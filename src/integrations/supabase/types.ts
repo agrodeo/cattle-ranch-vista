@@ -14,7 +14,243 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          animal_id: string | null
+          date: string | null
+          description: string | null
+          id: string
+          type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          animal_id?: string | null
+          date?: string | null
+          description?: string | null
+          id?: string
+          type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          animal_id?: string | null
+          date?: string | null
+          description?: string | null
+          id?: string
+          type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      animals: {
+        Row: {
+          birth_date: string | null
+          breed: string | null
+          cabaña_id: string | null
+          father_id: string | null
+          id: string
+          id_tag: string | null
+          mother_id: string | null
+          name: string | null
+          sex: string | null
+          status: string | null
+        }
+        Insert: {
+          birth_date?: string | null
+          breed?: string | null
+          cabaña_id?: string | null
+          father_id?: string | null
+          id?: string
+          id_tag?: string | null
+          mother_id?: string | null
+          name?: string | null
+          sex?: string | null
+          status?: string | null
+        }
+        Update: {
+          birth_date?: string | null
+          breed?: string | null
+          cabaña_id?: string | null
+          father_id?: string | null
+          id?: string
+          id_tag?: string | null
+          mother_id?: string | null
+          name?: string | null
+          sex?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animals_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cabañas: {
+        Row: {
+          id: string
+          location: string | null
+          name: string
+        }
+        Insert: {
+          id?: string
+          location?: string | null
+          name: string
+        }
+        Update: {
+          id?: string
+          location?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      finances: {
+        Row: {
+          amount: number | null
+          cabaña_id: string | null
+          date: string | null
+          description: string | null
+          id: string
+          type: string | null
+        }
+        Insert: {
+          amount?: number | null
+          cabaña_id?: string | null
+          date?: string | null
+          description?: string | null
+          id?: string
+          type?: string | null
+        }
+        Update: {
+          amount?: number | null
+          cabaña_id?: string | null
+          date?: string | null
+          description?: string | null
+          id?: string
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finances_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      services: {
+        Row: {
+          bull_id: string | null
+          female_id: string | null
+          id: string
+          notes: string | null
+          outcome: string | null
+          service_date: string | null
+        }
+        Insert: {
+          bull_id?: string | null
+          female_id?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          service_date?: string | null
+        }
+        Update: {
+          bull_id?: string | null
+          female_id?: string | null
+          id?: string
+          notes?: string | null
+          outcome?: string | null
+          service_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_bull_id_fkey"
+            columns: ["bull_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_female_id_fkey"
+            columns: ["female_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          cabaña_id: string | null
+          full_name: string | null
+          id: string
+        }
+        Insert: {
+          cabaña_id?: string | null
+          full_name?: string | null
+          id: string
+        }
+        Update: {
+          cabaña_id?: string | null
+          full_name?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
