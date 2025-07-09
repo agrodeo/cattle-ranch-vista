@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import GenealogyTree from "@/components/GenealogyTree";
 
 interface Animal {
   id: string;
@@ -111,7 +112,6 @@ const Animals = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [breedFilter, setBreedFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [animalDetails, setAnimalDetails] = useState<{[key: string]: any}>({});
   const [formData, setFormData] = useState({
     name: "",
     id_tag: "",
@@ -424,41 +424,6 @@ const Animals = () => {
     setShowOptionalFields(false);
   };
 
-  // Fetch animal details for expanded view
-  const fetchAnimalDetails = async (animalId: string) => {
-    if (animalDetails[animalId]) return animalDetails[animalId];
-    
-    try {
-      const animal = animals.find(a => a.id === animalId);
-      if (!animal) return null;
-
-      // Fetch parents
-      const parents = await Promise.all([
-        animal.mother_id ? supabase.from("animals").select("name, id_tag, sex, birth_date").eq("id", animal.mother_id).single() : null,
-        animal.father_id ? supabase.from("animals").select("name, id_tag, sex, birth_date").eq("id", animal.father_id).single() : null
-      ]);
-
-      // Fetch offspring
-      const { data: offspring } = await supabase
-        .from("animals")
-        .select("name, id_tag, sex, birth_date")
-        .or(`mother_id.eq.${animalId},father_id.eq.${animalId}`)
-        .order("birth_date", { ascending: false });
-
-      const details = {
-        mother: parents[0]?.data || null,
-        father: parents[1]?.data || null,
-        offspring: offspring || []
-      };
-
-      setAnimalDetails(prev => ({ ...prev, [animalId]: details }));
-      return details;
-    } catch (error) {
-      console.error("Error fetching animal details:", error);
-      return null;
-    }
-  };
-
   // Toggle expanded row
   const toggleExpandedRow = async (animalId: string) => {
     const newExpanded = new Set(expandedRows);
@@ -466,7 +431,6 @@ const Animals = () => {
       newExpanded.delete(animalId);
     } else {
       newExpanded.add(animalId);
-      await fetchAnimalDetails(animalId);
     }
     setExpandedRows(newExpanded);
   };
@@ -1033,67 +997,13 @@ const Animals = () => {
                                 )}
                               </div>
                               
-                              {/* Family Tree */}
+                              {/* Enhanced Genealogy Tree */}
                               <div className="space-y-3">
-                                <h4 className="font-semibold text-lg">Árbol Genealógico</h4>
-                                <div className="space-y-4">
-                                  {/* Parents */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-3 bg-muted/50 rounded-lg">
-                                      <div className="font-medium text-sm mb-2">Madre</div>
-                                      {animalDetails[animal.id]?.mother ? (
-                                        <div className="text-sm">
-                                          <div>{animalDetails[animal.id].mother.name || "Sin nombre"}</div>
-                                          <div className="text-muted-foreground">ID: {animalDetails[animal.id].mother.id_tag}</div>
-                                          <div className="text-muted-foreground">
-                                            {animalDetails[animal.id].mother.birth_date ? new Date(animalDetails[animal.id].mother.birth_date).toLocaleDateString() : "N/A"}
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <div className="text-sm text-muted-foreground">Desconocida</div>
-                                      )}
-                                    </div>
-                                    
-                                    <div className="p-3 bg-muted/50 rounded-lg">
-                                      <div className="font-medium text-sm mb-2">Padre</div>
-                                      {animalDetails[animal.id]?.father ? (
-                                        <div className="text-sm">
-                                          <div>{animalDetails[animal.id].father.name || "Sin nombre"}</div>
-                                          <div className="text-muted-foreground">ID: {animalDetails[animal.id].father.id_tag}</div>
-                                          <div className="text-muted-foreground">
-                                            {animalDetails[animal.id].father.birth_date ? new Date(animalDetails[animal.id].father.birth_date).toLocaleDateString() : "N/A"}
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <div className="text-sm text-muted-foreground">Desconocido</div>
-                                      )}
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Offspring */}
-                                  <div className="p-3 bg-muted/50 rounded-lg">
-                                    <div className="font-medium text-sm mb-2">Descendencia</div>
-                                    {animalDetails[animal.id]?.offspring?.length > 0 ? (
-                                      <div className="space-y-2">
-                                        {animalDetails[animal.id].offspring.slice(0, 3).map((offspring: any, index: number) => (
-                                          <div key={index} className="text-sm">
-                                            <div>{offspring.name || "Sin nombre"} - ID: {offspring.id_tag}</div>
-                                            <div className="text-muted-foreground">
-                                              {offspring.sex} - {offspring.birth_date ? new Date(offspring.birth_date).toLocaleDateString() : "N/A"}
-                                            </div>
-                                          </div>
-                                        ))}
-                                        {animalDetails[animal.id].offspring.length > 3 && (
-                                          <div className="text-sm text-muted-foreground">
-                                            +{animalDetails[animal.id].offspring.length - 3} más
-                                          </div>
-                                        )}
-                                      </div>
-                                    ) : (
-                                      <div className="text-sm text-muted-foreground">Sin descendencia registrada</div>
-                                    )}
-                                  </div>
-                                </div>
+                                <GenealogyTree 
+                                  animalId={animal.id}
+                                  animalName={animal.name}
+                                  animalIdTag={animal.id_tag}
+                                />
                               </div>
                             </div>
                           </div>
