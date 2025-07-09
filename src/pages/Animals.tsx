@@ -69,7 +69,7 @@ const ARGENTINE_BREEDS = [
 ];
 
 // Breeds that can have horns
-const HORNED_BREEDS = ["Hereford", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Criollo", "Corriente"];
+const HORNED_BREEDS = ["Hereford", "Braford", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Santa Gertrudis", "Criollo", "Corriente"];
 
 const MOCHO_OPTIONS = [
   { value: "Mocho", label: "Mocho" },
@@ -157,7 +157,7 @@ const Animals = () => {
       const { data, error } = await supabase
         .from("animals")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("name", { ascending: true });
 
       if (error) throw error;
       setAnimals(data || []);
@@ -210,6 +210,34 @@ const Animals = () => {
     }
 
     try {
+      // Look up parent animals by their id_tag values
+      let motherUUID = null;
+      let fatherUUID = null;
+
+      if (formData.mother_id) {
+        const { data: motherData } = await supabase
+          .from("animals")
+          .select("id")
+          .eq("id_tag", formData.mother_id)
+          .eq("cabaña_id", editingAnimal ? formData.cabaña_id : userCabaña)
+          .eq("sex", "Hembra")
+          .single();
+        
+        motherUUID = motherData?.id || null;
+      }
+
+      if (formData.father_id) {
+        const { data: fatherData } = await supabase
+          .from("animals")
+          .select("id")
+          .eq("id_tag", formData.father_id)
+          .eq("cabaña_id", editingAnimal ? formData.cabaña_id : userCabaña)
+          .eq("sex", "Macho")
+          .single();
+        
+        fatherUUID = fatherData?.id || null;
+      }
+
       // Prepare data for submission
       const submitData = {
         name: formData.name || null,
@@ -218,8 +246,8 @@ const Animals = () => {
         breed: formData.breed,
         birth_date: formData.birth_date || null,
         status: formData.status,
-        mother_id: formData.mother_id || null,
-        father_id: formData.father_id || null,
+        mother_id: motherUUID,
+        father_id: fatherUUID,
         cabaña_id: editingAnimal ? formData.cabaña_id : userCabaña,
         peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
         mocho: formData.mocho || null,
@@ -266,8 +294,31 @@ const Animals = () => {
     }
   };
 
-  const handleEdit = (animal: Animal) => {
+  const handleEdit = async (animal: Animal) => {
     setEditingAnimal(animal);
+    
+    // Convert parent UUIDs to id_tag values for display
+    let motherIdTag = "";
+    let fatherIdTag = "";
+    
+    if (animal.mother_id) {
+      const { data: motherData } = await supabase
+        .from("animals")
+        .select("id_tag")
+        .eq("id", animal.mother_id)
+        .single();
+      motherIdTag = motherData?.id_tag || "";
+    }
+    
+    if (animal.father_id) {
+      const { data: fatherData } = await supabase
+        .from("animals")
+        .select("id_tag")
+        .eq("id", animal.father_id)
+        .single();
+      fatherIdTag = fatherData?.id_tag || "";
+    }
+    
     setFormData({
       name: animal.name || "",
       id_tag: animal.id_tag || "",
@@ -275,11 +326,11 @@ const Animals = () => {
       breed: animal.breed || "",
       birth_date: animal.birth_date || "",
       status: animal.status || "Activo",
-      mother_id: animal.mother_id || "",
-      father_id: animal.father_id || "",
+      mother_id: motherIdTag,
+      father_id: fatherIdTag,
       cabaña_id: animal.cabaña_id || "",
       peso_nacimiento: animal.peso_nacimiento?.toString() || "",
-      mocho: animal.mocho || "",
+      mocho: animal.mocho || (animal.breed && HORNED_BREEDS.includes(animal.breed) ? "Desconocido" : ""),
       color: animal.color || "",
       condicion_corporal: animal.condicion_corporal || "",
       observaciones: animal.observaciones || ""
@@ -443,7 +494,10 @@ const Animals = () => {
                 {formData.breed && HORNED_BREEDS.includes(formData.breed) && (
                   <div className="space-y-2">
                     <Label htmlFor="mocho">Condición de Cuernos</Label>
-                    <Select value={formData.mocho} onValueChange={(value) => setFormData({...formData, mocho: value})}>
+                    <Select 
+                      value={formData.mocho || "Desconocido"} 
+                      onValueChange={(value) => setFormData({...formData, mocho: value})}
+                    >
                       <SelectTrigger className="bg-background">
                         <SelectValue placeholder="Seleccionar condición" />
                       </SelectTrigger>
@@ -485,38 +539,42 @@ const Animals = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="mother_id">Madre</Label>
-                    <Select value={formData.mother_id} onValueChange={(value) => setFormData({...formData, mother_id: value})}>
-                      <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Seleccionar madre" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border shadow-md z-50 max-h-60">
-                        {parentAnimals
-                          .filter(animal => animal.sex === "Hembra" && animal.id !== formData.father_id)
-                          .map((animal) => (
-                            <SelectItem key={animal.id} value={animal.id}>
-                              {animal.name ? `${animal.name} (${animal.id_tag})` : animal.id_tag}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="mother_id">Madre (ID de Identificación)</Label>
+                    <Input
+                      id="mother_id"
+                      value={formData.mother_id}
+                      onChange={(e) => setFormData({...formData, mother_id: e.target.value})}
+                      placeholder="Ingrese ID de la madre"
+                      list="mother-suggestions"
+                    />
+                    <datalist id="mother-suggestions">
+                      {parentAnimals
+                        .filter(animal => animal.sex === "Hembra" && animal.id_tag !== formData.father_id)
+                        .map((animal) => (
+                          <option key={animal.id} value={animal.id_tag}>
+                            {animal.name ? `${animal.name} (${animal.id_tag})` : animal.id_tag}
+                          </option>
+                        ))}
+                    </datalist>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="father_id">Padre</Label>
-                    <Select value={formData.father_id} onValueChange={(value) => setFormData({...formData, father_id: value})}>
-                      <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Seleccionar padre" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-background border shadow-md z-50 max-h-60">
-                        {parentAnimals
-                          .filter(animal => animal.sex === "Macho" && animal.id !== formData.mother_id)
-                          .map((animal) => (
-                            <SelectItem key={animal.id} value={animal.id}>
-                              {animal.name ? `${animal.name} (${animal.id_tag})` : animal.id_tag}
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="father_id">Padre (ID de Identificación)</Label>
+                    <Input
+                      id="father_id"
+                      value={formData.father_id}
+                      onChange={(e) => setFormData({...formData, father_id: e.target.value})}
+                      placeholder="Ingrese ID del padre"
+                      list="father-suggestions"
+                    />
+                    <datalist id="father-suggestions">
+                      {parentAnimals
+                        .filter(animal => animal.sex === "Macho" && animal.id_tag !== formData.mother_id)
+                        .map((animal) => (
+                          <option key={animal.id} value={animal.id_tag}>
+                            {animal.name ? `${animal.name} (${animal.id_tag})` : animal.id_tag}
+                          </option>
+                        ))}
+                    </datalist>
                   </div>
                 </div>
 
