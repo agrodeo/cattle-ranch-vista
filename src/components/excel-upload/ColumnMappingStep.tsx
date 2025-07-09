@@ -183,11 +183,12 @@ export const ColumnMappingStep = ({
     switch (fieldConfig.type) {
       case 'select':
         return (
-          <Select value={currentDefaults[field] || ""} onValueChange={(value) => updateDefault(field, value)}>
+          <Select value={currentDefaults[field] || "__empty__"} onValueChange={(value) => updateDefault(field, value === "__empty__" ? "" : value)}>
             <SelectTrigger>
               <SelectValue placeholder="Seleccionar valor por defecto" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="__empty__">No seleccionar</SelectItem>
               {('options' in fieldConfig && fieldConfig.options) && fieldConfig.options.map(option => (
                 <SelectItem key={option} value={option}>{option}</SelectItem>
               ))}
@@ -278,18 +279,20 @@ export const ColumnMappingStep = ({
                   Columna: "{excelCol}"
                 </Label>
                 <Select 
-                  value={currentMapping[excelCol] || ""} 
-                  onValueChange={(value) => updateMapping(excelCol, value as keyof typeof SUPPORTED_FIELDS | null)}
+                  value={currentMapping[excelCol] || "__no_mapping__"} 
+                  onValueChange={(value) => updateMapping(excelCol, value === "__no_mapping__" ? null : value as keyof typeof SUPPORTED_FIELDS)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccionar campo del sistema" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No mapear</SelectItem>
+                    <SelectItem value="__no_mapping__">No mapear</SelectItem>
                     {supportedFieldKeys.map(field => (
                       <SelectItem key={field} value={field}>
-                        {SUPPORTED_FIELDS[field].label}
-                        {SUPPORTED_FIELDS[field].required && <Badge variant="destructive" className="ml-2 text-xs">Requerido</Badge>}
+                        <div className="flex items-center">
+                          <span>{SUPPORTED_FIELDS[field].label}</span>
+                          {SUPPORTED_FIELDS[field].required && <Badge variant="destructive" className="ml-2 text-xs">Requerido</Badge>}
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
