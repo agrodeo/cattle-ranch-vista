@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
+import AnimalExcelUpload from "@/components/AnimalExcelUpload";
 
 interface Animal {
   id: string;
