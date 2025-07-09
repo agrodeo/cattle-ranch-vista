@@ -503,14 +503,15 @@ const Animals = () => {
           <h1 className="text-3xl font-bold">Gestión de Animales</h1>
           <p className="text-muted-foreground">Administra tu ganado y registra información detallada</p>
         </div>
-        <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setEditingAnimal(null); }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Agregar Animal
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
+        <div className="flex flex-col space-y-2">
+          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+            <DialogTrigger asChild>
+              <Button onClick={() => { resetForm(); setEditingAnimal(null); }}>
+                <Plus className="h-4 w-4 mr-2" />
+                Agregar Animal
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
             <DialogHeader>
               <DialogTitle>
                 {editingAnimal ? "Editar Animal" : "Agregar Nuevo Animal"}
@@ -736,7 +737,13 @@ const Animals = () => {
             </form>
           </DialogContent>
         </Dialog>
+        
+        <AnimalExcelUpload
+          userCabañaId={userCabaña}
+          onUploadComplete={fetchAnimals}
+        />
       </div>
+    </div>
 
       {/* Category Distribution Cards */}
       <Card>
