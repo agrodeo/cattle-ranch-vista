@@ -108,9 +108,9 @@ const Animals = () => {
   const [userCabaña, setUserCabaña] = useState<string>("");
   const [parentAnimals, setParentAnimals] = useState<ParentAnimal[]>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [categoryFilter, setCategoryFilter] = useState<string>("");
-  const [breedFilter, setBreedFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [breedFilter, setBreedFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [animalDetails, setAnimalDetails] = useState<{[key: string]: any}>({});
   const [formData, setFormData] = useState({
     name: "",
@@ -477,9 +477,9 @@ const Animals = () => {
       animal.id_tag?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       animal.breed?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesCategory = !categoryFilter || getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
-    const matchesBreed = !breedFilter || animal.breed === breedFilter;
-    const matchesStatus = !statusFilter || animal.status === statusFilter;
+    const matchesCategory = !categoryFilter || categoryFilter === "all" || getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
+    const matchesBreed = !breedFilter || breedFilter === "all" || animal.breed === breedFilter;
+    const matchesStatus = !statusFilter || statusFilter === "all" || animal.status === statusFilter;
     
     return matchesSearch && matchesCategory && matchesBreed && matchesStatus;
   });
@@ -859,10 +859,10 @@ const Animals = () => {
                 <Label className="text-sm font-medium">Categoría</Label>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-40 bg-background">
-                    <SelectValue placeholder="Todas" />
+                    <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
-                    <SelectItem value="">Todas las categorías</SelectItem>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category} value={category}>
                         {category}
@@ -879,7 +879,7 @@ const Animals = () => {
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
-                    <SelectItem value="">Todas las razas</SelectItem>
+                    <SelectItem value="all">Todas las razas</SelectItem>
                     {uniqueBreeds.map((breed) => (
                       <SelectItem key={breed} value={breed}>
                         {breed}
@@ -896,7 +896,7 @@ const Animals = () => {
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
-                    <SelectItem value="">Todos los estados</SelectItem>
+                    <SelectItem value="all">Todos los estados</SelectItem>
                     <SelectItem value="Activo">Activo</SelectItem>
                     <SelectItem value="Vendido">Vendido</SelectItem>
                     <SelectItem value="Muerto">Muerto</SelectItem>
@@ -904,14 +904,14 @@ const Animals = () => {
                 </Select>
               </div>
               
-              {(categoryFilter || breedFilter || statusFilter) && (
+              {(categoryFilter && categoryFilter !== "all" || breedFilter && breedFilter !== "all" || statusFilter && statusFilter !== "all") && (
                 <div className="flex flex-col justify-end">
                   <Button 
                     variant="outline" 
                     onClick={() => {
-                      setCategoryFilter("");
-                      setBreedFilter("");
-                      setStatusFilter("");
+                      setCategoryFilter("all");
+                      setBreedFilter("all");
+                      setStatusFilter("all");
                     }}
                   >
                     Limpiar filtros
