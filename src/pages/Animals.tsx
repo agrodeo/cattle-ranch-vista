@@ -120,12 +120,28 @@ const Animals = () => {
         .from("users")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
+      
+      // If user doesn't exist in users table, show a message
+      if (!data) {
+        toast({
+          title: "Configuración requerida",
+          description: "Por favor contacte al administrador para asignar su cabaña",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       setUserCabaña(data?.cabaña_id || "");
     } catch (error) {
       console.error("Error fetching user cabaña:", error);
+      toast({
+        title: "Error",
+        description: "No se pudo cargar la información del usuario",
+        variant: "destructive",
+      });
     }
   };
 
