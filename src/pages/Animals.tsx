@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
-import AnimalExcelUpload from "@/components/AnimalExcelUpload";
+import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
 
 interface Animal {
   id: string;
@@ -738,7 +738,7 @@ const Animals = () => {
           </DialogContent>
         </Dialog>
         
-        <AnimalExcelUpload
+        <AnimalExcelUploadAdvanced
           userCabañaId={userCabaña}
           onUploadComplete={fetchAnimals}
         />

@@ -61,52 +61,82 @@ export type Database = {
           birth_date: string | null
           breed: string | null
           cabaña_id: string | null
+          circunferencia_escrotal: number | null
           color: string | null
           condicion_corporal: string | null
           father_id: string | null
+          fecha_destete: string | null
+          fecha_muerte: string | null
+          fecha_servicio: string | null
           id: string
           id_tag: string | null
           mocho: string | null
           mother_id: string | null
           name: string | null
           observaciones: string | null
+          peso_destete: number | null
+          peso_final: number | null
           peso_nacimiento: number | null
+          resultado_preñez: string | null
           sex: string | null
           status: string | null
+          tipo_parto: string | null
+          tipo_servicio: string | null
+          toro_servicio_id: string | null
         }
         Insert: {
           birth_date?: string | null
           breed?: string | null
           cabaña_id?: string | null
+          circunferencia_escrotal?: number | null
           color?: string | null
           condicion_corporal?: string | null
           father_id?: string | null
+          fecha_destete?: string | null
+          fecha_muerte?: string | null
+          fecha_servicio?: string | null
           id?: string
           id_tag?: string | null
           mocho?: string | null
           mother_id?: string | null
           name?: string | null
           observaciones?: string | null
+          peso_destete?: number | null
+          peso_final?: number | null
           peso_nacimiento?: number | null
+          resultado_preñez?: string | null
           sex?: string | null
           status?: string | null
+          tipo_parto?: string | null
+          tipo_servicio?: string | null
+          toro_servicio_id?: string | null
         }
         Update: {
           birth_date?: string | null
           breed?: string | null
           cabaña_id?: string | null
+          circunferencia_escrotal?: number | null
           color?: string | null
           condicion_corporal?: string | null
           father_id?: string | null
+          fecha_destete?: string | null
+          fecha_muerte?: string | null
+          fecha_servicio?: string | null
           id?: string
           id_tag?: string | null
           mocho?: string | null
           mother_id?: string | null
           name?: string | null
           observaciones?: string | null
+          peso_destete?: number | null
+          peso_final?: number | null
           peso_nacimiento?: number | null
+          resultado_preñez?: string | null
           sex?: string | null
           status?: string | null
+          tipo_parto?: string | null
+          tipo_servicio?: string | null
+          toro_servicio_id?: string | null
         }
         Relationships: [
           {
@@ -114,6 +144,13 @@ export type Database = {
             columns: ["cabaña_id"]
             isOneToOne: false
             referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_toro_servicio"
+            columns: ["toro_servicio_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
             referencedColumns: ["id"]
           },
         ]
@@ -271,7 +308,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      categorize_animal: {
+        Args: { birth_date: string; sex: string; reference_date?: string }
+        Returns: string
+      }
+      check_consanguinity: {
+        Args: { animal_father_id: string; animal_mother_id: string }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
