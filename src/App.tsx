@@ -5,9 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import Animals from "./pages/Animals";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,42 +36,42 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Animals page coming soon...</div>} />
+              <Route index element={<Animals />} />
             </Route>
             <Route path="/activities" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Activities page coming soon...</div>} />
+              <Route index element={<div>Página de actividades próximamente...</div>} />
             </Route>
             <Route path="/services" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Services page coming soon...</div>} />
+              <Route index element={<div>Página de servicios próximamente...</div>} />
             </Route>
             <Route path="/finances" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Finances page coming soon...</div>} />
+              <Route index element={<div>Página de finanzas próximamente...</div>} />
             </Route>
             <Route path="/reports" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Reports page coming soon...</div>} />
+              <Route index element={<div>Página de reportes próximamente...</div>} />
             </Route>
             <Route path="/settings" element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Settings page coming soon...</div>} />
+              <Route index element={<div>Página de configuración próximamente...</div>} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

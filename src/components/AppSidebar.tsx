@@ -22,37 +22,37 @@ import {
 
 const menuItems = [
   {
-    title: "Dashboard",
+    title: "Tablero",
     url: "/dashboard",
     icon: Home,
   },
   {
-    title: "Animals",
+    title: "Animales",
     url: "/animals",
     icon: Users,
   },
   {
-    title: "Activities",
+    title: "Actividades",
     url: "/activities",
     icon: Activity,
   },
   {
-    title: "Services",
+    title: "Servicios",
     url: "/services",
     icon: FileText,
   },
   {
-    title: "Finances",
+    title: "Finanzas",
     url: "/finances",
     icon: DollarSign,
   },
   {
-    title: "Reports",
+    title: "Reportes",
     url: "/reports",
     icon: BarChart3,
   },
   {
-    title: "Settings",
+    title: "Configuración",
     url: "/settings",
     icon: Settings,
   },

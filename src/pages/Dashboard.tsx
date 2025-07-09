@@ -6,31 +6,31 @@ const Dashboard = () => {
   // Mock data for now - will be replaced with real data from Supabase
   const stats = [
     {
-      title: "Total Animals",
+      title: "Total de Animales",
       value: "0",
       icon: Users,
-      description: "Active cattle in the system",
+      description: "Ganado activo en el sistema",
       trend: "+0%",
     },
     {
-      title: "Recent Activities",
+      title: "Actividades Recientes",
       value: "0",
       icon: Activity,
-      description: "Activities logged this week",
+      description: "Actividades registradas esta semana",
       trend: "+0%",
     },
     {
-      title: "Monthly Revenue",
+      title: "Ingresos Mensuales",
       value: "$0",
       icon: DollarSign,
-      description: "Income this month",
+      description: "Ingresos este mes",
       trend: "+0%",
     },
     {
-      title: "Services",
+      title: "Servicios",
       value: "0",
       icon: TrendingUp,
-      description: "Breeding services completed",
+      description: "Servicios de reproducción completados",
       trend: "+0%",
     },
   ];
@@ -38,8 +38,8 @@ const Dashboard = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <Badge variant="outline">Welcome to AgroDeo</Badge>
+        <h1 className="text-3xl font-bold">Tablero</h1>
+        <Badge variant="outline">Bienvenido a AgroDeo</Badge>
       </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -64,28 +64,28 @@ const Dashboard = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Recent Activities</CardTitle>
+            <CardTitle>Actividades Recientes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8 text-muted-foreground">
-              No recent activities found.
+              No se encontraron actividades recientes.
             </div>
           </CardContent>
         </Card>
         
         <Card className="col-span-3">
           <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
+            <CardTitle>Acciones Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm text-muted-foreground">
-              Get started by:
+              Comienza por:
             </div>
             <ul className="space-y-2 text-sm">
-              <li>• Add your first animal</li>
-              <li>• Log an activity</li>
-              <li>• Record a service</li>
-              <li>• Track finances</li>
+              <li>• Agregar tu primer animal</li>
+              <li>• Registrar una actividad</li>
+              <li>• Anotar un servicio</li>
+              <li>• Rastrear finanzas</li>
             </ul>
           </CardContent>
         </Card>
