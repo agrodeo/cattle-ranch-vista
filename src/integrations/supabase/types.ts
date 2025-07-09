@@ -61,11 +61,16 @@ export type Database = {
           birth_date: string | null
           breed: string | null
           cabaña_id: string | null
+          color: string | null
+          condicion_corporal: string | null
           father_id: string | null
           id: string
           id_tag: string | null
+          mocho: string | null
           mother_id: string | null
           name: string | null
+          observaciones: string | null
+          peso_nacimiento: number | null
           sex: string | null
           status: string | null
         }
@@ -73,11 +78,16 @@ export type Database = {
           birth_date?: string | null
           breed?: string | null
           cabaña_id?: string | null
+          color?: string | null
+          condicion_corporal?: string | null
           father_id?: string | null
           id?: string
           id_tag?: string | null
+          mocho?: string | null
           mother_id?: string | null
           name?: string | null
+          observaciones?: string | null
+          peso_nacimiento?: number | null
           sex?: string | null
           status?: string | null
         }
@@ -85,11 +95,16 @@ export type Database = {
           birth_date?: string | null
           breed?: string | null
           cabaña_id?: string | null
+          color?: string | null
+          condicion_corporal?: string | null
           father_id?: string | null
           id?: string
           id_tag?: string | null
+          mocho?: string | null
           mother_id?: string | null
           name?: string | null
+          observaciones?: string | null
+          peso_nacimiento?: number | null
           sex?: string | null
           status?: string | null
         }

@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Animal {
   id: string;
-  name: string;
+  name?: string;
   id_tag: string;
   sex: string;
   breed: string;
@@ -23,6 +25,11 @@ interface Animal {
   mother_id?: string;
   father_id?: string;
   cabaña_id: string;
+  peso_nacimiento?: number;
+  mocho?: string;
+  color?: string;
+  condicion_corporal?: string;
+  observaciones?: string;
 }
 
 interface Cabaña {
@@ -30,6 +37,47 @@ interface Cabaña {
   name: string;
   location: string;
 }
+
+interface ParentAnimal {
+  id: string;
+  name?: string;
+  id_tag: string;
+  sex: string;
+}
+
+// Argentine cattle breeds
+const ARGENTINE_BREEDS = [
+  "Angus",
+  "Hereford", 
+  "Shorthorn",
+  "Charolais",
+  "Limousin",
+  "Simmental",
+  "Brahman",
+  "Nelore",
+  "Braford",
+  "Brangus",
+  "Santa Gertrudis",
+  "Senepol",
+  "Bonsmara",
+  "Holando Argentino",
+  "Jersey",
+  "Criollo",
+  "Wagyu",
+  "Corriente",
+  "Otro"
+];
+
+// Breeds that can have horns
+const HORNED_BREEDS = ["Hereford", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Criollo", "Corriente"];
+
+const MOCHO_OPTIONS = [
+  { value: "Mocho", label: "Mocho" },
+  { value: "Con Cuernos", label: "Con Cuernos" },
+  { value: "Desconocido", label: "Desconocido" }
+];
+
+const BODY_CONDITION_SCORES = ["1", "2", "3", "4", "5"];
 
 const Animals = () => {
   const { user } = useAuth();
@@ -39,6 +87,9 @@ const Animals = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingAnimal, setEditingAnimal] = useState<Animal | null>(null);
+  const [showOptionalFields, setShowOptionalFields] = useState(false);
+  const [userCabaña, setUserCabaña] = useState<string>("");
+  const [parentAnimals, setParentAnimals] = useState<ParentAnimal[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     id_tag: "",
@@ -48,13 +99,58 @@ const Animals = () => {
     status: "Activo",
     mother_id: "",
     father_id: "",
-    cabaña_id: ""
+    cabaña_id: "",
+    peso_nacimiento: "",
+    mocho: "",
+    color: "",
+    condicion_corporal: "",
+    observaciones: ""
   });
 
   useEffect(() => {
     fetchAnimals();
     fetchCabañas();
-  }, []);
+    fetchUserCabaña();
+  }, [user]);
+
+  const fetchUserCabaña = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+      
+      if (error) throw error;
+      setUserCabaña(data?.cabaña_id || "");
+    } catch (error) {
+      console.error("Error fetching user cabaña:", error);
+    }
+  };
+
+  const fetchParentAnimals = async () => {
+    if (!userCabaña) return;
+    try {
+      const { data, error } = await supabase
+        .from("animals")
+        .select("id, name, id_tag, sex")
+        .eq("cabaña_id", userCabaña)
+        .eq("status", "Activo")
+        .order("name");
+
+      if (error) throw error;
+      setParentAnimals(data || []);
+    } catch (error) {
+      console.error("Error fetching parent animals:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (userCabaña) {
+      fetchParentAnimals();
+    }
+  }, [userCabaña]);
 
   const fetchAnimals = async () => {
     try {
@@ -93,11 +189,49 @@ const Animals = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate that birth date is not in the future
+    if (formData.birth_date && new Date(formData.birth_date) > new Date()) {
+      toast({
+        title: "Error de validación",
+        description: "La fecha de nacimiento no puede ser en el futuro",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate that mother and father are not the same
+    if (formData.mother_id && formData.father_id && formData.mother_id === formData.father_id) {
+      toast({
+        title: "Error de validación",
+        description: "La madre y el padre no pueden ser el mismo animal",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
+      // Prepare data for submission
+      const submitData = {
+        name: formData.name || null,
+        id_tag: formData.id_tag,
+        sex: formData.sex,
+        breed: formData.breed,
+        birth_date: formData.birth_date || null,
+        status: formData.status,
+        mother_id: formData.mother_id || null,
+        father_id: formData.father_id || null,
+        cabaña_id: editingAnimal ? formData.cabaña_id : userCabaña,
+        peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
+        mocho: formData.mocho || null,
+        color: formData.color || null,
+        condicion_corporal: formData.condicion_corporal || null,
+        observaciones: formData.observaciones || null,
+      };
+
       if (editingAnimal) {
         const { error } = await supabase
           .from("animals")
-          .update(formData)
+          .update(submitData)
           .eq("id", editingAnimal.id);
 
         if (error) throw error;
@@ -109,7 +243,7 @@ const Animals = () => {
       } else {
         const { error } = await supabase
           .from("animals")
-          .insert([formData]);
+          .insert([submitData]);
 
         if (error) throw error;
         
@@ -143,7 +277,12 @@ const Animals = () => {
       status: animal.status || "Activo",
       mother_id: animal.mother_id || "",
       father_id: animal.father_id || "",
-      cabaña_id: animal.cabaña_id || ""
+      cabaña_id: animal.cabaña_id || "",
+      peso_nacimiento: animal.peso_nacimiento?.toString() || "",
+      mocho: animal.mocho || "",
+      color: animal.color || "",
+      condicion_corporal: animal.condicion_corporal || "",
+      observaciones: animal.observaciones || ""
     });
     setShowAddDialog(true);
   };
@@ -186,8 +325,14 @@ const Animals = () => {
       status: "Activo",
       mother_id: "",
       father_id: "",
-      cabaña_id: ""
+      cabaña_id: "",
+      peso_nacimiento: "",
+      mocho: "",
+      color: "",
+      condicion_corporal: "",
+      observaciones: ""
     });
+    setShowOptionalFields(false);
   };
 
   const filteredAnimals = animals.filter(animal =>
@@ -239,64 +384,142 @@ const Animals = () => {
                 {editingAnimal ? "Modifica la información del animal" : "Registra un nuevo animal en el sistema"}
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nombre</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    placeholder="Nombre del animal"
-                    required
-                  />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Essential Information Section */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="id_tag">Identificación *</Label>
+                    <Input
+                      id="id_tag"
+                      value={formData.id_tag}
+                      onChange={(e) => setFormData({...formData, id_tag: e.target.value})}
+                      placeholder="Número de identificación"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nombre (opcional)</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="Nombre del animal"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="id_tag">Identificación</Label>
-                  <Input
-                    id="id_tag"
-                    value={formData.id_tag}
-                    onChange={(e) => setFormData({...formData, id_tag: e.target.value})}
-                    placeholder="Número de identificación"
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="sex">Sexo</Label>
-                  <Select value={formData.sex} onValueChange={(value) => setFormData({...formData, sex: value})}>
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Seleccionar sexo" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-background border shadow-md z-50">
-                      <SelectItem value="Macho">Macho</SelectItem>
-                      <SelectItem value="Hembra">Hembra</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="sex">Sexo *</Label>
+                    <Select value={formData.sex} onValueChange={(value) => setFormData({...formData, sex: value})} required>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Seleccionar sexo" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-md z-50">
+                        <SelectItem value="Macho">Macho</SelectItem>
+                        <SelectItem value="Hembra">Hembra</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="breed">Raza *</Label>
+                    <Select value={formData.breed} onValueChange={(value) => setFormData({...formData, breed: value})} required>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Seleccionar raza" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-md z-50 max-h-60">
+                        {ARGENTINE_BREEDS.map((breed) => (
+                          <SelectItem key={breed} value={breed}>
+                            {breed}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="breed">Raza</Label>
-                  <Input
-                    id="breed"
-                    value={formData.breed}
-                    onChange={(e) => setFormData({...formData, breed: e.target.value})}
-                    placeholder="Raza del animal"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="birth_date">Fecha de Nacimiento</Label>
-                  <Input
-                    id="birth_date"
-                    type="date"
-                    value={formData.birth_date}
-                    onChange={(e) => setFormData({...formData, birth_date: e.target.value})}
-                  />
+                {/* Conditional Mocho field */}
+                {formData.breed && HORNED_BREEDS.includes(formData.breed) && (
+                  <div className="space-y-2">
+                    <Label htmlFor="mocho">Condición de Cuernos</Label>
+                    <Select value={formData.mocho} onValueChange={(value) => setFormData({...formData, mocho: value})}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Seleccionar condición" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-md z-50">
+                        {MOCHO_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="birth_date">Fecha de Nacimiento</Label>
+                    <Input
+                      id="birth_date"
+                      type="date"
+                      value={formData.birth_date}
+                      onChange={(e) => setFormData({...formData, birth_date: e.target.value})}
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="peso_nacimiento">Peso al Nacer (kg)</Label>
+                    <Input
+                      id="peso_nacimiento"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.peso_nacimiento}
+                      onChange={(e) => setFormData({...formData, peso_nacimiento: e.target.value})}
+                      placeholder="32.5"
+                    />
+                  </div>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="mother_id">Madre</Label>
+                    <Select value={formData.mother_id} onValueChange={(value) => setFormData({...formData, mother_id: value})}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Seleccionar madre" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-md z-50 max-h-60">
+                        {parentAnimals
+                          .filter(animal => animal.sex === "Hembra" && animal.id !== formData.father_id)
+                          .map((animal) => (
+                            <SelectItem key={animal.id} value={animal.id}>
+                              {animal.name ? `${animal.name} (${animal.id_tag})` : animal.id_tag}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="father_id">Padre</Label>
+                    <Select value={formData.father_id} onValueChange={(value) => setFormData({...formData, father_id: value})}>
+                      <SelectTrigger className="bg-background">
+                        <SelectValue placeholder="Seleccionar padre" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background border shadow-md z-50 max-h-60">
+                        {parentAnimals
+                          .filter(animal => animal.sex === "Macho" && animal.id !== formData.mother_id)
+                          .map((animal) => (
+                            <SelectItem key={animal.id} value={animal.id}>
+                              {animal.name ? `${animal.name} (${animal.id_tag})` : animal.id_tag}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="status">Estado</Label>
                   <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
@@ -312,23 +535,55 @@ const Animals = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="cabaña_id">Cabaña</Label>
-                <Select value={formData.cabaña_id} onValueChange={(value) => setFormData({...formData, cabaña_id: value})}>
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="Seleccionar cabaña" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-md z-50">
-                    {cabañas.map((cabaña) => (
-                      <SelectItem key={cabaña.id} value={cabaña.id}>
-                        {cabaña.name} - {cabaña.location}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Optional Fields Section */}
+              <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" className="w-full justify-between p-2">
+                    <span>Campos Adicionales (Opcional)</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${showOptionalFields ? 'rotate-180' : ''}`} />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="color">Color</Label>
+                      <Input
+                        id="color"
+                        value={formData.color}
+                        onChange={(e) => setFormData({...formData, color: e.target.value})}
+                        placeholder="Color del animal"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="condicion_corporal">Condición Corporal (1-5)</Label>
+                      <Select value={formData.condicion_corporal} onValueChange={(value) => setFormData({...formData, condicion_corporal: value})}>
+                        <SelectTrigger className="bg-background">
+                          <SelectValue placeholder="Seleccionar condición" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border shadow-md z-50">
+                          {BODY_CONDITION_SCORES.map((score) => (
+                            <SelectItem key={score} value={score}>
+                              {score}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="observaciones">Observaciones Generales</Label>
+                    <Textarea
+                      id="observaciones"
+                      value={formData.observaciones}
+                      onChange={(e) => setFormData({...formData, observaciones: e.target.value})}
+                      placeholder="Notas adicionales sobre el animal..."
+                      rows={3}
+                    />
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                 <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
                   Cancelar
                 </Button>
