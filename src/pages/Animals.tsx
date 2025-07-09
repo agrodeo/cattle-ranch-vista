@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface Animal {
@@ -79,6 +79,23 @@ const MOCHO_OPTIONS = [
 
 const BODY_CONDITION_SCORES = ["1", "2", "3", "4", "5"];
 
+// Age classification function
+const getAgeCategory = (birthDate: string | null, sex: string) => {
+  if (!birthDate) return "Sin clasificar";
+  
+  const today = new Date();
+  const birth = new Date(birthDate);
+  const monthsDiff = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
+  
+  if (monthsDiff < 12) {
+    return sex === "Macho" ? "Ternero" : "Ternera";
+  } else if (monthsDiff < 24) {
+    return sex === "Macho" ? "Novillo" : "Vaquillona";
+  } else {
+    return sex === "Macho" ? "Toro" : "Vaca adulta";
+  }
+};
+
 const Animals = () => {
   const { user } = useAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -90,6 +107,11 @@ const Animals = () => {
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [userCabaña, setUserCabaña] = useState<string>("");
   const [parentAnimals, setParentAnimals] = useState<ParentAnimal[]>([]);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [breedFilter, setBreedFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [animalDetails, setAnimalDetails] = useState<{[key: string]: any}>({});
   const [formData, setFormData] = useState({
     name: "",
     id_tag: "",
@@ -402,11 +424,92 @@ const Animals = () => {
     setShowOptionalFields(false);
   };
 
-  const filteredAnimals = animals.filter(animal =>
-    animal.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    animal.id_tag?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    animal.breed?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Fetch animal details for expanded view
+  const fetchAnimalDetails = async (animalId: string) => {
+    if (animalDetails[animalId]) return animalDetails[animalId];
+    
+    try {
+      const animal = animals.find(a => a.id === animalId);
+      if (!animal) return null;
+
+      // Fetch parents
+      const parents = await Promise.all([
+        animal.mother_id ? supabase.from("animals").select("name, id_tag, sex, birth_date").eq("id", animal.mother_id).single() : null,
+        animal.father_id ? supabase.from("animals").select("name, id_tag, sex, birth_date").eq("id", animal.father_id).single() : null
+      ]);
+
+      // Fetch offspring
+      const { data: offspring } = await supabase
+        .from("animals")
+        .select("name, id_tag, sex, birth_date")
+        .or(`mother_id.eq.${animalId},father_id.eq.${animalId}`)
+        .order("birth_date", { ascending: false });
+
+      const details = {
+        mother: parents[0]?.data || null,
+        father: parents[1]?.data || null,
+        offspring: offspring || []
+      };
+
+      setAnimalDetails(prev => ({ ...prev, [animalId]: details }));
+      return details;
+    } catch (error) {
+      console.error("Error fetching animal details:", error);
+      return null;
+    }
+  };
+
+  // Toggle expanded row
+  const toggleExpandedRow = async (animalId: string) => {
+    const newExpanded = new Set(expandedRows);
+    if (newExpanded.has(animalId)) {
+      newExpanded.delete(animalId);
+    } else {
+      newExpanded.add(animalId);
+      await fetchAnimalDetails(animalId);
+    }
+    setExpandedRows(newExpanded);
+  };
+
+  // Enhanced filtering with categories
+  const filteredAnimals = animals.filter(animal => {
+    const matchesSearch = animal.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      animal.id_tag?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      animal.breed?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = !categoryFilter || getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
+    const matchesBreed = !breedFilter || animal.breed === breedFilter;
+    const matchesStatus = !statusFilter || animal.status === statusFilter;
+    
+    return matchesSearch && matchesCategory && matchesBreed && matchesStatus;
+  });
+
+  // Calculate category counts
+  const getCategoryCounts = () => {
+    const activeAnimals = animals.filter(a => a.status === "Activo");
+    const counts = {
+      "Ternero": 0,
+      "Ternera": 0,
+      "Novillo": 0,
+      "Vaquillona": 0,
+      "Toro": 0,
+      "Vaca adulta": 0
+    };
+
+    activeAnimals.forEach(animal => {
+      const category = getAgeCategory(animal.birth_date, animal.sex);
+      if (counts.hasOwnProperty(category)) {
+        counts[category as keyof typeof counts]++;
+      }
+    });
+
+    return counts;
+  };
+
+  const categoryCounts = getCategoryCounts();
+  const totalActiveAnimals = animals.filter(a => a.status === "Activo").length;
+  const uniqueBreeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
+  const categories = ["Ternero", "Ternera", "Novillo", "Vaquillona", "Toro", "Vaca adulta"];
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -670,6 +773,27 @@ const Animals = () => {
         </Dialog>
       </div>
 
+      {/* Category Distribution Cards */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">📊 Distribución por Categoría</CardTitle>
+          <CardDescription>
+            Clasificación automática basada en edad y sexo - Total: {totalActiveAnimals} Animales Activos
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {Object.entries(categoryCounts).map(([category, count]) => (
+              <div key={category} className="text-center p-3 bg-muted/50 rounded-lg">
+                <div className="text-2xl font-bold text-primary">{count}</div>
+                <div className="text-sm text-muted-foreground">{category}{count !== 1 ? 's' : ''}</div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Quick Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -690,9 +814,7 @@ const Animals = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {animals.filter(a => a.status === "Activo").length}
-            </div>
+            <div className="text-2xl font-bold">{totalActiveAnimals}</div>
             <p className="text-xs text-muted-foreground">
               En la cabaña actualmente
             </p>
@@ -701,13 +823,13 @@ const Animals = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cabañas</CardTitle>
+            <CardTitle className="text-sm font-medium">Razas Registradas</CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{cabañas.length}</div>
+            <div className="text-2xl font-bold">{uniqueBreeds.length}</div>
             <p className="text-xs text-muted-foreground">
-              Ubicaciones registradas
+              Diferentes razas
             </p>
           </CardContent>
         </Card>
@@ -719,14 +841,84 @@ const Animals = () => {
           <CardDescription>
             Visualiza y gestiona todos los animales registrados
           </CardDescription>
-          <div className="flex items-center space-x-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre, ID o raza..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-sm"
-            />
+          
+          {/* Enhanced Search and Filter Controls */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre, ID o raza..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+            
+            <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col space-y-2">
+                <Label className="text-sm font-medium">Categoría</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="w-40 bg-background">
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    <SelectItem value="">Todas las categorías</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <Label className="text-sm font-medium">Raza</Label>
+                <Select value={breedFilter} onValueChange={setBreedFilter}>
+                  <SelectTrigger className="w-40 bg-background">
+                    <SelectValue placeholder="Todas" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    <SelectItem value="">Todas las razas</SelectItem>
+                    {uniqueBreeds.map((breed) => (
+                      <SelectItem key={breed} value={breed}>
+                        {breed}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <Label className="text-sm font-medium">Estado</Label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40 bg-background">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    <SelectItem value="">Todos los estados</SelectItem>
+                    <SelectItem value="Activo">Activo</SelectItem>
+                    <SelectItem value="Vendido">Vendido</SelectItem>
+                    <SelectItem value="Muerto">Muerto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {(categoryFilter || breedFilter || statusFilter) && (
+                <div className="flex flex-col justify-end">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setCategoryFilter("");
+                      setBreedFilter("");
+                      setStatusFilter("");
+                    }}
+                  >
+                    Limpiar filtros
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -738,9 +930,10 @@ const Animals = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead></TableHead>
                   <TableHead>Nombre</TableHead>
                   <TableHead>ID</TableHead>
-                  <TableHead>Sexo</TableHead>
+                  <TableHead>Categoría</TableHead>
                   <TableHead>Raza</TableHead>
                   <TableHead>Fecha de Nacimiento</TableHead>
                   <TableHead>Estado</TableHead>
@@ -749,34 +942,165 @@ const Animals = () => {
               </TableHeader>
               <TableBody>
                 {filteredAnimals.map((animal) => (
-                  <TableRow key={animal.id}>
-                    <TableCell className="font-medium">{animal.name}</TableCell>
-                    <TableCell>{animal.id_tag}</TableCell>
-                    <TableCell>{animal.sex}</TableCell>
-                    <TableCell>{animal.breed}</TableCell>
-                    <TableCell>
-                      {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(animal.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
+                  <>
+                    <TableRow key={animal.id} className="hover:bg-muted/50">
+                      <TableCell>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="sm"
-                          onClick={() => handleEdit(animal)}
+                          onClick={() => toggleExpandedRow(animal.id)}
+                          className="p-1"
                         >
-                          <Edit className="h-4 w-4" />
+                          {expandedRows.has(animal.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(animal.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                      </TableCell>
+                      <TableCell className="font-medium">{animal.name || "Sin nombre"}</TableCell>
+                      <TableCell>{animal.id_tag}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {getAgeCategory(animal.birth_date, animal.sex)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{animal.breed}</TableCell>
+                      <TableCell>
+                        {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(animal.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(animal)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(animal.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                    
+                    {/* Expandable Animal Details */}
+                    {expandedRows.has(animal.id) && (
+                      <TableRow>
+                        <TableCell colSpan={8} className="p-0">
+                          <div className="p-6 bg-muted/20 border-t">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              {/* Basic Info Recap */}
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-lg">Información Básica</h4>
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                  <div>
+                                    <span className="font-medium">Sexo:</span> {animal.sex}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Raza:</span> {animal.breed}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Fecha de Nacimiento:</span> {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Estado de Cuernos:</span> {animal.mocho || "N/A"}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Peso al Nacer:</span> {animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Estado Actual:</span> {animal.status}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Color:</span> {animal.color || "N/A"}
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
+                                  </div>
+                                </div>
+                                {animal.observaciones && (
+                                  <div className="mt-4">
+                                    <span className="font-medium">Observaciones:</span>
+                                    <p className="text-sm text-muted-foreground mt-1">{animal.observaciones}</p>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Family Tree */}
+                              <div className="space-y-3">
+                                <h4 className="font-semibold text-lg">Árbol Genealógico</h4>
+                                <div className="space-y-4">
+                                  {/* Parents */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="p-3 bg-muted/50 rounded-lg">
+                                      <div className="font-medium text-sm mb-2">Madre</div>
+                                      {animalDetails[animal.id]?.mother ? (
+                                        <div className="text-sm">
+                                          <div>{animalDetails[animal.id].mother.name || "Sin nombre"}</div>
+                                          <div className="text-muted-foreground">ID: {animalDetails[animal.id].mother.id_tag}</div>
+                                          <div className="text-muted-foreground">
+                                            {animalDetails[animal.id].mother.birth_date ? new Date(animalDetails[animal.id].mother.birth_date).toLocaleDateString() : "N/A"}
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="text-sm text-muted-foreground">Desconocida</div>
+                                      )}
+                                    </div>
+                                    
+                                    <div className="p-3 bg-muted/50 rounded-lg">
+                                      <div className="font-medium text-sm mb-2">Padre</div>
+                                      {animalDetails[animal.id]?.father ? (
+                                        <div className="text-sm">
+                                          <div>{animalDetails[animal.id].father.name || "Sin nombre"}</div>
+                                          <div className="text-muted-foreground">ID: {animalDetails[animal.id].father.id_tag}</div>
+                                          <div className="text-muted-foreground">
+                                            {animalDetails[animal.id].father.birth_date ? new Date(animalDetails[animal.id].father.birth_date).toLocaleDateString() : "N/A"}
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="text-sm text-muted-foreground">Desconocido</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  
+                                  {/* Offspring */}
+                                  <div className="p-3 bg-muted/50 rounded-lg">
+                                    <div className="font-medium text-sm mb-2">Descendencia</div>
+                                    {animalDetails[animal.id]?.offspring?.length > 0 ? (
+                                      <div className="space-y-2">
+                                        {animalDetails[animal.id].offspring.slice(0, 3).map((offspring: any, index: number) => (
+                                          <div key={index} className="text-sm">
+                                            <div>{offspring.name || "Sin nombre"} - ID: {offspring.id_tag}</div>
+                                            <div className="text-muted-foreground">
+                                              {offspring.sex} - {offspring.birth_date ? new Date(offspring.birth_date).toLocaleDateString() : "N/A"}
+                                            </div>
+                                          </div>
+                                        ))}
+                                        {animalDetails[animal.id].offspring.length > 3 && (
+                                          <div className="text-sm text-muted-foreground">
+                                            +{animalDetails[animal.id].offspring.length - 3} más
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-muted-foreground">Sin descendencia registrada</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </>
                 ))}
               </TableBody>
             </Table>
