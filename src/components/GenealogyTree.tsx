@@ -136,63 +136,78 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
   const fetchAncestors = async (animalNode: AnimalNode, currentGeneration: number = 1): Promise<AnimalNode> => {
     if (currentGeneration > 4) return animalNode;
 
-    const { data: animal } = await supabase
-      .from("animals")
-      .select("*")
-      .eq("id", animalNode.id)
-      .single();
-
-    if (!animal) return animalNode;
-
-    const enhancedNode = { ...animalNode };
-
-    // Fetch mother's ancestors
-    if (animal.mother_id) {
-      const { data: mother } = await supabase
+    try {
+      const { data: animal, error } = await supabase
         .from("animals")
         .select("*")
-        .eq("id", animal.mother_id)
+        .eq("id", animalNode.id)
         .single();
 
-      if (mother) {
-        const motherNode: AnimalNode = {
-          id: mother.id,
-          name: mother.name,
-          id_tag: mother.id_tag,
-          sex: mother.sex,
-          birth_date: mother.birth_date,
-          breed: mother.breed,
-          generation: currentGeneration
-        };
+      if (error || !animal) return animalNode;
 
-        enhancedNode.mother = await fetchAncestors(motherNode, currentGeneration + 1);
+      const enhancedNode = { ...animalNode };
+
+      // Fetch and process mother's line
+      if (animal.mother_id) {
+        try {
+          const { data: mother, error: motherError } = await supabase
+            .from("animals")
+            .select("*")
+            .eq("id", animal.mother_id)
+            .single();
+
+          if (!motherError && mother) {
+            const motherNode: AnimalNode = {
+              id: mother.id,
+              name: mother.name,
+              id_tag: mother.id_tag,
+              sex: mother.sex,
+              birth_date: mother.birth_date,
+              breed: mother.breed,
+              generation: currentGeneration
+            };
+
+            // Recursively fetch mother's ancestors
+            enhancedNode.mother = await fetchAncestors(motherNode, currentGeneration + 1);
+          }
+        } catch (error) {
+          console.error(`Error fetching mother at generation ${currentGeneration}:`, error);
+        }
       }
-    }
 
-    // Fetch father's ancestors
-    if (animal.father_id) {
-      const { data: father } = await supabase
-        .from("animals")
-        .select("*")
-        .eq("id", animal.father_id)
-        .single();
+      // Fetch and process father's line
+      if (animal.father_id) {
+        try {
+          const { data: father, error: fatherError } = await supabase
+            .from("animals")
+            .select("*")
+            .eq("id", animal.father_id)
+            .single();
 
-      if (father) {
-        const fatherNode: AnimalNode = {
-          id: father.id,
-          name: father.name,
-          id_tag: father.id_tag,
-          sex: father.sex,
-          birth_date: father.birth_date,
-          breed: father.breed,
-          generation: currentGeneration
-        };
+          if (!fatherError && father) {
+            const fatherNode: AnimalNode = {
+              id: father.id,
+              name: father.name,
+              id_tag: father.id_tag,
+              sex: father.sex,
+              birth_date: father.birth_date,
+              breed: father.breed,
+              generation: currentGeneration
+            };
 
-        enhancedNode.father = await fetchAncestors(fatherNode, currentGeneration + 1);
+            // Recursively fetch father's ancestors
+            enhancedNode.father = await fetchAncestors(fatherNode, currentGeneration + 1);
+          }
+        } catch (error) {
+          console.error(`Error fetching father at generation ${currentGeneration}:`, error);
+        }
       }
-    }
 
-    return enhancedNode;
+      return enhancedNode;
+    } catch (error) {
+      console.error(`Error in fetchAncestors at generation ${currentGeneration}:`, error);
+      return animalNode;
+    }
   };
 
   // Expand tree to show full genealogy
@@ -204,6 +219,19 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
       const fullTree = await fetchAncestors(treeData, 1);
       setTreeData(fullTree);
       setExpandedTree(true);
+      
+      // Auto-expand all nodes to show the full tree
+      const allNodeIds = new Set<string>();
+      const collectNodeIds = (node: AnimalNode) => {
+        allNodeIds.add(node.id);
+        if (node.mother) collectNodeIds(node.mother);
+        if (node.father) collectNodeIds(node.father);
+      };
+      
+      if (fullTree.mother) collectNodeIds(fullTree.mother);
+      if (fullTree.father) collectNodeIds(fullTree.father);
+      
+      setExpandedNodes(allNodeIds);
     } catch (error) {
       console.error("Error expanding tree:", error);
     } finally {
