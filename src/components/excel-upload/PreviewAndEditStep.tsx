@@ -12,6 +12,7 @@ import { ArrowLeft, ArrowRight, Edit, Check, X, Upload, Download, AlertTriangle 
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimalFieldMapping, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
+import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
 
 interface PreviewAndEditStepProps {
   animals: AnimalFieldMapping[];
@@ -61,6 +62,15 @@ export const PreviewAndEditStep = ({
     
     if (!editingAnimal.fecha_nacimiento?.toString().trim()) {
       errors.push('Fecha de nacimiento es requerida');
+    } else {
+      const convertedDate = convertToISODate(editingAnimal.fecha_nacimiento);
+      if (!convertedDate) {
+        errors.push('Fecha de nacimiento no es válida o no se pudo convertir');
+      } else if (!isValidBirthDate(convertedDate)) {
+        errors.push('Fecha de nacimiento no puede ser en el futuro o muy antigua');
+      } else {
+        editingAnimal.fecha_nacimiento = convertedDate;
+      }
     }
 
     editingAnimal._errors = errors;

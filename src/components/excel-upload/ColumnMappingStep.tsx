@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AnimalFieldMapping, ColumnMapping, DefaultValues, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
+import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
 
 interface ColumnMappingStepProps {
   rawData: any[];
@@ -99,13 +100,13 @@ export const ColumnMappingStep = ({
       if (!animal.fecha_nacimiento?.toString().trim()) {
         errors.push('Fecha de nacimiento es requerida');
       } else {
-        const date = new Date(animal.fecha_nacimiento.toString());
-        if (isNaN(date.getTime())) {
-          errors.push('Fecha de nacimiento no es válida');
-        } else if (date > new Date()) {
-          errors.push('Fecha de nacimiento no puede ser en el futuro');
+        const convertedDate = convertToISODate(animal.fecha_nacimiento);
+        if (!convertedDate) {
+          errors.push('Fecha de nacimiento no es válida o no se pudo convertir');
+        } else if (!isValidBirthDate(convertedDate)) {
+          errors.push('Fecha de nacimiento no puede ser en el futuro o muy antigua');
         } else {
-          animal.fecha_nacimiento = date.toISOString().split('T')[0];
+          animal.fecha_nacimiento = convertedDate;
         }
       }
 
@@ -122,15 +123,15 @@ export const ColumnMappingStep = ({
         }
       });
 
-      // Validate date fields
+      // Validate date fields with automatic format detection
       const dateFields = ['fecha_destete', 'fecha_servicio', 'fecha_muerte'];
       dateFields.forEach(field => {
         if ((animal as any)[field] !== undefined && (animal as any)[field] !== null && (animal as any)[field] !== '') {
-          const date = new Date((animal as any)[field].toString());
-          if (isNaN(date.getTime())) {
-            errors.push(`${SUPPORTED_FIELDS[field as keyof typeof SUPPORTED_FIELDS]?.label} no es una fecha válida`);
+          const convertedDate = convertToISODate((animal as any)[field]);
+          if (!convertedDate) {
+            errors.push(`${SUPPORTED_FIELDS[field as keyof typeof SUPPORTED_FIELDS]?.label} no es una fecha válida o no se pudo convertir`);
           } else {
-            (animal as any)[field] = date.toISOString().split('T')[0];
+            (animal as any)[field] = convertedDate;
           }
         }
       });

@@ -8,6 +8,7 @@ import { Upload, FileSpreadsheet, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
+import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
 import { ColumnMappingStep } from "./ColumnMappingStep";
 import { PreviewAndEditStep } from "./PreviewAndEditStep";
 import { ConsanguinityAnalysis } from "./ConsanguinityAnalysis";

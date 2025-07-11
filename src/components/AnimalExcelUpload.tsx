@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
+import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
 
 interface AnimalRow {
   identificacion: string;
@@ -143,16 +144,15 @@ const AnimalExcelUpload = ({ userCabañaId, onUploadComplete }: AnimalExcelUploa
     if (row.estado) animal.estado = String(row.estado).trim();
     else animal.estado = 'Activo';
 
-    // Validate fecha_nacimiento
+    // Validate fecha_nacimiento with automatic format detection
     if (row.fecha_nacimiento) {
-      const dateStr = String(row.fecha_nacimiento).trim();
-      const date = new Date(dateStr);
-      if (isNaN(date.getTime())) {
-        errors.push('Fecha de nacimiento no es válida');
-      } else if (date > new Date()) {
-        errors.push('Fecha de nacimiento no puede ser en el futuro');
+      const convertedDate = convertToISODate(row.fecha_nacimiento);
+      if (!convertedDate) {
+        errors.push('Fecha de nacimiento no es válida o no se pudo convertir');
+      } else if (!isValidBirthDate(convertedDate)) {
+        errors.push('Fecha de nacimiento no puede ser en el futuro o muy antigua');
       } else {
-        animal.fecha_nacimiento = date.toISOString().split('T')[0];
+        animal.fecha_nacimiento = convertedDate;
       }
     }
 
