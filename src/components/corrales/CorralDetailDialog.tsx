@@ -10,7 +10,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, Users, MapPin, Calendar, Filter, Move } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { AlertTriangle, Users, MapPin, Calendar, Filter, Move, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AnimalAssignmentDialog } from "./AnimalAssignmentDialog";
 import { 
@@ -28,6 +29,8 @@ interface Animal {
   birth_date: string;
   father_id: string;
   mother_id: string;
+  status: string;
+  corral_id: string;
 }
 
 interface CorralDetailDialogProps {
@@ -84,7 +87,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       // Fetch animals in this corral
       const { data: animalsData, error: animalsError } = await supabase
         .from("animals")
-        .select("id, name, id_tag, sex, breed, birth_date, father_id, mother_id")
+        .select("id, name, id_tag, sex, breed, birth_date, father_id, mother_id, status, corral_id")
         .eq("corral_id", corralId);
 
       if (animalsError) throw animalsError;
@@ -142,6 +145,28 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     toast({
       title: "Sugerencia",
       description: "Considere mover uno de los animales a otro corral para reducir el riesgo de consanguinidad",
+    });
+  };
+
+  const getRelationshipExplanation = (risk: RelationshipRisk) => {
+    const animal1Name = risk.animal1.name || risk.animal1.id_tag || risk.animal1.id;
+    const animal2Name = risk.animal2.name || risk.animal2.id_tag || risk.animal2.id;
+    
+    return {
+      what: "La consanguinidad se refiere a la reproducción entre animales que comparten ancestros comunes.",
+      why: `Este apareamiento es riesgoso porque ${animal1Name} y ${animal2Name} ${risk.description.toLowerCase()}`,
+      coefficient: risk.inbreedingCoefficient 
+        ? `Un coeficiente del ${(risk.inbreedingCoefficient * 100).toFixed(1)}% indica ${risk.inbreedingCoefficient > 0.25 ? 'un riesgo muy alto' : risk.inbreedingCoefficient > 0.125 ? 'un riesgo alto' : 'un riesgo moderado'} de problemas genéticos en la descendencia.`
+        : "Sin coeficiente calculado disponible.",
+      action: "Se recomienda mover uno de los animales a otro corral o evitar que se apareen para mantener la diversidad genética del rebaño."
+    };
+  };
+
+  const handleAnimalClick = (animalId: string) => {
+    // This could open an animal detail dialog or navigate to animal profile
+    toast({
+      title: "Perfil del Animal",
+      description: "Funcionalidad de perfil del animal próximamente disponible",
     });
   };
 
@@ -223,42 +248,113 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {filteredRisks.map((risk, index) => {
                     const display = getSeverityDisplay(risk.severity);
                     const animal1Name = risk.animal1.name || risk.animal1.id_tag || risk.animal1.id;
                     const animal2Name = risk.animal2.name || risk.animal2.id_tag || risk.animal2.id;
+                    const explanation = getRelationshipExplanation(risk);
                     
                     return (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                        <div className="flex items-center space-x-3">
-                          <span className="text-2xl">{display.emoji}</span>
-                          <div>
-                            <p className="font-medium">
-                              ⚠️ Riesgo de consanguinidad entre {animal1Name} y {animal2Name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {risk.description}
-                            </p>
-                            {risk.inbreedingCoefficient && (
-                              <p className="text-xs text-muted-foreground">
-                                Coeficiente de endogamia: {(risk.inbreedingCoefficient * 100).toFixed(1)}%
-                              </p>
-                            )}
+                      <div key={index} className="p-6 border rounded-lg bg-muted/30 shadow-sm space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-4 flex-1">
+                            <span className="text-3xl">{display.emoji}</span>
+                            <div className="space-y-3 flex-1">
+                              <div className="flex items-center space-x-3">
+                                <p className="font-semibold text-lg">
+                                  ⚠️ Riesgo de consanguinidad detectado
+                                </p>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                      <Info className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent className="w-80 p-4">
+                                    <div className="space-y-3">
+                                      <div>
+                                        <h4 className="font-semibold text-sm mb-1">¿Qué es la consanguinidad?</h4>
+                                        <p className="text-xs text-muted-foreground">{explanation.what}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="font-semibold text-sm mb-1">¿Por qué es riesgoso?</h4>
+                                        <p className="text-xs text-muted-foreground">{explanation.why}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="font-semibold text-sm mb-1">Coeficiente de endogamia</h4>
+                                        <p className="text-xs text-muted-foreground">{explanation.coefficient}</p>
+                                      </div>
+                                      <div>
+                                        <h4 className="font-semibold text-sm mb-1">Acción recomendada</h4>
+                                        <p className="text-xs text-muted-foreground">{explanation.action}</p>
+                                      </div>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                              
+                              <div className="space-y-2">
+                                <p className="text-sm">
+                                  Animales involucrados: 
+                                  <button 
+                                    onClick={() => handleAnimalClick(risk.animal1.id)}
+                                    className="ml-2 text-primary hover:text-primary/80 underline font-medium"
+                                  >
+                                    {animal1Name}
+                                  </button>
+                                  <span className="mx-2">y</span>
+                                  <button 
+                                    onClick={() => handleAnimalClick(risk.animal2.id)}
+                                    className="text-primary hover:text-primary/80 underline font-medium"
+                                  >
+                                    {animal2Name}
+                                  </button>
+                                </p>
+                                
+                                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground mt-3">
+                                  <div>
+                                    <p className="font-medium">{animal1Name}</p>
+                                    <p>Edad: {calculateAge(risk.animal1.birth_date)}</p>
+                                    <p>Estado: {(risk.animal1 as any).status || 'Sin especificar'}</p>
+                                  </div>
+                                  <div>
+                                    <p className="font-medium">{animal2Name}</p>
+                                    <p>Edad: {calculateAge(risk.animal2.birth_date)}</p>
+                                    <p>Estado: {(risk.animal2 as any).status || 'Sin especificar'}</p>
+                                  </div>
+                                </div>
+                                
+                                <p className="text-sm text-muted-foreground mt-2">
+                                  {risk.description}
+                                </p>
+                                
+                                {risk.inbreedingCoefficient && (
+                                  <p className="text-xs text-muted-foreground bg-muted p-2 rounded">
+                                    <strong>Coeficiente de endogamia:</strong> {(risk.inbreedingCoefficient * 100).toFixed(1)}%
+                                  </p>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Badge variant={risk.severity === 'severe' ? 'destructive' : risk.severity === 'medium' ? 'secondary' : 'outline'} className={display.color}>
-                            {display.label}
-                          </Badge>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleMoveAnimal(risk.animal1.id, risk.animal2.id)}
-                          >
-                            <Move className="h-3 w-3 mr-1" />
-                            Mover
-                          </Button>
+                          
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Badge 
+                              variant={risk.severity === 'severe' ? 'destructive' : risk.severity === 'medium' ? 'secondary' : 'outline'} 
+                              className={`${risk.severity === 'severe' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : display.color} font-medium`}
+                            >
+                              {display.label}
+                            </Badge>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleMoveAnimal(risk.animal1.id, risk.animal2.id)}
+                              className="hover:bg-muted"
+                            >
+                              <Move className="h-3 w-3 mr-1" />
+                              Mover
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
