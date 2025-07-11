@@ -5,7 +5,8 @@ import {
   FileText, 
   DollarSign, 
   BarChart3,
-  Settings
+  Settings,
+  MapPin
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -30,6 +31,11 @@ const menuItems = [
     title: "Animales",
     url: "/animals",
     icon: Users,
+  },
+  {
+    title: "Corrales",
+    url: "/corrales",
+    icon: MapPin,
   },
   {
     title: "Actividades",

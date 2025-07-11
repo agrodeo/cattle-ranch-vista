@@ -52,7 +52,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
           name: formData.name,
           hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
           user_id: user.id,
-          cabana_id: userData.cabaña_id,
+          cabaña_id: userData.cabaña_id,
         });
 
       if (error) throw error;

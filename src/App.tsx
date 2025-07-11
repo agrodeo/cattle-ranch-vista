@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Animals from "./pages/Animals";
+import Corrales from "./pages/Corrales";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -37,6 +38,13 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Animals />} />
+            </Route>
+            <Route path="/corrales" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Corrales />} />
             </Route>
             <Route path="/activities" element={
               <ProtectedRoute>

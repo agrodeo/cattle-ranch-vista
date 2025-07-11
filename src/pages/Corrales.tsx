@@ -60,7 +60,7 @@ export default function Corrales() {
             mother_id
           )
         `)
-        .eq("cabana_id", userData.cabaña_id);
+        .eq("cabaña_id", userData.cabaña_id);
 
       if (error) throw error;
 
