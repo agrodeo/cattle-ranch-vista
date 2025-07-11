@@ -11,6 +11,7 @@ import { ArrowLeft, ArrowRight, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AnimalFieldMapping, ColumnMapping, DefaultValues, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
+import { SexValueMappingDialog, SexMapping, getSexMapping, getDefaultSexMappings } from './SexValueMappingDialog';
 
 interface ColumnMappingStepProps {
   rawData: any[];
@@ -33,6 +34,9 @@ export const ColumnMappingStep = ({
 }: ColumnMappingStepProps) => {
   const [currentMapping, setCurrentMapping] = useState<ColumnMapping>(columnMapping);
   const [currentDefaults, setCurrentDefaults] = useState<DefaultValues>(defaultValues);
+  const [sexMappingOpen, setSexMappingOpen] = useState(false);
+  const [sexMappings, setSexMappings] = useState<SexMapping>(getDefaultSexMappings());
+  const [unrecognizedSexValues, setUnrecognizedSexValues] = useState<string[]>([]);
 
   if (rawData.length === 0) return null;
 
@@ -44,6 +48,26 @@ export const ColumnMappingStep = ({
   const unmappedRequiredFields = supportedFieldKeys.filter(
     field => SUPPORTED_FIELDS[field].required && !mappedFields.includes(field)
   );
+
+  // Helper function to check for unrecognized sex values
+  const checkForUnrecognizedSexValues = (): string[] => {
+    const sexColumnKey = Object.keys(currentMapping).find(key => currentMapping[key] === 'sexo');
+    if (!sexColumnKey) return [];
+
+    const unrecognized = new Set<string>();
+    
+    rawData.forEach(row => {
+      const sexValue = row[sexColumnKey];
+      if (sexValue !== undefined && sexValue !== null && sexValue !== '') {
+        const mappedValue = getSexMapping(sexValue.toString());
+        if (!mappedValue && !sexMappings[sexValue.toString()]) {
+          unrecognized.add(sexValue.toString());
+        }
+      }
+    });
+
+    return Array.from(unrecognized);
+  };
 
   // Validate and map data
   const validateAndMapData = (): AnimalFieldMapping[] => {
@@ -85,11 +109,19 @@ export const ColumnMappingStep = ({
       if (!animal.sexo?.toString().trim()) {
         errors.push('Sexo es requerido');
       } else {
-        const sexo = animal.sexo.toString().toLowerCase().trim();
-        if (!['macho', 'hembra', 'male', 'female', 'm', 'f'].includes(sexo)) {
-          errors.push('Sexo debe ser "Macho" o "Hembra"');
+        const originalSexValue = animal.sexo.toString();
+        // First try automatic mapping
+        let mappedSex = getSexMapping(originalSexValue);
+        
+        // If not found in default mappings, check user-defined mappings
+        if (!mappedSex && sexMappings[originalSexValue]) {
+          mappedSex = sexMappings[originalSexValue];
+        }
+        
+        if (mappedSex) {
+          animal.sexo = mappedSex;
         } else {
-          animal.sexo = sexo === 'male' || sexo === 'm' || sexo === 'macho' ? 'Macho' : 'Hembra';
+          errors.push(`Valor de sexo "${originalSexValue}" no reconocido. Use "Macho" o "Hembra".`);
         }
       }
       
@@ -146,6 +178,14 @@ export const ColumnMappingStep = ({
   };
 
   const handleNext = () => {
+    // Check for unrecognized sex values first
+    const unrecognizedValues = checkForUnrecognizedSexValues();
+    if (unrecognizedValues.length > 0) {
+      setUnrecognizedSexValues(unrecognizedValues);
+      setSexMappingOpen(true);
+      return;
+    }
+
     // Validate that all required fields are mapped or have defaults
     if (unmappedRequiredFields.length > 0) {
       const missingFields = unmappedRequiredFields.filter(field => !currentDefaults[field]);
@@ -164,6 +204,18 @@ export const ColumnMappingStep = ({
     
     const mappedData = validateAndMapData();
     onNext(mappedData);
+  };
+
+  const handleSexMappingsChange = (newMappings: SexMapping) => {
+    setSexMappings(newMappings);
+  };
+
+  const handleSaveForFuture = (mappings: SexMapping) => {
+    try {
+      localStorage.setItem('sexValueMappings', JSON.stringify(mappings));
+    } catch (error) {
+      console.error('Error saving sex mappings to localStorage:', error);
+    }
   };
 
   const updateMapping = (excelColumn: string, systemField: keyof typeof SUPPORTED_FIELDS | null) => {
@@ -358,6 +410,14 @@ export const ColumnMappingStep = ({
           </Button>
         </div>
       </CardContent>
+      <SexValueMappingDialog
+        open={sexMappingOpen}
+        onOpenChange={setSexMappingOpen}
+        unrecognizedValues={unrecognizedSexValues}
+        currentMappings={sexMappings}
+        onMappingsChange={handleSexMappingsChange}
+        onSaveForFuture={handleSaveForFuture}
+      />
     </Card>
   );
 };
