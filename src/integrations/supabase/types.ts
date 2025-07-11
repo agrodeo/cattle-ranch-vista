@@ -64,6 +64,7 @@ export type Database = {
           circunferencia_escrotal: number | null
           color: string | null
           condicion_corporal: string | null
+          corral_id: string | null
           father_id: string | null
           fecha_destete: string | null
           fecha_muerte: string | null
@@ -94,6 +95,7 @@ export type Database = {
           circunferencia_escrotal?: number | null
           color?: string | null
           condicion_corporal?: string | null
+          corral_id?: string | null
           father_id?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
@@ -124,6 +126,7 @@ export type Database = {
           circunferencia_escrotal?: number | null
           color?: string | null
           condicion_corporal?: string | null
+          corral_id?: string | null
           father_id?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
@@ -156,6 +159,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "animals_corral_id_fkey"
+            columns: ["corral_id"]
+            isOneToOne: false
+            referencedRelation: "corrales"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_toro_servicio"
             columns: ["toro_servicio_id"]
             isOneToOne: false
@@ -181,6 +191,44 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      corrales: {
+        Row: {
+          cabaña_id: string | null
+          created_at: string
+          hectareas: number | null
+          id: string
+          name: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          cabaña_id?: string | null
+          created_at?: string
+          hectareas?: number | null
+          id?: string
+          name: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          cabaña_id?: string | null
+          created_at?: string
+          hectareas?: number | null
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corrales_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       finances: {
         Row: {
