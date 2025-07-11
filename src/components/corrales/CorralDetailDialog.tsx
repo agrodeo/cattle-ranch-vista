@@ -9,10 +9,16 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Users, MapPin, Calendar } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertTriangle, Users, MapPin, Calendar, Filter, Move } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AnimalAssignmentDialog } from "./AnimalAssignmentDialog";
-
+import { 
+  analyzeCorralConsanguinity, 
+  RelationshipRisk, 
+  getSeverityDisplay,
+  Animal as ConsanguinityAnimal 
+} from "@/lib/consanguinityAnalysis";
 interface Animal {
   id: string;
   name: string;
@@ -22,12 +28,6 @@ interface Animal {
   birth_date: string;
   father_id: string;
   mother_id: string;
-}
-
-interface ConsanguinityRisk {
-  male_name: string;
-  female_name: string;
-  risk_percentage: number;
 }
 
 interface CorralDetailDialogProps {
@@ -42,8 +42,10 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const [loading, setLoading] = useState(true);
   const [corral, setCorral] = useState<any>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);
-  const [consanguinityRisks, setConsanguinityRisks] = useState<ConsanguinityRisk[]>([]);
+  const [relationshipRisks, setRelationshipRisks] = useState<RelationshipRisk[]>([]);
+  const [severityFilter, setSeverityFilter] = useState<'all' | 'severe' | 'medium' | 'low'>('all');
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
+  const [userCabañaId, setUserCabañaId] = useState<string>('');
 
   useEffect(() => {
     if (open && corralId) {
@@ -56,6 +58,19 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
     try {
       setLoading(true);
+
+      // Get user's cabaña_id first
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: userData } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.id)
+        .single();
+
+      if (!userData?.cabaña_id) return;
+      setUserCabañaId(userData.cabaña_id);
 
       // Fetch corral details
       const { data: corralData, error: corralError } = await supabase
@@ -77,9 +92,16 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       setCorral(corralData);
       setAnimals(animalsData || []);
 
-      // Calculate consanguinity risks
-      const risks = calculateConsanguinityRisks(animalsData || []);
-      setConsanguinityRisks(risks);
+      // Perform comprehensive consanguinity analysis
+      if (animalsData && animalsData.length > 0) {
+        const risks = await analyzeCorralConsanguinity(
+          animalsData as ConsanguinityAnimal[], 
+          userData.cabaña_id
+        );
+        setRelationshipRisks(risks);
+      } else {
+        setRelationshipRisks([]);
+      }
 
     } catch (error) {
       console.error("Error fetching corral data:", error);
@@ -93,56 +115,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     }
   };
 
-  const calculateConsanguinityRisks = (animals: Animal[]): ConsanguinityRisk[] => {
-    const risks: ConsanguinityRisk[] = [];
-    
-    // Filter animals over 18 months
-    const eligibleAnimals = animals.filter(animal => {
-      if (!animal.birth_date) return false;
-      const ageMonths = Math.floor(
-        (new Date().getTime() - new Date(animal.birth_date).getTime()) / 
-        (1000 * 60 * 60 * 24 * 30.44)
-      );
-      return ageMonths >= 18;
-    });
-
-    const males = eligibleAnimals.filter(a => a.sex === "Macho");
-    const females = eligibleAnimals.filter(a => a.sex === "Hembra");
-
-    // Check each male-female pair
-    for (const male of males) {
-      for (const female of females) {
-        let riskPercentage = 0;
-
-        // Check if they share the same father (half-siblings)
-        if (male.father_id && female.father_id && male.father_id === female.father_id) {
-          riskPercentage += 12.5; // Half-siblings sharing a father
-        }
-
-        // Check if they share the same mother (half-siblings)
-        if (male.mother_id && female.mother_id && male.mother_id === female.mother_id) {
-          riskPercentage += 12.5; // Half-siblings sharing a mother
-        }
-
-        // If they share both parents (full siblings)
-        if (male.father_id && female.father_id && male.father_id === female.father_id &&
-            male.mother_id && female.mother_id && male.mother_id === female.mother_id) {
-          riskPercentage = 25; // Full siblings
-        }
-
-        // Only report risks above 6.25%
-        if (riskPercentage > 6.25) {
-          risks.push({
-            male_name: male.name || male.id_tag || male.id,
-            female_name: female.name || female.id_tag || female.id,
-            risk_percentage: riskPercentage,
-          });
-        }
-      }
-    }
-
-    return risks;
-  };
+  const filteredRisks = relationshipRisks.filter(risk => 
+    severityFilter === 'all' || risk.severity === severityFilter
+  );
 
   const calculateAge = (birthDate: string) => {
     if (!birthDate) return "—";
@@ -159,6 +134,15 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     fetchCorralData();
     onUpdate();
     setAssignmentDialogOpen(false);
+  };
+
+  const handleMoveAnimal = async (animal1Id: string, animal2Id: string) => {
+    // Move one of the animals to remove the risk
+    // For now, we'll just show a toast - this could be enhanced with actual move functionality
+    toast({
+      title: "Sugerencia",
+      description: "Considere mover uno de los animales a otro corral para reducir el riesgo de consanguinidad",
+    });
   };
 
   if (loading) {
@@ -214,32 +198,78 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
           </div>
 
           {/* Consanguinity Alerts */}
-          {consanguinityRisks.length > 0 && (
+          {filteredRisks.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  <span>Alertas de Consanguinidad</span>
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center space-x-2">
+                    <AlertTriangle className="h-5 w-5 text-destructive" />
+                    <span>Alertas de Consanguinidad Detectadas</span>
+                  </CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <Filter className="h-4 w-4" />
+                    <Select value={severityFilter} onValueChange={(value: any) => setSeverityFilter(value)}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="severe">🔴 Alto</SelectItem>
+                        <SelectItem value="medium">🟠 Medio</SelectItem>
+                        <SelectItem value="low">🟡 Bajo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {consanguinityRisks.map((risk, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <p className="font-medium">
-                          {risk.male_name} × {risk.female_name}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Riesgo de consanguinidad: {risk.risk_percentage}%
-                        </p>
+                <div className="space-y-3">
+                  {filteredRisks.map((risk, index) => {
+                    const display = getSeverityDisplay(risk.severity);
+                    const animal1Name = risk.animal1.name || risk.animal1.id_tag || risk.animal1.id;
+                    const animal2Name = risk.animal2.name || risk.animal2.id_tag || risk.animal2.id;
+                    
+                    return (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-2xl">{display.emoji}</span>
+                          <div>
+                            <p className="font-medium">
+                              ⚠️ Riesgo de consanguinidad entre {animal1Name} y {animal2Name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {risk.description}
+                            </p>
+                            {risk.inbreedingCoefficient && (
+                              <p className="text-xs text-muted-foreground">
+                                Coeficiente de endogamia: {(risk.inbreedingCoefficient * 100).toFixed(1)}%
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Badge variant={risk.severity === 'severe' ? 'destructive' : risk.severity === 'medium' ? 'secondary' : 'outline'} className={display.color}>
+                            {display.label}
+                          </Badge>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleMoveAnimal(risk.animal1.id, risk.animal2.id)}
+                          >
+                            <Move className="h-3 w-3 mr-1" />
+                            Mover
+                          </Button>
+                        </div>
                       </div>
-                      <Badge variant={risk.risk_percentage > 12.5 ? "destructive" : "secondary"}>
-                        {risk.risk_percentage > 12.5 ? "Alto Riesgo" : "Riesgo Moderado"}
-                      </Badge>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
+                
+                {relationshipRisks.length > filteredRisks.length && (
+                  <p className="text-sm text-muted-foreground mt-3">
+                    Mostrando {filteredRisks.length} de {relationshipRisks.length} riesgos detectados
+                  </p>
+                )}
               </CardContent>
             </Card>
           )}
@@ -259,24 +289,48 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {animals.map((animal) => (
-                    <div key={animal.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <p className="font-medium">{animal.name || animal.id_tag || animal.id}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {animal.breed} • {animal.sex}
+                  {animals.map((animal) => {
+                    // Check if this animal is involved in any risk
+                    const involvedRisks = relationshipRisks.filter(risk => 
+                      risk.animal1.id === animal.id || risk.animal2.id === animal.id
+                    );
+                    const highestSeverity = involvedRisks.length > 0 ? 
+                      involvedRisks.reduce((prev, curr) => {
+                        const severityOrder = { severe: 3, medium: 2, low: 1 };
+                        return severityOrder[curr.severity] > severityOrder[prev.severity] ? curr : prev;
+                      }) : null;
+
+                    return (
+                      <div key={animal.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-4">
+                          <div className="flex items-center space-x-2">
+                            {highestSeverity && (
+                              <span className="text-lg">
+                                {getSeverityDisplay(highestSeverity.severity).emoji}
+                              </span>
+                            )}
+                            <div>
+                              <p className="font-medium">{animal.name || animal.id_tag || animal.id}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {animal.breed} • {animal.sex}
+                                {involvedRisks.length > 0 && (
+                                  <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
+                                    {involvedRisks.length} riesgo(s)
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">{calculateAge(animal.birth_date)}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {animal.id_tag && `#${animal.id_tag}`}
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{calculateAge(animal.birth_date)}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {animal.id_tag && `#${animal.id_tag}`}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

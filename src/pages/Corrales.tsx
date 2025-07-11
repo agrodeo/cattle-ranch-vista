@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
 import { EditCorralDialog } from "@/components/corrales/EditCorralDialog";
+import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 
 interface Corral {
   id: string;
@@ -18,6 +19,8 @@ interface Corral {
   male_count: number;
   female_count: number;
   has_consanguinity_risk: boolean;
+  risk_count: number;
+  highest_severity: 'severe' | 'medium' | 'low' | null;
 }
 
 export default function Corrales() {
@@ -65,22 +68,35 @@ export default function Corrales() {
       if (error) throw error;
 
       // Process data to include counts and consanguinity risk
-      const processedCorrales = corralesData?.map((corral: any) => {
+      const processedCorrales = await Promise.all(corralesData?.map(async (corral: any) => {
         const animals = corral.animals || [];
         const maleCount = animals.filter((a: any) => a.sex === "Macho").length;
         const femaleCount = animals.filter((a: any) => a.sex === "Hembra").length;
         
-        // Check for consanguinity risk (animals > 18 months)
-        const eligibleAnimals = animals.filter((animal: any) => {
-          if (!animal.birth_date) return false;
-          const ageMonths = Math.floor(
-            (new Date().getTime() - new Date(animal.birth_date).getTime()) / 
-            (1000 * 60 * 60 * 24 * 30.44)
-          );
-          return ageMonths >= 18;
-        });
-
-        const hasRisk = checkConsanguinityRisk(eligibleAnimals);
+        // Perform comprehensive consanguinity analysis
+        let riskCount = 0;
+        let highestSeverity: 'severe' | 'medium' | 'low' | null = null;
+        
+        if (animals.length > 0) {
+          try {
+            const risks = await analyzeCorralConsanguinity(
+              animals as ConsanguinityAnimal[], 
+              userData.cabaña_id
+            );
+            riskCount = risks.length;
+            
+            if (risks.length > 0) {
+              // Determine highest severity
+              const severityOrder = { severe: 3, medium: 2, low: 1 };
+              const maxSeverity = risks.reduce((prev, curr) => 
+                severityOrder[curr.severity] > severityOrder[prev.severity] ? curr : prev
+              );
+              highestSeverity = maxSeverity.severity;
+            }
+          } catch (error) {
+            console.error("Error analyzing consanguinity for corral:", corral.id, error);
+          }
+        }
 
         return {
           id: corral.id,
@@ -89,9 +105,11 @@ export default function Corrales() {
           animal_count: animals.length,
           male_count: maleCount,
           female_count: femaleCount,
-          has_consanguinity_risk: hasRisk,
+          has_consanguinity_risk: riskCount > 0,
+          risk_count: riskCount,
+          highest_severity: highestSeverity,
         };
-      }) || [];
+      }) || []);
 
       setCorrales(processedCorrales);
     } catch (error) {
@@ -106,23 +124,22 @@ export default function Corrales() {
     }
   };
 
-  // Simplified consanguinity check (to be enhanced with actual genealogy logic)
-  const checkConsanguinityRisk = (animals: any[]) => {
-    const males = animals.filter(a => a.sex === "Macho");
-    const females = animals.filter(a => a.sex === "Hembra");
+  const getSeverityBadge = (severity: 'severe' | 'medium' | 'low' | null, riskCount: number) => {
+    if (!severity || riskCount === 0) return null;
     
-    // Check if any male-female pair shares parents (simplified check)
-    for (const male of males) {
-      for (const female of females) {
-        if (male.father_id && female.father_id && male.father_id === female.father_id) {
-          return true; // Siblings
-        }
-        if (male.mother_id && female.mother_id && male.mother_id === female.mother_id) {
-          return true; // Siblings
-        }
-      }
-    }
-    return false;
+    const severityConfig = {
+      severe: { emoji: '🔴', label: 'Alto Riesgo', variant: 'destructive' as const },
+      medium: { emoji: '🟠', label: 'Riesgo Medio', variant: 'secondary' as const },
+      low: { emoji: '🟡', label: 'Riesgo Bajo', variant: 'outline' as const }
+    };
+    
+    const config = severityConfig[severity];
+    return (
+      <Badge variant={config.variant} className="flex items-center space-x-1">
+        <span>{config.emoji}</span>
+        <span>{config.label} ({riskCount})</span>
+      </Badge>
+    );
   };
 
   useEffect(() => {
@@ -186,12 +203,7 @@ export default function Corrales() {
                     <h3 className="text-lg font-semibold">{corral.name}</h3>
                   </div>
                   
-                  {corral.has_consanguinity_risk && (
-                    <Badge variant="destructive">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      Riesgo Consanguinidad
-                    </Badge>
-                  )}
+                  {corral.has_consanguinity_risk && getSeverityBadge(corral.highest_severity, corral.risk_count)}
                 </div>
 
                 <div className="flex items-center space-x-6">
