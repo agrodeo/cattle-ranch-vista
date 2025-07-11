@@ -250,7 +250,26 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
     setExpandedNodes(newExpanded);
   };
 
-  // Render ancestor node with proper tree formatting
+  // Get animal display name using naming convention: "Nombre – ID" or just "ID"
+  const getAnimalDisplayName = (animal: AnimalNode) => {
+    if (animal.name && animal.name.trim()) {
+      return `${animal.name} – ${animal.id_tag}`;
+    }
+    return animal.id_tag;
+  };
+
+  // Get animal tooltip info
+  const getAnimalTooltipInfo = (animal: AnimalNode) => {
+    const birthYear = animal.birth_date ? new Date(animal.birth_date).getFullYear() : 'N/A';
+    return {
+      raza: animal.breed || 'N/A',
+      sexo: animal.sex || 'N/A',
+      añoNacimiento: birthYear,
+      estadoCuernos: 'N/A' // We'll need to add mocho field to the interface if needed
+    };
+  };
+
+  // Render ancestor node with proper tree formatting and improved naming
   const renderAncestorNode = (node: AnimalNode | null, label: string, generation: number = 1, isLast: boolean = false) => {
     if (!node) {
       return (
@@ -263,7 +282,7 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
           </div>
           <div className="flex-1 pt-1">
             <div className="text-sm text-muted-foreground">
-              {label}: <span className="italic">Desconocido</span>
+              {label}: <span className="italic">No disponible en BD</span>
             </div>
           </div>
         </div>
@@ -273,6 +292,8 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
     const hasAncestors = (node.mother || node.father) && expandedTree;
     const isExpanded = expandedNodes.has(node.id);
     const generationPrefix = "→".repeat(generation);
+    const displayName = getAnimalDisplayName(node);
+    const tooltipInfo = getAnimalTooltipInfo(node);
 
     return (
       <div className="space-y-2">
@@ -289,12 +310,12 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
           </div>
           
           <div className="flex-1 pt-1">
-            <div className="bg-card border rounded-lg p-3 shadow-sm">
+            <div className="bg-card border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   <span className="text-xs text-muted-foreground">{generationPrefix}</span>
-                  <div className="font-semibold text-sm">
-                    {label}: {node.name || "Sin nombre"}
+                  <div className="font-semibold text-sm group-hover:text-primary transition-colors">
+                    {label}: {displayName}
                   </div>
                   <Badge variant={node.sex === 'Macho' ? 'default' : 'secondary'} className="text-xs">
                     {node.sex}
@@ -320,37 +341,48 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="h-6 text-xs px-2">
-                        Detalles
+                        Ver Perfil
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Detalles del Ancestro</DialogTitle>
+                        <DialogTitle>Perfil del Animal</DialogTitle>
                         <DialogDescription>
-                          Información completa de {node.name || node.id_tag}
+                          {displayName}
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div><span className="font-medium">Nombre:</span> {node.name || "Sin nombre"}</div>
                           <div><span className="font-medium">ID:</span> {node.id_tag}</div>
-                          <div><span className="font-medium">Sexo:</span> {node.sex}</div>
-                          <div><span className="font-medium">Raza:</span> {node.breed || "N/A"}</div>
-                          <div><span className="font-medium">Fecha de Nacimiento:</span> {node.birth_date ? new Date(node.birth_date).toLocaleDateString() : "N/A"}</div>
+                          <div><span className="font-medium">Sexo:</span> {tooltipInfo.sexo}</div>
+                          <div><span className="font-medium">Raza:</span> {tooltipInfo.raza}</div>
+                          <div><span className="font-medium">Año de Nacimiento:</span> {tooltipInfo.añoNacimiento}</div>
                           <div><span className="font-medium">Generación:</span> {node.generation}</div>
                         </div>
+                        {node.birth_date && (
+                          <div className="pt-2 border-t">
+                            <span className="font-medium text-sm">Fecha de Nacimiento:</span>
+                            <div className="text-sm text-muted-foreground">
+                              {new Date(node.birth_date).toLocaleDateString('es-AR')}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </DialogContent>
                   </Dialog>
                 </div>
               </div>
               
+              {/* Quick info tooltip overlay */}
               <div className="text-xs text-muted-foreground space-y-1">
                 <div className="flex items-center space-x-4">
-                  <span>ID: {node.id_tag}</span>
-                  <span>Raza: {node.breed || "N/A"}</span>
+                  <span>Raza: {tooltipInfo.raza}</span>
+                  <span>Año: {tooltipInfo.añoNacimiento}</span>
                 </div>
-                <div>Nacimiento: {node.birth_date ? new Date(node.birth_date).toLocaleDateString() : "N/A"}</div>
+                {node.birth_date && (
+                  <div>Nacimiento: {new Date(node.birth_date).toLocaleDateString('es-AR')}</div>
+                )}
                 {node.generation !== undefined && node.generation > 0 && (
                   <div>Generación: {node.generation}</div>
                 )}
@@ -363,7 +395,7 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
         {hasAncestors && isExpanded && (
           <div className="ml-11 space-y-1 border-l-2 border-muted pl-4">
             <div className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
-              Ancestros de {node.name || node.id_tag}
+              Ancestros de {displayName}
             </div>
             {node.mother && renderAncestorNode(node.mother, "Madre", generation + 1, !node.father)}
             {node.father && renderAncestorNode(node.father, "Padre", generation + 1, true)}
@@ -412,8 +444,13 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
       <div className="space-y-4">
         {/* Current Animal */}
         <div className="text-center p-4 bg-primary/10 rounded-lg border-2 border-primary/20">
-          <div className="font-bold text-lg">{animalName || "Sin nombre"}</div>
-          <div className="text-sm text-muted-foreground">ID: {animalIdTag}</div>
+          <div className="font-bold text-lg">
+            {animalName && animalName.trim() ? `${animalName} – ${animalIdTag}` : animalIdTag}
+          </div>
+          <div className="text-sm text-muted-foreground">
+            {treeData.breed && `Raza: ${treeData.breed}`}
+            {treeData.birth_date && ` • Nacido: ${new Date(treeData.birth_date).toLocaleDateString('es-AR')}`}
+          </div>
           <Badge variant="default" className="mt-2">Animal Principal</Badge>
         </div>
 
@@ -434,22 +471,32 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
               <span>DESCENDENCIA ({treeData.offspring.length})</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {treeData.offspring.slice(0, 6).map((child) => (
-                <div key={child.id} className="p-3 bg-muted/30 rounded-lg">
-                  <div className="font-medium">{child.name || "Sin nombre"}</div>
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <div>ID: {child.id_tag}</div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="text-xs">{child.sex}</Badge>
-                      {child.birth_date && (
-                        <span className="text-xs">
-                          {new Date(child.birth_date).toLocaleDateString()}
-                        </span>
-                      )}
+              {treeData.offspring
+                .sort((a, b) => {
+                  // Sort by birth date, most recent first
+                  if (!a.birth_date && !b.birth_date) return 0;
+                  if (!a.birth_date) return 1;
+                  if (!b.birth_date) return -1;
+                  return new Date(b.birth_date).getTime() - new Date(a.birth_date).getTime();
+                })
+                .slice(0, 6)
+                .map((child) => {
+                  const displayName = child.name && child.name.trim() ? `${child.name} – ${child.id_tag}` : child.id_tag;
+                  return (
+                    <div key={child.id} className="p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer">
+                      <div className="font-medium text-sm">{displayName}</div>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-xs">{child.sex}</Badge>
+                          {child.breed && <span>Raza: {child.breed}</span>}
+                        </div>
+                        {child.birth_date && (
+                          <div>Nacimiento: {new Date(child.birth_date).toLocaleDateString('es-AR')}</div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
               {treeData.offspring.length > 6 && (
                 <div className="p-3 bg-muted/20 rounded-lg flex items-center justify-center text-muted-foreground">
                   +{treeData.offspring.length - 6} más

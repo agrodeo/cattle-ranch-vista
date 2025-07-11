@@ -75,7 +75,10 @@ export type Database = {
           name: string | null
           observaciones: string | null
           peso_destete: number | null
+          peso_destete_mejorado: number | null
           peso_final: number | null
+          peso_final_mejorado: number | null
+          peso_nacer: number | null
           peso_nacimiento: number | null
           resultado_preñez: string | null
           sex: string | null
@@ -102,7 +105,10 @@ export type Database = {
           name?: string | null
           observaciones?: string | null
           peso_destete?: number | null
+          peso_destete_mejorado?: number | null
           peso_final?: number | null
+          peso_final_mejorado?: number | null
+          peso_nacer?: number | null
           peso_nacimiento?: number | null
           resultado_preñez?: string | null
           sex?: string | null
@@ -129,7 +135,10 @@ export type Database = {
           name?: string | null
           observaciones?: string | null
           peso_destete?: number | null
+          peso_destete_mejorado?: number | null
           peso_final?: number | null
+          peso_final_mejorado?: number | null
+          peso_nacer?: number | null
           peso_nacimiento?: number | null
           resultado_preñez?: string | null
           sex?: string | null

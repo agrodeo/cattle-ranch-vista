@@ -191,12 +191,20 @@ const Animals = () => {
     }
   }, [userCabaña]);
 
+  // Get animal display name using naming convention: "Nombre – ID" or just "ID"
+  const getAnimalDisplayName = (animal: Animal) => {
+    if (animal.name && animal.name.trim()) {
+      return `${animal.name} – ${animal.id_tag}`;
+    }
+    return animal.id_tag;
+  };
+
   const fetchAnimals = async () => {
     try {
       const { data, error } = await supabase
         .from("animals")
         .select("*")
-        .order("name", { ascending: true });
+        .order("birth_date", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
       setAnimals(data || []);
@@ -930,7 +938,7 @@ const Animals = () => {
                           )}
                         </Button>
                       </TableCell>
-                      <TableCell className="font-medium">{animal.name || "Sin nombre"}</TableCell>
+                      <TableCell className="font-medium">{getAnimalDisplayName(animal)}</TableCell>
                       <TableCell>{animal.id_tag}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
