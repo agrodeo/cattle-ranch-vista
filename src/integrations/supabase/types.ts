@@ -174,6 +174,70 @@ export type Database = {
           },
         ]
       }
+      artificial_inseminations: {
+        Row: {
+          bull_id: string | null
+          bull_name: string
+          cabaña_id: string
+          created_at: string
+          created_by: string | null
+          female_id: string
+          id: string
+          insemination_date: string
+          is_pregnant: boolean | null
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          bull_id?: string | null
+          bull_name: string
+          cabaña_id: string
+          created_at?: string
+          created_by?: string | null
+          female_id: string
+          id?: string
+          insemination_date: string
+          is_pregnant?: boolean | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bull_id?: string | null
+          bull_name?: string
+          cabaña_id?: string
+          created_at?: string
+          created_by?: string | null
+          female_id?: string
+          id?: string
+          insemination_date?: string
+          is_pregnant?: boolean | null
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artificial_inseminations_bull_id_fkey"
+            columns: ["bull_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artificial_inseminations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artificial_inseminations_female_id_fkey"
+            columns: ["female_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cabañas: {
         Row: {
           id: string
@@ -407,6 +471,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_ai_success_rate: {
+        Args: {
+          filter_year?: number
+          filter_corral_id?: string
+          filter_bull_name?: string
+          filter_cabaña_id?: string
+        }
+        Returns: {
+          total_inseminations: number
+          total_pregnancies: number
+          success_rate: number
+          pending_results: number
+        }[]
+      }
       calculate_reproductive_performance: {
         Args: { animal_uuid: string }
         Returns: {

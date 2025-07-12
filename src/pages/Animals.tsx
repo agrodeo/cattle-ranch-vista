@@ -11,12 +11,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Heart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
 import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
 import { ReproductiveEventsTable } from "@/components/reproductive/ReproductiveEventsTable";
+import { ArtificialInseminationManager } from "@/components/artificial-insemination/ArtificialInseminationManager";
 
 interface Animal {
   id: string;
@@ -755,69 +757,82 @@ const Animals = () => {
       </div>
     </div>
 
-      {/* Category Distribution Cards */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">📊 Distribución por Categoría</CardTitle>
-          <CardDescription>
-            Clasificación automática basada en edad y sexo - Total: {totalActiveAnimals} Animales Activos
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {Object.entries(categoryCounts).map(([category, count]) => (
-              <div key={category} className="text-center p-3 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold text-primary">{count}</div>
-                <div className="text-sm text-muted-foreground">{category}{count !== 1 ? 's' : ''}</div>
+      <Tabs defaultValue="animals" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="animals" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Animales
+          </TabsTrigger>
+          <TabsTrigger value="insemination" className="flex items-center gap-2">
+            <Heart className="h-4 w-4" />
+            Inseminación Artificial
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="animals" className="space-y-4">
+          {/* Category Distribution Cards */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">📊 Distribución por Categoría</CardTitle>
+              <CardDescription>
+                Clasificación automática basada en edad y sexo - Total: {totalActiveAnimals} Animales Activos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {Object.entries(categoryCounts).map(([category, count]) => (
+                  <div key={category} className="text-center p-3 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">{count}</div>
+                    <div className="text-sm text-muted-foreground">{category}{count !== 1 ? 's' : ''}</div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </CardContent>
+          </Card>
+
+          {/* Quick Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total de Animales</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{animals.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  Registrados en el sistema
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Animales Activos</CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{totalActiveAnimals}</div>
+                <p className="text-xs text-muted-foreground">
+                  En la cabaña actualmente
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Razas Registradas</CardTitle>
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{uniqueBreeds.length}</div>
+                <p className="text-xs text-muted-foreground">
+                  Diferentes razas
+                </p>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Quick Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Animales</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{animals.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Registrados en el sistema
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Animales Activos</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalActiveAnimals}</div>
-            <p className="text-xs text-muted-foreground">
-              En la cabaña actualmente
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Razas Registradas</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{uniqueBreeds.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Diferentes razas
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
+          <Card>
         <CardHeader>
           <CardTitle>Lista de Animales</CardTitle>
           <CardDescription>
@@ -1050,6 +1065,12 @@ const Animals = () => {
           )}
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="insemination">
+          <ArtificialInseminationManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
