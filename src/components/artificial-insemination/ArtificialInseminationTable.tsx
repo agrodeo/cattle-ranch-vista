@@ -39,7 +39,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
   const [filters, setFilters] = useState({
     dateFrom: "",
     dateTo: "",
-    result: "",
+    result: "all",
     bull: "",
     corral: "",
   });
@@ -109,7 +109,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
       );
     }
 
-    if (filters.result) {
+    if (filters.result && filters.result !== "all") {
       filtered = filtered.filter(record => {
         if (filters.result === "pending") return record.is_pregnant === null;
         if (filters.result === "pregnant") return record.is_pregnant === true;
@@ -174,7 +174,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
     setFilters({
       dateFrom: "",
       dateTo: "",
-      result: "",
+      result: "all",
       bull: "",
       corral: "",
     });
@@ -211,7 +211,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
               <SelectValue placeholder="Resultado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="pending">Pendiente</SelectItem>
               <SelectItem value="pregnant">Preñada</SelectItem>
               <SelectItem value="not_pregnant">No Preñada</SelectItem>
