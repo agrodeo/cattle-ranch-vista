@@ -15,6 +15,8 @@ import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, Chevr
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
+import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
+import { ReproductiveEventsTable } from "@/components/reproductive/ReproductiveEventsTable";
 
 interface Animal {
   id: string;
@@ -974,55 +976,70 @@ const Animals = () => {
                     {expandedRows.has(animal.id) && (
                       <TableRow>
                         <TableCell colSpan={8} className="p-0">
-                          <div className="p-6 bg-muted/20 border-t">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                              {/* Basic Info Recap */}
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-lg">Información Básica</h4>
-                                <div className="grid grid-cols-2 gap-3 text-sm">
-                                  <div>
-                                    <span className="font-medium">Sexo:</span> {animal.sex}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Raza:</span> {animal.breed}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Fecha de Nacimiento:</span> {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Estado de Cuernos:</span> {animal.mocho || "N/A"}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Peso al Nacer:</span> {animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Estado Actual:</span> {animal.status}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Color:</span> {animal.color || "N/A"}
-                                  </div>
-                                  <div>
-                                    <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
-                                  </div>
-                                </div>
-                                {animal.observaciones && (
-                                  <div className="mt-4">
-                                    <span className="font-medium">Observaciones:</span>
-                                    <p className="text-sm text-muted-foreground mt-1">{animal.observaciones}</p>
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Enhanced Genealogy Tree */}
-                              <div className="space-y-3">
-                                <GenealogyTree 
-                                  animalId={animal.id}
-                                  animalName={animal.name}
-                                  animalIdTag={animal.id_tag}
-                                />
-                              </div>
-                            </div>
-                          </div>
+                           <div className="p-6 bg-muted/20 border-t space-y-6">
+                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                               {/* Basic Info Recap */}
+                               <div className="space-y-3">
+                                 <h4 className="font-semibold text-lg">Información Básica</h4>
+                                 <div className="grid grid-cols-2 gap-3 text-sm">
+                                   <div>
+                                     <span className="font-medium">Sexo:</span> {animal.sex}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Raza:</span> {animal.breed}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Fecha de Nacimiento:</span> {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Estado de Cuernos:</span> {animal.mocho || "N/A"}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Peso al Nacer:</span> {animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Estado Actual:</span> {animal.status}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Color:</span> {animal.color || "N/A"}
+                                   </div>
+                                   <div>
+                                     <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
+                                   </div>
+                                 </div>
+                                 {animal.observaciones && (
+                                   <div className="mt-4">
+                                     <span className="font-medium">Observaciones:</span>
+                                     <p className="text-sm text-muted-foreground mt-1">{animal.observaciones}</p>
+                                   </div>
+                                 )}
+                               </div>
+                               
+                               {/* Enhanced Genealogy Tree */}
+                               <div className="space-y-3">
+                                 <GenealogyTree 
+                                   animalId={animal.id}
+                                   animalName={animal.name}
+                                   animalIdTag={animal.id_tag}
+                                 />
+                               </div>
+                             </div>
+
+                             {/* Reproductive Performance Section - Only for females */}
+                             {animal.sex === "Hembra" && (
+                               <div className="space-y-4">
+                                 <ReproductivePerformance 
+                                   animalId={animal.id}
+                                   animalSex={animal.sex}
+                                 />
+                                 <ReproductiveEventsTable
+                                   animalId={animal.id}
+                                   animalSex={animal.sex}
+                                   cabaña_id={animal.cabaña_id}
+                                 />
+                               </div>
+                             )}
+                           </div>
                         </TableCell>
                       </TableRow>
                     )}

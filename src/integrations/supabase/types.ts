@@ -292,6 +292,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reproductive_events: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          calving_date: string | null
+          created_at: string
+          id: string
+          linked_calf_id: string | null
+          notes: string | null
+          pregnancy_outcome: string | null
+          pregnancy_status: string | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          calving_date?: string | null
+          created_at?: string
+          id?: string
+          linked_calf_id?: string | null
+          notes?: string | null
+          pregnancy_outcome?: string | null
+          pregnancy_status?: string | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          calving_date?: string | null
+          created_at?: string
+          id?: string
+          linked_calf_id?: string | null
+          notes?: string | null
+          pregnancy_outcome?: string | null
+          pregnancy_status?: string | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       services: {
         Row: {
           bull_id: string | null
@@ -365,6 +407,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_reproductive_performance: {
+        Args: { animal_uuid: string }
+        Returns: {
+          porcentaje_preñez: number
+          porcentaje_paricion: number
+          total_reproductive_years: number
+          confirmed_pregnancies: number
+          live_calves: number
+        }[]
+      }
       categorize_animal: {
         Args: { birth_date: string; sex: string; reference_date?: string }
         Returns: string
