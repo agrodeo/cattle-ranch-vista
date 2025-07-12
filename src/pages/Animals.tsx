@@ -1104,8 +1104,8 @@ const Animals = () => {
                                 </div>
                               </div>
 
-                              {/* Braford Registration System */}
-                              {animal.breed === 'Braford' && (
+                              {/* Registration System for Braford and Brangus */}
+                              {(animal.breed === 'Braford' || animal.breed === 'Brangus') && (
                                 <div className="space-y-3">
                                   <BrafordRegistrationDisplay
                                     breed={animal.breed}

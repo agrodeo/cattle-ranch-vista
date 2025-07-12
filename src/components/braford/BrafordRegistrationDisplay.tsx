@@ -50,7 +50,7 @@ export function BrafordRegistrationDisplay({
 
   // Calculate registration when props change
   useEffect(() => {
-    if (breed === 'Braford') {
+    if (breed === 'Braford' || breed === 'Brangus') {
       const result = calculateBrafordRegistration(breed, fatherInfo, motherInfo, isArtificialInsemination);
       setRegistration(result);
     } else {
@@ -58,8 +58,8 @@ export function BrafordRegistrationDisplay({
     }
   }, [breed, fatherInfo, motherInfo, isArtificialInsemination]);
 
-  // Don't render for non-Braford breeds
-  if (breed !== 'Braford' || !registration) {
+  // Don't render for unsupported breeds
+  if (breed !== 'Braford' && breed !== 'Brangus' || !registration) {
     return null;
   }
 
@@ -101,20 +101,16 @@ export function BrafordRegistrationDisplay({
     });
   };
 
-  const allLevels: RegistrationLevel[] = [
-    'Preparatorio',
-    'Controlado', 
-    'Registrado',
-    'Avanzado',
-    'Definitivo'
-  ];
+  const allLevels: RegistrationLevel[] = breed === 'Brangus' 
+    ? ['BO', 'PC', 'PR', 'UB']
+    : ['Preparatorio', 'Controlado', 'Registrado', 'Avanzado', 'Definitivo'];
 
   return (
     <Card className="w-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Badge variant="outline">Braford</Badge>
-          Registro ABA 2022
+          <Badge variant="outline">{breed}</Badge>
+          Registro {breed === 'Brangus' ? 'AAB' : 'ABA 2022'}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>

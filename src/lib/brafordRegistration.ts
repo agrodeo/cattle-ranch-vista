@@ -6,7 +6,12 @@ export type RegistrationLevel =
   | 'Avanzado' 
   | 'Definitivo' 
   | 'Sin Registro' 
-  | 'Pendiente de registro';
+  | 'Pendiente de registro'
+  // Brangus levels
+  | 'BO' 
+  | 'PC' 
+  | 'PR' 
+  | 'UB';
 
 export interface RegistrationResult {
   level: RegistrationLevel;
@@ -35,6 +40,11 @@ const LEVEL_HIERARCHY: Record<RegistrationLevel, number> = {
   'Registrado': 4,
   'Avanzado': 5,
   'Definitivo': 6,
+  // Brangus hierarchy
+  'BO': 2,
+  'PC': 4,
+  'PR': 6,
+  'UB': 4,
 };
 
 // Registration level descriptions
@@ -46,10 +56,15 @@ export const REGISTRATION_DESCRIPTIONS: Record<RegistrationLevel, string> = {
   'Definitivo': 'Ambos padres deben ser "Avanzado". Se requiere prueba de ADN obligatoria para confirmar filiación.',
   'Sin Registro': 'No cumple con los requisitos mínimos para obtener un nivel de registro.',
   'Pendiente de registro': 'Falta información de parentesco o documentación para determinar el nivel.',
+  // Brangus descriptions
+  'BO': 'Base: Cruza inicial de razas fundadoras (Brahman y Angus/Hereford). Requiere identificación individual.',
+  'PC': 'Puro por Cruza: Resultado de cruzamientos registrados. Padre y madre mínimo "BO" o superior.',
+  'PR': 'Puro Registrado: Ambos padres PC o PR. Requiere identificación por ADN obligatoria.',
+  'UB': 'Ultrablack: Cruza Brangus × Angus para aumentar rusticidad o calidad carnicera.',
 };
 
 /**
- * Calculate automatic registration level for Braford animals based on parents
+ * Calculate automatic registration level for Braford and Brangus animals based on parents
  */
 export function calculateBrafordRegistration(
   breed: string,
@@ -68,10 +83,10 @@ export function calculateBrafordRegistration(
     warnings: [],
   };
 
-  // Only apply Braford registration rules to Braford breed
-  if (breed !== 'Braford') {
+  // Only apply registration rules to Braford and Brangus breeds
+  if (breed !== 'Braford' && breed !== 'Brangus') {
     result.level = 'Sin Registro';
-    result.reason = 'Sistema de registro solo aplicable a raza Braford';
+    result.reason = 'Sistema de registro solo aplicable a razas Braford y Brangus';
     result.canOverride = false;
     return result;
   }
@@ -85,6 +100,11 @@ export function calculateBrafordRegistration(
 
   const fatherLevel = fatherInfo?.level;
   const motherLevel = motherInfo?.level;
+
+  // Apply breed-specific rules
+  if (breed === 'Brangus') {
+    return calculateBrangusRegistration(result, fatherLevel, motherLevel, fatherInfo, motherInfo);
+  }
 
   // Apply inheritance rules
   try {
@@ -165,15 +185,84 @@ export function calculateBrafordRegistration(
         result.errors.push('Se requiere al menos un padre con nivel de registro válido');
       }
     }
+  } catch (error) {
+    result.level = 'Pendiente de registro';
+    result.reason = 'Error en el cálculo del nivel de registro';
+    result.errors.push('Error interno en el sistema de registro');
+  }
 
-    // Additional validations for AI
-    if (isArtificialInsemination && !fatherInfo?.hasDNA && ['Registrado', 'Avanzado', 'Definitivo'].includes(result.level)) {
-      result.warnings.push('Verificar que el toro tenga certificado de ADN para inseminación artificial');
+  return result;
+}
+
+/**
+ * Calculate registration level for Brangus breed
+ */
+function calculateBrangusRegistration(
+  result: RegistrationResult,
+  fatherLevel?: RegistrationLevel,
+  motherLevel?: RegistrationLevel,
+  fatherInfo?: ParentInfo,
+  motherInfo?: ParentInfo
+): RegistrationResult {
+  try {
+    // Brangus inheritance rules
+    // BO × BO → PC (if genealogy complies)
+    if (fatherLevel === 'BO' && motherLevel === 'BO') {
+      result.level = 'PC';
+      result.reason = 'Padre: BO, Madre: BO';
+      result.warnings.push('Verificar genealogía completa para confirmar nivel PC');
+    }
+    // PC × PC → PR
+    else if (fatherLevel === 'PC' && motherLevel === 'PC') {
+      result.level = 'PR';
+      result.reason = 'Padre: PC, Madre: PC';
+      result.requiresDNA = true;
+      result.warnings.push('Se requiere identificación por ADN obligatoria');
+    }
+    // PR × PR → PR
+    else if (fatherLevel === 'PR' && motherLevel === 'PR') {
+      result.level = 'PR';
+      result.reason = 'Padre: PR, Madre: PR';
+      result.requiresDNA = true;
+    }
+    // PC × PR → PR
+    else if (
+      (fatherLevel === 'PC' && motherLevel === 'PR') ||
+      (fatherLevel === 'PR' && motherLevel === 'PC')
+    ) {
+      result.level = 'PR';
+      result.reason = `Padre: ${fatherLevel}, Madre: ${motherLevel}`;
+      result.requiresDNA = true;
+    }
+    // BO × PC → PC
+    else if (
+      (fatherLevel === 'BO' && motherLevel === 'PC') ||
+      (fatherLevel === 'PC' && motherLevel === 'BO')
+    ) {
+      result.level = 'PC';
+      result.reason = `Padre: ${fatherLevel}, Madre: ${motherLevel}`;
+    }
+    // If one parent is unknown → Only BO possible
+    else if (!fatherLevel || !motherLevel) {
+      result.level = 'BO';
+      result.reason = 'Un padre desconocido - solo puede ser BO';
+      result.warnings.push('Se requieren ambos padres registrados para niveles superiores');
+    }
+    // Other combinations → BO
+    else {
+      result.level = 'BO';
+      result.reason = `Combinación ${fatherLevel || 'Desconocido'} × ${motherLevel || 'Desconocido'} resulta en BO`;
+      result.warnings.push('Combinación de padres no permite nivel superior');
+    }
+
+    // Additional Brangus validations
+    if (result.level === 'PR' && !fatherInfo?.hasDNA) {
+      result.warnings.push('Verificar que ambos padres tengan ADN validado para nivel PR');
     }
 
   } catch (error) {
     result.level = 'Pendiente de registro';
-    result.reason = 'Error en el cálculo del nivel de registro';
+    result.reason = 'Error en el cálculo del nivel de registro Brangus';
     result.errors.push('Error interno en el sistema de registro');
   }
 
@@ -232,6 +321,15 @@ export function getRegistrationLevelColor(level: RegistrationLevel): string {
       return 'bg-red-500 text-white';
     case 'Pendiente de registro':
       return 'bg-gray-500 text-white';
+    // Brangus colors
+    case 'PR':
+      return 'bg-purple-600 text-white';
+    case 'PC':
+      return 'bg-blue-600 text-white';
+    case 'BO':
+      return 'bg-green-600 text-white';
+    case 'UB':
+      return 'bg-indigo-600 text-white';
     default:
       return 'bg-gray-300 text-black';
   }
