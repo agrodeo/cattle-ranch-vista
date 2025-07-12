@@ -19,6 +19,8 @@ import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUplo
 import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
 import { ReproductiveEventsTable } from "@/components/reproductive/ReproductiveEventsTable";
 import { ArtificialInseminationManager } from "@/components/artificial-insemination/ArtificialInseminationManager";
+import { BrafordRegistrationDisplay } from "@/components/braford/BrafordRegistrationDisplay";
+import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 
 interface Animal {
   id: string;
@@ -36,6 +38,12 @@ interface Animal {
   color?: string;
   condicion_corporal?: string;
   observaciones?: string;
+  registration_level?: string;
+  registration_level_override?: string;
+  registration_override_reason?: string;
+  registration_father_level?: string;
+  registration_mother_level?: string;
+  dna_verified?: boolean;
 }
 
 interface Cabaña {
@@ -289,6 +297,61 @@ const Animals = () => {
         fatherUUID = fatherData?.id || null;
       }
 
+      // Calculate Braford registration if applicable
+      let registrationData = {};
+      if (formData.breed === 'Braford') {
+        let fatherInfo: ParentInfo | undefined;
+        let motherInfo: ParentInfo | undefined;
+
+        // Get father registration info
+        if (fatherUUID) {
+          const { data: fatherData } = await supabase
+            .from("animals")
+            .select("registration_level, registration_level_override, birth_date, dna_verified")
+            .eq("id", fatherUUID)
+            .single();
+          
+          if (fatherData) {
+            fatherInfo = {
+              level: (fatherData.registration_level_override || fatherData.registration_level) as RegistrationLevel,
+              hasDNA: fatherData.dna_verified || false,
+            };
+          }
+        }
+
+        // Get mother registration info
+        if (motherUUID) {
+          const { data: motherData } = await supabase
+            .from("animals")
+            .select("registration_level, registration_level_override, birth_date, breed")
+            .eq("id", motherUUID)
+            .single();
+          
+          if (motherData) {
+            const birthYear = motherData.birth_date ? new Date(motherData.birth_date).getFullYear() : undefined;
+            motherInfo = {
+              level: (motherData.registration_level_override || motherData.registration_level) as RegistrationLevel,
+              isBoMother: motherData.breed === 'Bo',
+              birthYear,
+            };
+          }
+        }
+
+        // Calculate registration level
+        const registrationResult = calculateBrafordRegistration(
+          formData.breed,
+          fatherInfo,
+          motherInfo,
+          false // Not AI for now, this can be enhanced later
+        );
+
+        registrationData = {
+          registration_level: registrationResult.level,
+          registration_father_level: fatherInfo?.level || null,
+          registration_mother_level: motherInfo?.level || null,
+        };
+      }
+
       // Prepare data for submission
       const submitData = {
         name: formData.name || null,
@@ -305,6 +368,7 @@ const Animals = () => {
         color: formData.color || null,
         condicion_corporal: formData.condicion_corporal || null,
         observaciones: formData.observaciones || null,
+        ...registrationData,
       };
 
       if (editingAnimal) {
@@ -1030,31 +1094,43 @@ const Animals = () => {
                                  )}
                                </div>
                                
-                               {/* Enhanced Genealogy Tree */}
-                               <div className="space-y-3">
-                                 <GenealogyTree 
-                                   animalId={animal.id}
-                                   animalName={animal.name}
-                                   animalIdTag={animal.id_tag}
-                                 />
-                               </div>
-                             </div>
+                                {/* Enhanced Genealogy Tree */}
+                                <div className="space-y-3">
+                                  <GenealogyTree 
+                                    animalId={animal.id}
+                                    animalName={animal.name}
+                                    animalIdTag={animal.id_tag}
+                                  />
+                                </div>
+                              </div>
 
-                             {/* Reproductive Performance Section - Only for females */}
-                             {animal.sex === "Hembra" && (
-                               <div className="space-y-4">
-                                 <ReproductivePerformance 
-                                   animalId={animal.id}
-                                   animalSex={animal.sex}
-                                 />
-                                 <ReproductiveEventsTable
-                                   animalId={animal.id}
-                                   animalSex={animal.sex}
-                                   cabaña_id={animal.cabaña_id}
-                                 />
-                               </div>
-                             )}
-                           </div>
+                              {/* Braford Registration System */}
+                              {animal.breed === 'Braford' && (
+                                <div className="space-y-3">
+                                  <BrafordRegistrationDisplay
+                                    breed={animal.breed}
+                                    currentLevel={animal.registration_level as RegistrationLevel}
+                                    overrideLevel={animal.registration_level_override as RegistrationLevel}
+                                    overrideReason={animal.registration_override_reason}
+                                    readonly
+                                  />
+                                </div>
+                              )}
+                              {/* Reproductive Performance Section - Only for females */}
+                              {animal.sex === "Hembra" && (
+                                <div className="space-y-4">
+                                  <ReproductivePerformance 
+                                    animalId={animal.id}
+                                    animalSex={animal.sex}
+                                  />
+                                  <ReproductiveEventsTable
+                                    animalId={animal.id}
+                                    animalSex={animal.sex}
+                                    cabaña_id={animal.cabaña_id}
+                                  />
+                                </div>
+                              )}
+                            </div>
                         </TableCell>
                       </TableRow>
                     )}

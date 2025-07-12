@@ -48,6 +48,12 @@ export interface AnimalFieldMapping {
   _warnings: string[];
   _category?: string;
   _consanguinityCoefficient?: number;
+  
+  // Braford Registration Fields
+  registro_padre?: string;
+  registro_madre?: string;
+  registro_sugerido?: string;
+  registro_nivel_calculado?: string;
 }
 
 export interface ColumnMapping {

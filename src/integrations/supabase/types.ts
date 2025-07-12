@@ -65,6 +65,7 @@ export type Database = {
           color: string | null
           condicion_corporal: string | null
           corral_id: string | null
+          dna_verified: boolean | null
           father_id: string | null
           fecha_destete: string | null
           fecha_muerte: string | null
@@ -81,6 +82,11 @@ export type Database = {
           peso_final_mejorado: number | null
           peso_nacer: number | null
           peso_nacimiento: number | null
+          registration_father_level: string | null
+          registration_level: string | null
+          registration_level_override: string | null
+          registration_mother_level: string | null
+          registration_override_reason: string | null
           resultado_preñez: string | null
           sex: string | null
           status: string | null
@@ -96,6 +102,7 @@ export type Database = {
           color?: string | null
           condicion_corporal?: string | null
           corral_id?: string | null
+          dna_verified?: boolean | null
           father_id?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
@@ -112,6 +119,11 @@ export type Database = {
           peso_final_mejorado?: number | null
           peso_nacer?: number | null
           peso_nacimiento?: number | null
+          registration_father_level?: string | null
+          registration_level?: string | null
+          registration_level_override?: string | null
+          registration_mother_level?: string | null
+          registration_override_reason?: string | null
           resultado_preñez?: string | null
           sex?: string | null
           status?: string | null
@@ -127,6 +139,7 @@ export type Database = {
           color?: string | null
           condicion_corporal?: string | null
           corral_id?: string | null
+          dna_verified?: boolean | null
           father_id?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
@@ -143,6 +156,11 @@ export type Database = {
           peso_final_mejorado?: number | null
           peso_nacer?: number | null
           peso_nacimiento?: number | null
+          registration_father_level?: string | null
+          registration_level?: string | null
+          registration_level_override?: string | null
+          registration_mother_level?: string | null
+          registration_override_reason?: string | null
           resultado_preñez?: string | null
           sex?: string | null
           status?: string | null

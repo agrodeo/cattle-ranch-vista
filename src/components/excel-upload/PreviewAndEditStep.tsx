@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimalFieldMapping, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
+import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 
 interface PreviewAndEditStepProps {
   animals: AnimalFieldMapping[];
@@ -92,6 +93,51 @@ export const PreviewAndEditStep = ({
       }
     }
 
+    // Calculate Braford registration if applicable
+    if (editingAnimal.raza === 'Braford') {
+      let fatherInfo: ParentInfo | undefined;
+      let motherInfo: ParentInfo | undefined;
+
+      // Get father registration info from excel data
+      if (editingAnimal.padre_id && editingAnimal.registro_padre) {
+        fatherInfo = {
+          level: editingAnimal.registro_padre as RegistrationLevel,
+          hasDNA: true,
+        };
+      }
+
+      // Get mother registration info from excel data
+      if (editingAnimal.madre_id && editingAnimal.registro_madre) {
+        const isBoMother = editingAnimal.registro_madre === 'Bo';
+        motherInfo = {
+          level: isBoMother ? 'Controlado' : editingAnimal.registro_madre as RegistrationLevel,
+          isBoMother,
+          birthYear: editingAnimal.fecha_nacimiento ? new Date(editingAnimal.fecha_nacimiento).getFullYear() - 2 : undefined,
+        };
+      }
+
+      // Calculate registration level
+      const registrationResult = calculateBrafordRegistration(
+        editingAnimal.raza,
+        fatherInfo,
+        motherInfo,
+        false
+      );
+
+      editingAnimal.registro_nivel_calculado = registrationResult.level;
+      editingAnimal.registro_sugerido = registrationResult.level;
+
+      // Add registration warnings to validation
+      if (registrationResult.warnings.length > 0) {
+        editingAnimal._warnings = editingAnimal._warnings || [];
+        editingAnimal._warnings.push(...registrationResult.warnings);
+      }
+      if (registrationResult.errors.length > 0) {
+        editingAnimal._errors.push(...registrationResult.errors);
+        editingAnimal._isValid = false;
+      }
+    }
+
     const updatedAnimals = animals.map(a => 
       a._originalIndex === editingAnimal._originalIndex ? editingAnimal : a
     );
@@ -164,6 +210,10 @@ export const PreviewAndEditStep = ({
         resultado_preñez: animal.resultado_preñez || null,
         fecha_muerte: animal.fecha_muerte || null,
         cabaña_id: userCabañaId,
+        // Braford registration fields
+        registration_level: animal.registro_nivel_calculado || null,
+        registration_father_level: animal.registro_padre || null,
+        registration_mother_level: animal.registro_madre || null,
         // We'll handle parent relationships in a second pass
         mother_id: null,
         father_id: null,
@@ -340,6 +390,7 @@ export const PreviewAndEditStep = ({
                 <TableHead>Raza</TableHead>
                 <TableHead>F. Nacimiento</TableHead>
                 <TableHead>Categoría</TableHead>
+                <TableHead>Registro Braford</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -368,6 +419,17 @@ export const PreviewAndEditStep = ({
                     )}
                   </TableCell>
                   <TableCell>
+                    {animal.raza === 'Braford' && animal.registro_sugerido && (
+                      <Badge 
+                        variant="secondary" 
+                        className="text-xs"
+                        title={`Padre: ${animal.registro_padre || 'N/A'}, Madre: ${animal.registro_madre || 'N/A'}`}
+                      >
+                        {animal.registro_sugerido}
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -380,7 +442,7 @@ export const PreviewAndEditStep = ({
               ))}
               {animals.length > 20 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground">
                     ... y {animals.length - 20} más
                   </TableCell>
                 </TableRow>
