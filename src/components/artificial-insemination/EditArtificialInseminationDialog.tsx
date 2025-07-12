@@ -44,7 +44,7 @@ export function EditArtificialInseminationDialog({
 }: EditArtificialInseminationDialogProps) {
   const [date, setDate] = useState<Date>();
   const [bullName, setBullName] = useState("");
-  const [isPregnant, setIsPregnant] = useState<string>("");
+  const [isPregnant, setIsPregnant] = useState<string>("pending");
   const [notes, setNotes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -54,7 +54,7 @@ export function EditArtificialInseminationDialog({
       setDate(new Date(record.insemination_date));
       setBullName(record.bull_name);
       setIsPregnant(
-        record.is_pregnant === null ? "" :
+        record.is_pregnant === null ? "pending" :
         record.is_pregnant ? "yes" : "no"
       );
       setNotes(record.notes || "");
@@ -173,7 +173,7 @@ export function EditArtificialInseminationDialog({
                   <SelectValue placeholder="Seleccionar resultado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Pendiente</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
                   <SelectItem value="yes">Sí</SelectItem>
                   <SelectItem value="no">No</SelectItem>
                 </SelectContent>

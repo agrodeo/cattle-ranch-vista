@@ -238,7 +238,7 @@ export function ArtificialInseminationDialog({
                   <SelectValue placeholder="Seleccionar resultado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Pendiente</SelectItem>
+                  <SelectItem value="pending">Pendiente</SelectItem>
                   <SelectItem value="yes">Sí</SelectItem>
                   <SelectItem value="no">No</SelectItem>
                 </SelectContent>
