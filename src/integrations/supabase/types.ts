@@ -66,14 +66,20 @@ export type Database = {
           condicion_corporal: string | null
           corral_id: string | null
           dna_verified: boolean | null
+          father_breed: string | null
           father_id: string | null
+          father_name: string | null
+          father_registration: string | null
           fecha_destete: string | null
           fecha_muerte: string | null
           fecha_servicio: string | null
           id: string
           id_tag: string | null
           mocho: string | null
+          mother_breed: string | null
           mother_id: string | null
+          mother_name: string | null
+          mother_registration: string | null
           name: string | null
           observaciones: string | null
           peso_destete: number | null
@@ -103,14 +109,20 @@ export type Database = {
           condicion_corporal?: string | null
           corral_id?: string | null
           dna_verified?: boolean | null
+          father_breed?: string | null
           father_id?: string | null
+          father_name?: string | null
+          father_registration?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
           fecha_servicio?: string | null
           id?: string
           id_tag?: string | null
           mocho?: string | null
+          mother_breed?: string | null
           mother_id?: string | null
+          mother_name?: string | null
+          mother_registration?: string | null
           name?: string | null
           observaciones?: string | null
           peso_destete?: number | null
@@ -140,14 +152,20 @@ export type Database = {
           condicion_corporal?: string | null
           corral_id?: string | null
           dna_verified?: boolean | null
+          father_breed?: string | null
           father_id?: string | null
+          father_name?: string | null
+          father_registration?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
           fecha_servicio?: string | null
           id?: string
           id_tag?: string | null
           mocho?: string | null
+          mother_breed?: string | null
           mother_id?: string | null
+          mother_name?: string | null
+          mother_registration?: string | null
           name?: string | null
           observaciones?: string | null
           peso_destete?: number | null

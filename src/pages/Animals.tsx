@@ -32,6 +32,12 @@ interface Animal {
   status: string;
   mother_id?: string;
   father_id?: string;
+  mother_name?: string;
+  father_name?: string;
+  mother_breed?: string;
+  father_breed?: string;
+  mother_registration?: string;
+  father_registration?: string;
   cabaña_id: string;
   peso_nacimiento?: number;
   mocho?: string;
@@ -169,6 +175,12 @@ const Animals = () => {
     status: "Activo",
     mother_id: "",
     father_id: "",
+    mother_name: "",
+    father_name: "",
+    mother_breed: "",
+    father_breed: "",
+    mother_registration: "",
+    father_registration: "",
     cabaña_id: "",
     peso_nacimiento: "",
     mocho: "",
@@ -305,7 +317,7 @@ const Animals = () => {
     }
 
     try {
-      // Look up parent animals by their id_tag values
+      // Look up parent animals by their id_tag values - but don't require they exist
       let motherUUID = null;
       let fatherUUID = null;
 
@@ -316,7 +328,7 @@ const Animals = () => {
           .eq("id_tag", formData.mother_id)
           .eq("cabaña_id", editingAnimal ? formData.cabaña_id : userCabaña)
           .eq("sex", "Hembra")
-          .single();
+          .maybeSingle();
         
         motherUUID = motherData?.id || null;
       }
@@ -328,7 +340,7 @@ const Animals = () => {
           .eq("id_tag", formData.father_id)
           .eq("cabaña_id", editingAnimal ? formData.cabaña_id : userCabaña)
           .eq("sex", "Macho")
-          .single();
+          .maybeSingle();
         
         fatherUUID = fatherData?.id || null;
       }
@@ -398,6 +410,13 @@ const Animals = () => {
         status: formData.status,
         mother_id: motherUUID,
         father_id: fatherUUID,
+        // Store parent names/info when not found as full animals
+        mother_name: !motherUUID && formData.mother_id ? formData.mother_id : null,
+        father_name: !fatherUUID && formData.father_id ? formData.father_id : null,
+        mother_breed: formData.mother_breed || null,
+        father_breed: formData.father_breed || null,
+        mother_registration: formData.mother_registration || null,
+        father_registration: formData.father_registration || null,
         cabaña_id: editingAnimal ? formData.cabaña_id : userCabaña,
         peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
         mocho: formData.mocho || null,
@@ -480,6 +499,12 @@ const Animals = () => {
       status: animal.status || "Activo",
       mother_id: motherIdTag,
       father_id: fatherIdTag,
+      mother_name: "",
+      father_name: "",
+      mother_breed: "",
+      father_breed: "",
+      mother_registration: "",
+      father_registration: "",
       cabaña_id: animal.cabaña_id || "",
       peso_nacimiento: animal.peso_nacimiento?.toString() || "",
       mocho: animal.mocho || (animal.breed && HORNED_BREEDS.includes(animal.breed) ? "Desconocido" : ""),
@@ -529,6 +554,12 @@ const Animals = () => {
       status: "Activo",
       mother_id: "",
       father_id: "",
+      mother_name: "",
+      father_name: "",
+      mother_breed: "",
+      father_breed: "",
+      mother_registration: "",
+      father_registration: "",
       cabaña_id: "",
       peso_nacimiento: "",
       mocho: "",
@@ -761,12 +792,12 @@ const Animals = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="mother_id">Madre (ID de Identificación)</Label>
+                    <Label htmlFor="mother_id">Madre (Nombre o ID)</Label>
                     <Input
                       id="mother_id"
                       value={formData.mother_id}
                       onChange={(e) => setFormData({...formData, mother_id: e.target.value})}
-                      placeholder="Ingrese ID de la madre"
+                      placeholder="Nombre o ID de la madre"
                       list="mother-suggestions"
                     />
                     <datalist id="mother-suggestions">
@@ -778,14 +809,52 @@ const Animals = () => {
                           </option>
                         ))}
                     </datalist>
+                    
+                    {/* Additional mother info fields */}
+                    {formData.mother_id && (
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Raza de la Madre</Label>
+                          <Select value={formData.mother_breed} onValueChange={(value) => setFormData({...formData, mother_breed: value})}>
+                            <SelectTrigger className="h-8 text-xs bg-background">
+                              <SelectValue placeholder="Raza" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border shadow-md z-50">
+                              {ARGENTINE_BREEDS.map((breed) => (
+                                <SelectItem key={breed} value={breed}>
+                                  {breed}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {formData.mother_breed && breedRequiresRegistration(formData.mother_breed) && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Registro de la Madre</Label>
+                            <Select value={formData.mother_registration} onValueChange={(value) => setFormData({...formData, mother_registration: value})}>
+                              <SelectTrigger className="h-8 text-xs bg-background">
+                                <SelectValue placeholder="Registro" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border shadow-md z-50">
+                                {getRegistrationOptions(formData.mother_breed).map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="father_id">Padre (ID de Identificación)</Label>
+                    <Label htmlFor="father_id">Padre (Nombre o ID)</Label>
                     <Input
                       id="father_id"
                       value={formData.father_id}
                       onChange={(e) => setFormData({...formData, father_id: e.target.value})}
-                      placeholder="Ingrese ID del padre"
+                      placeholder="Nombre o ID del padre"
                       list="father-suggestions"
                     />
                     <datalist id="father-suggestions">
@@ -797,6 +866,44 @@ const Animals = () => {
                           </option>
                         ))}
                     </datalist>
+                    
+                    {/* Additional father info fields */}
+                    {formData.father_id && (
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs text-muted-foreground">Raza del Padre</Label>
+                          <Select value={formData.father_breed} onValueChange={(value) => setFormData({...formData, father_breed: value})}>
+                            <SelectTrigger className="h-8 text-xs bg-background">
+                              <SelectValue placeholder="Raza" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-background border shadow-md z-50">
+                              {ARGENTINE_BREEDS.map((breed) => (
+                                <SelectItem key={breed} value={breed}>
+                                  {breed}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {formData.father_breed && breedRequiresRegistration(formData.father_breed) && (
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Registro del Padre</Label>
+                            <Select value={formData.father_registration} onValueChange={(value) => setFormData({...formData, father_registration: value})}>
+                              <SelectTrigger className="h-8 text-xs bg-background">
+                                <SelectValue placeholder="Registro" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-background border shadow-md z-50">
+                                {getRegistrationOptions(formData.father_breed).map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 

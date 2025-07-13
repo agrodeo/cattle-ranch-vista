@@ -14,10 +14,13 @@ interface AnimalNode {
   sex: string;
   birth_date?: string;
   breed?: string;
+  registration_level?: string;
   father?: AnimalNode | null;
   mother?: AnimalNode | null;
   offspring?: AnimalNode[];
   generation?: number;
+  // For partial parent data
+  isPartialData?: boolean;
 }
 
 interface GenealogyTreeProps {
@@ -54,9 +57,9 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
         generation: 0
       };
 
-      // Fetch immediate parents with proper individual handling
-      if (animal.mother_id || animal.father_id) {
-        // Fetch mother separately
+      // Fetch immediate parents with enhanced handling for partial data
+      if (animal.mother_id || animal.mother_name) {
+        // Try to fetch mother from animals table first
         if (animal.mother_id) {
           try {
             const { data: motherData, error: motherError } = await supabase
@@ -73,6 +76,7 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
                 sex: motherData.sex,
                 birth_date: motherData.birth_date,
                 breed: motherData.breed,
+                registration_level: motherData.registration_level,
                 generation: 1
               };
             }
@@ -80,8 +84,25 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
             console.error("Error fetching mother:", error);
           }
         }
+        
+        // If no mother found but we have partial data, create a partial node
+        if (!family.mother && animal.mother_name) {
+          family.mother = {
+            id: `partial-mother-${animal.id}`,
+            name: animal.mother_name,
+            id_tag: animal.mother_name,
+            sex: "Hembra",
+            breed: animal.mother_breed,
+            registration_level: animal.mother_registration,
+            generation: 1,
+            isPartialData: true
+          };
+        }
+      }
 
-        // Fetch father separately
+      // Fetch father with enhanced handling for partial data
+      if (animal.father_id || animal.father_name) {
+        // Try to fetch father from animals table first
         if (animal.father_id) {
           try {
             const { data: fatherData, error: fatherError } = await supabase
@@ -98,12 +119,27 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
                 sex: fatherData.sex,
                 birth_date: fatherData.birth_date,
                 breed: fatherData.breed,
+                registration_level: fatherData.registration_level,
                 generation: 1
               };
             }
           } catch (error) {
             console.error("Error fetching father:", error);
           }
+        }
+        
+        // If no father found but we have partial data, create a partial node
+        if (!family.father && animal.father_name) {
+          family.father = {
+            id: `partial-father-${animal.id}`,
+            name: animal.father_name,
+            id_tag: animal.father_name,
+            sex: "Macho",
+            breed: animal.father_breed,
+            registration_level: animal.father_registration,
+            generation: 1,
+            isPartialData: true
+          };
         }
       }
 

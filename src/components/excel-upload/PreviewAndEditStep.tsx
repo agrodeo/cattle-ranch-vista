@@ -247,6 +247,14 @@ export const PreviewAndEditStep = ({
         cabaña_id: userCabañaId,
         // Braford registration fields
         registration_level: animal.registration_level || animal.registro_nivel_calculado || null,
+        
+        // Parent information - flexible handling
+        mother_name: animal.mother_name || (animal.madre_id && !animal.madre_id?.match(/^\d+$/) ? animal.madre_id : null),
+        father_name: animal.father_name || (animal.padre_id && !animal.padre_id?.match(/^\d+$/) ? animal.padre_id : null),
+        mother_breed: animal.mother_breed || null,
+        father_breed: animal.father_breed || null,
+        mother_registration: animal.mother_registration || null,
+        father_registration: animal.father_registration || null,
         registration_father_level: animal.registro_padre || null,
         registration_mother_level: animal.registro_madre || null,
         // We'll handle parent relationships in a second pass

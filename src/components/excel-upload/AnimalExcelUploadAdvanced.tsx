@@ -41,6 +41,12 @@ export interface AnimalFieldMapping {
   resultado_preñez?: string;
   fecha_muerte?: string;
   registration_level?: string;
+  mother_name?: string;
+  father_name?: string;
+  mother_breed?: string;
+  father_breed?: string;
+  mother_registration?: string;
+  father_registration?: string;
   
   // Metadata
   _originalIndex: number;
@@ -93,7 +99,13 @@ export const SUPPORTED_FIELDS = {
   tipo_servicio: { label: "Tipo de Servicio", required: false, type: "select", options: ["Natural", "I.A.", "Transferencia Embrionaria"] },
   resultado_preñez: { label: "Resultado de Preñez", required: false, type: "select", options: ["Positiva", "Negativa", "Vacía", "Muerta"] },
   fecha_muerte: { label: "Fecha de Muerte", required: false, type: "date" },
-  registration_level: { label: "Registro", required: false, type: "select", options: ["Avanzado", "Avanzado Definitivo", "Controlado", "Puro de Pedigree", "Puro Registrado", "Sin Registro", "Puro por Cruza", "Terneros Registrados", "PC (Puro Controlado)", "PR (Puro Registrado)", "PP (Puro de Pedigree)"] }
+  registration_level: { label: "Registro", required: false, type: "select", options: ["Avanzado", "Avanzado Definitivo", "Controlado", "Puro de Pedigree", "Puro Registrado", "Sin Registro", "Puro por Cruza", "Terneros Registrados", "PC (Puro Controlado)", "PR (Puro Registrado)", "PP (Puro de Pedigree)"] },
+  mother_name: { label: "Nombre de la Madre", required: false, type: "text" },
+  father_name: { label: "Nombre del Padre", required: false, type: "text" },
+  mother_breed: { label: "Raza de la Madre", required: false, type: "select", options: ["Angus", "Hereford", "Shorthorn", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Braford", "Brangus", "Santa Gertrudis", "Senepol", "Bonsmara", "Holando Argentino", "Jersey", "Criollo", "Wagyu", "Corriente", "Otro"] },
+  father_breed: { label: "Raza del Padre", required: false, type: "select", options: ["Angus", "Hereford", "Shorthorn", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Braford", "Brangus", "Santa Gertrudis", "Senepol", "Bonsmara", "Holando Argentino", "Jersey", "Criollo", "Wagyu", "Corriente", "Otro"] },
+  mother_registration: { label: "Registro de la Madre", required: false, type: "select", options: ["Avanzado", "Avanzado Definitivo", "Controlado", "Puro de Pedigree", "Puro Registrado", "Sin Registro", "Puro por Cruza", "Terneros Registrados", "PC (Puro Controlado)", "PR (Puro Registrado)", "PP (Puro de Pedigree)"] },
+  father_registration: { label: "Registro del Padre", required: false, type: "select", options: ["Avanzado", "Avanzado Definitivo", "Controlado", "Puro de Pedigree", "Puro Registrado", "Sin Registro", "Puro por Cruza", "Terneros Registrados", "PC (Puro Controlado)", "PR (Puro Registrado)", "PP (Puro de Pedigree)"] }
 };
 
 type UploadStep = 'upload' | 'mapping' | 'preview' | 'consanguinity' | 'family-tree' | 'complete';
