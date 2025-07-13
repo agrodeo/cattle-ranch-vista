@@ -256,6 +256,71 @@ export type Database = {
           },
         ]
       }
+      bulls: {
+        Row: {
+          breed: string | null
+          cabaña_id: string | null
+          color: string | null
+          created_at: string
+          created_by: string | null
+          genetic_health_observations: string | null
+          id: string
+          insemination_center: string | null
+          internal_code: string | null
+          is_genotyped: boolean | null
+          name: string
+          nationality: string | null
+          official_registration_number: string | null
+          owner: string | null
+          registration_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          breed?: string | null
+          cabaña_id?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          genetic_health_observations?: string | null
+          id?: string
+          insemination_center?: string | null
+          internal_code?: string | null
+          is_genotyped?: boolean | null
+          name: string
+          nationality?: string | null
+          official_registration_number?: string | null
+          owner?: string | null
+          registration_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          breed?: string | null
+          cabaña_id?: string | null
+          color?: string | null
+          created_at?: string
+          created_by?: string | null
+          genetic_health_observations?: string | null
+          id?: string
+          insemination_center?: string | null
+          internal_code?: string | null
+          is_genotyped?: boolean | null
+          name?: string
+          nationality?: string | null
+          official_registration_number?: string | null
+          owner?: string | null
+          registration_level?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulls_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cabañas: {
         Row: {
           id: string
