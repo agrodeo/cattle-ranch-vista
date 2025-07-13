@@ -93,6 +93,41 @@ const MOCHO_OPTIONS = [
 
 const BODY_CONDITION_SCORES = ["1", "2", "3", "4", "5"];
 
+// Registration levels by breed
+const REGISTRATION_OPTIONS = {
+  "Braford": [
+    "Avanzado",
+    "Avanzado Definitivo", 
+    "Controlado",
+    "Puro de Pedigree",
+    "Puro Registrado",
+    "Sin Registro"
+  ],
+  "Brangus": [
+    "Puro por Cruza",
+    "Puro Registrado", 
+    "Puro de Pedigree",
+    "Terneros Registrados",
+    "Sin Registro"
+  ],
+  "Angus": [
+    "PC (Puro Controlado)",
+    "PR (Puro Registrado)",
+    "PP (Puro de Pedigree)",
+    "Sin Registro"
+  ]
+};
+
+// Get registration options for a specific breed
+const getRegistrationOptions = (breed: string): string[] => {
+  return REGISTRATION_OPTIONS[breed as keyof typeof REGISTRATION_OPTIONS] || ["Sin Registro"];
+};
+
+// Check if breed requires registration field
+const breedRequiresRegistration = (breed: string): boolean => {
+  return Object.keys(REGISTRATION_OPTIONS).includes(breed);
+};
+
 // Age classification function
 const getAgeCategory = (birthDate: string | null, sex: string) => {
   if (!birthDate) return "Sin clasificar";
@@ -139,7 +174,8 @@ const Animals = () => {
     mocho: "",
     color: "",
     condicion_corporal: "",
-    observaciones: ""
+    observaciones: "",
+    registration_level: ""
   });
 
   useEffect(() => {
@@ -368,6 +404,7 @@ const Animals = () => {
         color: formData.color || null,
         condicion_corporal: formData.condicion_corporal || null,
         observaciones: formData.observaciones || null,
+        registration_level: formData.registration_level || null,
         ...registrationData,
       };
 
@@ -448,7 +485,8 @@ const Animals = () => {
       mocho: animal.mocho || (animal.breed && HORNED_BREEDS.includes(animal.breed) ? "Desconocido" : ""),
       color: animal.color || "",
       condicion_corporal: animal.condicion_corporal || "",
-      observaciones: animal.observaciones || ""
+      observaciones: animal.observaciones || "",
+      registration_level: animal.registration_level || ""
     });
     setShowAddDialog(true);
   };
@@ -496,7 +534,8 @@ const Animals = () => {
       mocho: "",
       color: "",
       condicion_corporal: "",
-      observaciones: ""
+      observaciones: "",
+      registration_level: ""
     });
     setShowOptionalFields(false);
   };
@@ -673,7 +712,29 @@ const Animals = () => {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 {/* Conditional Registration field */}
+                 {formData.breed && breedRequiresRegistration(formData.breed) && (
+                   <div className="space-y-2">
+                     <Label htmlFor="registration_level">Registro</Label>
+                     <Select 
+                       value={formData.registration_level} 
+                       onValueChange={(value) => setFormData({...formData, registration_level: value})}
+                     >
+                       <SelectTrigger className="bg-background">
+                         <SelectValue placeholder="Seleccionar registro" />
+                       </SelectTrigger>
+                       <SelectContent className="bg-background border shadow-md z-50">
+                         {getRegistrationOptions(formData.breed).map((option) => (
+                           <SelectItem key={option} value={option}>
+                             {option}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 )}
+
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="birth_date">Fecha de Nacimiento</Label>
                     <Input
@@ -1075,12 +1136,15 @@ const Animals = () => {
                                    <div>
                                      <span className="font-medium">Estado Actual:</span> {animal.status}
                                    </div>
-                                   <div>
-                                     <span className="font-medium">Color:</span> {animal.color || "N/A"}
-                                   </div>
-                                   <div>
-                                     <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
-                                   </div>
+                                    <div>
+                                      <span className="font-medium">Color:</span> {animal.color || "N/A"}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Registro:</span> {animal.registration_level || "N/A"}
+                                    </div>
                                  </div>
                                  {animal.observaciones && (
                                    <div className="mt-4">

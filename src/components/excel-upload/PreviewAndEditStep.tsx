@@ -15,6 +15,41 @@ import { AnimalFieldMapping, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvance
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 
+// Registration levels by breed
+const REGISTRATION_OPTIONS = {
+  "Braford": [
+    "Avanzado",
+    "Avanzado Definitivo", 
+    "Controlado",
+    "Puro de Pedigree",
+    "Puro Registrado",
+    "Sin Registro"
+  ],
+  "Brangus": [
+    "Puro por Cruza",
+    "Puro Registrado", 
+    "Puro de Pedigree",
+    "Terneros Registrados",
+    "Sin Registro"
+  ],
+  "Angus": [
+    "PC (Puro Controlado)",
+    "PR (Puro Registrado)",
+    "PP (Puro de Pedigree)",
+    "Sin Registro"
+  ]
+};
+
+// Get registration options for a specific breed
+const getRegistrationOptions = (breed: string): string[] => {
+  return REGISTRATION_OPTIONS[breed as keyof typeof REGISTRATION_OPTIONS] || ["Sin Registro"];
+};
+
+// Check if breed requires registration field
+const breedRequiresRegistration = (breed: string): boolean => {
+  return Object.keys(REGISTRATION_OPTIONS).includes(breed);
+};
+
 interface PreviewAndEditStepProps {
   animals: AnimalFieldMapping[];
   userCabañaId: string;
@@ -211,7 +246,7 @@ export const PreviewAndEditStep = ({
         fecha_muerte: animal.fecha_muerte || null,
         cabaña_id: userCabañaId,
         // Braford registration fields
-        registration_level: animal.registro_nivel_calculado || null,
+        registration_level: animal.registration_level || animal.registro_nivel_calculado || null,
         registration_father_level: animal.registro_padre || null,
         registration_mother_level: animal.registro_madre || null,
         // We'll handle parent relationships in a second pass
@@ -570,6 +605,28 @@ export const PreviewAndEditStep = ({
                     onChange={(e) => setEditingAnimal({...editingAnimal, peso_nacer: parseFloat(e.target.value)})}
                   />
                 </div>
+                
+                {/* Conditional Registration field */}
+                {editingAnimal.raza && breedRequiresRegistration(editingAnimal.raza) && (
+                  <div className="space-y-2">
+                    <Label>Registro</Label>
+                    <Select 
+                      value={editingAnimal.registration_level || ''} 
+                      onValueChange={(value) => setEditingAnimal({...editingAnimal, registration_level: value})}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar registro" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {getRegistrationOptions(editingAnimal.raza).map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             )}
             

@@ -40,6 +40,7 @@ export interface AnimalFieldMapping {
   tipo_servicio?: string;
   resultado_preñez?: string;
   fecha_muerte?: string;
+  registration_level?: string;
   
   // Metadata
   _originalIndex: number;
@@ -91,7 +92,8 @@ export const SUPPORTED_FIELDS = {
   toro_servicio_id: { label: "Toro de Servicio ID", required: false, type: "text" },
   tipo_servicio: { label: "Tipo de Servicio", required: false, type: "select", options: ["Natural", "I.A.", "Transferencia Embrionaria"] },
   resultado_preñez: { label: "Resultado de Preñez", required: false, type: "select", options: ["Positiva", "Negativa", "Vacía", "Muerta"] },
-  fecha_muerte: { label: "Fecha de Muerte", required: false, type: "date" }
+  fecha_muerte: { label: "Fecha de Muerte", required: false, type: "date" },
+  registration_level: { label: "Registro", required: false, type: "select", options: ["Avanzado", "Avanzado Definitivo", "Controlado", "Puro de Pedigree", "Puro Registrado", "Sin Registro", "Puro por Cruza", "Terneros Registrados", "PC (Puro Controlado)", "PR (Puro Registrado)", "PP (Puro de Pedigree)"] }
 };
 
 type UploadStep = 'upload' | 'mapping' | 'preview' | 'consanguinity' | 'family-tree' | 'complete';
