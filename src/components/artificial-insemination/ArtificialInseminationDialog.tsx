@@ -36,6 +36,12 @@ interface Bull {
   color?: string;
   is_genotyped?: boolean;
   internal_code?: string;
+  horn_status?: string; // For Braford genetics
+  coat_color?: string; // For Brangus/Angus genetics
+  scrotal_circumference?: number;
+  birth_weight?: number;
+  weaning_weight?: number;
+  final_weight?: number;
 }
 
 interface ArtificialInseminationDialogProps {
@@ -72,14 +78,26 @@ export function ArtificialInseminationDialog({
   const [bullIsGenotyped, setBullIsGenotyped] = useState<string>("");
   const [bullInternalCode, setBullInternalCode] = useState("");
   
+  // Genetic fields specific to breed
+  const [bullHornStatus, setBullHornStatus] = useState(""); // For Braford
+  const [bullCoatColor, setBullCoatColor] = useState(""); // For Brangus/Angus
+  const [bullScrotalCircumference, setBullScrotalCircumference] = useState("");
+  const [bullBirthWeight, setBullBirthWeight] = useState("");
+  const [bullWeaningWeight, setBullWeaningWeight] = useState("");
+  const [bullFinalWeight, setBullFinalWeight] = useState("");
+  
+  // Validation states
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
     if (open) {
       fetchBulls();
+      validateSelectedAnimals();
     }
-  }, [open]);
+  }, [open, selectedAnimals]);
 
   const fetchBulls = async () => {
     try {
@@ -113,6 +131,81 @@ export function ArtificialInseminationDialog({
     }
   };
 
+  const validateSelectedAnimals = async () => {
+    if (selectedAnimals.length === 0) return;
+
+    try {
+      const animalIds = selectedAnimals.map(animal => animal.id);
+      const { data: animalsData, error } = await supabase
+        .from("animals")
+        .select("id, name, id_tag, birth_date, status")
+        .in("id", animalIds);
+
+      if (error) throw error;
+
+      const errors: string[] = [];
+      
+      animalsData.forEach(animal => {
+        const name = animal.name || animal.id_tag || animal.id;
+        
+        // Check if animal is dead or sold
+        if (animal.status === "muerto" || animal.status === "vendido") {
+          errors.push(`${name}: Animal ${animal.status}`);
+        }
+        
+        // Check if animal is already pregnant (removing this validation for now due to column name issues)
+        // if (animal.resultado_preñez === "preñada") {
+        //   errors.push(`${name}: Animal ya preñada`);
+        // }
+        
+        // Check age (must be at least 15 months)
+        if (animal.birth_date) {
+          const birthDate = new Date(animal.birth_date);
+          const ageMonths = Math.floor(
+            (Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+          );
+          if (ageMonths < 15) {
+            errors.push(`${name}: Menor de 15 meses (${ageMonths} meses)`);
+          }
+        }
+      });
+
+      setValidationErrors(errors);
+    } catch (error) {
+      console.error("Error validating animals:", error);
+    }
+  };
+
+  const getGeneticPrediction = () => {
+    if (!bullBreed) return null;
+
+    const breed = bullBreed.toLowerCase();
+    
+    if (breed.includes("braford") && bullHornStatus === "mocho_homocigota") {
+      return "📌 Genética esperada: Cría 100% mocha (por mocho homocigota).";
+    }
+    
+    if ((breed.includes("brangus") || breed.includes("angus"))) {
+      if (bullCoatColor === "negro_homocigota") {
+        return "📌 Genética esperada: Cría 100% negra (por negro homocigota).";
+      }
+      if (bullCoatColor === "colorado_homocigota") {
+        return "📌 Genética esperada: Cría 100% colorada (por colorado homocigota).";
+      }
+    }
+    
+    return null;
+  };
+
+  const shouldShowBrafordFields = () => {
+    return bullBreed.toLowerCase().includes("braford");
+  };
+
+  const shouldShowAngusFields = () => {
+    const breed = bullBreed.toLowerCase();
+    return breed.includes("brangus") || breed.includes("angus");
+  }
+
   const handleSubmit = async () => {
     if (!date || !bullName || selectedAnimals.length === 0) {
       toast({
@@ -140,7 +233,8 @@ export function ArtificialInseminationDialog({
       // Save or update bull details if provided
       if (showBullDetails && (bullBreed || bullRegistrationLevel || bullOfficialNumber || 
           bullInseminationCenter || bullNationality || bullOwner || bullGeneticObservations || 
-          bullColor || bullIsGenotyped || bullInternalCode)) {
+          bullColor || bullIsGenotyped || bullInternalCode || bullHornStatus || bullCoatColor ||
+          bullScrotalCircumference || bullBirthWeight || bullWeaningWeight || bullFinalWeight)) {
         
         const bullData = {
           name: bullName,
@@ -154,6 +248,12 @@ export function ArtificialInseminationDialog({
           color: bullColor || null,
           is_genotyped: bullIsGenotyped === "yes" ? true : bullIsGenotyped === "no" ? false : null,
           internal_code: bullInternalCode || null,
+          horn_status: bullHornStatus || null,
+          coat_color: bullCoatColor || null,
+          scrotal_circumference: bullScrotalCircumference ? parseFloat(bullScrotalCircumference) : null,
+          birth_weight: bullBirthWeight ? parseFloat(bullBirthWeight) : null,
+          weaning_weight: bullWeaningWeight ? parseFloat(bullWeaningWeight) : null,
+          final_weight: bullFinalWeight ? parseFloat(bullFinalWeight) : null,
           cabaña_id: userData.cabaña_id,
           created_by: user?.id,
         };
@@ -233,6 +333,17 @@ export function ArtificialInseminationDialog({
     setBullColor("");
     setBullIsGenotyped("");
     setBullInternalCode("");
+    
+    // Reset genetic fields
+    setBullHornStatus("");
+    setBullCoatColor("");
+    setBullScrotalCircumference("");
+    setBullBirthWeight("");
+    setBullWeaningWeight("");
+    setBullFinalWeight("");
+    
+    // Reset validation errors
+    setValidationErrors([]);
   };
 
   const handleBullSelect = (value: string) => {
@@ -250,6 +361,12 @@ export function ArtificialInseminationDialog({
       setBullColor("");
       setBullIsGenotyped("");
       setBullInternalCode("");
+      setBullHornStatus("");
+      setBullCoatColor("");
+      setBullScrotalCircumference("");
+      setBullBirthWeight("");
+      setBullWeaningWeight("");
+      setBullFinalWeight("");
     } else {
       const selectedBull = bulls.find(bull => bull.id === value);
       if (selectedBull) {
@@ -267,6 +384,14 @@ export function ArtificialInseminationDialog({
         setBullColor(selectedBull.color || "");
         setBullIsGenotyped(selectedBull.is_genotyped === true ? "yes" : selectedBull.is_genotyped === false ? "no" : "");
         setBullInternalCode(selectedBull.internal_code || "");
+        
+        // Auto-fill genetic fields
+        setBullHornStatus(selectedBull.horn_status || "");
+        setBullCoatColor(selectedBull.coat_color || "");
+        setBullScrotalCircumference(selectedBull.scrotal_circumference?.toString() || "");
+        setBullBirthWeight(selectedBull.birth_weight?.toString() || "");
+        setBullWeaningWeight(selectedBull.weaning_weight?.toString() || "");
+        setBullFinalWeight(selectedBull.final_weight?.toString() || "");
         
         // Show details section if bull has additional info
         if (selectedBull.breed || selectedBull.registration_level || selectedBull.official_registration_number) {
@@ -475,6 +600,103 @@ export function ArtificialInseminationDialog({
                   </div>
                 </div>
                 
+                {/* Breed-specific genetic fields */}
+                {shouldShowBrafordFields() && (
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Características Genéticas - Braford</h4>
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-horn-status">Estado de Cuernos</Label>
+                      <Select value={bullHornStatus} onValueChange={setBullHornStatus}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="astado">Astado</SelectItem>
+                          <SelectItem value="mocho">Mocho</SelectItem>
+                          <SelectItem value="mocho_homocigota">Mocho Homocigota ✅</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+                
+                {shouldShowAngusFields() && (
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-medium">Características Genéticas - {bullBreed.includes("Brangus") ? "Brangus" : "Angus"}</h4>
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-coat-color">Color</Label>
+                      <Select value={bullCoatColor} onValueChange={setBullCoatColor}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="negro">Negro</SelectItem>
+                          <SelectItem value="colorado">Colorado</SelectItem>
+                          <SelectItem value="negro_homocigota">Negro Homocigota ✅</SelectItem>
+                          <SelectItem value="colorado_homocigota">Colorado Homocigota ✅</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Common fields for all breeds */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium">Datos Físicos y Productivos</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-ce">CE (Circunferencia Escrotal) cm</Label>
+                      <Input
+                        id="bull-ce"
+                        type="number"
+                        value={bullScrotalCircumference}
+                        onChange={(e) => setBullScrotalCircumference(e.target.value)}
+                        placeholder="Ej: 38"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-birth-weight">Peso al Nacer (kg)</Label>
+                      <Input
+                        id="bull-birth-weight"
+                        type="number"
+                        value={bullBirthWeight}
+                        onChange={(e) => setBullBirthWeight(e.target.value)}
+                        placeholder="Ej: 35"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-weaning-weight">Peso al Destete (kg)</Label>
+                      <Input
+                        id="bull-weaning-weight"
+                        type="number"
+                        value={bullWeaningWeight}
+                        onChange={(e) => setBullWeaningWeight(e.target.value)}
+                        placeholder="Ej: 205"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-final-weight">Peso Final (kg)</Label>
+                      <Input
+                        id="bull-final-weight"
+                        type="number"
+                        value={bullFinalWeight}
+                        onChange={(e) => setBullFinalWeight(e.target.value)}
+                        placeholder="Ej: 450"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Genetic prediction alert */}
+                {getGeneticPrediction() && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">{getGeneticPrediction()}</p>
+                  </div>
+                )}
+                
                 <div className="space-y-2">
                   <Label htmlFor="bull-observations">Observaciones genéticas o sanitarias</Label>
                   <Textarea
@@ -520,6 +742,23 @@ export function ArtificialInseminationDialog({
             />
           </div>
 
+          {/* Validation Errors */}
+          {validationErrors.length > 0 && (
+            <div className="col-span-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <h4 className="text-sm font-medium text-red-800 mb-2">Animales con problemas:</h4>
+                <ul className="text-sm text-red-700 space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-red-500 mt-1">•</span>
+                      {error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
           {selectedAnimals.length > 0 && (
             <div className="grid grid-cols-4 items-start gap-4">
               <Label className="text-right">Animales:</Label>
@@ -538,7 +777,10 @@ export function ArtificialInseminationDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} disabled={isLoading}>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={isLoading || validationErrors.length > 0}
+          >
             {isLoading ? "Guardando..." : "Guardar"}
           </Button>
         </DialogFooter>

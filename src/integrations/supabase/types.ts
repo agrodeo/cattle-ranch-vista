@@ -258,12 +258,16 @@ export type Database = {
       }
       bulls: {
         Row: {
+          birth_weight: number | null
           breed: string | null
           cabaña_id: string | null
+          coat_color: string | null
           color: string | null
           created_at: string
           created_by: string | null
+          final_weight: number | null
           genetic_health_observations: string | null
+          horn_status: string | null
           id: string
           insemination_center: string | null
           internal_code: string | null
@@ -273,15 +277,21 @@ export type Database = {
           official_registration_number: string | null
           owner: string | null
           registration_level: string | null
+          scrotal_circumference: number | null
           updated_at: string
+          weaning_weight: number | null
         }
         Insert: {
+          birth_weight?: number | null
           breed?: string | null
           cabaña_id?: string | null
+          coat_color?: string | null
           color?: string | null
           created_at?: string
           created_by?: string | null
+          final_weight?: number | null
           genetic_health_observations?: string | null
+          horn_status?: string | null
           id?: string
           insemination_center?: string | null
           internal_code?: string | null
@@ -291,15 +301,21 @@ export type Database = {
           official_registration_number?: string | null
           owner?: string | null
           registration_level?: string | null
+          scrotal_circumference?: number | null
           updated_at?: string
+          weaning_weight?: number | null
         }
         Update: {
+          birth_weight?: number | null
           breed?: string | null
           cabaña_id?: string | null
+          coat_color?: string | null
           color?: string | null
           created_at?: string
           created_by?: string | null
+          final_weight?: number | null
           genetic_health_observations?: string | null
+          horn_status?: string | null
           id?: string
           insemination_center?: string | null
           internal_code?: string | null
@@ -309,7 +325,9 @@ export type Database = {
           official_registration_number?: string | null
           owner?: string | null
           registration_level?: string | null
+          scrotal_circumference?: number | null
           updated_at?: string
+          weaning_weight?: number | null
         }
         Relationships: [
           {
@@ -554,6 +572,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_age_months: {
+        Args: { birth_date: string }
+        Returns: number
+      }
       calculate_ai_success_rate: {
         Args: {
           filter_year?: number
