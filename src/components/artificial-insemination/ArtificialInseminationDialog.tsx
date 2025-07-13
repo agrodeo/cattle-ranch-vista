@@ -205,15 +205,24 @@ export function ArtificialInseminationDialog({
 
       console.log("✅ Usuario obtenido:", userData);
       
-      let finalBullId = bullId;
+      let finalBullId = null; // Initialize as null
 
-      // Save or update bull details if provided
+      // Only use bull_id if the selected bull exists in the animals table (not bulls table)
+      if (bullId && bulls.find(b => b.id === bullId && !b.breed)) {
+        // This means it's an animal (male) from the animals table, not from bulls table
+        finalBullId = bullId;
+        console.log("✅ Usando toro existente de animals:", bullId);
+      } else {
+        console.log("🔄 Entrada manual o toro de tabla bulls - bull_id será null");
+      }
+
+      // Save bull details in the bulls table (separate from the foreign key reference)
       if (showBullDetails && (bullBreed || bullRegistrationLevel || bullOfficialNumber || 
           bullInseminationCenter || bullNationality || bullOwner || bullGeneticObservations || 
           bullColor || bullIsGenotyped || bullInternalCode || bullHornStatus || bullCoatColor ||
           bullScrotalCircumference || bullBirthWeight || bullWeaningWeight || bullFinalWeight)) {
         
-        console.log("🐂 Guardando detalles del toro...");
+        console.log("🐂 Guardando detalles del toro en tabla bulls...");
         
         const bullData = {
           name: bullName,
@@ -237,35 +246,22 @@ export function ArtificialInseminationDialog({
           created_by: user?.id,
         };
 
-        console.log("📝 Datos del toro a guardar:", bullData);
+        console.log("📝 Datos del toro a guardar en bulls:", bullData);
 
-        if (bullId && bulls.find(b => b.id === bullId)) {
-          console.log("🔄 Actualizando toro existente...");
-          // Update existing bull
-          const { error: bullError } = await supabase
-            .from("bulls")
-            .update(bullData)
-            .eq("id", bullId);
-          if (bullError) {
-            console.error("❌ Error actualizando toro:", bullError);
-            throw bullError;
-          }
-          console.log("✅ Toro actualizado");
-        } else {
-          console.log("➕ Creando nuevo toro...");
-          // Create new bull
-          const { data: newBull, error: bullError } = await supabase
-            .from("bulls")
-            .insert(bullData)
-            .select()
-            .single();
-          if (bullError) {
-            console.error("❌ Error creando toro:", bullError);
-            throw bullError;
-          }
-          finalBullId = newBull.id;
-          console.log("✅ Toro creado:", newBull);
+        // Always create new entry in bulls table for detailed information
+        const { data: newBull, error: bullError } = await supabase
+          .from("bulls")
+          .insert(bullData)
+          .select()
+          .single();
+        
+        if (bullError) {
+          console.error("❌ Error creando registro en bulls:", bullError);
+          throw bullError;
         }
+        
+        console.log("✅ Toro guardado en tabla bulls:", newBull);
+        // Note: We don't use this ID for the foreign key in artificial_inseminations
       }
 
       console.log("💉 Preparando datos de inseminación...");
@@ -273,7 +269,7 @@ export function ArtificialInseminationDialog({
         female_id: animal.id,
         insemination_date: date.toISOString().split('T')[0],
         bull_name: bullName,
-        bull_id: finalBullId || null,
+        bull_id: finalBullId, // Will be null for manual entry or bulls from bulls table
         is_pregnant: isPregnant === "yes" ? true : isPregnant === "no" ? false : null,
         notes: notes || null,
         cabaña_id: userData.cabaña_id,
@@ -281,6 +277,7 @@ export function ArtificialInseminationDialog({
       }));
 
       console.log("📊 Datos de inseminación a insertar:", inseminations);
+      console.log("🔑 bull_id final:", finalBullId);
 
       const { error: insertError } = await supabase
         .from("artificial_inseminations")
