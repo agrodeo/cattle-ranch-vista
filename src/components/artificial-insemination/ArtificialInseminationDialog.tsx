@@ -138,25 +138,28 @@ export function ArtificialInseminationDialog({
       const animalIds = selectedAnimals.map(animal => animal.id);
       const { data: animalsData, error } = await supabase
         .from("animals")
-        .select("id, name, id_tag, birth_date, status")
+        .select("id, name, id_tag, birth_date, status, sex")
         .in("id", animalIds);
 
       if (error) throw error;
 
       const errors: string[] = [];
+      const validAnimals: string[] = [];
       
       animalsData.forEach(animal => {
         const name = animal.name || animal.id_tag || animal.id;
         
+        // Check if animal is female
+        if (animal.sex !== "Hembra") {
+          errors.push(`${name}: Solo se pueden inseminar hembras`);
+          return;
+        }
+        
         // Check if animal is dead or sold
         if (animal.status === "muerto" || animal.status === "vendido") {
           errors.push(`${name}: Animal ${animal.status}`);
+          return;
         }
-        
-        // Check if animal is already pregnant (removing this validation for now due to column name issues)
-        // if (animal.resultado_preñez === "preñada") {
-        //   errors.push(`${name}: Animal ya preñada`);
-        // }
         
         // Check age (must be at least 15 months)
         if (animal.birth_date) {
@@ -166,11 +169,23 @@ export function ArtificialInseminationDialog({
           );
           if (ageMonths < 15) {
             errors.push(`${name}: Menor de 15 meses (${ageMonths} meses)`);
+            return;
           }
         }
+        
+        // If animal passes all validations
+        validAnimals.push(name);
       });
 
       setValidationErrors(errors);
+      
+      // Show success message if some animals are valid
+      if (validAnimals.length > 0 && errors.length > 0) {
+        toast({
+          title: "Animales válidos encontrados",
+          description: `${validAnimals.length} animales válidos para inseminar`,
+        });
+      }
     } catch (error) {
       console.error("Error validating animals:", error);
     }
@@ -403,90 +418,135 @@ export function ArtificialInseminationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-xl font-semibold">
             Registrar Inseminación Artificial
             {selectedAnimals.length > 1 && ` (${selectedAnimals.length} animales)`}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="date" className="text-right">
-              Fecha *
-            </Label>
-            <div className="col-span-3">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "dd/MM/yyyy") : "Seleccionar fecha"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+        <div className="space-y-6 py-4">
+          {/* Validation Messages */}
+          {validationErrors.length > 0 && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg animate-fade-in">
+              <h4 className="text-sm font-semibold text-red-800 mb-3">⚠️ Animales con problemas:</h4>
+              <ul className="text-sm text-red-700 space-y-2">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <span className="text-red-500 mt-0.5 text-xs">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </div>
+          )}
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="bull" className="text-right">
-              Toro *
-            </Label>
-            <div className="col-span-3">
-              <Select onValueChange={handleBullSelect}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar toro" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="manual">Entrada manual</SelectItem>
-                  {bulls.map((bull) => (
-                    <SelectItem key={bull.id} value={bull.id}>
-                      {bull.name || bull.id_tag}
-                    </SelectItem>
+          {/* Show message if no valid animals */}
+          {selectedAnimals.length > 0 && validationErrors.length === selectedAnimals.length && (
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800 font-medium">
+                ❌ No hay animales disponibles para inseminar
+              </p>
+              <p className="text-xs text-yellow-700 mt-1">
+                Todos los animales seleccionados tienen restricciones.
+              </p>
+            </div>
+          )}
+
+          {/* Valid Animals List */}
+          {selectedAnimals.length > 0 && (
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Animales para inseminar:</Label>
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg max-h-24 overflow-y-auto">
+                <div className="space-y-1">
+                  {selectedAnimals.map((animal) => (
+                    <div key={animal.id} className="text-sm text-green-800">
+                      ✓ {animal.name || animal.id_tag}
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* Date Field */}
+          <div className="space-y-3">
+            <Label htmlFor="date" className="text-base font-medium">
+              Fecha de Inseminación *
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal text-base h-11",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-3 h-4 w-4" />
+                  {date ? format(date, "dd/MM/yyyy") : "Seleccionar fecha"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={setDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
+          {/* Bull Selection */}
+          <div className="space-y-3">
+            <Label htmlFor="bull" className="text-base font-medium">
+              Seleccionar Toro *
+            </Label>
+            <Select onValueChange={handleBullSelect}>
+              <SelectTrigger className="w-full text-base h-11">
+                <SelectValue placeholder="Elegir toro de la lista o entrada manual" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                <SelectItem value="manual">✏️ Entrada manual</SelectItem>
+                {bulls.map((bull) => (
+                  <SelectItem key={bull.id} value={bull.id}>
+                    {bull.name || bull.id_tag} {bull.breed && `(${bull.breed})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Manual Bull Name Entry */}
           {(bullId === "" || bulls.find(b => b.id === bullId) === undefined) && (
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="bull-name" className="text-right">
+            <div className="space-y-3">
+              <Label htmlFor="bull-name" className="text-base font-medium">
                 Nombre del Toro *
               </Label>
               <Input
                 id="bull-name"
                 value={bullName}
                 onChange={(e) => setBullName(e.target.value)}
-                className="col-span-3"
+                className="w-full text-base h-11"
                 placeholder="Ej: Toro 925 - Brahman"
               />
             </div>
           )}
 
           {/* Bull Details Expandable Section */}
-          <div className="col-span-4">
+          <div className="space-y-3">
             <Collapsible open={showBullDetails} onOpenChange={setShowBullDetails}>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2 p-0 h-auto text-sm">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center gap-2 text-base h-11"
+                >
                   {showBullDetails ? (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ocultar información del toro
+                      Ocultar información detallada del toro
                     </>
                   ) : (
                     <>
@@ -497,120 +557,65 @@ export function ArtificialInseminationDialog({
                 </Button>
               </CollapsibleTrigger>
               
-              <CollapsibleContent className="space-y-4 mt-4 p-4 border rounded-lg bg-muted/20">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-breed">Raza</Label>
-                    <Input
-                      id="bull-breed"
-                      value={bullBreed}
-                      onChange={(e) => setBullBreed(e.target.value)}
-                      placeholder="Ej: Brahman, Angus"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-registration">Registro</Label>
-                    <Select value={bullRegistrationLevel} onValueChange={setBullRegistrationLevel}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar nivel" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="advanced">Avanzado</SelectItem>
-                        <SelectItem value="definitive">Definitivo</SelectItem>
-                        <SelectItem value="controlled">Controlado</SelectItem>
-                        <SelectItem value="none">Sin Registro</SelectItem>
-                        <SelectItem value="appendix">Apéndice</SelectItem>
-                        <SelectItem value="preparatory">Preparatorio</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-official-number">Número de Registro Oficial</Label>
-                    <Input
-                      id="bull-official-number"
-                      value={bullOfficialNumber}
-                      onChange={(e) => setBullOfficialNumber(e.target.value)}
-                      placeholder="Ej: BR-12345"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-center">Centro de Inseminación</Label>
-                    <Input
-                      id="bull-center"
-                      value={bullInseminationCenter}
-                      onChange={(e) => setBullInseminationCenter(e.target.value)}
-                      placeholder="Ej: ABS Global, Semex"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-nationality">Nacionalidad del Toro</Label>
-                    <Input
-                      id="bull-nationality"
-                      value={bullNationality}
-                      onChange={(e) => setBullNationality(e.target.value)}
-                      placeholder="Ej: Argentina, Brasil, USA"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-owner">Propietario del Toro</Label>
-                    <Input
-                      id="bull-owner"
-                      value={bullOwner}
-                      onChange={(e) => setBullOwner(e.target.value)}
-                      placeholder="Nombre del propietario"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-color">Color</Label>
-                    <Input
-                      id="bull-color"
-                      value={bullColor}
-                      onChange={(e) => setBullColor(e.target.value)}
-                      placeholder="Ej: Colorado, Negro, Bayo"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-genotyped">¿Está genotipado?</Label>
-                    <Select value={bullIsGenotyped} onValueChange={setBullIsGenotyped}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="yes">Sí</SelectItem>
-                        <SelectItem value="no">No</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="bull-internal-code">Código interno de la cabaña</Label>
-                    <Input
-                      id="bull-internal-code"
-                      value={bullInternalCode}
-                      onChange={(e) => setBullInternalCode(e.target.value)}
-                      placeholder="Código interno"
-                    />
+              <CollapsibleContent className="space-y-6 mt-4 p-6 border border-border rounded-lg bg-muted/30 animate-accordion-down">
+                <h3 className="text-lg font-semibold border-b pb-2">Información Detallada del Toro</h3>
+                
+                {/* Basic Information */}
+                <div className="space-y-4">
+                  <h4 className="text-base font-medium">Información Básica</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-breed" className="text-sm font-medium">Raza</Label>
+                      <Input
+                        id="bull-breed"
+                        value={bullBreed}
+                        onChange={(e) => setBullBreed(e.target.value)}
+                        placeholder="Ej: Braford, Angus, Brangus"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-registration" className="text-sm font-medium">Registro Racial</Label>
+                      <Select value={bullRegistrationLevel} onValueChange={setBullRegistrationLevel}>
+                        <SelectTrigger className="text-base h-10">
+                          <SelectValue placeholder="Seleccionar nivel de registro" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="advanced">Avanzado</SelectItem>
+                          <SelectItem value="definitive">Definitivo</SelectItem>
+                          <SelectItem value="controlled">Controlado</SelectItem>
+                          <SelectItem value="none">Sin Registro</SelectItem>
+                          <SelectItem value="appendix">Apéndice</SelectItem>
+                          <SelectItem value="preparatory">Preparatorio</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-official-number" className="text-sm font-medium">Número de Registro Oficial</Label>
+                      <Input
+                        id="bull-official-number"
+                        value={bullOfficialNumber}
+                        onChange={(e) => setBullOfficialNumber(e.target.value)}
+                        placeholder="Ej: BR-12345"
+                        className="text-base h-10"
+                      />
+                    </div>
                   </div>
                 </div>
                 
                 {/* Breed-specific genetic fields */}
                 {shouldShowBrafordFields() && (
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">Características Genéticas - Braford</h4>
+                  <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="text-base font-medium text-blue-800">🐂 Características Genéticas - Braford</h4>
                     <div className="space-y-2">
-                      <Label htmlFor="bull-horn-status">Estado de Cuernos</Label>
+                      <Label htmlFor="bull-horn-status" className="text-sm font-medium">Estado de Cuernos</Label>
                       <Select value={bullHornStatus} onValueChange={setBullHornStatus}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estado" />
+                        <SelectTrigger className="text-base h-10">
+                          <SelectValue placeholder="Seleccionar estado de cuernos" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background">
                           <SelectItem value="astado">Astado</SelectItem>
                           <SelectItem value="mocho">Mocho</SelectItem>
                           <SelectItem value="mocho_homocigota">Mocho Homocigota ✅</SelectItem>
@@ -621,15 +626,15 @@ export function ArtificialInseminationDialog({
                 )}
                 
                 {shouldShowAngusFields() && (
-                  <div className="space-y-4">
-                    <h4 className="text-sm font-medium">Características Genéticas - {bullBreed.includes("Brangus") ? "Brangus" : "Angus"}</h4>
+                  <div className="space-y-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <h4 className="text-base font-medium text-purple-800">🐮 Características Genéticas - {bullBreed.includes("Brangus") ? "Brangus" : "Angus"}</h4>
                     <div className="space-y-2">
-                      <Label htmlFor="bull-coat-color">Color</Label>
+                      <Label htmlFor="bull-coat-color" className="text-sm font-medium">Color del Pelaje</Label>
                       <Select value={bullCoatColor} onValueChange={setBullCoatColor}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar color" />
+                        <SelectTrigger className="text-base h-10">
+                          <SelectValue placeholder="Seleccionar color del pelaje" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-background">
                           <SelectItem value="negro">Negro</SelectItem>
                           <SelectItem value="colorado">Colorado</SelectItem>
                           <SelectItem value="negro_homocigota">Negro Homocigota ✅</SelectItem>
@@ -640,148 +645,195 @@ export function ArtificialInseminationDialog({
                   </div>
                 )}
                 
-                {/* Common fields for all breeds */}
+                {/* Genetic prediction alert */}
+                {getGeneticPrediction() && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in">
+                    <p className="text-sm text-green-800 font-medium">{getGeneticPrediction()}</p>
+                  </div>
+                )}
+                
+                {/* Physical Data */}
                 <div className="space-y-4">
-                  <h4 className="text-sm font-medium">Datos Físicos y Productivos</h4>
+                  <h4 className="text-base font-medium">Datos Físicos y Productivos</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="bull-ce">CE (Circunferencia Escrotal) cm</Label>
+                      <Label htmlFor="bull-ce" className="text-sm font-medium">CE (Circunferencia Escrotal) cm</Label>
                       <Input
                         id="bull-ce"
                         type="number"
                         value={bullScrotalCircumference}
                         onChange={(e) => setBullScrotalCircumference(e.target.value)}
                         placeholder="Ej: 38"
+                        className="text-base h-10"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="bull-birth-weight">Peso al Nacer (kg)</Label>
+                      <Label htmlFor="bull-birth-weight" className="text-sm font-medium">Peso al Nacer (kg)</Label>
                       <Input
                         id="bull-birth-weight"
                         type="number"
                         value={bullBirthWeight}
                         onChange={(e) => setBullBirthWeight(e.target.value)}
                         placeholder="Ej: 35"
+                        className="text-base h-10"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="bull-weaning-weight">Peso al Destete (kg)</Label>
+                      <Label htmlFor="bull-weaning-weight" className="text-sm font-medium">Peso al Destete (kg)</Label>
                       <Input
                         id="bull-weaning-weight"
                         type="number"
                         value={bullWeaningWeight}
                         onChange={(e) => setBullWeaningWeight(e.target.value)}
                         placeholder="Ej: 205"
+                        className="text-base h-10"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="bull-final-weight">Peso Final (kg)</Label>
+                      <Label htmlFor="bull-final-weight" className="text-sm font-medium">Peso Final (kg)</Label>
                       <Input
                         id="bull-final-weight"
                         type="number"
                         value={bullFinalWeight}
                         onChange={(e) => setBullFinalWeight(e.target.value)}
                         placeholder="Ej: 450"
+                        className="text-base h-10"
                       />
                     </div>
                   </div>
                 </div>
                 
-                {/* Genetic prediction alert */}
-                {getGeneticPrediction() && (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-green-800">{getGeneticPrediction()}</p>
+                {/* Additional Information */}
+                <div className="space-y-4">
+                  <h4 className="text-base font-medium">Información Adicional</h4>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-center" className="text-sm font-medium">Centro de Inseminación</Label>
+                      <Input
+                        id="bull-center"
+                        value={bullInseminationCenter}
+                        onChange={(e) => setBullInseminationCenter(e.target.value)}
+                        placeholder="Ej: ABS Global, Semex"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-nationality" className="text-sm font-medium">Nacionalidad del Toro</Label>
+                      <Input
+                        id="bull-nationality"
+                        value={bullNationality}
+                        onChange={(e) => setBullNationality(e.target.value)}
+                        placeholder="Ej: Argentina, Brasil, USA"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-owner" className="text-sm font-medium">Propietario del Toro</Label>
+                      <Input
+                        id="bull-owner"
+                        value={bullOwner}
+                        onChange={(e) => setBullOwner(e.target.value)}
+                        placeholder="Nombre del propietario"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-genotyped" className="text-sm font-medium">¿Está genotipado?</Label>
+                      <Select value={bullIsGenotyped} onValueChange={setBullIsGenotyped}>
+                        <SelectTrigger className="text-base h-10">
+                          <SelectValue placeholder="Seleccionar" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="yes">Sí</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-internal-code" className="text-sm font-medium">Código interno de la cabaña</Label>
+                      <Input
+                        id="bull-internal-code"
+                        value={bullInternalCode}
+                        onChange={(e) => setBullInternalCode(e.target.value)}
+                        placeholder="Código interno"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="bull-observations" className="text-sm font-medium">Observaciones genéticas o sanitarias</Label>
+                      <Textarea
+                        id="bull-observations"
+                        value={bullGeneticObservations}
+                        onChange={(e) => setBullGeneticObservations(e.target.value)}
+                        placeholder="Información adicional sobre genética, sanidad, etc."
+                        rows={3}
+                        className="text-base"
+                      />
+                    </div>
                   </div>
-                )}
-                
-                <div className="space-y-2">
-                  <Label htmlFor="bull-observations">Observaciones genéticas o sanitarias</Label>
-                  <Textarea
-                    id="bull-observations"
-                    value={bullGeneticObservations}
-                    onChange={(e) => setBullGeneticObservations(e.target.value)}
-                    placeholder="Información adicional sobre genética, sanidad, etc."
-                    rows={3}
-                  />
                 </div>
               </CollapsibleContent>
             </Collapsible>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="pregnant" className="text-right">
-              ¿Quedó preñada?
+          {/* Pregnancy Status */}
+          <div className="space-y-3">
+            <Label htmlFor="pregnant" className="text-base font-medium">
+              ¿Quedó preñada? (Opcional)
             </Label>
-            <div className="col-span-3">
-              <Select value={isPregnant} onValueChange={setIsPregnant}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar resultado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="yes">Sí</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={isPregnant} onValueChange={setIsPregnant}>
+              <SelectTrigger className="w-full text-base h-11">
+                <SelectValue placeholder="Se puede completar después" />
+              </SelectTrigger>
+              <SelectContent className="bg-background">
+                <SelectItem value="pending">⏳ Pendiente (completar después)</SelectItem>
+                <SelectItem value="yes">✅ Sí</SelectItem>
+                <SelectItem value="no">❌ No</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Este campo es opcional y se puede completar posteriormente desde otra actividad.
+            </p>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="notes" className="text-right">
+          {/* Notes */}
+          <div className="space-y-3">
+            <Label htmlFor="notes" className="text-base font-medium">
               Observaciones
             </Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="col-span-3"
-              placeholder="Comentarios adicionales..."
+              placeholder="Comentarios adicionales sobre la inseminación..."
+              rows={3}
+              className="w-full text-base"
             />
           </div>
-
-          {/* Validation Errors */}
-          {validationErrors.length > 0 && (
-            <div className="col-span-4">
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <h4 className="text-sm font-medium text-red-800 mb-2">Animales con problemas:</h4>
-                <ul className="text-sm text-red-700 space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="text-red-500 mt-1">•</span>
-                      {error}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {selectedAnimals.length > 0 && (
-            <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right">Animales:</Label>
-              <div className="col-span-3 max-h-32 overflow-y-auto">
-                {selectedAnimals.map((animal) => (
-                  <div key={animal.id} className="text-sm text-muted-foreground">
-                    {animal.name || animal.id_tag}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <DialogFooter className="pt-6 space-x-4">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)}
+            className="text-base h-11 px-6"
+          >
             Cancelar
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={isLoading || validationErrors.length > 0}
+            disabled={isLoading || validationErrors.length > 0 || selectedAnimals.length === 0}
+            className="text-base h-11 px-6"
           >
-            {isLoading ? "Guardando..." : "Guardar"}
+            {isLoading ? "Guardando..." : "Registrar Inseminación"}
           </Button>
         </DialogFooter>
       </DialogContent>
