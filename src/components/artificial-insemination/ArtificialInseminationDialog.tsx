@@ -165,7 +165,17 @@ export function ArtificialInseminationDialog({
   };
 
   const handleSubmit = async () => {
+    console.log("🚀 Iniciando handleSubmit");
+    console.log("📋 Datos del formulario:", {
+      date,
+      bullName,
+      selectedAnimals: selectedAnimals.length,
+      isPregnant,
+      notes
+    });
+
     if (!date || !bullName || selectedAnimals.length === 0) {
+      console.log("❌ Validación fallida:", { date: !!date, bullName: !!bullName, animalsCount: selectedAnimals.length });
       toast({
         title: "Error",
         description: "Por favor completa todos los campos requeridos",
@@ -176,16 +186,25 @@ export function ArtificialInseminationDialog({
 
     setIsLoading(true);
     try {
-      const { data: userData } = await supabase
+      console.log("🔍 Obteniendo datos del usuario...");
+      const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
         .eq("id", user?.id)
         .single();
 
+      if (userError) {
+        console.error("❌ Error al obtener usuario:", userError);
+        throw userError;
+      }
+
       if (!userData?.cabaña_id) {
+        console.log("❌ Usuario sin cabaña asignada");
         throw new Error("Usuario sin cabaña asignada");
       }
 
+      console.log("✅ Usuario obtenido:", userData);
+      
       let finalBullId = bullId;
 
       // Save or update bull details if provided
@@ -193,6 +212,8 @@ export function ArtificialInseminationDialog({
           bullInseminationCenter || bullNationality || bullOwner || bullGeneticObservations || 
           bullColor || bullIsGenotyped || bullInternalCode || bullHornStatus || bullCoatColor ||
           bullScrotalCircumference || bullBirthWeight || bullWeaningWeight || bullFinalWeight)) {
+        
+        console.log("🐂 Guardando detalles del toro...");
         
         const bullData = {
           name: bullName,
@@ -216,25 +237,38 @@ export function ArtificialInseminationDialog({
           created_by: user?.id,
         };
 
+        console.log("📝 Datos del toro a guardar:", bullData);
+
         if (bullId && bulls.find(b => b.id === bullId)) {
+          console.log("🔄 Actualizando toro existente...");
           // Update existing bull
           const { error: bullError } = await supabase
             .from("bulls")
             .update(bullData)
             .eq("id", bullId);
-          if (bullError) throw bullError;
+          if (bullError) {
+            console.error("❌ Error actualizando toro:", bullError);
+            throw bullError;
+          }
+          console.log("✅ Toro actualizado");
         } else {
+          console.log("➕ Creando nuevo toro...");
           // Create new bull
           const { data: newBull, error: bullError } = await supabase
             .from("bulls")
             .insert(bullData)
             .select()
             .single();
-          if (bullError) throw bullError;
+          if (bullError) {
+            console.error("❌ Error creando toro:", bullError);
+            throw bullError;
+          }
           finalBullId = newBull.id;
+          console.log("✅ Toro creado:", newBull);
         }
       }
 
+      console.log("💉 Preparando datos de inseminación...");
       const inseminations = selectedAnimals.map((animal) => ({
         female_id: animal.id,
         insemination_date: date.toISOString().split('T')[0],
@@ -246,11 +280,18 @@ export function ArtificialInseminationDialog({
         created_by: user?.id,
       }));
 
-      const { error } = await supabase
+      console.log("📊 Datos de inseminación a insertar:", inseminations);
+
+      const { error: insertError } = await supabase
         .from("artificial_inseminations")
         .insert(inseminations);
 
-      if (error) throw error;
+      if (insertError) {
+        console.error("❌ Error insertando inseminaciones:", insertError);
+        throw insertError;
+      }
+
+      console.log("✅ Inseminaciones registradas exitosamente");
 
       toast({
         title: "Éxito",
@@ -261,10 +302,12 @@ export function ArtificialInseminationDialog({
       onOpenChange(false);
       resetForm();
     } catch (error) {
-      console.error("Error saving insemination:", error);
+      console.error("💥 Error completo en handleSubmit:", error);
+      console.error("💥 Error message:", error.message);
+      console.error("💥 Error details:", JSON.stringify(error, null, 2));
       toast({
         title: "Error",
-        description: "Error al registrar la inseminación artificial",
+        description: `Error al registrar la inseminación artificial: ${error.message || 'Error desconocido'}`,
         variant: "destructive",
       });
     } finally {
