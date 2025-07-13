@@ -132,75 +132,19 @@ export function ArtificialInseminationDialog({
   };
 
   const validateSelectedAnimals = async () => {
-    if (selectedAnimals.length === 0) return;
-
-    try {
-      const animalIds = selectedAnimals.map(animal => animal.id);
-      const { data: animalsData, error } = await supabase
-        .from("animals")
-        .select("id, name, id_tag, birth_date, status, sex")
-        .in("id", animalIds);
-
-      if (error) throw error;
-
-      const errors: string[] = [];
-      const validAnimals: string[] = [];
-      
-      animalsData.forEach(animal => {
-        const name = animal.name || animal.id_tag || animal.id;
-        
-        // Check if animal is female
-        if (animal.sex !== "Hembra") {
-          errors.push(`${name}: Solo se pueden inseminar hembras`);
-          return;
-        }
-        
-        // Check if animal is dead or sold
-        if (animal.status === "muerto" || animal.status === "vendido") {
-          errors.push(`${name}: Animal ${animal.status}`);
-          return;
-        }
-        
-        // Check age (must be at least 15 months)
-        if (animal.birth_date) {
-          const birthDate = new Date(animal.birth_date);
-          const ageMonths = Math.floor(
-            (Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)
-          );
-          if (ageMonths < 15) {
-            errors.push(`${name}: Menor de 15 meses (${ageMonths} meses)`);
-            return;
-          }
-        }
-        
-        // If animal passes all validations
-        validAnimals.push(name);
-      });
-
-      setValidationErrors(errors);
-      
-      // Show success message if some animals are valid
-      if (validAnimals.length > 0 && errors.length > 0) {
-        toast({
-          title: "Animales válidos encontrados",
-          description: `${validAnimals.length} animales válidos para inseminar`,
-        });
-      }
-    } catch (error) {
-      console.error("Error validating animals:", error);
-    }
+    // Since animals are pre-filtered in the manager, we only need basic validation here
+    const errors: string[] = [];
+    setValidationErrors(errors);
   };
 
   const getGeneticPrediction = () => {
     if (!bullBreed) return null;
-
-    const breed = bullBreed.toLowerCase();
     
-    if (breed.includes("braford") && bullHornStatus === "mocho_homocigota") {
+    if (bullBreed === "Braford" && bullHornStatus === "mocho_homocigota") {
       return "📌 Genética esperada: Cría 100% mocha (por mocho homocigota).";
     }
     
-    if ((breed.includes("brangus") || breed.includes("angus"))) {
+    if (bullBreed === "Brangus" || bullBreed === "Angus") {
       if (bullCoatColor === "negro_homocigota") {
         return "📌 Genética esperada: Cría 100% negra (por negro homocigota).";
       }
@@ -213,13 +157,12 @@ export function ArtificialInseminationDialog({
   };
 
   const shouldShowBrafordFields = () => {
-    return bullBreed.toLowerCase().includes("braford");
+    return bullBreed === "Braford";
   };
 
   const shouldShowAngusFields = () => {
-    const breed = bullBreed.toLowerCase();
-    return breed.includes("brangus") || breed.includes("angus");
-  }
+    return bullBreed === "Brangus" || bullBreed === "Angus";
+  };
 
   const handleSubmit = async () => {
     if (!date || !bullName || selectedAnimals.length === 0) {
@@ -561,18 +504,24 @@ export function ArtificialInseminationDialog({
                 <h3 className="text-lg font-semibold border-b pb-2">Información Detallada del Toro</h3>
                 
                 {/* Basic Information */}
-                <div className="space-y-4">
+                  <div className="space-y-4">
                   <h4 className="text-base font-medium">Información Básica</h4>
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="bull-breed" className="text-sm font-medium">Raza</Label>
-                      <Input
-                        id="bull-breed"
-                        value={bullBreed}
-                        onChange={(e) => setBullBreed(e.target.value)}
-                        placeholder="Ej: Braford, Angus, Brangus"
-                        className="text-base h-10"
-                      />
+                      <Label htmlFor="bull-breed" className="text-sm font-medium">Raza *</Label>
+                      <Select value={bullBreed} onValueChange={setBullBreed}>
+                        <SelectTrigger className="text-base h-10">
+                          <SelectValue placeholder="Seleccionar raza del toro" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background">
+                          <SelectItem value="Braford">Braford</SelectItem>
+                          <SelectItem value="Brangus">Brangus</SelectItem>
+                          <SelectItem value="Angus">Angus</SelectItem>
+                          <SelectItem value="Brahman">Brahman</SelectItem>
+                          <SelectItem value="Hereford">Hereford</SelectItem>
+                          <SelectItem value="Otro">Otro</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                     
                     <div className="space-y-2">

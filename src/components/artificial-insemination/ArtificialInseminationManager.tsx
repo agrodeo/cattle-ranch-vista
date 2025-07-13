@@ -103,6 +103,7 @@ export function ArtificialInseminationManager() {
           id_tag,
           birth_date,
           corral_id,
+          status,
           corrales:corral_id (
             name
           )
@@ -113,7 +114,16 @@ export function ArtificialInseminationManager() {
         .not("birth_date", "is", null);
 
       if (error) throw error;
-      setEligibleFemales((data as any) || []);
+      
+      // Filter out dead, sold, or pregnant animals on the client side
+      const validAnimals = (data as any)?.filter((animal: any) => 
+        !animal.status || 
+        (animal.status !== "muerto" && 
+         animal.status !== "vendido" && 
+         animal.status !== "preñada")
+      ) || [];
+      
+      setEligibleFemales(validAnimals);
     } catch (error) {
       console.error("Error fetching eligible females:", error);
       toast({
@@ -248,7 +258,7 @@ export function ArtificialInseminationManager() {
                         {animal.corrales?.name || "Sin corral"}
                       </div>
                       <Badge variant="secondary" className="text-xs">
-                        {ageMonths} meses
+                        Edad: {ageMonths} meses
                       </Badge>
                     </div>
                   </div>
@@ -257,9 +267,22 @@ export function ArtificialInseminationManager() {
             })}
           </div>
 
-          {filteredFemales.length === 0 && (
+          {filteredFemales.length === 0 && eligibleFemales.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
-              No hay hembras elegibles (mayor a 15 meses) en este corral
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-yellow-800 font-medium">
+                  🚫 No hay hembras elegibles para inseminación artificial
+                </p>
+                <p className="text-sm text-yellow-700 mt-1">
+                  Las hembras deben ser mayores de 15 meses, estar activas (no muertas/vendidas) y no estar preñadas.
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {filteredFemales.length === 0 && eligibleFemales.length > 0 && (
+            <div className="text-center py-8 text-muted-foreground">
+              No hay hembras elegibles en este corral
             </div>
           )}
         </CardContent>
