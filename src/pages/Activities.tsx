@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Heart, Syringe, Scale, Calendar, ClipboardList, Activity, BarChart3 } from "lucide-react";
+import { Heart, Syringe, Scale, Calendar, ClipboardList, Activity, BarChart3, Stethoscope } from "lucide-react";
 import { ArtificialInseminationManager } from "@/components/artificial-insemination/ArtificialInseminationManager";
 import { VaccinationManager } from "@/components/activities/VaccinationManager";
 import { WeighingManager } from "@/components/activities/WeighingManager";
 import { GeneralActivitiesManager } from "@/components/activities/GeneralActivitiesManager";
 import { ActivitiesCalendar } from "@/components/activities/ActivitiesCalendar";
 import { ActivitiesStats } from "@/components/activities/ActivitiesStats";
+import { PregnancyDetectionManager } from "@/components/activities/PregnancyDetectionManager";
 
 const Activities = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -29,7 +30,7 @@ const Activities = () => {
 
       {/* Activity Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Resumen
@@ -37,6 +38,10 @@ const Activities = () => {
           <TabsTrigger value="insemination" className="flex items-center gap-2">
             <Heart className="h-4 w-4" />
             Inseminación
+          </TabsTrigger>
+          <TabsTrigger value="pregnancy" className="flex items-center gap-2">
+            <Stethoscope className="h-4 w-4" />
+            Tacto
           </TabsTrigger>
           <TabsTrigger value="vaccination" className="flex items-center gap-2">
             <Syringe className="h-4 w-4" />
@@ -58,7 +63,7 @@ const Activities = () => {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Quick Access Cards */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             <Card 
               className="cursor-pointer hover:shadow-md transition-all duration-200 hover-scale"
               onClick={() => setActiveTab("insemination")}
@@ -103,6 +108,22 @@ const Activities = () => {
                 <div className="text-2xl font-bold">KG</div>
                 <p className="text-xs text-muted-foreground">
                   Control de peso y rendimiento
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="cursor-pointer hover:shadow-md transition-all duration-200 hover-scale"
+              onClick={() => setActiveTab("pregnancy")}
+            >
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Detección de Preñez</CardTitle>
+                <Stethoscope className="h-4 w-4 text-orange-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">🤰</div>
+                <p className="text-xs text-muted-foreground">
+                  Tacto rectal y seguimiento
                 </p>
               </CardContent>
             </Card>
@@ -206,7 +227,7 @@ const Activities = () => {
                     <Heart className="h-4 w-4 text-red-500" />
                     <span className="text-sm font-medium">Reproductivas</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">IA, servicios, gestación</p>
+                  <p className="text-xs text-muted-foreground mt-1">IA, tacto, gestación</p>
                 </div>
                 
                 <div className="p-3 border rounded-lg hover:bg-muted/50 transition-colors">
@@ -239,6 +260,10 @@ const Activities = () => {
 
         <TabsContent value="insemination">
           <ArtificialInseminationManager />
+        </TabsContent>
+
+        <TabsContent value="pregnancy">
+          <PregnancyDetectionManager />
         </TabsContent>
 
         <TabsContent value="vaccination">
