@@ -12,13 +12,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Heart } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Activity } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
 import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
 import { ReproductiveEventsTable } from "@/components/reproductive/ReproductiveEventsTable";
-import { ArtificialInseminationManager } from "@/components/artificial-insemination/ArtificialInseminationManager";
+import { ActivitiesManager } from "@/components/activities/ActivitiesManager";
 import { BrafordRegistrationDisplay } from "@/components/braford/BrafordRegistrationDisplay";
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 
@@ -827,9 +827,9 @@ const Animals = () => {
             <Users className="h-4 w-4" />
             Animales
           </TabsTrigger>
-          <TabsTrigger value="insemination" className="flex items-center gap-2">
-            <Heart className="h-4 w-4" />
-            Inseminación Artificial
+          <TabsTrigger value="activities" className="flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Actividades
           </TabsTrigger>
         </TabsList>
 
@@ -1143,8 +1143,8 @@ const Animals = () => {
       </Card>
         </TabsContent>
 
-        <TabsContent value="insemination">
-          <ArtificialInseminationManager />
+        <TabsContent value="activities">
+          <ActivitiesManager />
         </TabsContent>
       </Tabs>
     </div>
