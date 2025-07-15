@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
+import Users from "./pages/Users";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -53,6 +54,13 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Activities />} />
+            </Route>
+            <Route path="/users" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Users />} />
             </Route>
             <Route path="/services" element={
               <ProtectedRoute>

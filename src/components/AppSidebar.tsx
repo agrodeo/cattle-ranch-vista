@@ -6,7 +6,8 @@ import {
   DollarSign, 
   BarChart3,
   Settings,
-  MapPin
+  MapPin,
+  UserCog
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -41,6 +42,11 @@ const menuItems = [
     title: "Actividades",
     url: "/activities",
     icon: Activity,
+  },
+  {
+    title: "Usuarios",
+    url: "/users",
+    icon: UserCog,
   },
   {
     title: "Servicios",
