@@ -50,6 +50,32 @@ const breedRequiresRegistration = (breed: string): boolean => {
   return Object.keys(REGISTRATION_OPTIONS).includes(breed);
 };
 
+// Normalize animal status values from Excel to expected format
+const normalizeAnimalStatus = (status: string | undefined): string => {
+  if (!status) return 'Activo';
+  
+  const normalizedStatus = status.toString().toLowerCase().trim();
+  
+  // Mapping of common Excel status values to expected format
+  const statusMapping: { [key: string]: string } = {
+    'vivo': 'Activo',
+    'activo': 'Activo',
+    'active': 'Activo',
+    'alive': 'Activo',
+    'vendido': 'Vendido',
+    'sold': 'Vendido',
+    'muerto': 'Muerto',
+    'dead': 'Muerto',
+    'muerte': 'Muerto',
+    'fallecido': 'Muerto',
+    'transferido': 'Transferido',
+    'transferred': 'Transferido',
+    'trasferido': 'Transferido' // Common typo
+  };
+  
+  return statusMapping[normalizedStatus] || 'Activo';
+};
+
 interface PreviewAndEditStepProps {
   animals: AnimalFieldMapping[];
   userCabañaId: string;
@@ -233,7 +259,7 @@ export const PreviewAndEditStep = ({
         peso_nacimiento: animal.peso_nacer || null,
         peso_final: animal.peso_final || null,
         circunferencia_escrotal: animal.circunferencia_escrotal || null,
-        status: animal.estado || 'Activo',
+        status: normalizeAnimalStatus(animal.estado),
         mocho: animal.mocho || null,
         observaciones: animal.observaciones || null,
         tipo_parto: animal.tipo_parto || null,
