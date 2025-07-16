@@ -81,44 +81,25 @@ export const useUserRoles = () => {
   // Create new user
   const createUser = async (email: string, password: string, fullName: string, role: UserRole) => {
     try {
-      // Create user via Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: fullName
+      // Use Edge Function to create user with admin privileges
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email,
+          password,
+          fullName,
+          role,
+          requesterId: user?.id
         }
-      });
+      })
 
-      if (authError) throw authError;
+      if (error) throw error
 
-      if (authData.user) {
-        // Create user role
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: authData.user.id,
-            role,
-            created_by: user?.id
-          });
-
-        if (roleError) throw roleError;
-
-        // Store password for admin access
-        const { error: passwordError } = await supabase
-          .from('user_passwords')
-          .insert({
-            user_id: authData.user.id,
-            password_text: password,
-            created_by: user?.id
-          });
-
-        if (passwordError) throw passwordError;
-
-        await fetchUsers();
-        return { success: true };
+      if (data?.error) {
+        throw new Error(data.error)
       }
+
+      await fetchUsers();
+      return { success: true };
     } catch (error) {
       console.error('Error creating user:', error);
       return { success: false, error };
@@ -171,10 +152,20 @@ export const useUserRoles = () => {
   // Delete user
   const deleteUser = async (userId: string) => {
     try {
-      // Delete from auth.users (this will cascade to other tables)
-      const { error } = await supabase.auth.admin.deleteUser(userId);
+      // Use Edge Function to delete user with admin privileges
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: {
+          action: 'delete_user',
+          userId,
+          requesterId: user?.id
+        }
+      })
 
-      if (error) throw error;
+      if (error) throw error
+
+      if (data?.error) {
+        throw new Error(data.error)
+      }
 
       await fetchUsers();
       return { success: true };
@@ -204,23 +195,21 @@ export const useUserRoles = () => {
   // Change user password
   const changeUserPassword = async (userId: string, newPassword: string) => {
     try {
-      // Update password in auth using updateUserById
-      const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
-        password: newPassword
-      });
+      // Use Edge Function to change password with admin privileges
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: {
+          action: 'change_password',
+          userId,
+          newPassword,
+          requesterId: user?.id
+        }
+      })
 
-      if (authError) throw authError;
+      if (error) throw error
 
-      // Update stored password
-      const { error: passwordError } = await supabase
-        .from('user_passwords')
-        .update({ 
-          password_text: newPassword,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
-
-      if (passwordError) throw passwordError;
+      if (data?.error) {
+        throw new Error(data.error)
+      }
 
       return { success: true };
     } catch (error) {
