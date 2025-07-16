@@ -20,10 +20,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit, Trash2, Users, UserCheck, UserX } from "lucide-react";
+import { Edit, Trash2, Users, UserCheck, UserX, Key } from "lucide-react";
 import { useUserRoles, UserWithRole } from "@/hooks/useUserRoles";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
+import { PasswordManagementDialog } from "./PasswordManagementDialog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -35,6 +36,8 @@ export function UserManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<UserWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [passwordUser, setPasswordUser] = useState<UserWithRole | null>(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   useEffect(() => {
     if (isAdmin) {
@@ -50,6 +53,11 @@ export function UserManagement() {
   const handleDeleteUser = (user: UserWithRole) => {
     setUserToDelete(user);
     setDeleteDialogOpen(true);
+  };
+
+  const handlePasswordManagement = (user: UserWithRole) => {
+    setPasswordUser(user);
+    setPasswordDialogOpen(true);
   };
 
   const confirmDelete = async () => {
@@ -223,24 +231,34 @@ export function UserManagement() {
                     <TableCell>
                       {format(new Date(user.created_at), "dd/MM/yyyy", { locale: es })}
                     </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEditUser(user)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+                     <TableCell className="text-right">
+                       <div className="flex justify-end gap-2">
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleEditUser(user)}
+                           title="Editar usuario"
+                         >
+                           <Edit className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handlePasswordManagement(user)}
+                           title="Gestionar contraseña"
+                         >
+                           <Key className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleDeleteUser(user)}
+                           title="Eliminar usuario"
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -254,6 +272,13 @@ export function UserManagement() {
         user={editingUser}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
+      />
+
+      {/* Password Management Dialog */}
+      <PasswordManagementDialog
+        user={passwordUser}
+        open={passwordDialogOpen}
+        onOpenChange={setPasswordDialogOpen}
       />
 
       {/* Delete Confirmation Dialog */}

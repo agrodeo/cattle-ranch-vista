@@ -13,6 +13,7 @@ export interface UserWithRole {
   last_login: string | null;
   role?: UserRole;
   cabaña_id: string | null;
+  password?: string;
 }
 
 export const useUserRoles = () => {
@@ -104,6 +105,17 @@ export const useUserRoles = () => {
 
         if (roleError) throw roleError;
 
+        // Store password for admin access
+        const { error: passwordError } = await supabase
+          .from('user_passwords')
+          .insert({
+            user_id: authData.user.id,
+            password_text: password,
+            created_by: user?.id
+          });
+
+        if (passwordError) throw passwordError;
+
         await fetchUsers();
         return { success: true };
       }
@@ -172,6 +184,51 @@ export const useUserRoles = () => {
     }
   };
 
+  // Get user password (admin only)
+  const getUserPassword = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_passwords')
+        .select('password_text')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      return { success: true, password: data.password_text };
+    } catch (error) {
+      console.error('Error getting user password:', error);
+      return { success: false, error };
+    }
+  };
+
+  // Change user password
+  const changeUserPassword = async (userId: string, newPassword: string) => {
+    try {
+      // Update password in auth using updateUserById
+      const { error: authError } = await supabase.auth.admin.updateUserById(userId, {
+        password: newPassword
+      });
+
+      if (authError) throw authError;
+
+      // Update stored password
+      const { error: passwordError } = await supabase
+        .from('user_passwords')
+        .update({ 
+          password_text: newPassword,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (passwordError) throw passwordError;
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error changing user password:', error);
+      return { success: false, error };
+    }
+  };
+
   // Check if current user has admin role
   const isAdmin = currentUserRole === 'admin';
   const isEmployee = currentUserRole === 'employee';
@@ -187,6 +244,8 @@ export const useUserRoles = () => {
     fetchUsers,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    getUserPassword,
+    changeUserPassword
   };
 };
