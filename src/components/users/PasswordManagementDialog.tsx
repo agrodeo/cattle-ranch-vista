@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Key, Save } from "lucide-react";
 import { useUserRoles, UserWithRole } from "@/hooks/useUserRoles";
+import { useUsers } from "@/hooks/useUsers";
 import { toast } from "@/hooks/use-toast";
 
 interface PasswordManagementDialogProps {
@@ -21,7 +22,8 @@ export function PasswordManagementDialog({ user, open, onOpenChange }: PasswordM
   const [loading, setLoading] = useState(false);
   const [loadingCurrentPassword, setLoadingCurrentPassword] = useState(false);
   
-  const { getUserPassword, changeUserPassword } = useUserRoles();
+  const { changeUserPassword } = useUserRoles();
+  const { getUserPassword } = useUsers();
 
   const handleGetCurrentPassword = async () => {
     if (!user) return;

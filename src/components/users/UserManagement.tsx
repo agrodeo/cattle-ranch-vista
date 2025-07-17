@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Edit, Trash2, Users, UserCheck, UserX, Key, Eye, EyeOff, Ban, Check } from "lucide-react";
 import { useUserRoles, UserWithRole } from "@/hooks/useUserRoles";
+import { useUsers } from "@/hooks/useUsers";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
 import { PasswordManagementDialog } from "./PasswordManagementDialog";
@@ -31,7 +32,9 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 export function UserManagement() {
-  const { users, loading, isAdmin, fetchUsers, deleteUser, updateUser, getUserPassword, changeUserPassword } = useUserRoles();
+  const { users, loading, isAdmin, fetchUsers, deleteUser, updateUser, changeUserPassword } = useUserRoles();
+  const { userPasswords, loadingPasswords, getUserPassword } = useUsers();
+  
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -39,9 +42,7 @@ export function UserManagement() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [passwordUser, setPasswordUser] = useState<UserWithRole | null>(null);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [userPasswords, setUserPasswords] = useState<Record<string, string>>({});
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
-  const [loadingPasswords, setLoadingPasswords] = useState<Record<string, boolean>>({});
   const [updatingUsers, setUpdatingUsers] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -54,20 +55,14 @@ export function UserManagement() {
     if (isAdmin && users.length > 0) {
       loadAllPasswords();
     }
-  }, [users]);
+  }, [isAdmin, users]);
 
   const loadAllPasswords = async () => {
     if (!isAdmin || users.length === 0) return;
     
     const passwords: Record<string, string> = {};
-    const loadingStates: Record<string, boolean> = {};
     
-    for (const user of users) {
-      loadingStates[user.id] = true;
-    }
-    setLoadingPasswords(loadingStates);
-    
-    for (const user of users) {
+    const passwordPromises = users.map(async user => {
       try {
         const result = await getUserPassword(user.id);
         if (result.success && result.password) {
@@ -75,12 +70,10 @@ export function UserManagement() {
         }
       } catch (error) {
         console.error(`Error loading password for user ${user.id}:`, error);
-      } finally {
-        setLoadingPasswords(prev => ({ ...prev, [user.id]: false }));
       }
-    }
-    
-    setUserPasswords(passwords);
+    });
+
+    await Promise.all(passwordPromises);
   };
 
   const togglePasswordVisibility = (userId: string) => {
