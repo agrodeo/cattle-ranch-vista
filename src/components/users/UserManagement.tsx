@@ -20,7 +20,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Edit, Trash2, Users, UserCheck, UserX, Key } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Edit, Trash2, Users, UserCheck, UserX, Key, Eye, EyeOff, Ban, Check } from "lucide-react";
 import { useUserRoles, UserWithRole } from "@/hooks/useUserRoles";
 import { CreateUserDialog } from "./CreateUserDialog";
 import { EditUserDialog } from "./EditUserDialog";
@@ -30,7 +31,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 export function UserManagement() {
-  const { users, loading, isAdmin, fetchUsers, deleteUser } = useUserRoles();
+  const { users, loading, isAdmin, fetchUsers, deleteUser, updateUser, getUserPassword, changeUserPassword } = useUserRoles();
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -38,12 +39,87 @@ export function UserManagement() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [passwordUser, setPasswordUser] = useState<UserWithRole | null>(null);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [userPasswords, setUserPasswords] = useState<Record<string, string>>({});
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+  const [loadingPasswords, setLoadingPasswords] = useState<Record<string, boolean>>({});
+  const [updatingUsers, setUpdatingUsers] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
     }
   }, [isAdmin, fetchUsers]);
+
+  useEffect(() => {
+    if (isAdmin && users.length > 0) {
+      loadAllPasswords();
+    }
+  }, [users]);
+
+  const loadAllPasswords = async () => {
+    if (!isAdmin || users.length === 0) return;
+    
+    const passwords: Record<string, string> = {};
+    const loadingStates: Record<string, boolean> = {};
+    
+    for (const user of users) {
+      loadingStates[user.id] = true;
+    }
+    setLoadingPasswords(loadingStates);
+    
+    for (const user of users) {
+      try {
+        const result = await getUserPassword(user.id);
+        if (result.success && result.password) {
+          passwords[user.id] = result.password;
+        }
+      } catch (error) {
+        console.error(`Error loading password for user ${user.id}:`, error);
+      } finally {
+        setLoadingPasswords(prev => ({ ...prev, [user.id]: false }));
+      }
+    }
+    
+    setUserPasswords(passwords);
+  };
+
+  const togglePasswordVisibility = (userId: string) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [userId]: !prev[userId]
+    }));
+  };
+
+  const handleToggleUserStatus = async (user: UserWithRole) => {
+    setUpdatingUsers(prev => ({ ...prev, [user.id]: true }));
+    
+    try {
+      const result = await updateUser(user.id, {
+        is_active: !user.is_active
+      });
+      
+      if (result?.success) {
+        toast({
+          title: "Estado actualizado",
+          description: `El usuario ha sido ${!user.is_active ? 'activado' : 'desactivado'} exitosamente.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo actualizar el estado del usuario.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Ocurrió un error inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingUsers(prev => ({ ...prev, [user.id]: false }));
+    }
+  };
 
   const handleEditUser = (user: UserWithRole) => {
     setEditingUser(user);
@@ -198,6 +274,7 @@ export function UserManagement() {
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Contraseña</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Último Acceso</TableHead>
@@ -212,6 +289,36 @@ export function UserManagement() {
                       {user.full_name || "Sin nombre"}
                     </TableCell>
                     <TableCell>{user.email || "Sin email"}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 max-w-48">
+                        {loadingPasswords[user.id] ? (
+                          <span className="text-muted-foreground">Cargando...</span>
+                        ) : userPasswords[user.id] ? (
+                          <>
+                            <Input
+                              type={visiblePasswords[user.id] ? "text" : "password"}
+                              value={userPasswords[user.id]}
+                              readOnly
+                              className="text-xs"
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => togglePasswordVisibility(user.id)}
+                              title={visiblePasswords[user.id] ? "Ocultar contraseña" : "Mostrar contraseña"}
+                            >
+                              {visiblePasswords[user.id] ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground">No disponible</span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(user.role)}>
                         {getRoleDisplayName(user.role)}
@@ -232,7 +339,7 @@ export function UserManagement() {
                       {format(new Date(user.created_at), "dd/MM/yyyy", { locale: es })}
                     </TableCell>
                      <TableCell className="text-right">
-                       <div className="flex justify-end gap-2">
+                       <div className="flex justify-end gap-1">
                          <Button
                            variant="outline"
                            size="sm"
@@ -245,9 +352,24 @@ export function UserManagement() {
                            variant="outline"
                            size="sm"
                            onClick={() => handlePasswordManagement(user)}
-                           title="Gestionar contraseña"
+                           title="Cambiar contraseña"
                          >
                            <Key className="h-4 w-4" />
+                         </Button>
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleToggleUserStatus(user)}
+                           disabled={updatingUsers[user.id]}
+                           title={user.is_active ? "Desactivar usuario" : "Activar usuario"}
+                         >
+                           {updatingUsers[user.id] ? (
+                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                           ) : user.is_active ? (
+                             <Ban className="h-4 w-4" />
+                           ) : (
+                             <Check className="h-4 w-4" />
+                           )}
                          </Button>
                          <Button
                            variant="outline"
