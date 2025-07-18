@@ -94,8 +94,8 @@ export function EditUserDialog({ user, open, onOpenChange }: EditUserDialogProps
         onOpenChange(false);
       } else {
         toast({
-          title: "Error",
-          description: "No se pudo actualizar el usuario. Inténtalo de nuevo.",
+          title: "Error al actualizar usuario",
+          description: result?.error || "No se pudo actualizar el usuario. Inténtalo de nuevo.",
           variant: "destructive",
         });
       }

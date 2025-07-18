@@ -75,22 +75,37 @@ export const useUserRoles = () => {
   // Update user
   const updateUser = useCallback(async (userId: string, updates: Partial<UserWithRole>) => {
     try {
-      const { error: userError } = await supabase
+      console.log('Updating user:', userId, 'with updates:', updates);
+      
+      const { data: userData, error: userError } = await supabase
         .from('users')
         .update({
           full_name: updates.full_name,
           email: updates.email,
           is_active: updates.is_active
         })
-        .eq('id', userId);
+        .eq('id', userId)
+        .select();
 
-      if (userError) throw userError;
+      if (userError) {
+        console.error('User update error:', userError);
+        throw userError;
+      }
+
+      console.log('User updated successfully:', userData);
 
       if (updates.role) {
-        await supabase
+        console.log('Updating role to:', updates.role);
+        
+        const { error: deleteRoleError } = await supabase
           .from('user_roles')
           .delete()
           .eq('user_id', userId);
+
+        if (deleteRoleError) {
+          console.error('Error deleting old role:', deleteRoleError);
+          throw deleteRoleError;
+        }
 
         const { error: roleError } = await supabase
           .from('user_roles')
@@ -100,14 +115,20 @@ export const useUserRoles = () => {
             created_by: user?.id
           });
 
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error('Role update error:', roleError);
+          throw roleError;
+        }
+        
+        console.log('Role updated successfully');
       }
 
       await fetchUsers();
       return { success: true };
     } catch (error) {
       console.error('Error updating user:', error);
-      return { success: false, error };
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+      return { success: false, error: errorMessage };
     }
   }, [user, fetchUsers]);
 

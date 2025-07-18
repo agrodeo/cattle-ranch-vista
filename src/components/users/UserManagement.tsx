@@ -99,7 +99,7 @@ export function UserManagement() {
       } else {
         toast({
           title: "Error",
-          description: "No se pudo actualizar el estado del usuario.",
+          description: result?.error || "No se pudo actualizar el estado del usuario.",
           variant: "destructive",
         });
       }
