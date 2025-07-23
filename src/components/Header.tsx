@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useAuth } from "@/hooks/useAuth";
-import { LogOut, User } from "lucide-react";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { LogOut, Building2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,10 +13,10 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
-  const { user, signOut } = useAuth();
+  const { sistemaInfo, signOut } = useSimpleAuth();
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignOut = () => {
+    signOut();
   };
 
   return (
@@ -33,7 +33,7 @@ export function Header() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>
-                    {user?.email?.charAt(0).toUpperCase() || "U"}
+                    <Building2 className="h-4 w-4" />
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -42,10 +42,10 @@ export function Header() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {user?.user_metadata?.full_name || "Usuario"}
+                    {sistemaInfo?.sistemaLabel || "Sistema AgroDeo"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email}
+                    {sistemaInfo?.email || "admin@agrodeo.com"}
                   </p>
                 </div>
               </DropdownMenuLabel>

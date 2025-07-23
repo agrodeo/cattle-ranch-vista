@@ -559,6 +559,33 @@ export type Database = {
           },
         ]
       }
+      sistema_credenciales: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          password_hash: string
+          sistema_nombre: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          password_hash: string
+          sistema_nombre?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          password_hash?: string
+          sistema_nombre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_passwords: {
         Row: {
           created_at: string | null
@@ -614,29 +641,44 @@ export type Database = {
         Row: {
           cabaña_id: string | null
           created_at: string | null
+          department: string | null
           email: string | null
+          employee_code: string | null
           full_name: string | null
+          hire_date: string | null
           id: string
           is_active: boolean | null
+          is_internal_profile: boolean | null
           last_login: string | null
+          position: string | null
         }
         Insert: {
           cabaña_id?: string | null
           created_at?: string | null
+          department?: string | null
           email?: string | null
+          employee_code?: string | null
           full_name?: string | null
+          hire_date?: string | null
           id: string
           is_active?: boolean | null
+          is_internal_profile?: boolean | null
           last_login?: string | null
+          position?: string | null
         }
         Update: {
           cabaña_id?: string | null
           created_at?: string | null
+          department?: string | null
           email?: string | null
+          employee_code?: string | null
           full_name?: string | null
+          hire_date?: string | null
           id?: string
           is_active?: boolean | null
+          is_internal_profile?: boolean | null
           last_login?: string | null
+          position?: string | null
         }
         Relationships: [
           {
@@ -689,6 +731,13 @@ export type Database = {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
       }
+      get_sistema_credenciales: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          email: string
+          sistema_nombre: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -698,6 +747,10 @@ export type Database = {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
         }
+        Returns: boolean
+      }
+      verify_sistema_login: {
+        Args: { input_email: string; input_password: string }
         Returns: boolean
       }
     }

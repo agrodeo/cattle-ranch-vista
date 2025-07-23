@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -20,86 +20,41 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Edit, Trash2, Users, UserCheck, UserX, Key, Eye, EyeOff, Ban, Check } from "lucide-react";
-import { useUserRoles, UserWithRole } from "@/hooks/useUserRoles";
-import { useUsers } from "@/hooks/useUsers";
-import { CreateUserDialog } from "./CreateUserDialog";
-import { EditUserDialog } from "./EditUserDialog";
-import { PasswordManagementDialog } from "./PasswordManagementDialog";
+import { Edit, Trash2, Users, UserCheck, UserX, Briefcase, Ban, Check, Building2 } from "lucide-react";
+import { useInternalProfiles, InternalProfile } from "@/hooks/useInternalProfiles";
+import { CreateInternalProfileDialog } from "./CreateInternalProfileDialog";
+import { EditInternalProfileDialog } from "./EditInternalProfileDialog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 export function UserManagement() {
-  const { users, loading, isAdmin, fetchUsers, deleteUser, updateUser, changeUserPassword } = useUserRoles();
-  const { userPasswords, loadingPasswords, getUserPassword } = useUsers();
+  const { profiles, loading, updateProfile, deleteProfile } = useInternalProfiles();
   
-  const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
+  const [editingProfile, setEditingProfile] = useState<InternalProfile | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserWithRole | null>(null);
+  const [profileToDelete, setProfileToDelete] = useState<InternalProfile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [passwordUser, setPasswordUser] = useState<UserWithRole | null>(null);
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
-  const [updatingUsers, setUpdatingUsers] = useState<Record<string, boolean>>({});
+  const [updatingProfiles, setUpdatingProfiles] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    if (isAdmin) {
-      fetchUsers();
-    }
-  }, [isAdmin, fetchUsers]);
-
-  useEffect(() => {
-    if (isAdmin && users.length > 0) {
-      loadAllPasswords();
-    }
-  }, [isAdmin, users]);
-
-  const loadAllPasswords = async () => {
-    if (!isAdmin || users.length === 0) return;
-    
-    const passwords: Record<string, string> = {};
-    
-    const passwordPromises = users.map(async user => {
-      try {
-        const result = await getUserPassword(user.id);
-        if (result.success && result.password) {
-          passwords[user.id] = result.password;
-        }
-      } catch (error) {
-        console.error(`Error loading password for user ${user.id}:`, error);
-      }
-    });
-
-    await Promise.all(passwordPromises);
-  };
-
-  const togglePasswordVisibility = (userId: string) => {
-    setVisiblePasswords(prev => ({
-      ...prev,
-      [userId]: !prev[userId]
-    }));
-  };
-
-  const handleToggleUserStatus = async (user: UserWithRole) => {
-    setUpdatingUsers(prev => ({ ...prev, [user.id]: true }));
+  const handleToggleProfileStatus = async (profile: InternalProfile) => {
+    setUpdatingProfiles(prev => ({ ...prev, [profile.id]: true }));
     
     try {
-      const result = await updateUser(user.id, {
-        is_active: !user.is_active
+      const result = await updateProfile(profile.id, {
+        is_active: !profile.is_active
       });
       
       if (result?.success) {
         toast({
           title: "Estado actualizado",
-          description: `El usuario ha sido ${!user.is_active ? 'activado' : 'desactivado'} exitosamente.`,
+          description: `El perfil ha sido ${!profile.is_active ? 'activado' : 'desactivado'} exitosamente.`,
         });
       } else {
         toast({
           title: "Error",
-          description: result?.error || "No se pudo actualizar el estado del usuario.",
+          description: "No se pudo actualizar el estado del perfil.",
           variant: "destructive",
         });
       }
@@ -110,41 +65,36 @@ export function UserManagement() {
         variant: "destructive",
       });
     } finally {
-      setUpdatingUsers(prev => ({ ...prev, [user.id]: false }));
+      setUpdatingProfiles(prev => ({ ...prev, [profile.id]: false }));
     }
   };
 
-  const handleEditUser = (user: UserWithRole) => {
-    setEditingUser(user);
+  const handleEditProfile = (profile: InternalProfile) => {
+    setEditingProfile(profile);
     setEditDialogOpen(true);
   };
 
-  const handleDeleteUser = (user: UserWithRole) => {
-    setUserToDelete(user);
+  const handleDeleteProfile = (profile: InternalProfile) => {
+    setProfileToDelete(profile);
     setDeleteDialogOpen(true);
   };
 
-  const handlePasswordManagement = (user: UserWithRole) => {
-    setPasswordUser(user);
-    setPasswordDialogOpen(true);
-  };
-
   const confirmDelete = async () => {
-    if (!userToDelete) return;
+    if (!profileToDelete) return;
 
     setIsDeleting(true);
     try {
-      const result = await deleteUser(userToDelete.id);
+      const result = await deleteProfile(profileToDelete.id);
       
       if (result?.success) {
         toast({
-          title: "Usuario eliminado",
-          description: "El usuario ha sido eliminado exitosamente.",
+          title: "Perfil eliminado",
+          description: "El perfil interno ha sido eliminado exitosamente.",
         });
       } else {
         toast({
           title: "Error",
-          description: "No se pudo eliminar el usuario. Inténtalo de nuevo.",
+          description: "No se pudo eliminar el perfil. Inténtalo de nuevo.",
           variant: "destructive",
         });
       }
@@ -157,7 +107,7 @@ export function UserManagement() {
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
-      setUserToDelete(null);
+      setProfileToDelete(null);
     }
   };
 
@@ -184,181 +134,153 @@ export function UserManagement() {
   };
 
   const getStats = () => {
-    const totalUsers = users.length;
-    const activeUsers = users.filter(user => user.is_active).length;
-    const inactiveUsers = totalUsers - activeUsers;
+    const totalProfiles = profiles.length;
+    const activeProfiles = profiles.filter(profile => profile.is_active).length;
+    const inactiveProfiles = totalProfiles - activeProfiles;
     
-    return { totalUsers, activeUsers, inactiveUsers };
+    return { totalProfiles, activeProfiles, inactiveProfiles };
   };
 
   const stats = getStats();
 
-  if (!isAdmin) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Acceso Denegado</CardTitle>
-          <CardDescription>
-            No tienes permisos para acceder a la gestión de usuarios.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
     <div className="space-y-6">
+      {/* Header Info */}
+      <Card className="bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/20">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-primary/20">
+              <Building2 className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Gestión de Perfiles Internos</CardTitle>
+              <CardDescription>
+                Sistema de login único con perfiles de empleados sin autenticación individual
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Perfiles</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <div className="text-2xl font-bold">{stats.totalProfiles}</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuarios Activos</CardTitle>
+            <CardTitle className="text-sm font-medium">Perfiles Activos</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.activeUsers}</div>
+            <div className="text-2xl font-bold text-green-600">{stats.activeProfiles}</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuarios Inactivos</CardTitle>
+            <CardTitle className="text-sm font-medium">Perfiles Inactivos</CardTitle>
             <UserX className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.inactiveUsers}</div>
+            <div className="text-2xl font-bold text-red-600">{stats.inactiveProfiles}</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Users Table */}
+      {/* Profiles Table */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Gestión de Usuarios</CardTitle>
+              <CardTitle>Perfiles de Empleados</CardTitle>
               <CardDescription>
-                Administra los usuarios del sistema y sus permisos.
+                Gestiona los perfiles internos de empleados del sistema.
               </CardDescription>
             </div>
-            <CreateUserDialog />
+            <CreateInternalProfileDialog />
           </div>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-4">Cargando usuarios...</div>
-          ) : users.length === 0 ? (
+            <div className="text-center py-4">Cargando perfiles...</div>
+          ) : profiles.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
-              No hay usuarios registrados
+              No hay perfiles registrados
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
+                  <TableHead>Código Empleado</TableHead>
+                  <TableHead>Puesto</TableHead>
+                  <TableHead>Departamento</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Contraseña</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Último Acceso</TableHead>
-                  <TableHead>Fecha Creación</TableHead>
+                  <TableHead>Fecha Ingreso</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
+                {profiles.map((profile) => (
+                  <TableRow key={profile.id}>
                     <TableCell className="font-medium">
-                      {user.full_name || "Sin nombre"}
+                      {profile.full_name || "Sin nombre"}
                     </TableCell>
-                    <TableCell>{user.email || "Sin email"}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2 max-w-48">
-                        {loadingPasswords[user.id] ? (
-                          <span className="text-muted-foreground">Cargando...</span>
-                        ) : userPasswords[user.id] ? (
-                          <>
-                            <Input
-                              type={visiblePasswords[user.id] ? "text" : "password"}
-                              value={userPasswords[user.id]}
-                              readOnly
-                              className="text-xs"
-                            />
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => togglePasswordVisibility(user.id)}
-                              title={visiblePasswords[user.id] ? "Ocultar contraseña" : "Mostrar contraseña"}
-                            >
-                              {visiblePasswords[user.id] ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </Button>
-                          </>
-                        ) : (
-                          <span className="text-muted-foreground">No disponible</span>
-                        )}
+                      <div className="flex items-center gap-2">
+                        <Briefcase className="h-3 w-3 text-muted-foreground" />
+                        {profile.employee_code || "-"}
                       </div>
                     </TableCell>
+                    <TableCell>{profile.position || "-"}</TableCell>
+                    <TableCell>{profile.department || "-"}</TableCell>
+                    <TableCell>{profile.email || "-"}</TableCell>
                     <TableCell>
-                      <Badge variant={getRoleBadgeVariant(user.role)}>
-                        {getRoleDisplayName(user.role)}
+                      <Badge variant={getRoleBadgeVariant(profile.role)}>
+                        {getRoleDisplayName(profile.role)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.is_active ? "default" : "secondary"}>
-                        {user.is_active ? "Activo" : "Inactivo"}
+                      <Badge variant={profile.is_active ? "default" : "secondary"}>
+                        {profile.is_active ? "Activo" : "Inactivo"}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {user.last_login
-                        ? format(new Date(user.last_login), "dd/MM/yyyy HH:mm", { locale: es })
-                        : "Nunca"
+                      {profile.hire_date
+                        ? format(new Date(profile.hire_date), "dd/MM/yyyy", { locale: es })
+                        : "-"
                       }
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(user.created_at), "dd/MM/yyyy", { locale: es })}
                     </TableCell>
                      <TableCell className="text-right">
                        <div className="flex justify-end gap-1">
                          <Button
                            variant="outline"
                            size="sm"
-                           onClick={() => handleEditUser(user)}
-                           title="Editar usuario"
+                           onClick={() => handleEditProfile(profile)}
+                           title="Editar perfil"
                          >
                            <Edit className="h-4 w-4" />
                          </Button>
                          <Button
                            variant="outline"
                            size="sm"
-                           onClick={() => handlePasswordManagement(user)}
-                           title="Cambiar contraseña"
+                           onClick={() => handleToggleProfileStatus(profile)}
+                           disabled={updatingProfiles[profile.id]}
+                           title={profile.is_active ? "Desactivar perfil" : "Activar perfil"}
                          >
-                           <Key className="h-4 w-4" />
-                         </Button>
-                         <Button
-                           variant="outline"
-                           size="sm"
-                           onClick={() => handleToggleUserStatus(user)}
-                           disabled={updatingUsers[user.id]}
-                           title={user.is_active ? "Desactivar usuario" : "Activar usuario"}
-                         >
-                           {updatingUsers[user.id] ? (
+                           {updatingProfiles[profile.id] ? (
                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                           ) : user.is_active ? (
+                           ) : profile.is_active ? (
                              <Ban className="h-4 w-4" />
                            ) : (
                              <Check className="h-4 w-4" />
@@ -367,8 +289,8 @@ export function UserManagement() {
                          <Button
                            variant="outline"
                            size="sm"
-                           onClick={() => handleDeleteUser(user)}
-                           title="Eliminar usuario"
+                           onClick={() => handleDeleteProfile(profile)}
+                           title="Eliminar perfil"
                          >
                            <Trash2 className="h-4 w-4" />
                          </Button>
@@ -383,27 +305,20 @@ export function UserManagement() {
       </Card>
 
       {/* Edit Dialog */}
-      <EditUserDialog
-        user={editingUser}
+      <EditInternalProfileDialog
+        profile={editingProfile}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-      />
-
-      {/* Password Management Dialog */}
-      <PasswordManagementDialog
-        user={passwordUser}
-        open={passwordDialogOpen}
-        onOpenChange={setPasswordDialogOpen}
       />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar perfil?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente el usuario
-              "{userToDelete?.full_name}" y todos sus datos asociados.
+              Esta acción no se puede deshacer. Se eliminará permanentemente el perfil
+              "{profileToDelete?.full_name}" y todos sus datos asociados.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
