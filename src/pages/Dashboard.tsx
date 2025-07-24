@@ -1,8 +1,24 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Activity, DollarSign, TrendingUp } from "lucide-react";
+import { SubscriptionAlert } from "@/components/subscription/SubscriptionAlert";
+import { SubscriptionPlansModal } from "@/components/subscription/SubscriptionPlansModal";
+import { ReadOnlyModeModal } from "@/components/subscription/ReadOnlyModeModal";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const Dashboard = () => {
+  const [showPlansModal, setShowPlansModal] = useState(false);
+  const [showReadOnlyModal, setShowReadOnlyModal] = useState(false);
+  const { subscriptionStatus } = useSubscription();
+
+  // Show read-only modal if subscription expired
+  useEffect(() => {
+    if (subscriptionStatus?.isReadOnly) {
+      setShowReadOnlyModal(true);
+    }
+  }, [subscriptionStatus?.isReadOnly]);
+
   // Mock data for now - will be replaced with real data from Supabase
   const stats = [
     {
@@ -37,6 +53,8 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
+      <SubscriptionAlert onUpgrade={() => setShowPlansModal(true)} />
+      
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Tablero</h1>
         <Badge variant="outline">Bienvenido a AgroDeo</Badge>
@@ -90,6 +108,17 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <SubscriptionPlansModal 
+        open={showPlansModal} 
+        onOpenChange={setShowPlansModal} 
+      />
+
+      <ReadOnlyModeModal 
+        open={showReadOnlyModal}
+        onOpenChange={setShowReadOnlyModal}
+        onUpgrade={() => setShowPlansModal(true)}
+      />
     </div>
   );
 };

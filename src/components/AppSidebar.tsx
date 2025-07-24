@@ -7,7 +7,8 @@ import {
   BarChart3,
   Settings,
   MapPin,
-  UserCog
+  UserCog,
+  Crown
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -62,6 +63,11 @@ const menuItems = [
     title: "Reportes",
     url: "/reports",
     icon: BarChart3,
+  },
+  {
+    title: "Suscripción",
+    url: "/subscription",
+    icon: Crown,
   },
   {
     title: "Configuración",
