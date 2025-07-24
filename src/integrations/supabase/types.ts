@@ -795,6 +795,23 @@ export type Database = {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
       }
+      create_company_with_owner: {
+        Args: {
+          company_name: string
+          owner_name: string
+          owner_email: string
+          owner_password: string
+        }
+        Returns: {
+          user_data: Json
+          success: boolean
+          error_message: string
+        }[]
+      }
+      generate_employee_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_sistema_credenciales: {
         Args: Record<PropertyKey, never>
         Returns: {
