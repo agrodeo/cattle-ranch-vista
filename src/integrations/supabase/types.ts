@@ -716,7 +716,7 @@ export type Database = {
           employee_code?: string | null
           full_name?: string | null
           hire_date?: string | null
-          id: string
+          id?: string
           is_active?: boolean | null
           is_internal_profile?: boolean | null
           last_login?: string | null
