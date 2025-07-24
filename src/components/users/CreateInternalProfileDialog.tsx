@@ -40,6 +40,7 @@ export const CreateInternalProfileDialog = () => {
       department: formData.get("department") as string || undefined,
       hire_date: formData.get("hire_date") as string || undefined,
       role: formData.get("role") as ProfileRole,
+      password: formData.get("password") as string,
     };
 
     try {
@@ -47,16 +48,16 @@ export const CreateInternalProfileDialog = () => {
       
       if (result.success) {
         toast({
-          title: "Perfil creado",
-          description: "El perfil interno ha sido creado exitosamente.",
+          title: "Empleado creado",
+          description: "El empleado ha sido creado exitosamente y puede iniciar sesión.",
         });
         setOpen(false);
         // Reset form
         (e.target as HTMLFormElement).reset();
       } else {
         toast({
-          title: "Error al crear perfil",
-          description: "No se pudo crear el perfil. Inténtalo de nuevo.",
+          title: "Error al crear empleado",
+          description: "No se pudo crear el empleado. Inténtalo de nuevo.",
           variant: "destructive",
         });
       }
@@ -76,7 +77,7 @@ export const CreateInternalProfileDialog = () => {
       <DialogTrigger asChild>
         <Button>
           <UserPlus className="mr-2 h-4 w-4" />
-          Crear Perfil
+          Crear Empleado
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
@@ -86,9 +87,9 @@ export const CreateInternalProfileDialog = () => {
               <Building2 className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <DialogTitle>Crear Perfil Interno</DialogTitle>
+              <DialogTitle>Crear Empleado</DialogTitle>
               <DialogDescription>
-                Crea un nuevo perfil de empleado en el sistema.
+                Crea un nuevo empleado con acceso al sistema de gestión.
               </DialogDescription>
             </div>
           </div>
@@ -154,18 +155,30 @@ export const CreateInternalProfileDialog = () => {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="role">Rol en el Sistema*</Label>
-            <Select name="role" required>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona un rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="employee">Empleado</SelectItem>
-                <SelectItem value="read_only">Solo lectura</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="role">Rol en el Sistema*</Label>
+              <Select name="role" required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="employee">Empleado</SelectItem>
+                  <SelectItem value="read_only">Solo lectura</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña Inicial*</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Contraseña inicial para el empleado"
+                required
+              />
+            </div>
           </div>
 
           <DialogFooter>
@@ -173,7 +186,7 @@ export const CreateInternalProfileDialog = () => {
               Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Creando..." : "Crear Perfil"}
+              {isLoading ? "Creando..." : "Crear Empleado"}
             </Button>
           </DialogFooter>
         </form>

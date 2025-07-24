@@ -738,8 +738,19 @@ export type Database = {
           sistema_nombre: string
         }[]
       }
+      get_user_cabana_info: {
+        Args: { user_uuid: string }
+        Returns: {
+          cabana_id: string
+          cabana_name: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_user_role_by_id: {
+        Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
       has_role: {
@@ -752,6 +763,13 @@ export type Database = {
       verify_sistema_login: {
         Args: { input_email: string; input_password: string }
         Returns: boolean
+      }
+      verify_user_login: {
+        Args: { input_identifier: string; input_password: string }
+        Returns: {
+          user_data: Json
+          success: boolean
+        }[]
       }
     }
     Enums: {

@@ -24,6 +24,7 @@ import { Edit, Trash2, Users, UserCheck, UserX, Briefcase, Ban, Check, Building2
 import { useInternalProfiles, InternalProfile } from "@/hooks/useInternalProfiles";
 import { CreateInternalProfileDialog } from "./CreateInternalProfileDialog";
 import { EditInternalProfileDialog } from "./EditInternalProfileDialog";
+import { ResetPasswordDialog } from "./ResetPasswordDialog";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -153,9 +154,9 @@ export function UserManagement() {
               <Building2 className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Gestión de Perfiles Internos</CardTitle>
+              <CardTitle className="text-lg">Gestión de Empleados</CardTitle>
               <CardDescription>
-                Sistema de login único con perfiles de empleados sin autenticación individual
+                Administra empleados con acceso individual al sistema mediante sus credenciales personales
               </CardDescription>
             </div>
           </div>
@@ -271,6 +272,10 @@ export function UserManagement() {
                          >
                            <Edit className="h-4 w-4" />
                          </Button>
+                         <ResetPasswordDialog 
+                           profile={profile} 
+                           onPasswordReset={() => {}} 
+                         />
                          <Button
                            variant="outline"
                            size="sm"

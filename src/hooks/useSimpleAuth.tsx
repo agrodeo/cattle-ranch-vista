@@ -4,9 +4,19 @@ import { supabase } from "@/integrations/supabase/client";
 interface SimpleAuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (identifier: string, password: string) => Promise<{ error: any }>;
   signOut: () => void;
-  sistemaInfo: { email: string; sistemaLabel: string } | null;
+  currentUser: {
+    id: string;
+    email: string;
+    fullName: string;
+    employeeCode: string;
+    position: string;
+    department: string;
+    cabañaId: string;
+    role?: string;
+    cabañaName?: string;
+  } | null;
 }
 
 const SimpleAuthContext = createContext<SimpleAuthContextType | undefined>(undefined);
@@ -22,14 +32,14 @@ export const useSimpleAuth = () => {
 export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [sistemaInfo, setSistemaInfo] = useState<{ email: string; sistemaLabel: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<SimpleAuthContextType['currentUser']>(null);
 
   useEffect(() => {
     // Verificar si hay una sesión guardada
     const savedAuth = localStorage.getItem('agrodeo_auth');
     if (savedAuth) {
       const authData = JSON.parse(savedAuth);
-      if (authData.isAuthenticated && authData.timestamp) {
+      if (authData.isAuthenticated && authData.timestamp && authData.currentUser) {
         // Verificar que la sesión no sea muy antigua (24 horas)
         const now = Date.now();
         const sessionAge = now - authData.timestamp;
@@ -37,7 +47,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
         
         if (sessionAge < maxAge) {
           setIsAuthenticated(true);
-          setSistemaInfo(authData.sistemaInfo || null);
+          setCurrentUser(authData.currentUser);
         } else {
           localStorage.removeItem('agrodeo_auth');
         }
@@ -46,11 +56,11 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
     setLoading(false);
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (identifier: string, password: string) => {
     try {
-      // Verificar credenciales del sistema usando la función de la base de datos
-      const { data, error } = await supabase.rpc('verify_sistema_login', {
-        input_email: email,
+      // Verificar credenciales del usuario individual
+      const { data, error } = await supabase.rpc('verify_user_login', {
+        input_identifier: identifier,
         input_password: password
       });
 
@@ -58,27 +68,44 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
         return { error: { message: 'Error al verificar credenciales' } };
       }
 
-      if (!data) {
+      if (!data || data.length === 0 || !data[0].success) {
         return { error: { message: 'Credenciales incorrectas' } };
       }
 
-      // Obtener información del sistema
-      const { data: sistemaData } = await supabase.rpc('get_sistema_credenciales');
-      const sistemaInfo = sistemaData?.[0] ? {
-        email: sistemaData[0].email,
-        sistemaLabel: sistemaData[0].sistema_nombre
-      } : null;
+      const userData = data[0].user_data as any;
+      
+      // Obtener rol del usuario
+      const { data: roleData } = await supabase.rpc('get_user_role_by_id', {
+        user_uuid: userData.id
+      });
+
+      // Obtener información de la cabaña
+      const { data: cabanaData } = await supabase.rpc('get_user_cabana_info', {
+        user_uuid: userData.id
+      });
+
+      const currentUser = {
+        id: userData.id,
+        email: userData.email || '',
+        fullName: userData.full_name || '',
+        employeeCode: userData.employee_code || '',
+        position: userData.position || '',
+        department: userData.department || '',
+        cabañaId: userData.cabaña_id || '',
+        role: roleData || 'employee',
+        cabañaName: cabanaData?.[0]?.cabana_name || 'Sin asignar'
+      };
 
       // Guardar sesión
       const authData = {
         isAuthenticated: true,
         timestamp: Date.now(),
-        sistemaInfo
+        currentUser
       };
       localStorage.setItem('agrodeo_auth', JSON.stringify(authData));
       
       setIsAuthenticated(true);
-      setSistemaInfo(sistemaInfo);
+      setCurrentUser(currentUser);
       
       return { error: null };
     } catch (error) {
@@ -90,7 +117,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
   const signOut = () => {
     localStorage.removeItem('agrodeo_auth');
     setIsAuthenticated(false);
-    setSistemaInfo(null);
+    setCurrentUser(null);
   };
 
   return (
@@ -100,7 +127,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
         loading,
         signIn,
         signOut,
-        sistemaInfo,
+        currentUser,
       }}
     >
       {children}

@@ -18,10 +18,10 @@ const Auth = () => {
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const email = formData.get("email") as string;
+    const identifier = formData.get("identifier") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(identifier, password);
     
     if (error) {
       toast({
@@ -32,7 +32,7 @@ const Auth = () => {
     } else {
       toast({
         title: "¡Bienvenido!",
-        description: "Has accedido al sistema exitosamente.",
+        description: "Has iniciado sesión exitosamente.",
       });
       navigate("/dashboard");
     }
@@ -59,43 +59,37 @@ const Auth = () => {
           <div className="mb-6 p-4 bg-secondary/50 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <Shield className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Sistema de Acceso Único</span>
+              <span className="text-sm font-medium">Acceso de Empleados</span>
             </div>
             <p className="text-xs text-muted-foreground">
-              Utiliza las credenciales del sistema para acceder a la gestión de perfiles internos.
+              Ingresa con tu email o código de empleado y tu contraseña personal.
             </p>
-            <div className="mt-3 text-xs text-muted-foreground space-y-1">
-              <p><strong>Usuario:</strong> admin@agrodeo.com</p>
-              <p><strong>Contraseña:</strong> password</p>
-            </div>
           </div>
 
           <form onSubmit={handleSignIn} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email del Sistema</Label>
+              <Label htmlFor="identifier">Email o Código de Empleado</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="admin@agrodeo.com"
-                defaultValue="admin@agrodeo.com"
+                id="identifier"
+                name="identifier"
+                type="text"
+                placeholder="tu@email.com o código de empleado"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Contraseña del Sistema</Label>
+              <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
                 name="password"
                 type="password"
-                placeholder="Ingresa la contraseña del sistema"
-                defaultValue="password"
+                placeholder="Tu contraseña personal"
                 required
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Acceder al Sistema
+              Iniciar Sesión
             </Button>
           </form>
         </CardContent>

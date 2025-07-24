@@ -13,10 +13,19 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
-  const { sistemaInfo, signOut } = useSimpleAuth();
+  const { currentUser, signOut } = useSimpleAuth();
 
   const handleSignOut = () => {
     signOut();
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -33,7 +42,7 @@ export function Header() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>
-                    <Building2 className="h-4 w-4" />
+                    {currentUser?.fullName ? getInitials(currentUser.fullName) : <Building2 className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -42,10 +51,13 @@ export function Header() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {sistemaInfo?.sistemaLabel || "Sistema AgroDeo"}
+                    {currentUser?.fullName || "Usuario"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {sistemaInfo?.email || "admin@agrodeo.com"}
+                    {currentUser?.email || currentUser?.employeeCode || "Sin email"}
+                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    {currentUser?.cabañaName || "Sin cabaña"}
                   </p>
                 </div>
               </DropdownMenuLabel>

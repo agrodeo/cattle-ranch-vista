@@ -70,13 +70,22 @@ export const useInternalProfiles = () => {
     department?: string;
     hire_date?: string;
     role: ProfileRole;
+    password: string;
   }) => {
     try {
+      const userId = crypto.randomUUID();
+      
+      // Obtener primera cabaña disponible
+      const { data: cabanaData } = await supabase
+        .from('cabañas')
+        .select('id')
+        .limit(1);
+      
       // Crear perfil interno
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
-          id: crypto.randomUUID(), // Generar UUID para perfil interno
+          id: userId,
           full_name: profileData.full_name,
           email: profileData.email,
           employee_code: profileData.employee_code,
@@ -85,20 +94,31 @@ export const useInternalProfiles = () => {
           hire_date: profileData.hire_date,
           is_internal_profile: true,
           is_active: true,
-          cabaña_id: null // Por ahora sin cabaña específica
+          cabaña_id: cabanaData?.[0]?.id || null
         })
         .select()
         .single();
 
       if (userError) throw userError;
 
+      // Crear contraseña
+      const { error: passwordError } = await supabase
+        .from('user_passwords')
+        .insert({
+          user_id: userId,
+          password_text: profileData.password,
+          created_by: null
+        });
+
+      if (passwordError) throw passwordError;
+
       // Asignar rol
       const { error: roleError } = await supabase
         .from('user_roles')
         .insert({
-          user_id: userData.id,
+          user_id: userId,
           role: profileData.role,
-          created_by: null // Sistema, no hay usuario creador específico
+          created_by: null
         });
 
       if (roleError) throw roleError;
