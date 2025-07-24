@@ -5,6 +5,7 @@ interface SimpleAuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   signIn: (identifier: string, password: string) => Promise<{ error: any }>;
+  signUp: (companyName: string, ownerName: string, email: string, password: string) => Promise<{ error: any }>;
   signOut: () => void;
   currentUser: {
     id: string;
@@ -114,6 +115,61 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
+  const signUp = async (companyName: string, ownerName: string, email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.rpc('create_company_with_owner', {
+        company_name: companyName,
+        owner_name: ownerName,
+        owner_email: email,
+        owner_password: password
+      });
+
+      if (error || !data?.[0]?.success) {
+        return { error: { message: data?.[0]?.error_message || 'Error al crear la cuenta' } };
+      }
+
+      const userData = data[0].user_data as any;
+      
+      // Get user role
+      const { data: roleData } = await supabase.rpc('get_user_role_by_id', {
+        user_uuid: userData.id
+      });
+
+      // Get cabaña info
+      const { data: cabanaData } = await supabase.rpc('get_user_cabana_info', {
+        user_uuid: userData.id
+      });
+
+      const currentUser = {
+        id: userData.id,
+        email: userData.email || '',
+        fullName: userData.full_name || '',
+        employeeCode: userData.employee_code || '',
+        position: userData.position || '',
+        department: userData.department || '',
+        cabañaId: userData.cabaña_id || '',
+        role: roleData || 'admin',
+        cabañaName: cabanaData?.[0]?.cabana_name || 'Sin asignar'
+      };
+
+      // Save session
+      const authData = {
+        isAuthenticated: true,
+        timestamp: Date.now(),
+        currentUser
+      };
+      localStorage.setItem('agrodeo_auth', JSON.stringify(authData));
+      
+      setIsAuthenticated(true);
+      setCurrentUser(currentUser);
+
+      return { error: null };
+    } catch (error) {
+      console.error("Registration error:", error);
+      return { error: { message: "Error de conexión. Intenta nuevamente." } };
+    }
+  };
+
   const signOut = () => {
     localStorage.removeItem('agrodeo_auth');
     setIsAuthenticated(false);
@@ -126,6 +182,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
         isAuthenticated,
         loading,
         signIn,
+        signUp,
         signOut,
         currentUser,
       }}
