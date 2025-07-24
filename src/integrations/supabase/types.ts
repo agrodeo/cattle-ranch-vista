@@ -586,6 +586,62 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cabaña_id: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_trial_active: boolean | null
+          max_animals: number
+          max_users: number
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          subscription_end_date: string | null
+          subscription_start_date: string | null
+          trial_end_date: string | null
+          trial_start_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cabaña_id: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_trial_active?: boolean | null
+          max_animals?: number
+          max_users?: number
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cabaña_id?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_trial_active?: boolean | null
+          max_animals?: number
+          max_users?: number
+          plan?: Database["public"]["Enums"]["subscription_plan"]
+          subscription_end_date?: string | null
+          subscription_start_date?: string | null
+          trial_end_date?: string | null
+          trial_start_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: true
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_passwords: {
         Row: {
           created_at: string | null
@@ -695,6 +751,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_subscription: {
+        Args: {
+          cabana_uuid: string
+          plan_name: Database["public"]["Enums"]["subscription_plan"]
+          duration_months?: number
+        }
+        Returns: undefined
+      }
       calculate_age_months: {
         Args: { birth_date: string }
         Returns: number
@@ -738,6 +802,22 @@ export type Database = {
           sistema_nombre: string
         }[]
       }
+      get_subscription_status: {
+        Args: { cabana_uuid: string }
+        Returns: {
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          is_trial_active: boolean
+          trial_days_remaining: number
+          is_subscription_active: boolean
+          max_animals: number
+          max_users: number
+          current_animals_count: number
+          current_users_count: number
+          can_add_animals: boolean
+          can_add_users: boolean
+          is_read_only: boolean
+        }[]
+      }
       get_user_cabana_info: {
         Args: { user_uuid: string }
         Returns: {
@@ -760,6 +840,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_subscription_plan: {
+        Args: {
+          cabana_uuid: string
+          new_plan: Database["public"]["Enums"]["subscription_plan"]
+        }
+        Returns: undefined
+      }
       verify_sistema_login: {
         Args: { input_email: string; input_password: string }
         Returns: boolean
@@ -774,6 +861,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "employee" | "read_only"
+      subscription_plan:
+        | "free"
+        | "personal"
+        | "productor"
+        | "cabana"
+        | "corporativo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -902,6 +995,13 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "employee", "read_only"],
+      subscription_plan: [
+        "free",
+        "personal",
+        "productor",
+        "cabana",
+        "corporativo",
+      ],
     },
   },
 } as const
