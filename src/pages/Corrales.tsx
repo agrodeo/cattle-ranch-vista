@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,7 @@ interface Corral {
 }
 
 export default function Corrales() {
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
   const { toast } = useToast();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ export default function Corrales() {
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
 
   const fetchCorrales = async () => {
-    if (!user) return;
+    if (!currentUser) return;
 
     try {
       setLoading(true);
@@ -43,7 +43,7 @@ export default function Corrales() {
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", currentUser.id)
         .single();
 
       if (!userData?.cabaña_id) return;
@@ -144,7 +144,7 @@ export default function Corrales() {
 
   useEffect(() => {
     fetchCorrales();
-  }, [user]);
+  }, [currentUser]);
 
   const handleCreateSuccess = () => {
     fetchCorrales();
