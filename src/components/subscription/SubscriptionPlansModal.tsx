@@ -31,9 +31,26 @@ const plans = [
     annual: 249000
   },
   {
+    id: 'avanzado',
+    name: 'Avanzado',
+    icon: Zap,
+    color: 'bg-indigo-500',
+    maxAnimals: 600,
+    maxUsers: 4,
+    features: [
+      'Hasta 600 animales',
+      'Hasta 4 usuarios',
+      'Reportes intermedios',
+      'Exportación de datos',
+      'Soporte por email'
+    ],
+    monthly: 44900,
+    annual: 449000
+  },
+  {
     id: 'productor',
     name: 'Productor',
-    icon: Zap,
+    icon: Crown,
     color: 'bg-green-500',
     maxAnimals: 1000,
     maxUsers: 5,
@@ -52,7 +69,7 @@ const plans = [
   {
     id: 'cabana',
     name: 'Cabaña',
-    icon: Crown,
+    icon: Building2,
     color: 'bg-purple-500',
     maxAnimals: 5000,
     maxUsers: 15,
@@ -71,7 +88,7 @@ const plans = [
   {
     id: 'corporativo',
     name: 'Corporativo',
-    icon: Building2,
+    icon: Briefcase,
     color: 'bg-orange-500',
     maxAnimals: 'Ilimitado',
     maxUsers: 'Ilimitado',
