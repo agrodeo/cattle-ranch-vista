@@ -27,8 +27,8 @@ const plans = [
       'Reportes básicos',
       'Soporte por email'
     ],
-    monthly: 2900,
-    annual: 29000
+    monthly: 24900,
+    annual: 249000
   },
   {
     id: 'productor',
@@ -45,8 +45,8 @@ const plans = [
       'Exportación de datos',
       'Soporte prioritario'
     ],
-    monthly: 8900,
-    annual: 89000,
+    monthly: 69900,
+    annual: 699000,
     popular: true
   },
   {
@@ -65,8 +65,8 @@ const plans = [
       'Integración con sistemas',
       'Soporte telefónico'
     ],
-    monthly: 29900,
-    annual: 299000
+    monthly: 149000,
+    annual: 1490000
   },
   {
     id: 'corporativo',
@@ -83,8 +83,8 @@ const plans = [
       'Soporte 24/7',
       'Implementación personalizada'
     ],
-    monthly: 89900,
-    annual: 899000
+    monthly: 159000,
+    annual: 1590000
   }
 ];
 
