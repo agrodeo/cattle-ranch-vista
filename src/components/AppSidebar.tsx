@@ -50,11 +50,6 @@ const menuItems = [
     icon: UserCog,
   },
   {
-    title: "Servicios",
-    url: "/services",
-    icon: FileText,
-  },
-  {
     title: "Finanzas",
     url: "/finances",
     icon: DollarSign,
