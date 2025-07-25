@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -152,7 +152,7 @@ const getAgeCategory = (birthDate: string | null, sex: string) => {
 };
 
 const Animals = () => {
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,15 +194,15 @@ const Animals = () => {
     fetchAnimals();
     fetchCabañas();
     fetchUserCabaña();
-  }, [user]);
+  }, [currentUser]);
 
   const fetchUserCabaña = async () => {
-    if (!user) return;
+    if (!currentUser) return;
     try {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", currentUser.id)
         .maybeSingle();
       
       if (error) throw error;

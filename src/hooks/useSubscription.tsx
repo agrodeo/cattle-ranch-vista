@@ -4,7 +4,7 @@ import { useSimpleAuth } from './useSimpleAuth';
 import { toast } from '@/hooks/use-toast';
 
 export interface SubscriptionStatus {
-  plan: 'free' | 'personal' | 'productor' | 'cabana' | 'corporativo';
+  plan: 'free' | 'personal' | 'avanzado' | 'productor' | 'cabana' | 'corporativo';
   isTrialActive: boolean;
   trialDaysRemaining: number;
   isSubscriptionActive: boolean;
@@ -20,6 +20,7 @@ export interface SubscriptionStatus {
 const PLAN_NAMES = {
   free: 'Gratuito',
   personal: 'Personal',
+  avanzado: 'Avanzado',
   productor: 'Productor',
   cabana: 'Cabaña',
   corporativo: 'Corporativo'
@@ -27,6 +28,7 @@ const PLAN_NAMES = {
 
 const PLAN_PRICES = {
   personal: { monthly: 2900, annual: 29000 },
+  avanzado: { monthly: 5900, annual: 59000 },
   productor: { monthly: 8900, annual: 89000 },
   cabana: { monthly: 29900, annual: 299000 },
   corporativo: { monthly: 89900, annual: 899000 }
@@ -122,7 +124,7 @@ export const useSubscription = () => {
     return !subscriptionStatus.isReadOnly;
   }, [subscriptionStatus]);
 
-  const upgradePlan = useCallback(async (newPlan: 'personal' | 'productor' | 'cabana' | 'corporativo') => {
+  const upgradePlan = useCallback(async (newPlan: 'personal' | 'avanzado' | 'productor' | 'cabana' | 'corporativo') => {
     if (!currentUser?.cabañaId) return;
 
     try {
