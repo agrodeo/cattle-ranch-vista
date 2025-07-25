@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Calendar, Heart, Syringe, Scale, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 
 interface ActivityStats {
   totalActivities: number;
@@ -23,7 +23,7 @@ export function ActivitiesStats() {
     weighings: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
 
   useEffect(() => {
     fetchStats();
@@ -34,7 +34,7 @@ export function ActivitiesStats() {
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", currentUser?.id)
         .single();
 
       if (!userData?.cabaña_id) return;

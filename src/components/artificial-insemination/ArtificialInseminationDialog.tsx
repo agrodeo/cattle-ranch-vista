@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { CalendarIcon, ChevronDown, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 
 interface Animal {
   id: string;
@@ -90,7 +90,7 @@ export function ArtificialInseminationDialog({
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
 
   useEffect(() => {
     if (open) {
@@ -190,7 +190,7 @@ export function ArtificialInseminationDialog({
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", currentUser?.id)
         .single();
 
       if (userError) {
@@ -243,7 +243,7 @@ export function ArtificialInseminationDialog({
           weaning_weight: bullWeaningWeight ? parseFloat(bullWeaningWeight) : null,
           final_weight: bullFinalWeight ? parseFloat(bullFinalWeight) : null,
           cabaña_id: userData.cabaña_id,
-          created_by: user?.id,
+          created_by: currentUser?.id,
         };
 
         console.log("📝 Datos del toro a guardar en bulls:", bullData);
@@ -273,7 +273,7 @@ export function ArtificialInseminationDialog({
         is_pregnant: isPregnant === "yes" ? true : isPregnant === "no" ? false : null,
         notes: notes || null,
         cabaña_id: userData.cabaña_id,
-        created_by: user?.id,
+        created_by: currentUser?.id,
       }));
 
       console.log("📊 Datos de inseminación a insertar:", inseminations);

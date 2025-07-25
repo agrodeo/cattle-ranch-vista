@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ interface CreateCorralDialogProps {
 }
 
 export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorralDialogProps) {
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!currentUser) return;
 
     try {
       setLoading(true);
@@ -39,7 +39,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", currentUser.id)
         .single();
 
       if (!userData?.cabaña_id) {
@@ -51,7 +51,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
         .insert({
           name: formData.name,
           hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
-          user_id: user.id,
+          user_id: currentUser.id,
           cabaña_id: userData.cabaña_id,
         });
 

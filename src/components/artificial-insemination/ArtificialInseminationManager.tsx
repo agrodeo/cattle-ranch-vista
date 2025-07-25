@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Users, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { ArtificialInseminationDialog } from "./ArtificialInseminationDialog";
 import { ArtificialInseminationTable } from "./ArtificialInseminationTable";
 import { ArtificialInseminationStats } from "./ArtificialInseminationStats";
@@ -51,7 +51,7 @@ export function ArtificialInseminationManager() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
 
   useEffect(() => {
     fetchEligibleFemales();
@@ -63,7 +63,7 @@ export function ArtificialInseminationManager() {
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", currentUser?.id)
         .single();
 
       if (!userData?.cabaña_id) return;
@@ -86,7 +86,7 @@ export function ArtificialInseminationManager() {
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", currentUser?.id)
         .single();
 
       if (!userData?.cabaña_id) return;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "./useAuth";
+import { useSimpleAuth } from "./useSimpleAuth";
 import { useUsers } from "./useUsers";
 import { useCallback } from "react";
 
@@ -19,7 +19,7 @@ export interface UserWithRole {
 }
 
 export const useUserRoles = () => {
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
   const { users, loading: usersLoading, fetchUsers } = useUsers();
   const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);
@@ -27,11 +27,11 @@ export const useUserRoles = () => {
   // Get current user's role
   useEffect(() => {
     const getCurrentUserRole = async () => {
-      if (!user) return;
+      if (!currentUser) return;
       
       try {
         const { data, error } = await supabase
-          .rpc('get_user_role', { _user_id: user.id });
+          .rpc('get_user_role', { _user_id: currentUser.id });
         
         if (error) throw error;
         setCurrentUserRole(data);
@@ -43,7 +43,7 @@ export const useUserRoles = () => {
     };
 
     getCurrentUserRole();
-  }, [user]);
+  }, [currentUser]);
 
   // Create new user
   const createUser = useCallback(async (email: string, password: string, fullName: string, role: UserRole) => {
@@ -54,7 +54,7 @@ export const useUserRoles = () => {
           password,
           fullName,
           role,
-          requesterId: user?.id
+          requesterId: currentUser?.id
         }
       });
 
@@ -70,7 +70,7 @@ export const useUserRoles = () => {
       console.error('Error creating user:', error);
       return { success: false, error };
     }
-  }, [user, fetchUsers]);
+  }, [currentUser, fetchUsers]);
 
   // Update user
   const updateUser = useCallback(async (userId: string, updates: Partial<UserWithRole>) => {
@@ -112,7 +112,7 @@ export const useUserRoles = () => {
           .insert({
             user_id: userId,
             role: updates.role,
-            created_by: user?.id
+            created_by: currentUser?.id
           });
 
         if (roleError) {
@@ -130,7 +130,7 @@ export const useUserRoles = () => {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
       return { success: false, error: errorMessage };
     }
-  }, [user, fetchUsers]);
+  }, [currentUser, fetchUsers]);
 
   // Delete user
   const deleteUser = useCallback(async (userId: string) => {
@@ -139,7 +139,7 @@ export const useUserRoles = () => {
         body: {
           action: 'delete_user',
           userId,
-          requesterId: user?.id
+          requesterId: currentUser?.id
         }
       });
 
@@ -155,7 +155,7 @@ export const useUserRoles = () => {
       console.error('Error deleting user:', error);
       return { success: false, error };
     }
-  }, [user, fetchUsers]);
+  }, [currentUser, fetchUsers]);
 
   // Change user password
   const changeUserPassword = useCallback(async (userId: string, newPassword: string) => {
@@ -165,7 +165,7 @@ export const useUserRoles = () => {
           action: 'change_password',
           userId,
           newPassword,
-          requesterId: user?.id
+          requesterId: currentUser?.id
         }
       });
 
@@ -180,7 +180,7 @@ export const useUserRoles = () => {
       console.error('Error changing user password:', error);
       return { success: false, error };
     }
-  }, [user]);
+  }, [currentUser]);
 
   // Check if current user has admin role
   const isAdmin = currentUserRole === 'admin';

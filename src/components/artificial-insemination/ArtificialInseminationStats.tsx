@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, Heart, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 
 interface StatsData {
   total_inseminations: number;
@@ -23,7 +23,7 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [availableYears, setAvailableYears] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
 
   useEffect(() => {
     fetchStats();
@@ -35,7 +35,7 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", currentUser?.id)
         .single();
 
       if (!userData?.cabaña_id) return;
@@ -59,7 +59,7 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user?.id)
+        .eq("id", currentUser?.id)
         .single();
 
       if (!userData?.cabaña_id) return;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,7 +30,7 @@ interface AnimalAssignmentDialogProps {
 }
 
 export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess }: AnimalAssignmentDialogProps) {
-  const { user } = useAuth();
+  const { currentUser } = useSimpleAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -44,14 +44,14 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
   }, [open]);
 
   const fetchAnimals = async () => {
-    if (!user) return;
+    if (!currentUser) return;
 
     try {
       // Get user's cabaña_id
       const { data: userData } = await supabase
         .from("users")
         .select("*")
-        .eq("id", user.id)
+        .eq("id", currentUser.id)
         .single();
 
       if (!userData?.cabaña_id) return;
