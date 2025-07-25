@@ -201,7 +201,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
           </CardContent>
         </Card>
 
-        <div className="grid lg:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const price = isAnnual ? plan.annual : plan.monthly;
