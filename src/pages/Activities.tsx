@@ -121,7 +121,7 @@ const Activities = () => {
                 <Stethoscope className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">🤰</div>
+                <div className="text-2xl font-bold">TACTO</div>
                 <p className="text-xs text-muted-foreground">
                   Tacto rectal y seguimiento
                 </p>
