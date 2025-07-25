@@ -517,48 +517,6 @@ export type Database = {
         }
         Relationships: []
       }
-      services: {
-        Row: {
-          bull_id: string | null
-          female_id: string | null
-          id: string
-          notes: string | null
-          outcome: string | null
-          service_date: string | null
-        }
-        Insert: {
-          bull_id?: string | null
-          female_id?: string | null
-          id?: string
-          notes?: string | null
-          outcome?: string | null
-          service_date?: string | null
-        }
-        Update: {
-          bull_id?: string | null
-          female_id?: string | null
-          id?: string
-          notes?: string | null
-          outcome?: string | null
-          service_date?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "services_bull_id_fkey"
-            columns: ["bull_id"]
-            isOneToOne: false
-            referencedRelation: "animals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "services_female_id_fkey"
-            columns: ["female_id"]
-            isOneToOne: false
-            referencedRelation: "animals"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       sistema_credenciales: {
         Row: {
           created_at: string
