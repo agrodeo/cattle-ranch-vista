@@ -9,6 +9,7 @@ import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
 import Users from "./pages/Users";
+import Services from "./pages/Services";
 import Subscription from "./pages/Subscription";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
@@ -68,7 +69,7 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Página de servicios próximamente...</div>} />
+              <Route index element={<Services />} />
             </Route>
             <Route path="/finances" element={
               <ProtectedRoute>
