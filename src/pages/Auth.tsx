@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -146,6 +146,9 @@ const Auth = () => {
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Iniciar Sesión
                 </Button>
+                <div className="mt-3 text-right text-sm">
+                  <Link to="/forgot-password" className="text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
+                </div>
               </form>
             </TabsContent>
 
