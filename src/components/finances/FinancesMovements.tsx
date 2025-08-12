@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,10 +40,12 @@ export function FinancesMovements() {
 
   const queryClient = useQueryClient();
 
+  const supabaseAny = supabase as any;
+
   const { data, isLoading } = useQuery({
     queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search, categoryFilter],
     queryFn: async (): Promise<FinanceRow[]> => {
-      let q = supabase.from("finances").select("id,date,type,amount,description,category_id,buyer_name").order("date", { ascending: false });
+      let q = supabaseAny.from("finances").select("*").order("date", { ascending: false });
       if (from) q = q.gte("date", format(from, "yyyy-MM-dd"));
       if (to) q = q.lte("date", format(to, "yyyy-MM-dd"));
       if (type) q = q.eq("type", type);
@@ -50,7 +53,7 @@ export function FinancesMovements() {
       if (search) q = q.ilike("description", `%${search}%`);
       const { data, error } = await q;
       if (error) throw error;
-      return (data as any) || [];
+      return (data as unknown as FinanceRow[]) || [];
     },
   });
 
@@ -99,7 +102,7 @@ export function FinancesMovements() {
       const baseDate = form.date ? format(form.date, "yyyy-MM-dd") : null;
 
       if (!editRow && form.type === "ingreso" && form.isAnimalSale && form.animalIds.length > 0) {
-        const { error } = await supabase.rpc("create_animal_sale", {
+        const { error } = await supabaseAny.rpc("create_animal_sale", {
           _cabana_id: currentUser.cabañaId,
           _date: baseDate,
           _amount: form.amount ? Number(form.amount) : 0,
@@ -128,10 +131,10 @@ export function FinancesMovements() {
       };
 
       if (editRow) {
-        const { error } = await supabase.from("finances").update(payload).eq("id", editRow.id);
+        const { error } = await supabaseAny.from("finances").update(payload).eq("id", editRow.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("finances").insert(payload);
+        const { error } = await supabaseAny.from("finances").insert(payload);
         if (error) throw error;
       }
     },
@@ -151,7 +154,7 @@ export function FinancesMovements() {
 
   const deleteMutation = useMutation({
     mutationFn: async (row: FinanceRow) => {
-      const { error } = await supabase.from("finances").delete().eq("id", row.id);
+      const { error } = await supabaseAny.from("finances").delete().eq("id", row.id);
       if (error) throw error;
     },
     onSuccess: () => {

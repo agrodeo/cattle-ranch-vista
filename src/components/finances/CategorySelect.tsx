@@ -41,21 +41,24 @@ export default function CategorySelect({
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");
 
+  // Usar cliente sin tipos para evitar errores por tablas/columnas no presentes en Database
+  const supabaseAny = supabase as any;
+
   const { data: categories = [] } = useQuery({
     queryKey: ["finance-categories", type, currentUser?.cabañaId],
     queryFn: async (): Promise<CategoryRow[]> => {
       const cabId = currentUser?.cabañaId || "";
-      // Traer categorías del sistema (cabaña_id IS NULL) + de la cabaña
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAny
         .from("finance_categories")
-        .select("id,name,type,cabaña_id,is_system")
+        .select("*")
         .or(`cabaña_id.is.null,cabaña_id.eq.${cabId}`)
         .eq("type", type)
         .order("is_system", { ascending: false })
         .order("name", { ascending: true });
       if (error) throw error;
-      return (data as CategoryRow[]) || [];
+      return (data as unknown as CategoryRow[]) || [];
     },
+    enabled: true,
   });
 
   const createMutation = useMutation({
@@ -66,7 +69,7 @@ export default function CategorySelect({
         cabaña_id: currentUser?.cabañaId || null,
         is_system: false,
       };
-      const { error } = await supabase.from("finance_categories").insert(payload);
+      const { error } = await supabaseAny.from("finance_categories").insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {

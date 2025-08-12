@@ -52,15 +52,17 @@ export default function FinancesRecurring() {
     frequency: "monthly",
   });
 
+  const supabaseAny = supabase as any;
+
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["finances","recurring", currentUser?.cabañaId],
     queryFn: async (): Promise<RecurringRow[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAny
         .from("finance_recurring")
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId || "");
       if (error) throw error;
-      return data as RecurringRow[];
+      return (data as unknown as RecurringRow[]) || [];
     },
     enabled: !!currentUser?.cabañaId,
   });
@@ -77,7 +79,7 @@ export default function FinancesRecurring() {
         description: form.description || null,
         frequency: form.frequency,
       };
-      const { error } = await supabase.from("finance_recurring").insert(payload);
+      const { error } = await supabaseAny.from("finance_recurring").insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -90,7 +92,7 @@ export default function FinancesRecurring() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("finance_recurring").delete().eq("id", id);
+      const { error } = await supabaseAny.from("finance_recurring").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
