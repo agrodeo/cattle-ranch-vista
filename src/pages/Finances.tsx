@@ -1,15 +1,17 @@
+
 import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FinancesSummary } from "@/components/finances/FinancesSummary";
 import { FinancesMovements } from "@/components/finances/FinancesMovements";
 import { FinancesReports } from "@/components/finances/FinancesReports";
+import FinancesRecurring from "@/components/finances/FinancesRecurring";
 
 const Finances = () => {
   useEffect(() => {
     document.title = "Finanzas | AgroDeo";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Finanzas: resumen, movimientos y reportes");
+    if (meta) meta.setAttribute("content", "Finanzas: resumen, movimientos, reportes y recurrentes");
   }, []);
 
   return (
@@ -27,6 +29,7 @@ const Finances = () => {
               <TabsTrigger value="resumen">Resumen</TabsTrigger>
               <TabsTrigger value="movimientos">Movimientos</TabsTrigger>
               <TabsTrigger value="reportes">Reportes</TabsTrigger>
+              <TabsTrigger value="recurrentes">Recurrentes</TabsTrigger>
             </TabsList>
             <TabsContent value="resumen">
               <FinancesSummary />
@@ -37,6 +40,9 @@ const Finances = () => {
             <TabsContent value="reportes">
               <FinancesReports />
             </TabsContent>
+            <TabsContent value="recurrentes">
+              <FinancesRecurring />
+            </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
@@ -45,3 +51,4 @@ const Finances = () => {
 };
 
 export default Finances;
+

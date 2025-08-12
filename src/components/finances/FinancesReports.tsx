@@ -1,3 +1,4 @@
+
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -6,15 +7,21 @@ import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartToo
 import { Card, CardContent } from "@/components/ui/card";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
-interface Row { date: string | null; amount: number | null; type: string | null }
+interface Row { date: string | null; amount: number | null; type: string | null; category?: { name?: string | null } | null }
 
 export function FinancesReports() {
   const { data } = useQuery({
     queryKey: ["finances","reports"],
     queryFn: async (): Promise<Row[]> => {
-      const { data, error } = await supabase.from("finances").select("date, amount, type");
+      // Incluimos la categoría (si existe) para el desglose
+      const { data, error } = await supabase.from("finances").select("date, amount, type, finance_categories(name)");
       if (error) throw error;
-      return (data as Row[]) || [];
+      // PostgREST devuelve el join bajo la clave 'finance_categories'
+      const mapped = (data as any[]).map(d => ({
+        date: d.date, amount: d.amount, type: d.type,
+        category: d.finance_categories ? { name: d.finance_categories.name } : null,
+      }));
+      return mapped as Row[];
     }
   });
 
@@ -29,9 +36,24 @@ export function FinancesReports() {
     return Object.values(map).sort((a,b) => a.month.localeCompare(b.month));
   }, [data]);
 
+  // Desglose por categoría del último mes con datos
+  const lastMonthBreakdown = useMemo(() => {
+    if (!data || data.length === 0) return [];
+    const months = Array.from(new Set(data.filter(r => r.date).map(r => format(new Date(r.date!), 'yyyy-MM')))).sort();
+    const last = months[months.length - 1];
+    const filtered = data.filter(r => r.date && format(new Date(r.date), 'yyyy-MM') === last);
+    const map: Record<string, { category: string; total: number }> = {};
+    filtered.forEach(r => {
+      const key = r.category?.name || "Sin categoría";
+      if (!map[key]) map[key] = { category: key, total: 0 };
+      map[key].total += r.amount || 0;
+    });
+    return Object.values(map).sort((a,b) => b.total - a.total);
+  }, [data]);
+
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="pt-6 space-y-6">
         <ChartContainer
           config={{ ingresos: { label: 'Ingresos', color: 'hsl(var(--primary))' }, egresos: { label: 'Egresos', color: 'hsl(var(--destructive))' } }}
           className="h-[320px] w-full"
@@ -48,7 +70,24 @@ export function FinancesReports() {
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
+
+        {/* Desglose por categoría del último mes */}
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">Desglose por categoría (último mes con movimientos)</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {lastMonthBreakdown.map((item) => (
+              <div key={item.category} className="flex items-center justify-between rounded border px-3 py-2">
+                <span className="text-sm">{item.category}</span>
+                <span className="text-sm font-mono">${item.total.toLocaleString()}</span>
+              </div>
+            ))}
+            {lastMonthBreakdown.length === 0 && (
+              <div className="text-sm text-muted-foreground">Sin datos todavía.</div>
+            )}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 }
+

@@ -14,6 +14,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar as CalendarIcon, Pencil, Trash2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import CategorySelect from "./CategorySelect";
+import MultiAnimalSelect from "./MultiAnimalSelect";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 interface FinanceRow {
   id: string;
@@ -31,45 +35,98 @@ export function FinancesMovements() {
   const [to, setTo] = useState<Date | undefined>();
   const [type, setType] = useState<string | undefined>();
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string | undefined>();
 
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search],
+    queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search, categoryFilter],
     queryFn: async (): Promise<FinanceRow[]> => {
-      let q = supabase.from("finances").select("id,date,type,amount,description").order("date", { ascending: false });
+      let q = supabase.from("finances").select("id,date,type,amount,description,category_id,buyer_name").order("date", { ascending: false });
       if (from) q = q.gte("date", format(from, "yyyy-MM-dd"));
       if (to) q = q.lte("date", format(to, "yyyy-MM-dd"));
       if (type) q = q.eq("type", type);
+      if (categoryFilter) q = q.eq("category_id", categoryFilter);
       if (search) q = q.ilike("description", `%${search}%`);
       const { data, error } = await q;
       if (error) throw error;
-      return (data as FinanceRow[]) || [];
+      return (data as any) || [];
     },
   });
 
-  // Create / Update dialog state
   const [open, setOpen] = useState(false);
   const [editRow, setEditRow] = useState<FinanceRow | null>(null);
-  const [form, setForm] = useState<{ date: Date | undefined; type: string; amount: string; description: string }>({
+  const [form, setForm] = useState<{
+    date: Date | undefined;
+    type: string;
+    amount: string;
+    description: string;
+    categoryId?: string;
+    isAnimalSale: boolean;
+    animalIds: string[];
+    buyerName?: string;
+    buyerDocument?: string;
+    buyerDestination?: string;
+  }>({
     date: undefined,
     type: "ingreso",
     amount: "",
     description: "",
+    categoryId: undefined,
+    isAnimalSale: false,
+    animalIds: [],
+    buyerName: "",
+    buyerDocument: "",
+    buyerDestination: "",
   });
 
-  const resetForm = () => setForm({ date: undefined, type: "ingreso", amount: "", description: "" });
+  const resetForm = () => setForm({
+    date: undefined,
+    type: "ingreso",
+    amount: "",
+    description: "",
+    categoryId: undefined,
+    isAnimalSale: false,
+    animalIds: [],
+    buyerName: "",
+    buyerDocument: "",
+    buyerDestination: "",
+  });
 
   const upsertMutation = useMutation({
     mutationFn: async () => {
       if (!currentUser?.cabañaId) throw new Error("Falta cabaña");
-      const payload = {
+      const baseDate = form.date ? format(form.date, "yyyy-MM-dd") : null;
+
+      if (!editRow && form.type === "ingreso" && form.isAnimalSale && form.animalIds.length > 0) {
+        const { error } = await supabase.rpc("create_animal_sale", {
+          _cabana_id: currentUser.cabañaId,
+          _date: baseDate,
+          _amount: form.amount ? Number(form.amount) : 0,
+          _description: form.description || null,
+          _buyer_name: form.buyerName || null,
+          _buyer_document: form.buyerDocument || null,
+          _buyer_destination: form.buyerDestination || null,
+          _animal_ids: form.animalIds,
+          _unit_prices: null,
+          _category_id: form.categoryId || null
+        });
+        if (error) throw error;
+        return;
+      }
+
+      const payload: any = {
         cabaña_id: currentUser.cabañaId,
-        date: form.date ? format(form.date, "yyyy-MM-dd") : null,
+        date: baseDate,
         type: form.type,
         amount: form.amount ? Number(form.amount) : null,
         description: form.description || null,
+        category_id: form.categoryId || null,
+        buyer_name: form.buyerName || null,
+        buyer_document: form.buyerDocument || null,
+        buyer_destination: form.buyerDestination || null,
       };
+
       if (editRow) {
         const { error } = await supabase.from("finances").update(payload).eq("id", editRow.id);
         if (error) throw error;
@@ -85,6 +142,7 @@ export function FinancesMovements() {
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["finances","list"] });
       queryClient.invalidateQueries({ queryKey: ["finances","summary"] });
+      queryClient.invalidateQueries({ queryKey: ["finances","reports"] });
     },
     onError: (e: any) => {
       toast.error(e?.message || "Error al guardar");
@@ -100,6 +158,7 @@ export function FinancesMovements() {
       toast.success("Movimiento eliminado");
       queryClient.invalidateQueries({ queryKey: ["finances","list"] });
       queryClient.invalidateQueries({ queryKey: ["finances","summary"] });
+      queryClient.invalidateQueries({ queryKey: ["finances","reports"] });
     },
     onError: (e: any) => toast.error(e?.message || "Error al eliminar"),
   });
@@ -111,6 +170,12 @@ export function FinancesMovements() {
       type: row.type || "ingreso",
       amount: row.amount?.toString() || "",
       description: row.description || "",
+      categoryId: (row as any).category_id || undefined,
+      isAnimalSale: false,
+      animalIds: [],
+      buyerName: (row as any).buyer_name || "",
+      buyerDocument: (row as any).buyer_document || "",
+      buyerDestination: (row as any).buyer_destination || "",
     });
     setOpen(true);
   };
@@ -151,6 +216,14 @@ export function FinancesMovements() {
             <SelectItem value="egreso">Egreso</SelectItem>
           </SelectContent>
         </Select>
+        <CategorySelect
+          type={(type as "ingreso"|"egreso") || "egreso"}
+          value={categoryFilter}
+          onChange={(id) => setCategoryFilter(id === "__none__" ? undefined : id)}
+          className="w-[220px]"
+          allowCreate={false}
+          placeholder="Filtrar por categoría"
+        />
         <Input placeholder="Buscar descripción" value={search} onChange={(e) => setSearch(e.target.value)} className="w-[220px]" />
         <div className="ml-auto">
           <Button onClick={onCreate} disabled={!canEdit}>
@@ -165,6 +238,7 @@ export function FinancesMovements() {
             <TableRow>
               <TableHead>Fecha</TableHead>
               <TableHead>Tipo</TableHead>
+              <TableHead>Categoría</TableHead>
               <TableHead className="text-right">Monto</TableHead>
               <TableHead>Descripción</TableHead>
               <TableHead className="w-[110px]"></TableHead>
@@ -172,12 +246,15 @@ export function FinancesMovements() {
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={5}>Cargando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6}>Cargando...</TableCell></TableRow>
             )}
-            {!isLoading && (data || []).map((row) => (
+            {!isLoading && (data || []).map((row: any) => (
               <TableRow key={row.id}>
                 <TableCell>{row.date ? format(new Date(row.date), "dd/MM/yyyy") : "-"}</TableCell>
                 <TableCell className={row.type === 'ingreso' ? 'text-primary' : 'text-destructive'}>{row.type}</TableCell>
+                <TableCell>
+                  {row.category_name || row.category?.name || "-"}
+                </TableCell>
                 <TableCell className="text-right">${(row.amount || 0).toLocaleString()}</TableCell>
                 <TableCell>{row.description}</TableCell>
                 <TableCell className="text-right space-x-2">
@@ -214,6 +291,37 @@ export function FinancesMovements() {
                 <SelectItem value="egreso">Egreso</SelectItem>
               </SelectContent>
             </Select>
+
+            <CategorySelect
+              type={form.type as "ingreso"|"egreso"}
+              value={form.categoryId}
+              onChange={(id) => setForm(f => ({...f, categoryId: id === "__none__" ? undefined : id}))}
+            />
+
+            {form.type === "ingreso" && (
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="animal-sale"
+                  checked={form.isAnimalSale}
+                  onCheckedChange={(v) => setForm(f => ({...f, isAnimalSale: !!v}))}
+                />
+                <Label htmlFor="animal-sale">Venta de animales</Label>
+              </div>
+            )}
+
+            {form.type === "ingreso" && form.isAnimalSale && (
+              <div className="grid gap-3">
+                <MultiAnimalSelect
+                  selectedIds={form.animalIds}
+                  onChange={(ids) => setForm(f => ({...f, animalIds: ids}))}
+                />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <Input placeholder="Comprador (opcional)" value={form.buyerName} onChange={(e) => setForm(f => ({...f, buyerName: e.target.value}))} />
+                  <Input placeholder="Documento (opcional)" value={form.buyerDocument} onChange={(e) => setForm(f => ({...f, buyerDocument: e.target.value}))} />
+                  <Input placeholder="Destino (opcional)" value={form.buyerDestination} onChange={(e) => setForm(f => ({...f, buyerDestination: e.target.value}))} />
+                </div>
+              </div>
+            )}
 
             <Input type="number" placeholder="Monto" value={form.amount} onChange={(e) => setForm(f => ({...f, amount: e.target.value}))} />
             <Textarea placeholder="Descripción" value={form.description} onChange={(e) => setForm(f => ({...f, description: e.target.value}))} />
