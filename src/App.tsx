@@ -9,11 +9,11 @@ import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
 import Users from "./pages/Users";
-
 import Subscription from "./pages/Subscription";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import Finances from "./pages/Finances";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -73,7 +73,7 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Página de finanzas próximamente...</div>} />
+              <Route index element={<Finances />} />
             </Route>
             <Route path="/reports" element={
               <ProtectedRoute>
