@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 type FinanceType = "ingreso" | "egreso";
 
@@ -47,18 +48,28 @@ export default function CategorySelect({
   const { data: categories = [] } = useQuery({
     queryKey: ["finance-categories", type, currentUser?.cabañaId],
     queryFn: async (): Promise<CategoryRow[]> => {
-      const cabId = currentUser?.cabañaId || "";
-      const { data, error } = await supabaseAny
+      const cabId = currentUser?.cabañaId as string | undefined;
+
+      let q = supabaseAny
         .from("finance_categories")
         .select("*")
-        .or(`cabaña_id.is.null,cabaña_id.eq.${cabId}`)
-        .eq("type", type)
+        .eq("type", type);
+
+      // Evitar usar eq con UUID vacío: si no hay cabaña, filtramos solo por categorías del sistema (cabaña_id IS NULL)
+      if (cabId) {
+        q = q.or(`cabaña_id.is.null,cabaña_id.eq.${cabId}`);
+      } else {
+        q = q.is("cabaña_id", null);
+      }
+
+      const { data, error } = await q
         .order("is_system", { ascending: false })
         .order("name", { ascending: true });
+
       if (error) throw error;
       return (data as unknown as CategoryRow[]) || [];
     },
-    enabled: true,
+    enabled: !!currentUser?.id, // Ejecutar solo si hay sesión
   });
 
   const createMutation = useMutation({
@@ -73,9 +84,14 @@ export default function CategorySelect({
       if (error) throw error;
     },
     onSuccess: () => {
+      toast.success("Categoría creada");
       queryClient.invalidateQueries({ queryKey: ["finance-categories"] });
       setOpen(false);
       setNewName("");
+    },
+    onError: (e: any) => {
+      console.error("Error creando categoría:", e);
+      toast.error(e?.message || "Error al crear la categoría");
     },
   });
 

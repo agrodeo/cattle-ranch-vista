@@ -413,10 +413,130 @@ export type Database = {
           },
         ]
       }
+      finance_categories: {
+        Row: {
+          cabaña_id: string | null
+          created_at: string
+          id: string
+          is_system: boolean
+          name: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          cabaña_id?: string | null
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          name: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          cabaña_id?: string | null
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_categories_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finance_recurring: {
+        Row: {
+          amount: number
+          cabaña_id: string
+          category_id: string | null
+          created_at: string
+          day_of_month: number | null
+          day_of_week: number | null
+          description: string | null
+          end_date: string | null
+          frequency: string
+          id: string
+          interval_days: number | null
+          is_active: boolean
+          last_run_date: string | null
+          name: string
+          next_run_date: string | null
+          start_date: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          cabaña_id: string
+          category_id?: string | null
+          created_at?: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          description?: string | null
+          end_date?: string | null
+          frequency: string
+          id?: string
+          interval_days?: number | null
+          is_active?: boolean
+          last_run_date?: string | null
+          name: string
+          next_run_date?: string | null
+          start_date?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          cabaña_id?: string
+          category_id?: string | null
+          created_at?: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          description?: string | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          interval_days?: number | null
+          is_active?: boolean
+          last_run_date?: string | null
+          name?: string
+          next_run_date?: string | null
+          start_date?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finance_recurring_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finance_recurring_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       finances: {
         Row: {
           amount: number | null
+          buyer_destination: string | null
+          buyer_document: string | null
+          buyer_name: string | null
           cabaña_id: string | null
+          category_id: string | null
           date: string | null
           description: string | null
           id: string
@@ -424,7 +544,11 @@ export type Database = {
         }
         Insert: {
           amount?: number | null
+          buyer_destination?: string | null
+          buyer_document?: string | null
+          buyer_name?: string | null
           cabaña_id?: string | null
+          category_id?: string | null
           date?: string | null
           description?: string | null
           id?: string
@@ -432,7 +556,11 @@ export type Database = {
         }
         Update: {
           amount?: number | null
+          buyer_destination?: string | null
+          buyer_document?: string | null
+          buyer_name?: string | null
           cabaña_id?: string | null
+          category_id?: string | null
           date?: string | null
           description?: string | null
           id?: string
@@ -444,6 +572,49 @@ export type Database = {
             columns: ["cabaña_id"]
             isOneToOne: false
             referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finances_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "finance_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      finances_animal_sales: {
+        Row: {
+          animal_id: string
+          finance_id: string
+          id: string
+          unit_price: number | null
+        }
+        Insert: {
+          animal_id: string
+          finance_id: string
+          id?: string
+          unit_price?: number | null
+        }
+        Update: {
+          animal_id?: string
+          finance_id?: string
+          id?: string
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "finances_animal_sales_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "finances_animal_sales_finance_id_fkey"
+            columns: ["finance_id"]
+            isOneToOne: false
+            referencedRelation: "finances"
             referencedColumns: ["id"]
           },
         ]
@@ -820,6 +991,21 @@ export type Database = {
       check_consanguinity: {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
+      }
+      create_animal_sale: {
+        Args: {
+          _cabana_id: string
+          _date: string
+          _amount: number
+          _description: string
+          _buyer_name: string
+          _buyer_document: string
+          _buyer_destination: string
+          _animal_ids: string[]
+          _unit_prices: number[]
+          _category_id: string
+        }
+        Returns: string
       }
       create_company_with_owner: {
         Args: {
