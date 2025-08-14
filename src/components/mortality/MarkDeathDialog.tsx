@@ -38,6 +38,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 
 const formSchema = z.object({
   fecha_defuncion: z.date({
@@ -87,6 +88,7 @@ export function MarkDeathDialog({
   const [loading, setLoading] = useState(false);
   const [showCustomCause, setShowCustomCause] = useState(false);
   const { toast } = useToast();
+  const { currentUser } = useSimpleAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -114,6 +116,7 @@ export function MarkDeathDialog({
   const loadDeathCauses = async () => {
     try {
       const { data, error } = await supabase.rpc('manage_death_causes', {
+        _user_id: currentUser?.id,
         _action: 'list'
       });
 
@@ -141,11 +144,12 @@ export function MarkDeathDialog({
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!animal) return;
+    if (!animal || !currentUser?.id) return;
     
     setLoading(true);
     try {
       const { data, error } = await supabase.rpc('marcar_defuncion', {
+        _user_id: currentUser.id,
         _animal_id: animal.id,
         _fecha_defuncion: format(values.fecha_defuncion, 'yyyy-MM-dd'),
         _causa_id: values.causa_id || null,

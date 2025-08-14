@@ -1333,23 +1333,41 @@ export type Database = {
         }[]
       }
       manage_death_causes: {
-        Args: {
-          _action: string
-          _activo?: boolean
-          _id?: string
-          _nombre?: string
-          _orden?: number
-        }
+        Args:
+          | {
+              _action: string
+              _activo?: boolean
+              _id?: string
+              _nombre?: string
+              _orden?: number
+            }
+          | {
+              _action: string
+              _activo?: boolean
+              _id?: string
+              _nombre?: string
+              _orden?: number
+              _user_id: string
+            }
         Returns: Json
       }
       marcar_defuncion: {
-        Args: {
-          _animal_id: string
-          _causa_id?: string
-          _causa_texto?: string
-          _fecha_defuncion: string
-          _notas?: string
-        }
+        Args:
+          | {
+              _animal_id: string
+              _causa_id?: string
+              _causa_texto?: string
+              _fecha_defuncion: string
+              _notas?: string
+            }
+          | {
+              _animal_id: string
+              _causa_id?: string
+              _causa_texto?: string
+              _fecha_defuncion: string
+              _notas?: string
+              _user_id: string
+            }
         Returns: Json
       }
       update_finance_movement: {
