@@ -87,6 +87,9 @@ export function MarkDeathDialog({
   const [causes, setCauses] = useState<DeathCause[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCustomCause, setShowCustomCause] = useState(false);
+  const [showAddCause, setShowAddCause] = useState(false);
+  const [newCauseName, setNewCauseName] = useState("");
+  const [addingCause, setAddingCause] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useSimpleAuth();
 
@@ -140,6 +143,53 @@ export function MarkDeathDialog({
         description: "No se pudieron cargar las causas de muerte",
         variant: "destructive",
       });
+    }
+  };
+
+  const addNewCause = async () => {
+    if (!newCauseName.trim() || !currentUser?.id) return;
+
+    setAddingCause(true);
+    try {
+      const { data, error } = await supabase.rpc('manage_death_causes', {
+        _user_id: currentUser.id,
+        _action: 'create',
+        _nombre: newCauseName.trim(),
+      });
+
+      if (error) throw error;
+
+      if ((data as any)?.success) {
+        toast({
+          title: "Éxito",
+          description: "Causa de muerte agregada correctamente",
+        });
+        
+        // Recargar las causas y seleccionar la nueva
+        await loadDeathCauses();
+        
+        // Seleccionar la nueva causa
+        const newCauseId = (data as any)?.id;
+        if (newCauseId) {
+          form.setValue('causa_id', newCauseId);
+        }
+        
+        // Resetear el formulario de agregar
+        setNewCauseName("");
+        setShowAddCause(false);
+        setShowCustomCause(false);
+      } else {
+        throw new Error((data as any)?.error || 'Error desconocido');
+      }
+    } catch (error: any) {
+      console.error('Error adding death cause:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo agregar la causa",
+        variant: "destructive",
+      });
+    } finally {
+      setAddingCause(false);
     }
   };
 
@@ -206,10 +256,17 @@ export function MarkDeathDialog({
   const handleCauseChange = (value: string) => {
     if (value === 'otra') {
       setShowCustomCause(true);
+      setShowAddCause(false);
+      form.setValue('causa_id', '');
+      form.setValue('causa_texto', '');
+    } else if (value === 'agregar_nueva') {
+      setShowAddCause(true);
+      setShowCustomCause(false);
       form.setValue('causa_id', '');
       form.setValue('causa_texto', '');
     } else {
       setShowCustomCause(false);
+      setShowAddCause(false);
       form.setValue('causa_id', value);
       form.setValue('causa_texto', '');
     }
@@ -303,14 +360,15 @@ export function MarkDeathDialog({
                         <SelectValue placeholder="Seleccionar causa" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      {causes.map((cause) => (
-                        <SelectItem key={cause.id} value={cause.id}>
-                          {cause.nombre}
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="otra">Otra causa...</SelectItem>
-                    </SelectContent>
+                     <SelectContent>
+                       {causes.map((cause) => (
+                         <SelectItem key={cause.id} value={cause.id}>
+                           {cause.nombre}
+                         </SelectItem>
+                       ))}
+                       <SelectItem value="agregar_nueva">+ Agregar nueva causa</SelectItem>
+                       <SelectItem value="otra">Otra causa...</SelectItem>
+                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
@@ -334,6 +392,44 @@ export function MarkDeathDialog({
                   </FormItem>
                 )}
               />
+            )}
+
+            {showAddCause && (
+              <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
+                <FormLabel>Agregar nueva causa de muerte</FormLabel>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Nombre de la nueva causa"
+                    value={newCauseName}
+                    onChange={(e) => setNewCauseName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addNewCause();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={addNewCause}
+                    disabled={!newCauseName.trim() || addingCause}
+                    size="sm"
+                  >
+                    {addingCause ? "Agregando..." : "Agregar"}
+                  </Button>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAddCause(false);
+                    setNewCauseName("");
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
             )}
 
             <FormField

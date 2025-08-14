@@ -1100,6 +1100,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      add_default_death_causes_to_cabana: {
+        Args: { _cabana_id: string }
+        Returns: undefined
+      }
       calculate_age_months: {
         Args: { birth_date: string }
         Returns: number
