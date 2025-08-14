@@ -20,18 +20,32 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
-  const { data: animals = [] } = useQuery({
+  const { data: animals = [], isLoading, error } = useQuery({
     queryKey: ["animals-available", currentUser?.cabañaId],
     queryFn: async (): Promise<any[]> => {
       const cabId = currentUser?.cabañaId || "";
+      console.log("🐄 MultiAnimalSelect - Current user cabañaId:", cabId);
+      console.log("🐄 MultiAnimalSelect - Current user:", currentUser);
+      
+      if (!cabId) {
+        console.log("🐄 MultiAnimalSelect - No cabaña ID found");
+        return [];
+      }
+      
       // Traer animales de la cabaña que no estén vendidos ni muertos
-      // Seleccionamos * para evitar errores por columnas desconocidas
       const { data, error } = await supabase
         .from("animals")
         .select("*")
         .eq("cabaña_id", cabId)
         .not("status", "in", ["vendido", "muerto", "Vendido", "Muerto"]);
-      if (error) throw error;
+        
+      console.log("🐄 MultiAnimalSelect - Query result:", { data, error });
+      console.log("🐄 MultiAnimalSelect - Animals count:", data?.length || 0);
+      
+      if (error) {
+        console.error("🐄 MultiAnimalSelect - Query error:", error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!currentUser?.cabañaId,
@@ -76,7 +90,15 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
             <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} />
             <ScrollArea className="h-64 rounded border">
               <div className="p-2 space-y-1">
-                {filtered.map((a: any) => (
+                {isLoading && (
+                  <div className="text-sm text-muted-foreground px-2 py-1">Cargando animales...</div>
+                )}
+                {error && (
+                  <div className="text-sm text-destructive px-2 py-1">
+                    Error al cargar animales: {error.message}
+                  </div>
+                )}
+                {!isLoading && !error && filtered.map((a: any) => (
                   <label key={a.id} className="flex items-center gap-2 px-2 py-1 rounded hover:bg-muted cursor-pointer">
                     <Checkbox
                       checked={selectedIds.includes(a.id)}
@@ -85,8 +107,13 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
                     <span className="text-sm">{getLabel(a)}</span>
                   </label>
                 ))}
-                {filtered.length === 0 && (
-                  <div className="text-sm text-muted-foreground px-2 py-1">Sin resultados</div>
+                {!isLoading && !error && filtered.length === 0 && animals.length === 0 && (
+                  <div className="text-sm text-muted-foreground px-2 py-1">
+                    No hay animales disponibles para vender
+                  </div>
+                )}
+                {!isLoading && !error && filtered.length === 0 && animals.length > 0 && (
+                  <div className="text-sm text-muted-foreground px-2 py-1">Sin resultados para "{search}"</div>
                 )}
               </div>
             </ScrollArea>
