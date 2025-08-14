@@ -14,6 +14,7 @@ import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Finances from "./pages/Finances";
+import Reports from "./pages/Reports";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -80,7 +81,7 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Página de reportes próximamente...</div>} />
+              <Route index element={<Reports />} />
             </Route>
             <Route path="/subscription" element={
               <ProtectedRoute>
