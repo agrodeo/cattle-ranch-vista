@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSimpleAuth } from "@/hooks/useSimpleAuth";
@@ -122,8 +122,8 @@ export function FinancesSummary() {
 
     reportsData.forEach((item: any) => {
       try {
-        // Handle date parsing more robustly
-        const itemDate = new Date(item.date);
+        // Use parseISO for proper date handling without timezone issues
+        const itemDate = parseISO(item.date);
         if (isNaN(itemDate.getTime())) {
           console.warn("Invalid date found:", item.date, item);
           return;
