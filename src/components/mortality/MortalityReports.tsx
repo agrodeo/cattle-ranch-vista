@@ -61,7 +61,7 @@ export function MortalityReports() {
     dateFrom: "",
     dateTo: "",
     breed: "",
-    sex: "",
+    sex: "all",
     cause: "",
   });
   const { toast } = useToast();
@@ -94,6 +94,9 @@ export function MortalityReports() {
       }
       if (filters.dateTo) {
         query = query.lte('fecha_defuncion', filters.dateTo);
+      }
+      if (filters.sex && filters.sex !== 'all') {
+        query = query.eq('animals.sex', filters.sex);
       }
 
       const { data: deathsData, error } = await query;
@@ -277,7 +280,7 @@ export function MortalityReports() {
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="Macho">Macho</SelectItem>
                   <SelectItem value="Hembra">Hembra</SelectItem>
                 </SelectContent>
