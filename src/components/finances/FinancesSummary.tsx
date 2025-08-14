@@ -112,85 +112,134 @@ export function FinancesSummary() {
 
   // Process data for charts
   const monthly = useMemo(() => {
-    if (!reportsData) return [];
+    if (!reportsData) {
+      console.log("No reportsData available");
+      return [];
+    }
 
+    console.log("Processing monthly data:", reportsData);
     const monthlyMap = new Map();
 
     reportsData.forEach((item: any) => {
-      const month = format(new Date(item.date), "yyyy-MM");
-      if (!monthlyMap.has(month)) {
-        monthlyMap.set(month, { month, ingresos: 0, egresos: 0 });
-      }
-      const entry = monthlyMap.get(month);
-      if (item.type === "ingreso") {
-        entry.ingresos += Number(item.amount);
-      } else {
-        entry.egresos += Number(item.amount);
+      try {
+        // Handle date parsing more robustly
+        const itemDate = new Date(item.date);
+        if (isNaN(itemDate.getTime())) {
+          console.warn("Invalid date found:", item.date, item);
+          return;
+        }
+
+        const month = format(itemDate, "yyyy-MM");
+        if (!monthlyMap.has(month)) {
+          monthlyMap.set(month, { month, ingresos: 0, egresos: 0 });
+        }
+        const entry = monthlyMap.get(month);
+        
+        const amount = Number(item.amount) || 0;
+        if (item.type === "ingreso") {
+          entry.ingresos += amount;
+        } else if (item.type === "egreso") {
+          entry.egresos += amount;
+        }
+      } catch (error) {
+        console.error("Error processing item:", item, error);
       }
     });
 
-    return Array.from(monthlyMap.values()).sort((a, b) => a.month.localeCompare(b.month));
+    const result = Array.from(monthlyMap.values()).sort((a, b) => a.month.localeCompare(b.month));
+    console.log("Monthly chart data:", result);
+    return result;
   }, [reportsData]);
 
   const incomeByCategory = useMemo(() => {
-    if (!reportsData) return [];
+    if (!reportsData) {
+      console.log("No reportsData for income categories");
+      return [];
+    }
 
     const categoryMap = new Map();
 
     reportsData
       .filter((item: any) => item.type === "ingreso")
       .forEach((item: any) => {
-        const category = item.category_name || "Sin categoría";
-        if (!categoryMap.has(category)) {
-          categoryMap.set(category, 0);
+        try {
+          const category = item.category_name || "Sin categoría";
+          const amount = Number(item.amount) || 0;
+          
+          if (!categoryMap.has(category)) {
+            categoryMap.set(category, 0);
+          }
+          categoryMap.set(category, categoryMap.get(category) + amount);
+        } catch (error) {
+          console.error("Error processing income category:", item, error);
         }
-        categoryMap.set(category, categoryMap.get(category) + Number(item.amount));
       });
 
-    return Array.from(categoryMap.entries()).map(([name, value]) => ({
+    const result = Array.from(categoryMap.entries()).map(([name, value]) => ({
       name,
       value,
     }));
+    
+    console.log("Income by category data:", result);
+    return result;
   }, [reportsData]);
 
   const expensesByCategory = useMemo(() => {
-    if (!reportsData) return [];
+    if (!reportsData) {
+      console.log("No reportsData for expense categories");
+      return [];
+    }
 
     const categoryMap = new Map();
 
     reportsData
       .filter((item: any) => item.type === "egreso")
       .forEach((item: any) => {
-        const category = item.category_name || "Sin categoría";
-        if (!categoryMap.has(category)) {
-          categoryMap.set(category, 0);
+        try {
+          const category = item.category_name || "Sin categoría";
+          const amount = Number(item.amount) || 0;
+          
+          if (!categoryMap.has(category)) {
+            categoryMap.set(category, 0);
+          }
+          categoryMap.set(category, categoryMap.get(category) + amount);
+        } catch (error) {
+          console.error("Error processing expense category:", item, error);
         }
-        categoryMap.set(category, categoryMap.get(category) + Number(item.amount));
       });
 
-    return Array.from(categoryMap.entries()).map(([name, value]) => ({
+    const result = Array.from(categoryMap.entries()).map(([name, value]) => ({
       name,
       value,
     }));
+    
+    console.log("Expenses by category data:", result);
+    return result;
   }, [reportsData]);
 
   // Calculate period totals
   const totals = useMemo(() => {
-    if (!reportsData) return { ingresos: 0, egresos: 0, balance: 0 };
+    if (!reportsData) {
+      console.log("No reportsData for totals");
+      return { ingresos: 0, egresos: 0, balance: 0 };
+    }
 
     const totalIngresos = reportsData
       .filter((item: any) => item.type === "ingreso")
-      .reduce((sum: number, item: any) => sum + Number(item.amount), 0);
+      .reduce((sum: number, item: any) => sum + (Number(item.amount) || 0), 0);
 
     const totalEgresos = reportsData
       .filter((item: any) => item.type === "egreso")
-      .reduce((sum: number, item: any) => sum + Number(item.amount), 0);
+      .reduce((sum: number, item: any) => sum + (Number(item.amount) || 0), 0);
 
-    return {
+    const result = {
       ingresos: totalIngresos,
       egresos: totalEgresos,
       balance: totalIngresos - totalEgresos,
     };
+
+    console.log("Period totals:", result);
+    return result;
   }, [reportsData]);
 
   const ingresos = data?.ingresos || 0;
