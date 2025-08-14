@@ -200,16 +200,28 @@ const Animals = () => {
   }, [currentUser]);
 
   const fetchUserCabaña = async () => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      console.log("No currentUser.id found, currentUser:", currentUser);
+      return;
+    }
+    
+    console.log("Fetching cabaña for user:", currentUser.id);
+    
     try {
       const { data, error } = await supabase.rpc("get_user_cabana_info", {
         user_uuid: currentUser.id,
       });
       
-      if (error) throw error;
+      console.log("RPC response:", { data, error });
+      
+      if (error) {
+        console.error("RPC error:", error);
+        throw error;
+      }
       
       // If user doesn't exist in users table, show a message
       if (!data || data.length === 0) {
+        console.log("No cabaña data found for user");
         toast({
           title: "Configuración requerida",
           description: "Por favor contacte al administrador para asignar su cabaña",
@@ -218,6 +230,7 @@ const Animals = () => {
         return;
       }
       
+      console.log("Setting userCabaña to:", data[0]?.cabana_id);
       setUserCabaña(data[0]?.cabana_id || "");
     } catch (error) {
       console.error("Error fetching user cabaña:", error);
