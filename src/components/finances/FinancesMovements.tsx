@@ -45,16 +45,21 @@ export function FinancesMovements() {
   const { data, isLoading } = useQuery({
     queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search, categoryFilter],
     queryFn: async (): Promise<FinanceRow[]> => {
-      let q = supabaseAny.from("finances").select("*").order("date", { ascending: false });
-      if (from) q = q.gte("date", format(from, "yyyy-MM-dd"));
-      if (to) q = q.lte("date", format(to, "yyyy-MM-dd"));
-      if (type) q = q.eq("type", type);
-      if (categoryFilter) q = q.eq("category_id", categoryFilter);
-      if (search) q = q.ilike("description", `%${search}%`);
-      const { data, error } = await q;
+      if (!currentUser?.id) throw new Error("User not authenticated");
+      
+      const { data, error } = await supabaseAny.rpc("list_finance_movements", {
+        _user_id: currentUser.id,
+        _from_date: from ? format(from, "yyyy-MM-dd") : null,
+        _to_date: to ? format(to, "yyyy-MM-dd") : null,
+        _type: type || null,
+        _search: search || null,
+        _category_id: categoryFilter || null
+      });
+      
       if (error) throw error;
       return (data as unknown as FinanceRow[]) || [];
     },
+    enabled: !!currentUser?.id,
   });
 
   const [open, setOpen] = useState(false);
@@ -98,8 +103,11 @@ export function FinancesMovements() {
 
   const upsertMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser?.cabañaId) throw new Error("Falta cabaña");
+      if (!currentUser?.id) throw new Error("User not authenticated");
       const baseDate = form.date ? format(form.date, "yyyy-MM-dd") : null;
+      
+      if (!baseDate) throw new Error("Date is required");
+      if (!form.amount || Number(form.amount) <= 0) throw new Error("Amount must be greater than 0");
 
       if (!editRow && form.type === "ingreso" && form.isAnimalSale && form.animalIds.length > 0) {
         const { error } = await supabaseAny.rpc("create_animal_sale", {
@@ -118,23 +126,32 @@ export function FinancesMovements() {
         return;
       }
 
-      const payload: any = {
-        cabaña_id: currentUser.cabañaId,
-        date: baseDate,
-        type: form.type,
-        amount: form.amount ? Number(form.amount) : null,
-        description: form.description || null,
-        category_id: form.categoryId || null,
-        buyer_name: form.buyerName || null,
-        buyer_document: form.buyerDocument || null,
-        buyer_destination: form.buyerDestination || null,
-      };
-
       if (editRow) {
-        const { error } = await supabaseAny.from("finances").update(payload).eq("id", editRow.id);
+        const { error } = await supabaseAny.rpc("update_finance_movement", {
+          _user_id: currentUser.id,
+          _movement_id: editRow.id,
+          _date: baseDate,
+          _type: form.type,
+          _amount: Number(form.amount),
+          _description: form.description || null,
+          _category_id: form.categoryId || null,
+          _buyer_name: form.buyerName || null,
+          _buyer_document: form.buyerDocument || null,
+          _buyer_destination: form.buyerDestination || null,
+        });
         if (error) throw error;
       } else {
-        const { error } = await supabaseAny.from("finances").insert(payload);
+        const { error } = await supabaseAny.rpc("create_finance_movement", {
+          _user_id: currentUser.id,
+          _date: baseDate,
+          _type: form.type,
+          _amount: Number(form.amount),
+          _description: form.description || null,
+          _category_id: form.categoryId || null,
+          _buyer_name: form.buyerName || null,
+          _buyer_document: form.buyerDocument || null,
+          _buyer_destination: form.buyerDestination || null,
+        });
         if (error) throw error;
       }
     },
@@ -154,7 +171,12 @@ export function FinancesMovements() {
 
   const deleteMutation = useMutation({
     mutationFn: async (row: FinanceRow) => {
-      const { error } = await supabaseAny.from("finances").delete().eq("id", row.id);
+      if (!currentUser?.id) throw new Error("User not authenticated");
+      
+      const { error } = await supabaseAny.rpc("delete_finance_movement", {
+        _user_id: currentUser.id,
+        _movement_id: row.id
+      });
       if (error) throw error;
     },
     onSuccess: () => {

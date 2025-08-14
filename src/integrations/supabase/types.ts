@@ -1117,6 +1117,20 @@ export type Database = {
         Args: { _name: string; _type: string; _user_id: string }
         Returns: string
       }
+      create_finance_movement: {
+        Args: {
+          _amount: number
+          _buyer_destination?: string
+          _buyer_document?: string
+          _buyer_name?: string
+          _category_id?: string
+          _date: string
+          _description?: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
+      }
       create_finance_recurring: {
         Args: {
           _amount: number
@@ -1130,6 +1144,10 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      delete_finance_movement: {
+        Args: { _movement_id: string; _user_id: string }
+        Returns: undefined
       }
       delete_finance_recurring: {
         Args: { _id: string; _user_id: string }
@@ -1198,6 +1216,29 @@ export type Database = {
           type: string
         }[]
       }
+      list_finance_movements: {
+        Args: {
+          _category_id?: string
+          _from_date?: string
+          _search?: string
+          _to_date?: string
+          _type?: string
+          _user_id: string
+        }
+        Returns: {
+          amount: number
+          buyer_destination: string
+          buyer_document: string
+          buyer_name: string
+          cabaña_id: string
+          category_id: string
+          category_name: string
+          date: string
+          description: string
+          id: string
+          type: string
+        }[]
+      }
       list_finance_recurring: {
         Args: { _user_id: string }
         Returns: {
@@ -1240,6 +1281,21 @@ export type Database = {
           _notas?: string
         }
         Returns: Json
+      }
+      update_finance_movement: {
+        Args: {
+          _amount: number
+          _buyer_destination?: string
+          _buyer_document?: string
+          _buyer_name?: string
+          _category_id?: string
+          _date: string
+          _description?: string
+          _movement_id: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       update_subscription_plan: {
         Args: {
