@@ -30,7 +30,7 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
         .from("animals")
         .select("*")
         .eq("cabaña_id", cabId)
-        .not("status", "in", "(vendido,muerto)");
+        .not("status", "in", ["vendido", "muerto", "Vendido", "Muerto"]);
       if (error) throw error;
       return data || [];
     },
@@ -103,5 +103,5 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
 
 function getLabel(a: any) {
   // Tratamos de armar una etiqueta legible con posibles campos
-  return a.ear_tag || a.tag || a.registration_number || a.name || a.code || a.id;
+  return a.id_tag || a.name || a.registration_number || a.id;
 }
