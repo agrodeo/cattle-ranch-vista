@@ -1270,6 +1270,15 @@ export type Database = {
           updated_at: string
         }[]
       }
+      list_finance_reports: {
+        Args: { _user_id: string }
+        Returns: {
+          amount: number
+          category_name: string
+          date: string
+          type: string
+        }[]
+      }
       manage_death_causes: {
         Args: {
           _action: string

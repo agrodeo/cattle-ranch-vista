@@ -3,26 +3,31 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis } from "recharts";
 
-interface Row { date: string | null; amount: number | null; type: string | null; category?: { name?: string | null } | null }
+interface Row { date: string | null; amount: number | null; type: string | null; category_name?: string | null }
 
 export function FinancesReports() {
+  const { currentUser } = useSimpleAuth();
+
   const { data } = useQuery({
-    queryKey: ["finances","reports"],
+    queryKey: ["finances", "reports", currentUser?.id],
     queryFn: async (): Promise<Row[]> => {
-      // Incluimos la categoría (si existe) para el desglose
-      const { data, error } = await supabase.from("finances").select("date, amount, type, finance_categories(name)");
+      if (!currentUser?.id) {
+        throw new Error("Usuario no autenticado");
+      }
+
+      const { data, error } = await supabase.rpc("list_finance_reports", {
+        _user_id: currentUser.id,
+      });
+
       if (error) throw error;
-      // PostgREST devuelve el join bajo la clave 'finance_categories'
-      const mapped = (data as any[]).map(d => ({
-        date: d.date, amount: d.amount, type: d.type,
-        category: d.finance_categories ? { name: d.finance_categories.name } : null,
-      }));
-      return mapped as Row[];
-    }
+      return data || [];
+    },
+    enabled: !!currentUser?.id,
   });
 
   const monthly = useMemo(() => {
@@ -44,7 +49,7 @@ export function FinancesReports() {
     const filtered = data.filter(r => r.date && format(new Date(r.date), 'yyyy-MM') === last);
     const map: Record<string, { category: string; total: number }> = {};
     filtered.forEach(r => {
-      const key = r.category?.name || "Sin categoría";
+      const key = r.category_name || "Sin categoría";
       if (!map[key]) map[key] = { category: key, total: 0 };
       map[key].total += r.amount || 0;
     });
