@@ -4,7 +4,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FinancesSummary } from "@/components/finances/FinancesSummary";
 import { FinancesMovements } from "@/components/finances/FinancesMovements";
-import { FinancesReports } from "@/components/finances/FinancesReports";
 import FinancesRecurring from "@/components/finances/FinancesRecurring";
 
 const Finances = () => {
@@ -28,7 +27,6 @@ const Finances = () => {
             <TabsList>
               <TabsTrigger value="resumen">Resumen</TabsTrigger>
               <TabsTrigger value="movimientos">Movimientos</TabsTrigger>
-              <TabsTrigger value="reportes">Reportes</TabsTrigger>
               <TabsTrigger value="recurrentes">Recurrentes</TabsTrigger>
             </TabsList>
             <TabsContent value="resumen">
@@ -36,9 +34,6 @@ const Finances = () => {
             </TabsContent>
             <TabsContent value="movimientos">
               <FinancesMovements />
-            </TabsContent>
-            <TabsContent value="reportes">
-              <FinancesReports />
             </TabsContent>
             <TabsContent value="recurrentes">
               <FinancesRecurring />
