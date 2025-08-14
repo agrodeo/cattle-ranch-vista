@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { Scale, TrendingUp, Target, Award } from "lucide-react";
+import { getWeightedBenchmarks, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -12,11 +13,13 @@ interface ProductionStats {
   averageFinalWeight: number;
   averageDailyGain: number;
   weightByAge: { ageMonths: number; avgWeight: number; count: number }[];
-  weightByBreed: { breed: string; birthWeight: number; weaningWeight: number; finalWeight: number }[];
+  weightByBreed: { breed: string; birthWeight: number; weaningWeight: number; finalWeight: number; breedInfo: { name: string; hasBenchmarks: boolean } }[];
   weightByGender: { gender: string; birthWeight: number; weaningWeight: number; finalWeight: number }[];
   growthTrends: { month: string; avgBirthWeight: number; avgWeaningWeight: number; avgFinalWeight: number }[];
-  performanceIndicators: { metric: string; value: number; benchmark: number; status: string }[];
+  performanceIndicators: { metric: string; value: number; benchmark: number; status: string; breedSpecific: boolean }[];
   hasMultipleBreeds: boolean;
+  benchmarks: BreedBenchmarks;
+  breedDistribution: { breed: string; count: number }[];
 }
 
 export const ProductionAnalytics = () => {
@@ -50,6 +53,16 @@ export const ProductionAnalytics = () => {
 
   const calculateProductionStats = (animals: any[]): ProductionStats => {
     const animalsWithWeights = animals.filter(a => a.peso_nacimiento || a.peso_destete || a.peso_final);
+
+    // Calculate breed distribution
+    const breeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
+    const breedDistribution = breeds.map(breed => ({
+      breed,
+      count: animals.filter(a => a.breed === breed).length
+    }));
+
+    // Get breed-specific benchmarks
+    const benchmarks = getWeightedBenchmarks(breedDistribution);
 
     // Average weights
     const birthWeights = animals.filter(a => a.peso_nacimiento).map(a => Number(a.peso_nacimiento));
@@ -94,7 +107,6 @@ export const ProductionAnalytics = () => {
     });
 
     // Weight by breed
-    const breeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
     const weightByBreed = breeds.map(breed => {
       const breedAnimals = animals.filter(a => a.breed === breed);
       const breedBirthWeights = breedAnimals.filter(a => a.peso_nacimiento).map(a => Number(a.peso_nacimiento));
@@ -105,7 +117,8 @@ export const ProductionAnalytics = () => {
         breed,
         birthWeight: breedBirthWeights.length > 0 ? breedBirthWeights.reduce((a, b) => a + b, 0) / breedBirthWeights.length : 0,
         weaningWeight: breedWeaningWeights.length > 0 ? breedWeaningWeights.reduce((a, b) => a + b, 0) / breedWeaningWeights.length : 0,
-        finalWeight: breedFinalWeights.length > 0 ? breedFinalWeights.reduce((a, b) => a + b, 0) / breedFinalWeights.length : 0
+        finalWeight: breedFinalWeights.length > 0 ? breedFinalWeights.reduce((a, b) => a + b, 0) / breedFinalWeights.length : 0,
+        breedInfo: getBreedInfo(breed)
       };
     });
     const hasMultipleBreeds = breeds.length > 1;
@@ -150,11 +163,33 @@ export const ProductionAnalytics = () => {
       }
     }
 
-    // Performance indicators (comparing with industry benchmarks)
+    // Performance indicators using breed-specific benchmarks
+    const birthWeightEval = evaluatePerformance(averageBirthWeight, benchmarks, 'birthWeight');
+    const weaningWeightEval = evaluatePerformance(averageWeaningWeight, benchmarks, 'weaningWeight');
+    const dailyGainEval = evaluatePerformance(averageDailyGain, benchmarks, 'dailyGain');
+
     const performanceIndicators = [
-      { metric: 'Peso al nacer', value: averageBirthWeight, benchmark: 35, status: averageBirthWeight >= 35 ? 'good' : averageBirthWeight >= 30 ? 'average' : 'poor' },
-      { metric: 'Peso al destete', value: averageWeaningWeight, benchmark: 200, status: averageWeaningWeight >= 200 ? 'good' : averageWeaningWeight >= 180 ? 'average' : 'poor' },
-      { metric: 'Ganancia diaria', value: averageDailyGain, benchmark: 0.8, status: averageDailyGain >= 0.8 ? 'good' : averageDailyGain >= 0.6 ? 'average' : 'poor' }
+      { 
+        metric: 'Peso al nacer', 
+        value: averageBirthWeight, 
+        benchmark: birthWeightEval.benchmark, 
+        status: birthWeightEval.status,
+        breedSpecific: breedDistribution.length > 0
+      },
+      { 
+        metric: 'Peso al destete', 
+        value: averageWeaningWeight, 
+        benchmark: weaningWeightEval.benchmark, 
+        status: weaningWeightEval.status,
+        breedSpecific: breedDistribution.length > 0
+      },
+      { 
+        metric: 'Ganancia diaria', 
+        value: averageDailyGain, 
+        benchmark: dailyGainEval.benchmark, 
+        status: dailyGainEval.status,
+        breedSpecific: breedDistribution.length > 0
+      }
     ];
 
     return {
@@ -167,7 +202,9 @@ export const ProductionAnalytics = () => {
       weightByGender,
       growthTrends,
       performanceIndicators,
-      hasMultipleBreeds
+      hasMultipleBreeds,
+      benchmarks,
+      breedDistribution
     };
   };
 
@@ -190,9 +227,14 @@ export const ProductionAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageBirthWeight.toFixed(1)} kg</div>
-            <Badge variant={stats.averageBirthWeight >= 35 ? "default" : stats.averageBirthWeight >= 30 ? "secondary" : "destructive"}>
-              {stats.averageBirthWeight >= 35 ? "Excelente" : stats.averageBirthWeight >= 30 ? "Bueno" : "Mejorable"}
-            </Badge>
+            <div className="flex items-center justify-between">
+              <Badge variant={stats.performanceIndicators[0].status === 'good' ? "default" : stats.performanceIndicators[0].status === 'average' ? "secondary" : "destructive"}>
+                {stats.performanceIndicators[0].status === 'good' ? "Excelente" : stats.performanceIndicators[0].status === 'average' ? "Bueno" : "Mejorable"}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                vs {stats.performanceIndicators[0].benchmark.toFixed(1)}kg
+              </span>
+            </div>
           </CardContent>
         </Card>
 
@@ -203,9 +245,14 @@ export const ProductionAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageWeaningWeight.toFixed(1)} kg</div>
-            <Badge variant={stats.averageWeaningWeight >= 200 ? "default" : stats.averageWeaningWeight >= 180 ? "secondary" : "destructive"}>
-              {stats.averageWeaningWeight >= 200 ? "Excelente" : stats.averageWeaningWeight >= 180 ? "Bueno" : "Mejorable"}
-            </Badge>
+            <div className="flex items-center justify-between">
+              <Badge variant={stats.performanceIndicators[1].status === 'good' ? "default" : stats.performanceIndicators[1].status === 'average' ? "secondary" : "destructive"}>
+                {stats.performanceIndicators[1].status === 'good' ? "Excelente" : stats.performanceIndicators[1].status === 'average' ? "Bueno" : "Mejorable"}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                vs {stats.performanceIndicators[1].benchmark.toFixed(1)}kg
+              </span>
+            </div>
           </CardContent>
         </Card>
 
@@ -229,9 +276,14 @@ export const ProductionAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageDailyGain.toFixed(2)} kg/día</div>
-            <Badge variant={stats.averageDailyGain >= 0.8 ? "default" : stats.averageDailyGain >= 0.6 ? "secondary" : "destructive"}>
-              {stats.averageDailyGain >= 0.8 ? "Excelente" : stats.averageDailyGain >= 0.6 ? "Bueno" : "Mejorable"}
-            </Badge>
+            <div className="flex items-center justify-between">
+              <Badge variant={stats.performanceIndicators[2].status === 'good' ? "default" : stats.performanceIndicators[2].status === 'average' ? "secondary" : "destructive"}>
+                {stats.performanceIndicators[2].status === 'good' ? "Excelente" : stats.performanceIndicators[2].status === 'average' ? "Bueno" : "Mejorable"}
+              </Badge>
+              <span className="text-xs text-muted-foreground">
+                vs {stats.performanceIndicators[2].benchmark.toFixed(2)}kg/día
+              </span>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -329,7 +381,14 @@ export const ProductionAnalytics = () => {
       {/* Performance Indicators */}
       <Card>
         <CardHeader>
-          <CardTitle>Indicadores de Rendimiento vs Benchmarks</CardTitle>
+          <CardTitle>
+            Indicadores de Rendimiento vs Benchmarks
+            {stats.breedDistribution.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground ml-2">
+                (Específicos por raza)
+              </span>
+            )}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -338,7 +397,13 @@ export const ProductionAnalytics = () => {
                 <div>
                   <h4 className="font-medium">{indicator.metric}</h4>
                   <p className="text-sm text-muted-foreground">
-                    Actual: {indicator.value.toFixed(2)} | Benchmark: {indicator.benchmark}
+                    Actual: {indicator.metric === 'Ganancia diaria' ? indicator.value.toFixed(3) : indicator.value.toFixed(1)} 
+                    {indicator.metric === 'Ganancia diaria' ? ' kg/día' : ' kg'} | 
+                    Benchmark: {indicator.metric === 'Ganancia diaria' ? indicator.benchmark.toFixed(3) : indicator.benchmark.toFixed(1)}
+                    {indicator.metric === 'Ganancia diaria' ? ' kg/día' : ' kg'}
+                    {indicator.breedSpecific && (
+                      <span className="text-blue-600 ml-1">✓ Específico por raza</span>
+                    )}
                   </p>
                 </div>
                 <Badge variant={indicator.status === 'good' ? "default" : indicator.status === 'average' ? "secondary" : "destructive"}>
@@ -347,6 +412,23 @@ export const ProductionAnalytics = () => {
               </div>
             ))}
           </div>
+          
+          {/* Breed Distribution Info */}
+          {stats.breedDistribution.length > 1 && (
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <h5 className="font-medium text-sm mb-2">Distribución por Raza:</h5>
+              <div className="flex flex-wrap gap-2">
+                {stats.breedDistribution.map(({ breed, count }) => (
+                  <Badge key={breed} variant="outline" className="text-xs">
+                    {breed}: {count} animales
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Los benchmarks mostrados son promedios ponderados según la distribución de razas
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
