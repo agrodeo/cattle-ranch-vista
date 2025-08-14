@@ -137,7 +137,7 @@ export function MarkDeathDialog({
           return index === self.findIndex((c: any) => c.nombre === cause.nombre);
         }).sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
         
-        setCauses(uniqueCauses as DeathCause[]);
+        setCauses(uniqueCauses as unknown as DeathCause[]);
       } else {
         // Handle case where data is not an array (like error responses)
         setCauses([]);
