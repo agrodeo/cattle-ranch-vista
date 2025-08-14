@@ -16,8 +16,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 
 export function FinancesSummary() {
   const { currentUser } = useSimpleAuth();
-  const [from, setFrom] = useState<Date | undefined>();
-  const [to, setTo] = useState<Date | undefined>();
   const [selectedPeriod, setSelectedPeriod] = useState<string>("last6months");
   const [customFromDate, setCustomFromDate] = useState<Date | undefined>();
   const [customToDate, setCustomToDate] = useState<Date | undefined>();
@@ -72,9 +70,9 @@ export function FinancesSummary() {
     }
   }, [selectedPeriod, customFromDate, customToDate]);
 
-  // Query for summary data using existing date filters
+  // Query for summary data using unified date filters
   const { data } = useQuery({
-    queryKey: ["finances", "summary", currentUser?.id, from?.toISOString(), to?.toISOString()],
+    queryKey: ["finances", "summary", currentUser?.id, fromDate?.toISOString(), toDate?.toISOString()],
     queryFn: async () => {
       if (!currentUser?.id) {
         throw new Error("Usuario no autenticado");
@@ -82,14 +80,14 @@ export function FinancesSummary() {
 
       const { data, error } = await supabase.rpc("get_finance_summary", {
         _user_id: currentUser.id,
-        _from_date: from ? format(from, "yyyy-MM-dd") : null,
-        _to_date: to ? format(to, "yyyy-MM-dd") : null,
+        _from_date: fromDate ? format(fromDate, "yyyy-MM-dd") : null,
+        _to_date: toDate ? format(toDate, "yyyy-MM-dd") : null,
       });
 
       if (error) throw error;
       return data?.[0] || { ingresos: 0, egresos: 0, balance: 0 };
     },
-    enabled: !!currentUser?.id,
+    enabled: !!currentUser?.id && !!fromDate && !!toDate,
   });
 
   // Query for reports data using period filters
@@ -214,66 +212,6 @@ export function FinancesSummary() {
 
   return (
     <div className="space-y-6">
-      {/* Date Range Filters */}
-      <div className="flex flex-wrap gap-3">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[220px] justify-start">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {from ? format(from, "PPP") : "Desde"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={from}
-              onSelect={setFrom}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-[220px] justify-start">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {to ? format(to, "PPP") : "Hasta"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={to}
-              onSelect={setTo}
-              initialFocus
-              className={cn("p-3 pointer-events-auto")}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Ingresos</p>
-            <p className="text-2xl font-semibold">${ingresos.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Egresos</p>
-            <p className="text-2xl font-semibold">${egresos.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Balance</p>
-            <p className="text-2xl font-semibold">${balance.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Period Filters */}
       <div className="flex flex-wrap gap-3">
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -329,6 +267,28 @@ export function FinancesSummary() {
             </Popover>
           </>
         )}
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Ingresos</p>
+            <p className="text-2xl font-semibold">${ingresos.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Egresos</p>
+            <p className="text-2xl font-semibold">${egresos.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground">Balance</p>
+            <p className="text-2xl font-semibold">${balance.toLocaleString()}</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Period Totals */}
