@@ -194,10 +194,16 @@ const Animals = () => {
   });
 
   useEffect(() => {
-    fetchAnimals();
     fetchCabañas();
     fetchUserCabaña();
   }, [currentUser]);
+
+  // Fetch animals when userCabaña is available
+  useEffect(() => {
+    if (userCabaña) {
+      fetchAnimals();
+    }
+  }, [userCabaña]);
 
   const fetchUserCabaña = async () => {
     if (!currentUser?.id) {
@@ -274,15 +280,25 @@ const Animals = () => {
   };
 
   const fetchAnimals = async () => {
+    if (!userCabaña) {
+      console.log("No userCabaña available, skipping fetchAnimals");
+      setLoading(false);
+      return;
+    }
+
     try {
+      console.log("🐄 Animals page - Fetching animals for cabaña:", userCabaña);
       const { data, error } = await supabase
         .from("animals")
         .select("*")
+        .eq("cabaña_id", userCabaña)
         .order("birth_date", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
+      console.log("🐄 Animals page - Found animals:", data?.length || 0);
       setAnimals(data || []);
     } catch (error) {
+      console.error("Error fetching animals:", error);
       toast({
         title: "Error",
         description: "No se pudieron cargar los animales",
