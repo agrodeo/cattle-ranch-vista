@@ -16,6 +16,7 @@ interface ProductionStats {
   weightByGender: { gender: string; birthWeight: number; weaningWeight: number; finalWeight: number }[];
   growthTrends: { month: string; avgBirthWeight: number; avgWeaningWeight: number; avgFinalWeight: number }[];
   performanceIndicators: { metric: string; value: number; benchmark: number; status: string }[];
+  hasMultipleBreeds: boolean;
 }
 
 export const ProductionAnalytics = () => {
@@ -107,6 +108,7 @@ export const ProductionAnalytics = () => {
         finalWeight: breedFinalWeights.length > 0 ? breedFinalWeights.reduce((a, b) => a + b, 0) / breedFinalWeights.length : 0
       };
     });
+    const hasMultipleBreeds = breeds.length > 1;
 
     // Weight by gender
     const weightByGender = ['Macho', 'Hembra'].map(gender => {
@@ -164,7 +166,8 @@ export const ProductionAnalytics = () => {
       weightByBreed,
       weightByGender,
       growthTrends,
-      performanceIndicators
+      performanceIndicators,
+      hasMultipleBreeds
     };
   };
 
@@ -276,11 +279,11 @@ export const ProductionAnalytics = () => {
           </CardContent>
         </Card>
 
-        {/* Weight by Breed */}
-        {stats.weightByBreed.length > 0 && (
+        {/* Weight by Breed - Only show if multiple breeds */}
+        {stats.hasMultipleBreeds && stats.weightByBreed.length > 1 && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Rendimiento por Raza</CardTitle>
+              <CardTitle>Comparación de Rendimiento por Raza</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>

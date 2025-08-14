@@ -18,6 +18,8 @@ interface ReproductiveStats {
   yearlyData: { year: number; pregnancies: number; births: number; inseminations: number }[];
   serviceTypeData: { type: string; count: number; successRate: number }[];
   monthlyBreeding: { month: string; count: number }[];
+  breedComparison: { breed: string; pregnancyRate: number; calvingRate: number; aiSuccessRate: number }[];
+  hasMultipleBreeds: boolean;
 }
 
 export const ReproductiveAnalytics = () => {
@@ -114,6 +116,41 @@ export const ReproductiveAnalytics = () => {
       return { month: month.charAt(0).toUpperCase() + month.slice(1), count };
     });
 
+    // Breed comparison
+    const breeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
+    const hasMultipleBreeds = breeds.length > 1;
+    const breedComparison = breeds.map(breed => {
+      const breedFemales = females.filter(f => f.breed === breed);
+      const breedReproductiveFemales = breedFemales.filter(f => {
+        if (!f.birth_date) return false;
+        const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+        return ageInMonths >= 15;
+      });
+      
+      const breedInseminations = inseminations.filter(i => {
+        const female = animals.find(a => a.id === i.female_id);
+        return female?.breed === breed;
+      });
+      
+      const breedPregnancies = breedInseminations.filter(i => i.is_pregnant === true).length +
+                              reproductiveEvents.filter(r => {
+                                const animal = animals.find(a => a.id === r.animal_id);
+                                return animal?.breed === breed && r.pregnancy_status === 'pregnant';
+                              }).length;
+      
+      const breedBirths = reproductiveEvents.filter(r => {
+        const animal = animals.find(a => a.id === r.animal_id);
+        return animal?.breed === breed && r.pregnancy_outcome === 'live_calf';
+      }).length;
+
+      return {
+        breed,
+        pregnancyRate: breedReproductiveFemales.length > 0 ? (breedPregnancies / breedReproductiveFemales.length) * 100 : 0,
+        calvingRate: breedPregnancies > 0 ? (breedBirths / breedPregnancies) * 100 : 0,
+        aiSuccessRate: breedInseminations.length > 0 ? (breedInseminations.filter(i => i.is_pregnant === true).length / breedInseminations.length) * 100 : 0
+      };
+    });
+
     return {
       totalFemales,
       reproductiveFemales,
@@ -125,7 +162,9 @@ export const ReproductiveAnalytics = () => {
       aiSuccessRate,
       yearlyData,
       serviceTypeData,
-      monthlyBreeding
+      monthlyBreeding,
+      breedComparison,
+      hasMultipleBreeds
     };
   };
 
@@ -248,7 +287,7 @@ export const ReproductiveAnalytics = () => {
         )}
 
         {/* Monthly Breeding Pattern */}
-        <Card className="lg:col-span-2">
+        <Card className={stats.hasMultipleBreeds ? "" : "lg:col-span-2"}>
           <CardHeader>
             <CardTitle>Patrón Estacional de Servicios</CardTitle>
           </CardHeader>
@@ -264,6 +303,29 @@ export const ReproductiveAnalytics = () => {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Breed Comparison - Only show if multiple breeds */}
+        {stats.hasMultipleBreeds && stats.breedComparison.length > 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Comparación Reproductiva por Raza</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats.breedComparison}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="breed" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="pregnancyRate" fill="#10b981" name="% Preñez" />
+                  <Bar dataKey="calvingRate" fill="#3b82f6" name="% Parición" />
+                  <Bar dataKey="aiSuccessRate" fill="#8b5cf6" name="% Éxito IA" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Performance Badges */}

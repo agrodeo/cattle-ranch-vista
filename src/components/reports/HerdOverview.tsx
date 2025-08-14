@@ -62,6 +62,7 @@ export const HerdOverview = () => {
       breedCounts[breed] = (breedCounts[breed] || 0) + 1;
     });
     const breedDistribution = Object.entries(breedCounts).map(([breed, count]) => ({ breed, count }));
+    const uniqueBreeds = Object.keys(breedCounts).filter(breed => breed !== 'Sin especificar');
 
     // Age distribution
     const ageGroups = {
@@ -224,15 +225,15 @@ export const HerdOverview = () => {
           </CardContent>
         </Card>
 
-        {/* Breed Distribution */}
-        {stats.breedDistribution.length > 0 && (
+        {/* Breed Distribution - Only show if multiple breeds */}
+        {stats.breedDistribution.length > 1 && stats.breedDistribution.filter(b => b.breed !== 'Sin especificar').length > 1 && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Distribución por Raza</CardTitle>
+              <CardTitle>Comparación por Raza</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.breedDistribution}>
+                <BarChart data={stats.breedDistribution.filter(b => b.breed !== 'Sin especificar')}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="breed" />
                   <YAxis />

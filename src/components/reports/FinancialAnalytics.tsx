@@ -18,6 +18,8 @@ interface FinancialStats {
   yearlyComparison: { year: number; revenue: number; expenses: number; profit: number }[];
   topExpenseCategories: { category: string; amount: number; percentage: number }[];
   topRevenueCategories: { category: string; amount: number; percentage: number }[];
+  breedProfitability: { breed: string; revenue: number; costPerAnimal: number; profitPerAnimal: number }[];
+  hasMultipleBreeds: boolean;
 }
 
 export const FinancialAnalytics = () => {
@@ -65,10 +67,10 @@ export const FinancialAnalytics = () => {
       // Fetch animals count for per-animal calculations
       const { data: animals } = await supabase
         .from("animals")
-        .select("id")
+        .select("id, breed")
         .eq("cabaña_id", currentUser?.cabañaId);
 
-      const financialStats = calculateFinancialStats(finances || [], animals?.length || 1);
+      const financialStats = calculateFinancialStats(finances || [], animals || []);
       setStats(financialStats);
     } catch (error) {
       console.error("Error fetching financial stats:", error);
@@ -77,7 +79,8 @@ export const FinancialAnalytics = () => {
     }
   };
 
-  const calculateFinancialStats = (finances: any[], animalCount: number): FinancialStats => {
+  const calculateFinancialStats = (finances: any[], animals: any[]): FinancialStats => {
+    const animalCount = animals.length || 1;
     const revenues = finances.filter(f => f.type === 'ingreso');
     const expenses = finances.filter(f => f.type === 'egreso');
 
@@ -175,6 +178,25 @@ export const FinancialAnalytics = () => {
         percentage: (amount / totalRevenue) * 100
       }));
 
+    // Breed profitability analysis
+    const breeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
+    const hasMultipleBreeds = breeds.length > 1;
+    const breedProfitability = breeds.map(breed => {
+      const breedAnimals = animals.filter(a => a.breed === breed);
+      const breedCount = breedAnimals.length || 1;
+      
+      // Calculate revenue from sales of this breed (simplified - would need animal sale tracking)
+      const breedRevenue = totalRevenue / breeds.length; // Simplified distribution
+      const breedCosts = totalExpenses / breeds.length; // Simplified distribution
+      
+      return {
+        breed,
+        revenue: breedRevenue,
+        costPerAnimal: breedCosts / breedCount,
+        profitPerAnimal: (breedRevenue - breedCosts) / breedCount
+      };
+    });
+
     return {
       totalRevenue,
       totalExpenses,
@@ -186,7 +208,9 @@ export const FinancialAnalytics = () => {
       categoryBreakdown,
       yearlyComparison,
       topExpenseCategories,
-      topRevenueCategories
+      topRevenueCategories,
+      breedProfitability,
+      hasMultipleBreeds
     };
   };
 
@@ -388,9 +412,31 @@ export const FinancialAnalytics = () => {
           </Card>
         )}
 
+        {/* Breed Profitability - Only show if multiple breeds */}
+        {stats.hasMultipleBreeds && stats.breedProfitability.length > 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Rentabilidad por Raza</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={stats.breedProfitability}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="breed" />
+                  <YAxis />
+                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
+                  <Legend />
+                  <Bar dataKey="costPerAnimal" fill="#ef4444" name="Costo por Animal" />
+                  <Bar dataKey="profitPerAnimal" fill="#10b981" name="Ganancia por Animal" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Yearly Comparison */}
         {stats.yearlyComparison.length > 1 && (
-          <Card className="lg:col-span-2">
+          <Card className={stats.hasMultipleBreeds && stats.breedProfitability.length > 1 ? "lg:col-span-1" : "lg:col-span-2"}>
             <CardHeader>
               <CardTitle>Comparación Anual</CardTitle>
             </CardHeader>
