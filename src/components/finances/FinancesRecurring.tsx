@@ -55,31 +55,33 @@ export default function FinancesRecurring() {
   const supabaseAny = supabase as any;
 
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["finances","recurring", currentUser?.cabañaId],
+    queryKey: ["finances","recurring", currentUser?.id],
     queryFn: async (): Promise<RecurringRow[]> => {
-      const { data, error } = await supabaseAny
-        .from("finance_recurring")
-        .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId || "");
+      if (!currentUser?.id) return [];
+
+      const { data, error } = await supabaseAny.rpc('list_finance_recurring', {
+        _user_id: currentUser.id
+      });
+
       if (error) throw error;
-      return (data as unknown as RecurringRow[]) || [];
+      return data || [];
     },
-    enabled: !!currentUser?.cabañaId,
+    enabled: !!currentUser?.id,
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser?.cabañaId) throw new Error("Falta cabaña");
-      const payload = {
-        cabaña_id: currentUser.cabañaId,
-        name: form.name.trim(),
-        type: form.type,
-        amount: Number(form.amount || 0),
-        category_id: form.categoryId || null,
-        description: form.description || null,
-        frequency: form.frequency,
-      };
-      const { error } = await supabaseAny.from("finance_recurring").insert(payload);
+      if (!currentUser?.id) throw new Error("Usuario no autenticado");
+
+      const { error } = await supabaseAny.rpc('create_finance_recurring', {
+        _user_id: currentUser.id,
+        _name: form.name.trim(),
+        _type: form.type,
+        _amount: Number(form.amount || 0),
+        _frequency: form.frequency,
+        _category_id: form.categoryId || null,
+        _description: form.description || null
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -92,7 +94,12 @@ export default function FinancesRecurring() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabaseAny.from("finance_recurring").delete().eq("id", id);
+      if (!currentUser?.id) throw new Error("Usuario no autenticado");
+
+      const { error } = await supabaseAny.rpc('delete_finance_recurring', {
+        _user_id: currentUser.id,
+        _id: id
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,7 +137,7 @@ export default function FinancesRecurring() {
           </div>
           <div className="flex gap-2">
             <Input placeholder="Descripción (opcional)" value={form.description} onChange={(e) => setForm(f => ({...f, description: e.target.value}))} />
-            <Button onClick={() => createMutation.mutate()} disabled={!form.name.trim() || !form.amount}>
+            <Button onClick={() => createMutation.mutate()} disabled={!form.name.trim() || !form.amount || !currentUser?.id}>
               Agregar recurrente
             </Button>
           </div>

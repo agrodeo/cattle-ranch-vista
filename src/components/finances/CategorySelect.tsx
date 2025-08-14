@@ -46,41 +46,30 @@ export default function CategorySelect({
   const supabaseAny = supabase as any;
 
   const { data: categories = [] } = useQuery({
-    queryKey: ["finance-categories", type, currentUser?.cabañaId],
+    queryKey: ["finance-categories", type, currentUser?.id],
     queryFn: async (): Promise<CategoryRow[]> => {
-      const cabId = currentUser?.cabañaId as string | undefined;
+      if (!currentUser?.id) return [];
 
-      let q = supabaseAny
-        .from("finance_categories")
-        .select("*")
-        .eq("type", type);
-
-      // Evitar usar eq con UUID vacío: si no hay cabaña, filtramos solo por categorías del sistema (cabaña_id IS NULL)
-      if (cabId) {
-        q = q.or(`cabaña_id.is.null,cabaña_id.eq.${cabId}`);
-      } else {
-        q = q.is("cabaña_id", null);
-      }
-
-      const { data, error } = await q
-        .order("is_system", { ascending: false })
-        .order("name", { ascending: true });
+      const { data, error } = await supabaseAny.rpc('list_finance_categories', {
+        _user_id: currentUser.id,
+        _type: type
+      });
 
       if (error) throw error;
-      return (data as unknown as CategoryRow[]) || [];
+      return data || [];
     },
-    enabled: !!currentUser?.id, // Ejecutar solo si hay sesión
+    enabled: !!currentUser?.id,
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
-        name: newName.trim(),
-        type,
-        cabaña_id: currentUser?.cabañaId || null,
-        is_system: false,
-      };
-      const { error } = await supabaseAny.from("finance_categories").insert(payload);
+      if (!currentUser?.id) throw new Error("Usuario no autenticado");
+      
+      const { error } = await supabaseAny.rpc('create_finance_category', {
+        _user_id: currentUser.id,
+        _name: newName.trim(),
+        _type: type
+      });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -110,7 +99,7 @@ export default function CategorySelect({
           </SelectItem>
         </SelectContent>
       </Select>
-      {allowCreate && (
+      {allowCreate && currentUser?.id && (
         <>
           <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
             + Nueva

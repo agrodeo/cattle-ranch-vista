@@ -1020,6 +1020,28 @@ export type Database = {
           error_message: string
         }[]
       }
+      create_finance_category: {
+        Args: { _user_id: string; _name: string; _type: string }
+        Returns: string
+      }
+      create_finance_recurring: {
+        Args: {
+          _user_id: string
+          _name: string
+          _type: string
+          _amount: number
+          _frequency: string
+          _category_id?: string
+          _description?: string
+          _start_date?: string
+          _end_date?: string
+        }
+        Returns: string
+      }
+      delete_finance_recurring: {
+        Args: { _user_id: string; _id: string }
+        Returns: undefined
+      }
       generate_employee_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1072,6 +1094,39 @@ export type Database = {
       is_valid_password_reset_token: {
         Args: { _token: string }
         Returns: boolean
+      }
+      list_finance_categories: {
+        Args: { _user_id: string; _type: string }
+        Returns: {
+          id: string
+          name: string
+          type: string
+          cabaña_id: string
+          is_system: boolean
+        }[]
+      }
+      list_finance_recurring: {
+        Args: { _user_id: string }
+        Returns: {
+          id: string
+          cabaña_id: string
+          amount: number
+          category_id: string
+          start_date: string
+          end_date: string
+          next_run_date: string
+          last_run_date: string
+          day_of_month: number
+          day_of_week: number
+          interval_days: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+          description: string
+          frequency: string
+          name: string
+          type: string
+        }[]
       }
       update_subscription_plan: {
         Args: {
