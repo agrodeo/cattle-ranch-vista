@@ -128,16 +128,17 @@ export function MarkDeathDialog({
       // Ensure data is an array and handle successful response
       if (data && Array.isArray(data)) {
         // Remove duplicates and filter out control options
-        const uniqueCauses = data.filter((cause: any, index: number, self: any[]) => {
+        const rawCauses = data as unknown as DeathCause[];
+        const uniqueCauses = rawCauses.filter((cause, index, self) => {
           const isControlOption = cause.nombre?.toLowerCase().includes('otra causa') || 
                                 cause.nombre?.toLowerCase().includes('agregar');
           if (isControlOption) return false;
           
           // Remove duplicates based on name
-          return index === self.findIndex((c: any) => c.nombre === cause.nombre);
-        }).sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+          return index === self.findIndex((c) => c.nombre === cause.nombre);
+        }).sort((a, b) => a.nombre.localeCompare(b.nombre));
         
-        setCauses(uniqueCauses as unknown as DeathCause[]);
+        setCauses(uniqueCauses);
       } else {
         // Handle case where data is not an array (like error responses)
         setCauses([]);
