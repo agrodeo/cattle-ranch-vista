@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -951,8 +951,8 @@ export type Database = {
       activate_subscription: {
         Args: {
           cabana_uuid: string
-          plan_name: Database["public"]["Enums"]["subscription_plan"]
           duration_months?: number
+          plan_name: Database["public"]["Enums"]["subscription_plan"]
         }
         Returns: undefined
       }
@@ -962,30 +962,30 @@ export type Database = {
       }
       calculate_ai_success_rate: {
         Args: {
-          filter_year?: number
-          filter_corral_id?: string
           filter_bull_name?: string
           filter_cabaña_id?: string
+          filter_corral_id?: string
+          filter_year?: number
         }
         Returns: {
+          pending_results: number
+          success_rate: number
           total_inseminations: number
           total_pregnancies: number
-          success_rate: number
-          pending_results: number
         }[]
       }
       calculate_reproductive_performance: {
         Args: { animal_uuid: string }
         Returns: {
-          porcentaje_preñez: number
-          porcentaje_paricion: number
-          total_reproductive_years: number
           confirmed_pregnancies: number
           live_calves: number
+          porcentaje_paricion: number
+          porcentaje_preñez: number
+          total_reproductive_years: number
         }[]
       }
       categorize_animal: {
-        Args: { birth_date: string; sex: string; reference_date?: string }
+        Args: { birth_date: string; reference_date?: string; sex: string }
         Returns: string
       }
       check_consanguinity: {
@@ -994,52 +994,52 @@ export type Database = {
       }
       create_animal_sale: {
         Args: {
-          _cabana_id: string
-          _date: string
           _amount: number
-          _description: string
-          _buyer_name: string
-          _buyer_document: string
-          _buyer_destination: string
           _animal_ids: string[]
-          _unit_prices: number[]
+          _buyer_destination: string
+          _buyer_document: string
+          _buyer_name: string
+          _cabana_id: string
           _category_id: string
+          _date: string
+          _description: string
+          _unit_prices: number[]
         }
         Returns: string
       }
       create_company_with_owner: {
         Args: {
           company_name: string
-          owner_name: string
           owner_email: string
+          owner_name: string
           owner_password: string
         }
         Returns: {
-          user_data: Json
-          success: boolean
           error_message: string
+          success: boolean
+          user_data: Json
         }[]
       }
       create_finance_category: {
-        Args: { _user_id: string; _name: string; _type: string }
+        Args: { _name: string; _type: string; _user_id: string }
         Returns: string
       }
       create_finance_recurring: {
         Args: {
-          _user_id: string
-          _name: string
-          _type: string
           _amount: number
-          _frequency: string
           _category_id?: string
           _description?: string
-          _start_date?: string
           _end_date?: string
+          _frequency: string
+          _name: string
+          _start_date?: string
+          _type: string
+          _user_id: string
         }
         Returns: string
       }
       delete_finance_recurring: {
-        Args: { _user_id: string; _id: string }
+        Args: { _id: string; _user_id: string }
         Returns: undefined
       }
       generate_employee_code: {
@@ -1056,17 +1056,17 @@ export type Database = {
       get_subscription_status: {
         Args: { cabana_uuid: string }
         Returns: {
-          plan: Database["public"]["Enums"]["subscription_plan"]
-          is_trial_active: boolean
-          trial_days_remaining: number
-          is_subscription_active: boolean
-          max_animals: number
-          max_users: number
-          current_animals_count: number
-          current_users_count: number
           can_add_animals: boolean
           can_add_users: boolean
+          current_animals_count: number
+          current_users_count: number
           is_read_only: boolean
+          is_subscription_active: boolean
+          is_trial_active: boolean
+          max_animals: number
+          max_users: number
+          plan: Database["public"]["Enums"]["subscription_plan"]
+          trial_days_remaining: number
         }[]
       }
       get_user_cabana_info: {
@@ -1086,8 +1086,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
@@ -1096,36 +1096,36 @@ export type Database = {
         Returns: boolean
       }
       list_finance_categories: {
-        Args: { _user_id: string; _type: string }
+        Args: { _type: string; _user_id: string }
         Returns: {
+          cabaña_id: string
           id: string
+          is_system: boolean
           name: string
           type: string
-          cabaña_id: string
-          is_system: boolean
         }[]
       }
       list_finance_recurring: {
         Args: { _user_id: string }
         Returns: {
-          id: string
-          cabaña_id: string
           amount: number
+          cabaña_id: string
           category_id: string
-          start_date: string
-          end_date: string
-          next_run_date: string
-          last_run_date: string
+          created_at: string
           day_of_month: number
           day_of_week: number
+          description: string
+          end_date: string
+          frequency: string
+          id: string
           interval_days: number
           is_active: boolean
-          created_at: string
-          updated_at: string
-          description: string
-          frequency: string
+          last_run_date: string
           name: string
+          next_run_date: string
+          start_date: string
           type: string
+          updated_at: string
         }[]
       }
       update_subscription_plan: {
@@ -1142,8 +1142,8 @@ export type Database = {
       verify_user_login: {
         Args: { input_identifier: string; input_password: string }
         Returns: {
-          user_data: Json
           success: boolean
+          user_data: Json
         }[]
       }
     }
