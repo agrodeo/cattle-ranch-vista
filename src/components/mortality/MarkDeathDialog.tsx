@@ -118,9 +118,20 @@ export function MarkDeathDialog({
       });
 
       if (error) throw error;
-      setCauses((data as unknown as DeathCause[]) || []);
+      
+      // Ensure data is an array and handle successful response
+      if (data && Array.isArray(data)) {
+        setCauses(data as unknown as DeathCause[]);
+      } else {
+        // Handle case where data is not an array (like error responses)
+        setCauses([]);
+        if (data && typeof data === 'object' && 'error' in data) {
+          throw new Error((data as any).error);
+        }
+      }
     } catch (error) {
       console.error('Error loading death causes:', error);
+      setCauses([]); // Ensure causes is always an array
       toast({
         title: "Error",
         description: "No se pudieron cargar las causas de muerte",
