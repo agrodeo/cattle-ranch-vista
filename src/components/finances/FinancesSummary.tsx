@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,28 +12,32 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function FinancesSummary() {
-  
+  const { currentUser } = useSimpleAuth();
   const [from, setFrom] = useState<Date | undefined>();
   const [to, setTo] = useState<Date | undefined>();
 
   const { data } = useQuery({
-    queryKey: ["finances","summary", from?.toISOString(), to?.toISOString()],
+    queryKey: ["finances", "summary", currentUser?.id, from?.toISOString(), to?.toISOString()],
     queryFn: async () => {
-      let q = supabase.from("finances").select("amount,type,date");
-      if (from) q = q.gte("date", format(from, "yyyy-MM-dd"));
-      if (to) q = q.lte("date", format(to, "yyyy-MM-dd"));
-      const { data, error } = await q;
+      if (!currentUser?.id) {
+        throw new Error("Usuario no autenticado");
+      }
+
+      const { data, error } = await supabase.rpc("get_finance_summary", {
+        _user_id: currentUser.id,
+        _from_date: from ? format(from, "yyyy-MM-dd") : null,
+        _to_date: to ? format(to, "yyyy-MM-dd") : null,
+      });
+
       if (error) throw error;
-      return data || [];
+      return data?.[0] || { ingresos: 0, egresos: 0, balance: 0 };
     },
+    enabled: !!currentUser?.id,
   });
 
-  const { ingresos, egresos, balance } = useMemo(() => {
-    const rows = data || [];
-    const ing = rows.filter(r => r.type === "ingreso").reduce((s, r) => s + (r.amount || 0), 0);
-    const egr = rows.filter(r => r.type === "egreso").reduce((s, r) => s + (r.amount || 0), 0);
-    return { ingresos: ing, egresos: egr, balance: ing - egr };
-  }, [data]);
+  const ingresos = data?.ingresos || 0;
+  const egresos = data?.egresos || 0;
+  const balance = data?.balance || 0;
 
   return (
     <div className="space-y-4">

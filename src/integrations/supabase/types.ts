@@ -1157,6 +1157,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_finance_summary: {
+        Args: { _from_date?: string; _to_date?: string; _user_id: string }
+        Returns: {
+          balance: number
+          egresos: number
+          ingresos: number
+        }[]
+      }
       get_sistema_credenciales: {
         Args: Record<PropertyKey, never>
         Returns: {
