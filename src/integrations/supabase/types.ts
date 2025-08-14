@@ -453,6 +453,57 @@ export type Database = {
           },
         ]
       }
+      custom_benchmarks: {
+        Row: {
+          birth_weight_excellent: number
+          birth_weight_good: number
+          birth_weight_poor: number
+          breed: string | null
+          cabaña_id: string
+          created_at: string
+          daily_gain_excellent: number
+          daily_gain_good: number
+          daily_gain_poor: number
+          id: string
+          updated_at: string
+          weaning_weight_excellent: number
+          weaning_weight_good: number
+          weaning_weight_poor: number
+        }
+        Insert: {
+          birth_weight_excellent?: number
+          birth_weight_good?: number
+          birth_weight_poor?: number
+          breed?: string | null
+          cabaña_id: string
+          created_at?: string
+          daily_gain_excellent?: number
+          daily_gain_good?: number
+          daily_gain_poor?: number
+          id?: string
+          updated_at?: string
+          weaning_weight_excellent?: number
+          weaning_weight_good?: number
+          weaning_weight_poor?: number
+        }
+        Update: {
+          birth_weight_excellent?: number
+          birth_weight_good?: number
+          birth_weight_poor?: number
+          breed?: string | null
+          cabaña_id?: string
+          created_at?: string
+          daily_gain_excellent?: number
+          daily_gain_good?: number
+          daily_gain_poor?: number
+          id?: string
+          updated_at?: string
+          weaning_weight_excellent?: number
+          weaning_weight_good?: number
+          weaning_weight_poor?: number
+        }
+        Relationships: []
+      }
       defunciones: {
         Row: {
           animal_id: string

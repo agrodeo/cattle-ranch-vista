@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSimpleAuth } from "@/hooks/useSimpleAuth";
 import { Scale, TrendingUp, Target, Award } from "lucide-react";
-import { getWeightedBenchmarks, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
+import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -42,7 +42,7 @@ export const ProductionAnalytics = () => {
 
       if (error) throw error;
 
-      const prodStats = calculateProductionStats(animals || []);
+      const prodStats = await calculateProductionStats(animals || []);
       setStats(prodStats);
     } catch (error) {
       console.error("Error fetching production stats:", error);
@@ -51,7 +51,7 @@ export const ProductionAnalytics = () => {
     }
   };
 
-  const calculateProductionStats = (animals: any[]): ProductionStats => {
+  const calculateProductionStats = async (animals: any[]): Promise<ProductionStats> => {
     const animalsWithWeights = animals.filter(a => a.peso_nacimiento || a.peso_destete || a.peso_final);
 
     // Calculate breed distribution
@@ -61,8 +61,8 @@ export const ProductionAnalytics = () => {
       count: animals.filter(a => a.breed === breed).length
     }));
 
-    // Get breed-specific benchmarks
-    const benchmarks = getWeightedBenchmarks(breedDistribution);
+    // Get breed-specific benchmarks with custom overrides
+    const benchmarks = await getWeightedBenchmarksWithCustom(breedDistribution, currentUser.cabañaId);
 
     // Average weights
     const birthWeights = animals.filter(a => a.peso_nacimiento).map(a => Number(a.peso_nacimiento));

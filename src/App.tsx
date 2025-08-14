@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Finances from "./pages/Finances";
 import Reports from "./pages/Reports";
+import { SettingsPage } from "./pages/Settings";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -95,7 +96,7 @@ const App = () => (
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<div>Página de configuración próximamente...</div>} />
+              <Route index element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,5 @@
 // Breed-specific performance benchmarks for livestock production
+import { supabase } from "@/integrations/supabase/client";
 
 export interface BreedBenchmarks {
   birthWeight: {
@@ -16,6 +17,21 @@ export interface BreedBenchmarks {
     good: number;
     poor: number;
   };
+}
+
+export interface CustomBenchmark {
+  id: string;
+  cabaña_id: string;
+  breed: string | null;
+  birth_weight_excellent: number;
+  birth_weight_good: number;
+  birth_weight_poor: number;
+  weaning_weight_excellent: number;
+  weaning_weight_good: number;
+  weaning_weight_poor: number;
+  daily_gain_excellent: number;
+  daily_gain_good: number;
+  daily_gain_poor: number;
 }
 
 // Breed-specific benchmarks based on industry standards
@@ -65,7 +81,80 @@ const DEFAULT_BENCHMARKS: BreedBenchmarks = {
 };
 
 /**
- * Get benchmarks for a specific breed
+ * Convert database custom benchmark to BreedBenchmarks format
+ */
+function convertCustomBenchmark(custom: CustomBenchmark): BreedBenchmarks {
+  return {
+    birthWeight: {
+      excellent: custom.birth_weight_excellent,
+      good: custom.birth_weight_good,
+      poor: custom.birth_weight_poor,
+    },
+    weaningWeight: {
+      excellent: custom.weaning_weight_excellent,
+      good: custom.weaning_weight_good,
+      poor: custom.weaning_weight_poor,
+    },
+    dailyGain: {
+      excellent: custom.daily_gain_excellent,
+      good: custom.daily_gain_good,
+      poor: custom.daily_gain_poor,
+    },
+  };
+}
+
+/**
+ * Fetch custom benchmarks from database for a specific cabaña
+ */
+export async function fetchCustomBenchmarks(cabañaId: string): Promise<Record<string, BreedBenchmarks>> {
+  try {
+    const { data, error } = await supabase
+      .from("custom_benchmarks")
+      .select("*")
+      .eq("cabaña_id", cabañaId);
+
+    if (error) {
+      console.error("Error fetching custom benchmarks:", error);
+      return {};
+    }
+
+    const customBenchmarks: Record<string, BreedBenchmarks> = {};
+    
+    data?.forEach((custom: CustomBenchmark) => {
+      const key = custom.breed || 'default';
+      customBenchmarks[key] = convertCustomBenchmark(custom);
+    });
+
+    return customBenchmarks;
+  } catch (error) {
+    console.error("Error fetching custom benchmarks:", error);
+    return {};
+  }
+}
+
+/**
+ * Get benchmarks for a specific breed with custom overrides
+ */
+export async function getBreedBenchmarksWithCustom(breed: string, cabañaId: string): Promise<BreedBenchmarks> {
+  const customBenchmarks = await fetchCustomBenchmarks(cabañaId);
+  
+  // Check for breed-specific custom benchmark first
+  const normalizedBreed = breed?.trim() || '';
+  if (customBenchmarks[normalizedBreed]) {
+    return customBenchmarks[normalizedBreed];
+  }
+  
+  // Check for default custom benchmark
+  if (customBenchmarks['default']) {
+    return customBenchmarks['default'];
+  }
+  
+  // Fall back to system defaults
+  return getBreedBenchmarks(breed);
+}
+
+/**
+ * Get benchmarks for a specific breed (system defaults only)
  */
 export function getBreedBenchmarks(breed: string): BreedBenchmarks {
   const normalizedBreed = breed?.trim() || '';
@@ -73,7 +162,52 @@ export function getBreedBenchmarks(breed: string): BreedBenchmarks {
 }
 
 /**
- * Calculate weighted average benchmarks for multiple breeds
+ * Calculate weighted average benchmarks for multiple breeds with custom overrides
+ */
+export async function getWeightedBenchmarksWithCustom(
+  breedDistribution: { breed: string; count: number }[], 
+  cabañaId: string
+): Promise<BreedBenchmarks> {
+  if (breedDistribution.length === 0) {
+    const customBenchmarks = await fetchCustomBenchmarks(cabañaId);
+    return customBenchmarks['default'] || DEFAULT_BENCHMARKS;
+  }
+
+  if (breedDistribution.length === 1) {
+    return await getBreedBenchmarksWithCustom(breedDistribution[0].breed, cabañaId);
+  }
+
+  const totalCount = breedDistribution.reduce((sum, item) => sum + item.count, 0);
+  
+  // Calculate weighted averages for each metric
+  const weightedBenchmarks: BreedBenchmarks = {
+    birthWeight: { excellent: 0, good: 0, poor: 0 },
+    weaningWeight: { excellent: 0, good: 0, poor: 0 },
+    dailyGain: { excellent: 0, good: 0, poor: 0 }
+  };
+
+  for (const { breed, count } of breedDistribution) {
+    const benchmarks = await getBreedBenchmarksWithCustom(breed, cabañaId);
+    const weight = count / totalCount;
+
+    weightedBenchmarks.birthWeight.excellent += benchmarks.birthWeight.excellent * weight;
+    weightedBenchmarks.birthWeight.good += benchmarks.birthWeight.good * weight;
+    weightedBenchmarks.birthWeight.poor += benchmarks.birthWeight.poor * weight;
+
+    weightedBenchmarks.weaningWeight.excellent += benchmarks.weaningWeight.excellent * weight;
+    weightedBenchmarks.weaningWeight.good += benchmarks.weaningWeight.good * weight;
+    weightedBenchmarks.weaningWeight.poor += benchmarks.weaningWeight.poor * weight;
+
+    weightedBenchmarks.dailyGain.excellent += benchmarks.dailyGain.excellent * weight;
+    weightedBenchmarks.dailyGain.good += benchmarks.dailyGain.good * weight;
+    weightedBenchmarks.dailyGain.poor += benchmarks.dailyGain.poor * weight;
+  }
+
+  return weightedBenchmarks;
+}
+
+/**
+ * Calculate weighted average benchmarks for multiple breeds (system defaults only)
  */
 export function getWeightedBenchmarks(breedDistribution: { breed: string; count: number }[]): BreedBenchmarks {
   if (breedDistribution.length === 0) {
