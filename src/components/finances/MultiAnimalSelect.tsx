@@ -37,7 +37,7 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
         .from("animals")
         .select("*")
         .eq("cabaña_id", cabId)
-        .not("status", "in", ["vendido", "muerto", "Vendido", "Muerto"]);
+        .not("status", "in", "(vendido,muerto,Vendido,Muerto)");
         
       console.log("🐄 MultiAnimalSelect - Query result:", { data, error });
       console.log("🐄 MultiAnimalSelect - Animals count:", data?.length || 0);
