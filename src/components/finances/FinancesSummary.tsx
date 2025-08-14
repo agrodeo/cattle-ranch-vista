@@ -217,30 +217,6 @@ export function FinancesSummary() {
     return result;
   }, [reportsData]);
 
-  // Calculate period totals
-  const totals = useMemo(() => {
-    if (!reportsData) {
-      console.log("No reportsData for totals");
-      return { ingresos: 0, egresos: 0, balance: 0 };
-    }
-
-    const totalIngresos = reportsData
-      .filter((item: any) => item.type === "ingreso")
-      .reduce((sum: number, item: any) => sum + (Number(item.amount) || 0), 0);
-
-    const totalEgresos = reportsData
-      .filter((item: any) => item.type === "egreso")
-      .reduce((sum: number, item: any) => sum + (Number(item.amount) || 0), 0);
-
-    const result = {
-      ingresos: totalIngresos,
-      egresos: totalEgresos,
-      balance: totalIngresos - totalEgresos,
-    };
-
-    console.log("Period totals:", result);
-    return result;
-  }, [reportsData]);
 
   const ingresos = data?.ingresos || 0;
   const egresos = data?.egresos || 0;
@@ -262,7 +238,7 @@ export function FinancesSummary() {
   return (
     <div className="space-y-6">
       {/* Period Filters */}
-      <div className="flex flex-wrap gap-3">
+      <div className="space-y-4">
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Seleccionar período" />
@@ -278,8 +254,10 @@ export function FinancesSummary() {
           </SelectContent>
         </Select>
 
-        {selectedPeriod === "custom" && (
-          <>
+        {/* Always visible custom date range */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-muted-foreground">Rango personalizado:</p>
+          <div className="flex flex-wrap gap-3">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-[220px] justify-start">
@@ -291,7 +269,10 @@ export function FinancesSummary() {
                 <Calendar
                   mode="single"
                   selected={customFromDate}
-                  onSelect={setCustomFromDate}
+                  onSelect={(date) => {
+                    setCustomFromDate(date);
+                    if (date) setSelectedPeriod("custom");
+                  }}
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}
                 />
@@ -308,14 +289,17 @@ export function FinancesSummary() {
                 <Calendar
                   mode="single"
                   selected={customToDate}
-                  onSelect={setCustomToDate}
+                  onSelect={(date) => {
+                    setCustomToDate(date);
+                    if (date) setSelectedPeriod("custom");
+                  }}
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}
                 />
               </PopoverContent>
             </Popover>
-          </>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -340,30 +324,6 @@ export function FinancesSummary() {
         </Card>
       </div>
 
-      {/* Period Totals */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Totales del período seleccionado</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="text-center p-4 bg-primary/5 rounded-lg">
-              <p className="text-sm text-muted-foreground">Ingresos</p>
-              <p className="text-2xl font-semibold text-primary">${totals.ingresos.toLocaleString()}</p>
-            </div>
-            <div className="text-center p-4 bg-destructive/5 rounded-lg">
-              <p className="text-sm text-muted-foreground">Egresos</p>
-              <p className="text-2xl font-semibold text-destructive">${totals.egresos.toLocaleString()}</p>
-            </div>
-            <div className="text-center p-4 bg-secondary/5 rounded-lg">
-              <p className="text-sm text-muted-foreground">Balance</p>
-              <p className={`text-2xl font-semibold ${totals.balance >= 0 ? 'text-primary' : 'text-destructive'}`}>
-                ${totals.balance.toLocaleString()}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Monthly Evolution Chart */}
       <Card>
