@@ -1271,7 +1271,9 @@ export type Database = {
         }[]
       }
       list_finance_reports: {
-        Args: { _user_id: string }
+        Args:
+          | { _from_date?: string; _to_date?: string; _user_id: string }
+          | { _user_id: string }
         Returns: {
           amount: number
           category_name: string
