@@ -31,7 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { CalendarIcon, Skull } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInDays, differenceInMonths, differenceInYears } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -127,7 +127,17 @@ export function MarkDeathDialog({
       
       // Ensure data is an array and handle successful response
       if (data && Array.isArray(data)) {
-        setCauses(data as unknown as DeathCause[]);
+        // Remove duplicates and filter out control options
+        const uniqueCauses = data.filter((cause: any, index: number, self: any[]) => {
+          const isControlOption = cause.nombre?.toLowerCase().includes('otra causa') || 
+                                cause.nombre?.toLowerCase().includes('agregar');
+          if (isControlOption) return false;
+          
+          // Remove duplicates based on name
+          return index === self.findIndex((c: any) => c.nombre === cause.nombre);
+        }).sort((a: any, b: any) => a.nombre.localeCompare(b.nombre));
+        
+        setCauses(uniqueCauses as DeathCause[]);
       } else {
         // Handle case where data is not an array (like error responses)
         setCauses([]);
@@ -236,20 +246,20 @@ export function MarkDeathDialog({
     
     const birthDate = new Date(animal.birth_date);
     const deathDate = form.watch('fecha_defuncion');
-    const diffTime = deathDate.getTime() - birthDate.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const diffMonths = Math.floor(diffDays / 30.44);
-    const years = Math.floor(diffMonths / 12);
-    const months = diffMonths % 12;
     
-    if (diffDays < 0) return "Fecha inválida";
+    // Validar que la fecha de muerte no sea anterior al nacimiento
+    if (deathDate < birthDate) return "Fecha inválida";
+    
+    const totalDays = differenceInDays(deathDate, birthDate);
+    const years = differenceInYears(deathDate, birthDate);
+    const months = differenceInMonths(deathDate, birthDate) % 12;
     
     if (years > 0) {
-      return `${years} año${years > 1 ? 's' : ''} ${months} mes${months !== 1 ? 'es' : ''} (${diffDays} días)`;
+      return `${years} año${years > 1 ? 's' : ''} ${months} mes${months !== 1 ? 'es' : ''} (${totalDays} días)`;
     } else if (months > 0) {
-      return `${months} mes${months !== 1 ? 'es' : ''} (${diffDays} días)`;
+      return `${months} mes${months !== 1 ? 'es' : ''} (${totalDays} días)`;
     } else {
-      return `${diffDays} día${diffDays !== 1 ? 's' : ''}`;
+      return `${totalDays} día${totalDays !== 1 ? 's' : ''}`;
     }
   };
 
