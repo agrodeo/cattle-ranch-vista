@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Skull } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
@@ -21,6 +21,7 @@ import { ReproductiveEventsTable } from "@/components/reproductive/ReproductiveE
 import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHistory";
 import { BrafordRegistrationDisplay } from "@/components/braford/BrafordRegistrationDisplay";
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
+import { MarkDeathDialog } from "@/components/mortality/MarkDeathDialog";
 
 interface Animal {
   id: string;
@@ -166,6 +167,8 @@ const Animals = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [breedFilter, setBreedFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [showDeathDialog, setShowDeathDialog] = useState(false);
+  const [animalToMarkDead, setAnimalToMarkDead] = useState<Animal | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     id_tag: "",
@@ -542,6 +545,17 @@ const Animals = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleMarkDeath = (animal: Animal) => {
+    setAnimalToMarkDead(animal);
+    setShowDeathDialog(true);
+  };
+
+  const handleDeathSuccess = () => {
+    fetchAnimals();
+    setShowDeathDialog(false);
+    setAnimalToMarkDead(null);
   };
 
   const resetForm = () => {
@@ -1211,6 +1225,16 @@ const Animals = () => {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                          {animal.status !== 'muerto' && animal.status !== 'vendido' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleMarkDeath(animal)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Skull className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1320,6 +1344,13 @@ const Animals = () => {
         </TabsContent>
 
       </Tabs>
+
+      <MarkDeathDialog
+        open={showDeathDialog}
+        onOpenChange={setShowDeathDialog}
+        animal={animalToMarkDead}
+        onSuccess={handleDeathSuccess}
+      />
     </div>
   );
 };

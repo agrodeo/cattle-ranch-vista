@@ -65,6 +65,7 @@ export type Database = {
           color: string | null
           condicion_corporal: string | null
           corral_id: string | null
+          defuncion_id: string | null
           dna_verified: boolean | null
           father_breed: string | null
           father_id: string | null
@@ -108,6 +109,7 @@ export type Database = {
           color?: string | null
           condicion_corporal?: string | null
           corral_id?: string | null
+          defuncion_id?: string | null
           dna_verified?: boolean | null
           father_breed?: string | null
           father_id?: string | null
@@ -151,6 +153,7 @@ export type Database = {
           color?: string | null
           condicion_corporal?: string | null
           corral_id?: string | null
+          defuncion_id?: string | null
           dna_verified?: boolean | null
           father_breed?: string | null
           father_id?: string | null
@@ -199,6 +202,13 @@ export type Database = {
             columns: ["corral_id"]
             isOneToOne: false
             referencedRelation: "corrales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "animals_defuncion_id_fkey"
+            columns: ["defuncion_id"]
+            isOneToOne: false
+            referencedRelation: "defunciones"
             referencedColumns: ["id"]
           },
           {
@@ -375,6 +385,36 @@ export type Database = {
         }
         Relationships: []
       }
+      catalogo_causas: {
+        Row: {
+          activo: boolean
+          cabaña_id: string
+          created_at: string | null
+          id: string
+          nombre: string
+          orden: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          activo?: boolean
+          cabaña_id: string
+          created_at?: string | null
+          id?: string
+          nombre: string
+          orden?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          activo?: boolean
+          cabaña_id?: string
+          created_at?: string | null
+          id?: string
+          nombre?: string
+          orden?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       corrales: {
         Row: {
           cabaña_id: string | null
@@ -409,6 +449,59 @@ export type Database = {
             columns: ["cabaña_id"]
             isOneToOne: false
             referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      defunciones: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          causa_id: string | null
+          causa_texto: string | null
+          created_at: string | null
+          edad_dias: number | null
+          edad_meses: number | null
+          fecha_defuncion: string
+          id: string
+          notas: string | null
+          registrado_por: string
+          updated_at: string | null
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          causa_id?: string | null
+          causa_texto?: string | null
+          created_at?: string | null
+          edad_dias?: number | null
+          edad_meses?: number | null
+          fecha_defuncion: string
+          id?: string
+          notas?: string | null
+          registrado_por: string
+          updated_at?: string | null
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          causa_id?: string | null
+          causa_texto?: string | null
+          created_at?: string | null
+          edad_dias?: number | null
+          edad_meses?: number | null
+          fecha_defuncion?: string
+          id?: string
+          notas?: string | null
+          registrado_por?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "defunciones_causa_id_fkey"
+            columns: ["causa_id"]
+            isOneToOne: false
+            referencedRelation: "catalogo_causas"
             referencedColumns: ["id"]
           },
         ]
@@ -1127,6 +1220,26 @@ export type Database = {
           type: string
           updated_at: string
         }[]
+      }
+      manage_death_causes: {
+        Args: {
+          _action: string
+          _activo?: boolean
+          _id?: string
+          _nombre?: string
+          _orden?: number
+        }
+        Returns: Json
+      }
+      marcar_defuncion: {
+        Args: {
+          _animal_id: string
+          _causa_id?: string
+          _causa_texto?: string
+          _fecha_defuncion: string
+          _notas?: string
+        }
+        Returns: Json
       }
       update_subscription_plan: {
         Args: {
