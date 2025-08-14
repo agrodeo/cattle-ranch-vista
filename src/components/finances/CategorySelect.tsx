@@ -19,6 +19,7 @@ interface Props {
   className?: string;
   allowCreate?: boolean;
   placeholder?: string;
+  isAnimalSale?: boolean;
 }
 
 interface CategoryRow {
@@ -36,6 +37,7 @@ export default function CategorySelect({
   className,
   allowCreate = true,
   placeholder = "Categoría",
+  isAnimalSale = false,
 }: Props) {
   const { currentUser } = useSimpleAuth();
   const queryClient = useQueryClient();
@@ -91,12 +93,23 @@ export default function CategorySelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {categories.map((c) => (
-            <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-          ))}
-          <SelectItem value="__none__" onClick={() => onChange(undefined)}>
-            Sin categoría
-          </SelectItem>
+          {isAnimalSale ? (
+            // For animal sales, only show "Venta de Animales" and option to create custom
+            categories
+              .filter(c => c.name === 'Venta de Animales')
+              .map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))
+          ) : (
+            categories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            ))
+          )}
+          {!isAnimalSale && (
+            <SelectItem value="__none__" onClick={() => onChange(undefined)}>
+              Sin categoría
+            </SelectItem>
+          )}
         </SelectContent>
       </Select>
       {allowCreate && currentUser?.id && (

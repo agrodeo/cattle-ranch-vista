@@ -42,6 +42,21 @@ export function FinancesMovements() {
 
   const supabaseAny = supabase as any;
 
+  // Query to get animal sale category ID
+  const { data: animalSaleCategory } = useQuery({
+    queryKey: ["finance-categories", "animal-sale", currentUser?.id],
+    queryFn: async () => {
+      if (!currentUser?.id) return null;
+      const { data, error } = await supabaseAny.rpc('list_finance_categories', {
+        _user_id: currentUser.id,
+        _type: 'ingreso'
+      });
+      if (error) throw error;
+      return data?.find((c: any) => c.name === 'Venta de Animales') || null;
+    },
+    enabled: !!currentUser?.id,
+  });
+
   const { data, isLoading } = useQuery({
     queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search, categoryFilter],
     queryFn: async (): Promise<FinanceRow[]> => {
@@ -321,6 +336,7 @@ export function FinancesMovements() {
               type={form.type as "ingreso"|"egreso"}
               value={form.categoryId}
               onChange={(id) => setForm(f => ({...f, categoryId: id === "__none__" ? undefined : id}))}
+              isAnimalSale={form.type === "ingreso" && form.isAnimalSale}
             />
 
             {form.type === "ingreso" && (
@@ -328,7 +344,15 @@ export function FinancesMovements() {
                 <Switch
                   id="animal-sale"
                   checked={form.isAnimalSale}
-                  onCheckedChange={(v) => setForm(f => ({...f, isAnimalSale: !!v}))}
+                  onCheckedChange={(v) => {
+                    const isAnimalSale = !!v;
+                    setForm(f => ({
+                      ...f, 
+                      isAnimalSale,
+                      // Auto-select animal sale category when enabled
+                      categoryId: isAnimalSale ? animalSaleCategory?.id || f.categoryId : f.categoryId
+                    }));
+                  }}
                 />
                 <Label htmlFor="animal-sale">Venta de animales</Label>
               </div>
