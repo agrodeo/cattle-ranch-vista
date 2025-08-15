@@ -228,6 +228,17 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
             Registre el servicio de inseminación artificial
           </DialogDescription>
         </DialogHeader>
+        
+        {animals.length === 0 && !loading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-2">
+              No hay hembras elegibles para inseminación artificial.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Se requieren hembras ≥15 meses que no estén preñadas.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* Service Details */}

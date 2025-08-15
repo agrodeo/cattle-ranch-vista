@@ -195,6 +195,17 @@ export function NewTactoDialog({ onSuccess }: TactoDialogProps) {
             Registre el resultado del tacto rectal para detección de preñez
           </DialogDescription>
         </DialogHeader>
+        
+        {animals.length === 0 && !loading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-2">
+              No hay hembras elegibles para tacto.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Se requieren hembras ≥15 meses.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* Detection Details */}

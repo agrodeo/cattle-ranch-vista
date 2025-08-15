@@ -108,8 +108,8 @@ export function useActivities() {
         .from("animals")
         .select("*")
         .eq("cabaña_id", userData.cabaña_id)
-        .neq("status", "vendido")
-        .neq("status", "muerto");
+        .neq("status", "Vendido")
+        .neq("status", "Muerto");
 
       // Apply specific filters based on activity type
       if (activityType === 'IA') {

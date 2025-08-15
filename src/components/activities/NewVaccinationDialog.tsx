@@ -154,6 +154,17 @@ export function NewVaccinationDialog({ onSuccess }: VaccinationDialogProps) {
             Registre la aplicación de vacunas a los animales
           </DialogDescription>
         </DialogHeader>
+        
+        {animals.length === 0 && !loading && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-2">
+              No hay animales elegibles para vacunación.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Verifica que tengas animales activos en tu cabaña.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-6">
           {/* Vaccination Details */}
