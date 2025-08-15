@@ -1,8 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Scale, Plus, TrendingUp } from "lucide-react";
+import { NewWeighingDialog } from "./NewWeighingDialog";
+import { useActivities } from "@/hooks/useActivities";
 
 export function WeighingManager() {
+  const { stats, fetchStats } = useActivities();
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -12,10 +16,7 @@ export function WeighingManager() {
             Control de peso y rendimiento del ganado
           </p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Pesaje
-        </Button>
+        <NewWeighingDialog onSuccess={fetchStats} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -51,7 +52,7 @@ export function WeighingManager() {
             <div className="h-4 w-4 rounded-full bg-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{stats.weighings}</div>
             <p className="text-xs text-muted-foreground">
               Este mes
             </p>

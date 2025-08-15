@@ -1,8 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Syringe, Plus, Calendar } from "lucide-react";
+import { NewVaccinationDialog } from "./NewVaccinationDialog";
+import { useActivities } from "@/hooks/useActivities";
 
 export function VaccinationManager() {
+  const { stats, fetchStats } = useActivities();
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -12,10 +16,7 @@ export function VaccinationManager() {
             Control sanitario y programas de vacunación del ganado
           </p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Vacunación
-        </Button>
+        <NewVaccinationDialog onSuccess={fetchStats} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -38,7 +39,7 @@ export function VaccinationManager() {
             <Syringe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{stats.vaccinations}</div>
             <p className="text-xs text-muted-foreground">
               Este mes
             </p>
