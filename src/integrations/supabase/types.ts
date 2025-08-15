@@ -1048,6 +1048,7 @@ export type Database = {
           is_internal_profile: boolean | null
           last_login: string | null
           position: string | null
+          username: string | null
         }
         Insert: {
           cabaña_id?: string | null
@@ -1062,6 +1063,7 @@ export type Database = {
           is_internal_profile?: boolean | null
           last_login?: string | null
           position?: string | null
+          username?: string | null
         }
         Update: {
           cabaña_id?: string | null
@@ -1076,6 +1078,7 @@ export type Database = {
           is_internal_profile?: boolean | null
           last_login?: string | null
           position?: string | null
+          username?: string | null
         }
         Relationships: [
           {
@@ -1158,9 +1161,9 @@ export type Database = {
       create_company_with_owner: {
         Args: {
           company_name: string
-          owner_email: string
           owner_name: string
           owner_password: string
+          owner_username: string
         }
         Returns: {
           error_message: string
@@ -1401,7 +1404,7 @@ export type Database = {
         Returns: boolean
       }
       verify_user_login: {
-        Args: { input_identifier: string; input_password: string }
+        Args: { input_password: string; input_username: string }
         Returns: {
           success: boolean
           user_data: Json

@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 interface SimpleAuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
-  signIn: (identifier: string, password: string) => Promise<{ error: any }>;
-  signUp: (companyName: string, ownerName: string, email: string, password: string) => Promise<{ error: any }>;
+  signIn: (username: string, password: string) => Promise<{ error: any }>;
+  signUp: (companyName: string, ownerName: string, username: string, password: string) => Promise<{ error: any }>;
   signOut: () => void;
   currentUser: {
     id: string;
-    email: string;
+    username: string;
     fullName: string;
     employeeCode: string;
     position: string;
@@ -57,11 +57,11 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
     setLoading(false);
   }, []);
 
-  const signIn = async (identifier: string, password: string) => {
+  const signIn = async (username: string, password: string) => {
     try {
       // Verificar credenciales del usuario individual
       const { data, error } = await supabase.rpc('verify_user_login', {
-        input_identifier: identifier,
+        input_username: username,
         input_password: password
       });
 
@@ -87,7 +87,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
 
       const currentUser = {
         id: userData.id,
-        email: userData.email || '',
+        username: userData.username || '',
         fullName: userData.full_name || '',
         employeeCode: userData.employee_code || '',
         position: userData.position || '',
@@ -115,12 +115,12 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const signUp = async (companyName: string, ownerName: string, email: string, password: string) => {
+  const signUp = async (companyName: string, ownerName: string, username: string, password: string) => {
     try {
       const { data, error } = await supabase.rpc('create_company_with_owner', {
         company_name: companyName,
         owner_name: ownerName,
-        owner_email: email,
+        owner_username: username,
         owner_password: password
       });
 
@@ -142,7 +142,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
 
       const currentUser = {
         id: userData.id,
-        email: userData.email || '',
+        username: userData.username || '',
         fullName: userData.full_name || '',
         employeeCode: userData.employee_code || '',
         position: userData.position || '',

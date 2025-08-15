@@ -221,10 +221,9 @@ export function UserManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Código Empleado</TableHead>
+                  <TableHead>Usuario</TableHead>
                   <TableHead>Puesto</TableHead>
                   <TableHead>Departamento</TableHead>
-                  <TableHead>Email</TableHead>
                   <TableHead>Rol</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead>Fecha Ingreso</TableHead>
@@ -239,13 +238,12 @@ export function UserManagement() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Briefcase className="h-3 w-3 text-muted-foreground" />
-                        {profile.employee_code || "-"}
+                        <span className="text-muted-foreground">@</span>
+                        {(profile as any).username || profile.employee_code || "-"}
                       </div>
                     </TableCell>
                     <TableCell>{profile.position || "-"}</TableCell>
                     <TableCell>{profile.department || "-"}</TableCell>
-                    <TableCell>{profile.email || "-"}</TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(profile.role)}>
                         {getRoleDisplayName(profile.role)}

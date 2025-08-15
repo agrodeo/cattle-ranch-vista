@@ -33,12 +33,10 @@ export const CreateInternalProfileDialog = () => {
 
     const formData = new FormData(e.currentTarget);
     const profileData = {
-      full_name: formData.get("full_name") as string,
-      email: formData.get("email") as string || undefined,
-      employee_code: formData.get("employee_code") as string || undefined,
+      username: formData.get("username") as string,
+      full_name: formData.get("full_name") as string || undefined,
       position: formData.get("position") as string || undefined,
       department: formData.get("department") as string || undefined,
-      hire_date: formData.get("hire_date") as string || undefined,
       role: formData.get("role") as ProfileRole,
       password: formData.get("password") as string,
     };
@@ -98,20 +96,20 @@ export const CreateInternalProfileDialog = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="full_name">Nombre Completo*</Label>
+              <Label htmlFor="username">Nombre de Usuario*</Label>
               <Input
-                id="full_name"
-                name="full_name"
-                placeholder="Ej: Juan Pérez"
+                id="username"
+                name="username"
+                placeholder="Ej: jperez"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="employee_code">Código Empleado</Label>
+              <Label htmlFor="full_name">Nombre Completo</Label>
               <Input
-                id="employee_code"
-                name="employee_code"
-                placeholder="Ej: EMP001"
+                id="full_name"
+                name="full_name"
+                placeholder="Ej: Juan Pérez (opcional)"
               />
             </div>
           </div>
@@ -137,25 +135,16 @@ export const CreateInternalProfileDialog = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="password">Contraseña*</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Ej: juan@empresa.com"
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Contraseña para el empleado"
+                required
+                minLength={6}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="hire_date">Fecha de Ingreso</Label>
-              <Input
-                id="hire_date"
-                name="hire_date"
-                type="date"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="role">Rol en el Sistema*</Label>
               <Select name="role" required>
@@ -169,17 +158,8 @@ export const CreateInternalProfileDialog = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña Inicial*</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder="Contraseña inicial para el empleado"
-                required
-              />
-            </div>
           </div>
+
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>

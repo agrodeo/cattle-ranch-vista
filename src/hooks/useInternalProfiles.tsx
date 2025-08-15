@@ -5,7 +5,8 @@ export type ProfileRole = 'admin' | 'employee' | 'read_only';
 
 export interface InternalProfile {
   id: string;
-  full_name: string;
+  username?: string;
+  full_name?: string;
   email?: string;
   employee_code?: string;
   position?: string;
@@ -63,12 +64,10 @@ export const useInternalProfiles = () => {
 
   // Crear nuevo perfil interno
   const createProfile = useCallback(async (profileData: {
-    full_name: string;
-    email?: string;
-    employee_code?: string;
+    username: string;
+    full_name?: string;
     position?: string;
     department?: string;
-    hire_date?: string;
     role: ProfileRole;
     password: string;
   }) => {
@@ -81,20 +80,23 @@ export const useInternalProfiles = () => {
         .select('id')
         .limit(1);
       
+      // Generate employee code
+      const employeeCode = `USR${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+      
       // Crear perfil interno
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
           id: userId,
-          full_name: profileData.full_name,
-          email: profileData.email,
-          employee_code: profileData.employee_code,
-          position: profileData.position,
-          department: profileData.department,
-          hire_date: profileData.hire_date,
+          username: profileData.username,
+          full_name: profileData.full_name || profileData.username,
+          employee_code: employeeCode,
+          position: profileData.position || 'Empleado',
+          department: profileData.department || 'General',
           is_internal_profile: true,
           is_active: true,
-          cabaña_id: cabanaData?.[0]?.id || null
+          cabaña_id: cabanaData?.[0]?.id || null,
+          hire_date: new Date().toISOString().split('T')[0]
         })
         .select()
         .single();

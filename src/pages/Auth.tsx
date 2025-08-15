@@ -20,10 +20,10 @@ const Auth = () => {
     setIsLoading(true);
     
     const formData = new FormData(e.currentTarget);
-    const identifier = formData.get("identifier") as string;
+    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await signIn(identifier, password);
+    const { error } = await signIn(username, password);
     
     if (error) {
       toast({
@@ -49,7 +49,7 @@ const Auth = () => {
     const formData = new FormData(e.currentTarget);
     const companyName = formData.get("companyName") as string;
     const ownerName = formData.get("ownerName") as string;
-    const email = formData.get("email") as string;
+    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -63,7 +63,7 @@ const Auth = () => {
       return;
     }
 
-    const { error } = await signUp(companyName, ownerName, email, password);
+    const { error } = await signUp(companyName, ownerName, username, password);
     
     if (error) {
       toast({
@@ -117,18 +117,18 @@ const Auth = () => {
                   <span className="text-sm font-medium">Acceso de Empleados</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Ingresa con tu email o código de empleado y tu contraseña personal.
+                  Ingresa con tu nombre de usuario y contraseña.
                 </p>
               </div>
 
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="identifier">Email o Código de Empleado</Label>
+                  <Label htmlFor="username">Usuario</Label>
                   <Input
-                    id="identifier"
-                    name="identifier"
+                    id="username"
+                    name="username"
                     type="text"
-                    placeholder="tu@email.com o código de empleado"
+                    placeholder="Nombre de usuario"
                     required
                   />
                 </div>
@@ -185,12 +185,12 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="username">Nombre de Usuario</Label>
                   <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="tu@email.com"
+                    id="username"
+                    name="username"
+                    type="text"
+                    placeholder="Nombre de usuario único"
                     required
                   />
                 </div>

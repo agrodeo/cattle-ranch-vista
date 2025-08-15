@@ -54,7 +54,7 @@ export function Header() {
                     {currentUser?.fullName || "Usuario"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser?.email || currentUser?.employeeCode || "Sin email"}
+                    @{currentUser?.username || currentUser?.employeeCode || "Sin usuario"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {currentUser?.cabañaName || "Sin cabaña"}
