@@ -67,13 +67,18 @@ export type Database = {
           corral_id: string | null
           defuncion_id: string | null
           dna_verified: boolean | null
+          esta_preñada: boolean | null
           father_breed: string | null
           father_id: string | null
           father_name: string | null
           father_registration: string | null
           fecha_destete: string | null
           fecha_muerte: string | null
+          fecha_probable_parto: string | null
           fecha_servicio: string | null
+          fecha_ultima_preñez: string | null
+          fecha_ultimo_pesaje: string | null
+          ganancia_diaria_kg: number | null
           id: string
           id_tag: string | null
           mocho: string | null
@@ -83,6 +88,7 @@ export type Database = {
           mother_registration: string | null
           name: string | null
           observaciones: string | null
+          peso_actual_kg: number | null
           peso_destete: number | null
           peso_destete_mejorado: number | null
           peso_final: number | null
@@ -111,13 +117,18 @@ export type Database = {
           corral_id?: string | null
           defuncion_id?: string | null
           dna_verified?: boolean | null
+          esta_preñada?: boolean | null
           father_breed?: string | null
           father_id?: string | null
           father_name?: string | null
           father_registration?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
+          fecha_probable_parto?: string | null
           fecha_servicio?: string | null
+          fecha_ultima_preñez?: string | null
+          fecha_ultimo_pesaje?: string | null
+          ganancia_diaria_kg?: number | null
           id?: string
           id_tag?: string | null
           mocho?: string | null
@@ -127,6 +138,7 @@ export type Database = {
           mother_registration?: string | null
           name?: string | null
           observaciones?: string | null
+          peso_actual_kg?: number | null
           peso_destete?: number | null
           peso_destete_mejorado?: number | null
           peso_final?: number | null
@@ -155,13 +167,18 @@ export type Database = {
           corral_id?: string | null
           defuncion_id?: string | null
           dna_verified?: boolean | null
+          esta_preñada?: boolean | null
           father_breed?: string | null
           father_id?: string | null
           father_name?: string | null
           father_registration?: string | null
           fecha_destete?: string | null
           fecha_muerte?: string | null
+          fecha_probable_parto?: string | null
           fecha_servicio?: string | null
+          fecha_ultima_preñez?: string | null
+          fecha_ultimo_pesaje?: string | null
+          ganancia_diaria_kg?: number | null
           id?: string
           id_tag?: string | null
           mocho?: string | null
@@ -171,6 +188,7 @@ export type Database = {
           mother_registration?: string | null
           name?: string | null
           observaciones?: string | null
+          peso_actual_kg?: number | null
           peso_destete?: number | null
           peso_destete_mejorado?: number | null
           peso_final?: number | null
@@ -557,6 +575,42 @@ export type Database = {
           },
         ]
       }
+      eventos: {
+        Row: {
+          cabaña_id: string
+          creado_por: string
+          created_at: string
+          fecha: string
+          id: string
+          notas: string | null
+          payload: Json | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          cabaña_id: string
+          creado_por: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          notas?: string | null
+          payload?: Json | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          cabaña_id?: string
+          creado_por?: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          notas?: string | null
+          payload?: Json | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       finance_categories: {
         Row: {
           cabaña_id: string | null
@@ -763,6 +817,50 @@ export type Database = {
           },
         ]
       }
+      ia: {
+        Row: {
+          animales_ids: string[]
+          created_at: string
+          evento_id: string | null
+          extras_toro: Json | null
+          id: string
+          raza_toro: string | null
+          toro_id: string | null
+          toro_nombre: string
+          updated_at: string
+        }
+        Insert: {
+          animales_ids: string[]
+          created_at?: string
+          evento_id?: string | null
+          extras_toro?: Json | null
+          id?: string
+          raza_toro?: string | null
+          toro_id?: string | null
+          toro_nombre: string
+          updated_at?: string
+        }
+        Update: {
+          animales_ids?: string[]
+          created_at?: string
+          evento_id?: string | null
+          extras_toro?: Json | null
+          id?: string
+          raza_toro?: string | null
+          toro_id?: string | null
+          toro_nombre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ia_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       password_reset_tokens: {
         Row: {
           created_at: string
@@ -797,6 +895,88 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pesajes: {
+        Row: {
+          created_at: string
+          evento_id: string | null
+          id: string
+          mediciones: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evento_id?: string | null
+          id?: string
+          mediciones: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evento_id?: string | null
+          id?: string
+          mediciones?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pesajes_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      preñeces: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string
+          estado: string
+          evento_id: string | null
+          fecha_estimada_parto: string | null
+          fecha_inicio: string
+          id: string
+          notas: string | null
+          origen: string
+          updated_at: string
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string
+          estado?: string
+          evento_id?: string | null
+          fecha_estimada_parto?: string | null
+          fecha_inicio: string
+          id?: string
+          notas?: string | null
+          origen: string
+          updated_at?: string
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string
+          estado?: string
+          evento_id?: string | null
+          fecha_estimada_parto?: string | null
+          fecha_inicio?: string
+          id?: string
+          notas?: string | null
+          origen?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "preñeces_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
             referencedColumns: ["id"]
           },
         ]
@@ -964,6 +1144,38 @@ export type Database = {
           },
         ]
       }
+      tactos: {
+        Row: {
+          created_at: string
+          evento_id: string | null
+          id: string
+          resultados: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evento_id?: string | null
+          id?: string
+          resultados: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evento_id?: string | null
+          id?: string
+          resultados?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tactos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_passwords: {
         Row: {
           created_at: string | null
@@ -1097,6 +1309,103 @@ export type Database = {
             columns: ["cabaña_id"]
             isOneToOne: false
             referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vacunaciones: {
+        Row: {
+          animales_ids: string[]
+          created_at: string
+          dosis: string | null
+          evento_id: string | null
+          id: string
+          lote: string | null
+          proxima_dosis: string | null
+          updated_at: string
+          vacuna: string
+          via: string | null
+        }
+        Insert: {
+          animales_ids: string[]
+          created_at?: string
+          dosis?: string | null
+          evento_id?: string | null
+          id?: string
+          lote?: string | null
+          proxima_dosis?: string | null
+          updated_at?: string
+          vacuna: string
+          via?: string | null
+        }
+        Update: {
+          animales_ids?: string[]
+          created_at?: string
+          dosis?: string | null
+          evento_id?: string | null
+          id?: string
+          lote?: string | null
+          proxima_dosis?: string | null
+          updated_at?: string
+          vacuna?: string
+          via?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacunaciones_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vacunas_historial: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string
+          dosis: string | null
+          evento_id: string | null
+          fecha: string
+          id: string
+          lote: string | null
+          proxima_dosis: string | null
+          vacuna: string
+          via: string | null
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string
+          dosis?: string | null
+          evento_id?: string | null
+          fecha: string
+          id?: string
+          lote?: string | null
+          proxima_dosis?: string | null
+          vacuna: string
+          via?: string | null
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string
+          dosis?: string | null
+          evento_id?: string | null
+          fecha?: string
+          id?: string
+          lote?: string | null
+          proxima_dosis?: string | null
+          vacuna?: string
+          via?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vacunas_historial_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
             referencedColumns: ["id"]
           },
         ]
