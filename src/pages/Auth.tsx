@@ -1,29 +1,57 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Building2, Shield, UserPlus } from "lucide-react";
+import { Loader2, Building2, Shield, UserPlus, Mail } from "lucide-react";
 
 const Auth = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingAdmin, setIsLoadingAdmin] = useState(false);
+  const [isLoadingEmployee, setIsLoadingEmployee] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
-  const { signIn, signUp } = useSimpleAuth();
+  const { signInAdmin, signInEmployee, signUp } = useHybridAuth();
   const navigate = useNavigate();
 
-  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAdminSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoadingAdmin(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    const { error } = await signInAdmin(email, password);
+    
+    if (error) {
+      toast({
+        title: "Error al iniciar sesión",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "¡Bienvenido Administrador!",
+        description: "Has iniciado sesión exitosamente.",
+      });
+      navigate("/dashboard");
+    }
+    
+    setIsLoadingAdmin(false);
+  };
+
+  const handleEmployeeSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoadingEmployee(true);
     
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await signIn(username, password);
+    const { error } = await signInEmployee(username, password);
     
     if (error) {
       toast({
@@ -39,7 +67,7 @@ const Auth = () => {
       navigate("/dashboard");
     }
     
-    setIsLoading(false);
+    setIsLoadingEmployee(false);
   };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,11 +126,15 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login" className="flex items-center gap-2">
+          <Tabs defaultValue="admin" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="admin" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Admin
+              </TabsTrigger>
+              <TabsTrigger value="employee" className="flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                Empleados
+                Empleado
               </TabsTrigger>
               <TabsTrigger value="register" className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
@@ -110,7 +142,49 @@ const Auth = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="login" className="space-y-4 mt-6">
+            <TabsContent value="admin" className="space-y-4 mt-6">
+              <div className="p-4 bg-secondary/50 rounded-lg border">
+                <div className="flex items-center gap-2 mb-2">
+                  <Mail className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium">Acceso de Administradores</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Ingresa con tu email y contraseña registrados.
+                </p>
+              </div>
+
+              <form onSubmit={handleAdminSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="admin-email">Email</Label>
+                  <Input
+                    id="admin-email"
+                    name="email"
+                    type="email"
+                    placeholder="tu-email@ejemplo.com"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="admin-password">Contraseña</Label>
+                  <Input
+                    id="admin-password"
+                    name="password"
+                    type="password"
+                    placeholder="Tu contraseña"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoadingAdmin}>
+                  {isLoadingAdmin && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Iniciar Sesión como Admin
+                </Button>
+                <div className="mt-3 text-right text-sm">
+                  <Link to="/forgot-password" className="text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
+                </div>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="employee" className="space-y-4 mt-6">
               <div className="p-4 bg-secondary/50 rounded-lg border">
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className="h-4 w-4 text-primary" />
@@ -121,11 +195,11 @@ const Auth = () => {
                 </p>
               </div>
 
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <form onSubmit={handleEmployeeSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Usuario</Label>
+                  <Label htmlFor="employee-username">Usuario</Label>
                   <Input
-                    id="username"
+                    id="employee-username"
                     name="username"
                     type="text"
                     placeholder="Nombre de usuario"
@@ -133,22 +207,19 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Contraseña</Label>
+                  <Label htmlFor="employee-password">Contraseña</Label>
                   <Input
-                    id="password"
+                    id="employee-password"
                     name="password"
                     type="password"
                     placeholder="Tu contraseña personal"
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button type="submit" className="w-full" disabled={isLoadingEmployee}>
+                  {isLoadingEmployee && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Iniciar Sesión
                 </Button>
-                <div className="mt-3 text-right text-sm">
-                  <Link to="/forgot-password" className="text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
-                </div>
               </form>
             </TabsContent>
 

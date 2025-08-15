@@ -1,5 +1,5 @@
 import { Navigate } from "react-router-dom";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading } = useSimpleAuth();
+  const { isAuthenticated, loading } = useHybridAuth();
 
   if (loading) {
     return (

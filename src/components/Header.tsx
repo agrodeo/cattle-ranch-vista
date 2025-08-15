@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { LogOut, Building2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export function Header() {
-  const { currentUser, signOut } = useSimpleAuth();
+export const Header = () => {
+  const { currentUser, signOut } = useHybridAuth();
 
   const handleSignOut = () => {
     signOut();
@@ -54,7 +54,7 @@ export function Header() {
                     {currentUser?.fullName || "Usuario"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    @{currentUser?.username || currentUser?.employeeCode || "Sin usuario"}
+                    {currentUser?.authType === 'custom' ? `@${currentUser.username}` : currentUser?.email} • {currentUser?.role}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {currentUser?.cabañaName || "Sin cabaña"}
@@ -72,4 +72,4 @@ export function Header() {
       </div>
     </header>
   );
-}
+};
