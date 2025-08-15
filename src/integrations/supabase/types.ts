@@ -803,6 +803,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          cabaña_id: string | null
           created_at: string
           email: string | null
           full_name: string | null
@@ -811,6 +812,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          cabaña_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -819,6 +821,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          cabaña_id?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -826,7 +829,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reproductive_events: {
         Row: {
