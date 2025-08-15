@@ -73,18 +73,13 @@ export function MortalityReports() {
   const loadMortalityData = async () => {
     setLoading(true);
     try {
-      // Query deaths with animal data
+      // Query deaths with animal data using proper Supabase syntax
       let query = supabase
         .from('defunciones')
         .select(`
           *,
-          catalogo_causas!left(nombre),
-          animals!inner(
-            name,
-            id_tag,
-            sex,
-            breed
-          )
+          catalogo_causas(nombre),
+          animals(name, id_tag, sex, breed)
         `)
         .order('fecha_defuncion', { ascending: false });
 
@@ -98,19 +93,22 @@ export function MortalityReports() {
       if (filters.sex && filters.sex !== 'all') {
         query = query.eq('animals.sex', filters.sex);
       }
+      if (filters.breed) {
+        query = query.ilike('animals.breed', `%${filters.breed}%`);
+      }
 
       const { data: deathsData, error } = await query;
 
       if (error) throw error;
 
-      // Process deaths data
+      // Process deaths data - handle the nested structure properly
       const processedDeaths = (deathsData || []).map(death => ({
         ...death,
-        causa_nombre: death.catalogo_causas?.nombre,
-        animal_name: (death.animals as any).name,
-        animal_id_tag: (death.animals as any).id_tag,
-        animal_sex: (death.animals as any).sex,
-        animal_breed: (death.animals as any).breed,
+        causa_nombre: (death as any).catalogo_causas?.nombre,
+        animal_name: (death as any).animals?.name,
+        animal_id_tag: (death as any).animals?.id_tag,
+        animal_sex: (death as any).animals?.sex,
+        animal_breed: (death as any).animals?.breed,
       }));
 
       setDeaths(processedDeaths);
@@ -208,7 +206,7 @@ export function MortalityReports() {
 
       const csvData = deaths.map(death => [
         format(new Date(death.fecha_defuncion), 'dd/MM/yyyy'),
-        death.animal_id_tag || death.animal_name || 'Sin identificador',
+        death.animal_id_tag ? `RP: ${death.animal_id_tag}` : (death.animal_name || 'Sin identificador'),
         death.animal_name || '',
         death.animal_sex || 'Sin especificar',
         death.animal_breed || 'Sin especificar',
