@@ -206,17 +206,17 @@ export function MortalityReports() {
       'Notas',
     ];
 
-    const csvData = deaths.map(death => [
-      format(new Date(death.fecha_defuncion), 'dd/MM/yyyy'),
-      death.animal_id_tag || death.animal_name || '',
-      death.animal_name || '',
-      death.animal_sex || '',
-      death.animal_breed || '',
-      death.edad_dias ?? '',
-      death.edad_meses ?? '',
-      death.causa_nombre || death.causa_texto || '',
-      death.notas || '',
-    ]);
+      const csvData = deaths.map(death => [
+        format(new Date(death.fecha_defuncion), 'dd/MM/yyyy'),
+        death.animal_id_tag || death.animal_name || 'Sin identificador',
+        death.animal_name || '',
+        death.animal_sex || 'Sin especificar',
+        death.animal_breed || 'Sin especificar',
+        death.edad_dias ?? '',
+        death.edad_meses ?? '',
+        death.causa_nombre || death.causa_texto || 'Sin especificar',
+        death.notas || '',
+      ]);
 
     const csvContent = [headers, ...csvData]
       .map(row => row.map(cell => `"${cell}"`).join(','))
@@ -410,11 +410,11 @@ export function MortalityReports() {
                     <TableCell>
                       <div>
                         <div className="font-medium">
-                          {death.animal_id_tag || death.animal_name || 'Sin identificador'}
+                          {death.animal_id_tag ? `RP: ${death.animal_id_tag}` : (death.animal_name || 'Sin identificador')}
                         </div>
                         {death.animal_name && death.animal_id_tag && (
                           <div className="text-sm text-muted-foreground">
-                            Nombre: {death.animal_name}
+                            {death.animal_name}
                           </div>
                         )}
                       </div>
@@ -440,7 +440,9 @@ export function MortalityReports() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {death.animal_breed || 'Sin especificar'}
+                      <Badge variant="secondary">
+                        {death.animal_breed || 'Sin especificar'}
+                      </Badge>
                     </TableCell>
                   </TableRow>
                 ))}
