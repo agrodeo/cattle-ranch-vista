@@ -104,6 +104,8 @@ export function useActivities() {
 
       if (!userData?.cabaña_id) return [];
 
+      console.log(`Fetching animals for activity: ${activityType}`);
+
       let query = supabase
         .from("animals")
         .select("*")
@@ -126,16 +128,21 @@ export function useActivities() {
 
       if (error) throw error;
 
+      console.log(`Initial query returned ${animals?.length || 0} animals for ${activityType}`, animals);
+
       // Filter by age (>= 15 months for reproductive activities)
       const eligibleAnimals = animals?.filter(animal => {
         if (['IA', 'TACTO'].includes(activityType) && animal.birth_date) {
           const ageInMonths = Math.floor(
             (new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
           );
+          console.log(`Animal ${animal.name || animal.id_tag}: age ${ageInMonths} months`);
           return ageInMonths >= 15;
         }
         return true;
       }) || [];
+
+      console.log(`Final eligible animals for ${activityType}: ${eligibleAnimals.length}`, eligibleAnimals);
 
       return eligibleAnimals as EligibleAnimal[];
     } catch (error) {
