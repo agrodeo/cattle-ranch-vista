@@ -83,18 +83,12 @@ export function MortalityReports() {
         `)
         .order('fecha_defuncion', { ascending: false });
 
-      // Apply filters
+      // Apply date filters to the query
       if (filters.dateFrom) {
         query = query.gte('fecha_defuncion', filters.dateFrom);
       }
       if (filters.dateTo) {
         query = query.lte('fecha_defuncion', filters.dateTo);
-      }
-      if (filters.sex && filters.sex !== 'all') {
-        query = query.eq('animals.sex', filters.sex);
-      }
-      if (filters.breed) {
-        query = query.ilike('animals.breed', `%${filters.breed}%`);
       }
 
       const { data: deathsData, error } = await query;
@@ -102,7 +96,7 @@ export function MortalityReports() {
       if (error) throw error;
 
       // Process deaths data - handle the nested structure properly
-      const processedDeaths = (deathsData || []).map(death => ({
+      let processedDeaths = (deathsData || []).map(death => ({
         ...death,
         causa_nombre: (death as any).catalogo_causas?.nombre,
         animal_name: (death as any).animals?.name,
@@ -110,6 +104,16 @@ export function MortalityReports() {
         animal_sex: (death as any).animals?.sex,
         animal_breed: (death as any).animals?.breed,
       }));
+
+      // Apply client-side filters for sex and breed since Supabase doesn't support filtering on nested relations
+      if (filters.sex && filters.sex !== 'all') {
+        processedDeaths = processedDeaths.filter(death => death.animal_sex === filters.sex);
+      }
+      if (filters.breed) {
+        processedDeaths = processedDeaths.filter(death => 
+          death.animal_breed?.toLowerCase().includes(filters.breed.toLowerCase())
+        );
+      }
 
       setDeaths(processedDeaths);
 
