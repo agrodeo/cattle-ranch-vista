@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
 
 interface MortalityStats {
@@ -18,7 +18,7 @@ interface MortalityStats {
 }
 
 export const MortalityReports = () => {
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
 

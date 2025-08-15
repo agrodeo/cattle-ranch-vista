@@ -38,7 +38,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 
 const formSchema = z.object({
   fecha_defuncion: z.date({
@@ -91,7 +91,7 @@ export function MarkDeathDialog({
   const [newCauseName, setNewCauseName] = useState("");
   const [addingCause, setAddingCause] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

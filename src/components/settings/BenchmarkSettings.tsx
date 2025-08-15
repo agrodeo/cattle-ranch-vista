@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { useToast } from "@/hooks/use-toast";
 import { type CustomBenchmark } from "@/lib/breedBenchmarks";
 
@@ -38,7 +38,7 @@ const DEFAULT_FORM_DATA: BenchmarkFormData = {
 };
 
 export const BenchmarkSettings = () => {
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
   const { toast } = useToast();
   const [customBenchmarks, setCustomBenchmarks] = useState<CustomBenchmark[]>([]);
   const [loading, setLoading] = useState(true);

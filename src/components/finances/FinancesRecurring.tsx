@@ -3,7 +3,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,7 +34,7 @@ interface RecurringRow {
 }
 
 export default function FinancesRecurring() {
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<{
     name: string;

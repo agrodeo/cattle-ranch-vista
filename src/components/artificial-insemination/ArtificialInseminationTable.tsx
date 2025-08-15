@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Pencil, Trash2, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { format } from "date-fns";
 
 interface ArtificialInsemination {
@@ -44,7 +44,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
     corral: "",
   });
   const { toast } = useToast();
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
 
   useEffect(() => {
     fetchRecords();

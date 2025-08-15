@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,7 +24,7 @@ interface Corral {
 }
 
 export default function Corrales() {
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
   const { toast } = useToast();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);

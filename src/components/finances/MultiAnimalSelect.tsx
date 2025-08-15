@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function MultiAnimalSelect({ selectedIds, onChange, className }: Props) {
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
