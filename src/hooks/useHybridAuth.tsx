@@ -48,48 +48,84 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     // Set up Supabase auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if this is a Supabase Auth user with profile
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single();
-          
-          if (profile) {
-            // This is a Supabase Auth user
-            const hybridUser: HybridUser = {
-              id: session.user.id,
-              email: session.user.email,
-              fullName: profile.full_name || session.user.email || '',
-              cabañaId: '', // Will need to get from profiles
-              authType: 'supabase',
-              role: 'admin' // Default role for Supabase users
-            };
-            
-            setCurrentUser(hybridUser);
-            setIsAuthenticated(true);
-          }
+          // Handle Supabase Auth user - defer profile fetch to avoid blocking
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', session.user.id)
+                .single();
+              
+              if (profile) {
+                // This is a Supabase Auth user
+                const hybridUser: HybridUser = {
+                  id: session.user.id,
+                  email: session.user.email,
+                  fullName: profile.full_name || session.user.email || '',
+                  cabañaId: profile.cabaña_id || '', // Handle missing cabaña_id gracefully
+                  authType: 'supabase',
+                  role: 'admin' // Default role for Supabase users
+                };
+                
+                setCurrentUser(hybridUser);
+                setIsAuthenticated(true);
+              } else {
+                // Create minimal user if no profile exists
+                const hybridUser: HybridUser = {
+                  id: session.user.id,
+                  email: session.user.email,
+                  fullName: session.user.email || 'Admin',
+                  cabañaId: '',
+                  authType: 'supabase',
+                  role: 'admin'
+                };
+                
+                setCurrentUser(hybridUser);
+                setIsAuthenticated(true);
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              // Fallback to basic user data
+              const hybridUser: HybridUser = {
+                id: session.user.id,
+                email: session.user.email,
+                fullName: session.user.email || 'Admin',
+                cabañaId: '',
+                authType: 'supabase',
+                role: 'admin'
+              };
+              
+              setCurrentUser(hybridUser);
+              setIsAuthenticated(true);
+            }
+          }, 0);
         } else {
           // Check for custom auth session in localStorage
           const savedAuth = localStorage.getItem('agrodeo_auth');
           if (savedAuth) {
-            const authData = JSON.parse(savedAuth);
-            if (authData.isAuthenticated && authData.timestamp && authData.currentUser) {
-              const now = Date.now();
-              const sessionAge = now - authData.timestamp;
-              const maxAge = 24 * 60 * 60 * 1000; // 24 hours
-              
-              if (sessionAge < maxAge) {
-                setCurrentUser({ ...authData.currentUser, authType: 'custom' });
-                setIsAuthenticated(true);
-              } else {
-                localStorage.removeItem('agrodeo_auth');
+            try {
+              const authData = JSON.parse(savedAuth);
+              if (authData.isAuthenticated && authData.timestamp && authData.currentUser) {
+                const now = Date.now();
+                const sessionAge = now - authData.timestamp;
+                const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+                
+                if (sessionAge < maxAge) {
+                  setCurrentUser({ ...authData.currentUser, authType: 'custom' });
+                  setIsAuthenticated(true);
+                } else {
+                  localStorage.removeItem('agrodeo_auth');
+                }
               }
+            } catch (error) {
+              console.error('Error parsing saved auth:', error);
+              localStorage.removeItem('agrodeo_auth');
             }
           }
         }
