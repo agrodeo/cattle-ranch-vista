@@ -146,7 +146,8 @@ export function MortalityReports() {
     };
 
     deaths.forEach(death => {
-      if (!death.edad_dias) {
+      // Only mark as unknown if edad_dias is null or undefined, not if it's 0
+      if (death.edad_dias === null || death.edad_dias === undefined) {
         ageGroups['Desconocido']++;
         return;
       }
@@ -195,8 +196,8 @@ export function MortalityReports() {
   const exportToCSV = () => {
     const headers = [
       'Fecha Defunción',
-      'Animal',
-      'RP/ID',
+      'Identificador Principal',
+      'Nombre',
       'Sexo',
       'Raza',
       'Edad al Morir (días)',
@@ -207,12 +208,12 @@ export function MortalityReports() {
 
     const csvData = deaths.map(death => [
       format(new Date(death.fecha_defuncion), 'dd/MM/yyyy'),
+      death.animal_id_tag || death.animal_name || '',
       death.animal_name || '',
-      death.animal_id_tag || '',
       death.animal_sex || '',
       death.animal_breed || '',
-      death.edad_dias || '',
-      death.edad_meses || '',
+      death.edad_dias ?? '',
+      death.edad_meses ?? '',
       death.causa_nombre || death.causa_texto || '',
       death.notas || '',
     ]);
@@ -234,8 +235,8 @@ export function MortalityReports() {
 
   const totalDeaths = deaths.length;
   const averageAgeAtDeath = deaths
-    .filter(d => d.edad_dias)
-    .reduce((sum, d) => sum + (d.edad_dias || 0), 0) / deaths.filter(d => d.edad_dias).length;
+    .filter(d => d.edad_dias !== null && d.edad_dias !== undefined)
+    .reduce((sum, d) => sum + (d.edad_dias || 0), 0) / deaths.filter(d => d.edad_dias !== null && d.edad_dias !== undefined).length;
 
   return (
     <div className="space-y-6">
@@ -409,21 +410,21 @@ export function MortalityReports() {
                     <TableCell>
                       <div>
                         <div className="font-medium">
-                          {death.animal_name || death.animal_id_tag || 'Sin nombre'}
+                          {death.animal_id_tag || death.animal_name || 'Sin identificador'}
                         </div>
-                        {death.animal_id_tag && death.animal_name && (
+                        {death.animal_name && death.animal_id_tag && (
                           <div className="text-sm text-muted-foreground">
-                            RP: {death.animal_id_tag}
+                            Nombre: {death.animal_name}
                           </div>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {death.edad_dias ? (
+                      {death.edad_dias !== null && death.edad_dias !== undefined ? (
                         <div>
                           <div>{death.edad_dias} días</div>
                           <div className="text-sm text-muted-foreground">
-                            {death.edad_meses} meses
+                            {death.edad_meses || 0} meses
                           </div>
                         </div>
                       ) : (
