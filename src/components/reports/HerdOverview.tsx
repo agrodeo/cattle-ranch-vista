@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useSimpleAuth } from "@/hooks/useSimpleAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Calendar, Users, TrendingUp, Activity } from "lucide-react";
 
 interface HerdStats {
@@ -19,7 +20,7 @@ interface HerdStats {
 }
 
 export const HerdOverview = () => {
-  const { currentUser } = useSimpleAuth();
+  const { currentUser } = useHybridAuth();
   const [stats, setStats] = useState<HerdStats | null>(null);
   const [loading, setLoading] = useState(true);
 
