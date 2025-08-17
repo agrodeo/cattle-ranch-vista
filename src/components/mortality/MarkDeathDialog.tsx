@@ -67,10 +67,10 @@ interface DeathCause {
 interface Animal {
   id: string;
   name?: string;
-  id_tag?: string;
+  id_tag: string;
   birth_date?: string;
-  sex?: string;
-  breed?: string;
+  sex: string;
+  breed: string;
   status?: string;
 }
 
