@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Animal } from "@/types/animal";
 import { AnimalProfileHeader } from "@/components/animals/profile/AnimalProfileHeader";
@@ -11,19 +11,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnimalProfile() {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { currentUser } = useHybridAuth();
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id || !user) return;
+    if (!id || !currentUser) return;
     
     fetchAnimal();
-  }, [id, user]);
+  }, [id, currentUser]);
 
   const fetchAnimal = async () => {
-    if (!id || !user) return;
+    if (!id || !currentUser) return;
 
     setLoading(true);
     setError(null);
