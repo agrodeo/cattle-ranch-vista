@@ -35,11 +35,19 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
     try {
       setLoading(true);
 
+      console.log("Debug - currentUser:", currentUser);
+      console.log("Debug - currentUser.authType:", currentUser.authType);
+      console.log("Debug - currentUser.cabañaId:", currentUser.cabañaId);
+
       // Get user's cabaña_id using the function that handles both auth types
       const { data: cabanaData, error: cabanaError } = await supabase
         .rpc("get_current_user_cabana_id");
 
+      console.log("Debug - cabanaData:", cabanaData);
+      console.log("Debug - cabanaError:", cabanaError);
+
       if (cabanaError || !cabanaData) {
+        console.log("Debug - Error condition triggered");
         throw new Error("No se encontró la cabaña del usuario");
       }
 
