@@ -68,18 +68,20 @@ interface DeathCause {
 interface MarkDeathDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  animal: Animal | null;
+  animalId: string | null;
   onSuccess: () => void;
 }
 
 export function MarkDeathDialog({
   open,
   onOpenChange,
-  animal,
+  animalId,
   onSuccess,
 }: MarkDeathDialogProps) {
+  const [animal, setAnimal] = useState<Animal | null>(null);
   const [causes, setCauses] = useState<DeathCause[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingAnimal, setLoadingAnimal] = useState(false);
   const [showCustomCause, setShowCustomCause] = useState(false);
   const [showAddCause, setShowAddCause] = useState(false);
   const [newCauseName, setNewCauseName] = useState("");
@@ -87,21 +89,49 @@ export function MarkDeathDialog({
   const { toast } = useToast();
   const { currentUser } = useHybridAuth();
 
-  // Debug logging to see what data we're receiving
-  useEffect(() => {
-    if (animal) {
-      console.log("🔍 MarkDeathDialog received animal data:", {
-        id: animal.id,
-        name: animal.name,
-        id_tag: animal.id_tag,
-        sex: animal.sex,
-        breed: animal.breed,
-        birth_date: animal.birth_date,
-        status: animal.status,
-        rawAnimal: animal
+  // Fetch animal data when dialog opens and animalId is provided
+  const fetchAnimalData = async (id: string) => {
+    setLoadingAnimal(true);
+    try {
+      const { data, error } = await supabase
+        .from('animals')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      
+      console.log("🔍 MarkDeathDialog fetched fresh animal data:", {
+        id: data.id,
+        name: data.name,
+        id_tag: data.id_tag,
+        sex: data.sex,
+        breed: data.breed,
+        birth_date: data.birth_date,
+        status: data.status,
+        rawAnimal: data
       });
+      
+      setAnimal(data);
+    } catch (error) {
+      console.error('Error fetching animal data:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los datos del animal",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAnimal(false);
     }
-  }, [animal]);
+  };
+
+  useEffect(() => {
+    if (open && animalId) {
+      fetchAnimalData(animalId);
+    } else {
+      setAnimal(null);
+    }
+  }, [open, animalId]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -305,6 +335,19 @@ export function MarkDeathDialog({
           </DialogTitle>
         </DialogHeader>
 
+        {loadingAnimal ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+              <p className="text-muted-foreground">Cargando datos del animal...</p>
+            </div>
+          </div>
+        ) : !animal ? (
+          <div className="flex items-center justify-center p-8">
+            <p className="text-muted-foreground">No se encontraron datos del animal</p>
+          </div>
+        ) : (
+          <>
         {animal && (
           <div className="mb-4 p-3 bg-muted rounded-lg space-y-2">
             <div className="grid grid-cols-2 gap-2 text-sm">
@@ -502,6 +545,8 @@ export function MarkDeathDialog({
             </DialogFooter>
           </form>
         </Form>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -139,7 +139,7 @@ const Animals = () => {
   const [breedFilter, setBreedFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showDeathDialog, setShowDeathDialog] = useState(false);
-  const [animalToMarkDead, setAnimalToMarkDead] = useState<Animal | null>(null);
+  const [animalToMarkDead, setAnimalToMarkDead] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     id_tag: "",
@@ -545,7 +545,7 @@ const Animals = () => {
   };
 
   const handleMarkDeath = (animal: Animal) => {
-    setAnimalToMarkDead(animal);
+    setAnimalToMarkDead(animal.id);
     setShowDeathDialog(true);
   };
 
@@ -1345,7 +1345,7 @@ const Animals = () => {
       <MarkDeathDialog
         open={showDeathDialog}
         onOpenChange={setShowDeathDialog}
-        animal={animalToMarkDead}
+        animalId={animalToMarkDead}
         onSuccess={handleDeathSuccess}
       />
     </div>
