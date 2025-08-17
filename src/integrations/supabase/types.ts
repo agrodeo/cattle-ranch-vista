@@ -1558,6 +1558,24 @@ export type Database = {
           cabana_name: string
         }[]
       }
+      get_mortality_reports: {
+        Args: { _date_from?: string; _date_to?: string; _user_id: string }
+        Returns: {
+          animal_breed: string
+          animal_id: string
+          animal_id_tag: string
+          animal_name: string
+          animal_sex: string
+          cabaña_id: string
+          causa_nombre: string
+          causa_texto: string
+          edad_dias: number
+          edad_meses: number
+          fecha_defuncion: string
+          id: string
+          notas: string
+        }[]
+      }
       get_sistema_credenciales: {
         Args: Record<PropertyKey, never>
         Returns: {

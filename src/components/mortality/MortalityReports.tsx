@@ -23,6 +23,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { FileDown, Calendar, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { format } from "date-fns";
 
 interface DeathRecord {
@@ -65,47 +66,39 @@ export function MortalityReports() {
     cause: "",
   });
   const { toast } = useToast();
+  const { currentUser } = useHybridAuth();
 
   useEffect(() => {
-    loadMortalityData();
-  }, []);
+    if (currentUser) {
+      loadMortalityData();
+    }
+  }, [currentUser]);
 
   const loadMortalityData = async () => {
+    if (!currentUser) {
+      console.log('No current user available for mortality data loading');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Query deaths with animal data using proper Supabase syntax
-      let query = supabase
-        .from('defunciones')
-        .select(`
-          *,
-          catalogo_causas(nombre),
-          animals(name, id_tag, sex, breed)
-        `)
-        .order('fecha_defuncion', { ascending: false });
+      // Use the new database function to get mortality data with proper joins
+      const { data: deathsData, error } = await supabase.rpc('get_mortality_reports', {
+        _user_id: currentUser.id,
+        _date_from: filters.dateFrom || null,
+        _date_to: filters.dateTo || null
+      });
 
-      // Apply date filters to the query
-      if (filters.dateFrom) {
-        query = query.gte('fecha_defuncion', filters.dateFrom);
-      }
-      if (filters.dateTo) {
-        query = query.lte('fecha_defuncion', filters.dateTo);
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
       }
 
-      const { data: deathsData, error } = await query;
+      console.log('🔍 MortalityReports fetched data:', deathsData);
 
-      if (error) throw error;
-
-      // Process deaths data - handle the nested structure properly
-      let processedDeaths = (deathsData || []).map(death => ({
-        ...death,
-        causa_nombre: (death as any).catalogo_causas?.nombre,
-        animal_name: (death as any).animals?.name,
-        animal_id_tag: (death as any).animals?.id_tag,
-        animal_sex: (death as any).animals?.sex,
-        animal_breed: (death as any).animals?.breed,
-      }));
-
-      // Apply client-side filters for sex and breed since Supabase doesn't support filtering on nested relations
+      // Apply client-side filters for sex and breed
+      let processedDeaths = deathsData || [];
+      
       if (filters.sex && filters.sex !== 'all') {
         processedDeaths = processedDeaths.filter(death => death.animal_sex === filters.sex);
       }
