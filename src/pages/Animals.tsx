@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Skull } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Skull, Eye } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
@@ -124,6 +125,7 @@ const getAgeCategory = (birthDate: string | null, sex: string) => {
 };
 
 const Animals = () => {
+  const navigate = useNavigate();
   const { currentUser } = useHybridAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
@@ -1194,7 +1196,12 @@ const Animals = () => {
                           )}
                         </Button>
                       </TableCell>
-                      <TableCell className="font-medium">{getAnimalDisplayName(animal)}</TableCell>
+                       <TableCell 
+                         className="font-medium cursor-pointer hover:text-primary"
+                         onClick={() => navigate(`/animales/${animal.id}`)}
+                       >
+                         {getAnimalDisplayName(animal)}
+                       </TableCell>
                       <TableCell>{animal.id_tag}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
@@ -1206,34 +1213,43 @@ const Animals = () => {
                         {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
                       </TableCell>
                       <TableCell>{getStatusBadge(animal.status)}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(animal)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDelete(animal.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                          {animal.status !== 'muerto' && animal.status !== 'vendido' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleMarkDeath(animal)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Skull className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </TableCell>
+                       <TableCell>
+                         <div className="flex items-center gap-2">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => navigate(`/animales/${animal.id}`)}
+                             className="flex items-center gap-1"
+                           >
+                             <Eye className="h-4 w-4" />
+                             Ver
+                           </Button>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleEdit(animal)}
+                           >
+                             <Edit className="h-4 w-4" />
+                           </Button>
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => handleDelete(animal.id)}
+                           >
+                             <Trash2 className="h-4 w-4" />
+                           </Button>
+                           {animal.status !== 'muerto' && animal.status !== 'vendido' && (
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => handleMarkDeath(animal)}
+                               className="text-destructive hover:text-destructive"
+                             >
+                               <Skull className="h-4 w-4" />
+                             </Button>
+                           )}
+                         </div>
+                       </TableCell>
                     </TableRow>
                     
                     {/* Expandable Animal Details */}
