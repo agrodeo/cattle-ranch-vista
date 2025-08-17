@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export type ProfileRole = 'admin' | 'employee' | 'read_only';
 
@@ -21,6 +22,7 @@ export interface InternalProfile {
 }
 
 export const useInternalProfiles = () => {
+  const { user, profile } = useAuth();
   const [profiles, setProfiles] = useState<InternalProfile[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -72,18 +74,15 @@ export const useInternalProfiles = () => {
     password: string;
   }) => {
     try {
-      const userId = crypto.randomUUID();
-      
-      // Obtener primera cabaña disponible
-      const { data: cabanaData } = await supabase
-        .from('cabañas')
-        .select('id')
-        .limit(1);
-      
+      if (!user || !profile?.cabaña_id) {
+        throw new Error('Usuario no autenticado o sin cabaña asignada');
+      }
+
       // Generate employee code
       const employeeCode = `USR${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       
-      // Crear perfil interno
+      // Crear perfil interno usando el ID del usuario autenticado como created_by
+      const userId = crypto.randomUUID();
       const { data: userData, error: userError } = await supabase
         .from('users')
         .insert({
@@ -95,7 +94,7 @@ export const useInternalProfiles = () => {
           department: profileData.department || 'General',
           is_internal_profile: true,
           is_active: true,
-          cabaña_id: cabanaData?.[0]?.id || null,
+          cabaña_id: profile.cabaña_id,
           hire_date: new Date().toISOString().split('T')[0]
         })
         .select()
@@ -109,7 +108,7 @@ export const useInternalProfiles = () => {
         .insert({
           user_id: userId,
           password_text: profileData.password,
-          created_by: null
+          created_by: user.id
         });
 
       if (passwordError) throw passwordError;
@@ -120,7 +119,7 @@ export const useInternalProfiles = () => {
         .insert({
           user_id: userId,
           role: profileData.role,
-          created_by: null
+          created_by: user.id
         });
 
       if (roleError) throw roleError;
@@ -131,7 +130,7 @@ export const useInternalProfiles = () => {
       console.error('Error creating profile:', error);
       return { success: false, error };
     }
-  }, [fetchProfiles]);
+  }, [fetchProfiles, user, profile]);
 
   // Actualizar perfil interno
   const updateProfile = useCallback(async (profileId: string, updates: Partial<InternalProfile>) => {
