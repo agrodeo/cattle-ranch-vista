@@ -1,8 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ClipboardList, Plus, Activity } from "lucide-react";
+import { NewGeneralActivityDialog } from "./NewGeneralActivityDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export function GeneralActivitiesManager() {
+  const { toast } = useToast();
+
+  const handleActivityTypeClick = (activityName: string) => {
+    toast({
+      title: "Próximamente",
+      description: `El registro de ${activityName} estará disponible pronto`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -12,10 +23,12 @@ export function GeneralActivitiesManager() {
             Registro de otras actividades de manejo ganadero
           </p>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Actividad
-        </Button>
+        <NewGeneralActivityDialog>
+          <Button className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Nueva Actividad
+          </Button>
+        </NewGeneralActivityDialog>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -66,6 +79,7 @@ export function GeneralActivitiesManager() {
               <div
                 key={index}
                 className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                onClick={() => handleActivityTypeClick(activity.name)}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">{activity.icon}</span>
