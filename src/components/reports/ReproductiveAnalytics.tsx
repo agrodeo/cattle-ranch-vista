@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Heart, TrendingUp, Calendar, Users } from "lucide-react";
 
 interface ReproductiveStats {
@@ -23,12 +23,12 @@ interface ReproductiveStats {
 }
 
 export const ReproductiveAnalytics = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const [stats, setStats] = useState<ReproductiveStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentUser?.cabañaId) {
+    if (profile?.cabaña_id) {
       fetchReproductiveStats();
     }
   }, [currentUser]);
@@ -39,19 +39,19 @@ export const ReproductiveAnalytics = () => {
       const { data: animals } = await supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", profile?.cabaña_id);
 
       // Fetch artificial inseminations
       const { data: inseminations } = await supabase
         .from("artificial_inseminations")
         .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", profile?.cabaña_id);
 
       // Fetch reproductive events
       const { data: reproductiveEvents } = await supabase
         .from("reproductive_events")
         .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", profile?.cabaña_id);
 
       const reproStats = calculateReproductiveStats(animals || [], inseminations || [], reproductiveEvents || []);
       setStats(reproStats);

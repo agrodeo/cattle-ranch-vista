@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { type CustomBenchmark } from "@/lib/breedBenchmarks";
 
@@ -38,7 +38,7 @@ const DEFAULT_FORM_DATA: BenchmarkFormData = {
 };
 
 export const BenchmarkSettings = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const { toast } = useToast();
   const [customBenchmarks, setCustomBenchmarks] = useState<CustomBenchmark[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export const BenchmarkSettings = () => {
   const [availableBreeds, setAvailableBreeds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (currentUser?.cabañaId) {
+    if (profile?.cabaña_id) {
       fetchCustomBenchmarks();
       fetchAvailableBreeds();
     }
@@ -59,7 +59,7 @@ export const BenchmarkSettings = () => {
       const { data, error } = await supabase
         .from("custom_benchmarks")
         .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId)
+        .eq("cabaña_id", profile?.cabaña_id)
         .order("breed", { nullsFirst: false });
 
       if (error) throw error;
@@ -81,7 +81,7 @@ export const BenchmarkSettings = () => {
       const { data, error } = await supabase
         .from("animals")
         .select("breed")
-        .eq("cabaña_id", currentUser?.cabañaId)
+        .eq("cabaña_id", profile?.cabaña_id)
         .not("breed", "is", null);
 
       if (error) throw error;
@@ -95,12 +95,12 @@ export const BenchmarkSettings = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUser?.cabañaId) return;
+    if (!profile?.cabaña_id) return;
 
     setSaving(true);
     try {
       const benchmarkData = {
-        cabaña_id: currentUser.cabañaId,
+        cabaña_id: profile.cabaña_id,
         ...formData,
       };
 

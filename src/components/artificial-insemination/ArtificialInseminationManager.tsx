@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Users, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { ArtificialInseminationDialog } from "./ArtificialInseminationDialog";
 import { ArtificialInseminationTable } from "./ArtificialInseminationTable";
 import { ArtificialInseminationStats } from "./ArtificialInseminationStats";
@@ -51,7 +51,7 @@ export function ArtificialInseminationManager() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     fetchEligibleFemales();

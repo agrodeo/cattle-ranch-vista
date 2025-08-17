@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, ScatterChart, Scatter } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Scale, TrendingUp, Target, Award } from "lucide-react";
 import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
 
@@ -23,12 +23,12 @@ interface ProductionStats {
 }
 
 export const ProductionAnalytics = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentUser?.cabañaId) {
+    if (profile?.cabaña_id) {
       fetchProductionStats();
     }
   }, [currentUser]);
@@ -38,7 +38,7 @@ export const ProductionAnalytics = () => {
       const { data: animals, error } = await supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", profile?.cabaña_id);
 
       if (error) throw error;
 
@@ -62,7 +62,7 @@ export const ProductionAnalytics = () => {
     }));
 
     // Get breed-specific benchmarks with custom overrides
-    const benchmarks = await getWeightedBenchmarksWithCustom(breedDistribution, currentUser.cabañaId);
+    const benchmarks = await getWeightedBenchmarksWithCustom(breedDistribution, profile.cabaña_id);
 
     // Average weights
     const birthWeights = animals.filter(a => a.peso_nacimiento).map(a => Number(a.peso_nacimiento));

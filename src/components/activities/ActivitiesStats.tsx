@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Calendar, Heart, Syringe, Scale, Activity } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ActivityStats {
   totalActivities: number;
@@ -23,7 +23,7 @@ export function ActivitiesStats() {
     weighings: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     fetchStats();

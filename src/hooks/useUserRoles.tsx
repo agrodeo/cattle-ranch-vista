@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "./useHybridAuth";
+import { useAuth } from "./useAuth";
 import { useUsers } from "./useUsers";
 import { useCallback } from "react";
 
@@ -19,7 +19,7 @@ export interface UserWithRole {
 }
 
 export const useUserRoles = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser } = useAuth();
   const { users, loading: usersLoading, fetchUsers } = useUsers();
   const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null);
   const [roleLoading, setRoleLoading] = useState(true);

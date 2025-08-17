@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -16,15 +16,15 @@ interface Props {
 }
 
 export default function MultiAnimalSelect({ selectedIds, onChange, className }: Props) {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   const { data: animals = [], isLoading, error } = useQuery({
-    queryKey: ["animals-available", currentUser?.cabañaId],
+    queryKey: ["animals-available", profile?.cabaña_id],
     queryFn: async (): Promise<any[]> => {
-      const cabId = currentUser?.cabañaId || "";
-      console.log("🐄 MultiAnimalSelect - Current user cabañaId:", cabId);
+      const cabId = profile?.cabaña_id || "";
+      console.log("🐄 MultiAnimalSelect - Current user profile cabaña_id:", cabId);
       console.log("🐄 MultiAnimalSelect - Current user:", currentUser);
       
       if (!cabId) {
@@ -48,7 +48,7 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
       }
       return data || [];
     },
-    enabled: !!currentUser?.cabañaId,
+    enabled: !!profile?.cabaña_id,
   });
 
   const filtered = useMemo(() => {

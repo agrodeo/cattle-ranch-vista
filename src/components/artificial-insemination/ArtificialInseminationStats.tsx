@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TrendingUp, Heart, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 interface StatsData {
   total_inseminations: number;
@@ -23,7 +23,7 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
   const [selectedYear, setSelectedYear] = useState<string>("all");
   const [availableYears, setAvailableYears] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     fetchStats();

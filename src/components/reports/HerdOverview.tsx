@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Calendar, Users, TrendingUp, Activity } from "lucide-react";
 
 interface HerdStats {
@@ -20,12 +20,12 @@ interface HerdStats {
 }
 
 export const HerdOverview = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const [stats, setStats] = useState<HerdStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (currentUser?.cabañaId) {
+    if (profile?.cabaña_id) {
       fetchHerdStats();
     }
   }, [currentUser]);
@@ -35,7 +35,7 @@ export const HerdOverview = () => {
       const { data: animals, error } = await supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", profile?.cabaña_id);
 
       if (error) throw error;
 

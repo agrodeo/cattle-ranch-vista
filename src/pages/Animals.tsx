@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -153,7 +153,7 @@ const getAgeCategory = (birthDate: string | null, sex: string) => {
 };
 
 const Animals = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser } = useAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
   const [loading, setLoading] = useState(true);

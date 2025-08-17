@@ -3,7 +3,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,7 +29,7 @@ interface FinanceRow {
 }
 
 export function FinancesMovements() {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'employee';
 
   const [from, setFrom] = useState<Date | undefined>();
@@ -126,7 +126,7 @@ export function FinancesMovements() {
 
       if (!editRow && form.type === "ingreso" && form.isAnimalSale && form.animalIds.length > 0) {
         const { error } = await supabaseAny.rpc("create_animal_sale", {
-          _cabana_id: currentUser.cabañaId,
+          _cabana_id: profile?.cabaña_id,
           _date: baseDate,
           _amount: form.amount ? Number(form.amount) : 0,
           _description: form.description || null,

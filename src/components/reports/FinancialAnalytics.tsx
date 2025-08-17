@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { DollarSign, TrendingUp, TrendingDown, Calculator } from "lucide-react";
 
 interface FinancialStats {
@@ -23,13 +23,13 @@ interface FinancialStats {
 }
 
 export const FinancialAnalytics = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'all' | 'year' | 'quarter'>('year');
 
   useEffect(() => {
-    if (currentUser?.cabañaId) {
+    if (profile?.cabaña_id) {
       fetchFinancialStats();
     }
   }, [currentUser, timeRange]);
@@ -59,7 +59,7 @@ export const FinancialAnalytics = () => {
           *,
           finance_categories(name)
         `)
-        .eq("cabaña_id", currentUser?.cabañaId)
+        .eq("cabaña_id", profile?.cabaña_id)
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
         .order('date', { ascending: true });
@@ -68,7 +68,7 @@ export const FinancialAnalytics = () => {
       const { data: animals } = await supabase
         .from("animals")
         .select("id, breed")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", profile?.cabaña_id);
 
       const financialStats = calculateFinancialStats(finances || [], animals || []);
       setStats(financialStats);

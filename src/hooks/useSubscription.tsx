@@ -1,7 +1,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useHybridAuth } from './useHybridAuth';
+import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 
 export interface SubscriptionStatus {
@@ -36,19 +36,19 @@ const PLAN_PRICES = {
 };
 
 export const useSubscription = () => {
-  const { currentUser } = useHybridAuth();
+  const { user: currentUser, profile } = useAuth();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchSubscriptionStatus = useCallback(async () => {
-    if (!currentUser?.cabañaId) {
+    if (!profile?.cabaña_id) {
       setLoading(false);
       return;
     }
 
     try {
       const { data, error } = await supabase.rpc('get_subscription_status', {
-        cabana_uuid: currentUser.cabañaId
+        cabana_uuid: profile.cabaña_id
       });
 
       if (error) {
@@ -82,7 +82,7 @@ export const useSubscription = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUser?.cabañaId]);
+  }, [profile?.cabaña_id]);
 
   useEffect(() => {
     fetchSubscriptionStatus();
@@ -126,11 +126,11 @@ export const useSubscription = () => {
   }, [subscriptionStatus]);
 
   const upgradePlan = useCallback(async (newPlan: 'personal' | 'avanzado' | 'productor' | 'cabana' | 'corporativo') => {
-    if (!currentUser?.cabañaId) return;
+    if (!profile?.cabaña_id) return;
 
     try {
       const { error } = await supabase.rpc('update_subscription_plan', {
-        cabana_uuid: currentUser.cabañaId,
+        cabana_uuid: profile.cabaña_id,
         new_plan: newPlan
       });
 
@@ -154,7 +154,7 @@ export const useSubscription = () => {
       console.error('Error in upgradePlan:', error);
       return false;
     }
-  }, [currentUser?.cabañaId, fetchSubscriptionStatus]);
+  }, [profile?.cabaña_id, fetchSubscriptionStatus]);
 
   return {
     subscriptionStatus,
