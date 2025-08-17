@@ -6,6 +6,7 @@ import { ReproductiveAnalytics } from "@/components/reports/ReproductiveAnalytic
 import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
 import { MortalityReports } from "@/components/mortality/MortalityReports";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
+import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalytics";
 
 const Reports = () => {
   useEffect(() => {
@@ -29,11 +30,12 @@ const Reports = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="herd" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="herd">Rebaño</TabsTrigger>
               <TabsTrigger value="reproductive">Reproducción</TabsTrigger>
               <TabsTrigger value="production">Producción</TabsTrigger>
               <TabsTrigger value="mortality">Mortalidad</TabsTrigger>
+              <TabsTrigger value="vaccines">Vacunas</TabsTrigger>
               <TabsTrigger value="financial">Finanzas</TabsTrigger>
             </TabsList>
             
@@ -51,6 +53,10 @@ const Reports = () => {
             
             <TabsContent value="mortality" className="space-y-4">
               <MortalityReports />
+            </TabsContent>
+            
+            <TabsContent value="vaccines" className="space-y-4">
+              <VaccinationAnalytics />
             </TabsContent>
             
             <TabsContent value="financial" className="space-y-4">
