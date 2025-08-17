@@ -9,6 +9,7 @@ import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
 import Users from "./pages/Users";
+import AnimalProfile from "./pages/AnimalProfile";
 import Subscription from "./pages/Subscription";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
@@ -42,6 +43,7 @@ const App = () => (
             }>
               <Route index element={<Dashboard />} />
             </Route>
+            <Route path="/animales/:id" element={<ProtectedRoute><AnimalProfile /></ProtectedRoute>} />
             <Route path="/animals" element={
               <ProtectedRoute>
                 <Layout />

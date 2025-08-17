@@ -27,4 +27,11 @@ export interface Animal {
   registration_mother_level?: string;
   dna_verified?: boolean;
   corral_id?: string | null;
+  corral?: any; // For joined data
+  esta_preñada?: boolean;
+  fecha_probable_parto?: string;
+  fecha_muerte?: string;
+  peso_actual_kg?: number;
+  fecha_ultimo_pesaje?: string;
+  ganancia_diaria_kg?: number;
 }
