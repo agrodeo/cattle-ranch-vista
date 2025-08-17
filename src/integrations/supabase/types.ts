@@ -1551,6 +1551,13 @@ export type Database = {
           ingresos: number
         }[]
       }
+      get_internal_user_cabana_info: {
+        Args: { user_uuid: string }
+        Returns: {
+          cabana_id: string
+          cabana_name: string
+        }[]
+      }
       get_sistema_credenciales: {
         Args: Record<PropertyKey, never>
         Returns: {

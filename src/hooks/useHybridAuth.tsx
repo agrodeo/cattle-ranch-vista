@@ -203,7 +203,7 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
         user_uuid: userData.id
       });
 
-      const { data: cabanaData } = await supabase.rpc('get_user_cabana_info', {
+      const { data: cabanaData } = await supabase.rpc('get_internal_user_cabana_info', {
         user_uuid: userData.id
       });
 
@@ -256,7 +256,7 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
         user_uuid: userData.id
       });
 
-      const { data: cabanaData } = await supabase.rpc('get_user_cabana_info', {
+      const { data: cabanaData } = await supabase.rpc('get_internal_user_cabana_info', {
         user_uuid: userData.id
       });
 
