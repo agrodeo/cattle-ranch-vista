@@ -1539,6 +1539,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_current_user_cabana_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_finance_summary: {
         Args: { _from_date?: string; _to_date?: string; _user_id: string }
         Returns: {

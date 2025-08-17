@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ActivityStats {
   totalActivities: number;
@@ -35,14 +35,14 @@ export function useActivities() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { profile } = useAuth();
 
   const fetchStats = async () => {
     try {
       setIsLoading(true);
       
       // Check if user is authenticated and has cabaña_id
-      if (!currentUser?.cabañaId) {
+      if (!profile?.cabaña_id) {
         return;
       }
 
@@ -52,7 +52,7 @@ export function useActivities() {
       const { data: events } = await supabase
         .from("eventos")
         .select("tipo, fecha")
-        .eq("cabaña_id", currentUser.cabañaId);
+        .eq("cabaña_id", profile.cabaña_id);
 
       const totalActivities = events?.length || 0;
       const monthlyActivities = events?.filter(e => 
@@ -68,7 +68,7 @@ export function useActivities() {
       const { data: pregnancies } = await supabase
         .from("preñeces")
         .select("id")
-        .eq("cabaña_id", currentUser.cabañaId)
+        .eq("cabaña_id", profile.cabaña_id)
         .eq("estado", "confirmada");
 
       setStats({
@@ -89,14 +89,14 @@ export function useActivities() {
   const getEligibleAnimals = async (activityType: 'IA' | 'TACTO' | 'PESAJE' | 'VACUNACION') => {
     try {
       // Check if user is authenticated and has cabaña_id
-      if (!currentUser?.cabañaId) {
+      if (!profile?.cabaña_id) {
         return [];
       }
       
       let query = supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", currentUser.cabañaId)
+        .eq("cabaña_id", profile.cabaña_id)
         .neq("status", "Vendido")
         .neq("status", "Muerto");
 
@@ -146,15 +146,15 @@ export function useActivities() {
   ) => {
     try {
       // Check if user is authenticated and has cabaña_id
-      if (!currentUser?.cabañaId || !currentUser?.id) throw new Error("Usuario no autenticado");
+      if (!profile?.cabaña_id || !profile?.user_id) throw new Error("Usuario no autenticado");
 
       const { data: event, error } = await supabase
         .from("eventos")
         .insert({
-          cabaña_id: currentUser.cabañaId,
+          cabaña_id: profile.cabaña_id,
           tipo,
           fecha: fecha.toISOString().split('T')[0],
-          creado_por: currentUser.id,
+          creado_por: profile.user_id,
           notas,
           payload,
         })

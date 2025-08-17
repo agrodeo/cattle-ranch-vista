@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { LogOut, Building2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -12,14 +12,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-export const Header = () => {
-  const { currentUser, signOut } = useHybridAuth();
+export function Header() {
+  const { user, profile, userRole, signOut } = useAuth();
 
   const handleSignOut = () => {
     signOut();
   };
 
-  const getInitials = (name: string) => {
+  const getInitials = (name?: string) => {
+    if (!name) return 'U';
     return name
       .split(' ')
       .map(word => word.charAt(0))
@@ -42,7 +43,7 @@ export const Header = () => {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>
-                    {currentUser?.fullName ? getInitials(currentUser.fullName) : <Building2 className="h-4 w-4" />}
+                    {profile?.full_name ? getInitials(profile.full_name) : <Building2 className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -51,18 +52,18 @@ export const Header = () => {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {currentUser?.fullName || "Usuario"}
+                    {profile?.full_name || "Usuario"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser?.authType === 'custom' ? `@${currentUser.username}` : currentUser?.email} • {currentUser?.role}
+                    {user?.email} • {userRole?.role || 'Sin rol'}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser?.cabañaName || "Sin cabaña"}
+                    {profile?.cabaña_id || "Sin cabaña"}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSignOut}>
+              <DropdownMenuItem onClick={signOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>
