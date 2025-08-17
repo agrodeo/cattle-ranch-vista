@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 
 interface ActivityStats {
   totalActivities: number;
@@ -35,14 +35,14 @@ export function useActivities() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { profile } = useAuth();
+  const { currentUser } = useHybridAuth();
 
   const fetchStats = async () => {
     try {
       setIsLoading(true);
       
       // Check if user is authenticated and has cabaña_id
-      if (!profile?.cabaña_id) {
+      if (!currentUser?.cabañaId) {
         return;
       }
 
@@ -52,7 +52,7 @@ export function useActivities() {
       const { data: events } = await supabase
         .from("eventos")
         .select("tipo, fecha")
-        .eq("cabaña_id", profile.cabaña_id);
+        .eq("cabaña_id", currentUser.cabañaId);
 
       const totalActivities = events?.length || 0;
       const monthlyActivities = events?.filter(e => 

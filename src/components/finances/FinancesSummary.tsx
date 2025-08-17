@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export function FinancesSummary() {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useHybridAuth();
   const [selectedPeriod, setSelectedPeriod] = useState<string>("last6months");
   const [customFromDate, setCustomFromDate] = useState<Date | undefined>();
   const [customToDate, setCustomToDate] = useState<Date | undefined>();

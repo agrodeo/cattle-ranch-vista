@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Syringe, Scale, Activity, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
 
@@ -25,7 +25,7 @@ interface AnimalActivitiesHistoryProps {
 export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActivitiesHistoryProps) {
   const [activities, setActivities] = useState<AnimalActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useHybridAuth();
 
   useEffect(() => {
     fetchActivities();

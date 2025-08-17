@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -39,7 +39,7 @@ export default function CategorySelect({
   placeholder = "Categoría",
   isAnimalSale = false,
 }: Props) {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useHybridAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [newName, setNewName] = useState("");

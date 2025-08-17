@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { CalendarIcon, ChevronDown, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 
 interface Animal {
   id: string;
@@ -90,7 +90,7 @@ export function ArtificialInseminationDialog({
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   
   const { toast } = useToast();
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useHybridAuth();
 
   useEffect(() => {
     if (open) {

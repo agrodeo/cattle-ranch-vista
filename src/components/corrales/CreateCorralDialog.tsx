@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ interface CreateCorralDialogProps {
 }
 
 export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorralDialogProps) {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useHybridAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({

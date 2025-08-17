@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { LogOut, Building2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
-  const { user, profile, userRole, signOut } = useAuth();
+  const { currentUser, signOut } = useHybridAuth();
 
   const handleSignOut = () => {
     signOut();
@@ -43,7 +43,7 @@ export function Header() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback>
-                    {profile?.full_name ? getInitials(profile.full_name) : <Building2 className="h-4 w-4" />}
+                    {currentUser?.fullName ? getInitials(currentUser.fullName) : <Building2 className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -52,13 +52,13 @@ export function Header() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    {profile?.full_name || "Usuario"}
+                    {currentUser?.fullName || "Usuario"}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {user?.email} • {userRole?.role || 'Sin rol'}
+                    {currentUser?.email || currentUser?.username} • {currentUser?.role || 'Sin rol'}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    {profile?.cabaña_id || "Sin cabaña"}
+                    {currentUser?.cabañaName || "Sin cabaña"}
                   </p>
                 </div>
               </DropdownMenuLabel>

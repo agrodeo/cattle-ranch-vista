@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Plus, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { useToast } from "@/hooks/use-toast";
 import { type CustomBenchmark } from "@/lib/breedBenchmarks";
 
@@ -38,7 +38,7 @@ const DEFAULT_FORM_DATA: BenchmarkFormData = {
 };
 
 export const BenchmarkSettings = () => {
-  const { user: currentUser, profile } = useAuth();
+  const { currentUser } = useHybridAuth();
   const { toast } = useToast();
   const [customBenchmarks, setCustomBenchmarks] = useState<CustomBenchmark[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +48,7 @@ export const BenchmarkSettings = () => {
   const [availableBreeds, setAvailableBreeds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (profile?.cabaña_id) {
+    if (currentUser?.cabañaId) {
       fetchCustomBenchmarks();
       fetchAvailableBreeds();
     }
@@ -59,7 +59,7 @@ export const BenchmarkSettings = () => {
       const { data, error } = await supabase
         .from("custom_benchmarks")
         .select("*")
-        .eq("cabaña_id", profile?.cabaña_id)
+        .eq("cabaña_id", currentUser?.cabañaId)
         .order("breed", { nullsFirst: false });
 
       if (error) throw error;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,7 +30,7 @@ interface AnimalAssignmentDialogProps {
 }
 
 export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess }: AnimalAssignmentDialogProps) {
-  const { user: currentUser } = useAuth();
+  const { currentUser } = useHybridAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<Animal[]>([]);

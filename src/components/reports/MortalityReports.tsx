@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
 
 interface MortalityStats {
@@ -18,12 +18,12 @@ interface MortalityStats {
 }
 
 export const MortalityReports = () => {
-  const { user: currentUser, profile } = useAuth();
+  const { currentUser } = useHybridAuth();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (profile?.cabaña_id) {
+    if (currentUser?.cabañaId) {
       fetchMortalityStats();
     }
   }, [currentUser]);
@@ -37,13 +37,13 @@ export const MortalityReports = () => {
           *,
           catalogo_causas(nombre)
         `)
-        .eq("cabaña_id", profile?.cabaña_id);
+        .eq("cabaña_id", currentUser?.cabañaId);
 
       // Fetch all animals for rate calculations
       const { data: animals } = await supabase
         .from("animals")
         .select("id, breed, birth_date")
-        .eq("cabaña_id", profile?.cabaña_id);
+        .eq("cabaña_id", currentUser?.cabañaId);
 
       const mortalityStats = calculateMortalityStats(deaths || [], animals || []);
       setStats(mortalityStats);
