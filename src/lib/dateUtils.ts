@@ -42,7 +42,7 @@ export function isExcelSerialDate(value: any): boolean {
 }
 
 /**
- * Parses various date string formats and normalizes them
+ * Parses various date string formats and normalizes them, including partial dates
  * @param dateStr Date string in various formats
  * @returns Date object or null if parsing fails
  */
@@ -53,22 +53,55 @@ export function parseDateString(dateStr: string): Date | null {
   
   const trimmed = dateStr.trim();
   
-  // Try different date formats
-  const formats = [
-    // ISO format (YYYY-MM-DD)
-    /^(\d{4})-(\d{1,2})-(\d{1,2})$/,
-    // DD/MM/YYYY or DD-MM-YYYY
-    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/,
-    // MM/DD/YYYY or MM-DD-YYYY  
-    /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/,
-    // YYYY/MM/DD or YYYY-MM-DD
-    /^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/,
-  ];
-  
   // Try to parse as is first (handles many formats automatically)
   let date = new Date(trimmed);
   if (!isNaN(date.getTime())) {
     return date;
+  }
+  
+  // Handle partial dates - year only (e.g., "2020")
+  const yearOnly = trimmed.match(/^(\d{4})$/);
+  if (yearOnly) {
+    const year = parseInt(yearOnly[1], 10);
+    if (year >= 1900 && year <= 2100) {
+      return new Date(year, 0, 1); // January 1st of the year
+    }
+  }
+  
+  // Handle month/year formats
+  const monthYear = trimmed.match(/^(\d{1,2})[\/\-](\d{4})$/);
+  if (monthYear) {
+    const month = parseInt(monthYear[1], 10);
+    const year = parseInt(monthYear[2], 10);
+    if (month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+      return new Date(year, month - 1, 1); // 1st day of the month
+    }
+  }
+  
+  // Handle YYYY-MM format
+  const yearMonth = trimmed.match(/^(\d{4})[\/\-](\d{1,2})$/);
+  if (yearMonth) {
+    const year = parseInt(yearMonth[1], 10);
+    const month = parseInt(yearMonth[2], 10);
+    if (month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+      return new Date(year, month - 1, 1); // 1st day of the month
+    }
+  }
+  
+  // Handle Spanish month names with year (e.g., "Marzo 2020", "marzo 2020")
+  const spanishMonths = {
+    'enero': 1, 'febrero': 2, 'marzo': 3, 'abril': 4, 'mayo': 5, 'junio': 6,
+    'julio': 7, 'agosto': 8, 'septiembre': 9, 'octubre': 10, 'noviembre': 11, 'diciembre': 12
+  };
+  
+  const monthNameYear = trimmed.toLowerCase().match(/^(\w+)\s+(\d{4})$/);
+  if (monthNameYear) {
+    const monthName = monthNameYear[1];
+    const year = parseInt(monthNameYear[2], 10);
+    const monthNumber = spanishMonths[monthName as keyof typeof spanishMonths];
+    if (monthNumber && year >= 1900 && year <= 2100) {
+      return new Date(year, monthNumber - 1, 1);
+    }
   }
   
   // Try manual parsing for DD/MM/YYYY format (common in Excel exports)
@@ -94,6 +127,36 @@ export function parseDateString(dateStr: string): Date | null {
   }
   
   return null;
+}
+
+/**
+ * Detects if a date value is partial (missing day or month)
+ * @param value Original date value
+ * @returns object with isPartial flag and completedInfo
+ */
+export function detectPartialDate(value: any): { isPartial: boolean; completedInfo?: string } {
+  if (!value || typeof value !== 'string') {
+    return { isPartial: false };
+  }
+  
+  const trimmed = value.trim();
+  
+  // Year only
+  if (trimmed.match(/^(\d{4})$/)) {
+    return { isPartial: true, completedInfo: 'Se completó con 1 de enero' };
+  }
+  
+  // Month/Year formats
+  if (trimmed.match(/^(\d{1,2})[\/\-](\d{4})$/) || trimmed.match(/^(\d{4})[\/\-](\d{1,2})$/)) {
+    return { isPartial: true, completedInfo: 'Se completó con día 1 del mes' };
+  }
+  
+  // Spanish month names
+  if (trimmed.toLowerCase().match(/^(\w+)\s+(\d{4})$/)) {
+    return { isPartial: true, completedInfo: 'Se completó con día 1 del mes' };
+  }
+  
+  return { isPartial: false };
 }
 
 /**

@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { AnimalFieldMapping, ColumnMapping, DefaultValues, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
-import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
+import { convertToISODate, isValidBirthDate, detectPartialDate } from '@/lib/dateUtils';
 import { SexValueMappingDialog, SexMapping, getSexMapping, getDefaultSexMappings } from './SexValueMappingDialog';
 
 interface ColumnMappingStepProps {
@@ -132,13 +132,22 @@ export const ColumnMappingStep = ({
       if (!animal.fecha_nacimiento?.toString().trim()) {
         errors.push('Fecha de nacimiento es requerida');
       } else {
+        const originalValue = animal.fecha_nacimiento;
+        const partialDateInfo = detectPartialDate(originalValue);
         const convertedDate = convertToISODate(animal.fecha_nacimiento);
+        
         if (!convertedDate) {
           errors.push('Fecha de nacimiento no es válida o no se pudo convertir');
         } else if (!isValidBirthDate(convertedDate)) {
           errors.push('Fecha de nacimiento no puede ser en el futuro o muy antigua');
         } else {
           animal.fecha_nacimiento = convertedDate;
+          
+          // Add warning for partial dates
+          if (partialDateInfo.isPartial) {
+            animal._warnings = animal._warnings || [];
+            animal._warnings.push(`Fecha de nacimiento parcial "${originalValue}": ${partialDateInfo.completedInfo}`);
+          }
         }
       }
 
@@ -159,11 +168,20 @@ export const ColumnMappingStep = ({
       const dateFields = ['fecha_destete', 'fecha_servicio', 'fecha_muerte'];
       dateFields.forEach(field => {
         if ((animal as any)[field] !== undefined && (animal as any)[field] !== null && (animal as any)[field] !== '') {
-          const convertedDate = convertToISODate((animal as any)[field]);
+          const originalValue = (animal as any)[field];
+          const partialDateInfo = detectPartialDate(originalValue);
+          const convertedDate = convertToISODate(originalValue);
+          
           if (!convertedDate) {
             errors.push(`${SUPPORTED_FIELDS[field as keyof typeof SUPPORTED_FIELDS]?.label} no es una fecha válida o no se pudo convertir`);
           } else {
             (animal as any)[field] = convertedDate;
+            
+            // Add warning for partial dates
+            if (partialDateInfo.isPartial) {
+              animal._warnings = animal._warnings || [];
+              animal._warnings.push(`${SUPPORTED_FIELDS[field as keyof typeof SUPPORTED_FIELDS]?.label} parcial "${originalValue}": ${partialDateInfo.completedInfo}`);
+            }
           }
         }
       });

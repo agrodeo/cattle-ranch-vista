@@ -9,10 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Edit, Check, X, Upload, Download, AlertTriangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimalFieldMapping, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
-import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
+import { convertToISODate, isValidBirthDate, detectPartialDate } from '@/lib/dateUtils';
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 
 // Registration levels by breed
@@ -99,6 +100,7 @@ export const PreviewAndEditStep = ({
 
   const validAnimals = animals.filter(a => a._isValid);
   const invalidAnimals = animals.filter(a => !a._isValid);
+  const animalsWithWarnings = animals.filter(a => a._warnings && a._warnings.length > 0);
 
   const handleEditAnimal = (animal: AnimalFieldMapping) => {
     setEditingAnimal({ ...animal });
@@ -422,7 +424,7 @@ export const PreviewAndEditStep = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Summary stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{validAnimals.length}</div>
             <div className="text-sm text-muted-foreground">Válidos</div>
@@ -430,6 +432,10 @@ export const PreviewAndEditStep = ({
           <div className="text-center">
             <div className="text-2xl font-bold text-red-600">{invalidAnimals.length}</div>
             <div className="text-sm text-muted-foreground">Con errores</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-yellow-600">{animalsWithWarnings.length}</div>
+            <div className="text-sm text-muted-foreground">Con avisos</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold">{animals.length}</div>
@@ -467,11 +473,25 @@ export const PreviewAndEditStep = ({
               {animals.slice(0, 20).map((animal, index) => (
                 <TableRow key={index} className={animal._isValid ? '' : 'bg-red-50'}>
                   <TableCell>
-                    {animal._isValid ? (
-                      <Check className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <X className="h-4 w-4 text-red-600" />
-                    )}
+                    <div className="flex items-center space-x-1">
+                      {animal._isValid ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-600" />
+                      )}
+                      {animal._warnings && animal._warnings.length > 0 && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Avisos: {animal._warnings.join('; ')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="font-medium">{animal.identificacion}</TableCell>
                   <TableCell>{animal.nombre || '-'}</TableCell>
