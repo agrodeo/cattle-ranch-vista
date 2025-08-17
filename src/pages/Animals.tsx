@@ -22,36 +22,7 @@ import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHi
 import { BrafordRegistrationDisplay } from "@/components/braford/BrafordRegistrationDisplay";
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 import { MarkDeathDialog } from "@/components/mortality/MarkDeathDialog";
-
-interface Animal {
-  id: string;
-  name?: string;
-  id_tag: string;
-  sex: string;
-  breed: string;
-  birth_date: string;
-  status: string;
-  mother_id?: string;
-  father_id?: string;
-  mother_name?: string;
-  father_name?: string;
-  mother_breed?: string;
-  father_breed?: string;
-  mother_registration?: string;
-  father_registration?: string;
-  cabaña_id: string;
-  peso_nacimiento?: number;
-  mocho?: string;
-  color?: string;
-  condicion_corporal?: string;
-  observaciones?: string;
-  registration_level?: string;
-  registration_level_override?: string;
-  registration_override_reason?: string;
-  registration_father_level?: string;
-  registration_mother_level?: string;
-  dna_verified?: boolean;
-}
+import { Animal } from "@/types/animal";
 
 interface Cabaña {
   id: string;

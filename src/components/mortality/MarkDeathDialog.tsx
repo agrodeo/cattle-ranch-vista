@@ -39,6 +39,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { Animal } from "@/types/animal";
 
 const formSchema = z.object({
   fecha_defuncion: z.date({
@@ -62,16 +63,6 @@ interface DeathCause {
   nombre: string;
   activo: boolean;
   orden: number;
-}
-
-interface Animal {
-  id: string;
-  name?: string;
-  id_tag: string;
-  birth_date?: string;
-  sex: string;
-  breed: string;
-  status?: string;
 }
 
 interface MarkDeathDialogProps {
