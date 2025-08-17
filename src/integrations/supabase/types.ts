@@ -1313,6 +1313,66 @@ export type Database = {
           },
         ]
       }
+      vaccination_schemes: {
+        Row: {
+          breed: string | null
+          country: string
+          created_at: string
+          description: string | null
+          frequency_days: number | null
+          id: string
+          is_active: boolean
+          is_mandatory: boolean
+          max_age_months: number | null
+          min_age_months: number | null
+          name: string
+          notes: string | null
+          region: string | null
+          season_restriction: string | null
+          sex_restriction: string | null
+          updated_at: string
+          vaccine_type: string
+        }
+        Insert: {
+          breed?: string | null
+          country: string
+          created_at?: string
+          description?: string | null
+          frequency_days?: number | null
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          max_age_months?: number | null
+          min_age_months?: number | null
+          name: string
+          notes?: string | null
+          region?: string | null
+          season_restriction?: string | null
+          sex_restriction?: string | null
+          updated_at?: string
+          vaccine_type: string
+        }
+        Update: {
+          breed?: string | null
+          country?: string
+          created_at?: string
+          description?: string | null
+          frequency_days?: number | null
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          max_age_months?: number | null
+          min_age_months?: number | null
+          name?: string
+          notes?: string | null
+          region?: string | null
+          season_restriction?: string | null
+          sex_restriction?: string | null
+          updated_at?: string
+          vaccine_type?: string
+        }
+        Relationships: []
+      }
       vacunaciones: {
         Row: {
           animales_ids: string[]
@@ -1613,6 +1673,21 @@ export type Database = {
       get_user_role_by_id: {
         Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      get_vaccination_alerts_for_animal: {
+        Args: { _animal_id: string; _country?: string }
+        Returns: {
+          days_since_last: number
+          days_until_due: number
+          description: string
+          is_mandatory: boolean
+          last_vaccination_date: string
+          next_due_date: string
+          scheme_id: string
+          status: string
+          vaccine_name: string
+          vaccine_type: string
+        }[]
       }
       has_role: {
         Args: {
