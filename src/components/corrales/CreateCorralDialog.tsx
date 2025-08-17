@@ -39,15 +39,10 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
       console.log("Debug - currentUser.authType:", currentUser.authType);
       console.log("Debug - currentUser.cabañaId:", currentUser.cabañaId);
 
-      // Get user's cabaña_id using the function that handles both auth types
-      const { data: cabanaData, error: cabanaError } = await supabase
-        .rpc("get_current_user_cabana_id");
-
-      console.log("Debug - cabanaData:", cabanaData);
-      console.log("Debug - cabanaError:", cabanaError);
-
-      if (cabanaError || !cabanaData) {
-        console.log("Debug - Error condition triggered");
+      // Use the cabañaId directly from currentUser since hybrid auth already provides it
+      const cabanaId = currentUser.cabañaId;
+      
+      if (!cabanaId) {
         throw new Error("No se encontró la cabaña del usuario");
       }
 
@@ -57,7 +52,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
           name: formData.name,
           hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
           user_id: currentUser.id,
-          cabaña_id: cabanaData,
+          cabaña_id: cabanaId,
         });
 
       if (error) throw error;
