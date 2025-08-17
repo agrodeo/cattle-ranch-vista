@@ -11,11 +11,13 @@ import {
   Skull, 
   Truck,
   Calendar,
-  Baby
+  Baby,
+  ArrowLeft
 } from "lucide-react";
 import { calculateAge } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 interface AnimalProfileHeaderProps {
   animal: Animal;
@@ -23,6 +25,7 @@ interface AnimalProfileHeaderProps {
 }
 
 export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHeaderProps) {
+  const navigate = useNavigate();
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const isInactive = animal.status === 'vendido' || animal.status === 'muerto';
   
@@ -119,6 +122,19 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
     <Card className="rounded-none border-x-0 border-t-0">
       <CardContent className="p-4">
         <div className="space-y-4">
+          {/* Back Button and Title */}
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/animals')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Volver a Animales
+            </Button>
+          </div>
+          
           {/* Title and ID */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">{getDisplayName()}</h1>

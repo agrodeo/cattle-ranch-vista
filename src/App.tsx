@@ -43,7 +43,13 @@ const App = () => (
             }>
               <Route index element={<Dashboard />} />
             </Route>
-            <Route path="/animales/:id" element={<ProtectedRoute><AnimalProfile /></ProtectedRoute>} />
+            <Route path="/animales/:id" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AnimalProfile />} />
+            </Route>
             <Route path="/animals" element={
               <ProtectedRoute>
                 <Layout />

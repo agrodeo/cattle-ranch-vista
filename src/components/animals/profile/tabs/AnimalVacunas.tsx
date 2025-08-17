@@ -11,10 +11,14 @@ import {
   CheckCircle, 
   Clock,
   Shield,
-  XCircle
+  XCircle,
+  ArrowLeft
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
+import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AnimalVacunasProps {
   animal: Animal;
@@ -73,6 +77,32 @@ const requiredVaccines = [
 ];
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
+  const { alerts, loading: alertsLoading } = useVaccinationAlerts(animal.id);
+  const [vaccinations, setVaccinations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchVaccinations = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('vacunas_historial')
+        .select('*')
+        .eq('animal_id', animal.id)
+        .order('fecha', { ascending: false });
+
+      if (error) throw error;
+      setVaccinations(data || []);
+    } catch (error) {
+      console.error("Error fetching vaccinations:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVaccinations();
+  }, [animal.id]);
+
   const calculateStatus = (proximaDosis: string | null) => {
     if (!proximaDosis) return { status: 'unique', days: 0 };
     
@@ -128,8 +158,16 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     }
   };
 
-  const appliedCount = requiredVaccines.filter(v => v.applied).length;
-  const coveragePercentage = (appliedCount / requiredVaccines.length) * 100;
+  // Use intelligent alerts instead of mock data
+  const mandatoryAlerts = alerts.filter(alert => alert.is_mandatory);
+  const overdue = alerts.filter(alert => alert.status === 'overdue').length;
+  const dueSoon = alerts.filter(alert => alert.status === 'due_soon').length;
+  const upToDate = alerts.filter(alert => alert.status === 'up_to_date').length;
+  const missing = alerts.filter(alert => alert.status === 'missing').length;
+  
+  const totalRequired = alerts.length;
+  const applied = upToDate + overdue + dueSoon; // Count any vaccine that has been applied
+  const coveragePercentage = totalRequired > 0 ? (applied / totalRequired) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -148,7 +186,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                Vacunas aplicadas: {appliedCount}/{requiredVaccines.length}
+                Esquema de vacunación: {applied}/{totalRequired}
               </span>
               <span className="text-sm text-muted-foreground">
                 {coveragePercentage.toFixed(0)}%
@@ -156,29 +194,63 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
             </div>
             <Progress value={coveragePercentage} className="h-2" />
             
+            {/* Status Summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div className="bg-green-50 border border-green-200 text-green-800 p-2 rounded text-center">
+                <div className="font-medium">{upToDate}</div>
+                <div>Al día</div>
+              </div>
+              <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-2 rounded text-center">
+                <div className="font-medium">{dueSoon}</div>
+                <div>Próximas</div>
+              </div>
+              <div className="bg-red-50 border border-red-200 text-red-800 p-2 rounded text-center">
+                <div className="font-medium">{overdue}</div>
+                <div>Vencidas</div>
+              </div>
+              <div className="bg-gray-50 border border-gray-200 text-gray-800 p-2 rounded text-center">
+                <div className="font-medium">{missing}</div>
+                <div>Faltantes</div>
+              </div>
+            </div>
+            
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {requiredVaccines.map((vaccine) => (
+              {alerts.map((alert) => (
                 <div 
-                  key={vaccine.name}
+                  key={alert.scheme_id}
                   className={`p-2 rounded-lg border text-sm ${
-                    vaccine.applied 
-                      ? 'bg-green-50 border-green-200 text-green-800' 
-                      : 'bg-red-50 border-red-200 text-red-800'
+                    alert.status === 'up_to_date' 
+                      ? 'bg-green-50 border-green-200 text-green-800'
+                      : alert.status === 'due_soon'
+                      ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+                      : alert.status === 'overdue'
+                      ? 'bg-red-50 border-red-200 text-red-800'
+                      : 'bg-gray-50 border-gray-200 text-gray-800'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    {vaccine.applied ? (
+                    {alert.status === 'up_to_date' ? (
                       <CheckCircle className="h-3 w-3" />
+                    ) : alert.status === 'overdue' ? (
+                      <AlertTriangle className="h-3 w-3" />
+                    ) : alert.status === 'due_soon' ? (
+                      <Clock className="h-3 w-3" />
                     ) : (
                       <XCircle className="h-3 w-3" />
                     )}
-                    <span className="font-medium">{vaccine.name}</span>
+                    <span className="font-medium">{alert.vaccine_name}</span>
+                    {alert.is_mandatory && (
+                      <Badge variant="outline" className="text-xs px-1 py-0">
+                        Obligatoria
+                      </Badge>
+                    )}
                   </div>
-                  {vaccine.frequency && (
-                    <div className="text-xs mt-1">
-                      Cada {vaccine.frequency} días
-                    </div>
-                  )}
+                  <div className="text-xs mt-1 text-muted-foreground">
+                    {alert.status === 'missing' && 'Nunca aplicada'}
+                    {alert.status === 'overdue' && `Vencida hace ${alert.days_until_due && Math.abs(alert.days_until_due)} días`}
+                    {alert.status === 'due_soon' && `Vence en ${alert.days_until_due} días`}
+                    {alert.status === 'up_to_date' && alert.last_vaccination_date && `Aplicada: ${format(new Date(alert.last_vaccination_date), 'dd/MM/yy')}`}
+                  </div>
                 </div>
               ))}
             </div>
@@ -218,33 +290,47 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockVaccinations.map((vaccination) => (
-                <TableRow key={vaccination.id}>
-                  <TableCell className="font-medium">
-                    {vaccination.vacuna}
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(vaccination.fecha), 'dd/MM/yyyy', { locale: es })}
-                  </TableCell>
-                  <TableCell>
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                      {vaccination.lote}
-                    </code>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{vaccination.dosis}</div>
-                      <div className="text-muted-foreground">{vaccination.via}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {getStatusBadge(vaccination.proximaDosis)}
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {vaccination.responsable}
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4">
+                    Cargando historial...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : vaccinations.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                    No hay registros de vacunación
+                  </TableCell>
+                </TableRow>
+              ) : (
+                vaccinations.map((vaccination) => (
+                  <TableRow key={vaccination.id}>
+                    <TableCell className="font-medium">
+                      {vaccination.vacuna}
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(vaccination.fecha), 'dd/MM/yyyy', { locale: es })}
+                    </TableCell>
+                    <TableCell>
+                      <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                        {vaccination.lote || 'N/A'}
+                      </code>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div>{vaccination.dosis || 'N/A'}</div>
+                        <div className="text-muted-foreground">{vaccination.via || 'N/A'}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {getStatusBadge(vaccination.proxima_dosis)}
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      Sistema
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -263,37 +349,76 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {mockVaccinations
-              .filter(v => v.proximaDosis)
-              .sort((a, b) => new Date(a.proximaDosis!).getTime() - new Date(b.proximaDosis!).getTime())
-              .map((vaccination) => {
-                const { status, days } = calculateStatus(vaccination.proximaDosis);
-                return (
+            {alertsLoading ? (
+              <div className="text-center py-4 text-muted-foreground">
+                Cargando alertas...
+              </div>
+            ) : alerts.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                No hay alertas de vacunación
+              </div>
+            ) : (
+              alerts
+                .filter(alert => alert.status !== 'up_to_date')
+                .sort((a, b) => {
+                  // Sort by priority: overdue > due_soon > missing
+                  const priority = { overdue: 3, due_soon: 2, missing: 1 };
+                  return (priority[b.status] || 0) - (priority[a.status] || 0);
+                })
+                .map((alert) => (
                   <div 
-                    key={vaccination.id}
+                    key={alert.scheme_id}
                     className={`p-3 rounded-lg border ${
-                      status === 'overdue' ? 'border-red-200 bg-red-50' :
-                      status === 'due' ? 'border-yellow-200 bg-yellow-50' :
+                      alert.status === 'overdue' ? 'border-red-200 bg-red-50' :
+                      alert.status === 'due_soon' ? 'border-yellow-200 bg-yellow-50' :
                       'border-border bg-muted/30'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="font-medium">{vaccination.vacuna}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {format(new Date(vaccination.proximaDosis!), 'dd/MM/yyyy', { locale: es })}
+                        <div className="font-medium flex items-center gap-2">
+                          {alert.vaccine_name}
+                          {alert.is_mandatory && (
+                            <Badge variant="destructive" className="text-xs">
+                              OBLIGATORIA
+                            </Badge>
+                          )}
                         </div>
+                        <div className="text-sm text-muted-foreground">
+                          {alert.description}
+                        </div>
+                        {alert.next_due_date && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Vence: {format(new Date(alert.next_due_date), 'dd/MM/yyyy', { locale: es })}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right">
-                        {getStatusBadge(vaccination.proximaDosis)}
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Lote: {vaccination.lote}
-                        </div>
+                        <Badge 
+                          variant={
+                            alert.status === 'overdue' ? 'destructive' :
+                            alert.status === 'due_soon' ? 'secondary' :
+                            'outline'
+                          }
+                          className="flex items-center gap-1"
+                        >
+                          {alert.status === 'overdue' && <AlertTriangle className="h-3 w-3" />}
+                          {alert.status === 'due_soon' && <Clock className="h-3 w-3" />}
+                          {alert.status === 'missing' && <XCircle className="h-3 w-3" />}
+                          {alert.status === 'overdue' && `Vencida (${alert.days_until_due && Math.abs(alert.days_until_due)}d)`}
+                          {alert.status === 'due_soon' && `Vence en ${alert.days_until_due}d`}
+                          {alert.status === 'missing' && 'Faltante'}
+                        </Badge>
+                        {alert.last_vaccination_date && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            Última: {format(new Date(alert.last_vaccination_date), 'dd/MM/yy')}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                ))
+            )}
           </div>
         </CardContent>
       </Card>
