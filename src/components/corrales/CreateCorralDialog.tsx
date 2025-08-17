@@ -46,14 +46,21 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
         throw new Error("No se encontró la cabaña del usuario");
       }
 
+      // Prepare insert data - only include user_id for Supabase auth users
+      const insertData: any = {
+        name: formData.name,
+        hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
+        cabaña_id: cabanaId,
+      };
+
+      // Only add user_id for Supabase authenticated users to avoid foreign key constraint
+      if (currentUser.authType === 'supabase') {
+        insertData.user_id = currentUser.id;
+      }
+
       const { error } = await supabase
         .from("corrales")
-        .insert({
-          name: formData.name,
-          hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
-          user_id: currentUser.id,
-          cabaña_id: cabanaId,
-        });
+        .insert(insertData);
 
       if (error) throw error;
 
