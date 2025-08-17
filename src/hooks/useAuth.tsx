@@ -47,53 +47,94 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      const { data: profileData } = await supabase
+      console.log('Fetching user profile for:', userId);
+      
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
         .single();
 
-      const { data: roleData } = await supabase
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+      } else {
+        console.log('Profile data:', profileData);
+      }
+
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('*')
         .eq('user_id', userId)
         .single();
 
+      if (roleError) {
+        console.error('Role fetch error:', roleError);
+      } else {
+        console.log('Role data:', roleData);
+      }
+
       setProfile(profileData);
       setUserRole(roleData);
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      // Set loading to false even on error to prevent infinite loading
+      setLoading(false);
     }
   };
 
   useEffect(() => {
+    let isInitialized = false;
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('Auth state change:', event, !!session);
         setSession(session);
         setUser(session?.user ?? null);
 
         if (session?.user) {
-          await fetchUserProfile(session.user.id);
+          // Use setTimeout to prevent deadlock in auth state change callback
+          setTimeout(() => {
+            fetchUserProfile(session.user.id).finally(() => {
+              if (!isInitialized) {
+                setLoading(false);
+                isInitialized = true;
+              }
+            });
+          }, 0);
         } else {
           setProfile(null);
           setUserRole(null);
+          if (!isInitialized) {
+            setLoading(false);
+            isInitialized = true;
+          }
         }
-        
-        setLoading(false);
       }
     );
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session:', !!session);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        fetchUserProfile(session.user.id).finally(() => {
+          if (!isInitialized) {
+            setLoading(false);
+            isInitialized = true;
+          }
+        });
       } else {
-        setLoading(false);
+        if (!isInitialized) {
+          setLoading(false);
+          isInitialized = true;
+        }
       }
+    }).catch((error) => {
+      console.error('Error getting initial session:', error);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
