@@ -96,6 +96,22 @@ export function MarkDeathDialog({
   const { toast } = useToast();
   const { currentUser } = useHybridAuth();
 
+  // Debug logging to see what data we're receiving
+  useEffect(() => {
+    if (animal) {
+      console.log("🔍 MarkDeathDialog received animal data:", {
+        id: animal.id,
+        name: animal.name,
+        id_tag: animal.id_tag,
+        sex: animal.sex,
+        breed: animal.breed,
+        birth_date: animal.birth_date,
+        status: animal.status,
+        rawAnimal: animal
+      });
+    }
+  }, [animal]);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -307,15 +323,15 @@ export function MarkDeathDialog({
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Identificador:</span>
-                <p className="font-medium">{animal.id_tag || 'Sin identificador'}</p>
+                <p className="font-medium">{animal.id_tag}</p>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Sexo:</span>
-                <p className="font-medium">{animal.sex || 'Sin especificar'}</p>
+                <p className="font-medium">{animal.sex}</p>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Raza:</span>
-                <p className="font-medium">{animal.breed || 'Sin especificar'}</p>
+                <p className="font-medium">{animal.breed}</p>
               </div>
             </div>
             {animal.birth_date && (
