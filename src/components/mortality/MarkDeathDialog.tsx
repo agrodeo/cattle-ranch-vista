@@ -323,15 +323,21 @@ export function MarkDeathDialog({
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Identificador:</span>
-                <p className="font-medium">{animal.id_tag}</p>
+                <p className="font-medium">
+                  {`"${animal.id_tag}" (length: ${animal.id_tag?.length || 0}, type: ${typeof animal.id_tag})`}
+                </p>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Sexo:</span>
-                <p className="font-medium">{animal.sex}</p>
+                <p className="font-medium">
+                  {`"${animal.sex}" (length: ${animal.sex?.length || 0}, type: ${typeof animal.sex})`}
+                </p>
               </div>
               <div>
                 <span className="font-medium text-muted-foreground">Raza:</span>
-                <p className="font-medium">{animal.breed}</p>
+                <p className="font-medium">
+                  {`"${animal.breed}" (length: ${animal.breed?.length || 0}, type: ${typeof animal.breed})`}
+                </p>
               </div>
             </div>
             {animal.birth_date && (
