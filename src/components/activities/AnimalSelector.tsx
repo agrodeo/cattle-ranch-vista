@@ -396,17 +396,17 @@ export function AnimalSelector({
                 <div>
                   <label className="text-sm font-medium mb-2 block">Corral</label>
                   <Select 
-                    value={filters.corrals[0] || ""} 
+                    value={filters.corrals[0] || "all"}
                     onValueChange={(value) => setFilters(prev => ({ 
                       ...prev, 
-                      corrals: value ? [value] : [] 
+                      corrals: value === "all" ? [] : [value] 
                     }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Todos los corrales" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos los corrales</SelectItem>
+                      <SelectItem value="all">Todos los corrales</SelectItem>
                       {corrals.map(corral => (
                         <SelectItem key={corral.id} value={corral.id}>
                           {corral.name}
@@ -420,17 +420,17 @@ export function AnimalSelector({
                 <div>
                   <label className="text-sm font-medium mb-2 block">Sexo</label>
                   <Select 
-                    value={filters.sex[0] || ""} 
+                    value={filters.sex[0] || "all"}
                     onValueChange={(value) => setFilters(prev => ({ 
                       ...prev, 
-                      sex: value ? [value] : [] 
+                      sex: value === "all" ? [] : [value] 
                     }))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Todos" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
+                      <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="Macho">Macho</SelectItem>
                       <SelectItem value="Hembra">Hembra</SelectItem>
                     </SelectContent>
@@ -474,17 +474,17 @@ export function AnimalSelector({
               <div>
                 <label className="text-sm font-medium mb-2 block">Categoría</label>
                 <Select 
-                  value={filters.categories[0] || ""} 
+                  value={filters.categories[0] || "all"}
                   onValueChange={(value) => setFilters(prev => ({ 
                     ...prev, 
-                    categories: value ? [value] : [] 
+                    categories: value === "all" ? [] : [value] 
                   }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todas las categorías</SelectItem>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
                     {CATEGORIES.map(cat => (
                       <SelectItem key={cat.value} value={cat.value}>
                         {cat.label}
