@@ -295,8 +295,6 @@ const Animals = () => {
         .order("birth_date", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
-      console.log("🐄 Animals page - Found animals:", data?.length || 0);
-      console.log("🐄 Animals page - Sample animal data:", data?.[0]);
       setAnimals(data || []);
     } catch (error) {
       console.error("Error fetching animals:", error);
@@ -576,16 +574,6 @@ const Animals = () => {
   };
 
   const handleMarkDeath = (animal: Animal) => {
-    console.log("🔥 handleMarkDeath called with animal:", {
-      id: animal.id,
-      name: animal.name,
-      id_tag: animal.id_tag,
-      sex: animal.sex, 
-      breed: animal.breed,
-      birth_date: animal.birth_date,
-      status: animal.status,
-      fullAnimal: animal
-    });
     setAnimalToMarkDead(animal);
     setShowDeathDialog(true);
   };
