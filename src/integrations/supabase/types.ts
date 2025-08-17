@@ -56,6 +56,63 @@ export type Database = {
           },
         ]
       }
+      animal_vaccines: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string | null
+          created_by: string
+          date: string
+          dose: string | null
+          id: string
+          lot: string | null
+          next_due: string | null
+          route: string | null
+          vaccine_code: string
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string | null
+          created_by: string
+          date: string
+          dose?: string | null
+          id?: string
+          lot?: string | null
+          next_due?: string | null
+          route?: string | null
+          vaccine_code: string
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string | null
+          created_by?: string
+          date?: string
+          dose?: string | null
+          id?: string
+          lot?: string | null
+          next_due?: string | null
+          route?: string | null
+          vaccine_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animal_vaccines_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "animal_vaccines_vaccine_code_fkey"
+            columns: ["vaccine_code"]
+            isOneToOne: false
+            referencedRelation: "vaccines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       animals: {
         Row: {
           birth_date: string | null
@@ -817,6 +874,78 @@ export type Database = {
           },
         ]
       }
+      herd_settings: {
+        Row: {
+          cabaña_id: string
+          compliance_mode: string
+          country: string
+          created_at: string
+          herd_type: string | null
+          id: string
+          lat: number | null
+          lng: number | null
+          region: string | null
+          service_type: string | null
+          updated_at: string
+        }
+        Insert: {
+          cabaña_id: string
+          compliance_mode?: string
+          country: string
+          created_at?: string
+          herd_type?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          region?: string | null
+          service_type?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cabaña_id?: string
+          compliance_mode?: string
+          country?: string
+          created_at?: string
+          herd_type?: string | null
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          region?: string | null
+          service_type?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      herd_vaccine_overrides: {
+        Row: {
+          active: boolean
+          cabaña_id: string
+          created_at: string
+          id: string
+          jurisdiction_code: string
+          rule_jsonb: Json
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          cabaña_id: string
+          created_at?: string
+          id?: string
+          jurisdiction_code: string
+          rule_jsonb: Json
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          cabaña_id?: string
+          created_at?: string
+          id?: string
+          jurisdiction_code?: string
+          rule_jsonb?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ia: {
         Row: {
           animales_ids: string[]
@@ -858,6 +987,38 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "eventos"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      jurisdictions: {
+        Row: {
+          code: string
+          country: string
+          created_at: string
+          name: string
+          parent_code: string | null
+        }
+        Insert: {
+          code: string
+          country: string
+          created_at?: string
+          name: string
+          parent_code?: string | null
+        }
+        Update: {
+          code?: string
+          country?: string
+          created_at?: string
+          name?: string
+          parent_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jurisdictions_parent_code_fkey"
+            columns: ["parent_code"]
+            isOneToOne: false
+            referencedRelation: "jurisdictions"
+            referencedColumns: ["code"]
           },
         ]
       }
@@ -1370,6 +1531,188 @@ export type Database = {
           sex_restriction?: string | null
           updated_at?: string
           vaccine_type?: string
+        }
+        Relationships: []
+      }
+      vaccine_aliases: {
+        Row: {
+          alias: string
+          created_at: string
+          id: string
+          vaccine_code: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string
+          id?: string
+          vaccine_code: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string
+          id?: string
+          vaccine_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccine_aliases_vaccine_code_fkey"
+            columns: ["vaccine_code"]
+            isOneToOne: false
+            referencedRelation: "vaccines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      vaccine_campaigns: {
+        Row: {
+          created_at: string
+          id: string
+          jurisdiction_code: string
+          label: string
+          vaccine_code: string
+          window_end: string
+          window_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          jurisdiction_code: string
+          label: string
+          vaccine_code: string
+          window_end: string
+          window_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          jurisdiction_code?: string
+          label?: string
+          vaccine_code?: string
+          window_end?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccine_campaigns_jurisdiction_code_fkey"
+            columns: ["jurisdiction_code"]
+            isOneToOne: false
+            referencedRelation: "jurisdictions"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "vaccine_campaigns_vaccine_code_fkey"
+            columns: ["vaccine_code"]
+            isOneToOne: false
+            referencedRelation: "vaccines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      vaccine_rules: {
+        Row: {
+          active: boolean
+          booster_interval_days: number | null
+          category: string
+          coverage_window_days: number | null
+          created_at: string
+          id: string
+          jurisdiction_code: string
+          mandatory: boolean
+          max_age_days: number | null
+          min_age_days: number
+          notes: string | null
+          one_time: boolean
+          pregnancy_ok: boolean
+          sex: string
+          source_url: string | null
+          updated_at: string
+          vaccine_code: string
+          version: number
+        }
+        Insert: {
+          active?: boolean
+          booster_interval_days?: number | null
+          category?: string
+          coverage_window_days?: number | null
+          created_at?: string
+          id?: string
+          jurisdiction_code: string
+          mandatory?: boolean
+          max_age_days?: number | null
+          min_age_days?: number
+          notes?: string | null
+          one_time?: boolean
+          pregnancy_ok?: boolean
+          sex?: string
+          source_url?: string | null
+          updated_at?: string
+          vaccine_code: string
+          version?: number
+        }
+        Update: {
+          active?: boolean
+          booster_interval_days?: number | null
+          category?: string
+          coverage_window_days?: number | null
+          created_at?: string
+          id?: string
+          jurisdiction_code?: string
+          mandatory?: boolean
+          max_age_days?: number | null
+          min_age_days?: number
+          notes?: string | null
+          one_time?: boolean
+          pregnancy_ok?: boolean
+          sex?: string
+          source_url?: string | null
+          updated_at?: string
+          vaccine_code?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccine_rules_jurisdiction_code_fkey"
+            columns: ["jurisdiction_code"]
+            isOneToOne: false
+            referencedRelation: "jurisdictions"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "vaccine_rules_vaccine_code_fkey"
+            columns: ["vaccine_code"]
+            isOneToOne: false
+            referencedRelation: "vaccines"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      vaccines: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          species: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          species?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          species?: string
         }
         Relationships: []
       }
