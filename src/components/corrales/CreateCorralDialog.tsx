@@ -35,14 +35,11 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
     try {
       setLoading(true);
 
-      // Get user's cabaña_id
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser.id)
-        .single();
+      // Get user's cabaña_id using the function that handles both auth types
+      const { data: cabanaData, error: cabanaError } = await supabase
+        .rpc("get_current_user_cabana_id");
 
-      if (!userData?.cabaña_id) {
+      if (cabanaError || !cabanaData) {
         throw new Error("No se encontró la cabaña del usuario");
       }
 
@@ -52,7 +49,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
           name: formData.name,
           hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
           user_id: currentUser.id,
-          cabaña_id: userData.cabaña_id,
+          cabaña_id: cabanaData,
         });
 
       if (error) throw error;
