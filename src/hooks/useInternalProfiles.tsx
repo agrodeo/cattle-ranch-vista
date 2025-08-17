@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 
 export type ProfileRole = 'admin' | 'employee' | 'read_only';
 
@@ -22,7 +22,7 @@ export interface InternalProfile {
 }
 
 export const useInternalProfiles = () => {
-  const { user, profile } = useAuth();
+  const { currentUser } = useHybridAuth();
   const [profiles, setProfiles] = useState<InternalProfile[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -74,7 +74,7 @@ export const useInternalProfiles = () => {
     password: string;
   }) => {
     try {
-      if (!user || !profile?.cabaña_id) {
+      if (!currentUser || !currentUser?.cabañaId) {
         throw new Error('Usuario no autenticado o sin cabaña asignada');
       }
 
@@ -94,7 +94,7 @@ export const useInternalProfiles = () => {
           department: profileData.department || 'General',
           is_internal_profile: true,
           is_active: true,
-          cabaña_id: profile.cabaña_id,
+          cabaña_id: currentUser.cabañaId,
           hire_date: new Date().toISOString().split('T')[0]
         })
         .select()
@@ -108,7 +108,7 @@ export const useInternalProfiles = () => {
         .insert({
           user_id: userId,
           password_text: profileData.password,
-          created_by: user.id
+          created_by: currentUser.id
         });
 
       if (passwordError) throw passwordError;
@@ -119,7 +119,7 @@ export const useInternalProfiles = () => {
         .insert({
           user_id: userId,
           role: profileData.role,
-          created_by: user.id
+          created_by: currentUser.id
         });
 
       if (roleError) throw roleError;
@@ -130,7 +130,7 @@ export const useInternalProfiles = () => {
       console.error('Error creating profile:', error);
       return { success: false, error };
     }
-  }, [fetchProfiles, user, profile]);
+  }, [fetchProfiles, currentUser]);
 
   // Actualizar perfil interno
   const updateProfile = useCallback(async (profileId: string, updates: Partial<InternalProfile>) => {
