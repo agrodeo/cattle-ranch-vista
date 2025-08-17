@@ -29,15 +29,10 @@ export default function AnimalProfile() {
     setError(null);
 
     try {
+      // First, get the animal basic data
       const { data, error } = await supabase
         .from('animals')
-        .select(`
-          *,
-          corral:corrales(id, name),
-          father:animals!father_id(id, id_tag, name),
-          mother:animals!mother_id(id, id_tag, name),
-          defuncion:defunciones(id, fecha_defuncion, causa_texto)
-        `)
+        .select('*')
         .eq('id', id)
         .single();
 
@@ -52,7 +47,62 @@ export default function AnimalProfile() {
         return;
       }
 
-      setAnimal(data as Animal);
+      // Now get additional related data
+      const animalData: any = { ...data };
+
+      // Get corral info if animal has corral_id
+      if (data.corral_id) {
+        const { data: corralData } = await supabase
+          .from('corrales')
+          .select('id, name')
+          .eq('id', data.corral_id)
+          .maybeSingle();
+        
+        if (corralData) {
+          animalData.corral = corralData;
+        }
+      }
+
+      // Get father info if animal has father_id
+      if (data.father_id) {
+        const { data: fatherData } = await supabase
+          .from('animals')
+          .select('id, id_tag, name')
+          .eq('id', data.father_id)
+          .maybeSingle();
+        
+        if (fatherData) {
+          animalData.father = fatherData;
+        }
+      }
+
+      // Get mother info if animal has mother_id
+      if (data.mother_id) {
+        const { data: motherData } = await supabase
+          .from('animals')
+          .select('id, id_tag, name')
+          .eq('id', data.mother_id)
+          .maybeSingle();
+        
+        if (motherData) {
+          animalData.mother = motherData;
+        }
+      }
+
+      // Get defuncion info if animal has defuncion_id
+      if (data.defuncion_id) {
+        const { data: defuncionData } = await supabase
+          .from('defunciones')
+          .select('id, fecha_defuncion, causa_texto')
+          .eq('id', data.defuncion_id)
+          .maybeSingle();
+        
+        if (defuncionData) {
+          animalData.defuncion = defuncionData;
+        }
+      }
+
+      setAnimal(animalData as Animal);
     } catch (err) {
       console.error('Error:', err);
       setError('Error al cargar el animal');
