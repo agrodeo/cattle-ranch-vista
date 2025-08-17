@@ -81,7 +81,7 @@ export const BenchmarkSettings = () => {
       const { data, error } = await supabase
         .from("animals")
         .select("breed")
-        .eq("cabaña_id", profile?.cabaña_id)
+        .eq("cabaña_id", currentUser?.cabañaId)
         .not("breed", "is", null);
 
       if (error) throw error;
@@ -95,12 +95,12 @@ export const BenchmarkSettings = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!profile?.cabaña_id) return;
+    if (!currentUser?.cabañaId) return;
 
     setSaving(true);
     try {
       const benchmarkData = {
-        cabaña_id: profile.cabaña_id,
+        cabaña_id: currentUser.cabañaId,
         ...formData,
       };
 

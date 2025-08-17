@@ -68,7 +68,7 @@ export function useActivities() {
       const { data: pregnancies } = await supabase
         .from("preñeces")
         .select("id")
-        .eq("cabaña_id", profile.cabaña_id)
+        .eq("cabaña_id", currentUser.cabañaId)
         .eq("estado", "confirmada");
 
       setStats({
@@ -89,14 +89,14 @@ export function useActivities() {
   const getEligibleAnimals = async (activityType: 'IA' | 'TACTO' | 'PESAJE' | 'VACUNACION') => {
     try {
       // Check if user is authenticated and has cabaña_id
-      if (!profile?.cabaña_id) {
+      if (!currentUser?.cabañaId) {
         return [];
       }
       
       let query = supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", profile.cabaña_id)
+        .eq("cabaña_id", currentUser.cabañaId)
         .neq("status", "Vendido")
         .neq("status", "Muerto");
 
@@ -146,15 +146,15 @@ export function useActivities() {
   ) => {
     try {
       // Check if user is authenticated and has cabaña_id
-      if (!profile?.cabaña_id || !profile?.user_id) throw new Error("Usuario no autenticado");
+      if (!currentUser?.cabañaId || !currentUser?.id) throw new Error("Usuario no autenticado");
 
       const { data: event, error } = await supabase
         .from("eventos")
         .insert({
-          cabaña_id: profile.cabaña_id,
+          cabaña_id: currentUser.cabañaId,
           tipo,
           fecha: fecha.toISOString().split('T')[0],
-          creado_por: profile.user_id,
+          creado_por: currentUser.id,
           notas,
           payload,
         })
