@@ -64,11 +64,15 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
               
               if (profile) {
                 // This is a Supabase Auth user
+                if (!profile.cabaña_id) {
+                  console.warn('User profile missing cabaña_id, authentication may not work properly');
+                }
+                
                 const hybridUser: HybridUser = {
                   id: session.user.id,
                   email: session.user.email,
                   fullName: profile.full_name || session.user.email || '',
-                  cabañaId: (profile as any).cabaña_id || '', // Handle missing cabaña_id gracefully
+                  cabañaId: profile.cabaña_id || '', // Handle missing cabaña_id gracefully
                   authType: 'supabase',
                   role: 'admin' // Default role for Supabase users
                 };

@@ -39,12 +39,10 @@ export function useActivities() {
 
   const fetchStats = async () => {
     try {
-      console.log("📊 fetchStats called, currentUser:", currentUser);
       setIsLoading(true);
       
       // Check if user is authenticated and has cabaña_id
       if (!currentUser?.cabañaId) {
-        console.log("❌ fetchStats: No currentUser or cabañaId");
         return;
       }
 
@@ -90,17 +88,10 @@ export function useActivities() {
 
   const getEligibleAnimals = async (activityType: 'IA' | 'TACTO' | 'PESAJE' | 'VACUNACION') => {
     try {
-      console.log("🔍 getEligibleAnimals called with activityType:", activityType);
-      console.log("👤 currentUser:", currentUser);
-      console.log("🏠 cabañaId:", currentUser?.cabañaId);
-      
       // Check if user is authenticated and has cabaña_id
       if (!currentUser?.cabañaId) {
-        console.log("❌ No currentUser or cabañaId, returning empty array");
         return [];
       }
-
-      console.log("🔍 Building query for cabaña_id:", currentUser.cabañaId);
       
       let query = supabase
         .from("animals")
@@ -111,42 +102,29 @@ export function useActivities() {
 
       // Apply specific filters based on activity type
       if (activityType === 'IA') {
-        console.log("🚺 Applying IA filters: females, not pregnant");
         // Only females >= 15 months, not pregnant
         query = query
           .eq("sex", "Hembra")
           .eq("esta_preñada", false);
       } else if (activityType === 'TACTO') {
-        console.log("🚺 Applying TACTO filters: females only");
         // Only females >= 15 months
         query = query.eq("sex", "Hembra");
-      } else {
-        console.log("🐄 No sex filters for:", activityType);
       }
 
-      console.log("📡 Executing query...");
       const { data: animals, error } = await query;
-
-      console.log("📊 Query results:", { animals, error });
-      console.log("📈 Animals count:", animals?.length || 0);
 
       if (error) throw error;
 
       // Filter by age (>= 15 months for reproductive activities)
-      console.log("🎂 Applying age filters for reproductive activities...");
       const eligibleAnimals = animals?.filter(animal => {
         if (['IA', 'TACTO'].includes(activityType) && animal.birth_date) {
           const ageInMonths = Math.floor(
             (new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
           );
-          console.log(`🐄 Animal ${animal.name} (${animal.id_tag}): ${ageInMonths} months old`);
           return ageInMonths >= 15;
         }
         return true;
       }) || [];
-
-      console.log("✅ Final eligible animals:", eligibleAnimals.length);
-      console.log("📋 Eligible animals list:", eligibleAnimals.map(a => ({ name: a.name, id_tag: a.id_tag, sex: a.sex })));
       
       return eligibleAnimals as EligibleAnimal[];
     } catch (error) {
