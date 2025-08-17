@@ -1566,7 +1566,7 @@ export type Database = {
           animal_id_tag: string
           animal_name: string
           animal_sex: string
-          cabaña_id: string
+          cabana_id: string
           causa_nombre: string
           causa_texto: string
           edad_dias: number
