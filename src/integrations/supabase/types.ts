@@ -1866,6 +1866,28 @@ export type Database = {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
       }
+      compile_rules_for_ranch: {
+        Args: { _cabana_id: string }
+        Returns: {
+          booster_interval_days: number
+          campaign_windows: Json
+          category: string
+          coverage_window_days: number
+          mandatory: boolean
+          max_age_days: number
+          min_age_days: number
+          notes: string
+          one_time: boolean
+          pregnancy_ok: boolean
+          sex: string
+          vaccine_code: string
+          vaccine_name: string
+        }[]
+      }
+      compute_due_vaccines_for_animal: {
+        Args: { _animal_id: string }
+        Returns: Json
+      }
       create_animal_sale: {
         Args: {
           _amount: number
@@ -2146,6 +2168,18 @@ export type Database = {
               _notas?: string
               _user_id: string
             }
+        Returns: Json
+      }
+      record_vaccination: {
+        Args: {
+          _animal_id: string
+          _created_by?: string
+          _date: string
+          _dose?: string
+          _lot?: string
+          _route?: string
+          _vaccine_code: string
+        }
         Returns: Json
       }
       update_finance_movement: {

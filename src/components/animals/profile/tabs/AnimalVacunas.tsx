@@ -17,6 +17,7 @@ import {
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
+import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -78,20 +79,62 @@ const requiredVaccines = [
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   const { alerts, loading: alertsLoading } = useVaccinationAlerts(animal.id);
+  const { getDueVaccinesForAnimal } = useLocationAwareVaccination();
   const [vaccinations, setVaccinations] = useState<any[]>([]);
+  const [locationAlerts, setLocationAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchVaccinations = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch from new animal_vaccines table
+      const { data: newVaccinations, error: newError } = await supabase
+        .from('animal_vaccines')
+        .select(`
+          *,
+          vaccines(name)
+        `)
+        .eq('animal_id', animal.id)
+        .order('date', { ascending: false });
+
+      // Also fetch from old table for compatibility
+      const { data: oldVaccinations, error: oldError } = await supabase
         .from('vacunas_historial')
         .select('*')
         .eq('animal_id', animal.id)
         .order('fecha', { ascending: false });
 
-      if (error) throw error;
-      setVaccinations(data || []);
+      // Merge and normalize data
+      const allVaccinations = [
+        ...(newVaccinations || []).map(v => ({
+          id: v.id,
+          vacuna: v.vaccines?.name || v.vaccine_code,
+          fecha: v.date,
+          lote: v.lot,
+          dosis: v.dose,
+          via: v.route,
+          proximaDosis: v.next_due,
+          source: 'new'
+        })),
+        ...(oldVaccinations || []).map(v => ({
+          id: v.id,
+          vacuna: v.vacuna,
+          fecha: v.fecha,
+          lote: v.lote,
+          dosis: v.dosis,
+          via: v.via,
+          proximaDosis: v.proxima_dosis,
+          source: 'old'
+        }))
+      ].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+
+      setVaccinations(allVaccinations);
+
+      // Get location-aware due vaccines
+      const dueVaccines = await getDueVaccinesForAnimal(animal.id);
+      setLocationAlerts(dueVaccines);
+
     } catch (error) {
       console.error("Error fetching vaccinations:", error);
     } finally {
@@ -158,15 +201,16 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     }
   };
 
-  // Use intelligent alerts instead of mock data
-  const mandatoryAlerts = alerts.filter(alert => alert.is_mandatory);
-  const overdue = alerts.filter(alert => alert.status === 'overdue').length;
-  const dueSoon = alerts.filter(alert => alert.status === 'due_soon').length;
-  const upToDate = alerts.filter(alert => alert.status === 'up_to_date').length;
-  const missing = alerts.filter(alert => alert.status === 'missing').length;
+  // Use location-aware alerts for better intelligence
+  const combinedAlerts = locationAlerts.length > 0 ? locationAlerts : alerts;
+  const mandatoryAlerts = combinedAlerts.filter(alert => alert.mandatory);
+  const overdue = combinedAlerts.filter(alert => alert.is_due && alert.mandatory).length;
+  const dueSoon = combinedAlerts.filter(alert => alert.is_due && !alert.mandatory).length;
+  const upToDate = combinedAlerts.filter(alert => !alert.is_due).length;
+  const missing = combinedAlerts.filter(alert => alert.is_due).length;
   
-  const totalRequired = alerts.length;
-  const applied = upToDate + overdue + dueSoon; // Count any vaccine that has been applied
+  const totalRequired = combinedAlerts.length;
+  const applied = upToDate;
   const coveragePercentage = totalRequired > 0 ? (applied / totalRequired) * 100 : 0;
 
   return (
@@ -215,42 +259,42 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {alerts.map((alert) => (
+              {combinedAlerts.map((alert, index) => (
                 <div 
-                  key={alert.scheme_id}
+                  key={alert.vaccine_code || alert.scheme_id || index}
                   className={`p-2 rounded-lg border text-sm ${
-                    alert.status === 'up_to_date' 
+                    !alert.is_due || alert.rationale?.includes('Al día')
                       ? 'bg-green-50 border-green-200 text-green-800'
-                      : alert.status === 'due_soon'
-                      ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
-                      : alert.status === 'overdue'
+                      : alert.mandatory
                       ? 'bg-red-50 border-red-200 text-red-800'
-                      : 'bg-gray-50 border-gray-200 text-gray-800'
+                      : 'bg-yellow-50 border-yellow-200 text-yellow-800'
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    {alert.status === 'up_to_date' ? (
+                    {!alert.is_due || alert.rationale?.includes('Al día') ? (
                       <CheckCircle className="h-3 w-3" />
-                    ) : alert.status === 'overdue' ? (
+                    ) : alert.mandatory ? (
                       <AlertTriangle className="h-3 w-3" />
-                    ) : alert.status === 'due_soon' ? (
-                      <Clock className="h-3 w-3" />
                     ) : (
-                      <XCircle className="h-3 w-3" />
+                      <Clock className="h-3 w-3" />
                     )}
-                    <span className="font-medium">{alert.vaccine_name}</span>
-                    {alert.is_mandatory && (
+                    <span className="font-medium">
+                      {alert.vaccine_name || alert.scheme_id}
+                    </span>
+                    {alert.mandatory && (
                       <Badge variant="outline" className="text-xs px-1 py-0">
                         Obligatoria
                       </Badge>
                     )}
                   </div>
                   <div className="text-xs mt-1 text-muted-foreground">
-                    {alert.status === 'missing' && 'Nunca aplicada'}
-                    {alert.status === 'overdue' && `Vencida hace ${alert.days_until_due && Math.abs(alert.days_until_due)} días`}
-                    {alert.status === 'due_soon' && `Vence en ${alert.days_until_due} días`}
-                    {alert.status === 'up_to_date' && alert.last_vaccination_date && `Aplicada: ${format(new Date(alert.last_vaccination_date), 'dd/MM/yy')}`}
+                    {alert.rationale || (alert.is_due ? 'Pendiente' : 'Al día')}
                   </div>
+                  {alert.campaign_active && (
+                    <Badge variant="destructive" className="text-xs mt-1">
+                      Campaña Activa
+                    </Badge>
+                  )}
                 </div>
               ))}
             </div>
@@ -349,69 +393,66 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {alertsLoading ? (
+            {loading ? (
               <div className="text-center py-4 text-muted-foreground">
                 Cargando alertas...
               </div>
-            ) : alerts.length === 0 ? (
+            ) : combinedAlerts.length === 0 ? (
               <div className="text-center py-4 text-muted-foreground">
                 No hay alertas de vacunación
               </div>
             ) : (
-              alerts
-                .filter(alert => alert.status !== 'up_to_date')
+              combinedAlerts
+                .filter(alert => alert.is_due)
                 .sort((a, b) => {
-                  // Sort by priority: overdue > due_soon > missing
-                  const priority = { overdue: 3, due_soon: 2, missing: 1 };
-                  return (priority[b.status] || 0) - (priority[a.status] || 0);
+                  // Sort mandatory first, then by due status
+                  if (a.mandatory && !b.mandatory) return -1;
+                  if (!a.mandatory && b.mandatory) return 1;
+                  return 0;
                 })
-                .map((alert) => (
+                .map((alert, index) => (
                   <div 
-                    key={alert.scheme_id}
+                    key={alert.vaccine_code || alert.scheme_id || index}
                     className={`p-3 rounded-lg border ${
-                      alert.status === 'overdue' ? 'border-red-200 bg-red-50' :
-                      alert.status === 'due_soon' ? 'border-yellow-200 bg-yellow-50' :
-                      'border-border bg-muted/30'
+                      alert.mandatory ? 'border-red-200 bg-red-50' :
+                      'border-yellow-200 bg-yellow-50'
                     }`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium flex items-center gap-2">
-                          {alert.vaccine_name}
-                          {alert.is_mandatory && (
+                          {alert.vaccine_name || alert.scheme_id}
+                          {alert.mandatory && (
                             <Badge variant="destructive" className="text-xs">
                               OBLIGATORIA
                             </Badge>
                           )}
+                          {alert.campaign_active && (
+                            <Badge variant="outline" className="text-xs">
+                              CAMPAÑA ACTIVA
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {alert.description}
+                          {alert.rationale}
                         </div>
                         {alert.next_due_date && (
                           <div className="text-xs text-muted-foreground mt-1">
-                            Vence: {format(new Date(alert.next_due_date), 'dd/MM/yyyy', { locale: es })}
+                            Próxima: {format(new Date(alert.next_due_date), 'dd/MM/yyyy', { locale: es })}
                           </div>
                         )}
                       </div>
                       <div className="text-right">
                         <Badge 
-                          variant={
-                            alert.status === 'overdue' ? 'destructive' :
-                            alert.status === 'due_soon' ? 'secondary' :
-                            'outline'
-                          }
+                          variant={alert.mandatory ? 'destructive' : 'secondary'}
                           className="flex items-center gap-1"
                         >
-                          {alert.status === 'overdue' && <AlertTriangle className="h-3 w-3" />}
-                          {alert.status === 'due_soon' && <Clock className="h-3 w-3" />}
-                          {alert.status === 'missing' && <XCircle className="h-3 w-3" />}
-                          {alert.status === 'overdue' && `Vencida (${alert.days_until_due && Math.abs(alert.days_until_due)}d)`}
-                          {alert.status === 'due_soon' && `Vence en ${alert.days_until_due}d`}
-                          {alert.status === 'missing' && 'Faltante'}
+                          {alert.mandatory ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                          {alert.mandatory ? 'Obligatoria' : 'Recomendada'}
                         </Badge>
-                        {alert.last_vaccination_date && (
+                        {alert.last_dose_date && (
                           <div className="text-xs text-muted-foreground mt-1">
-                            Última: {format(new Date(alert.last_vaccination_date), 'dd/MM/yy')}
+                            Última: {format(new Date(alert.last_dose_date), 'dd/MM/yy')}
                           </div>
                         )}
                       </div>
