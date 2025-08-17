@@ -81,7 +81,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
       });
 
       // Obtener información de la cabaña
-      const { data: cabanaData } = await supabase.rpc('get_user_cabana_info', {
+      const { data: cabanaData } = await supabase.rpc('get_internal_user_cabana_info', {
         user_uuid: userData.id
       });
 
@@ -136,7 +136,7 @@ export const SimpleAuthProvider = ({ children }: { children: React.ReactNode }) 
       });
 
       // Get cabaña info
-      const { data: cabanaData } = await supabase.rpc('get_user_cabana_info', {
+      const { data: cabanaData } = await supabase.rpc('get_internal_user_cabana_info', {
         user_uuid: userData.id
       });
 

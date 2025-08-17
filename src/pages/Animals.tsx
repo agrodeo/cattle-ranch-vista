@@ -214,7 +214,7 @@ const Animals = () => {
     console.log("Fetching cabaña for user:", currentUser.id);
     
     try {
-      const { data, error } = await supabase.rpc("get_user_cabana_info", {
+      const { data, error } = await supabase.rpc("get_internal_user_cabana_info", {
         user_uuid: currentUser.id,
       });
       
