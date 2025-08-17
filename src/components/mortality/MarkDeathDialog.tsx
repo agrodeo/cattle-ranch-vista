@@ -69,6 +69,9 @@ interface Animal {
   name?: string;
   id_tag?: string;
   birth_date?: string;
+  sex?: string;
+  breed?: string;
+  status?: string;
 }
 
 interface MarkDeathDialogProps {
@@ -296,19 +299,36 @@ export function MarkDeathDialog({
         </DialogHeader>
 
         {animal && (
-          <div className="mb-4 p-3 bg-muted rounded-lg">
-            <p className="font-medium">
-              {animal.name || animal.id_tag || 'Animal sin nombre'}
-            </p>
+          <div className="mb-4 p-3 bg-muted rounded-lg space-y-2">
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <span className="font-medium text-muted-foreground">Nombre:</span>
+                <p className="font-medium">{animal.name || 'Sin nombre'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Identificador:</span>
+                <p className="font-medium">{animal.id_tag || 'Sin identificador'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Sexo:</span>
+                <p className="font-medium">{animal.sex || 'Sin especificar'}</p>
+              </div>
+              <div>
+                <span className="font-medium text-muted-foreground">Raza:</span>
+                <p className="font-medium">{animal.breed || 'Sin especificar'}</p>
+              </div>
+            </div>
             {animal.birth_date && (
-              <p className="text-sm text-muted-foreground">
-                Fecha de nacimiento: {format(new Date(animal.birth_date), 'dd/MM/yyyy')}
-              </p>
+              <div>
+                <span className="font-medium text-muted-foreground text-sm">Fecha de nacimiento:</span>
+                <p className="text-sm">{format(new Date(animal.birth_date), 'dd/MM/yyyy')}</p>
+              </div>
             )}
             {ageDisplay && (
-              <p className="text-sm font-medium text-primary mt-1">
-                Edad al morir: {ageDisplay}
-              </p>
+              <div>
+                <span className="font-medium text-muted-foreground text-sm">Edad al morir:</span>
+                <p className="text-sm font-medium text-primary">{ageDisplay}</p>
+              </div>
             )}
           </div>
         )}
