@@ -34,19 +34,10 @@ export default function Corrales() {
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
 
   const fetchCorrales = async () => {
-    if (!currentUser) return;
+    if (!currentUser?.cabañaId) return;
 
     try {
       setLoading(true);
-      
-      // Get user's cabaña_id
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
 
       // Fetch corrales with animal counts and consanguinity data
       const { data: corralesData, error } = await supabase
@@ -63,7 +54,7 @@ export default function Corrales() {
             mother_id
           )
         `)
-        .eq("cabaña_id", userData.cabaña_id);
+        .eq("cabaña_id", currentUser.cabañaId);
 
       if (error) throw error;
 
@@ -81,7 +72,7 @@ export default function Corrales() {
           try {
             const risks = await analyzeCorralConsanguinity(
               animals as ConsanguinityAnimal[], 
-              userData.cabaña_id
+              currentUser.cabañaId
             );
             riskCount = risks.length;
             

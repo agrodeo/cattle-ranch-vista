@@ -20,6 +20,7 @@ import {
   getSeverityDisplay,
   Animal as ConsanguinityAnimal 
 } from "@/lib/consanguinityAnalysis";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 interface Animal {
   id: string;
   name: string;
@@ -42,6 +43,7 @@ interface CorralDetailDialogProps {
 
 export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: CorralDetailDialogProps) {
   const { toast } = useToast();
+  const { currentUser } = useHybridAuth();
   const [loading, setLoading] = useState(true);
   const [corral, setCorral] = useState<any>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -51,10 +53,10 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const [userCabañaId, setUserCabañaId] = useState<string>('');
 
   useEffect(() => {
-    if (open && corralId) {
+    if (open && corralId && currentUser) {
       fetchCorralData();
     }
-  }, [open, corralId]);
+  }, [open, corralId, currentUser]);
 
   const fetchCorralData = async () => {
     if (!corralId) return;
@@ -62,18 +64,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     try {
       setLoading(true);
 
-      // Get user's cabaña_id first
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
-      setUserCabañaId(userData.cabaña_id);
+      // Get user's cabaña_id from hybrid auth
+      if (!currentUser?.cabañaId) return;
+      setUserCabañaId(currentUser.cabañaId);
 
       // Fetch corral details
       const { data: corralData, error: corralError } = await supabase
@@ -99,7 +92,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       if (animalsData && animalsData.length > 0) {
         const risks = await analyzeCorralConsanguinity(
           animalsData as ConsanguinityAnimal[], 
-          userData.cabaña_id
+          currentUser.cabañaId
         );
         setRelationshipRisks(risks);
       } else {

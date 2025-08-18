@@ -44,23 +44,14 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
   }, [open]);
 
   const fetchAnimals = async () => {
-    if (!currentUser) return;
+    if (!currentUser?.cabañaId) return;
 
     try {
-      // Get user's cabaña_id
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
-
       // Fetch animals from the same cabaña
       const { data: animalsData, error } = await supabase
         .from("animals")
         .select("id, name, id_tag, sex, breed, corral_id")
-        .eq("cabaña_id", userData.cabaña_id);
+        .eq("cabaña_id", currentUser.cabañaId);
 
       if (error) throw error;
 

@@ -27,23 +27,17 @@ export function ActivitiesStats() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [currentUser]);
 
   const fetchStats = async () => {
     try {
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser?.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
+      if (!currentUser?.cabañaId) return;
 
       // Fetch AI stats
       const { data: aiData } = await supabase
         .from("artificial_inseminations")
         .select("*")
-        .eq("cabaña_id", userData.cabaña_id);
+        .eq("cabaña_id", currentUser.cabañaId);
 
       // Count pregnancies
       const pregnancies = aiData?.filter(record => record.is_pregnant === true).length || 0;
