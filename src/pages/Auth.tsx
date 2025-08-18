@@ -341,7 +341,7 @@ const Auth = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                {selectedCountry && (
+                {selectedCountry === 'AR' && (
                   <div className="space-y-2">
                     <Label htmlFor="region">Provincia/Estado</Label>
                     <Select value={selectedRegion} onValueChange={setSelectedRegion} disabled={isLoadingRegions}>
