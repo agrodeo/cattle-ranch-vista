@@ -21,7 +21,7 @@ interface HybridAuthContextType {
   loading: boolean;
   signInAdmin: (email: string, password: string) => Promise<{ error: any }>;
   signInEmployee: (username: string, password: string) => Promise<{ error: any }>;
-  signUp: (companyName: string, ownerName: string, username: string, password: string, country?: string, region?: string | null) => Promise<{ error: any }>;
+  signUp: (companyName: string, ownerName: string, email: string, username: string, password: string, country?: string, region?: string | null) => Promise<{ error: any }>;
   signOut: () => void;
   currentUser: HybridUser | null;
   user: User | null;
@@ -240,6 +240,7 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
   const signUp = async (
     companyName: string, 
     ownerName: string, 
+    email: string,
     username: string, 
     password: string,
     country: string = 'Argentina',

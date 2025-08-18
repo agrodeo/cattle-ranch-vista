@@ -149,6 +149,7 @@ const Auth = () => {
       const formData = new FormData(e.currentTarget);
       const companyName = formData.get("companyName") as string;
       const ownerName = formData.get("ownerName") as string;
+      const email = formData.get("email") as string;
       const username = formData.get("username") as string;
       const password = formData.get("password") as string;
       const confirmPassword = formData.get("confirmPassword") as string;
@@ -174,6 +175,7 @@ const Auth = () => {
       const { error } = await signUp(
         companyName, 
         ownerName, 
+        email,
         username, 
         password, 
         selectedCountry, 
@@ -323,6 +325,19 @@ const Auth = () => {
                     name="ownerName"
                     type="text"
                     placeholder="Juan Pérez"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="admin@cabaña.com"
                     required
                   />
                 </div>
