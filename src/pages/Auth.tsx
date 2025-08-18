@@ -37,11 +37,11 @@ const Auth = () => {
         // Filter for countries only (parent_code is null)
         const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
         
-        // Extract unique countries with proper mapping
-        const uniqueCountries = Array.from(
-          new Map(countryJurisdictions.map((j: any) => [j.country, { code: j.country, name: j.country }]))
-            .values()
-        ).sort((a: any, b: any) => a.name.localeCompare(b.name));
+        // Map countries with proper code and name
+        const uniqueCountries = countryJurisdictions.map((j: any) => ({
+          code: j.code,
+          name: j.name
+        })).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         setCountries(uniqueCountries);
       } catch (error) {
@@ -65,9 +65,9 @@ const Auth = () => {
       try {
         const jurisdictions = await getJurisdictions();
         
-        // Filter regions for selected country (has parent_code and matches country)
+        // Filter regions for selected country (has parent_code = selectedCountry)
         const countryRegions = jurisdictions.filter((j: any) => 
-          j.country === selectedCountry && j.parent_code !== null
+          j.parent_code === selectedCountry
         ).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         setRegions(countryRegions);
