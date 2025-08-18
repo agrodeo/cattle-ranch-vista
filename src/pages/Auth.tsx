@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Building2, Shield, UserPlus, Mail, User } from "lucide-react";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  const [countries, setCountries] = useState<any[]>([]);
+  const [regions, setRegions] = useState<any[]>([]);
+  
   const { signInAdmin, signInEmployee, signUp, isAuthenticated } = useHybridAuth();
+  const { getJurisdictions } = useLocationAwareVaccination();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,6 +27,50 @@ const Auth = () => {
       navigate('/dashboard');
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    const loadJurisdictions = async () => {
+      try {
+        const jurisdictions = await getJurisdictions();
+        
+        // Extract unique countries
+        const uniqueCountries = Array.from(
+          new Map(jurisdictions.map(j => [j.country, { code: j.code, name: j.country }]))
+            .values()
+        ).sort((a, b) => a.name.localeCompare(b.name));
+        
+        setCountries(uniqueCountries);
+      } catch (error) {
+        console.error('Error loading jurisdictions:', error);
+      }
+    };
+
+    loadJurisdictions();
+  }, [getJurisdictions]);
+
+  useEffect(() => {
+    const loadRegions = async () => {
+      if (!selectedCountry) {
+        setRegions([]);
+        return;
+      }
+      
+      try {
+        const jurisdictions = await getJurisdictions();
+        
+        // Filter regions for selected country
+        const countryRegions = jurisdictions.filter(j => 
+          j.country === selectedCountry && j.parent_code
+        ).sort((a, b) => a.name.localeCompare(b.name));
+        
+        setRegions(countryRegions);
+      } catch (error) {
+        console.error('Error loading regions:', error);
+      }
+    };
+
+    loadRegions();
+  }, [selectedCountry, getJurisdictions]);
 
   const handleAdminSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -95,7 +147,24 @@ const Auth = () => {
       return;
     }
 
-    const { error } = await signUp(companyName, ownerName, username, password);
+    if (!selectedCountry) {
+      toast({
+        title: "Error",
+        description: "Debes seleccionar un país",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await signUp(
+      companyName, 
+      ownerName, 
+      username, 
+      password, 
+      selectedCountry, 
+      selectedRegion || null
+    );
     
     if (error) {
       toast({
@@ -236,6 +305,38 @@ const Auth = () => {
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">País *</Label>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry} required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un país" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.code} value={country.name}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {regions.length > 0 && (
+                  <div className="space-y-2">
+                    <Label htmlFor="region">Provincia/Estado</Label>
+                    <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una región (opcional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {regions.map((region) => (
+                          <SelectItem key={region.code} value={region.name}>
+                            {region.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="username">Usuario</Label>
                   <Input

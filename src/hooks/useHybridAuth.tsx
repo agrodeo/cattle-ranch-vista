@@ -21,7 +21,7 @@ interface HybridAuthContextType {
   loading: boolean;
   signInAdmin: (email: string, password: string) => Promise<{ error: any }>;
   signInEmployee: (username: string, password: string) => Promise<{ error: any }>;
-  signUp: (companyName: string, ownerName: string, username: string, password: string) => Promise<{ error: any }>;
+  signUp: (companyName: string, ownerName: string, username: string, password: string, country?: string, region?: string | null) => Promise<{ error: any }>;
   signOut: () => void;
   currentUser: HybridUser | null;
   user: User | null;
@@ -237,13 +237,22 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const signUp = async (companyName: string, ownerName: string, username: string, password: string) => {
+  const signUp = async (
+    companyName: string, 
+    ownerName: string, 
+    username: string, 
+    password: string,
+    country: string = 'Argentina',
+    region: string | null = null
+  ) => {
     try {
       const { data, error } = await supabase.rpc('create_company_with_owner', {
         company_name: companyName,
         owner_name: ownerName,
         owner_username: username,
-        owner_password: password
+        owner_password: password,
+        country: country,
+        region: region
       });
 
       if (error || !data?.[0]?.success) {

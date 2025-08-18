@@ -1904,12 +1904,21 @@ export type Database = {
         Returns: string
       }
       create_company_with_owner: {
-        Args: {
-          company_name: string
-          owner_name: string
-          owner_password: string
-          owner_username: string
-        }
+        Args:
+          | {
+              company_name: string
+              country?: string
+              owner_name: string
+              owner_password: string
+              owner_username: string
+              region?: string
+            }
+          | {
+              company_name: string
+              owner_name: string
+              owner_password: string
+              owner_username: string
+            }
         Returns: {
           error_message: string
           success: boolean
