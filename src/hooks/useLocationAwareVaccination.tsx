@@ -52,6 +52,7 @@ export function useLocationAwareVaccination() {
   const [rules, setRules] = useState<VaccineRule[]>([]);
   const [loading, setLoading] = useState(false);
   const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
+  const [jurisdictionsCache, setJurisdictionsCache] = useState<any[]>([]);
   const { toast } = useToast();
   const { currentUser } = useHybridAuth();
 
@@ -227,22 +228,47 @@ export function useLocationAwareVaccination() {
   };
 
   const getJurisdictions = useCallback(async () => {
+    // Return cached data if available
+    if (jurisdictionsCache.length > 0) {
+      return jurisdictionsCache;
+    }
+
+    // Prevent multiple simultaneous calls
+    if (jurisdictionsLoading) {
+      return [];
+    }
+
+    setJurisdictionsLoading(true);
+    
     try {
-      setJurisdictionsLoading(true);
       const { data, error } = await supabase
         .from('jurisdictions')
         .select('*')
         .order('name');
 
       if (error) throw error;
-      return data || [];
+      
+      // Cache the data
+      const jurisdictions = data || [];
+      setJurisdictionsCache(jurisdictions);
+      return jurisdictions;
     } catch (error) {
       console.error("Error fetching jurisdictions:", error);
-      return [];
+      // Return fallback data to prevent total failure
+      const fallback = [
+        { code: "AR", country: "AR", name: "Argentina", parent_code: null },
+        { code: "BR", country: "BR", name: "Brasil", parent_code: null },
+        { code: "CL", country: "CL", name: "Chile", parent_code: null },
+        { code: "CO", country: "CO", name: "Colombia", parent_code: null },
+        { code: "MX", country: "MX", name: "México", parent_code: null },
+        { code: "PY", country: "PY", name: "Paraguay", parent_code: null },
+      ];
+      setJurisdictionsCache(fallback);
+      return fallback;
     } finally {
       setJurisdictionsLoading(false);
     }
-  }, []);
+  }, [jurisdictionsCache, jurisdictionsLoading]);
 
   useEffect(() => {
     if (currentUser?.cabañaId) {

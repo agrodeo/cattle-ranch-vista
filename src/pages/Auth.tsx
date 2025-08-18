@@ -17,6 +17,7 @@ const Auth = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [countries, setCountries] = useState<any[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
+  const [isLoadingRegions, setIsLoadingRegions] = useState(false);
   
   const { signInAdmin, signInEmployee, signUp, isAuthenticated } = useHybridAuth();
   const { getJurisdictions, jurisdictionsLoading } = useLocationAwareVaccination();
@@ -35,9 +36,10 @@ const Auth = () => {
         
         // Extract unique countries
         const uniqueCountries = Array.from(
-          new Map(jurisdictions.map(j => [j.country, { code: j.code, name: j.country }]))
+          new Map(jurisdictions.map((j: any) => [j.country, { code: j.country, name: j.name }]))
             .values()
-        ).sort((a, b) => a.name.localeCompare(b.name));
+        ).filter((country: any) => !country.code.includes('-')) // Filter out regions
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         setCountries(uniqueCountries);
       } catch (error) {
@@ -46,31 +48,37 @@ const Auth = () => {
     };
 
     loadJurisdictions();
-  }, []);
+  }, [getJurisdictions]);
 
   useEffect(() => {
     const loadRegions = async () => {
       if (!selectedCountry) {
         setRegions([]);
+        setSelectedRegion("");
         return;
       }
+      
+      setIsLoadingRegions(true);
       
       try {
         const jurisdictions = await getJurisdictions();
         
         // Filter regions for selected country
-        const countryRegions = jurisdictions.filter(j => 
+        const countryRegions = jurisdictions.filter((j: any) => 
           j.country === selectedCountry && j.parent_code
-        ).sort((a, b) => a.name.localeCompare(b.name));
+        ).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         setRegions(countryRegions);
       } catch (error) {
         console.error('Error loading regions:', error);
+        setRegions([]);
+      } finally {
+        setIsLoadingRegions(false);
       }
     };
 
     loadRegions();
-  }, [selectedCountry]);
+  }, [selectedCountry, getJurisdictions]);
 
   const handleAdminSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -313,29 +321,35 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">País *</Label>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry} required>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={jurisdictionsLoading}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un país" />
+                      <SelectValue placeholder={jurisdictionsLoading ? "Cargando países..." : "Selecciona un país"} />
                     </SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
-                        <SelectItem key={country.code} value={country.name}>
+                        <SelectItem key={country.code} value={country.code}>
                           {country.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                {regions.length > 0 && (
+                {selectedCountry && (
                   <div className="space-y-2">
                     <Label htmlFor="region">Provincia/Estado</Label>
-                    <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                    <Select value={selectedRegion} onValueChange={setSelectedRegion} disabled={isLoadingRegions}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una región (opcional)" />
+                        <SelectValue placeholder={
+                          isLoadingRegions 
+                            ? "Cargando regiones..." 
+                            : regions.length > 0 
+                            ? "Selecciona una región (opcional)" 
+                            : "No hay regiones disponibles"
+                        } />
                       </SelectTrigger>
                       <SelectContent>
                         {regions.map((region) => (
-                          <SelectItem key={region.code} value={region.name}>
+                          <SelectItem key={region.code} value={region.code}>
                             {region.name}
                           </SelectItem>
                         ))}
