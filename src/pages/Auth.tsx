@@ -34,12 +34,14 @@ const Auth = () => {
       try {
         const jurisdictions = await getJurisdictions();
         
-        // Extract unique countries
+        // Filter for countries only (parent_code is null)
+        const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
+        
+        // Extract unique countries with proper mapping
         const uniqueCountries = Array.from(
-          new Map(jurisdictions.map((j: any) => [j.country, { code: j.country, name: j.name }]))
+          new Map(countryJurisdictions.map((j: any) => [j.country, { code: j.country, name: j.country }]))
             .values()
-        ).filter((country: any) => !country.code.includes('-')) // Filter out regions
-        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+        ).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         setCountries(uniqueCountries);
       } catch (error) {
@@ -63,9 +65,9 @@ const Auth = () => {
       try {
         const jurisdictions = await getJurisdictions();
         
-        // Filter regions for selected country
+        // Filter regions for selected country (has parent_code and matches country)
         const countryRegions = jurisdictions.filter((j: any) => 
-          j.country === selectedCountry && j.parent_code
+          j.country === selectedCountry && j.parent_code !== null
         ).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         setRegions(countryRegions);
@@ -79,6 +81,11 @@ const Auth = () => {
 
     loadRegions();
   }, [selectedCountry, getJurisdictions]);
+
+  // Clear region when country changes
+  useEffect(() => {
+    setSelectedRegion("");
+  }, [selectedCountry]);
 
   const handleAdminSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
