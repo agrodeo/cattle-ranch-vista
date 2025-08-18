@@ -9,9 +9,9 @@ import {
   Syringe, 
   Baby, 
   AlertTriangle, 
-  Activity,
   Calendar
 } from "lucide-react";
+import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHistory";
 import { calculateAge } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -137,57 +137,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
       )}
 
       {/* Timeline de Actividades Recientes */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Actividades Recientes
-          </CardTitle>
-          <CardDescription>
-            Últimas 5 actividades registradas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {/* Mock timeline */}
-            <div className="flex items-start gap-3">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100">
-                <Scale className="h-3 w-3 text-blue-600" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Pesaje registrado</p>
-                <p className="text-xs text-muted-foreground">
-                  Peso: 450 kg • Hace 3 días
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
-                <Syringe className="h-3 w-3 text-green-600" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Vacuna aplicada</p>
-                <p className="text-xs text-muted-foreground">
-                  Triple viral • Hace 1 semana
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100">
-                <Heart className="h-3 w-3 text-pink-600" />
-              </div>
-              <div className="flex-1 space-y-1">
-                <p className="text-sm font-medium">Tacto positivo</p>
-                <p className="text-xs text-muted-foreground">
-                  Confirmada preñez • Hace 2 semanas
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <AnimalActivitiesHistory animalId={animal.id} animalName={animal.name || animal.id_tag} />
 
       {/* Alertas */}
       <div className="space-y-3">

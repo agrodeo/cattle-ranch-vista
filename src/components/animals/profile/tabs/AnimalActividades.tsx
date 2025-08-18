@@ -7,87 +7,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { 
   Plus, 
   Filter, 
-  Calendar, 
   Activity, 
   Scale, 
   Heart, 
   Syringe, 
   MapPin, 
-  User 
+  User,
+  ExternalLink
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
+import { useAnimalActivities } from "@/hooks/useAnimalActivities";
+import { Link } from "react-router-dom";
 
 interface AnimalActividadesProps {
   animal: Animal;
   onAnimalUpdate: (animal: Animal) => void;
 }
 
-const mockActividades = [
-  {
-    id: '1',
-    tipo: 'pesaje',
-    fecha: '2024-01-15T10:30:00Z',
-    descripcion: 'Pesaje rutinario',
-    detalles: { peso: '450 kg', ganancia: '+1.2 kg/día' },
-    responsable: 'Juan Pérez',
-    icon: Scale,
-    color: 'bg-blue-500'
-  },
-  {
-    id: '2',
-    tipo: 'vacunacion',
-    fecha: '2024-01-10T09:00:00Z',
-    descripcion: 'Vacuna triple viral',
-    detalles: { vacuna: 'Triple Viral', lote: 'TV2024-01', dosis: '2ml' },
-    responsable: 'María García',
-    icon: Syringe,
-    color: 'bg-green-500'
-  },
-  {
-    id: '3',
-    tipo: 'tacto',
-    fecha: '2024-01-05T14:15:00Z',
-    descripcion: 'Detección de preñez',
-    detalles: { resultado: 'Preñada', fpp: '2024-10-15' },
-    responsable: 'Dr. Rodriguez',
-    icon: Heart,
-    color: 'bg-pink-500'
-  },
-  {
-    id: '4',
-    tipo: 'movimiento',
-    fecha: '2024-01-01T08:00:00Z',
-    descripcion: 'Cambio de corral',
-    detalles: { origen: 'Corral A', destino: 'Corral B' },
-    responsable: 'Juan Pérez',
-    icon: MapPin,
-    color: 'bg-yellow-500'
-  },
-  {
-    id: '5',
-    tipo: 'inseminacion',
-    fecha: '2023-12-20T11:00:00Z',
-    descripcion: 'Inseminación artificial',
-    detalles: { toro: 'Toro Elite #123', tecnico: 'Dr. Martinez' },
-    responsable: 'Dr. Martinez',
-    icon: Heart,
-    color: 'bg-purple-500'
-  }
-];
-
 export function AnimalActividades({ animal }: AnimalActividadesProps) {
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroFecha, setFiltroFecha] = useState<string>('');
   const [busqueda, setBusqueda] = useState<string>('');
+  
+  const { activities, isLoading } = useAnimalActivities(animal.id);
 
-  const actividadesFiltradas = mockActividades.filter(actividad => {
-    const cumpleTipo = filtroTipo === 'todos' || actividad.tipo === filtroTipo;
-    const cumpleFecha = !filtroFecha || actividad.fecha.includes(filtroFecha);
+  const actividadesFiltradas = activities.filter(actividad => {
+    const cumpleTipo = filtroTipo === 'todos' || actividad.type === filtroTipo;
+    const cumpleFecha = !filtroFecha || actividad.date.includes(filtroFecha);
     const cumpleBusqueda = !busqueda || 
-      actividad.descripcion.toLowerCase().includes(busqueda.toLowerCase()) ||
-      actividad.responsable.toLowerCase().includes(busqueda.toLowerCase());
+      actividad.description.toLowerCase().includes(busqueda.toLowerCase()) ||
+      (actividad.responsable && actividad.responsable.toLowerCase().includes(busqueda.toLowerCase()));
     
     return cumpleTipo && cumpleFecha && cumpleBusqueda;
   });
@@ -95,12 +46,47 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
   const getTypeLabel = (tipo: string) => {
     const types: { [key: string]: string } = {
       'pesaje': 'Pesaje',
-      'vacunacion': 'Vacunación',
+      'vaccination': 'Vacunación',
       'tacto': 'Tacto',
       'movimiento': 'Movimiento',
-      'inseminacion': 'Inseminación'
+      'insemination': 'Inseminación',
+      'reproductive': 'Reproductivo'
     };
     return types[tipo] || tipo;
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "insemination":
+        return Heart;
+      case "vaccination":
+        return Syringe;
+      case "pesaje":
+        return Scale;
+      case "reproductive":
+        return Heart;
+      case "movimiento":
+        return MapPin;
+      default:
+        return Activity;
+    }
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case "insemination":
+        return "bg-purple-500";
+      case "vaccination":
+        return "bg-green-500";
+      case "pesaje":
+        return "bg-blue-500";
+      case "reproductive":
+        return "bg-pink-500";
+      case "movimiento":
+        return "bg-yellow-500";
+      default:
+        return "bg-gray-500";
+    }
   };
 
   return (
@@ -114,10 +100,13 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
           </p>
         </div>
         
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Agregar Actividad
-        </Button>
+        <Link to="/activities">
+          <Button className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Agregar Actividad
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </Link>
       </div>
 
       {/* Filtros */}
@@ -139,10 +128,11 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
                 <SelectContent>
                   <SelectItem value="todos">Todas</SelectItem>
                   <SelectItem value="pesaje">Pesajes</SelectItem>
-                  <SelectItem value="vacunacion">Vacunaciones</SelectItem>
+                  <SelectItem value="vaccination">Vacunaciones</SelectItem>
                   <SelectItem value="tacto">Tactos</SelectItem>
                   <SelectItem value="movimiento">Movimientos</SelectItem>
-                  <SelectItem value="inseminacion">Inseminaciones</SelectItem>
+                  <SelectItem value="insemination">Inseminaciones</SelectItem>
+                  <SelectItem value="reproductive">Reproductivos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -177,22 +167,34 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {actividadesFiltradas.length === 0 ? (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">Cargando actividades...</p>
+            </div>
+          ) : actividadesFiltradas.length === 0 ? (
             <div className="text-center py-8">
               <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">No hay actividades</h3>
               <p className="text-muted-foreground mb-4">
-                No se encontraron actividades con los filtros aplicados
+                {activities.length === 0 
+                  ? "Este animal aún no tiene actividades registradas"
+                  : "No se encontraron actividades con los filtros aplicados"
+                }
               </p>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Agregar Primera Actividad
-              </Button>
+              <Link to="/activities">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Primera Actividad
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </Button>
+              </Link>
             </div>
           ) : (
             <div className="space-y-4">
               {actividadesFiltradas.map((actividad, index) => {
-                const Icon = actividad.icon;
+                const Icon = getActivityIcon(actividad.type);
+                const color = getActivityColor(actividad.type);
                 const isLast = index === actividadesFiltradas.length - 1;
 
                 return (
@@ -204,7 +206,7 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
                     
                     <div className="flex items-start gap-4">
                       {/* Icono */}
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${actividad.color} text-white`}>
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${color} text-white`}>
                         <Icon className="h-5 w-5" />
                       </div>
                       
@@ -212,30 +214,41 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2">
-                            <h4 className="font-medium">{actividad.descripcion}</h4>
+                            <h4 className="font-medium">{actividad.description}</h4>
                             <Badge variant="outline">
-                              {getTypeLabel(actividad.tipo)}
+                              {getTypeLabel(actividad.type)}
                             </Badge>
                           </div>
                           <time className="text-sm text-muted-foreground">
-                            {format(new Date(actividad.fecha), 'dd/MM/yyyy HH:mm', { locale: es })}
+                            {format(new Date(actividad.date), 'dd/MM/yyyy', { locale: es })}
                           </time>
                         </div>
                         
                         {/* Detalles */}
-                        <div className="space-y-1 mb-2">
-                          {Object.entries(actividad.detalles).map(([key, value]) => (
-                            <p key={key} className="text-sm text-muted-foreground">
-                              <span className="capitalize">{key}:</span> {value}
-                            </p>
-                          ))}
-                        </div>
+                        {Object.keys(actividad.details).length > 0 && (
+                          <div className="space-y-1 mb-2">
+                            {Object.entries(actividad.details).map(([key, value]) => (
+                              <p key={key} className="text-sm text-muted-foreground">
+                                <span className="capitalize">{key}:</span> {value}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Notas */}
+                        {actividad.notes && (
+                          <p className="text-sm text-muted-foreground mb-2">
+                            <span className="font-medium">Notas:</span> {actividad.notes}
+                          </p>
+                        )}
                         
                         {/* Responsable */}
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <User className="h-3 w-3" />
-                          {actividad.responsable}
-                        </div>
+                        {actividad.responsable && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <User className="h-3 w-3" />
+                            {actividad.responsable}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
