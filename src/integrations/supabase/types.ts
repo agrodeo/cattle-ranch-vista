@@ -1908,6 +1908,15 @@ export type Database = {
           | {
               company_name: string
               country?: string
+              owner_email?: string
+              owner_name: string
+              owner_password: string
+              owner_username: string
+              region?: string
+            }
+          | {
+              company_name: string
+              country?: string
               owner_name: string
               owner_password: string
               owner_username: string

@@ -252,6 +252,7 @@ export const HybridAuthProvider = ({ children }: { children: React.ReactNode }) 
         owner_name: ownerName,
         owner_username: username,
         owner_password: password,
+        owner_email: email,
         country: country,
         region: region
       });
