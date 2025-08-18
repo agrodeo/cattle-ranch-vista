@@ -51,7 +51,11 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
       const { data: animalsData, error } = await supabase
         .from("animals")
         .select("id, name, id_tag, sex, breed, corral_id")
-        .eq("cabaña_id", currentUser.cabañaId);
+        .eq("cabaña_id", currentUser.cabañaId)
+        .neq("status", "vendido")
+        .neq("status", "muerto")
+        .neq("status", "Vendido")
+        .neq("status", "Muerto");
 
       if (error) throw error;
 

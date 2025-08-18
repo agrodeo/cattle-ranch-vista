@@ -24,6 +24,7 @@ import { BrafordRegistrationDisplay } from "@/components/braford/BrafordRegistra
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
 import { MarkDeathDialog } from "@/components/mortality/MarkDeathDialog";
 import { Animal } from "@/types/animal";
+import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 
 interface Cabaña {
   id: string;
@@ -458,6 +459,13 @@ const Animals = () => {
       setEditingAnimal(null);
       resetForm();
       fetchAnimals();
+      
+      // Cleanup inactive animals from corrals if status changed to inactive
+      if (editingAnimal && 
+          (submitData.status === "vendido" || submitData.status === "muerto" || 
+           submitData.status === "Vendido" || submitData.status === "Muerto")) {
+        await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
+      }
     } catch (error) {
       toast({
         title: "Error",

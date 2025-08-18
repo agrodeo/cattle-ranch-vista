@@ -21,6 +21,7 @@ import {
   Animal as ConsanguinityAnimal 
 } from "@/lib/consanguinityAnalysis";
 import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 interface Animal {
   id: string;
   name: string;
@@ -77,11 +78,18 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
       if (corralError) throw corralError;
 
-      // Fetch animals in this corral
+      // Cleanup inactive animals from corrals first
+      await cleanupInactiveAnimalsFromCorrals(currentUser.cabañaId);
+
+      // Fetch active animals in this corral
       const { data: animalsData, error: animalsError } = await supabase
         .from("animals")
         .select("id, name, id_tag, sex, breed, birth_date, father_id, mother_id, status, corral_id")
-        .eq("corral_id", corralId);
+        .eq("corral_id", corralId)
+        .neq("status", "vendido")
+        .neq("status", "muerto")
+        .neq("status", "Vendido")
+        .neq("status", "Muerto");
 
       if (animalsError) throw animalsError;
 

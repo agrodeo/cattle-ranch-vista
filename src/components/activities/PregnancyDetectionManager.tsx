@@ -16,6 +16,7 @@ import { Plus, Search, Calendar as CalendarIcon, Heart, AlertTriangle, CheckCirc
 import { NewTactoDialog } from "./NewTactoDialog";
 import { format, addDays, differenceInMonths, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
+import { useHybridAuth } from "@/hooks/useHybridAuth";
 
 interface Animal {
   id: string;
@@ -46,6 +47,7 @@ export function PregnancyDetectionManager() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
+  const { currentUser } = useHybridAuth();
 
   useEffect(() => {
     fetchEligibleAnimals();
@@ -55,27 +57,19 @@ export function PregnancyDetectionManager() {
     try {
       setLoading(true);
       
-      // Obtener usuario actual
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData || !userData.cabaña_id) return;
+      if (!currentUser?.cabañaId) return;
 
       // Obtener hembras elegibles: activas, >15 meses, no vendidas ni muertas
       const { data: animalsData, error } = await supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", userData.cabaña_id)
+        .eq("cabaña_id", currentUser.cabañaId)
         .eq("sex", "Hembra")
         .neq("status", "vendido")
         .neq("status", "muerto")
-        .or("status.is.null,status.eq.activo");
+        .neq("status", "Vendido")
+        .neq("status", "Muerto")
+        .or("status.is.null,status.eq.activo,status.eq.Activo");
 
       if (error) throw error;
 
@@ -152,17 +146,7 @@ export function PregnancyDetectionManager() {
         return;
       }
 
-      // Obtener usuario actual
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (!userData || !userData.cabaña_id) return;
+      if (!currentUser?.cabañaId) return;
 
       // Preparar registros para insertar en reproductive_events
       const reproductiveEvents = validRecords.map(record => ({
@@ -173,7 +157,7 @@ export function PregnancyDetectionManager() {
         calving_date: record.isPregnant === 'yes' ? format(record.estimatedDueDate!, 'yyyy-MM-dd') : null,
         linked_calf_id: null,
         notes: record.observations || `Detección de preñez: ${record.isPregnant === 'yes' ? 'Positiva' : 'Negativa'}. ${record.observations}`.trim(),
-        cabaña_id: userData.cabaña_id
+        cabaña_id: currentUser.cabañaId
       }));
 
       const { error } = await supabase
