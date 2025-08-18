@@ -19,7 +19,7 @@ const Auth = () => {
   const [regions, setRegions] = useState<any[]>([]);
   
   const { signInAdmin, signInEmployee, signUp, isAuthenticated } = useHybridAuth();
-  const { getJurisdictions } = useLocationAwareVaccination();
+  const { getJurisdictions, jurisdictionsLoading } = useLocationAwareVaccination();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Auth = () => {
     };
 
     loadJurisdictions();
-  }, [getJurisdictions]);
+  }, []);
 
   useEffect(() => {
     const loadRegions = async () => {
@@ -70,7 +70,7 @@ const Auth = () => {
     };
 
     loadRegions();
-  }, [selectedCountry, getJurisdictions]);
+  }, [selectedCountry]);
 
   const handleAdminSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -130,57 +130,63 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const formData = new FormData(e.currentTarget);
-    const companyName = formData.get("companyName") as string;
-    const ownerName = formData.get("ownerName") as string;
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+    try {
+      const formData = new FormData(e.currentTarget);
+      const companyName = formData.get("companyName") as string;
+      const ownerName = formData.get("ownerName") as string;
+      const username = formData.get("username") as string;
+      const password = formData.get("password") as string;
+      const confirmPassword = formData.get("confirmPassword") as string;
 
-    if (password !== confirmPassword) {
+      if (password !== confirmPassword) {
+        toast({
+          title: "Error",
+          description: "Las contraseñas no coinciden",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!selectedCountry) {
+        toast({
+          title: "Error",
+          description: "Debes seleccionar un país",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { error } = await signUp(
+        companyName, 
+        ownerName, 
+        username, 
+        password, 
+        selectedCountry, 
+        selectedRegion || null
+      );
+      
+      if (error) {
+        toast({
+          title: "Error al crear la cuenta",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "¡Cuenta creada!",
+          description: "Tu empresa ha sido registrada exitosamente.",
+        });
+        navigate("/dashboard");
+      }
+    } catch (error) {
       toast({
-        title: "Error",
-        description: "Las contraseñas no coinciden",
+        title: "Error inesperado",
+        description: "Ocurrió un error inesperado. Intenta nuevamente.",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (!selectedCountry) {
-      toast({
-        title: "Error",
-        description: "Debes seleccionar un país",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await signUp(
-      companyName, 
-      ownerName, 
-      username, 
-      password, 
-      selectedCountry, 
-      selectedRegion || null
-    );
-    
-    if (error) {
-      toast({
-        title: "Error al crear la cuenta",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "¡Cuenta creada!",
-        description: "Tu empresa ha sido registrada exitosamente.",
-      });
-      navigate("/dashboard");
-    }
-    
-    setLoading(false);
   };
 
   return (
@@ -369,8 +375,8 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button type="submit" className="w-full" disabled={loading || jurisdictionsLoading}>
+                  {(loading || jurisdictionsLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Crear Empresa
                 </Button>
               </form>

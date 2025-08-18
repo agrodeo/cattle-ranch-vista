@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useHybridAuth } from "@/hooks/useHybridAuth";
@@ -51,6 +51,7 @@ export function useLocationAwareVaccination() {
   const [herdSettings, setHerdSettings] = useState<HerdSettings | null>(null);
   const [rules, setRules] = useState<VaccineRule[]>([]);
   const [loading, setLoading] = useState(false);
+  const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useHybridAuth();
 
@@ -225,8 +226,9 @@ export function useLocationAwareVaccination() {
     }
   };
 
-  const getJurisdictions = async () => {
+  const getJurisdictions = useCallback(async () => {
     try {
+      setJurisdictionsLoading(true);
       const { data, error } = await supabase
         .from('jurisdictions')
         .select('*')
@@ -237,8 +239,10 @@ export function useLocationAwareVaccination() {
     } catch (error) {
       console.error("Error fetching jurisdictions:", error);
       return [];
+    } finally {
+      setJurisdictionsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -251,6 +255,7 @@ export function useLocationAwareVaccination() {
     herdSettings,
     rules,
     loading,
+    jurisdictionsLoading,
     fetchHerdSettings,
     fetchRules,
     saveHerdSettings,
