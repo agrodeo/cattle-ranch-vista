@@ -4,11 +4,12 @@ import { useHybridAuth } from "@/hooks/useHybridAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin } from "lucide-react";
+import { Eye, Plus, AlertTriangle, MapPin, Move } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
 import { EditCorralDialog } from "@/components/corrales/EditCorralDialog";
+import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 
 interface Corral {
@@ -31,6 +32,7 @@ export default function Corrales() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
 
   const fetchCorrales = async () => {
@@ -177,10 +179,16 @@ export default function Corrales() {
           <h1 className="text-3xl font-bold">Corrales</h1>
           <p className="text-muted-foreground">Gestiona los corrales y asignación de animales</p>
         </div>
-        <Button onClick={() => setCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Corral
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setMoveDialogOpen(true)}>
+            <Move className="h-4 w-4 mr-2" />
+            Mover Animales
+          </Button>
+          <Button onClick={() => setCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Corral
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -275,6 +283,12 @@ export default function Corrales() {
         onOpenChange={setDetailDialogOpen}
         corralId={selectedCorral}
         onUpdate={fetchCorrales}
+      />
+
+      <MoveAnimalDialog
+        open={moveDialogOpen}
+        onOpenChange={setMoveDialogOpen}
+        onSuccess={fetchCorrales}
       />
     </div>
   );

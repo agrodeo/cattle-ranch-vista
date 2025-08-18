@@ -175,7 +175,7 @@ export function useActivities() {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [currentUser]);
 
   return {
     stats,
