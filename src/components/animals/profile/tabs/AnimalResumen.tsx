@@ -9,12 +9,17 @@ import {
   Syringe, 
   Baby, 
   AlertTriangle, 
-  Calendar
+  Calendar,
+  CheckCircle,
+  XCircle
 } from "lucide-react";
 import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHistory";
+import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
 import { calculateAge } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AnimalResumenProps {
   animal: Animal;
@@ -23,6 +28,91 @@ interface AnimalResumenProps {
 
 export function AnimalResumen({ animal }: AnimalResumenProps) {
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
+  const { alerts: vaccinationAlerts, loading: vaccinationLoading } = useVaccinationAlerts(animal.id);
+  const [reproductiveData, setReproductiveData] = useState<{
+    pregnancyPercentage: number;
+    calvingPercentage: number;
+    totalOffspring: number;
+    liveOffspring: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchReproductiveData = async () => {
+      if (animal.sex !== 'Hembra') return;
+      
+      try {
+        // Get reproductive events for this animal
+        const { data: reproductiveEvents } = await supabase
+          .from('reproductive_events')
+          .select('*')
+          .eq('animal_id', animal.id);
+
+        // Get offspring count
+        const { data: offspring } = await supabase
+          .from('animals')
+          .select('id, status')
+          .or(`mother_id.eq.${animal.id},father_id.eq.${animal.id}`);
+
+        const totalEvents = reproductiveEvents?.length || 0;
+        const pregnancies = reproductiveEvents?.filter(e => e.pregnancy_status === 'confirmed').length || 0;
+        const calvings = reproductiveEvents?.filter(e => e.calving_date).length || 0;
+        const liveOffspring = offspring?.filter(o => o.status !== 'muerto').length || 0;
+        const totalOffspring = offspring?.length || 0;
+
+        setReproductiveData({
+          pregnancyPercentage: totalEvents > 0 ? Math.round((pregnancies / totalEvents) * 100) : 0,
+          calvingPercentage: pregnancies > 0 ? Math.round((calvings / pregnancies) * 100) : 0,
+          totalOffspring,
+          liveOffspring
+        });
+      } catch (error) {
+        console.error('Error fetching reproductive data:', error);
+      }
+    };
+
+    fetchReproductiveData();
+  }, [animal.id, animal.sex]);
+
+  const getVaccinationStatus = () => {
+    if (vaccinationLoading) return { status: 'Cargando...', color: 'text-muted-foreground', nextDate: null };
+    
+    if (!vaccinationAlerts || vaccinationAlerts.length === 0) {
+      return { status: 'Sin esquema', color: 'text-muted-foreground', nextDate: null };
+    }
+
+    const overdueAlerts = vaccinationAlerts.filter(alert => alert.status === 'overdue');
+    const missingAlerts = vaccinationAlerts.filter(alert => alert.status === 'missing');
+    const dueSoonAlerts = vaccinationAlerts.filter(alert => alert.status === 'due_soon');
+
+    if (overdueAlerts.length > 0) {
+      return { 
+        status: `${overdueAlerts.length} vencida${overdueAlerts.length > 1 ? 's' : ''}`, 
+        color: 'text-destructive',
+        nextDate: null
+      };
+    }
+
+    if (missingAlerts.length > 0) {
+      return { 
+        status: `${missingAlerts.length} faltante${missingAlerts.length > 1 ? 's' : ''}`, 
+        color: 'text-warning',
+        nextDate: null
+      };
+    }
+
+    if (dueSoonAlerts.length > 0) {
+      const nextAlert = dueSoonAlerts[0];
+      return { 
+        status: 'Próximas', 
+        color: 'text-warning',
+        nextDate: nextAlert.next_due_date
+      };
+    }
+
+    return { status: 'Al día', color: 'text-success', nextDate: null };
+  };
+
+  const vaccinationStatus = getVaccinationStatus();
 
   return (
     <div className="space-y-6">
@@ -77,10 +167,20 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
             <Syringe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Al día</div>
-            <p className="text-xs text-muted-foreground">
-              Próxima: 15/02/2024
-            </p>
+            <div className={`text-2xl font-bold ${vaccinationStatus.color}`}>
+              {vaccinationStatus.status}
+            </div>
+            {vaccinationStatus.nextDate && (
+              <p className="text-xs text-muted-foreground">
+                Próxima: {format(new Date(vaccinationStatus.nextDate), 'dd/MM/yyyy', { locale: es })}
+              </p>
+            )}
+            {!vaccinationStatus.nextDate && vaccinationStatus.status !== 'Cargando...' && (
+              <p className="text-xs text-muted-foreground">
+                {vaccinationStatus.status === 'Sin esquema' ? 'No hay vacunas configuradas' : 
+                 vaccinationStatus.status === 'Al día' ? 'Todas las vacunas al día' : 'Revisar calendario'}
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -92,7 +192,13 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {animal.sex === 'Hembra' ? '3/4' : '12'}
+              {reproductiveData ? 
+                (animal.sex === 'Hembra' ? 
+                  `${reproductiveData.liveOffspring}/${reproductiveData.totalOffspring}` : 
+                  reproductiveData.totalOffspring.toString()
+                ) : 
+                '0'
+              }
             </div>
             <p className="text-xs text-muted-foreground">
               {animal.sex === 'Hembra' ? 'Vivos/Total' : 'Hijos registrados'}
@@ -102,7 +208,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
       </div>
 
       {/* Performance Metrics */}
-      {animal.sex === 'Hembra' && (
+      {animal.sex === 'Hembra' && reproductiveData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardHeader>
@@ -111,10 +217,10 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm">Este año</span>
-                  <span className="text-sm font-medium">75%</span>
+                  <span className="text-sm">Histórico</span>
+                  <span className="text-sm font-medium">{reproductiveData.pregnancyPercentage}%</span>
                 </div>
-                <Progress value={75} className="h-2" />
+                <Progress value={reproductiveData.pregnancyPercentage} className="h-2" />
               </div>
             </CardContent>
           </Card>
@@ -127,9 +233,9 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm">Histórico</span>
-                  <span className="text-sm font-medium">85%</span>
+                  <span className="text-sm font-medium">{reproductiveData.calvingPercentage}%</span>
                 </div>
-                <Progress value={85} className="h-2" />
+                <Progress value={reproductiveData.calvingPercentage} className="h-2" />
               </div>
             </CardContent>
           </Card>
@@ -146,20 +252,41 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
           Alertas y Avisos
         </h3>
 
-        <Alert>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Vacuna vencida:</strong> Triple viral vence en 5 días. 
-            Programar revacunación.
-          </AlertDescription>
-        </Alert>
+        {/* Alertas de vacunación */}
+        {vaccinationAlerts && vaccinationAlerts.length > 0 && (
+          <>
+            {vaccinationAlerts
+              .filter(alert => alert.status === 'overdue' || alert.status === 'missing' || alert.status === 'due_soon')
+              .map((alert, index) => (
+                <Alert key={index} variant={alert.status === 'overdue' ? 'destructive' : 'default'}>
+                  {alert.status === 'overdue' ? <XCircle className="h-4 w-4" /> : 
+                   alert.status === 'missing' ? <AlertTriangle className="h-4 w-4" /> :
+                   <Calendar className="h-4 w-4" />}
+                  <AlertDescription>
+                    <strong>
+                      {alert.status === 'overdue' ? 'Vacuna vencida:' :
+                       alert.status === 'missing' ? 'Vacuna faltante:' :
+                       'Vacuna próxima:'}
+                    </strong> {alert.vaccine_name}
+                    {alert.status === 'overdue' && alert.days_since_last && 
+                      ` - Vencida hace ${alert.days_since_last} días`}
+                    {alert.status === 'due_soon' && alert.days_until_due && 
+                      ` - Vence en ${alert.days_until_due} días`}
+                    {alert.description && `. ${alert.description}`}
+                  </AlertDescription>
+                </Alert>
+              ))
+            }
+          </>
+        )}
 
-        {animal.father_id && animal.mother_id && (
+        {/* Si no hay alertas de vacunación, mostrar mensaje informativo */}
+        {(!vaccinationAlerts || vaccinationAlerts.length === 0) && !vaccinationLoading && (
           <Alert>
-            <AlertTriangle className="h-4 w-4" />
+            <Syringe className="h-4 w-4" />
             <AlertDescription>
-              <strong>Consanguinidad:</strong> Coeficiente de endogamia: 12.5%. 
-              Considerar para próximos apareamientos.
+              <strong>Sin esquema de vacunación:</strong> No hay vacunas configuradas para este animal. 
+              Considere configurar un plan de vacunación apropiado.
             </AlertDescription>
           </Alert>
         )}
