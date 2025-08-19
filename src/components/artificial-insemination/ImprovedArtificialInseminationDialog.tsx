@@ -288,13 +288,24 @@ export function ImprovedArtificialInseminationDialog({
 
     setLoading(true);
     try {
+      // Get user's cabaña_id
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('"cabaña_id"')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (userError || !userData?.["cabaña_id"]) {
+        throw new Error('Usuario sin cabaña asignada');
+      }
+
       const fechaControl = new Date(date);
       fechaControl.setDate(fechaControl.getDate() + 45);
       
       const fpp = new Date(date);
       fpp.setDate(fpp.getDate() + 283);
 
-      // Create AI record using existing table structure
+      // Create AI data
       const aiData = {
         fecha: format(date, 'yyyy-MM-dd'),
         toro_nombre: bullMode === 'catalog' ? selectedBull?.name : manualBullData.nombre,
@@ -309,6 +320,7 @@ export function ImprovedArtificialInseminationDialog({
       const { data: eventoData, error: eventoError } = await supabase
         .from('eventos')
         .insert({
+          "cabaña_id": userData["cabaña_id"],
           tipo: 'inseminacion_artificial',
           fecha: format(date, 'yyyy-MM-dd'),
           creado_por: currentUser.id,
