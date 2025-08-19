@@ -160,47 +160,77 @@ export function ImprovedArtificialInseminationDialog({
     try {
       console.log('Loading eligible females for cabaña:', currentUser.cabañaId);
       
-      // Simple query to avoid TypeScript complexity
-      const result = await supabase.from('animals').select('*').eq('sex', 'Hembra').order('name');
-      
-      const { data, error } = result;
+      // Get all females for the current cabaña
+      const { data, error } = await supabase
+        .from('animals')
+        .select('*')
+        .eq('cabaña_id', currentUser.cabañaId)
+        .eq('sex', 'Hembra')
+        .order('name');
 
       if (error) {
         console.error('Database error:', error);
         throw error;
       }
       
-      console.log('Raw animals data:', data);
+      console.log(`Total females in cabaña: ${data?.length || 0}`);
       
-      // Filter data based on cabaña and conditions
+      // Valid statuses (case-insensitive)
+      const validStatuses = ['activo', 'en_rodeo', 'disponible', 'presente'];
+      const invalidStatuses = ['vendido', 'muerto', 'sold', 'dead'];
+      
+      // Filter data based on eligibility conditions
       let filteredData = (data || []).filter((animal: any) => {
-        // Cabaña filter - most important
-        if (animal.cabaña_id !== currentUser.cabañaId) return false;
+        // Log each animal for debugging
+        console.log(`Checking animal ${animal.id_tag}: status=${animal.status}, pregnant=${animal.esta_preñada}, birth_date=${animal.birth_date}`);
         
         // Basic eligibility checks
-        if (!animal.birth_date) return false;
-        if (animal.status === 'vendido' || animal.status === 'muerto') return false;
-        if (animal.esta_preñada === true) return false;
-        if (!['activo', 'en_rodeo'].includes(animal.status)) return false;
+        if (!animal.birth_date) {
+          console.log(`  - Rejected: no birth_date`);
+          return false;
+        }
         
-        // Age check
+        // Status check (case-insensitive and more flexible)
+        const animalStatus = (animal.status || '').toLowerCase();
+        const isValidStatus = validStatuses.includes(animalStatus) || 
+                             !invalidStatuses.includes(animalStatus);
+        
+        if (!isValidStatus) {
+          console.log(`  - Rejected: invalid status (${animal.status})`);
+          return false;
+        }
+        
+        if (animal.esta_preñada === true) {
+          console.log(`  - Rejected: already pregnant`);
+          return false;
+        }
+        
+        // Age check (at least 15 months)
         const birthDate = new Date(animal.birth_date);
         const ageMonths = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-        if (ageMonths < 15) return false;
+        if (ageMonths < 15) {
+          console.log(`  - Rejected: too young (${ageMonths} months)`);
+          return false;
+        }
         
         // Search filter
         if (searchTerm) {
           const searchLower = searchTerm.toLowerCase();
           const name = (animal.name || '').toLowerCase();
           const idTag = (animal.id_tag || '').toLowerCase();
-          if (!name.includes(searchLower) && !idTag.includes(searchLower)) return false;
+          if (!name.includes(searchLower) && !idTag.includes(searchLower)) {
+            console.log(`  - Rejected: doesn't match search term`);
+            return false;
+          }
         }
         
         // Corral filter
         if (selectedCorrales.length > 0 && !selectedCorrales.includes(animal.corral_id)) {
+          console.log(`  - Rejected: not in selected corrales`);
           return false;
         }
         
+        console.log(`  - Accepted: ${animal.id_tag}`);
         return true;
       }).map((animal: any) => {
         const birthDate = new Date(animal.birth_date);
@@ -222,15 +252,25 @@ export function ImprovedArtificialInseminationDialog({
       // Apply category filter
       if (filterCategory !== 'all') {
         filteredData = filteredData.filter((f: any) => f.category === filterCategory);
+        console.log(`After category filter (${filterCategory}): ${filteredData.length}`);
       }
 
       // Apply age range filter
       filteredData = filteredData.filter((f: any) => 
         f.age_months >= ageRange[0] && f.age_months <= ageRange[1]
       );
+      console.log(`After age range filter (${ageRange[0]}-${ageRange[1]}): ${filteredData.length}`);
 
-      console.log('Final eligible females:', filteredData);
+      console.log('Final eligible females:', filteredData.length);
       setEligibleFemales(filteredData);
+      
+      if (filteredData.length === 0) {
+        toast({
+          title: "Sin hembras elegibles",
+          description: `No hay hembras elegibles con los filtros actuales. Total en cabaña: ${data?.length || 0}`,
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error loading eligible females:', error);
       toast({
