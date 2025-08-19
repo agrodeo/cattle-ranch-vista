@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useState } from "react";
+import { ImprovedArtificialInseminationDialog } from "@/components/artificial-insemination/ImprovedArtificialInseminationDialog";
+import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
 
 interface AnimalReproduccionProps {
   animal: Animal;
@@ -75,6 +78,8 @@ const mockOffspring = [
 ];
 
 export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
+  const [showIADialog, setShowIADialog] = useState(false);
+
   if (animal.sex !== 'Hembra') {
     return (
       <Card>
@@ -111,6 +116,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
 
   return (
     <div className="space-y-6">
+      {/* Reproductive Performance Analytics */}
+      <ReproductivePerformance animalId={animal.id} animalSex={animal.sex} />
+      
       {/* Header con métricas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
@@ -166,9 +174,12 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
                 Registro completo de preñeces y servicios
               </CardDescription>
             </div>
-            <Button className="flex items-center gap-2">
+            <Button 
+              className="flex items-center gap-2"
+              onClick={() => setShowIADialog(true)}
+            >
               <Plus className="h-4 w-4" />
-              Registrar Servicio
+              Registrar Servicio IA
             </Button>
           </div>
         </CardHeader>
@@ -294,6 +305,16 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* IA Dialog */}
+      <ImprovedArtificialInseminationDialog
+        open={showIADialog}
+        onOpenChange={setShowIADialog}
+        onSuccess={() => {
+          setShowIADialog(false);
+          // Refresh data
+        }}
+      />
     </div>
   );
 }

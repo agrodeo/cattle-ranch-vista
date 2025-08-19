@@ -1,15 +1,25 @@
 import { ArtificialInseminationManager } from '@/components/artificial-insemination/ArtificialInseminationManager';
 import { PregnancyDetectionManager } from '../PregnancyDetectionManager';
+import { PregnancyManagement } from '@/components/artificial-insemination/PregnancyManagement';
+import { ServiceManagement } from '@/components/artificial-insemination/ServiceManagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useActivityPreferences } from '@/hooks/useActivityPreferences';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 export function ReproductivasTab() {
   const { preferences } = useActivityPreferences();
   const isCompact = preferences.density === 'compact';
+  const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(undefined);
 
   return (
     <div className={cn('space-y-6', isCompact && 'space-y-4')}>
+      {/* Service Management - Full Width */}
+      <ServiceManagement 
+        onServiceSelect={setSelectedServiceId}
+        selectedServiceId={selectedServiceId}
+      />
+      
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Artificial Insemination */}
         <Card>
@@ -53,12 +63,10 @@ export function ReproductivasTab() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {/* TODO: Add pregnancy management component */}
-          <div className="text-center py-8 text-muted-foreground">
-            <p className={cn(isCompact && 'text-sm')}>
-              Gestión de preñeces en desarrollo
-            </p>
-          </div>
+          <PregnancyManagement 
+            serviceId={selectedServiceId}
+            onClose={() => setSelectedServiceId(undefined)}
+          />
         </CardContent>
       </Card>
     </div>
