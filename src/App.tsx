@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { HybridAuthProvider } from "@/hooks/useHybridAuth";
+import { AuthProvider } from "@/hooks/useSupabaseAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
@@ -26,7 +26,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <HybridAuthProvider>
+    <AuthProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -110,7 +110,7 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </HybridAuthProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

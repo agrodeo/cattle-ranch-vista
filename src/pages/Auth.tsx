@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Building2, Shield, UserPlus, Mail, User } from "lucide-react";
+import { Loader2, Building2, Mail, UserPlus } from "lucide-react";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const Auth = () => {
   const [regions, setRegions] = useState<any[]>([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
   
-  const { signInAdmin, signInEmployee, signUp, isAuthenticated } = useHybridAuth();
+  const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const { getJurisdictions, jurisdictionsLoading } = useLocationAwareVaccination();
   const navigate = useNavigate();
 
@@ -87,7 +87,7 @@ const Auth = () => {
     setSelectedRegion("");
   }, [selectedCountry]);
 
-  const handleAdminSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     
@@ -95,34 +95,7 @@ const Auth = () => {
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
-    const { error } = await signInAdmin(email, password);
-    
-    if (error) {
-      toast({
-        title: "Error al iniciar sesión",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "¡Bienvenido!",
-        description: "Has iniciado sesión exitosamente.",
-      });
-      navigate("/dashboard");
-    }
-    
-    setLoading(false);
-  };
-
-  const handleEmployeeSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    const formData = new FormData(e.currentTarget);
-    const username = formData.get("username") as string;
-    const password = formData.get("password") as string;
-
-    const { error } = await signInEmployee(username, password);
+    const { error } = await signIn(email, password);
     
     if (error) {
       toast({
@@ -150,7 +123,6 @@ const Auth = () => {
       const companyName = formData.get("companyName") as string;
       const ownerName = formData.get("ownerName") as string;
       const email = formData.get("email") as string;
-      const username = formData.get("username") as string;
       const password = formData.get("password") as string;
       const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -173,11 +145,10 @@ const Auth = () => {
       }
 
       const { error } = await signUp(
-        companyName, 
-        ownerName, 
         email,
-        username, 
-        password, 
+        password,
+        ownerName,
+        companyName,
         selectedCountry, 
         selectedRegion || null
       );
@@ -191,9 +162,8 @@ const Auth = () => {
       } else {
         toast({
           title: "¡Cuenta creada!",
-          description: "Tu empresa ha sido registrada exitosamente.",
+          description: "Tu empresa ha sido registrada exitosamente. Revisa tu email para confirmar tu cuenta.",
         });
-        navigate("/dashboard");
       }
     } catch (error) {
       toast({
@@ -222,15 +192,11 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="admin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="admin" className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Admin
-              </TabsTrigger>
-              <TabsTrigger value="employee" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Empleado
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin" className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                Iniciar Sesión
               </TabsTrigger>
               <TabsTrigger value="register" className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
@@ -238,25 +204,25 @@ const Auth = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="admin" className="space-y-4 mt-6">
+            <TabsContent value="signin" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
-                Para administradores de cabañas
+                Ingresa con tu email y contraseña
               </div>
-              <form onSubmit={handleAdminSignIn} className="space-y-4">
+              <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="admin-email">Email</Label>
+                  <Label htmlFor="signin-email">Email</Label>
                   <Input
-                    id="admin-email"
+                    id="signin-email"
                     name="email"
                     type="email"
-                    placeholder="admin@cabaña.com"
+                    placeholder="tu@email.com"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="admin-password">Contraseña</Label>
+                  <Label htmlFor="signin-password">Contraseña</Label>
                   <Input
-                    id="admin-password"
+                    id="signin-password"
                     name="password"
                     type="password"
                     required
@@ -264,42 +230,13 @@ const Auth = () => {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Iniciar Sesión como Admin
+                  Iniciar Sesión
                 </Button>
                 <div className="mt-3 text-center text-sm">
-                  <Link to="/forgot-password" className="text-primary hover:underline">¿Olvidaste tu contraseña?</Link>
+                  <Link to="/forgot-password" className="text-primary hover:underline">
+                    ¿Olvidaste tu contraseña?
+                  </Link>
                 </div>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="employee" className="space-y-4 mt-6">
-              <div className="text-center text-sm text-muted-foreground mb-4">
-                Para empleados de la cabaña
-              </div>
-              <form onSubmit={handleEmployeeSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="employee-username">Usuario</Label>
-                  <Input
-                    id="employee-username"
-                    name="username"
-                    type="text"
-                    placeholder="nombre_usuario"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="employee-password">Contraseña</Label>
-                  <Input
-                    id="employee-password"
-                    name="password"
-                    type="password"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Iniciar Sesión como Empleado
-                </Button>
               </form>
             </TabsContent>
 
@@ -379,16 +316,6 @@ const Auth = () => {
                     </Select>
                   </div>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="username">Usuario</Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    type="text"
-                    placeholder="juan_perez"
-                    required
-                  />
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="password">Contraseña</Label>
                   <Input
