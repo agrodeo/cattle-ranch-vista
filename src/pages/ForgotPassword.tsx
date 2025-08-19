@@ -19,22 +19,25 @@ const ForgotPassword = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      await supabase.functions.invoke("request-password-reset", {
-        body: { identifier, origin: window.location.origin },
+      const { error } = await supabase.auth.resetPasswordForEmail(identifier, {
+        redirectTo: `${window.location.origin}/reset-password`
       });
+      
+      if (error) throw error;
+      
       toast({
-        title: "Si el usuario existe, enviamos instrucciones",
-        description: "Revisa tu correo para continuar con el cambio de contraseña.",
+        title: "Correo enviado",
+        description: "Si el email existe, recibirás instrucciones para restablecer tu contraseña.",
       });
       navigate("/auth");
-    } catch (err: any) {
-      // Aun en error, no exponemos existencia del usuario
+    } catch (error: any) {
       toast({
-        title: "Solicitud recibida",
-        description: "Si el usuario existe, recibirás un correo con instrucciones.",
+        title: "Error",
+        description: "Hubo un problema al enviar el correo. Inténtalo de nuevo.",
+        variant: "destructive"
       });
-      navigate("/auth");
     } finally {
       setLoading(false);
     }
@@ -45,19 +48,24 @@ const ForgotPassword = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-bold">Recuperar contraseña</CardTitle>
-          <CardDescription>Ingresa tu email o código de empleado</CardDescription>
+          <CardDescription>Solo para propietarios - Ingresa tu email de registro</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="identifier">Email o Código de Empleado</Label>
+              <Label htmlFor="identifier">Email</Label>
               <Input
                 id="identifier"
+                type="email"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="tu@email.com o código de empleado"
+                placeholder="tu@email.com"
                 required
               />
+            </div>
+            <div className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-md">
+              <p className="font-medium mb-1">¿Eres empleado?</p>
+              <p>Los empleados deben contactar al administrador para cambiar su contraseña.</p>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Enviando..." : "Enviar instrucciones"}

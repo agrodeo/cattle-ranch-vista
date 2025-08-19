@@ -9,7 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 const ResetPassword = () => {
   const [sp] = useSearchParams();
-  const token = useMemo(() => sp.get("token") ?? "", [sp]);
+  const accessToken = useMemo(() => sp.get("access_token") ?? "", [sp]);
+  const refreshToken = useMemo(() => sp.get("refresh_token") ?? "", [sp]);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,32 +22,61 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) {
-      toast({ title: "Token inválido", variant: "destructive" });
+    
+    if (!accessToken) {
+      toast({ title: "Enlace inválido", variant: "destructive" });
       return;
     }
+    
     if (password.length < 6) {
       toast({ title: "La contraseña debe tener al menos 6 caracteres", variant: "destructive" });
       return;
     }
+    
     if (password !== confirm) {
       toast({ title: "Las contraseñas no coinciden", variant: "destructive" });
       return;
     }
+    
     setLoading(true);
-    const { error } = await supabase.functions.invoke("confirm-password-reset", {
-      body: { token, newPassword: password },
-    });
-    setLoading(false);
-    if (error) {
-      toast({ title: "No se pudo restablecer", description: "El enlace puede haber expirado.", variant: "destructive" });
-      return;
+    
+    try {
+      // Set the session with the tokens from URL
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      
+      if (sessionError) throw sessionError;
+      
+      // Update the password
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: password
+      });
+      
+      if (updateError) throw updateError;
+      
+      toast({ 
+        title: "Contraseña actualizada", 
+        description: "Ahora puedes iniciar sesión con tu nueva contraseña." 
+      });
+      
+      // Sign out to force fresh login
+      await supabase.auth.signOut();
+      navigate("/auth");
+      
+    } catch (error: any) {
+      toast({ 
+        title: "Error", 
+        description: "No se pudo actualizar la contraseña. El enlace puede haber expirado.", 
+        variant: "destructive" 
+      });
+    } finally {
+      setLoading(false);
     }
-    toast({ title: "Contraseña actualizada", description: "Ahora puedes iniciar sesión." });
-    navigate("/auth");
   };
 
-  if (!token) {
+  if (!accessToken) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
