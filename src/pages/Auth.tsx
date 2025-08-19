@@ -273,7 +273,12 @@ const Auth = () => {
 
             <TabsContent value="employee" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
-                Ingresa con tu usuario y contraseña de empleado
+                Solo para empleados con usuario asignado
+              </div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm text-blue-800">
+                <strong>¿No tienes usuario de empleado?</strong> 
+                <br />Si eres propietario, usa la pestaña "Propietario" con tu email.
+                <br />Si eres empleado sin usuario, contacta a tu administrador.
               </div>
               <form onSubmit={handleEmployeeSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -297,8 +302,11 @@ const Auth = () => {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Iniciar Sesión
+                  Iniciar Sesión como Empleado
                 </Button>
+                <div className="text-center text-xs text-muted-foreground">
+                  Solo para empleados con credenciales específicas
+                </div>
               </form>
             </TabsContent>
 
