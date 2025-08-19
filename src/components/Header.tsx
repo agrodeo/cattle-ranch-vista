@@ -33,7 +33,7 @@ export function Header() {
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-14 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <SidebarTrigger className="md:hidden" />
+          <SidebarTrigger />
           <h1 className="text-lg font-semibold">Gestión de Ganado</h1>
         </div>
         
