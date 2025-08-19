@@ -1,7 +1,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useHybridAuth } from './useHybridAuth';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { toast } from '@/hooks/use-toast';
 
 export interface SubscriptionStatus {
@@ -36,7 +36,7 @@ const PLAN_PRICES = {
 };
 
 export const useSubscription = () => {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
 

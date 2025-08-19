@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ interface CreateCorralDialogProps {
 }
 
 export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorralDialogProps) {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -36,7 +36,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
       setLoading(true);
 
       console.log("Debug - currentUser:", currentUser);
-      console.log("Debug - currentUser.authType:", currentUser.authType);
+      console.log("Debug - currentUser.cabañaId:", currentUser.cabañaId);
       console.log("Debug - currentUser.cabañaId:", currentUser.cabañaId);
 
       // Use the cabañaId directly from currentUser since hybrid auth already provides it
@@ -53,10 +53,8 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
         cabaña_id: cabanaId,
       };
 
-      // Only add user_id for Supabase authenticated users to avoid foreign key constraint
-      if (currentUser.authType === 'supabase') {
-        insertData.user_id = currentUser.id;
-      }
+      // Always add user_id since we're using Supabase auth
+      insertData.user_id = currentUser.id;
 
       const { error } = await supabase
         .from("corrales")

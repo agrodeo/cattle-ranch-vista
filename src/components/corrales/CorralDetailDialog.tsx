@@ -20,7 +20,7 @@ import {
   getSeverityDisplay,
   Animal as ConsanguinityAnimal 
 } from "@/lib/consanguinityAnalysis";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 interface Animal {
   id: string;
@@ -44,7 +44,7 @@ interface CorralDetailDialogProps {
 
 export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: CorralDetailDialogProps) {
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const [loading, setLoading] = useState(true);
   const [corral, setCorral] = useState<any>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +38,7 @@ interface MoveAnimalDialogProps {
 }
 
 export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDialogProps) {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<Animal[]>([]);

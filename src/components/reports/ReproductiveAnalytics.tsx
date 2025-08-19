@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Heart, TrendingUp, Calendar, Users } from "lucide-react";
 
 interface ReproductiveStats {
@@ -23,7 +23,7 @@ interface ReproductiveStats {
 }
 
 export const ReproductiveAnalytics = () => {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ReproductiveStats | null>(null);
   const [loading, setLoading] = useState(true);
 

@@ -16,7 +16,7 @@ import { Plus, Search, Calendar as CalendarIcon, Heart, AlertTriangle, CheckCirc
 import { NewTactoDialog } from "./NewTactoDialog";
 import { format, addDays, differenceInMonths, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface Animal {
   id: string;
@@ -47,7 +47,7 @@ export function PregnancyDetectionManager() {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   useEffect(() => {
     fetchEligibleAnimals();

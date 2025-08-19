@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { LogOut, Building2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
-  const { currentUser, signOut } = useHybridAuth();
+  const { currentUser, signOut } = useSupabaseAuth();
 
   const handleSignOut = () => {
     signOut();

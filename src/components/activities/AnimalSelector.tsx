@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Search, Filter, Users, CheckCircle2, X, Eye, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 
@@ -80,7 +80,7 @@ export function AnimalSelector({
   description = "Selecciona los animales para la actividad",
   maxSelection
 }: AnimalSelectorProps) {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);

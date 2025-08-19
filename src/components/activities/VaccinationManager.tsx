@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Syringe, Plus, Calendar, AlertTriangle, CheckCircle, Shield, Info } from "lucide-react";
 import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
 import { AnimalSelector } from "./AnimalSelector";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -25,7 +25,7 @@ interface VaccineOption {
 }
 
 export function VaccinationManager() {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { 
     rules, 
     herdSettings, 

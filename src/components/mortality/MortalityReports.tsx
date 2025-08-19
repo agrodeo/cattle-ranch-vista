@@ -23,7 +23,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { FileDown, Calendar, Filter } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { format } from "date-fns";
 
 interface DeathRecord {
@@ -66,7 +66,7 @@ export function MortalityReports() {
     cause: "",
   });
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   useEffect(() => {
     if (currentUser) {

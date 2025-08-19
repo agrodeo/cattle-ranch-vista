@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { DollarSign, TrendingUp, TrendingDown, Calculator } from "lucide-react";
 
 interface FinancialStats {
@@ -23,7 +23,7 @@ interface FinancialStats {
 }
 
 export const FinancialAnalytics = () => {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'all' | 'year' | 'quarter'>('year');

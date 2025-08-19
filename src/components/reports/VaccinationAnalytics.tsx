@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
 import { Shield, AlertTriangle, CheckCircle, Calendar, Syringe, Download, Filter, X, Activity } from "lucide-react";
 import { format, subMonths, parseISO } from "date-fns";
@@ -46,7 +46,7 @@ interface VaccinationStats {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export const VaccinationAnalytics = () => {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { herdSettings, rules, getDueVaccinesForAnimal, getAvailableVaccines } = useLocationAwareVaccination();
   const [stats, setStats] = useState<VaccinationStats | null>(null);
   const [loading, setLoading] = useState(true);

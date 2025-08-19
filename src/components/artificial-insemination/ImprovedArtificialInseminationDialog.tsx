@@ -18,7 +18,7 @@ import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useHybridAuth } from '@/hooks/useHybridAuth';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 interface Bull {
   id: string;
@@ -74,7 +74,7 @@ export function ImprovedArtificialInseminationDialog({
   onOpenChange,
   onSuccess
 }: ImprovedArtificialInseminationDialogProps) {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
 
   // Form state

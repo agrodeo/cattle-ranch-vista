@@ -38,7 +38,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Animal } from "@/types/animal";
 
 const formSchema = z.object({
@@ -87,7 +87,7 @@ export function MarkDeathDialog({
   const [newCauseName, setNewCauseName] = useState("");
   const [addingCause, setAddingCause] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   // Fetch animal data when dialog opens and animalId is provided
   const fetchAnimalData = async (id: string) => {

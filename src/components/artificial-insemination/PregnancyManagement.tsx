@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertCircle, CheckCircle, Clock, Heart, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useHybridAuth } from '@/hooks/useHybridAuth';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -37,7 +37,7 @@ interface PregnancyManagementProps {
 }
 
 export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementProps) {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
 
   const [serviceAnimals, setServiceAnimals] = useState<ServiceAnimal[]>([]);

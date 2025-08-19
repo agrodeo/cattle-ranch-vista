@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -127,7 +127,7 @@ const getAgeCategory = (birthDate: string | null, sex: string) => {
 
 const Animals = () => {
   const navigate = useNavigate();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
   const [loading, setLoading] = useState(true);

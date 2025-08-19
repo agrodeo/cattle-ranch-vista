@@ -8,7 +8,7 @@ import { Heart, Plus, BarChart3, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
-import { useHybridAuth } from '@/hooks/useHybridAuth';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useToast } from '@/hooks/use-toast';
 
 interface Service {
@@ -33,7 +33,7 @@ interface ServiceManagementProps {
 }
 
 export function ServiceManagement({ onServiceSelect, selectedServiceId }: ServiceManagementProps) {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   
   const [services, setServices] = useState<Service[]>([]);

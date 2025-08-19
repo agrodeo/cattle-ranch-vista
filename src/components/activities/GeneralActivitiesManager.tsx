@@ -5,7 +5,7 @@ import { ClipboardList, Plus, Activity } from "lucide-react";
 import { NewGeneralActivityDialog } from "./NewGeneralActivityDialog";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export function GeneralActivitiesManager() {
   const [generalActivitiesCount, setGeneralActivitiesCount] = useState(0);
@@ -14,7 +14,7 @@ export function GeneralActivitiesManager() {
   const [selectedActivityType, setSelectedActivityType] = useState<string>("");
   
   const { stats } = useActivities();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   useEffect(() => {
     fetchGeneralActivitiesStats();
