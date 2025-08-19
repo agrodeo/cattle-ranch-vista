@@ -1146,29 +1146,53 @@ export type Database = {
         Row: {
           cabaña_id: string | null
           created_at: string
+          department: string | null
           email: string | null
+          employee_code: string | null
           full_name: string | null
+          hire_date: string | null
           id: string
+          is_active: boolean | null
+          is_internal_profile: boolean | null
+          last_login: string | null
+          position: string | null
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           cabaña_id?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
+          employee_code?: string | null
           full_name?: string | null
+          hire_date?: string | null
           id?: string
+          is_active?: boolean | null
+          is_internal_profile?: boolean | null
+          last_login?: string | null
+          position?: string | null
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           cabaña_id?: string | null
           created_at?: string
+          department?: string | null
           email?: string | null
+          employee_code?: string | null
           full_name?: string | null
+          hire_date?: string | null
           id?: string
+          is_active?: boolean | null
+          is_internal_profile?: boolean | null
+          last_login?: string | null
+          position?: string | null
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: [
           {
@@ -2191,6 +2215,10 @@ export type Database = {
               _user_id: string
             }
         Returns: Json
+      }
+      prepare_user_migration: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       record_vaccination: {
         Args: {
