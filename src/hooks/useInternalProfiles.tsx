@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export type ProfileRole = 'admin' | 'employee' | 'read_only';
 
@@ -22,7 +22,7 @@ export interface InternalProfile {
 }
 
 export const useInternalProfiles = () => {
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
   const [profiles, setProfiles] = useState<InternalProfile[]>([]);
   const [loading, setLoading] = useState(false);
 

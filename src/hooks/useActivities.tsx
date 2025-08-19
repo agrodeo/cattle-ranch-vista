@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface ActivityStats {
   totalActivities: number;
@@ -35,7 +35,7 @@ export function useActivities() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   const fetchStats = async () => {
     try {

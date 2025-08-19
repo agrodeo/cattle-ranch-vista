@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface ActivityItem {
   id: string;
@@ -15,7 +15,7 @@ interface ActivityItem {
 export function useAnimalActivities(animalId: string) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   const fetchActivities = async () => {
     if (!animalId) return;
