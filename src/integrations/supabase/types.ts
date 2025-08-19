@@ -1246,6 +1246,42 @@ export type Database = {
         }
         Relationships: []
       }
+      security_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: unknown | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: unknown | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sistema_credenciales: {
         Row: {
           created_at: string
@@ -2177,6 +2213,15 @@ export type Database = {
           date: string
           type: string
         }[]
+      }
+      log_security_event: {
+        Args: {
+          _action: string
+          _details?: Json
+          _record_id?: string
+          _table_name: string
+        }
+        Returns: undefined
       }
       manage_death_causes: {
         Args:

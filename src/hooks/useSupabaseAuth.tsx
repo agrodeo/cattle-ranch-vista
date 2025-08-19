@@ -47,26 +47,82 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (userId: string) => {
     try {
-      // Get basic profile
+      // CRITICAL SECURITY FIX: Use maybeSingle and validate user_id strictly
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
+
+      // Log security event for audit
+      try {
+        await supabase.rpc('log_security_event', {
+          _action: 'profile_fetch_attempt',
+          _table_name: 'profiles',
+          _details: { requested_user_id: userId, found_profile: !!profile }
+        });
+      } catch {} // Don't fail if logging fails
 
       if (error) {
         console.error('Error fetching profile:', error);
+        try {
+          await supabase.rpc('log_security_event', {
+            _action: 'profile_fetch_error',
+            _table_name: 'profiles', 
+            _details: { user_id: userId, error: error.message }
+          });
+        } catch {}
         return null;
       }
 
-      // Get cabaña info separately
+      // CRITICAL: If no profile found, do not authenticate
+      if (!profile) {
+        console.warn('No profile found for authenticated user:', userId);
+        try {
+          await supabase.rpc('log_security_event', {
+            _action: 'profile_not_found',
+            _table_name: 'profiles',
+            _details: { user_id: userId }
+          });
+        } catch {}
+        return null;
+      }
+
+      // CRITICAL: Validate that profile belongs to the authenticated user
+      if (profile.user_id !== userId) {
+        console.error('SECURITY VIOLATION: Profile mismatch detected!', { 
+          expected: userId, 
+          actual: profile.user_id 
+        });
+        try {
+          await supabase.rpc('log_security_event', {
+            _action: 'security_violation_profile_mismatch',
+            _table_name: 'profiles',
+            _details: { expected_user_id: userId, actual_user_id: profile.user_id }
+          });
+        } catch {}
+        throw new Error('Security violation detected');
+      }
+
+      // Get cabaña info separately - SECURITY FIX: Use maybeSingle
       let cabañaName = '';
       if (profile.cabaña_id) {
-        const { data: cabañaData } = await supabase
+        const { data: cabañaData, error: cabañaError } = await supabase
           .from('cabañas')
           .select('name')
           .eq('id', profile.cabaña_id)
-          .single();
+          .maybeSingle();
+        
+        if (cabañaError) {
+          console.error('Error fetching cabaña:', cabañaError);
+          try {
+            await supabase.rpc('log_security_event', {
+              _action: 'cabana_fetch_error',
+              _table_name: 'cabañas',
+              _details: { cabana_id: profile.cabaña_id, error: cabañaError.message }
+            });
+          } catch {}
+        }
         
         cabañaName = cabañaData?.name || '';
       }
@@ -103,14 +159,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // User is logged in
-          const userProfile = await fetchUserProfile(session.user.id);
-          if (userProfile) {
-            setCurrentUser(userProfile);
-            setIsAuthenticated(true);
-          } else {
-            // Profile doesn't exist, create a basic one or handle error
-            console.warn('No profile found for user');
+          // User is logged in - CRITICAL SECURITY FIX
+          try {
+            const userProfile = await fetchUserProfile(session.user.id);
+            if (userProfile) {
+              setCurrentUser(userProfile);
+              setIsAuthenticated(true);
+              try {
+                await supabase.rpc('log_security_event', {
+                  _action: 'successful_login',
+                  _table_name: 'profiles',
+                  _details: { user_id: session.user.id, cabana_id: userProfile.cabañaId }
+                });
+              } catch {}
+            } else {
+              // CRITICAL: Profile doesn't exist - DO NOT AUTHENTICATE
+              console.error('Authentication failed: No valid profile found for user:', session.user.id);
+              try {
+                await supabase.rpc('log_security_event', {
+                  _action: 'authentication_failed_no_profile',
+                  _table_name: 'profiles',
+                  _details: { user_id: session.user.id }
+                });
+              } catch {}
+              
+              // Force sign out to prevent security breach
+              await supabase.auth.signOut();
+              setCurrentUser(null);
+              setIsAuthenticated(false);
+            }
+          } catch (error) {
+            // CRITICAL: If any error in profile fetching, DO NOT AUTHENTICATE
+            console.error('Critical security error during authentication:', error);
+            try {
+              await supabase.rpc('log_security_event', {
+                _action: 'authentication_security_error',
+                _table_name: 'profiles',
+                _details: { user_id: session.user.id, error: String(error) }
+              });
+            } catch {}
+            
+            // Force sign out
+            await supabase.auth.signOut();
+            setCurrentUser(null);
             setIsAuthenticated(false);
           }
         } else {
@@ -170,28 +261,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (authError) {
+        try {
+          await supabase.rpc('log_security_event', {
+            _action: 'signup_auth_error',
+            _table_name: 'auth.users',
+            _details: { email, error: authError.message }
+          });
+        } catch {}
         return { error: { message: authError.message } };
       }
 
       if (!authData.user) {
+        try {
+          await supabase.rpc('log_security_event', {
+            _action: 'signup_no_user_created',
+            _table_name: 'auth.users',
+            _details: { email }
+          });
+        } catch {}
         return { error: { message: 'Error al crear usuario' } };
       }
 
-      // Create company if provided
+      // Create company if provided - CRITICAL SECURITY FIX
       let cabañaId = '';
       if (companyName) {
-        const { data: cabañaData, error: cabañaError } = await supabase
-          .from('cabañas')
-          .insert({ name: companyName })
-          .select()
-          .single();
+        try {
+          const { data: cabañaData, error: cabañaError } = await supabase
+            .from('cabañas')
+            .insert({ name: companyName })
+            .select()
+            .single();
 
-        if (cabañaError) {
-          console.error('Error creating cabaña:', cabañaError);
-          return { error: { message: 'Error al crear empresa' } };
+          if (cabañaError) {
+            console.error('Error creating cabaña:', cabañaError);
+            try {
+              await supabase.rpc('log_security_event', {
+                _action: 'signup_cabana_creation_failed',
+                _table_name: 'cabañas',
+                _details: { user_id: authData.user.id, company_name: companyName, error: cabañaError.message }
+              });
+            } catch {}
+            
+            // CRITICAL: If cabaña creation fails, cleanup user
+            try {
+              await supabase.auth.admin.deleteUser(authData.user.id);
+            } catch {}
+            return { error: { message: 'Error al crear empresa' } };
+          }
+
+          cabañaId = cabañaData.id;
+        } catch (error) {
+          console.error('Critical error during cabaña creation:', error);
+          try {
+            await supabase.rpc('log_security_event', {
+              _action: 'signup_cabana_creation_exception',
+              _table_name: 'cabañas', 
+              _details: { user_id: authData.user.id, error: String(error) }
+            });
+          } catch {}
+          
+          // Cleanup user
+          try {
+            await supabase.auth.admin.deleteUser(authData.user.id);
+          } catch {}
+          return { error: { message: 'Error crítico al crear empresa' } };
         }
-
-        cabañaId = cabañaData.id;
 
         // Create subscription for the company
         await supabase
@@ -204,32 +338,130 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
       }
 
-      // Create user profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          user_id: authData.user.id,
-          email: email,
-          full_name: fullName,
-          cabaña_id: cabañaId || null,
-          is_active: true,
-          is_internal_profile: true
-        });
-
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        return { error: { message: 'Error al crear perfil' } };
-      }
-
-      // Assign admin role if creating a company
-      if (companyName) {
-        await supabase
-          .from('user_roles')
+      // Create user profile - CRITICAL SECURITY FIX  
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
           .insert({
             user_id: authData.user.id,
-            role: 'admin'
+            email: email,
+            full_name: fullName,
+            cabaña_id: cabañaId || null,
+            is_active: true,
+            is_internal_profile: true
           });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          try {
+            await supabase.rpc('log_security_event', {
+              _action: 'signup_profile_creation_failed',
+              _table_name: 'profiles',
+              _details: { user_id: authData.user.id, error: profileError.message }
+            });
+          } catch {}
+          
+          // CRITICAL: Cleanup user and cabaña if profile creation fails
+          if (cabañaId) {
+            try {
+              await supabase.from('cabañas').delete().eq('id', cabañaId);
+            } catch {}
+          }
+          try {
+            await supabase.auth.admin.deleteUser(authData.user.id);
+          } catch {}
+          return { error: { message: 'Error al crear perfil' } };
+        }
+      } catch (error) {
+        console.error('Critical error during profile creation:', error);
+        try {
+          await supabase.rpc('log_security_event', {
+            _action: 'signup_profile_creation_exception',
+            _table_name: 'profiles',
+            _details: { user_id: authData.user.id, error: String(error) }
+          });
+        } catch {}
+        
+        // Cleanup
+        if (cabañaId) {
+          try {
+            await supabase.from('cabañas').delete().eq('id', cabañaId);
+          } catch {}
+        }
+        try {
+          await supabase.auth.admin.deleteUser(authData.user.id);
+        } catch {}
+        return { error: { message: 'Error crítico al crear perfil' } };
       }
+
+      // Assign admin role if creating a company - CRITICAL SECURITY FIX
+      if (companyName) {
+        try {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: authData.user.id,
+              role: 'admin'
+            });
+            
+          if (roleError) {
+            console.error('Error assigning admin role:', roleError);
+            try {
+              await supabase.rpc('log_security_event', {
+                _action: 'signup_role_assignment_failed',
+                _table_name: 'user_roles',
+                _details: { user_id: authData.user.id, error: roleError.message }
+              });
+            } catch {}
+            
+            // CRITICAL: Full cleanup if role assignment fails
+            try {
+              await supabase.from('profiles').delete().eq('user_id', authData.user.id);
+            } catch {}
+            if (cabañaId) {
+              try {
+                await supabase.from('cabañas').delete().eq('id', cabañaId);
+              } catch {}
+            }
+            try {
+              await supabase.auth.admin.deleteUser(authData.user.id);
+            } catch {}
+            return { error: { message: 'Error al asignar permisos de administrador' } };
+          }
+        } catch (error) {
+          console.error('Critical error during role assignment:', error);
+          try {
+            await supabase.rpc('log_security_event', {
+              _action: 'signup_role_assignment_exception',
+              _table_name: 'user_roles',
+              _details: { user_id: authData.user.id, error: String(error) }
+            });
+          } catch {}
+          
+          // Full cleanup
+          try {
+            await supabase.from('profiles').delete().eq('user_id', authData.user.id);
+          } catch {}
+          if (cabañaId) {
+            try {
+              await supabase.from('cabañas').delete().eq('id', cabañaId);
+            } catch {}
+          }
+          try {
+            await supabase.auth.admin.deleteUser(authData.user.id);
+          } catch {}
+          return { error: { message: 'Error crítico al asignar permisos' } };
+        }
+      }
+
+      // Log successful registration
+      try {
+        await supabase.rpc('log_security_event', {
+          _action: 'successful_signup',
+          _table_name: 'profiles',
+          _details: { user_id: authData.user.id, cabana_id: cabañaId, has_company: !!companyName }
+        });
+      } catch {}
 
       return { error: null };
     } catch (error) {
