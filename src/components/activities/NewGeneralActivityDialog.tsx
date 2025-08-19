@@ -18,6 +18,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface NewGeneralActivityDialogProps {
   children: React.ReactNode;
+  preselectedType?: string;
+  onClose?: () => void;
+  onSuccess?: () => void;
 }
 
 interface Animal {
@@ -97,7 +100,7 @@ const activityTypes = [
   },
 ];
 
-export function NewGeneralActivityDialog({ children }: NewGeneralActivityDialogProps) {
+export function NewGeneralActivityDialog({ children, preselectedType, onClose, onSuccess }: NewGeneralActivityDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAnimals, setLoadingAnimals] = useState(false);
@@ -117,8 +120,11 @@ export function NewGeneralActivityDialog({ children }: NewGeneralActivityDialogP
   useEffect(() => {
     if (open) {
       loadAnimals();
+      if (preselectedType) {
+        setSelectedType(preselectedType);
+      }
     }
-  }, [open]);
+  }, [open, preselectedType]);
 
   const loadAnimals = async () => {
     setLoadingAnimals(true);
@@ -206,6 +212,9 @@ export function NewGeneralActivityDialog({ children }: NewGeneralActivityDialogP
         description: `${selectedType} registrado exitosamente para ${selectedAnimals.length} animal(es)`,
       });
       
+      // Call success callback
+      onSuccess?.();
+      
       // Reset form
       setSelectedDate(undefined);
       setSelectedType("");
@@ -214,6 +223,7 @@ export function NewGeneralActivityDialog({ children }: NewGeneralActivityDialogP
       setSelectedAnimals([]);
       setActivityData({});
       setOpen(false);
+      onClose?.();
     } catch (error) {
       toast({
         title: "Error",
@@ -400,7 +410,12 @@ export function NewGeneralActivityDialog({ children }: NewGeneralActivityDialogP
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open || !!preselectedType} onOpenChange={(newOpen) => {
+      setOpen(newOpen);
+      if (!newOpen) {
+        onClose?.();
+      }
+    }}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
