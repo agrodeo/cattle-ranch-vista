@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Building2, Mail, UserPlus } from "lucide-react";
+import { Loader2, Building2, Mail, UserPlus, Users } from "lucide-react";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ const Auth = () => {
   const [regions, setRegions] = useState<any[]>([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
   
-  const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
+  const { signIn, signInEmployee, signUp, isAuthenticated } = useSupabaseAuth();
   const { getJurisdictions, jurisdictionsLoading } = useLocationAwareVaccination();
   const navigate = useNavigate();
 
@@ -96,6 +96,33 @@ const Auth = () => {
     const password = formData.get("password") as string;
 
     const { error } = await signIn(email, password);
+    
+    if (error) {
+      toast({
+        title: "Error al iniciar sesión",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "¡Bienvenido!",
+        description: "Has iniciado sesión exitosamente.",
+      });
+      navigate("/dashboard");
+    }
+    
+    setLoading(false);
+  };
+
+  const handleEmployeeSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const formData = new FormData(e.currentTarget);
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
+
+    const { error } = await signInEmployee(username, password);
     
     if (error) {
       toast({
@@ -193,10 +220,14 @@ const Auth = () => {
         
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin" className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                Iniciar Sesión
+                Propietario
+              </TabsTrigger>
+              <TabsTrigger value="employee" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Empleado
               </TabsTrigger>
               <TabsTrigger value="register" className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
@@ -206,7 +237,7 @@ const Auth = () => {
 
             <TabsContent value="signin" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
-                Ingresa con tu email y contraseña
+                Ingresa con tu email y contraseña de propietario
               </div>
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -237,6 +268,37 @@ const Auth = () => {
                     ¿Olvidaste tu contraseña?
                   </Link>
                 </div>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="employee" className="space-y-4 mt-6">
+              <div className="text-center text-sm text-muted-foreground mb-4">
+                Ingresa con tu usuario y contraseña de empleado
+              </div>
+              <form onSubmit={handleEmployeeSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="employee-username">Usuario</Label>
+                  <Input
+                    id="employee-username"
+                    name="username"
+                    type="text"
+                    placeholder="tu_usuario"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="employee-password">Contraseña</Label>
+                  <Input
+                    id="employee-password"
+                    name="password"
+                    type="password"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Iniciar Sesión
+                </Button>
               </form>
             </TabsContent>
 

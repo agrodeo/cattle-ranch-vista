@@ -20,6 +20,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signInEmployee: (username: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, fullName: string, companyName?: string, country?: string, region?: string | null) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
@@ -478,6 +479,48 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSession(null);
   };
 
+  const signInEmployee = async (username: string, password: string) => {
+    try {
+      const { data, error } = await supabase.rpc('verify_user_login', {
+        input_username: username,
+        input_password: password
+      });
+      
+      if (error) {
+        return { error: { message: error.message } };
+      }
+      
+      if (!data || !data[0]?.success || !data[0]?.user_data) {
+        return { error: { message: 'Usuario o contraseña incorrectos' } };
+      }
+      
+      // Manually set the current user for employees
+      const userData = data[0].user_data as any;
+      const employeeUser: AuthUser = {
+        id: userData.id,
+        email: userData.email || '',
+        fullName: userData.full_name || '',
+        employeeCode: userData.employee_code,
+        position: userData.position,
+        department: userData.department,
+        cabañaId: userData.cabaña_id || '',
+        role: 'employee',
+        cabañaName: '',
+        username: userData.username,
+        isActive: userData.is_active ?? true
+      };
+      
+      setCurrentUser(employeeUser);
+      setIsAuthenticated(true);
+      setLoading(false);
+      
+      return { error: null };
+    } catch (error) {
+      console.error('Error in signInEmployee:', error);
+      return { error: { message: 'Error de conexión' } };
+    }
+  };
+
   const resetPassword = async (email: string) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -501,6 +544,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAuthenticated,
         loading,
         signIn,
+        signInEmployee,
         signUp,
         signOut,
         resetPassword,
