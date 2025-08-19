@@ -2019,6 +2019,10 @@ export type Database = {
           notas: string
         }[]
       }
+      get_service_pregnancy_stats: {
+        Args: { _service_id: string }
+        Returns: Json
+      }
       get_sistema_credenciales: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -2214,6 +2218,15 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      update_pregnancy_status: {
+        Args: {
+          _estado: string
+          _result_source?: string
+          _service_animal_ids: string[]
+          _user_id: string
+        }
+        Returns: Json
       }
       update_subscription_plan: {
         Args: {
