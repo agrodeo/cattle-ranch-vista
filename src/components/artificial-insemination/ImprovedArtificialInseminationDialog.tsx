@@ -151,6 +151,17 @@ export function ImprovedArtificialInseminationDialog({
 
     setLoadingFemales(true);
     try {
+      // Get user's cabaña_id first
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('"cabaña_id"')
+        .eq('id', currentUser.id)
+        .single();
+
+      if (userError || !userData?.["cabaña_id"]) {
+        throw new Error('Usuario sin cabaña asignada');
+      }
+
       let query = supabase
         .from('animals')
         .select(`
@@ -166,7 +177,7 @@ export function ImprovedArtificialInseminationDialog({
           corrales:corral_id(name)
         `)
         .eq('sex', 'Hembra')
-        .eq('status', 'activo')
+        .in('status', ['activo', 'en_rodeo'])
         .or('esta_preñada.is.null,esta_preñada.eq.false');
 
       if (searchTerm) {
@@ -179,15 +190,22 @@ export function ImprovedArtificialInseminationDialog({
 
       const { data, error } = await query.order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Raw animals data:', data);
       
       let filteredData = (data || []).map((animal: any) => {
+        if (!animal.birth_date) return null;
+        
         const birthDate = new Date(animal.birth_date);
         const ageMonths = Math.floor((Date.now() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
         
         return {
           id: animal.id,
-          name: animal.name,
+          name: animal.name || animal.id_tag,
           id_tag: animal.id_tag,
           birth_date: animal.birth_date,
           age_months: ageMonths,
@@ -196,7 +214,11 @@ export function ImprovedArtificialInseminationDialog({
           category: ageMonths < 24 ? 'Vaquillona' : 'Vaca',
           breed: animal.breed
         };
-      }).filter((f: EligibleFemale) => f.age_months >= 15);
+      }).filter((f: EligibleFemale | null): f is EligibleFemale => {
+        return f !== null && f.age_months >= 15;
+      });
+      
+      console.log('Filtered females after age check:', filteredData);
       
       // Apply category filter
       if (filterCategory !== 'all') {
@@ -208,12 +230,13 @@ export function ImprovedArtificialInseminationDialog({
         f.age_months >= ageRange[0] && f.age_months <= ageRange[1]
       );
 
+      console.log('Final eligible females:', filteredData);
       setEligibleFemales(filteredData);
     } catch (error) {
       console.error('Error loading eligible females:', error);
       toast({
         title: "Error",
-        description: "Error al cargar hembras elegibles",
+        description: "Error al cargar hembras elegibles: " + (error as Error).message,
         variant: "destructive"
       });
     } finally {
@@ -229,7 +252,7 @@ export function ImprovedArtificialInseminationDialog({
       }, 300);
       return () => clearTimeout(timeoutId);
     }
-  }, [ageRange, selectedCorrales, searchTerm, filterCategory, open]);
+  }, [ageRange, selectedCorrales, searchTerm, filterCategory, open, currentUser?.id]);
 
   const handleFemaleSelection = (female: EligibleFemale, selected: boolean) => {
     if (selected) {
@@ -393,7 +416,7 @@ export function ImprovedArtificialInseminationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Inseminación Artificial Mejorada</DialogTitle>
+          <DialogTitle>Inseminación Artificial</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">

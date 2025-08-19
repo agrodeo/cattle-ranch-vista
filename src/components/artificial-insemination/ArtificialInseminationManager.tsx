@@ -13,7 +13,7 @@ export function ArtificialInseminationManager() {
         <div>
           <h3 className="text-xl font-semibold flex items-center gap-2">
             <Heart className="h-5 w-5 text-red-500" />
-            Inseminación Artificial Mejorada
+            Inseminación Artificial
           </h3>
           <p className="text-muted-foreground">
             Sistema completo de registro de servicios reproductivos con gestión de preñeces
@@ -30,7 +30,7 @@ export function ArtificialInseminationManager() {
           <div className="text-center space-y-4">
             <Heart className="h-12 w-12 text-red-500 mx-auto" />
             <div>
-              <h4 className="text-lg font-medium">Sistema Mejorado de IA</h4>
+              <h4 className="text-lg font-medium">Sistema de IA</h4>
               <p className="text-muted-foreground">
                 Registro de servicios con hembras elegibles ≥15 meses, gestión de toros y seguimiento de preñeces
               </p>

@@ -51,7 +51,7 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
 
     setLoading(true);
     try {
-      // Load events and join with IA data
+      // Load IA events and join with service data
       const { data: eventos, error } = await supabase
         .from('eventos')
         .select(`
@@ -59,63 +59,53 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
           fecha,
           tipo,
           notas,
-          payload
+          payload,
+          ia!inner(
+            id,
+            toro_nombre,
+            raza_toro,
+            animales_ids
+          )
         `)
-        .eq('tipo', 'IA')
+        .eq('tipo', 'inseminacion_artificial')
         .order('fecha', { ascending: false });
 
       if (error) throw error;
 
-      // Mock services data for demo
-      const mockServices: Service[] = [
-        {
-          id: 'service_1',
-          fecha: '2024-01-15',
-          tipo: 'IA',
-          notas: 'Servicio con toro Elite #123',
-          animal_count: 15,
-          veterinario: 'Dr. García',
-          stats: {
-            total: 15,
-            pendientes: 5,
-            preñadas: 8,
-            vacias: 2,
-            porcentaje_preñez: 80
-          }
-        },
-        {
-          id: 'service_2',
-          fecha: '2024-01-08',
-          tipo: 'IA',
-          notas: 'Servicio con toro Aberdeen #456',
-          animal_count: 12,
-          veterinario: 'Dr. López',
-          stats: {
-            total: 12,
-            pendientes: 2,
-            preñadas: 7,
-            vacias: 3,
-            porcentaje_preñez: 70
-          }
-        },
-        {
-          id: 'service_3',
-          fecha: '2023-12-20',
-          tipo: 'IA',
-          notas: 'Servicio con toro Braford #789',
-          animal_count: 20,
-          veterinario: 'Dr. Martínez',
-          stats: {
-            total: 20,
-            pendientes: 0,
-            preñadas: 14,
-            vacias: 6,
-            porcentaje_preñez: 70
-          }
+      // Transform events into services with stats
+      const servicesWithStats = await Promise.all((eventos || []).map(async (evento: any) => {
+        const iaData = evento.ia[0]; // Get the first IA record
+        
+        // Get stats for this service
+        let stats = null;
+        try {
+          const { data: statsData } = await supabase
+            .rpc('get_service_pregnancy_stats', { 
+              _service_id: evento.id 
+            });
+          stats = statsData;
+        } catch (error) {
+          console.log('No stats function available, using basic count');
         }
-      ];
 
-      setServices(mockServices);
+        return {
+          id: evento.id,
+          fecha: evento.fecha,
+          tipo: 'IA',
+          notas: evento.notas || `Servicio con ${iaData?.toro_nombre} (${iaData?.raza_toro})`,
+          animal_count: iaData?.animales_ids?.length || 0,
+          veterinario: evento.payload?.veterinario || 'No especificado',
+          stats: stats || {
+            total: iaData?.animales_ids?.length || 0,
+            pendientes: iaData?.animales_ids?.length || 0,
+            preñadas: 0,
+            vacias: 0,
+            porcentaje_preñez: null
+          }
+        };
+      }));
+
+      setServices(servicesWithStats);
     } catch (error) {
       console.error('Error loading services:', error);
       toast({
