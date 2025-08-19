@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useHybridAuth } from "@/hooks/useHybridAuth";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface HerdSettings {
   id?: string;
@@ -54,7 +54,7 @@ export function useLocationAwareVaccination() {
   const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
   const [jurisdictionsCache, setJurisdictionsCache] = useState<any[]>([]);
   const { toast } = useToast();
-  const { currentUser } = useHybridAuth();
+  const { currentUser } = useSupabaseAuth();
 
   const fetchHerdSettings = async () => {
     if (!currentUser?.cabañaId) return;
