@@ -2105,6 +2105,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      hash_password: {
+        Args: { _password: string }
+        Returns: string
+      }
       is_valid_password_reset_token: {
         Args: { _token: string }
         Returns: boolean
