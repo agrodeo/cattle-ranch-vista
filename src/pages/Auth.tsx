@@ -330,7 +330,10 @@ const Auth = () => {
                       required
                       disabled={false}
                     >
-                      <SelectTrigger id="country" className="cursor-default">
+                      <SelectTrigger 
+                        id="country" 
+                        className="!cursor-pointer !pointer-events-auto [&:not(:disabled)]:cursor-pointer [&:not(:disabled)]:hover:cursor-pointer enabled:cursor-pointer"
+                      >
                         <SelectValue placeholder="Selecciona un país" />
                       </SelectTrigger>
                       <SelectContent>
