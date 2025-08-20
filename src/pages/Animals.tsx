@@ -188,7 +188,7 @@ const Animals = () => {
     console.log("Fetching cabaña for user:", currentUser.id);
     
     try {
-      const { data, error } = await supabase.rpc("get_internal_user_cabana_info", {
+      const { data, error } = await supabase.rpc("get_user_cabana_info", {
         user_uuid: currentUser.id,
       });
       
@@ -200,7 +200,7 @@ const Animals = () => {
       }
       
       // If user doesn't exist in users table, show a message
-      if (!data || data.length === 0) {
+      if (!data) {
         console.log("No cabaña data found for user");
         toast({
           title: "Configuración requerida",

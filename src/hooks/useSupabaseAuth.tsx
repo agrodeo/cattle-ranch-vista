@@ -406,64 +406,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       // Assign admin role if creating a company - CRITICAL SECURITY FIX
-      if (companyName) {
-        try {
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({
-              user_id: authData.user.id,
-              role: 'admin'
-            });
-            
-          if (roleError) {
-            console.error('Error assigning admin role:', roleError);
-            try {
-              await supabase.rpc('log_security_event', {
-                _action: 'signup_role_assignment_failed',
-                _table_name: 'user_roles',
-                _details: { user_id: authData.user.id, error: roleError.message }
-              });
-            } catch {}
-            
-            // CRITICAL: Full cleanup if role assignment fails
-            try {
-              await supabase.from('profiles').delete().eq('user_id', authData.user.id);
-            } catch {}
-            if (cabañaId) {
-              try {
-                await supabase.from('cabañas').delete().eq('id', cabañaId);
-              } catch {}
-            }
-            try {
-              await supabase.auth.admin.deleteUser(authData.user.id);
-            } catch {}
-            return { error: { message: 'Error al asignar permisos de administrador' } };
-          }
-        } catch (error) {
-          console.error('Critical error during role assignment:', error);
-          try {
-            await supabase.rpc('log_security_event', {
-              _action: 'signup_role_assignment_exception',
-              _table_name: 'user_roles',
-              _details: { user_id: authData.user.id, error: String(error) }
-            });
-          } catch {}
-          
-          // Full cleanup
-          try {
-            await supabase.from('profiles').delete().eq('user_id', authData.user.id);
-          } catch {}
-          if (cabañaId) {
-            try {
-              await supabase.from('cabañas').delete().eq('id', cabañaId);
-            } catch {}
-          }
-          try {
-            await supabase.auth.admin.deleteUser(authData.user.id);
-          } catch {}
-          return { error: { message: 'Error crítico al asignar permisos' } };
-        }
-      }
+      // Since we removed the user_roles table, we'll handle admin permissions 
+      // through the profiles table and subscription management
+      console.log('User profile created successfully');
 
       // Log successful registration
       try {
