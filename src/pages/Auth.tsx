@@ -120,9 +120,6 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      // First attempt password migration
-      await migrateEmployeePasswords();
-      
       const formData = new FormData(e.currentTarget);
       const username = formData.get("username") as string;
       const password = formData.get("password") as string;
