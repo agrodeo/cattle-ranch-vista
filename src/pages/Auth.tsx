@@ -372,7 +372,10 @@ const Auth = () => {
                     </details>
                   )}
                 </div>
-                {selectedCountry === 'AR' && (
+                {/* Show provinces for countries that have them */}
+                {(selectedCountry === 'AR' || selectedCountry === 'MX' || selectedCountry === 'US' || 
+                  selectedCountry === 'BR' || selectedCountry === 'AU' || selectedCountry === 'PE' || 
+                  selectedCountry === 'VE' || selectedCountry === 'EC' || selectedCountry === 'BO') && (
                   <div className="space-y-2">
                     <Label htmlFor="region">Provincia/Estado</Label>
                     <Select value={selectedRegion} onValueChange={setSelectedRegion} disabled={isLoadingRegions}>

@@ -14,12 +14,19 @@ export function useCountries() {
   // Fallback countries that are always available
   const fallbackCountries: Country[] = [
     { code: 'AR', name: 'Argentina' },
-    { code: 'UY', name: 'Uruguay' },
-    { code: 'BR', name: 'Brasil' },
-    { code: 'PY', name: 'Paraguay' },
     { code: 'CL', name: 'Chile' },
-    { code: 'CO', name: 'Colombia' },
-    { code: 'MX', name: 'México' }
+    { code: 'BO', name: 'Bolivia' },
+    { code: 'UY', name: 'Uruguay' },
+    { code: 'PY', name: 'Paraguay' },
+    { code: 'PE', name: 'Perú' },
+    { code: 'BR', name: 'Brasil' },
+    { code: 'EC', name: 'Ecuador' },
+    { code: 'VE', name: 'Venezuela' },
+    { code: 'MX', name: 'México' },
+    { code: 'US', name: 'Estados Unidos' },
+    { code: 'AU', name: 'Australia' },
+    { code: 'AF', name: 'África' },
+    { code: 'EU', name: 'Europa' }
   ];
 
   useEffect(() => {
