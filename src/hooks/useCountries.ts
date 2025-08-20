@@ -11,21 +11,37 @@ export function useCountries() {
   const [isLoadingCountries, setIsLoadingCountries] = useState(true);
   const [countriesError, setCountriesError] = useState<Error | null>(null);
 
-  // DEBUG: Log state changes
-  useEffect(() => {
-    console.log('🏗️ useCountries state changed:', {
-      isLoadingCountries,
-      countriesError: !!countriesError,
-      countriesCount: countries.length,
-      timestamp: new Date().toISOString()
-    });
-  }, [isLoadingCountries, countriesError, countries.length]);
+  // Fallback countries that are always available
+  const fallbackCountries: Country[] = [
+    { code: 'AR', name: 'Argentina' },
+    { code: 'UY', name: 'Uruguay' },
+    { code: 'BR', name: 'Brasil' },
+    { code: 'PY', name: 'Paraguay' },
+    { code: 'CL', name: 'Chile' },
+    { code: 'CO', name: 'Colombia' },
+    { code: 'MX', name: 'México' }
+  ];
 
   useEffect(() => {
-    let active = true;
+    console.log('🏗️ useCountries mounting, starting fetch...');
     
-    const fetchCountries = async (): Promise<Country[]> => {
+    let isActive = true;
+    let timeoutId: NodeJS.Timeout;
+    
+    // Force stop loading after 10 seconds maximum
+    const forceStopLoading = () => {
+      console.log('⏰ Forcing stop loading after timeout');
+      if (isActive) {
+        setIsLoadingCountries(false);
+        setCountries(fallbackCountries);
+      }
+    };
+    
+    timeoutId = setTimeout(forceStopLoading, 10000);
+    
+    const fetchCountries = async () => {
       try {
+        console.log('📡 Fetching countries from database...');
         setIsLoadingCountries(true);
         setCountriesError(null);
         
@@ -34,71 +50,57 @@ export function useCountries() {
           .select('*')
           .order('name');
         
-        if (error) throw error;
+        console.log('📊 Database response:', { 
+          error: !!error, 
+          dataLength: jurisdictions?.length || 0 
+        });
         
-        if (!jurisdictions || jurisdictions.length === 0) {
-          // Fallback data for common countries
-          return [
-            { code: 'AR', name: 'Argentina' },
-            { code: 'UY', name: 'Uruguay' },
-            { code: 'BR', name: 'Brasil' },
-            { code: 'PY', name: 'Paraguay' },
-            { code: 'CL', name: 'Chile' },
-            { code: 'CO', name: 'Colombia' },
-            { code: 'MX', name: 'México' }
-          ];
+        if (error) {
+          console.error('❌ Database error:', error);
+          throw error;
         }
         
-        // Filter for countries only (parent_code is null)
-        const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
+        let countriesToSet = fallbackCountries;
         
-        // Map countries with proper code and name
-        return countryJurisdictions.map((j: any) => ({
-          code: j.code,
-          name: j.name
-        })).sort((a: any, b: any) => a.name.localeCompare(b.name));
+        if (jurisdictions && jurisdictions.length > 0) {
+          // Filter for countries only (parent_code is null)
+          const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
+          console.log('🌍 Found countries:', countryJurisdictions.length);
+          
+          if (countryJurisdictions.length > 0) {
+            countriesToSet = countryJurisdictions.map((j: any) => ({
+              code: j.code,
+              name: j.name
+            })).sort((a: any, b: any) => a.name.localeCompare(b.name));
+          }
+        }
+        
+        if (isActive) {
+          console.log('✅ Setting countries:', countriesToSet.length);
+          setCountries(countriesToSet);
+          setIsLoadingCountries(false);
+          clearTimeout(timeoutId);
+        }
         
       } catch (error: any) {
-        console.error('Error loading countries:', error);
-        // Return fallback countries so user can still register
-        return [
-          { code: 'AR', name: 'Argentina' },
-          { code: 'UY', name: 'Uruguay' },
-          { code: 'BR', name: 'Brasil' },
-          { code: 'PY', name: 'Paraguay' },
-          { code: 'CL', name: 'Chile' },
-          { code: 'CO', name: 'Colombia' },
-          { code: 'MX', name: 'México' }
-        ];
+        console.error('❌ Error in fetchCountries:', error);
+        if (isActive) {
+          setCountriesError(error);
+          setCountries(fallbackCountries);
+          setIsLoadingCountries(false);
+          clearTimeout(timeoutId);
+        }
       }
     };
-
-    (async () => {
-      try {
-        const data = await fetchCountries();
-        if (active) {
-          setCountries(data);
-        }
-      } catch (e: any) {
-        if (active) {
-          setCountriesError(e);
-          // Set fallback countries even on error
-          setCountries([
-            { code: 'AR', name: 'Argentina' },
-            { code: 'UY', name: 'Uruguay' },
-            { code: 'BR', name: 'Brasil' },
-            { code: 'PY', name: 'Paraguay' },
-            { code: 'CL', name: 'Chile' }
-          ]);
-        }
-      } finally {
-        if (active) {
-          setIsLoadingCountries(false);
-        }
-      }
-    })();
     
-    return () => { active = false; };
+    // Start the fetch immediately
+    fetchCountries();
+    
+    return () => {
+      console.log('🧹 useCountries cleanup');
+      isActive = false;
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return { countries, isLoadingCountries, countriesError };
