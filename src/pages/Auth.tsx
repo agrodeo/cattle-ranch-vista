@@ -10,15 +10,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Building2, Mail, UserPlus, Users } from "lucide-react";
+
 const Auth = () => {
-  const [loading, setLoading] = useState(false);
+  // Separate loading states
+  const [loading, setLoading] = useState(false); // For sign in form
+  const [isSubmitting, setIsSubmitting] = useState(false); // For register form submission
+  const [isLoadingCountries, setIsLoadingCountries] = useState(true); // For country loading
+  const [activeTab, setActiveTab] = useState("signin");
+  
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   const [countries, setCountries] = useState<any[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
-  const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
-  const [jurisdictionsLoaded, setJurisdictionsLoaded] = useState(false);
   
   const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const navigate = useNavigate();
@@ -29,12 +33,15 @@ const Auth = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  // Load countries safely with cleanup
   useEffect(() => {
-    const loadJurisdictions = async () => {
-      if (jurisdictionsLoaded || countries.length > 0) return; // Avoid reloading if already loaded
+    let active = true;
+    
+    const loadCountries = async () => {
+      if (countries.length > 0) return; // Avoid reloading if already loaded
       
-      setJurisdictionsLoading(true);
-      console.log('Loading jurisdictions...');
+      setIsLoadingCountries(true);
+      console.log('Loading countries...');
       
       try {
         const { data: jurisdictions, error } = await supabase
@@ -97,13 +104,15 @@ const Auth = () => {
         setCountries(fallbackCountries);
         
       } finally {
-        setJurisdictionsLoading(false);
-        setJurisdictionsLoaded(true);
-        console.log('Finished loading jurisdictions');
+        if (active) {
+          setIsLoadingCountries(false);
+        }
+        console.log('Finished loading countries');
       }
     };
 
-    loadJurisdictions();
+    loadCountries();
+    return () => { active = false; };
   }, []); // Remove any dependencies that could cause re-runs
 
   useEffect(() => {
@@ -147,6 +156,13 @@ const Auth = () => {
     setSelectedRegion("");
   }, [selectedCountry]);
 
+  // Reset form states on tab change
+  useEffect(() => {
+    setIsSubmitting(false);
+    setSelectedCountry("");
+    setSelectedRegion("");
+  }, [activeTab]);
+
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -177,7 +193,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
+    setIsSubmitting(true);
     
     try {
       const formData = new FormData(e.currentTarget);
@@ -233,7 +249,7 @@ const Auth = () => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -253,13 +269,13 @@ const Auth = () => {
         </CardHeader>
         
         <CardContent>
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin" className="flex items-center gap-2">
+              <TabsTrigger value="signin" className="flex items-center gap-2" type="button">
                 <Mail className="h-4 w-4" />
                 Iniciar Sesión
               </TabsTrigger>
-              <TabsTrigger value="register" className="flex items-center gap-2">
+              <TabsTrigger value="register" className="flex items-center gap-2" type="button">
                 <UserPlus className="h-4 w-4" />
                 Registrar Empresa
               </TabsTrigger>
@@ -340,17 +356,17 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="country">País *</Label>
-                   <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={jurisdictionsLoading}>
-                     <SelectTrigger>
-                       <SelectValue placeholder={
-                         jurisdictionsLoading 
-                           ? "Cargando países..." 
-                           : countries.length === 0 
-                           ? "No hay países disponibles"
-                           : "Selecciona un país"
-                       } />
+                 <div className="space-y-2">
+                   <Label htmlFor="country">País *</Label>
+                    <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={isLoadingCountries}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          isLoadingCountries 
+                            ? "Cargando países..." 
+                            : countries.length === 0 
+                            ? "No hay países disponibles"
+                            : "Selecciona un país"
+                        } />
                     </SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
@@ -406,9 +422,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                 <Button type="submit" className="w-full" disabled={loading}>
-                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   {jurisdictionsLoading ? "Cargando..." : "Crear Empresa"}
+                 <Button type="submit" className="w-full" disabled={isSubmitting || isLoadingCountries}>
+                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {isSubmitting ? "Cargando..." : "Crear Empresa"}
                 </Button>
               </form>
             </TabsContent>
