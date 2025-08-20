@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,11 +22,23 @@ serve(async (req) => {
 
     const { email, password, fullName, role, requesterId } = await req.json()
 
+    // Validate input
+    if (!email || !password || !fullName || !role) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
     // Verify that the requester is an admin
     const { data: requesterRole, error: roleError } = await supabaseAdmin
       .rpc('get_user_role', { _user_id: requesterId })
 
     if (roleError || requesterRole !== 'admin') {
+      console.error('Authorization error:', roleError)
       return new Response(
         JSON.stringify({ error: 'Unauthorized - admin access required' }),
         { 
@@ -34,6 +47,10 @@ serve(async (req) => {
         }
       )
     }
+
+    // Hash the password securely
+    const saltRounds = 12
+    const hashedPassword = await bcrypt.hash(password, saltRounds)
 
     // Create user with admin privileges
     const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -46,6 +63,7 @@ serve(async (req) => {
     })
 
     if (createError) {
+      console.error('User creation error:', createError)
       throw createError
     }
 
@@ -60,17 +78,18 @@ serve(async (req) => {
         })
 
       if (roleInsertError) {
+        console.error('Role insertion error:', roleInsertError)
         // If role creation fails, cleanup the user
         await supabaseAdmin.auth.admin.deleteUser(userData.user.id)
         throw roleInsertError
       }
 
-      // Store password for admin access
+      // Store hashed password for admin access
       const { error: passwordError } = await supabaseAdmin
         .from('user_passwords')
         .insert({
           user_id: userData.user.id,
-          password_text: password,
+          password_text: hashedPassword, // Store hashed password
           created_by: requesterId
         })
 
@@ -78,6 +97,14 @@ serve(async (req) => {
         console.error('Error storing password:', passwordError)
         // Don't fail the entire operation if password storage fails
       }
+
+      // Log security event
+      await supabaseAdmin.rpc('log_security_event', {
+        _action: 'user_created',
+        _table_name: 'users',
+        _record_id: userData.user.id,
+        _details: { email, role, created_by: requesterId }
+      })
     }
 
     return new Response(
