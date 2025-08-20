@@ -30,6 +30,8 @@ const Auth = () => {
 
   useEffect(() => {
     const loadJurisdictions = async () => {
+      if (countries.length > 0) return; // Avoid reloading if already loaded
+      
       setJurisdictionsLoading(true);
       console.log('Loading jurisdictions...');
       
@@ -100,7 +102,7 @@ const Auth = () => {
     };
 
     loadJurisdictions();
-  }, []);
+  }, []); // Remove any dependencies that could cause re-runs
 
   useEffect(() => {
     const loadRegions = async () => {
