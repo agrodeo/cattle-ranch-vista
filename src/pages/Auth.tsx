@@ -123,35 +123,38 @@ const Auth = () => {
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
+    console.log('Attempting employee login for:', username);
     const { error } = await signInEmployee(username, password);
+    console.log('Employee login result:', { error });
     
     if (error) {
-      // Check if this might be a password migration issue
-      if (error.message.includes('conexion') || error.message.includes('timeout') || error.message.includes('bcrypt')) {
-        try {
+      console.error('Employee login error:', error);
+      
+      // Try password migration for any authentication failure
+      // This is likely a password migration issue since security was updated
+      try {
+        console.log('Attempting password migration...');
+        toast({
+          title: "Actualizando seguridad...",
+          description: "Migrando contraseñas al nuevo sistema seguro. Espera un momento.",
+        });
+        
+        const migrationResult = await migrateEmployeePasswords();
+        console.log('Migration result:', migrationResult);
+        
+        if (migrationResult && migrationResult.success) {
           toast({
-            title: "Migrando contraseñas...",
-            description: "Actualizando sistema de seguridad, espera un momento.",
+            title: "¡Sistema actualizado!",
+            description: `Se actualizaron ${migrationResult.updated || 0} contraseñas. Intenta iniciar sesión nuevamente.`,
           });
-          
-          await migrateEmployeePasswords();
-          
-          toast({
-            title: "Migración completada",
-            description: "Sistema actualizado. Intenta iniciar sesión nuevamente.",
-          });
-        } catch (migrationError) {
-          console.error('Migration failed:', migrationError);
-          toast({
-            title: "Error al iniciar sesión",
-            description: "La conexión está tardando demasiado. Verifica tu internet e intenta de nuevo.",
-            variant: "destructive",
-          });
+        } else {
+          throw new Error('Migration failed or no passwords to migrate');
         }
-      } else {
+      } catch (migrationError) {
+        console.error('Migration failed:', migrationError);
         toast({
           title: "Error al iniciar sesión",
-          description: error.message,
+          description: "Las contraseñas necesitan ser migradas por un administrador.",
           variant: "destructive",
         });
       }
