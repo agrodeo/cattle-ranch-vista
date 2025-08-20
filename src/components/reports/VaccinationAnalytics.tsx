@@ -80,18 +80,19 @@ export const VaccinationAnalytics = () => {
     if (!user) return;
     
     try {
-      // Get user's cabaña info
-      const { data: cabanaData } = await supabase
-        .from('profiles')
-        .select('cabaña_id')
-        .eq('user_id', user.id)
-        .single();
+      // Get user's cabaña info directly using the RPC function
+      const { data: cabanaInfo } = await supabase.rpc('get_current_user_cabana_id');
       
-      if (!cabanaData) return;
+      if (!cabanaInfo) {
+        console.error('No cabaña data found for user');
+        return;
+      }
+
+      const cabanaId = cabanaInfo;
       
       const [vaccinesData, corralsData] = await Promise.all([
         supabase.from('vaccines').select('*'),
-        supabase.from('corrales').select('*')
+        supabase.from('corrales').select('*').eq('cabaña_id', cabanaId)
       ]);
       
       setAvailableVaccines(vaccinesData.data || []);
@@ -104,23 +105,24 @@ export const VaccinationAnalytics = () => {
   const fetchVaccinationStats = async () => {
     if (!user) return;
     
-    // Get user's cabaña info
-    const { data: cabanaData } = await supabase
-      .from('profiles')
-      .select('cabaña_id')
-      .eq('user_id', user.id)
-      .single();
-    
-    if (!cabanaData) return;
-    
     try {
       setLoading(true);
+      
+      // Get user's cabaña info directly using the RPC function
+      const { data: cabanaInfo } = await supabase.rpc('get_current_user_cabana_id');
+      
+      if (!cabanaInfo) {
+        console.error('No cabaña data found for user');
+        return;
+      }
+
+      const cabanaId = cabanaInfo;
       
       // Fetch animals with filters
       let animalsQuery = supabase
         .from('animals')
         .select('*')
-        .eq('cabaña_id', cabanaData.cabaña_id);
+        .eq('cabaña_id', cabanaId);
 
       if (filters.animalStatus.length > 0) {
         animalsQuery = animalsQuery.in('status', filters.animalStatus.map(s => 
@@ -143,7 +145,7 @@ export const VaccinationAnalytics = () => {
       let historyQuery = supabase
         .from('animal_vaccines')
         .select('*, animals(name, id_tag)')
-        .eq('cabaña_id', cabanaData.cabaña_id);
+        .eq('cabaña_id', cabanaId);
 
       if (filters.dateRange.from) {
         historyQuery = historyQuery.gte('date', format(filters.dateRange.from, 'yyyy-MM-dd'));
