@@ -5,7 +5,9 @@ export const migrateEmployeePasswords = async () => {
     console.log('Starting password migration...');
     
     // Call the public migrate-employee-passwords edge function
-    const { data, error } = await supabase.functions.invoke('migrate-employee-passwords');
+    const { data, error } = await supabase.functions.invoke('migrate-employee-passwords', {
+      body: {}
+    });
 
     if (error) {
       console.error('Password migration error:', error);
