@@ -47,13 +47,6 @@ export type Database = {
             referencedRelation: "animals"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "activities_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       animal_vaccines: {
@@ -341,13 +334,6 @@ export type Database = {
             columns: ["bull_id"]
             isOneToOne: false
             referencedRelation: "animals"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "artificial_inseminations_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -1359,143 +1345,6 @@ export type Database = {
           },
         ]
       }
-      user_passwords: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          id: string
-          password_text: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          password_text: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          id?: string
-          password_text?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_passwords_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_passwords_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_roles: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_roles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      users: {
-        Row: {
-          cabaña_id: string | null
-          created_at: string | null
-          department: string | null
-          email: string | null
-          employee_code: string | null
-          full_name: string | null
-          hire_date: string | null
-          id: string
-          is_active: boolean | null
-          is_internal_profile: boolean | null
-          last_login: string | null
-          position: string | null
-          username: string | null
-        }
-        Insert: {
-          cabaña_id?: string | null
-          created_at?: string | null
-          department?: string | null
-          email?: string | null
-          employee_code?: string | null
-          full_name?: string | null
-          hire_date?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_internal_profile?: boolean | null
-          last_login?: string | null
-          position?: string | null
-          username?: string | null
-        }
-        Update: {
-          cabaña_id?: string | null
-          created_at?: string | null
-          department?: string | null
-          email?: string | null
-          employee_code?: string | null
-          full_name?: string | null
-          hire_date?: string | null
-          id?: string
-          is_active?: boolean | null
-          is_internal_profile?: boolean | null
-          last_login?: string | null
-          position?: string | null
-          username?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "users_cabaña_id_fkey"
-            columns: ["cabaña_id"]
-            isOneToOne: false
-            referencedRelation: "cabañas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       vaccination_schemes: {
         Row: {
           breed: string | null
@@ -1926,30 +1775,14 @@ export type Database = {
         Returns: string
       }
       create_company_with_owner: {
-        Args:
-          | {
-              company_name: string
-              country?: string
-              owner_email?: string
-              owner_name: string
-              owner_password: string
-              owner_username: string
-              region?: string
-            }
-          | {
-              company_name: string
-              country?: string
-              owner_name: string
-              owner_password: string
-              owner_username: string
-              region?: string
-            }
-          | {
-              company_name: string
-              owner_name: string
-              owner_password: string
-              owner_username: string
-            }
+        Args: {
+          company_name: string
+          country?: string
+          owner_name: string
+          owner_password: string
+          owner_username: string
+          region?: string
+        }
         Returns: {
           error_message: string
           success: boolean
@@ -1996,10 +1829,6 @@ export type Database = {
         Args: { _id: string; _user_id: string }
         Returns: undefined
       }
-      generate_employee_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
       get_current_user_cabana: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2014,13 +1843,6 @@ export type Database = {
           balance: number
           egresos: number
           ingresos: number
-        }[]
-      }
-      get_internal_user_cabana_info: {
-        Args: { user_uuid: string }
-        Returns: {
-          cabana_id: string
-          cabana_name: string
         }[]
       }
       get_mortality_reports: {
@@ -2077,10 +1899,6 @@ export type Database = {
       }
       get_user_role: {
         Args: { _user_id: string }
-        Returns: Database["public"]["Enums"]["app_role"]
-      }
-      get_user_role_by_id: {
-        Args: { user_uuid: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_vaccination_alerts_for_animal: {
@@ -2277,13 +2095,6 @@ export type Database = {
       verify_sistema_login: {
         Args: { input_email: string; input_password: string }
         Returns: boolean
-      }
-      verify_user_login: {
-        Args: { input_password: string; input_username: string }
-        Returns: {
-          success: boolean
-          user_data: Json
-        }[]
       }
     }
     Enums: {
