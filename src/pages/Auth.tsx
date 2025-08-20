@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Building2, Mail, UserPlus, Users } from "lucide-react";
+import { Loader2, Building2, Mail, UserPlus } from "lucide-react";
 
 const Auth = () => {
   // Separate loading states
@@ -66,7 +66,7 @@ const Auth = () => {
             { code: 'PY', name: 'Paraguay' },
             { code: 'CL', name: 'Chile' }
           ];
-          setCountries(fallbackCountries);
+          if (active) setCountries(fallbackCountries);
           return;
         }
         
@@ -81,10 +81,10 @@ const Auth = () => {
         })).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
         console.log('Final countries list:', uniqueCountries);
-        setCountries(uniqueCountries);
+        if (active) setCountries(uniqueCountries);
         
       } catch (error) {
-        console.error('Error loading jurisdictions:', error);
+        console.error('Error loading countries:', error);
         
         // Show user-friendly error
         toast({
@@ -101,7 +101,7 @@ const Auth = () => {
           { code: 'PY', name: 'Paraguay' },
           { code: 'CL', name: 'Chile' }
         ];
-        setCountries(fallbackCountries);
+        if (active) setCountries(fallbackCountries);
         
       } finally {
         if (active) {
@@ -189,7 +189,6 @@ const Auth = () => {
     
     setLoading(false);
   };
-
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -317,7 +316,6 @@ const Auth = () => {
               </form>
             </TabsContent>
 
-
             <TabsContent value="register" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
                 Crear una nueva empresa/cabaña
@@ -356,17 +354,17 @@ const Auth = () => {
                     required
                   />
                 </div>
-                 <div className="space-y-2">
-                   <Label htmlFor="country">País *</Label>
-                    <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={isLoadingCountries}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={
-                          isLoadingCountries 
-                            ? "Cargando países..." 
-                            : countries.length === 0 
-                            ? "No hay países disponibles"
-                            : "Selecciona un país"
-                        } />
+                <div className="space-y-2">
+                  <Label htmlFor="country">País *</Label>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={isLoadingCountries}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={
+                        isLoadingCountries 
+                          ? "Cargando países..." 
+                          : countries.length === 0 
+                          ? "No hay países disponibles"
+                          : "Selecciona un país"
+                      } />
                     </SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
@@ -422,9 +420,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                 <Button type="submit" className="w-full" disabled={isSubmitting || isLoadingCountries}>
-                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                   {isSubmitting ? "Cargando..." : "Crear Empresa"}
+                <Button type="submit" className="w-full" disabled={isSubmitting || isLoadingCountries}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting ? "Cargando..." : "Crear Empresa"}
                 </Button>
               </form>
             </TabsContent>
