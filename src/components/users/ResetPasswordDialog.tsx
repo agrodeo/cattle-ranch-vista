@@ -33,17 +33,18 @@ export const ResetPasswordDialog = ({ profile, onPasswordReset }: ResetPasswordD
     const newPassword = formData.get("password") as string;
 
     try {
-      // Update or insert password
-      const { error } = await supabase
-        .from('user_passwords')
-        .upsert({
-          user_id: profile.id,
-          password_text: newPassword,
-          created_by: null,
-          updated_at: new Date().toISOString()
-        });
+      // Use edge function to securely hash and store password
+      const { data, error } = await supabase.functions.invoke('manage-user', {
+        body: {
+          action: 'change_password',
+          userId: profile.id,
+          newPassword: newPassword,
+          requesterId: (await supabase.auth.getUser()).data.user?.id
+        }
+      });
 
       if (error) throw error;
+      if (!data.success) throw new Error(data.message || 'Failed to update password');
 
       toast({
         title: "Contraseña actualizada",

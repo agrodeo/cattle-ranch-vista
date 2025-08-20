@@ -37,49 +37,18 @@ export const useUsers = () => {
     }
   }, []);
 
+  // Password retrieval removed for security - passwords are now encrypted and cannot be retrieved
   const getUserPassword = useCallback(async (userId: string) => {
-    try {
-      setLoadingPasswords(prev => ({ ...prev, [userId]: true }));
-      
-      const { data, error } = await supabase
-        .from('user_passwords')
-        .select('password_text')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (data?.password_text) {
-        setUserPasswords(prev => ({
-          ...prev,
-          [userId]: data.password_text
-        }));
-        return { success: true, password: data.password_text };
-      }
-
-      return { success: false, error: 'No password found' };
-    } catch (error) {
-      console.error(`Error getting user password for ${userId}:`, error);
-      return { success: false, error };
-    } finally {
-      setLoadingPasswords(prev => ({ ...prev, [userId]: false }));
-    }
+    // This function has been disabled for security reasons
+    console.warn('Password retrieval is disabled for security. Passwords are encrypted and cannot be viewed.');
+    return { success: false, password: null, message: 'Password retrieval disabled for security' };
   }, []);
 
+  // Password loading disabled for security
   const loadAllPasswords = useCallback(async () => {
-    if (!users.length) return;
-
-    // Initialize loading states
-    const loadingStates: Record<string, boolean> = {};
-    users.forEach(user => {
-      loadingStates[user.id] = true;
-    });
-    setLoadingPasswords(loadingStates);
-
-    // Fetch all passwords in parallel
-    const passwordPromises = users.map(user => getUserPassword(user.id));
-    await Promise.all(passwordPromises);
-  }, [users, getUserPassword]);
+    console.warn('Bulk password loading is disabled for security reasons.');
+    setLoadingPasswords({});
+  }, []);
 
   return {
     users,

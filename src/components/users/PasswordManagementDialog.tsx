@@ -3,10 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Key, Save } from "lucide-react";
+import { Eye, EyeOff, Key, Save, Shield } from "lucide-react";
 import { useUserRoles, UserWithRole } from "@/hooks/useUserRoles";
-import { useUsers } from "@/hooks/useUsers";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface PasswordManagementDialogProps {
   user: UserWithRole | null;
@@ -15,46 +15,11 @@ interface PasswordManagementDialogProps {
 }
 
 export function PasswordManagementDialog({ user, open, onOpenChange }: PasswordManagementDialogProps) {
-  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingCurrentPassword, setLoadingCurrentPassword] = useState(false);
   
   const { changeUserPassword } = useUserRoles();
-  const { getUserPassword } = useUsers();
-
-  const handleGetCurrentPassword = async () => {
-    if (!user) return;
-    
-    setLoadingCurrentPassword(true);
-    try {
-      const result = await getUserPassword(user.id);
-      
-      if (result.success && result.password) {
-        setCurrentPassword(result.password);
-        toast({
-          title: "Contraseña obtenida",
-          description: "La contraseña actual se ha cargado exitosamente.",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "No se pudo obtener la contraseña actual.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Ocurrió un error al obtener la contraseña.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingCurrentPassword(false);
-    }
-  };
 
   const handleChangePassword = async () => {
     if (!user || !newPassword.trim()) {
@@ -75,7 +40,6 @@ export function PasswordManagementDialog({ user, open, onOpenChange }: PasswordM
           title: "Contraseña actualizada",
           description: "La contraseña ha sido cambiada exitosamente.",
         });
-        setCurrentPassword(newPassword);
         setNewPassword("");
         onOpenChange(false);
       } else {
@@ -98,9 +62,7 @@ export function PasswordManagementDialog({ user, open, onOpenChange }: PasswordM
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
-      setCurrentPassword("");
       setNewPassword("");
-      setShowCurrentPassword(false);
       setShowNewPassword(false);
     }
     onOpenChange(newOpen);
@@ -117,37 +79,14 @@ export function PasswordManagementDialog({ user, open, onOpenChange }: PasswordM
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Contraseña Actual */}
-          <div className="space-y-2">
-            <Label htmlFor="current-password">Contraseña Actual</Label>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Input
-                  id="current-password"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  readOnly
-                  placeholder="Haz clic en 'Ver Contraseña' para cargar"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                >
-                  {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </Button>
-              </div>
-              <Button
-                onClick={handleGetCurrentPassword}
-                disabled={loadingCurrentPassword}
-                variant="outline"
-              >
-                {loadingCurrentPassword ? "Cargando..." : "Ver Contraseña"}
-              </Button>
-            </div>
-          </div>
+          {/* Security Notice */}
+          <Alert>
+            <Shield className="h-4 w-4" />
+            <AlertDescription>
+              Por motivos de seguridad, las contraseñas están cifradas y no pueden ser visualizadas. 
+              Solo puedes establecer una nueva contraseña.
+            </AlertDescription>
+          </Alert>
 
           {/* Nueva Contraseña */}
           <div className="space-y-2">
