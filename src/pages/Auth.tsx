@@ -287,37 +287,45 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">País *</Label>
-                  {countriesError && countries.length === 0 ? (
+                  {isLoadingCountries && (
+                    <Select disabled value="">
+                      <SelectTrigger id="country" className="cursor-wait">
+                        <SelectValue placeholder="Cargando países..." />
+                      </SelectTrigger>
+                    </Select>
+                  )}
+                  
+                  {!isLoadingCountries && !countriesError && countries.length > 0 && (
+                    <Select 
+                      value={selectedCountry} 
+                      onValueChange={setSelectedCountry} 
+                      required 
+                      disabled={false}
+                    >
+                      <SelectTrigger id="country" className="cursor-default">
+                        <SelectValue placeholder="Selecciona un país" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            {country.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  
+                  {countriesError && countries.length === 0 && (
                     <Input
-                      id="country"
-                      name="country"
+                      id="countryText"
+                      name="countryText"
                       type="text"
-                      placeholder="País (ingresar manualmente)"
+                      placeholder="Escribe tu país manualmente"
                       value={selectedCountry}
                       onChange={(e) => setSelectedCountry(e.target.value)}
                       required
+                      className="cursor-text"
                     />
-                  ) : (
-                    <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={isLoadingCountries}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={
-                          isLoadingCountries 
-                            ? "Cargando países..." 
-                            : countries.length === 0 
-                            ? "No hay países disponibles"
-                            : "Selecciona un país"
-                        } />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {!isLoadingCountries && !countriesError && countries.length > 0 ? (
-                          countries.map((country) => (
-                            <SelectItem key={country.code} value={country.code}>
-                              {country.name}
-                            </SelectItem>
-                          ))
-                        ) : null}
-                      </SelectContent>
-                    </Select>
                   )}
                 </div>
                 {selectedCountry === 'AR' && (
