@@ -120,6 +120,9 @@ const Auth = () => {
     setLoading(true);
     
     try {
+      // First attempt password migration
+      await migrateEmployeePasswords();
+      
       const formData = new FormData(e.currentTarget);
       const username = formData.get("username") as string;
       const password = formData.get("password") as string;
@@ -133,58 +136,27 @@ const Auth = () => {
         return;
       }
 
-      console.log('Attempting employee login for:', username);
       const { error } = await signInEmployee(username, password);
-      console.log('Employee login result:', { error });
       
       if (error) {
-        console.error('Employee login error:', error);
-        
-        // Check for specific error types
         if (error.message.includes('Usuario no encontrado') || error.message.includes('not found')) {
           toast({
             title: "Usuario no encontrado",
-            description: "El nombre de usuario no existe en el sistema.",
+            description: "El nombre de usuario no existe. ¿Eres propietario? Usa la pestaña 'Propietario'.",
             variant: "destructive",
           });
         } else if (error.message.includes('contraseña') || error.message.includes('password')) {
           toast({
             title: "Contraseña incorrecta",
-            description: "La contraseña ingresada no es correcta.",
+            description: "Verifica tu contraseña e intenta nuevamente.",
             variant: "destructive",
           });
         } else {
-          // For other errors, try password migration first
-          try {
-            console.log('Attempting password migration due to authentication error...');
-            toast({
-              title: "Actualizando seguridad...",
-              description: "Migrando contraseñas al nuevo sistema seguro.",
-            });
-            
-            const migrationResult = await migrateEmployeePasswords();
-            console.log('Migration result:', migrationResult);
-            
-            if (migrationResult && migrationResult.success && migrationResult.updated > 0) {
-              toast({
-                title: "¡Sistema actualizado!",
-                description: `Se actualizaron ${migrationResult.updated} contraseñas. Intenta iniciar sesión nuevamente.`,
-              });
-            } else {
-              toast({
-                title: "Error al iniciar sesión",
-                description: "Verifica tu usuario y contraseña.",
-                variant: "destructive",
-              });
-            }
-          } catch (migrationError) {
-            console.error('Migration failed:', migrationError);
-            toast({
-              title: "Error al iniciar sesión",
-              description: "Error del sistema. Contacta al administrador.",
-              variant: "destructive",
-            });
-          }
+          toast({
+            title: "Error al iniciar sesión",
+            description: "Verifica tus credenciales o contacta al administrador.",
+            variant: "destructive",
+          });
         }
       } else {
         toast({
@@ -194,10 +166,10 @@ const Auth = () => {
         navigate("/dashboard");
       }
     } catch (err) {
-      console.error('Unexpected error during employee login:', err);
+      console.error('Employee login error:', err);
       toast({
-        title: "Error inesperado",
-        description: "Ocurrió un error. Intenta de nuevo.",
+        title: "Error de conexión",
+        description: "No se pudo conectar al servidor. Intenta nuevamente.",
         variant: "destructive",
       });
     } finally {
