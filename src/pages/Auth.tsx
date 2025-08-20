@@ -328,13 +328,19 @@ const Auth = () => {
                       value={selectedCountry}
                       onValueChange={setSelectedCountry}
                       required
-                      disabled={isLoadingCountries}
+                      // Don't disable the entire Select component
                     >
                       <SelectTrigger 
                         id="country"
                         forceEnabled={!isLoadingCountries}
                         className="[&:disabled]:!cursor-pointer [&:disabled]:!opacity-100"
                         style={!isLoadingCountries ? { cursor: 'pointer !important' } : undefined}
+                        onClick={(e) => {
+                          // Force enable interaction
+                          if (!isLoadingCountries) {
+                            console.log('Country select clicked, loading:', isLoadingCountries);
+                          }
+                        }}
                       >
                         <SelectValue placeholder="Selecciona un país" />
                       </SelectTrigger>

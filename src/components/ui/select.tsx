@@ -16,13 +16,15 @@ const SelectTrigger = React.forwardRef<
     forceEnabled?: boolean;
   }
 >(({ className, children, forceEnabled, disabled, ...props }, ref) => {
-  // Override disabled when forceEnabled is true
-  const isDisabled = forceEnabled ? false : disabled;
+  // Completely override disabled when forceEnabled is true
+  const finalDisabled = forceEnabled ? false : disabled;
+  
+  console.log('SelectTrigger render:', { forceEnabled, disabled, finalDisabled });
   
   return (
     <SelectPrimitive.Trigger
       ref={ref}
-      disabled={isDisabled}
+      disabled={finalDisabled}
       data-force-enabled={forceEnabled ? "true" : "false"}
       className={cn(
         "flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 [&>span]:line-clamp-1",
