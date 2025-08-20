@@ -430,19 +430,28 @@ export type Database = {
       }
       cabañas: {
         Row: {
+          country_code: string | null
           id: string
           location: string | null
+          location_updated_at: string | null
           name: string
+          province_code: string | null
         }
         Insert: {
+          country_code?: string | null
           id?: string
           location?: string | null
+          location_updated_at?: string | null
           name: string
+          province_code?: string | null
         }
         Update: {
+          country_code?: string | null
           id?: string
           location?: string | null
+          location_updated_at?: string | null
           name?: string
+          province_code?: string | null
         }
         Relationships: []
       }

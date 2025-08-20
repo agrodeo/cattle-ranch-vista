@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
 import { Shield, AlertTriangle, CheckCircle, Calendar, Syringe, Download, Filter, X, Activity } from "lucide-react";
 import { format, subMonths, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -46,9 +45,10 @@ interface VaccinationStats {
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
 export const VaccinationAnalytics = () => {
-  const { currentUser } = useSupabaseAuth();
-  const { herdSettings, rules, getDueVaccinesForAnimal, getAvailableVaccines } = useLocationAwareVaccination();
+  const { user } = useSupabaseAuth();
   const [stats, setStats] = useState<VaccinationStats | null>(null);
+  const [herdSettings, setHerdSettings] = useState<any>(null);
+  const [rules, setRules] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [availableVaccines, setAvailableVaccines] = useState<any[]>([]);
@@ -65,25 +65,36 @@ export const VaccinationAnalytics = () => {
   });
 
   useEffect(() => {
-    if (currentUser?.cabañaId) {
+    if (user) {
       loadInitialData();
     }
-  }, [currentUser]);
+  }, [user]);
 
   useEffect(() => {
-    if (currentUser?.cabañaId && availableVaccines.length > 0) {
+    if (user && availableVaccines.length > 0) {
       fetchVaccinationStats();
     }
-  }, [currentUser, filters, availableVaccines]);
+  }, [user, filters, availableVaccines]);
 
   const loadInitialData = async () => {
+    if (!user) return;
+    
     try {
+      // Get user's cabaña info
+      const { data: cabanaData } = await supabase
+        .from('profiles')
+        .select('cabaña_id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!cabanaData) return;
+      
       const [vaccinesData, corralsData] = await Promise.all([
-        getAvailableVaccines(),
-        supabase.from('corrales').select('*').eq('cabaña_id', currentUser?.cabañaId)
+        supabase.from('vaccines').select('*'),
+        supabase.from('corrales').select('*')
       ]);
       
-      setAvailableVaccines(vaccinesData);
+      setAvailableVaccines(vaccinesData.data || []);
       setCorrals(corralsData.data || []);
     } catch (error) {
       console.error("Error loading initial data:", error);
@@ -91,7 +102,16 @@ export const VaccinationAnalytics = () => {
   };
 
   const fetchVaccinationStats = async () => {
-    if (!currentUser?.cabañaId) return;
+    if (!user) return;
+    
+    // Get user's cabaña info
+    const { data: cabanaData } = await supabase
+      .from('profiles')
+      .select('cabaña_id')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (!cabanaData) return;
     
     try {
       setLoading(true);
@@ -100,7 +120,7 @@ export const VaccinationAnalytics = () => {
       let animalsQuery = supabase
         .from('animals')
         .select('*')
-        .eq('cabaña_id', currentUser.cabañaId);
+        .eq('cabaña_id', cabanaData.cabaña_id);
 
       if (filters.animalStatus.length > 0) {
         animalsQuery = animalsQuery.in('status', filters.animalStatus.map(s => 
@@ -123,7 +143,7 @@ export const VaccinationAnalytics = () => {
       let historyQuery = supabase
         .from('animal_vaccines')
         .select('*, animals(name, id_tag)')
-        .eq('cabaña_id', currentUser.cabañaId);
+        .eq('cabaña_id', cabanaData.cabaña_id);
 
       if (filters.dateRange.from) {
         historyQuery = historyQuery.gte('date', format(filters.dateRange.from, 'yyyy-MM-dd'));
@@ -179,7 +199,11 @@ export const VaccinationAnalytics = () => {
       let vaccineOverdue = 0;
 
       for (const animal of eligibleAnimals) {
-        const dueVaccines = await getDueVaccinesForAnimal(animal.id);
+        // Get due vaccines using the RPC function
+        const { data: dueVaccinesData } = await supabase.rpc('compute_due_vaccines_for_animal', {
+          _animal_id: animal.id
+        });
+        const dueVaccines = (dueVaccinesData as any)?.due_vaccines || [];
         const thisVaccine = dueVaccines.find(v => v.vaccine_code === rule.vaccine_code);
         
         if (thisVaccine) {

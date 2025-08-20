@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
+import { vaccinesForRanch, pendingVaccinesForAnimal } from "@/lib/vaccines";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -52,11 +52,11 @@ interface VaccinationStats {
 }
 
 export function VaccinationDashboard() {
-  const { currentUser } = useSupabaseAuth();
-  const { rules, herdSettings, recordVaccination } = useLocationAwareVaccination();
+  const { user } = useSupabaseAuth();
   
   const [loading, setLoading] = useState(true);
   const [animals, setAnimals] = useState<any[]>([]);
+  const [herdSettings, setHerdSettings] = useState<any>(null);
   const [vaccinationStatus, setVaccinationStatus] = useState<VaccinationStatus[]>([]);
   const [stats, setStats] = useState<VaccinationStats>({
     totalAnimals: 0,
@@ -70,10 +70,27 @@ export function VaccinationDashboard() {
 
   useEffect(() => {
     loadVaccinationData();
-  }, [currentUser]);
+  }, [user]);
 
   const loadVaccinationData = async () => {
-    if (!currentUser?.cabañaId) return;
+    if (!user) return;
+    
+    // Get user's cabaña info
+    const { data: cabanaData } = await supabase
+      .from('profiles')
+      .select('cabaña_id')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (!cabanaData) return;
+    
+    // Get herd settings
+    const { data: settings } = await supabase
+      .from('cabañas')
+      .select('country_code, province_code')
+      .single();
+    
+    setHerdSettings(settings);
     
     try {
       setLoading(true);
@@ -82,7 +99,7 @@ export function VaccinationDashboard() {
       const { data: animalsData, error: animalsError } = await supabase
         .from('animals')
         .select('id, name, id_tag, sex, birth_date, status')
-        .eq('cabaña_id', currentUser.cabañaId)
+        .eq('status', 'activo')
         .neq('status', 'muerto')
         .neq('status', 'vendido');
 
@@ -355,12 +372,13 @@ export function VaccinationDashboard() {
       </Card>
 
       {/* Mandatory Vaccines Alert */}
-      {rules.filter(r => r.mandatory).length > 0 && (
+      {herdSettings && (
         <Alert>
           <Shield className="h-4 w-4" />
           <AlertDescription>
-            <strong>Vacunas Obligatorias para {herdSettings?.country || 'Argentina'}:</strong>{' '}
-            {rules.filter(r => r.mandatory).map(r => r.vaccine_name).join(', ')}
+            <strong>Vacunas Obligatorias para {herdSettings?.country_code || 'AR'}:</strong>{' '}
+            Sistema configurado para {herdSettings?.country_code || 'Argentina'}
+            {herdSettings?.province_code && ` - ${herdSettings.province_code}`}
           </AlertDescription>
         </Alert>
       )}

@@ -17,9 +17,8 @@ import {
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
-import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 
 interface AnimalVacunasProps {
   animal: Animal;
@@ -79,7 +78,6 @@ const requiredVaccines = [
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   const { alerts, loading: alertsLoading } = useVaccinationAlerts(animal.id);
-  const { getDueVaccinesForAnimal } = useLocationAwareVaccination();
   const [vaccinations, setVaccinations] = useState<any[]>([]);
   const [locationAlerts, setLocationAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -131,9 +129,11 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
 
       setVaccinations(allVaccinations);
 
-      // Get location-aware due vaccines
-      const dueVaccines = await getDueVaccinesForAnimal(animal.id);
-      setLocationAlerts(dueVaccines);
+      // Get location-aware due vaccines using RPC
+      const { data: dueVaccines } = await supabase.rpc('compute_due_vaccines_for_animal', {
+        _animal_id: animal.id
+      });
+      setLocationAlerts((dueVaccines as any)?.due_vaccines || []);
 
     } catch (error) {
       console.error("Error fetching vaccinations:", error);

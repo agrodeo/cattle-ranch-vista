@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Syringe, Plus, Calendar, AlertTriangle, CheckCircle, Shield, Info } from "lucide-react";
-import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
+import { supabase } from "@/integrations/supabase/client";
 import { AnimalSelector } from "./AnimalSelector";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -14,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { supabase } from "@/integrations/supabase/client";
 
 interface VaccineOption {
   code: string;
@@ -25,13 +24,7 @@ interface VaccineOption {
 }
 
 export function VaccinationManager() {
-  const { currentUser } = useSupabaseAuth();
-  const { 
-    rules, 
-    herdSettings, 
-    getAvailableVaccines, 
-    recordVaccination 
-  } = useLocationAwareVaccination();
+  const { user } = useSupabaseAuth();
   const { toast } = useToast();
   
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
@@ -45,15 +38,15 @@ export function VaccinationManager() {
 
   useEffect(() => {
     loadVaccines();
-  }, [rules]);
+  }, []);
 
   const loadVaccines = async () => {
     try {
-      const vaccines = await getAvailableVaccines();
-      const processedVaccines = vaccines.map((v: any) => ({
+      const { data: vaccines } = await supabase.from('vaccines').select('*');
+      const processedVaccines = (vaccines || []).map((v: any) => ({
         code: v.code,
         name: v.name,
-        mandatory: rules.some(r => r.vaccine_code === v.code && r.mandatory)
+        mandatory: false // Simplified for now
       }));
       setAvailableVaccines(processedVaccines);
     } catch (error) {
@@ -77,9 +70,17 @@ export function VaccinationManager() {
 
     try {
       setSubmitting(true);
-      const promises = selectedAnimals.map(animalId => 
-        recordVaccination(animalId, selectedVaccine, new Date(date), lot, dose, route)
-      );
+      const promises = selectedAnimals.map(async animalId => {
+        const { error } = await supabase.rpc('record_vaccination', {
+          _animal_id: animalId,
+          _vaccine_code: selectedVaccine,
+          _date: date,
+          _lot: lot,
+          _dose: dose,
+          _route: route
+        });
+        if (error) throw error;
+      });
       await Promise.all(promises);
       
       toast({

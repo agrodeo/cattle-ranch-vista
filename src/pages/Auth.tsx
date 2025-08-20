@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { useCountries } from "@/hooks/useCountries";
+import { useLocationOptions } from "@/hooks/useLocation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,23 +19,10 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState("signin");
   
   const [selectedCountry, setSelectedCountry] = useState<string>("");
-  const [selectedRegion, setSelectedRegion] = useState<string>("");
-  const [regions, setRegions] = useState<any[]>([]);
-  const [isLoadingRegions, setIsLoadingRegions] = useState(false);
+  const [selectedProvince, setSelectedProvince] = useState<string>("");
   
-  // Use centralized countries hook
-  const { countries, isLoadingCountries, countriesError } = useCountries();
-  
-  // DEBUG: Log state changes to track the issue
-  useEffect(() => {
-    console.log('🔍 Country loading state changed:', {
-      isLoadingCountries,
-      countriesError: !!countriesError,
-      countriesCount: countries.length,
-      selectedCountry,
-      timestamp: new Date().toISOString()
-    });
-  }, [isLoadingCountries, countriesError, countries.length, selectedCountry]);
+  // Use new location options hook (no remote fetch needed)
+  const { isReady, countries, arProvinces } = useLocationOptions();
   
   const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const navigate = useNavigate();
@@ -46,63 +33,16 @@ const Auth = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Show error toast if countries failed to load but we have fallback
+  // Clear province when country changes
   useEffect(() => {
-    if (countriesError && countries.length > 0) {
-      toast({
-        title: "Advertencia",
-        description: "No se pudieron cargar todos los países. Usando lista predeterminada.",
-        variant: "default",
-      });
-    }
-  }, [countriesError, countries.length]);
-
-  useEffect(() => {
-    const loadRegions = async () => {
-      if (!selectedCountry) {
-        setRegions([]);
-        setSelectedRegion("");
-        return;
-      }
-      
-      setIsLoadingRegions(true);
-      
-      try {
-        const { data: jurisdictions, error } = await supabase
-          .from('jurisdictions')
-          .select('*')
-          .eq('parent_code', selectedCountry)
-          .order('name');
-        
-        if (error) throw error;
-        
-        // Filter regions for selected country (has parent_code = selectedCountry)
-        const countryRegions = jurisdictions?.filter((j: any) => 
-          j.parent_code === selectedCountry
-        ).sort((a: any, b: any) => a.name.localeCompare(b.name)) || [];
-        
-        setRegions(countryRegions);
-      } catch (error) {
-        console.error('Error loading regions:', error);
-        setRegions([]);
-      } finally {
-        setIsLoadingRegions(false);
-      }
-    };
-
-    loadRegions();
-  }, [selectedCountry]);
-
-  // Clear region when country changes
-  useEffect(() => {
-    setSelectedRegion("");
+    setSelectedProvince("");
   }, [selectedCountry]);
 
   // Reset form states on tab change
   useEffect(() => {
     setIsSubmitting(false);
     setSelectedCountry("");
-    setSelectedRegion("");
+    setSelectedProvince("");
   }, [activeTab]);
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -162,13 +102,23 @@ const Auth = () => {
         return;
       }
 
+      const isAR = selectedCountry === 'AR';
+      if (isAR && !selectedProvince) {
+        toast({
+          title: "Error",
+          description: "Debes seleccionar una provincia para Argentina",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await signUp(
         email,
         password,
         ownerName,
         companyName,
         selectedCountry, 
-        selectedRegion || null
+        isAR ? selectedProvince : null
       );
       
       if (error) {
@@ -302,96 +252,47 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">País *</Label>
-                  
-                  {/* Force clean remount with different keys */}
-                  {isLoadingCountries ? (
-                    <Select key="loading-countries" disabled value="">
-                      <SelectTrigger id="country" className="cursor-wait">
-                        <SelectValue placeholder="Cargando países..." />
-                      </SelectTrigger>
-                    </Select>
-                  ) : countriesError && countries.length === 0 ? (
-                    <Input
-                      key="error-countries"
-                      id="countryText"
-                      name="countryText"
-                      type="text"
-                      placeholder="Escribe tu país manualmente"
-                      value={selectedCountry}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
-                      required
-                      className="cursor-text"
-                    />
-                  ) : (
-                    <Select
-                      key="ready-countries"
-                      value={selectedCountry}
-                      onValueChange={setSelectedCountry}
-                      required
-                      // Don't disable the entire Select component
+                  <Select
+                    key="country"
+                    value={selectedCountry}
+                    onValueChange={setSelectedCountry}
+                    disabled={!isReady}
+                  >
+                    <SelectTrigger 
+                      id="country" 
+                      aria-label="País" 
+                      className={!isReady ? 'cursor-wait' : 'cursor-default'}
                     >
-                      <SelectTrigger 
-                        id="country"
-                        forceEnabled={!isLoadingCountries}
-                        className="[&:disabled]:!cursor-pointer [&:disabled]:!opacity-100"
-                        style={!isLoadingCountries ? { cursor: 'pointer !important' } : undefined}
-                        onClick={(e) => {
-                          // Force enable interaction
-                          if (!isLoadingCountries) {
-                            console.log('Country select clicked, loading:', isLoadingCountries);
-                          }
-                        }}
-                      >
-                        <SelectValue placeholder="Selecciona un país" />
-                      </SelectTrigger>
+                      <SelectValue placeholder={isReady ? 'Selecciona un país' : 'Cargando países…'} />
+                    </SelectTrigger>
+                    {isReady && (
                       <SelectContent>
-                        {countries.map((country) => (
+                        {countries.map(country => (
                           <SelectItem key={country.code} value={country.code}>
                             {country.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
-                    </Select>
-                  )}
-                  
-                  {/* DEBUG: Native select fallback for testing */}
-                  {process.env.NODE_ENV === 'development' && !isLoadingCountries && !countriesError && countries.length > 0 && (
-                    <details className="mt-2">
-                      <summary className="text-xs text-muted-foreground cursor-pointer">🔧 Debug: Native Select</summary>
-                      <select 
-                        id="countryNative" 
-                        value={selectedCountry}
-                        onChange={(e) => setSelectedCountry(e.target.value)} 
-                        className="w-full mt-1 p-2 border rounded cursor-default"
-                      >
-                        <option value="">Selecciona país (nativo)...</option>
-                        {countries.map(c => (
-                          <option key={c.code} value={c.code}>{c.name}</option>
-                        ))}
-                      </select>
-                    </details>
-                  )}
+                    )}
+                  </Select>
                 </div>
-                {/* Show provinces for countries that have them */}
-                {(selectedCountry === 'AR' || selectedCountry === 'MX' || selectedCountry === 'US' || 
-                  selectedCountry === 'BR' || selectedCountry === 'AU' || selectedCountry === 'PE' || 
-                  selectedCountry === 'VE' || selectedCountry === 'EC' || selectedCountry === 'BO') && (
+                
+                {/* Show provinces only for Argentina */}
+                {selectedCountry === 'AR' && (
                   <div className="space-y-2">
-                    <Label htmlFor="region">Provincia/Estado</Label>
-                    <Select value={selectedRegion} onValueChange={setSelectedRegion} disabled={isLoadingRegions}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={
-                          isLoadingRegions 
-                            ? "Cargando regiones..." 
-                            : regions.length > 0 
-                            ? "Selecciona una región (opcional)" 
-                            : "No hay regiones disponibles"
-                        } />
+                    <Label htmlFor="province">Provincia *</Label>
+                    <Select
+                      key={`prov-${selectedCountry}`}  // forces remount when toggling AR
+                      value={selectedProvince}
+                      onValueChange={setSelectedProvince}
+                    >
+                      <SelectTrigger aria-label="Provincia">
+                        <SelectValue placeholder="Selecciona provincia" />
                       </SelectTrigger>
                       <SelectContent>
-                        {regions.map((region) => (
-                          <SelectItem key={region.code} value={region.code}>
-                            {region.name}
+                        {arProvinces.map(province => (
+                          <SelectItem key={province.code} value={province.code}>
+                            {province.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
