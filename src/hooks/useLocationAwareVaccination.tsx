@@ -51,8 +51,8 @@ export function useLocationAwareVaccination() {
   const [herdSettings, setHerdSettings] = useState<HerdSettings | null>(null);
   const [rules, setRules] = useState<VaccineRule[]>([]);
   const [loading, setLoading] = useState(false);
-  const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
-  const [jurisdictionsCache, setJurisdictionsCache] = useState<any[]>([]);
+  const [isLoadingCountries, setIsLoadingCountries] = useState(false);
+  const [countriesCache, setCountriesCache] = useState<any[]>([]);
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
 
@@ -227,18 +227,18 @@ export function useLocationAwareVaccination() {
     }
   };
 
-  const getJurisdictions = useCallback(async () => {
+  const getCountries = useCallback(async () => {
     // Return cached data if available
-    if (jurisdictionsCache.length > 0) {
-      return jurisdictionsCache;
+    if (countriesCache.length > 0) {
+      return countriesCache;
     }
 
     // Prevent multiple simultaneous calls
-    if (jurisdictionsLoading) {
+    if (isLoadingCountries) {
       return [];
     }
 
-    setJurisdictionsLoading(true);
+    setIsLoadingCountries(true);
     
     try {
       const { data, error } = await supabase
@@ -250,7 +250,7 @@ export function useLocationAwareVaccination() {
       
       // Cache the data
       const jurisdictions = data || [];
-      setJurisdictionsCache(jurisdictions);
+      setCountriesCache(jurisdictions);
       return jurisdictions;
     } catch (error) {
       console.error("Error fetching jurisdictions:", error);
@@ -263,12 +263,12 @@ export function useLocationAwareVaccination() {
         { code: "MX", country: "MX", name: "México", parent_code: null },
         { code: "PY", country: "PY", name: "Paraguay", parent_code: null },
       ];
-      setJurisdictionsCache(fallback);
+      setCountriesCache(fallback);
       return fallback;
     } finally {
-      setJurisdictionsLoading(false);
+      setIsLoadingCountries(false);
     }
-  }, [jurisdictionsCache, jurisdictionsLoading]);
+  }, [countriesCache, isLoadingCountries]);
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -281,7 +281,7 @@ export function useLocationAwareVaccination() {
     herdSettings,
     rules,
     loading,
-    jurisdictionsLoading,
+    isLoadingCountries,
     fetchHerdSettings,
     fetchRules,
     saveHerdSettings,
@@ -289,6 +289,6 @@ export function useLocationAwareVaccination() {
     recordVaccination,
     getAvailableVaccines,
     getVaccineAliases,
-    getJurisdictions,
+    getCountries,
   };
 }

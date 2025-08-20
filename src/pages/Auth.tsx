@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useCountries } from "@/hooks/useCountries";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,14 +16,15 @@ const Auth = () => {
   // Separate loading states
   const [loading, setLoading] = useState(false); // For sign in form
   const [isSubmitting, setIsSubmitting] = useState(false); // For register form submission
-  const [isLoadingCountries, setIsLoadingCountries] = useState(true); // For country loading
   const [activeTab, setActiveTab] = useState("signin");
   
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedRegion, setSelectedRegion] = useState<string>("");
-  const [countries, setCountries] = useState<any[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
+  
+  // Use centralized countries hook
+  const { countries, isLoadingCountries, countriesError } = useCountries();
   
   const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const navigate = useNavigate();
@@ -33,87 +35,16 @@ const Auth = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Load countries safely with cleanup
+  // Show error toast if countries failed to load but we have fallback
   useEffect(() => {
-    let active = true;
-    
-    const loadCountries = async () => {
-      if (countries.length > 0) return; // Avoid reloading if already loaded
-      
-      setIsLoadingCountries(true);
-      console.log('Loading countries...');
-      
-      try {
-        const { data: jurisdictions, error } = await supabase
-          .from('jurisdictions')
-          .select('*')
-          .order('name');
-        
-        console.log('Jurisdictions response:', { data: jurisdictions, error });
-        
-        if (error) {
-          console.error('Supabase error:', error);
-          throw error;
-        }
-        
-        if (!jurisdictions || jurisdictions.length === 0) {
-          console.warn('No jurisdictions data received');
-          // Fallback data for common countries
-          const fallbackCountries = [
-            { code: 'AR', name: 'Argentina' },
-            { code: 'UY', name: 'Uruguay' },
-            { code: 'BR', name: 'Brasil' },
-            { code: 'PY', name: 'Paraguay' },
-            { code: 'CL', name: 'Chile' }
-          ];
-          if (active) setCountries(fallbackCountries);
-          return;
-        }
-        
-        // Filter for countries only (parent_code is null)
-        const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
-        console.log('Filtered countries:', countryJurisdictions);
-        
-        // Map countries with proper code and name
-        const uniqueCountries = countryJurisdictions.map((j: any) => ({
-          code: j.code,
-          name: j.name
-        })).sort((a: any, b: any) => a.name.localeCompare(b.name));
-        
-        console.log('Final countries list:', uniqueCountries);
-        if (active) setCountries(uniqueCountries);
-        
-      } catch (error) {
-        console.error('Error loading countries:', error);
-        
-        // Show user-friendly error
-        toast({
-          title: "Advertencia",
-          description: "No se pudieron cargar los países. Usando lista predeterminada.",
-          variant: "default",
-        });
-        
-        // Set fallback countries so user can still register
-        const fallbackCountries = [
-          { code: 'AR', name: 'Argentina' },
-          { code: 'UY', name: 'Uruguay' },
-          { code: 'BR', name: 'Brasil' },
-          { code: 'PY', name: 'Paraguay' },
-          { code: 'CL', name: 'Chile' }
-        ];
-        if (active) setCountries(fallbackCountries);
-        
-      } finally {
-        if (active) {
-          setIsLoadingCountries(false);
-        }
-        console.log('Finished loading countries');
-      }
-    };
-
-    loadCountries();
-    return () => { active = false; };
-  }, []); // Remove any dependencies that could cause re-runs
+    if (countriesError && countries.length > 0) {
+      toast({
+        title: "Advertencia",
+        description: "No se pudieron cargar todos los países. Usando lista predeterminada.",
+        variant: "default",
+      });
+    }
+  }, [countriesError, countries.length]);
 
   useEffect(() => {
     const loadRegions = async () => {
@@ -356,24 +287,38 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">País *</Label>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={isLoadingCountries}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={
-                        isLoadingCountries 
-                          ? "Cargando países..." 
-                          : countries.length === 0 
-                          ? "No hay países disponibles"
-                          : "Selecciona un país"
-                      } />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {countries.map((country) => (
-                        <SelectItem key={country.code} value={country.code}>
-                          {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {countriesError && countries.length === 0 ? (
+                    <Input
+                      id="country"
+                      name="country"
+                      type="text"
+                      placeholder="País (ingresar manualmente)"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      required
+                    />
+                  ) : (
+                    <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={isLoadingCountries}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          isLoadingCountries 
+                            ? "Cargando países..." 
+                            : countries.length === 0 
+                            ? "No hay países disponibles"
+                            : "Selecciona un país"
+                        } />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {!isLoadingCountries && !countriesError && countries.length > 0 ? (
+                          countries.map((country) => (
+                            <SelectItem key={country.code} value={country.code}>
+                              {country.name}
+                            </SelectItem>
+                          ))
+                        ) : null}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
                 {selectedCountry === 'AR' && (
                   <div className="space-y-2">
@@ -420,9 +365,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isSubmitting || isLoadingCountries}>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isSubmitting ? "Cargando..." : "Crear Empresa"}
+                  {isSubmitting ? "Creando..." : "Crear Empresa"}
                 </Button>
               </form>
             </TabsContent>

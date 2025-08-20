@@ -12,7 +12,7 @@ interface HerdSettingsFormProps {
 }
 
 export function HerdSettingsForm({ onSettingsSaved }: HerdSettingsFormProps) {
-  const { herdSettings, saveHerdSettings, getJurisdictions, rules, loading } = useLocationAwareVaccination();
+  const { herdSettings, saveHerdSettings, getCountries, rules, loading } = useLocationAwareVaccination();
   const [jurisdictions, setJurisdictions] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     country: '',
@@ -39,7 +39,7 @@ export function HerdSettingsForm({ onSettingsSaved }: HerdSettingsFormProps) {
   }, [herdSettings]);
 
   const loadJurisdictions = async () => {
-    const data = await getJurisdictions();
+    const data = await getCountries();
     setJurisdictions(data);
   };
 
