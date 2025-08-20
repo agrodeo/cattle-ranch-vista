@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { useLocationAwareVaccination } from "@/hooks/useLocationAwareVaccination";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,9 +19,9 @@ const Auth = () => {
   const [countries, setCountries] = useState<any[]>([]);
   const [regions, setRegions] = useState<any[]>([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
+  const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
   
   const { signIn, signInEmployee, signUp, isAuthenticated } = useSupabaseAuth();
-  const { getJurisdictions, jurisdictionsLoading } = useLocationAwareVaccination();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,11 +32,17 @@ const Auth = () => {
 
   useEffect(() => {
     const loadJurisdictions = async () => {
+      setJurisdictionsLoading(true);
       try {
-        const jurisdictions = await getJurisdictions();
+        const { data: jurisdictions, error } = await supabase
+          .from('jurisdictions')
+          .select('*')
+          .order('name');
+        
+        if (error) throw error;
         
         // Filter for countries only (parent_code is null)
-        const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
+        const countryJurisdictions = jurisdictions?.filter((j: any) => !j.parent_code) || [];
         
         // Map countries with proper code and name
         const uniqueCountries = countryJurisdictions.map((j: any) => ({
@@ -47,11 +53,13 @@ const Auth = () => {
         setCountries(uniqueCountries);
       } catch (error) {
         console.error('Error loading jurisdictions:', error);
+      } finally {
+        setJurisdictionsLoading(false);
       }
     };
 
     loadJurisdictions();
-  }, [getJurisdictions]);
+  }, []);
 
   useEffect(() => {
     const loadRegions = async () => {
@@ -64,12 +72,18 @@ const Auth = () => {
       setIsLoadingRegions(true);
       
       try {
-        const jurisdictions = await getJurisdictions();
+        const { data: jurisdictions, error } = await supabase
+          .from('jurisdictions')
+          .select('*')
+          .eq('parent_code', selectedCountry)
+          .order('name');
+        
+        if (error) throw error;
         
         // Filter regions for selected country (has parent_code = selectedCountry)
-        const countryRegions = jurisdictions.filter((j: any) => 
+        const countryRegions = jurisdictions?.filter((j: any) => 
           j.parent_code === selectedCountry
-        ).sort((a: any, b: any) => a.name.localeCompare(b.name));
+        ).sort((a: any, b: any) => a.name.localeCompare(b.name)) || [];
         
         setRegions(countryRegions);
       } catch (error) {
@@ -81,7 +95,7 @@ const Auth = () => {
     };
 
     loadRegions();
-  }, [selectedCountry, getJurisdictions]);
+  }, [selectedCountry]);
 
   // Clear region when country changes
   useEffect(() => {
