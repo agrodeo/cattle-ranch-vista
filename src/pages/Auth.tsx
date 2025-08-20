@@ -18,6 +18,7 @@ const Auth = () => {
   const [regions, setRegions] = useState<any[]>([]);
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
   const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
+  const [jurisdictionsLoaded, setJurisdictionsLoaded] = useState(false);
   
   const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ const Auth = () => {
 
   useEffect(() => {
     const loadJurisdictions = async () => {
-      if (countries.length > 0) return; // Avoid reloading if already loaded
+      if (jurisdictionsLoaded || countries.length > 0) return; // Avoid reloading if already loaded
       
       setJurisdictionsLoading(true);
       console.log('Loading jurisdictions...');
@@ -97,6 +98,7 @@ const Auth = () => {
         
       } finally {
         setJurisdictionsLoading(false);
+        setJurisdictionsLoaded(true);
         console.log('Finished loading jurisdictions');
       }
     };
@@ -340,9 +342,15 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">País *</Label>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={jurisdictionsLoading}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={jurisdictionsLoading ? "Cargando países..." : "Selecciona un país"} />
+                   <Select value={selectedCountry} onValueChange={setSelectedCountry} required disabled={jurisdictionsLoading}>
+                     <SelectTrigger>
+                       <SelectValue placeholder={
+                         jurisdictionsLoading 
+                           ? "Cargando países..." 
+                           : countries.length === 0 
+                           ? "No hay países disponibles"
+                           : "Selecciona un país"
+                       } />
                     </SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
@@ -398,9 +406,9 @@ const Auth = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading || jurisdictionsLoading}>
-                  {(loading || jurisdictionsLoading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Crear Empresa
+                 <Button type="submit" className="w-full" disabled={loading}>
+                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                   {jurisdictionsLoading ? "Cargando..." : "Crear Empresa"}
                 </Button>
               </form>
             </TabsContent>
