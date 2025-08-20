@@ -328,11 +328,13 @@ const Auth = () => {
                       value={selectedCountry}
                       onValueChange={setSelectedCountry}
                       required
-                      disabled={false}
+                      disabled={isLoadingCountries}
                     >
                       <SelectTrigger 
                         id="country"
                         forceEnabled={!isLoadingCountries}
+                        className="[&:disabled]:!cursor-pointer [&:disabled]:!opacity-100"
+                        style={!isLoadingCountries ? { cursor: 'pointer !important' } : undefined}
                       >
                         <SelectValue placeholder="Selecciona un país" />
                       </SelectTrigger>
