@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Building2, Mail, UserPlus, Users } from "lucide-react";
+import { migrateEmployeePasswords } from '@/utils/migratePasswords';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -125,11 +126,35 @@ const Auth = () => {
     const { error } = await signInEmployee(username, password);
     
     if (error) {
-      toast({
-        title: "Error al iniciar sesión",
-        description: error.message,
-        variant: "destructive",
-      });
+      // Check if this might be a password migration issue
+      if (error.message.includes('conexion') || error.message.includes('timeout') || error.message.includes('bcrypt')) {
+        try {
+          toast({
+            title: "Migrando contraseñas...",
+            description: "Actualizando sistema de seguridad, espera un momento.",
+          });
+          
+          await migrateEmployeePasswords();
+          
+          toast({
+            title: "Migración completada",
+            description: "Sistema actualizado. Intenta iniciar sesión nuevamente.",
+          });
+        } catch (migrationError) {
+          console.error('Migration failed:', migrationError);
+          toast({
+            title: "Error al iniciar sesión",
+            description: "La conexión está tardando demasiado. Verifica tu internet e intenta de nuevo.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "Error al iniciar sesión",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "¡Bienvenido!",
