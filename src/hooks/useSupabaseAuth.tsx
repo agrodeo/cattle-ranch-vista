@@ -481,28 +481,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signInEmployee = async (username: string, password: string) => {
     try {
-      // Add timeout for the employee login request
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Tiempo de conexión agotado')), 15000)
-      );
-      
-      const loginPromise = supabase.rpc('verify_user_login', {
+      const { data, error } = await supabase.rpc('verify_user_login', {
         input_username: username,
         input_password: password
       });
       
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any;
-      
       if (error) {
-        // Improve error messages
-        if (error.message.includes('not found') || error.message.includes('does not exist')) {
-          return { error: { message: 'Usuario no encontrado. Verifica que tienes credenciales de empleado o usa la pestaña "Propietario" si eres el dueño de la empresa.' } };
-        }
-        return { error: { message: error.message } };
+        console.error('Employee login error:', error);
+        return { error: { message: 'Error al verificar credenciales' } };
       }
       
-      if (!data || !data[0]?.success || !data[0]?.user_data) {
-        return { error: { message: 'Usuario o contraseña incorrectos. Si eres propietario, usa la pestaña "Propietario" con tu email.' } };
+      if (!data || !Array.isArray(data) || data.length === 0 || !data[0].success || !data[0].user_data) {
+        return { error: { message: 'Usuario o contraseña incorrectos' } };
       }
       
       // Manually set the current user for employees
@@ -528,13 +518,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: null };
     } catch (error: any) {
       console.error('Error in signInEmployee:', error);
-      
-      // Handle timeout and connection errors more gracefully
-      if (error.message === 'Tiempo de conexión agotado') {
-        return { error: { message: 'La conexión está tardando demasiado. Verifica tu internet e intenta de nuevo.' } };
-      }
-      
-      return { error: { message: 'Error de conexión. Si eres propietario, usa la pestaña "Propietario" con tu email.' } };
+      return { error: { message: 'Error al iniciar sesión, verifica tus credenciales' } };
     }
   };
 
