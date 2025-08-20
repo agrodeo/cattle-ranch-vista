@@ -26,6 +26,17 @@ const Auth = () => {
   // Use centralized countries hook
   const { countries, isLoadingCountries, countriesError } = useCountries();
   
+  // DEBUG: Log state changes to track the issue
+  useEffect(() => {
+    console.log('🔍 Country loading state changed:', {
+      isLoadingCountries,
+      countriesError: !!countriesError,
+      countriesCount: countries.length,
+      selectedCountry,
+      timestamp: new Date().toISOString()
+    });
+  }, [isLoadingCountries, countriesError, countries.length, selectedCountry]);
+  
   const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const navigate = useNavigate();
 
@@ -251,7 +262,11 @@ const Auth = () => {
               <div className="text-center text-sm text-muted-foreground mb-4">
                 Crear una nueva empresa/cabaña
               </div>
-              <form onSubmit={handleSignUp} className="space-y-4">
+              <form 
+                onSubmit={handleSignUp} 
+                className="space-y-4"
+                style={{ pointerEvents: 'auto' }} // Ensure form is never blocked
+              >
                 <div className="space-y-2">
                   <Label htmlFor="companyName">Nombre de la Empresa</Label>
                   <Input
@@ -287,19 +302,32 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">País *</Label>
-                  {isLoadingCountries && (
-                    <Select disabled value="">
+                  
+                  {/* Force clean remount with different keys */}
+                  {isLoadingCountries ? (
+                    <Select key="loading-countries" disabled value="">
                       <SelectTrigger id="country" className="cursor-wait">
                         <SelectValue placeholder="Cargando países..." />
                       </SelectTrigger>
                     </Select>
-                  )}
-                  
-                  {!isLoadingCountries && !countriesError && countries.length > 0 && (
-                    <Select 
-                      value={selectedCountry} 
-                      onValueChange={setSelectedCountry} 
-                      required 
+                  ) : countriesError && countries.length === 0 ? (
+                    <Input
+                      key="error-countries"
+                      id="countryText"
+                      name="countryText"
+                      type="text"
+                      placeholder="Escribe tu país manualmente"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      required
+                      className="cursor-text"
+                    />
+                  ) : (
+                    <Select
+                      key="ready-countries"
+                      value={selectedCountry}
+                      onValueChange={setSelectedCountry}
+                      required
                       disabled={false}
                     >
                       <SelectTrigger id="country" className="cursor-default">
@@ -315,17 +343,22 @@ const Auth = () => {
                     </Select>
                   )}
                   
-                  {countriesError && countries.length === 0 && (
-                    <Input
-                      id="countryText"
-                      name="countryText"
-                      type="text"
-                      placeholder="Escribe tu país manualmente"
-                      value={selectedCountry}
-                      onChange={(e) => setSelectedCountry(e.target.value)}
-                      required
-                      className="cursor-text"
-                    />
+                  {/* DEBUG: Native select fallback for testing */}
+                  {process.env.NODE_ENV === 'development' && !isLoadingCountries && !countriesError && countries.length > 0 && (
+                    <details className="mt-2">
+                      <summary className="text-xs text-muted-foreground cursor-pointer">🔧 Debug: Native Select</summary>
+                      <select 
+                        id="countryNative" 
+                        value={selectedCountry}
+                        onChange={(e) => setSelectedCountry(e.target.value)} 
+                        className="w-full mt-1 p-2 border rounded cursor-default"
+                      >
+                        <option value="">Selecciona país (nativo)...</option>
+                        {countries.map(c => (
+                          <option key={c.code} value={c.code}>{c.name}</option>
+                        ))}
+                      </select>
+                    </details>
                   )}
                 </div>
                 {selectedCountry === 'AR' && (

@@ -11,6 +11,16 @@ export function useCountries() {
   const [isLoadingCountries, setIsLoadingCountries] = useState(true);
   const [countriesError, setCountriesError] = useState<Error | null>(null);
 
+  // DEBUG: Log state changes
+  useEffect(() => {
+    console.log('🏗️ useCountries state changed:', {
+      isLoadingCountries,
+      countriesError: !!countriesError,
+      countriesCount: countries.length,
+      timestamp: new Date().toISOString()
+    });
+  }, [isLoadingCountries, countriesError, countries.length]);
+
   useEffect(() => {
     let active = true;
     
