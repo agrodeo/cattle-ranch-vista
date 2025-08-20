@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.confirm-password-reset]
 verify_jwt = false
+
+[functions.migrate-employee-passwords]
+verify_jwt = false
