@@ -46,11 +46,6 @@ const menuItems = [
     icon: Activity,
   },
   {
-    title: "Usuarios",
-    url: "/users",
-    icon: UserCog,
-  },
-  {
     title: "Finanzas",
     url: "/finances",
     icon: DollarSign,

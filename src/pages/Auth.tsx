@@ -10,8 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Building2, Mail, UserPlus, Users } from "lucide-react";
-import { migrateEmployeePasswords } from '@/utils/migratePasswords';
-
 const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
@@ -21,7 +19,7 @@ const Auth = () => {
   const [isLoadingRegions, setIsLoadingRegions] = useState(false);
   const [jurisdictionsLoading, setJurisdictionsLoading] = useState(false);
   
-  const { signIn, signInEmployee, signUp, isAuthenticated } = useSupabaseAuth();
+  const { signIn, signUp, isAuthenticated } = useSupabaseAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -129,64 +127,6 @@ const Auth = () => {
     setLoading(false);
   };
 
-  const handleEmployeeSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const formData = new FormData(e.currentTarget);
-      const username = formData.get("username") as string;
-      const password = formData.get("password") as string;
-
-      if (!username || !password) {
-        toast({
-          title: "Error",
-          description: "Por favor ingresa usuario y contraseña",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const { error } = await signInEmployee(username, password);
-      
-      if (error) {
-        if (error.message.includes('Usuario no encontrado') || error.message.includes('not found')) {
-          toast({
-            title: "Usuario no encontrado",
-            description: "El nombre de usuario no existe. ¿Eres propietario? Usa la pestaña 'Propietario'.",
-            variant: "destructive",
-          });
-        } else if (error.message.includes('contraseña') || error.message.includes('password')) {
-          toast({
-            title: "Contraseña incorrecta",
-            description: "Verifica tu contraseña e intenta nuevamente.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error al iniciar sesión",
-            description: "Verifica tus credenciales o contacta al administrador.",
-            variant: "destructive",
-          });
-        }
-      } else {
-        toast({
-          title: "¡Bienvenido!",
-          description: "Has iniciado sesión exitosamente.",
-        });
-        navigate("/dashboard");
-      }
-    } catch (err) {
-      console.error('Employee login error:', err);
-      toast({
-        title: "Error de conexión",
-        description: "No se pudo conectar al servidor. Intenta nuevamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -267,14 +207,10 @@ const Auth = () => {
         
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin" className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                Propietario
-              </TabsTrigger>
-              <TabsTrigger value="employee" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Empleado
+                Iniciar Sesión
               </TabsTrigger>
               <TabsTrigger value="register" className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
@@ -284,7 +220,7 @@ const Auth = () => {
 
             <TabsContent value="signin" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
-                Ingresa con tu email y contraseña de propietario
+                Ingresa con tu email y contraseña
               </div>
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
@@ -318,44 +254,6 @@ const Auth = () => {
               </form>
             </TabsContent>
 
-            <TabsContent value="employee" className="space-y-4 mt-6">
-              <div className="text-center text-sm text-muted-foreground mb-4">
-                Solo para empleados con usuario asignado
-              </div>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 text-sm text-blue-800">
-                <strong>¿No tienes usuario de empleado?</strong> 
-                <br />Si eres propietario, usa la pestaña "Propietario" con tu email.
-                <br />Si eres empleado sin usuario, contacta a tu administrador.
-              </div>
-              <form onSubmit={handleEmployeeSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="employee-username">Usuario</Label>
-                  <Input
-                    id="employee-username"
-                    name="username"
-                    type="text"
-                    placeholder="tu_usuario"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="employee-password">Contraseña</Label>
-                  <Input
-                    id="employee-password"
-                    name="password"
-                    type="password"
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Iniciar Sesión como Empleado
-                </Button>
-                <div className="text-center text-xs text-muted-foreground">
-                  Solo para empleados con credenciales específicas
-                </div>
-              </form>
-            </TabsContent>
 
             <TabsContent value="register" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">

@@ -8,7 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
-import Users from "./pages/Users";
+
 import AnimalProfile from "./pages/AnimalProfile";
 import Subscription from "./pages/Subscription";
 import Layout from "@/components/Layout";
@@ -70,13 +70,6 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<Activities />} />
-            </Route>
-            <Route path="/users" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Users />} />
             </Route>
             <Route path="/finances" element={
               <ProtectedRoute>
