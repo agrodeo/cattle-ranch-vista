@@ -1354,6 +1354,65 @@ export type Database = {
           },
         ]
       }
+      users: {
+        Row: {
+          cabaña_id: string | null
+          created_at: string | null
+          department: string | null
+          email: string | null
+          employee_code: string | null
+          full_name: string | null
+          hire_date: string | null
+          id: string
+          is_active: boolean | null
+          is_internal_profile: boolean | null
+          last_login: string | null
+          position: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          cabaña_id?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          employee_code?: string | null
+          full_name?: string | null
+          hire_date?: string | null
+          id: string
+          is_active?: boolean | null
+          is_internal_profile?: boolean | null
+          last_login?: string | null
+          position?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          cabaña_id?: string | null
+          created_at?: string | null
+          department?: string | null
+          email?: string | null
+          employee_code?: string | null
+          full_name?: string | null
+          hire_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_internal_profile?: boolean | null
+          last_login?: string | null
+          position?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "users_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vaccination_schemes: {
         Row: {
           breed: string | null
