@@ -57,13 +57,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
   const fetchRecords = async () => {
     try {
       setIsLoading(true);
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser?.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
+      if (!currentUser?.cabañaId) return;
 
       const { data, error } = await supabase
         .from("artificial_inseminations")
@@ -77,7 +71,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
             )
           )
         `)
-        .eq("cabaña_id", userData.cabaña_id)
+        .eq("cabaña_id", currentUser.cabañaId)
         .order("insemination_date", { ascending: false });
 
       if (error) throw error;

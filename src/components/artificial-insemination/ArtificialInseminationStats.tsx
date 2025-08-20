@@ -32,17 +32,11 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
 
   const fetchStats = async () => {
     try {
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser?.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
+      if (!currentUser?.cabañaId) return;
 
       const { data, error } = await supabase
         .rpc("calculate_ai_success_rate", {
-          filter_cabaña_id: userData.cabaña_id
+          filter_cabaña_id: currentUser.cabañaId
         });
 
       if (error) throw error;
@@ -56,19 +50,13 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
 
   const fetchYearlyStats = async () => {
     try {
-      const { data: userData } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser?.id)
-        .single();
-
-      if (!userData?.cabaña_id) return;
+      if (!currentUser?.cabañaId) return;
 
       // Get available years
       const { data: yearsData } = await supabase
         .from("artificial_inseminations")
         .select("insemination_date")
-        .eq("cabaña_id", userData.cabaña_id);
+        .eq("cabaña_id", currentUser.cabañaId);
 
       if (yearsData) {
         const years = [...new Set(
@@ -86,7 +74,7 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
           const { data, error } = await supabase
             .rpc("calculate_ai_success_rate", {
               filter_year: parseInt(year),
-              filter_cabaña_id: userData.cabaña_id
+              filter_cabaña_id: currentUser.cabañaId
             });
 
           if (!error && data && data.length > 0) {

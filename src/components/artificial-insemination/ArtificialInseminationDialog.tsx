@@ -186,24 +186,12 @@ export function ArtificialInseminationDialog({
 
     setIsLoading(true);
     try {
-      console.log("🔍 Obteniendo datos del usuario...");
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", currentUser?.id)
-        .single();
-
-      if (userError) {
-        console.error("❌ Error al obtener usuario:", userError);
-        throw userError;
+      console.log("🔍 Obteniendo cabaña_id del usuario...");
+      if (!currentUser?.cabañaId) {
+        throw new Error("No se encontró el ID de la cabaña");
       }
 
-      if (!userData?.cabaña_id) {
-        console.log("❌ Usuario sin cabaña asignada");
-        throw new Error("Usuario sin cabaña asignada");
-      }
-
-      console.log("✅ Usuario obtenido:", userData);
+      console.log("✅ Cabaña ID obtenido:", currentUser.cabañaId);
       
       let finalBullId = null; // Initialize as null
 
@@ -242,7 +230,7 @@ export function ArtificialInseminationDialog({
           birth_weight: bullBirthWeight ? parseFloat(bullBirthWeight) : null,
           weaning_weight: bullWeaningWeight ? parseFloat(bullWeaningWeight) : null,
           final_weight: bullFinalWeight ? parseFloat(bullFinalWeight) : null,
-          cabaña_id: userData.cabaña_id,
+        cabaña_id: currentUser.cabañaId,
           created_by: currentUser?.id,
         };
 
@@ -272,7 +260,7 @@ export function ArtificialInseminationDialog({
         bull_id: finalBullId, // Will be null for manual entry or bulls from bulls table
         is_pregnant: isPregnant === "yes" ? true : isPregnant === "no" ? false : null,
         notes: notes || null,
-        cabaña_id: userData.cabaña_id,
+        cabaña_id: currentUser.cabañaId,
         created_by: currentUser?.id,
       }));
 

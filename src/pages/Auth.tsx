@@ -31,16 +31,38 @@ const Auth = () => {
   useEffect(() => {
     const loadJurisdictions = async () => {
       setJurisdictionsLoading(true);
+      console.log('Loading jurisdictions...');
+      
       try {
         const { data: jurisdictions, error } = await supabase
           .from('jurisdictions')
           .select('*')
           .order('name');
         
-        if (error) throw error;
+        console.log('Jurisdictions response:', { data: jurisdictions, error });
+        
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
+        
+        if (!jurisdictions || jurisdictions.length === 0) {
+          console.warn('No jurisdictions data received');
+          // Fallback data for common countries
+          const fallbackCountries = [
+            { code: 'AR', name: 'Argentina' },
+            { code: 'UY', name: 'Uruguay' },
+            { code: 'BR', name: 'Brasil' },
+            { code: 'PY', name: 'Paraguay' },
+            { code: 'CL', name: 'Chile' }
+          ];
+          setCountries(fallbackCountries);
+          return;
+        }
         
         // Filter for countries only (parent_code is null)
-        const countryJurisdictions = jurisdictions?.filter((j: any) => !j.parent_code) || [];
+        const countryJurisdictions = jurisdictions.filter((j: any) => !j.parent_code);
+        console.log('Filtered countries:', countryJurisdictions);
         
         // Map countries with proper code and name
         const uniqueCountries = countryJurisdictions.map((j: any) => ({
@@ -48,11 +70,32 @@ const Auth = () => {
           name: j.name
         })).sort((a: any, b: any) => a.name.localeCompare(b.name));
         
+        console.log('Final countries list:', uniqueCountries);
         setCountries(uniqueCountries);
+        
       } catch (error) {
         console.error('Error loading jurisdictions:', error);
+        
+        // Show user-friendly error
+        toast({
+          title: "Advertencia",
+          description: "No se pudieron cargar los países. Usando lista predeterminada.",
+          variant: "default",
+        });
+        
+        // Set fallback countries so user can still register
+        const fallbackCountries = [
+          { code: 'AR', name: 'Argentina' },
+          { code: 'UY', name: 'Uruguay' },
+          { code: 'BR', name: 'Brasil' },
+          { code: 'PY', name: 'Paraguay' },
+          { code: 'CL', name: 'Chile' }
+        ];
+        setCountries(fallbackCountries);
+        
       } finally {
         setJurisdictionsLoading(false);
+        console.log('Finished loading jurisdictions');
       }
     };
 
