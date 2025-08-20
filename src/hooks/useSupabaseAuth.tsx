@@ -29,11 +29,22 @@ interface AuthContextType {
   session: Session | null;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  loading: true,
+  currentUser: null,
+  user: null,
+  session: null,
+  signIn: async () => ({ error: { message: 'Auth not initialized' } }),
+  signUp: async () => ({ error: { message: 'Auth not initialized' } }),
+  signOut: async () => {},
+  resetPassword: async () => ({ error: { message: 'Auth not initialized' } }),
+  signInEmployee: async () => ({ error: { message: 'Auth not initialized' } })
+});
 
 export const useSupabaseAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useSupabaseAuth must be used within an AuthProvider");
   }
   return context;

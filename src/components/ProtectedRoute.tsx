@@ -9,6 +9,7 @@ interface ProtectedRouteProps {
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { isAuthenticated, loading } = useSupabaseAuth();
 
+  // Show loading spinner while auth is being determined
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -17,10 +18,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
   }
 
+  // Redirect to auth if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
 
+  // Render protected content
   return <>{children}</>;
 };
 
