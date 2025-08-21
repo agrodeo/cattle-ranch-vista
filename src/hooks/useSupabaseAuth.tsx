@@ -108,6 +108,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Handle pending cabaña creation after email confirmation
+  const handlePendingCabanaCreation = async (userId: string) => {
+    try {
+      const pendingCabana = localStorage.getItem('pending_cabana');
+      const pendingOwnerData = localStorage.getItem('pending_owner_data');
+      
+      if (!pendingCabana || !pendingOwnerData) return;
+      
+      const cabanaData = JSON.parse(pendingCabana);
+      const ownerData = JSON.parse(pendingOwnerData);
+      
+      // Check if user already has a cabaña
+      const { data: existingCabana } = await supabase
+        .from('cabañas')
+        .select('id')
+        .eq('owner_id', userId)
+        .single();
+      
+      if (existingCabana) {
+        // User already has a cabaña, cleanup pending data
+        localStorage.removeItem('pending_cabana');
+        localStorage.removeItem('pending_owner_data');
+        return;
+      }
+      
+      // Create the cabaña
+      cabanaData.owner_id = userId;
+      const { data: newCabana, error: cabanaError } = await supabase
+        .from('cabañas')
+        .insert(cabanaData)
+        .select()
+        .single();
+      
+      if (cabanaError) throw cabanaError;
+      
+      // Create subscription
+      await supabase.from('subscriptions').insert({
+        cabaña_id: newCabana.id,
+        plan: 'free',
+        max_animals: 50,
+        max_users: 2,
+      });
+      
+      // Create/update profile
+      await supabase.from('profiles').upsert({
+        user_id: userId,
+        cabaña_id: newCabana.id,
+        full_name: ownerData.full_name,
+        email: ownerData.email,
+        is_active: true,
+        is_internal_profile: true,
+      });
+      
+      // Assign admin role
+      await supabase.from('user_roles').insert({
+        user_id: userId,
+        role: 'admin',
+      });
+      
+      // Cleanup pending data
+      localStorage.removeItem('pending_cabana');
+      localStorage.removeItem('pending_owner_data');
+      
+      console.log('✅ Completed pending cabaña creation');
+      
+    } catch (error) {
+      console.error('❌ Error creating pending cabaña:', error);
+    }
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -115,6 +185,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
+          // Handle pending cabaña creation on first sign in
+          if (event === 'SIGNED_IN') {
+            await handlePendingCabanaCreation(session.user.id);
+          }
+          
           const userProfile = await fetchUserProfile(session.user.id);
           if (userProfile) {
             setCurrentUser(userProfile);

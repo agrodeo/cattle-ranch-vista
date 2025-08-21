@@ -435,6 +435,7 @@ export type Database = {
           location: string | null
           location_updated_at: string | null
           name: string
+          owner_id: string | null
           province_code: string | null
         }
         Insert: {
@@ -443,6 +444,7 @@ export type Database = {
           location?: string | null
           location_updated_at?: string | null
           name: string
+          owner_id?: string | null
           province_code?: string | null
         }
         Update: {
@@ -451,6 +453,7 @@ export type Database = {
           location?: string | null
           location_updated_at?: string | null
           name?: string
+          owner_id?: string | null
           province_code?: string | null
         }
         Relationships: []

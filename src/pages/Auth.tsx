@@ -139,14 +139,6 @@ const Auth = () => {
         return;
       }
 
-      // Connectivity check (CORS/URL)
-      try {
-        const response = await fetch(`https://yjzxbjwewzyhjquhrfzv.supabase.co/auth/v1/settings`);
-        console.log('Auth settings status:', response.status);
-      } catch (err) {
-        console.error('Auth settings failed:', err);
-      }
-
       // Create auth user
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
@@ -161,17 +153,46 @@ const Auth = () => {
         },
       });
 
-      console.timeEnd('signup');
       if (error) throw error;
 
-      // Create cabaña
-      const { data: cabañaData, error: cabañaError } = await supabase
-        .from('cabañas')
-        .insert({
-          name: values.companyName,
+      // Check if we have an immediate session (email confirmation OFF)
+      const { data: sessionData } = await supabase.auth.getSession();
+      console.log('Auth session after signUp:', sessionData?.session ? 'present' : 'null');
+
+      // Build the cabaña row we intend to insert
+      const cabañaRow = {
+        name: values.companyName,
+        country_code: values.country_code,
+        province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
+        owner_id: data.user?.id ?? sessionData?.session?.user?.id ?? null,
+      };
+      console.log('About to insert cabañas row:', cabañaRow);
+
+      // If no session yet (email confirmation ON), defer cabaña creation
+      if (!sessionData?.session) {
+        console.warn('No session yet – deferring cabaña creation until first authenticated visit.');
+        localStorage.setItem('pending_cabana', JSON.stringify(cabañaRow));
+        localStorage.setItem('pending_owner_data', JSON.stringify({
+          full_name: values.ownerName,
+          email: values.email,
           country_code: values.country_code,
           province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
-        })
+        }));
+        
+        toast({
+          title: "¡Cuenta creada!",
+          description: "Revisa tu email para verificar tu cuenta y completar el registro.",
+        });
+        
+        setActiveTab("signin");
+        signInForm.setValue("email", values.email);
+        return;
+      }
+
+      // We have an immediate session - create cabaña and complete setup
+      const { data: cabañaData, error: cabañaError } = await supabase
+        .from('cabañas')
+        .insert(cabañaRow)
         .select()
         .single();
 
@@ -191,8 +212,6 @@ const Auth = () => {
         cabaña_id: cabañaData.id,
         full_name: values.ownerName,
         email: values.email,
-        country_code: values.country_code,
-        province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
         is_active: true,
         is_internal_profile: true,
       });
@@ -204,23 +223,23 @@ const Auth = () => {
       });
 
       toast({
-        title: "¡Cuenta creada!",
-        description: "Tu empresa ha sido registrada exitosamente. Revisa tu email para verificar tu cuenta.",
+        title: "¡Empresa creada!",
+        description: "Tu cuenta y empresa han sido creadas exitosamente.",
       });
 
-      // Switch to sign in tab
-      setActiveTab("signin");
-      signInForm.setValue("email", values.email);
+      // Redirect to dashboard since we're already authenticated
+      navigate('/dashboard');
 
     } catch (e: any) {
-      console.timeEnd('signup');
       const msg = e?.message || e?.error_description || 'Error de conexión';
+      console.error('Signup/Insert error:', e);
       toast({
         title: "Error al crear la cuenta",
         description: `No se pudo crear la cuenta: ${msg}`,
         variant: "destructive",
       });
     } finally {
+      console.timeEnd('signup');
       setSignUpLoading(false);
     }
   };
