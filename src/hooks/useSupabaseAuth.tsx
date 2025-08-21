@@ -260,10 +260,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log('🚀 Starting signup process for:', email);
     
     try {
-      // First create the auth user
+      // First create the auth user with timeout
       console.log('📝 Creating auth user...');
       
-      // Add timeout to prevent hanging
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Signup timeout - please try again')), 15000); // 15 second timeout
+      });
+      
       const authPromise = supabase.auth.signUp({
         email,
         password,
@@ -275,8 +279,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       });
       
-      console.log('⏱️ Waiting for auth response...');
-      const { data: authData, error: authError } = await authPromise;
+      console.log('⏱️ Waiting for auth response (15s timeout)...');
+      const { data: authData, error: authError } = await Promise.race([authPromise, timeoutPromise]) as any;
       console.log('📬 Auth response received:', { authData: !!authData, authError: !!authError });
 
       if (authError) {
@@ -457,7 +461,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { error: null };
     } catch (error) {
       console.error("❌ Registration error:", error);
-      return { error: { message: "Error de conexión. Intenta nuevamente: " + String(error) } };
+      return { error: { message: "Error de conexión o timeout. Intenta nuevamente: " + String(error) } };
     }
   };
 
