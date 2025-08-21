@@ -262,7 +262,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       // First create the auth user
       console.log('📝 Creating auth user...');
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      
+      // Add timeout to prevent hanging
+      const authPromise = supabase.auth.signUp({
         email,
         password,
         options: {
@@ -272,6 +274,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         }
       });
+      
+      console.log('⏱️ Waiting for auth response...');
+      const { data: authData, error: authError } = await authPromise;
+      console.log('📬 Auth response received:', { authData: !!authData, authError: !!authError });
 
       if (authError) {
         console.error('❌ Auth error:', authError);
