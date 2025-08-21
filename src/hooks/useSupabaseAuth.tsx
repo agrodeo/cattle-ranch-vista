@@ -306,13 +306,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Create company if provided
       let cabañaId = '';
       if (companyName) {
+        console.log('🏢 Starting cabaña creation process...');
         try {
           console.log('🏢 Creating cabaña:', companyName);
+          console.log('🔍 About to call supabase.from(cabañas).insert...');
           const { data: cabañaData, error: cabañaError } = await supabase
             .from('cabañas')
             .insert({ name: companyName })
             .select()
             .single();
+          
+          console.log('🔍 Cabaña insert completed. Result:', { cabañaData, cabañaError });
 
           if (cabañaError) {
             console.error('❌ Error creating cabaña:', cabañaError);
