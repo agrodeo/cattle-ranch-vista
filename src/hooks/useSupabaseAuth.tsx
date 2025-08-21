@@ -57,8 +57,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
 
   const fetchUserProfile = async (userId: string) => {
+    console.log('👤 Fetching user profile for:', userId);
     try {
-      // CRITICAL SECURITY FIX: Use maybeSingle and validate user_id strictly
+      // Use maybeSingle and validate user_id strictly
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -75,29 +76,27 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } catch {} // Don't fail if logging fails
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('❌ Error fetching profile:', error);
         try {
           await supabase.rpc('log_security_event', {
             _action: 'profile_fetch_error',
             _table_name: 'profiles', 
             _details: { user_id: userId, error: error.message }
           });
-        } catch {}
+        } catch (logError) {
+          console.warn('Failed to log security event:', logError);
+        }
         return null;
       }
 
-      // CRITICAL: If no profile found, do not authenticate
+      // If no profile found, this might be during signup process
       if (!profile) {
-        console.warn('No profile found for authenticated user:', userId);
-        try {
-          await supabase.rpc('log_security_event', {
-            _action: 'profile_not_found',
-            _table_name: 'profiles',
-            _details: { user_id: userId }
-          });
-        } catch {}
+        console.warn('⚠️ No profile found for authenticated user - might be during signup:', userId);
+        // Don't log as security event during signup process - this is expected
         return null;
       }
+
+      console.log('✅ Profile found for user:', userId);
 
       // CRITICAL: Validate that profile belongs to the authenticated user
       if (profile.user_id !== userId) {
@@ -258,8 +257,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     country: string = 'Argentina',
     region: string | null = null
   ) => {
+    console.log('🚀 Starting signup process for:', email);
+    
     try {
       // First create the auth user
+      console.log('📝 Creating auth user...');
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -272,31 +274,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
 
       if (authError) {
+        console.error('❌ Auth error:', authError);
         try {
           await supabase.rpc('log_security_event', {
             _action: 'signup_auth_error',
             _table_name: 'auth.users',
             _details: { email, error: authError.message }
           });
-        } catch {}
+        } catch (logError) {
+          console.warn('Failed to log security event:', logError);
+        }
         return { error: { message: authError.message } };
       }
 
       if (!authData.user) {
+        console.error('❌ No user created despite success');
         try {
           await supabase.rpc('log_security_event', {
             _action: 'signup_no_user_created',
             _table_name: 'auth.users',
             _details: { email }
           });
-        } catch {}
+        } catch (logError) {
+          console.warn('Failed to log security event:', logError);
+        }
         return { error: { message: 'Error al crear usuario' } };
       }
 
-      // Create company if provided - CRITICAL SECURITY FIX
+      console.log('✅ Auth user created successfully:', authData.user.id);
+
+      // Create company if provided
       let cabañaId = '';
       if (companyName) {
         try {
+          console.log('🏢 Creating cabaña:', companyName);
           const { data: cabañaData, error: cabañaError } = await supabase
             .from('cabañas')
             .insert({ name: companyName })
@@ -304,53 +315,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .single();
 
           if (cabañaError) {
-            console.error('Error creating cabaña:', cabañaError);
+            console.error('❌ Error creating cabaña:', cabañaError);
             try {
               await supabase.rpc('log_security_event', {
                 _action: 'signup_cabana_creation_failed',
                 _table_name: 'cabañas',
                 _details: { user_id: authData.user.id, company_name: companyName, error: cabañaError.message }
               });
-            } catch {}
+            } catch (logError) {
+              console.warn('Failed to log security event:', logError);
+            }
             
-            // CRITICAL: If cabaña creation fails, cleanup user
-            try {
-              await supabase.auth.admin.deleteUser(authData.user.id);
-            } catch {}
-            return { error: { message: 'Error al crear empresa' } };
+            return { error: { message: 'Error al crear empresa: ' + cabañaError.message } };
           }
 
           cabañaId = cabañaData.id;
+          console.log('✅ Cabaña created successfully:', cabañaId);
         } catch (error) {
-          console.error('Critical error during cabaña creation:', error);
+          console.error('❌ Critical error during cabaña creation:', error);
           try {
             await supabase.rpc('log_security_event', {
               _action: 'signup_cabana_creation_exception',
               _table_name: 'cabañas', 
               _details: { user_id: authData.user.id, error: String(error) }
             });
-          } catch {}
+          } catch (logError) {
+            console.warn('Failed to log security event:', logError);
+          }
           
-          // Cleanup user
-          try {
-            await supabase.auth.admin.deleteUser(authData.user.id);
-          } catch {}
-          return { error: { message: 'Error crítico al crear empresa' } };
+          return { error: { message: 'Error crítico al crear empresa: ' + String(error) } };
         }
 
         // Create subscription for the company
-        await supabase
-          .from('subscriptions')
-          .insert({
-            cabaña_id: cabañaId,
-            plan: 'free',
-            max_animals: 50,
-            max_users: 2
-          });
+        try {
+          console.log('📝 Creating subscription for cabaña:', cabañaId);
+          await supabase
+            .from('subscriptions')
+            .insert({
+              cabaña_id: cabañaId,
+              plan: 'free',
+              max_animals: 50,
+              max_users: 2
+            });
+          console.log('✅ Subscription created successfully');
+        } catch (subError) {
+          console.error('❌ Error creating subscription:', subError);
+          // Continue with signup even if subscription fails
+        }
       }
 
-      // Create user profile - CRITICAL SECURITY FIX  
+      // Create user profile
       try {
+        console.log('👤 Creating user profile for:', authData.user.id);
         const { error: profileError } = await supabase
           .from('profiles')
           .insert({
@@ -363,52 +379,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           });
 
         if (profileError) {
-          console.error('Error creating profile:', profileError);
+          console.error('❌ Error creating profile:', profileError);
           try {
             await supabase.rpc('log_security_event', {
               _action: 'signup_profile_creation_failed',
               _table_name: 'profiles',
               _details: { user_id: authData.user.id, error: profileError.message }
             });
-          } catch {}
-          
-          // CRITICAL: Cleanup user and cabaña if profile creation fails
-          if (cabañaId) {
-            try {
-              await supabase.from('cabañas').delete().eq('id', cabañaId);
-            } catch {}
+          } catch (logError) {
+            console.warn('Failed to log security event:', logError);
           }
-          try {
-            await supabase.auth.admin.deleteUser(authData.user.id);
-          } catch {}
-          return { error: { message: 'Error al crear perfil' } };
+          
+          return { error: { message: 'Error al crear perfil: ' + profileError.message } };
         }
+        
+        console.log('✅ User profile created successfully');
       } catch (error) {
-        console.error('Critical error during profile creation:', error);
+        console.error('❌ Critical error during profile creation:', error);
         try {
           await supabase.rpc('log_security_event', {
             _action: 'signup_profile_creation_exception',
             _table_name: 'profiles',
             _details: { user_id: authData.user.id, error: String(error) }
           });
-        } catch {}
-        
-        // Cleanup
-        if (cabañaId) {
-          try {
-            await supabase.from('cabañas').delete().eq('id', cabañaId);
-          } catch {}
+        } catch (logError) {
+          console.warn('Failed to log security event:', logError);
         }
-        try {
-          await supabase.auth.admin.deleteUser(authData.user.id);
-        } catch {}
-        return { error: { message: 'Error crítico al crear perfil' } };
+        
+        return { error: { message: 'Error crítico al crear perfil: ' + String(error) } };
       }
 
-      // Assign admin role if creating a company - CRITICAL SECURITY FIX
-      // Since we removed the user_roles table, we'll handle admin permissions 
-      // through the profiles table and subscription management
-      console.log('User profile created successfully');
+      // Assign admin role if creating a company
+      if (companyName) {
+        try {
+          console.log('👑 Assigning admin role to user');
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({
+              user_id: authData.user.id,
+              role: 'admin'
+            });
+
+          if (roleError) {
+            console.error('❌ Error assigning admin role:', roleError);
+            // Continue with signup even if role assignment fails
+          } else {
+            console.log('✅ Admin role assigned successfully');
+          }
+        } catch (roleErr) {
+          console.error('❌ Exception assigning admin role:', roleErr);
+          // Continue with signup even if role assignment fails
+        }
+      }
 
       // Log successful registration
       try {
@@ -417,12 +439,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           _table_name: 'profiles',
           _details: { user_id: authData.user.id, cabana_id: cabañaId, has_company: !!companyName }
         });
-      } catch {}
+      } catch (logError) {
+        console.warn('Failed to log security event:', logError);
+      }
 
+      console.log('🎉 Signup completed successfully!');
       return { error: null };
     } catch (error) {
-      console.error("Registration error:", error);
-      return { error: { message: "Error de conexión. Intenta nuevamente." } };
+      console.error("❌ Registration error:", error);
+      return { error: { message: "Error de conexión. Intenta nuevamente: " + String(error) } };
     }
   };
 
