@@ -320,12 +320,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           console.log('🏢 Creating cabaña:', companyName);
           console.log('🔍 About to call supabase.from(cabañas).insert...');
-          const { data: cabañaData, error: cabañaError } = await supabase
+          
+          // Add timeout for cabaña creation
+          const cabañaTimeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Cabaña creation timeout')), 10000);
+          });
+          
+          const cabañaPromise = supabase
             .from('cabañas')
             .insert({ name: companyName })
             .select()
             .single();
           
+          const { data: cabañaData, error: cabañaError } = await Promise.race([cabañaPromise, cabañaTimeout]) as any;
           console.log('🔍 Cabaña insert completed. Result:', { cabañaData, cabañaError });
 
           if (cabañaError) {
@@ -363,7 +370,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Create subscription for the company
         try {
           console.log('📝 Creating subscription for cabaña:', cabañaId);
-          await supabase
+          
+          // Add timeout for subscription creation
+          const subTimeout = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Subscription creation timeout')), 10000);
+          });
+          
+          const subPromise = supabase
             .from('subscriptions')
             .insert({
               cabaña_id: cabañaId,
@@ -371,6 +384,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               max_animals: 50,
               max_users: 2
             });
+          
+          await Promise.race([subPromise, subTimeout]);
           console.log('✅ Subscription created successfully');
         } catch (subError) {
           console.error('❌ Error creating subscription:', subError);
@@ -381,7 +396,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Create user profile
       try {
         console.log('👤 Creating user profile for:', authData.user.id);
-        const { error: profileError } = await supabase
+        
+        // Add timeout for profile creation
+        const profileTimeout = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Profile creation timeout')), 10000);
+        });
+        
+        const profilePromise = supabase
           .from('profiles')
           .insert({
             user_id: authData.user.id,
@@ -391,6 +412,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             is_active: true,
             is_internal_profile: true
           });
+        
+        const { error: profileError } = await Promise.race([profilePromise, profileTimeout]) as any;
 
         if (profileError) {
           console.error('❌ Error creating profile:', profileError);
