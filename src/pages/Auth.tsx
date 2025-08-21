@@ -120,7 +120,7 @@ const Auth = () => {
       }
 
       console.log('📞 Calling signUp function...');
-      const { error } = await signUp(
+      const result = await signUp(
         email,
         password,
         ownerName,
@@ -129,7 +129,8 @@ const Auth = () => {
         isAR ? selectedProvince : null
       );
       
-      console.log('📋 SignUp result:', { error });
+      console.log('📋 SignUp result:', result);
+      const { error } = result;
       
       if (error) {
         console.error('❌ Signup error detected:', error);
