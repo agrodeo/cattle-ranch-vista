@@ -122,25 +122,30 @@ const Auth = () => {
       );
       
       if (error) {
+        console.error('Signup error:', error);
         toast({
           title: "Error al crear la cuenta",
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "¡Cuenta creada!",
-          description: "Tu empresa ha sido registrada exitosamente. Revisa tu email para confirmar tu cuenta.",
-        });
-      }
+        setIsSubmitting(false); // CRITICAL: Reset loading state on error
+        return; // Don't continue to success toast
+      } 
+      
+      toast({
+        title: "¡Cuenta creada!",
+        description: "Tu empresa ha sido registrada exitosamente. Revisa tu email para confirmar tu cuenta.",
+      });
     } catch (error) {
+      console.error('Unexpected signup error:', error);
       toast({
         title: "Error inesperado",
         description: "Ocurrió un error inesperado. Intenta nuevamente.",
         variant: "destructive",
       });
+      setIsSubmitting(false); // CRITICAL: Reset loading state on exception
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Ensure loading state is always reset
     }
   };
 
