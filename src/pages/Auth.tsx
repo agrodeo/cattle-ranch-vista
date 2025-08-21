@@ -74,6 +74,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('🚀 Form submitted, setting loading to true');
     setIsSubmitting(true);
     
     try {
@@ -85,33 +86,40 @@ const Auth = () => {
       const confirmPassword = formData.get("confirmPassword") as string;
 
       if (password !== confirmPassword) {
+        console.log('❌ Password validation failed');
         toast({
           title: "Error",
           description: "Las contraseñas no coinciden",
           variant: "destructive",
         });
+        setIsSubmitting(false); // CRITICAL: Reset loading state
         return;
       }
 
       if (!selectedCountry) {
+        console.log('❌ Country validation failed');
         toast({
           title: "Error",
           description: "Debes seleccionar un país",
           variant: "destructive",
         });
+        setIsSubmitting(false); // CRITICAL: Reset loading state
         return;
       }
 
       const isAR = selectedCountry === 'AR';
       if (isAR && !selectedProvince) {
+        console.log('❌ Province validation failed');
         toast({
           title: "Error",
           description: "Debes seleccionar una provincia para Argentina",
           variant: "destructive",
         });
+        setIsSubmitting(false); // CRITICAL: Reset loading state
         return;
       }
 
+      console.log('📞 Calling signUp function...');
       const { error } = await signUp(
         email,
         password,
@@ -121,31 +129,37 @@ const Auth = () => {
         isAR ? selectedProvince : null
       );
       
+      console.log('📋 SignUp result:', { error });
+      
       if (error) {
-        console.error('Signup error:', error);
+        console.error('❌ Signup error detected:', error);
         toast({
           title: "Error al crear la cuenta",
           description: error.message,
           variant: "destructive",
         });
-        setIsSubmitting(false); // CRITICAL: Reset loading state on error
-        return; // Don't continue to success toast
+        console.log('🔄 Resetting loading state due to error');
+        setIsSubmitting(false);
+        return;
       } 
       
+      console.log('✅ Signup successful, showing success toast');
       toast({
         title: "¡Cuenta creada!",
         description: "Tu empresa ha sido registrada exitosamente. Revisa tu email para confirmar tu cuenta.",
       });
     } catch (error) {
-      console.error('Unexpected signup error:', error);
+      console.error('💥 Unexpected signup exception:', error);
       toast({
         title: "Error inesperado",
         description: "Ocurrió un error inesperado. Intenta nuevamente.",
         variant: "destructive",
       });
-      setIsSubmitting(false); // CRITICAL: Reset loading state on exception
+      console.log('🔄 Resetting loading state due to exception');
+      setIsSubmitting(false);
     } finally {
-      setIsSubmitting(false); // Ensure loading state is always reset
+      console.log('🏁 Finally block - ensuring loading state is reset');
+      setIsSubmitting(false);
     }
   };
 
