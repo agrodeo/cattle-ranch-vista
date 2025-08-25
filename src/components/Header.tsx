@@ -31,23 +31,23 @@ export function Header() {
 
   return (
     <header className="border-b border-ink-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
-      <div className="flex h-16 items-center justify-between px-6">
-        <div className="flex items-center gap-4">
-          <SidebarTrigger className="text-ink-600 hover:text-ink-900" />
+      <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-6">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <SidebarTrigger className="text-ink-600 hover:text-ink-900 h-10 w-10" />
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-ink-50">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-brand-100 text-brand-800 font-medium">
-                    {currentUser?.fullName ? getInitials(currentUser.fullName) : <Building2 className="h-4 w-4" />}
+              <Button variant="ghost" className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-ink-50">
+                <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+                  <AvatarFallback className="bg-brand-100 text-brand-800 font-medium text-xs sm:text-sm">
+                    {currentUser?.fullName ? getInitials(currentUser.fullName) : <Building2 className="h-3 w-3 sm:h-4 sm:w-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
+            <DropdownMenuContent className="w-56 sm:w-64 p-2" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1 px-2 py-1.5">
                   <p className="text-sm font-semibold leading-none text-ink-900">

@@ -161,11 +161,11 @@ export default function Corrales() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="w-full max-w-full overflow-x-hidden">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Cargando corrales...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500 mx-auto mb-4"></div>
+            <p className="text-ink-600">Cargando corrales...</p>
           </div>
         </div>
       </div>
@@ -173,63 +173,78 @@ export default function Corrales() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Corrales</h1>
-          <p className="text-muted-foreground">Gestiona los corrales y asignación de animales</p>
+    <div className="w-full max-w-full overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 truncate">Corrales</h1>
+          <p className="text-sm sm:text-base text-ink-600 mt-1">Gestiona los corrales y asignación de animales</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setMoveDialogOpen(true)}>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+          <Button 
+            variant="outline" 
+            onClick={() => setMoveDialogOpen(true)}
+            className="w-full sm:w-auto justify-center h-10 px-4"
+          >
             <Move className="h-4 w-4 mr-2" />
-            Mover Animales
+            <span className="sm:inline">Mover Animales</span>
           </Button>
-          <Button onClick={() => setCreateDialogOpen(true)}>
+          <Button 
+            onClick={() => setCreateDialogOpen(true)}
+            className="w-full sm:w-auto justify-center h-10 px-4"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Nuevo Corral
+            <span className="sm:inline">Nuevo Corral</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-3 sm:gap-4">
         {corrales.map((corral) => (
-          <Card key={corral.id}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="h-5 w-5 text-muted-foreground" />
-                    <h3 className="text-lg font-semibold">{corral.name}</h3>
+          <Card key={corral.id} className="overflow-hidden">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                {/* Header Section */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <MapPin className="h-5 w-5 text-ink-500 flex-shrink-0" />
+                    <h3 className="text-lg font-semibold text-ink-900 truncate">{corral.name}</h3>
                   </div>
                   
-                  {corral.has_consanguinity_risk && getSeverityBadge(corral.highest_severity, corral.risk_count)}
+                  {corral.has_consanguinity_risk && (
+                    <div className="flex-shrink-0">
+                      {getSeverityBadge(corral.highest_severity, corral.risk_count)}
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{corral.animal_count}</p>
-                    <p className="text-sm text-muted-foreground">Animales</p>
+                {/* Stats Section */}
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                  <div className="text-center min-w-[60px]">
+                    <p className="text-xl sm:text-2xl font-bold text-ink-900 tabular-nums">{corral.animal_count}</p>
+                    <p className="text-xs sm:text-sm text-ink-600">Animales</p>
                   </div>
                   
-                  <div className="text-center">
-                    <p className="text-lg font-semibold">
+                  <div className="text-center min-w-[50px]">
+                    <p className="text-base sm:text-lg font-semibold text-ink-900 tabular-nums">
                       {corral.male_count} / {corral.female_count}
                     </p>
-                    <p className="text-sm text-muted-foreground">M / H</p>
+                    <p className="text-xs sm:text-sm text-ink-600">M / H</p>
                   </div>
                   
-                  <div className="text-center">
-                    <p className="text-lg font-semibold">
+                  <div className="text-center min-w-[60px]">
+                    <p className="text-base sm:text-lg font-semibold text-ink-900 tabular-nums">
                       {corral.hectareas || "—"}
                     </p>
-                    <p className="text-sm text-muted-foreground">Hectáreas</p>
+                    <p className="text-xs sm:text-sm text-ink-600">Hectáreas</p>
                   </div>
 
-                  <div className="flex space-x-2">
+                  {/* Actions */}
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto lg:ml-4">
                     <Button 
                       variant="outline" 
                       size="sm"
                       onClick={() => openEditDialog(corral.id)}
+                      className="w-full sm:w-auto h-9 text-sm"
                     >
                       Editar
                     </Button>
@@ -237,6 +252,7 @@ export default function Corrales() {
                       variant="default" 
                       size="sm"
                       onClick={() => openDetailDialog(corral.id)}
+                      className="w-full sm:w-auto h-9 text-sm"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       Ver Detalles
@@ -250,13 +266,16 @@ export default function Corrales() {
 
         {corrales.length === 0 && (
           <Card>
-            <CardContent className="p-8 text-center">
-              <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No hay corrales</h3>
-              <p className="text-muted-foreground mb-4">
+            <CardContent className="p-6 sm:p-8 text-center">
+              <MapPin className="h-10 w-10 sm:h-12 sm:w-12 text-ink-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2 text-ink-900">No hay corrales</h3>
+              <p className="text-sm sm:text-base text-ink-600 mb-4 max-w-sm mx-auto">
                 Crea tu primer corral para comenzar a gestionar los animales
               </p>
-              <Button onClick={() => setCreateDialogOpen(true)}>
+              <Button 
+                onClick={() => setCreateDialogOpen(true)}
+                className="w-full sm:w-auto"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Primer Corral
               </Button>

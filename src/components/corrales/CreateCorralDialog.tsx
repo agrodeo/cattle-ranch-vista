@@ -83,26 +83,27 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Corral</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Crear Nuevo Corral</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Nombre del Corral</Label>
+              <Label htmlFor="name" className="text-sm font-medium">Nombre del Corral</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ej: Corral 1"
+                className="h-10 mt-1"
                 required
               />
             </div>
             
             <div>
-              <Label htmlFor="hectareas">Hectáreas</Label>
+              <Label htmlFor="hectareas" className="text-sm font-medium">Hectáreas</Label>
               <Input
                 id="hectareas"
                 type="number"
@@ -110,20 +111,26 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
                 value={formData.hectareas}
                 onChange={(e) => setFormData({ ...formData, hectareas: e.target.value })}
                 placeholder="Ej: 5.5"
+                className="h-10 mt-1"
               />
             </div>
           </div>
 
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row gap-2">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
               {loading ? "Creando..." : "Crear Corral"}
             </Button>
           </DialogFooter>
