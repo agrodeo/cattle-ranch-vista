@@ -12,14 +12,12 @@ import {
 } from 'lucide-react';
 import { useActivities } from '@/hooks/useActivities';
 import { useActivityPreferences } from '@/hooks/useActivityPreferences';
-import { cn } from '@/lib/utils';
 import { MetricsDrawer } from '../MetricsDrawer';
 
 export function ResumenTab() {
   const { stats } = useActivities();
   const { preferences, toggleSection } = useActivityPreferences();
   
-  const isCompact = preferences.density === 'compact';
   const isRecentActivitiesOpen = !preferences.collapsedSections.recentActivities;
   
   const mainKPIs = [
@@ -44,37 +42,22 @@ export function ResumenTab() {
   ];
 
   return (
-    <div className={cn('space-y-6', isCompact && 'space-y-4')}>
+    <div className="space-y-4 sm:space-y-6">
       {/* Main KPIs */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         {mainKPIs.map((kpi, index) => (
           <Card key={index} className="cursor-pointer hover:bg-muted/50 transition-colors">
-            <CardHeader className={cn(
-              'flex flex-row items-center justify-between space-y-0 pb-2',
-              isCompact && 'pb-1'
-            )}>
-              <CardTitle className={cn(
-                'text-sm font-medium',
-                isCompact && 'text-xs'
-              )}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
                 {kpi.title}
               </CardTitle>
-              <kpi.icon className={cn(
-                'h-4 w-4 text-muted-foreground',
-                isCompact && 'h-3 w-3'
-              )} />
+              <kpi.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className={cn(isCompact && 'pt-1')}>
-              <div className={cn(
-                'text-2xl font-bold',
-                isCompact && 'text-xl'
-              )}>
+            <CardContent>
+              <div className="text-xl sm:text-2xl font-bold">
                 {kpi.value}
               </div>
-              <p className={cn(
-                'text-xs text-muted-foreground',
-                isCompact && 'text-[10px]'
-              )}>
+              <p className="text-xs text-muted-foreground">
                 {kpi.description}
               </p>
             </CardContent>
@@ -95,28 +78,19 @@ export function ResumenTab() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className={cn(
-            'text-lg',
-            isCompact && 'text-base'
-          )}>
+          <CardTitle className="text-base sm:text-lg">
             Acciones Rápidas
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Button size="lg" className={cn(
-              'h-16 flex-col gap-2',
-              isCompact && 'h-12 gap-1'
-            )}>
-              <Plus className={cn('h-5 w-5', isCompact && 'h-4 w-4')} />
-              <span className={cn(isCompact && 'text-sm')}>Registrar Actividad</span>
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
+            <Button size="lg" className="h-12 sm:h-16 flex-col gap-1 sm:gap-2">
+              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-sm">Registrar Actividad</span>
             </Button>
-            <Button size="lg" variant="outline" className={cn(
-              'h-16 flex-col gap-2',
-              isCompact && 'h-12 gap-1'
-            )}>
-              <Syringe className={cn('h-5 w-5', isCompact && 'h-4 w-4')} />
-              <span className={cn(isCompact && 'text-sm')}>Vacunar Ahora</span>
+            <Button size="lg" variant="outline" className="h-12 sm:h-16 flex-col gap-1 sm:gap-2">
+              <Syringe className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-sm">Vacunar Ahora</span>
             </Button>
           </div>
         </CardContent>
@@ -125,25 +99,20 @@ export function ResumenTab() {
       {/* Compact Calendar */}
       <Card>
         <CardHeader>
-          <CardTitle className={cn(
-            'flex items-center justify-between text-lg',
-            isCompact && 'text-base'
-          )}>
+          <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-base sm:text-lg">
             <span>Próximos 7 días</span>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
               <Calendar className="h-4 w-4 mr-2" />
-              Ver calendario completo
+              <span className="hidden sm:inline">Ver calendario completo</span>
+              <span className="sm:hidden">Ver más</span>
             </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className={cn(
-            'space-y-3',
-            isCompact && 'space-y-2'
-          )}>
+          <div className="space-y-2 sm:space-y-3">
             {/* TODO: Implement upcoming activities */}
             <div className="text-center py-4 text-muted-foreground">
-              <p className={cn(isCompact && 'text-sm')}>
+              <p className="text-sm">
                 No hay actividades programadas para los próximos 7 días
               </p>
             </div>
@@ -156,13 +125,10 @@ export function ResumenTab() {
         <Card>
           <CollapsibleTrigger asChild>
             <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <CardTitle className={cn(
-                'flex items-center justify-between text-lg',
-                isCompact && 'text-base'
-              )}>
+              <CardTitle className="flex items-center justify-between text-base sm:text-lg">
                 <span>Actividades Recientes</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">5 elementos</span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">5 elementos</span>
                   <Button 
                     variant="ghost" 
                     size="sm"
@@ -183,13 +149,10 @@ export function ResumenTab() {
           </CollapsibleTrigger>
           <CollapsibleContent>
             <CardContent>
-              <div className={cn(
-                'space-y-3',
-                isCompact && 'space-y-2'
-              )}>
+              <div className="space-y-2 sm:space-y-3">
                 {/* TODO: Implement recent activities list */}
                 <div className="text-center py-4 text-muted-foreground">
-                  <p className={cn(isCompact && 'text-sm')}>
+                  <p className="text-sm">
                     No hay actividades recientes
                   </p>
                 </div>

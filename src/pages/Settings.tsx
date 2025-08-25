@@ -14,11 +14,11 @@ export const SettingsPage = () => {
   }, []);
 
   return (
-    <main className="container mx-auto py-6">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
-          <p className="text-muted-foreground">
+    <main className="container mx-auto py-3 sm:py-6">
+      <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Configuración</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Personaliza tu experiencia y configura parámetros específicos para tu operación ganadera.
           </p>
         </div>
@@ -26,22 +26,24 @@ export const SettingsPage = () => {
         <Card>
           <CardContent className="p-0">
             <Tabs defaultValue="benchmarks" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="benchmarks" className="flex items-center gap-2">
-                  <Target className="h-4 w-4" />
-                  Benchmarks
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
+                <TabsTrigger value="benchmarks" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                  <Target className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Benchmarks</span>
+                  <span className="sm:hidden">Config.</span>
                 </TabsTrigger>
-                <TabsTrigger value="users" className="flex items-center gap-2" disabled>
-                  <Users className="h-4 w-4" />
+                <TabsTrigger value="users" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2" disabled>
+                  <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                   Usuarios
                 </TabsTrigger>
-                <TabsTrigger value="general" className="flex items-center gap-2" disabled>
-                  <SettingsIcon className="h-4 w-4" />
+                <TabsTrigger value="general" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2" disabled>
+                  <SettingsIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                   General
                 </TabsTrigger>
-                <TabsTrigger value="billing" className="flex items-center gap-2" disabled>
-                  <CreditCard className="h-4 w-4" />
-                  Facturación
+                <TabsTrigger value="billing" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2" disabled>
+                  <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Facturación</span>
+                  <span className="sm:hidden">Plan</span>
                 </TabsTrigger>
               </TabsList>
 

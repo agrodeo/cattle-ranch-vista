@@ -13,20 +13,26 @@ const Finances = () => {
   }, []);
 
   return (
-    <section aria-labelledby="finanzas-title" className="space-y-6">
-      <header>
-        <h1 id="finanzas-title" className="text-3xl font-bold tracking-tight">Finanzas</h1>
+    <section aria-labelledby="finanzas-title" className="space-y-4 sm:space-y-6">
+      <header className="space-y-2">
+        <h1 id="finanzas-title" className="text-2xl sm:text-3xl font-bold tracking-tight">Finanzas</h1>
       </header>
       <Card>
-        <CardHeader>
-          <CardTitle>Gestión financiera</CardTitle>
+        <CardHeader className="pb-3 sm:pb-6">
+          <CardTitle className="text-lg sm:text-xl">Gestión financiera</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           <Tabs defaultValue="resumen">
-            <TabsList>
-              <TabsTrigger value="resumen">Resumen</TabsTrigger>
-              <TabsTrigger value="movimientos">Movimientos</TabsTrigger>
-              <TabsTrigger value="recurrentes">Recurrentes</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 h-auto sm:h-10">
+              <TabsTrigger value="resumen" className="text-xs sm:text-sm py-2">Resumen</TabsTrigger>
+              <TabsTrigger value="movimientos" className="text-xs sm:text-sm py-2">
+                <span className="hidden sm:inline">Movimientos</span>
+                <span className="sm:hidden">Movim.</span>
+              </TabsTrigger>
+              <TabsTrigger value="recurrentes" className="text-xs sm:text-sm py-2">
+                <span className="hidden sm:inline">Recurrentes</span>
+                <span className="sm:hidden">Recur.</span>
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="resumen">
               <FinancesSummary />

@@ -664,16 +664,16 @@ const Animals = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Gestión de Animales</h1>
-          <p className="text-muted-foreground">Administra tu ganado y registra información detallada</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1 sm:space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Animales</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Administra tu ganado y registra información detallada</p>
         </div>
         <div className="flex flex-col space-y-2">
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
-              <Button onClick={() => { resetForm(); setEditingAnimal(null); }}>
+              <Button onClick={() => { resetForm(); setEditingAnimal(null); }} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Agregar Animal
               </Button>
@@ -1032,14 +1032,14 @@ const Animals = () => {
           </Card>
 
           {/* Quick Stats Cards */}
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total de Animales</CardTitle>
                 <Users className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{animals.length}</div>
+                <div className="text-xl sm:text-2xl font-bold">{animals.length}</div>
                 <p className="text-xs text-muted-foreground">
                   Registrados en el sistema
                 </p>
@@ -1052,7 +1052,7 @@ const Animals = () => {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{totalActiveAnimals}</div>
+                <div className="text-xl sm:text-2xl font-bold">{totalActiveAnimals}</div>
                 <p className="text-xs text-muted-foreground">
                   En la cabaña actualmente
                 </p>
@@ -1065,7 +1065,7 @@ const Animals = () => {
                 <MapPin className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{uniqueBreeds.length}</div>
+                <div className="text-xl sm:text-2xl font-bold">{uniqueBreeds.length}</div>
                 <p className="text-xs text-muted-foreground">
                   Diferentes razas
                 </p>
@@ -1081,22 +1081,22 @@ const Animals = () => {
           </CardDescription>
           
           {/* Enhanced Search and Filter Controls */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center space-x-2">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nombre, ID o raza..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
+                className="flex-1 sm:max-w-sm"
               />
             </div>
             
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="flex flex-col space-y-2">
                 <Label className="text-sm font-medium">Categoría</Label>
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-40 bg-background">
+                  <SelectTrigger className="w-full bg-background">
                     <SelectValue placeholder="Todas las categorías" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
@@ -1113,7 +1113,7 @@ const Animals = () => {
               <div className="flex flex-col space-y-2">
                 <Label className="text-sm font-medium">Raza</Label>
                 <Select value={breedFilter} onValueChange={setBreedFilter}>
-                  <SelectTrigger className="w-40 bg-background">
+                  <SelectTrigger className="w-full bg-background">
                     <SelectValue placeholder="Todas" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
@@ -1130,7 +1130,7 @@ const Animals = () => {
               <div className="flex flex-col space-y-2">
                 <Label className="text-sm font-medium">Estado</Label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40 bg-background">
+                  <SelectTrigger className="w-full bg-background">
                     <SelectValue placeholder="Todos" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
@@ -1151,6 +1151,7 @@ const Animals = () => {
                       setBreedFilter("all");
                       setStatusFilter("all");
                     }}
+                    className="w-full"
                   >
                     Limpiar filtros
                   </Button>
