@@ -137,20 +137,29 @@ const Auth = () => {
         province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
       }));
 
-      // Use the global auth context for signup
-      const { error } = await signIn(values.email, values.password);
+      // Create the Supabase auth user
+      const { supabase } = await import("@/integrations/supabase/client");
       
-      if (error) {
-        // If signin fails, try signup
-        console.log("Sign in failed, attempting signup...");
-        // Note: The actual signup logic is handled in useSupabaseAuth
-        throw new Error("Por favor contacta al administrador para crear tu cuenta");
-      }
+      const { data, error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) throw error;
 
       toast({
         title: "¡Cuenta creada!",
-        description: "Has iniciado sesión exitosamente.",
+        description: data.user?.email_confirmed_at 
+          ? "Tu cuenta ha sido creada exitosamente." 
+          : "Revisa tu email para verificar tu cuenta y completar el registro.",
       });
+
+      // Switch to sign in tab and pre-fill email
+      setActiveTab("signin");
+      signInForm.setValue("email", values.email);
 
     } catch (e: any) {
       const msg = e?.message || e?.error_description || 'Error de conexión';
