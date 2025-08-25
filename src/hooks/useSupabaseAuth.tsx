@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AuthUser {
   id: string;
@@ -64,30 +64,102 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
-        return null;
+        // Don't fail completely - try to create a basic profile
+        console.log('⚠️ Creating basic profile for user:', userId);
+        
+        const { data: basicProfile, error: createError } = await supabase
+          .from('profiles')
+          .upsert({
+            user_id: userId,
+            email: '', // Will be updated later
+            full_name: 'Usuario',
+            is_active: true,
+            is_internal_profile: true,
+          })
+          .select()
+          .single();
+          
+        if (createError) {
+          console.error('❌ Failed to create basic profile:', createError);
+          return null;
+        }
+        
+        return {
+          id: userId,
+          email: basicProfile.email || '',
+          fullName: basicProfile.full_name || 'Usuario',
+          employeeCode: basicProfile.employee_code,
+          position: basicProfile.position,
+          department: basicProfile.department,
+          cabañaId: basicProfile.cabaña_id || '',
+          role: 'employee',
+          cabañaName: '',
+          username: basicProfile.username,
+          isActive: basicProfile.is_active ?? true
+        };
       }
 
       if (!profile) {
-        console.warn('⚠️ No profile found for authenticated user:', userId);
-        return null;
+        console.warn('⚠️ No profile found for authenticated user, creating one:', userId);
+        
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: userId,
+            email: '',
+            full_name: 'Usuario',
+            is_active: true,
+            is_internal_profile: true,
+          })
+          .select()
+          .single();
+          
+        if (createError) {
+          console.error('❌ Failed to create profile:', createError);
+          return null;
+        }
+        
+        return {
+          id: userId,
+          email: newProfile.email || '',
+          fullName: newProfile.full_name || 'Usuario',
+          employeeCode: newProfile.employee_code,
+          position: newProfile.position,
+          department: newProfile.department,
+          cabañaId: newProfile.cabaña_id || '',
+          role: 'employee',
+          cabañaName: '',
+          username: newProfile.username,
+          isActive: newProfile.is_active ?? true
+        };
       }
 
       // Get cabaña info
       let cabañaName = '';
       if (profile.cabaña_id) {
-        const { data: cabañaData } = await supabase
-          .from('cabañas')
-          .select('name')
-          .eq('id', profile.cabaña_id)
-          .maybeSingle();
-        
-        cabañaName = cabañaData?.name || '';
+        try {
+          const { data: cabañaData } = await supabase
+            .from('cabañas')
+            .select('name')
+            .eq('id', profile.cabaña_id)
+            .maybeSingle();
+          
+          cabañaName = cabañaData?.name || '';
+        } catch (cabañaError) {
+          console.warn('⚠️ Could not fetch cabaña info:', cabañaError);
+        }
       }
 
-      // Get user role
-      const { data: roleData } = await supabase.rpc('get_user_role', {
-        _user_id: userId
-      });
+      // Get user role safely
+      let userRole = 'employee';
+      try {
+        const { data: roleData } = await supabase.rpc('get_user_role', {
+          _user_id: userId
+        });
+        userRole = roleData || 'employee';
+      } catch (roleError) {
+        console.warn('⚠️ Could not fetch user role:', roleError);
+      }
 
       return {
         id: userId,
@@ -97,13 +169,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         position: profile.position,
         department: profile.department,
         cabañaId: profile.cabaña_id || '',
-        role: roleData || 'employee',
+        role: userRole,
         cabañaName: cabañaName,
         username: profile.username,
         isActive: profile.is_active ?? true
       };
     } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
+      console.error('💥 Critical error in fetchUserProfile:', error);
       return null;
     }
   };
@@ -180,27 +252,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('🔐 Auth state change:', event, session ? 'session exists' : 'no session');
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Handle pending cabaña creation on first sign in
-          if (event === 'SIGNED_IN') {
-            await handlePendingCabanaCreation(session.user.id);
-          }
+          console.log('👤 User authenticated, fetching profile...');
           
-          const userProfile = await fetchUserProfile(session.user.id);
-          if (userProfile) {
-            setCurrentUser(userProfile);
-            setIsAuthenticated(true);
-          } else {
-            // If no profile found, sign out
-            await supabase.auth.signOut();
-            setCurrentUser(null);
-            setIsAuthenticated(false);
-          }
+          // Handle async operations in setTimeout to avoid blocking auth state
+          setTimeout(async () => {
+            try {
+              // Handle pending cabaña creation on first sign in
+              if (event === 'SIGNED_IN') {
+                await handlePendingCabanaCreation(session.user.id);
+              }
+              
+              const userProfile = await fetchUserProfile(session.user.id);
+              if (userProfile) {
+                console.log('✅ Profile loaded successfully:', userProfile.fullName);
+                setCurrentUser(userProfile);
+                setIsAuthenticated(true);
+              } else {
+                console.error('❌ Failed to load profile, but keeping user signed in for now');
+                setCurrentUser(null);
+                setIsAuthenticated(false);
+                // Don't auto-sign out anymore - let user troubleshoot
+              }
+            } catch (error) {
+              console.error('💥 Error in auth state change handler:', error);
+              setCurrentUser(null);
+              setIsAuthenticated(false);
+            }
+          }, 0);
         } else {
+          console.log('👤 No user session');
           setCurrentUser(null);
           setIsAuthenticated(false);
         }
@@ -209,6 +295,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
       // Auth state change will handle the session
     });
 

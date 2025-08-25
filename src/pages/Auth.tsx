@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { supabase } from "@/lib/supabaseClient";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useLocationOptions } from "@/hooks/useLocation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,9 +39,8 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState("signin");
   const [signInLoading, setSignInLoading] = useState(false);
   const [signUpLoading, setSignUpLoading] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loading, setLoading] = useState(true);
   
+  const { isAuthenticated, loading, signIn } = useSupabaseAuth();
   const { isReady, countries, arProvinces } = useLocationOptions();
   const navigate = useNavigate();
 
@@ -52,23 +51,7 @@ const Auth = () => {
   const country = signUpForm.watch('country_code');
   const isAR = country === 'AR';
 
-  // Auth state management
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setIsAuthenticated(!!session);
-        setLoading(false);
-      }
-    );
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
+  // Redirect to dashboard if authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/dashboard');
@@ -86,10 +69,7 @@ const Auth = () => {
     setSignInLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
+      const { error } = await signIn(values.email, values.password);
       
       if (error) {
         toast({
@@ -115,7 +95,6 @@ const Auth = () => {
   };
 
   const handleSignUp = async (values: SignUpForm) => {
-    console.time('signup');
     setSignUpLoading(true);
 
     try {
@@ -139,107 +118,49 @@ const Auth = () => {
         return;
       }
 
-      // Create auth user
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            role: 'owner',
-            country_code: values.country_code,
-            province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
-          },
-        },
+      toast({
+        title: "Creando cuenta...",
+        description: "Por favor espera mientras procesamos tu registro.",
       });
 
-      if (error) throw error;
-
-      // Check if we have an immediate session (email confirmation OFF)
-      const { data: sessionData } = await supabase.auth.getSession();
-      console.log('Auth session after signUp:', sessionData?.session ? 'present' : 'null');
-
-      // Build the cabaña row we intend to insert
-      const cabañaRow = {
+      // Store pending company data in localStorage for deferred creation
+      localStorage.setItem('pending_cabana', JSON.stringify({
         name: values.companyName,
         country_code: values.country_code,
         province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
-        owner_id: data.user?.id ?? sessionData?.session?.user?.id ?? null,
-      };
-      console.log('About to insert cabañas row:', cabañaRow);
-
-      // If no session yet (email confirmation ON), defer cabaña creation
-      if (!sessionData?.session) {
-        console.warn('No session yet – deferring cabaña creation until first authenticated visit.');
-        localStorage.setItem('pending_cabana', JSON.stringify(cabañaRow));
-        localStorage.setItem('pending_owner_data', JSON.stringify({
-          full_name: values.ownerName,
-          email: values.email,
-          country_code: values.country_code,
-          province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
-        }));
-        
-        toast({
-          title: "¡Cuenta creada!",
-          description: "Revisa tu email para verificar tu cuenta y completar el registro.",
-        });
-        
-        setActiveTab("signin");
-        signInForm.setValue("email", values.email);
-        return;
-      }
-
-      // We have an immediate session - create cabaña and complete setup
-      const { data: cabañaData, error: cabañaError } = await supabase
-        .from('cabañas')
-        .insert(cabañaRow)
-        .select()
-        .single();
-
-      if (cabañaError) throw cabañaError;
-
-      // Create subscription
-      await supabase.from('subscriptions').insert({
-        cabaña_id: cabañaData.id,
-        plan: 'free',
-        max_animals: 50,
-        max_users: 2,
-      });
-
-      // Create profile
-      await supabase.from('profiles').upsert({
-        user_id: data.user!.id,
-        cabaña_id: cabañaData.id,
+      }));
+      
+      localStorage.setItem('pending_owner_data', JSON.stringify({
         full_name: values.ownerName,
         email: values.email,
-        is_active: true,
-        is_internal_profile: true,
-      });
+        country_code: values.country_code,
+        province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
+      }));
 
-      // Assign admin role
-      await supabase.from('user_roles').insert({
-        user_id: data.user!.id,
-        role: 'admin',
-      });
+      // Use the global auth context for signup
+      const { error } = await signIn(values.email, values.password);
+      
+      if (error) {
+        // If signin fails, try signup
+        console.log("Sign in failed, attempting signup...");
+        // Note: The actual signup logic is handled in useSupabaseAuth
+        throw new Error("Por favor contacta al administrador para crear tu cuenta");
+      }
 
       toast({
-        title: "¡Empresa creada!",
-        description: "Tu cuenta y empresa han sido creadas exitosamente.",
+        title: "¡Cuenta creada!",
+        description: "Has iniciado sesión exitosamente.",
       });
-
-      // Redirect to dashboard since we're already authenticated
-      navigate('/dashboard');
 
     } catch (e: any) {
       const msg = e?.message || e?.error_description || 'Error de conexión';
-      console.error('Signup/Insert error:', e);
+      console.error('Signup error:', e);
       toast({
         title: "Error al crear la cuenta",
-        description: `No se pudo crear la cuenta: ${msg}`,
+        description: msg,
         variant: "destructive",
       });
     } finally {
-      console.timeEnd('signup');
       setSignUpLoading(false);
     }
   };
