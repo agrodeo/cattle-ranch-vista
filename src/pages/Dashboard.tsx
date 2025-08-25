@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Users, Activity, DollarSign, TrendingUp } from "lucide-react";
+import { Users, Activity, DollarSign, TrendingUp, Plus } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { KpiCard } from "@/components/ui/kpi-card";
+import { DataCard } from "@/components/ui/data-card";
+import { PrimaryButton } from "@/components/ui/primary-button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SubscriptionAlert } from "@/components/subscription/SubscriptionAlert";
 import { SubscriptionPlansModal } from "@/components/subscription/SubscriptionPlansModal";
 import { ReadOnlyModeModal } from "@/components/subscription/ReadOnlyModeModal";
@@ -55,58 +58,73 @@ const Dashboard = () => {
     <div className="space-y-6">
       <SubscriptionAlert onUpgrade={() => setShowPlansModal(true)} />
       
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Tablero</h1>
-        <Badge variant="outline">Bienvenido a AgroDeo</Badge>
-      </div>
+      <PageHeader 
+        title="Tablero"
+        description="Panel de control de tu operación ganadera"
+        actions={
+          <PrimaryButton>
+            <Plus className="h-4 w-4 mr-2" />
+            Registrar Actividad
+          </PrimaryButton>
+        }
+      />
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
+          <KpiCard
+            key={index}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            delta={{
+              value: stat.trend,
+              trend: "neutral"
+            }}
+          />
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Actividades Recientes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              No se encontraron actividades recientes.
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <DataCard 
+          title="Actividades Recientes"
+          icon={Activity}
+          className="col-span-4"
+        >
+          <EmptyState
+            icon={Activity}
+            title="No hay actividades recientes"
+            description="Cuando registres actividades aparecerán aquí"
+            action={{
+              label: "Registrar Primera Actividad",
+              onClick: () => console.log("Navigate to activities")
+            }}
+          />
+        </DataCard>
         
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Acciones Rápidas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="text-sm text-muted-foreground">
+        <DataCard 
+          title="Próximas Actividades"
+          icon={TrendingUp}
+          className="col-span-3"
+        >
+          <div className="space-y-4">
+            <div className="text-sm text-ink-600 mb-4">
               Comienza por:
             </div>
-            <ul className="space-y-2 text-sm">
-              <li>• Agregar tu primer animal</li>
-              <li>• Registrar una actividad</li>
-              <li>• Anotar un servicio</li>
-              <li>• Rastrear finanzas</li>
-            </ul>
-          </CardContent>
-        </Card>
+            <div className="space-y-3">
+              {[
+                { label: "Agregar tu primer animal", path: "/animals" },
+                { label: "Registrar una actividad", path: "/activities" },
+                { label: "Crear un corral", path: "/corrales" },
+                { label: "Configurar finanzas", path: "/finances" }
+              ].map((item, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-ink-50 hover:bg-ink-100 transition-colors cursor-pointer">
+                  <div className="h-2 w-2 rounded-full bg-brand-500"></div>
+                  <span className="text-sm font-medium text-ink-800">{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </DataCard>
       </div>
 
       <SubscriptionPlansModal 

@@ -30,40 +30,39 @@ export function Header() {
   };
 
   return (
-    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <SidebarTrigger />
-          <h1 className="text-lg font-semibold">Gestión de Ganado</h1>
+    <header className="border-b border-ink-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
+      <div className="flex h-16 items-center justify-between px-6">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="text-ink-600 hover:text-ink-900" />
         </div>
         
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-ink-50">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-brand-100 text-brand-800 font-medium">
                     {currentUser?.fullName ? getInitials(currentUser.fullName) : <Building2 className="h-4 w-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-64 p-2" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
-                <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">
+                <div className="flex flex-col space-y-1 px-2 py-1.5">
+                  <p className="text-sm font-semibold leading-none text-ink-900">
                     {currentUser?.fullName || "Usuario"}
                   </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser?.email || currentUser?.username} • {currentUser?.role || 'Sin rol'}
+                  <p className="text-xs leading-none text-ink-600">
+                    {currentUser?.email || currentUser?.username}
                   </p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    {currentUser?.cabañaName || "Sin cabaña"}
+                  <p className="text-xs leading-none text-ink-500">
+                    {currentUser?.cabañaName || "Sin cabaña"} • {currentUser?.role || 'Sin rol'}
                   </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={signOut}>
+              <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600 focus:bg-red-50">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar sesión</span>
               </DropdownMenuItem>

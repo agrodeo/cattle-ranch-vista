@@ -11,6 +11,7 @@ import {
   Crown
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
@@ -73,24 +74,42 @@ export function AppSidebar() {
   const isCollapsed = state === "collapsed";
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarContent>
+    <Sidebar collapsible="icon" className="border-r border-ink-200 bg-white w-64">
+      <SidebarContent className="bg-white">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-lg font-bold px-4 py-6">
-            {!isCollapsed && "AgroDeo"}
+          <SidebarGroupLabel className="px-6 py-8 border-b border-ink-100">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient">
+                <span className="text-white font-bold text-sm">A</span>
+              </div>
+              {!isCollapsed && (
+                <span className="text-xl font-bold text-ink-900">Agrodeo</span>
+              )}
+            </div>
           </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={location.pathname === item.url}>
-                    <NavLink to={item.url}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+          <SidebarGroupContent className="px-3 py-4">
+            <SidebarMenu className="space-y-1">
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild className="h-auto p-0">
+                      <NavLink 
+                        to={item.url}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 relative",
+                          isActive 
+                            ? "bg-brand-50 text-brand-900 border-l-3 border-brand-500" 
+                            : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
+                        )}
+                      >
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        {!isCollapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

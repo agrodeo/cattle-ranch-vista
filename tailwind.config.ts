@@ -61,12 +61,49 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				brand: {
+					50: '140 100% 97%',   // #eafff3
+					100: '142 100% 89%',  // #c8ffe1
+					200: '148 100% 79%',  // #93ffca
+					300: '154 87% 69%',   // #5ef5ad
+					400: '158 79% 55%',   // #36e38f
+					500: '142 71% 45%',   // #22c55e - primary
+					600: '142 76% 36%',   // #16a34a
+					700: '142 72% 29%',   // #12833d
+					800: '142 69% 24%',   // #0f6832
+					900: '140 61% 17%',   // #0a4b24
+				},
+				ink: {
+					50: '210 40% 98%',    // #f8fafc
+					100: '210 40% 96%',   // #f1f5f9
+					200: '214 32% 91%',   // #e2e8f0
+					300: '213 27% 84%',   // #cbd5e1
+					400: '215 20% 65%',   // #94a3b8
+					500: '215 16% 47%',   // #64748b
+					600: '215 19% 35%',   // #475569
+					700: '215 25% 27%',   // #334155
+					800: '217 33% 17%',   // #1f2937
+					900: '222 84% 5%',    // #0f172a
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				xl: '14px',
+				'2xl': '20px'
+			},
+			boxShadow: {
+				card: '0 6px 24px rgba(15,23,42,0.06)',
+				'card-hover': '0 10px 30px rgba(15,23,42,0.10)',
+				glow: '0 0 0 3px rgba(34,197,94,0.18)',
+			},
+			fontFamily: {
+				sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+			},
+			fontFeatureSettings: {
+				'tnum': '"tnum"',
 			},
 			keyframes: {
 				'accordion-down': {
