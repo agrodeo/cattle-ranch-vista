@@ -1010,15 +1010,7 @@ const Animals = () => {
       </div>
     </div>
 
-      <Tabs defaultValue="animals" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="animals" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Animales
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="animals" className="space-y-4">
+      <div className="space-y-4">
           {/* Category Distribution Cards */}
           <Card>
             <CardHeader>
@@ -1362,9 +1354,7 @@ const Animals = () => {
           )}
         </CardContent>
       </Card>
-        </TabsContent>
-
-      </Tabs>
+      </div>
 
       <MarkDeathDialog
         open={showDeathDialog}
