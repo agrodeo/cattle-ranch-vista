@@ -21,6 +21,7 @@ const Dashboard = () => {
     warnings, 
     isLoading, 
     isError, 
+    diagnostics,
     refetch 
   } = useDashboardSummary();
 
@@ -225,6 +226,23 @@ const Dashboard = () => {
           )}
         </DataCard>
       </div>
+
+      {/* Development Diagnostics */}
+      {process.env.NODE_ENV !== 'production' && diagnostics.length > 0 && (
+        <div className="mt-4 p-4 bg-zinc-900 text-zinc-200 rounded-lg text-xs font-mono">
+          <h3 className="font-semibold mb-2">🔍 Dashboard Diagnostics</h3>
+          <div className="space-y-1">
+            {diagnostics.map((d, i) => (
+              <div key={i} className="flex justify-between">
+                <span>{d.label}:</span>
+                <span className={d.error ? 'text-red-400' : 'text-green-400'}>
+                  {d.error ? `Error: ${d.error}` : `${d.count} animals`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modals */}
       <SubscriptionPlansModal 

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useSubscription } from '@/hooks/useSubscription';
+import { normalizeStatus } from '@/lib/status';
+import { isValidUUID } from '@/lib/cabana';
 
 interface DashboardCounts {
   animalsActive: number;
@@ -40,6 +42,7 @@ interface DashboardSummary {
   warnings: DashboardWarnings;
   isLoading: boolean;
   isError: boolean;
+  diagnostics: any[];
   refetch: () => void;
 }
 
@@ -64,6 +67,7 @@ export const useDashboardSummary = (): DashboardSummary => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<any[]>([]);
 
   const fetchDashboardData = useCallback(async () => {
     if (!currentUser?.cabañaId) {
@@ -77,15 +81,48 @@ export const useDashboardSummary = (): DashboardSummary => {
       setIsLoading(true);
       setIsError(false);
 
-      // Get cabaña info
+      // -------- DIAGNÓSTICO: probar varias combinaciones de filtros ----------
+      const runCount = async (label: string, filters: any) => {
+        try {
+          const q = supabase.from('animals').select('id', { count: 'exact', head: true });
+          if (filters.cabana) q.eq('cabaña_id', currentUser.cabañaId);
+          if (filters.status) q.in('status', filters.status);
+          if (filters.noPlaceholder) q.is('is_placeholder', false);
+          const { count, error } = await q;
+          return { label, count: count ?? 0, error: error?.message ?? null, filters };
+        } catch (e: any) {
+          return { label, count: 0, error: e.message, filters };
+        }
+      };
+
+      const diag = [];
+      diag.push(await runCount('Total animals (no filters)', { cabana: false, status: null, noPlaceholder: false }));
+      diag.push(await runCount('Animals in cabaña', { cabana: true, status: null, noPlaceholder: false }));
+      diag.push(await runCount('Active animals (normalized)', { cabana: true, status: ['active'], noPlaceholder: true }));
+      diag.push(await runCount('Active animals (both)', { cabana: true, status: ['activo', 'active'], noPlaceholder: true }));
+
+      setDiagnostics(diag);
+      console.group('🔍 Dashboard Animal Count Diagnostics');
+      console.table(diag.map(d => ({ ...d.filters, label: d.label, count: d.count, error: d.error })));
+      console.groupEnd();
+
+      // Get cabaña info (use maybeSingle to avoid errors)
       const { data: cabanaData, error: cabanaError } = await supabase
         .from('cabañas')
         .select('id, name')
         .eq('id', currentUser.cabañaId)
-        .single();
+        .maybeSingle();
 
-      if (cabanaError || !cabanaData) {
+      if (cabanaError) {
         console.error('Error fetching cabaña:', cabanaError);
+        setWarnings(prev => ({ ...prev, noCabana: true }));
+        setCabana(null);
+        setIsLoading(false);
+        return;
+      }
+
+      if (!cabanaData) {
+        console.warn('No cabaña found for user:', currentUser.cabañaId);
         setWarnings(prev => ({ ...prev, noCabana: true }));
         setCabana(null);
         setIsLoading(false);
@@ -107,16 +144,22 @@ export const useDashboardSummary = (): DashboardSummary => {
       const sevenDaysFromNow = new Date(today);
       sevenDaysFromNow.setDate(today.getDate() + 7);
 
-      // Count active animals (using normalized status 'active')
+      // Count active animals (robust query with diagnostics)
       const { count: animalsCount, error: animalsError } = await supabase
         .from('animals')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', currentUser.cabañaId)
-        .in('status', ['active', 'activo']); // Support both normalized and legacy values
+        .in('status', ['active', 'activo']) // Support both normalized and legacy values
+        .neq('status', 'sold')
+        .neq('status', 'vendido')
+        .neq('status', 'dead')
+        .neq('status', 'muerto');
 
       if (animalsError) {
         console.error('Error counting animals:', animalsError);
-        throw animalsError;
+        console.log('Animals count result:', { animalsCount, animalsError });
+      } else {
+        console.log(`✅ Found ${animalsCount} active animals in cabaña ${currentUser.cabañaId}`);
       }
 
       // Count corrals
@@ -263,6 +306,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     warnings,
     isLoading,
     isError,
+    diagnostics,
     refetch: fetchDashboardData,
   };
 };
