@@ -299,6 +299,17 @@ const Animals = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate that user has a cabaña associated
+    if (!editingAnimal && !userCabaña) {
+      console.error("User cabaña validation failed:", { userCabaña, editingAnimal });
+      toast({
+        title: "Error de configuración",
+        description: "No tienes una cabaña asociada. Contacta al administrador.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     // Validate that birth date is not in the future
     if (formData.birth_date && new Date(formData.birth_date) > new Date()) {
       toast({
@@ -467,9 +478,30 @@ const Animals = () => {
         await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
       }
     } catch (error) {
+      console.error("Error saving animal:", error, {
+        userCabaña,
+        editingAnimal: editingAnimal?.id,
+        formData,
+        submitData: {
+          cabaña_id: editingAnimal ? formData.cabaña_id : userCabaña,
+          id_tag: formData.id_tag,
+          sex: formData.sex
+        }
+      });
+      
+      let errorMessage = "No se pudo guardar el animal";
+      if (error && typeof error === 'object' && 'message' in error) {
+        const errorMsg = (error as any).message;
+        if (errorMsg.includes('row-level security policy')) {
+          errorMessage = "Error de permisos: Verifica que tengas una cabaña asociada";
+        } else if (errorMsg.includes('duplicate key')) {
+          errorMessage = "Ya existe un animal con ese ID";
+        }
+      }
+      
       toast({
         title: "Error",
-        description: "No se pudo guardar el animal",
+        description: errorMessage,
         variant: "destructive",
       });
     }
