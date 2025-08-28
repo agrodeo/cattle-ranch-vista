@@ -74,10 +74,19 @@ export const useDashboardSummary = (): DashboardSummary => {
       setIsLoading(true);
       setIsError(false);
 
-      console.log('🏠 Fetching cabaña for user:', (await supabase.auth.getUser()).data.user?.id);
+      // Validate user is available
+      if (!currentUser?.id) {
+        console.log('⚠️ No current user available');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('🏠 Fetching cabaña for user:', currentUser.id);
       
-      // First get the user's cabaña using the same RPC as Animals.tsx
-      const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_cabana_info');
+      // Get the user's cabaña using the same RPC as Animals.tsx with proper parameter
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_user_cabana_info', {
+        user_uuid: currentUser.id
+      });
       
       console.log('RPC response:', { data: rpcData, error: rpcError });
       
@@ -236,7 +245,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     } finally {
       setIsLoading(false);
     }
-  }, [subscriptionStatus]);
+  }, [subscriptionStatus, currentUser]);
 
   useEffect(() => {
     fetchDashboardData();
