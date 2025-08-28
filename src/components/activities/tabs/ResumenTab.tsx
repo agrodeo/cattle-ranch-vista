@@ -8,7 +8,10 @@ import {
   Weight,
   Baby,
   AlertTriangle,
-  Plus
+  Plus,
+  Stethoscope,
+  Users,
+  BarChart3
 } from 'lucide-react';
 import { useActivities } from '@/hooks/useActivities';
 import { Accordion } from "@/components/ui/accordion";
@@ -19,6 +22,15 @@ import { CompactList } from '../mobile/CompactList';
 import { BottomSheet } from '../mobile/BottomSheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
+// Import components from other tabs
+import { ArtificialInseminationManager } from '@/components/artificial-insemination/ArtificialInseminationManager';
+import { PregnancyDetectionManager } from '../PregnancyDetectionManager';
+import { ServiceManagement } from '@/components/artificial-insemination/ServiceManagement';
+import { VaccinationManager } from '../VaccinationManager';
+import { VaccinationDashboard } from '@/components/vaccination/VaccinationDashboard';
+import { WeighingManager } from '../WeighingManager';
+import { GeneralActivitiesManager } from '../GeneralActivitiesManager';
 
 interface FilterOptions {
   corrales: string[];
@@ -103,6 +115,8 @@ export function ResumenTab() {
     console.log('Register weighing');
   };
 
+  const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(undefined);
+
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-6">
       {/* Main Content */}
@@ -125,14 +139,19 @@ export function ResumenTab() {
           <ActivityAccordion
             value="servicios"
             title="Servicios"
-            summary="Registro de servicios naturales"
+            summary="Gestión de servicios naturales"
             count={services.length}
             primaryAction={{
-              label: "Registrar Servicio",
+              label: "Gestionar Servicios",
               onClick: handleRegisterService
             }}
           >
-            <CompactList items={services} />
+            <div className="space-y-3">
+              <ServiceManagement 
+                onServiceSelect={setSelectedServiceId}
+                selectedServiceId={selectedServiceId}
+              />
+            </div>
           </ActivityAccordion>
 
           <ActivityAccordion
@@ -145,23 +164,9 @@ export function ResumenTab() {
               onClick: handleRegisterIA
             }}
           >
-            <CompactList items={inseminations} />
-            <BottomSheet
-              title="Programar Inseminación"
-              trigger={
-                <Button variant="outline" size="sm" className="w-full mt-2">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Programar IA
-                </Button>
-              }
-            >
-              <div className="space-y-4">
-                <p className="text-sm text-slate-600">Formulario de programación de IA</p>
-                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
-                  Confirmar Programación
-                </Button>
-              </div>
-            </BottomSheet>
+            <div className="space-y-3">
+              <ArtificialInseminationManager />
+            </div>
           </ActivityAccordion>
 
           <ActivityAccordion
@@ -174,29 +179,80 @@ export function ResumenTab() {
               onClick: handleScheduleTacto
             }}
           >
-            <CompactList items={pregnancyDetections} />
+            <div className="space-y-3">
+              <PregnancyDetectionManager />
+            </div>
           </ActivityAccordion>
 
           <ActivityAccordion
-            value="historial-detecciones"
-            title="Historial de Detecciones"
-            summary="Resultados de tactos anteriores"
-            count={detectionHistory.length}
+            value="vacunacion"
+            title="Vacunación y Sanidad"
+            summary="Control sanitario y vacunas"
+            count={12}
+            primaryAction={{
+              label: "Nueva Vacunación",
+              onClick: handleVaccinate
+            }}
           >
-            <CompactList items={detectionHistory} />
+            <div className="space-y-3">
+              <VaccinationDashboard />
+              <BottomSheet
+                title="Registrar Vacunación"
+                trigger={
+                  <Button variant="outline" size="sm" className="w-full">
+                    <Syringe className="h-4 w-4 mr-2" />
+                    Registrar Vacunación
+                  </Button>
+                }
+              >
+                <div className="space-y-4">
+                  <VaccinationManager />
+                </div>
+              </BottomSheet>
+            </div>
           </ActivityAccordion>
 
           <ActivityAccordion
             value="pesajes"
             title="Gestión de Pesajes"
-            summary="Registro de pesos y crecimiento"
+            summary="Control productivo y pesos"
             count={weighings.length}
             primaryAction={{
               label: "Registrar Pesaje",
               onClick: handleRegisterWeighing
             }}
           >
-            <CompactList items={weighings} />
+            <div className="space-y-3">
+              <WeighingManager />
+            </div>
+          </ActivityAccordion>
+
+          <ActivityAccordion
+            value="manejo"
+            title="Manejo General"
+            summary="Actividades generales y movimientos"
+            count={8}
+            primaryAction={{
+              label: "Nueva Actividad",
+              onClick: handleRegisterActivity
+            }}
+          >
+            <div className="space-y-3">
+              <GeneralActivitiesManager />
+            </div>
+          </ActivityAccordion>
+
+          <ActivityAccordion
+            value="calendario"
+            title="Calendario de Actividades"
+            summary="Vista temporal de actividades"
+            count={15}
+          >
+            <div className="space-y-3">
+              <CompactList items={[
+                { id: '1', title: 'Calendario de Actividades', subtitle: 'Vista temporal próximamente', date: 'Hoy', status: 'pending' as const }
+              ]} />
+            </div>
           </ActivityAccordion>
         </Accordion>
       </section>

@@ -1,43 +1,6 @@
-import { useActivityPreferences } from '@/hooks/useActivityPreferences';
-import { StickyTabs } from './mobile/StickyTabs';
 import { ResumenTab } from './tabs/ResumenTab';
-import { ReproductivasTab } from './tabs/ReproductivasTab';
-import { SanitariasTab } from './tabs/SanitariasTab';
-import { ProductivasTab } from './tabs/ProductivasTab';
-import { ManejoTab } from './tabs/ManejoTab';
-import { CalendarioTab } from './tabs/CalendarioTab';
-
-const tabs = [
-  { id: 'resumen', label: 'Resumen', shortLabel: 'Inicio' },
-  { id: 'reproductivas', label: 'Reproductivas', shortLabel: 'Reprod.' },
-  { id: 'sanitarias', label: 'Sanitarias', shortLabel: 'Sanit.' },
-  { id: 'productivas', label: 'Productivas', shortLabel: 'Prod.' },
-  { id: 'manejo', label: 'Manejo', shortLabel: 'Manejo' },
-  { id: 'calendario', label: 'Calendario', shortLabel: 'Cal.' }
-];
 
 export function ActivitiesTabs() {
-  const { preferences, setActiveTab } = useActivityPreferences();
-
-  const renderTabContent = () => {
-    switch (preferences.activeTab) {
-      case 'resumen':
-        return <ResumenTab />;
-      case 'reproductivas':
-        return <ReproductivasTab />;
-      case 'sanitarias':
-        return <SanitariasTab />;
-      case 'productivas':
-        return <ProductivasTab />;
-      case 'manejo':
-        return <ManejoTab />;
-      case 'calendario':
-        return <CalendarioTab />;
-      default:
-        return <ResumenTab />;
-    }
-  };
-
   return (
     <div className="space-y-3">
       {/* Header - Only on Desktop */}
@@ -50,16 +13,21 @@ export function ActivitiesTabs() {
         </p>
       </div>
 
-      {/* Sticky Tabs Navigation */}
-      <StickyTabs
-        tabs={tabs}
-        activeTab={preferences.activeTab}
-        onTabChange={setActiveTab}
-      />
+      {/* Single "Inicio" Tab */}
+      <header className="sticky top-0 z-30 -mx-3 mb-2 bg-white/95 backdrop-blur px-3 py-2 border-b border-slate-200">
+        <div className="flex gap-2">
+          <button
+            className="px-3 py-2 rounded-full text-sm bg-emerald-600 text-white border border-emerald-600"
+            aria-pressed="true"
+          >
+            Inicio
+          </button>
+        </div>
+      </header>
 
-      {/* Tab Content */}
-      <div>
-        {renderTabContent()}
+      {/* Unified Content */}
+      <div className="pb-24">
+        <ResumenTab />
       </div>
     </div>
   );
