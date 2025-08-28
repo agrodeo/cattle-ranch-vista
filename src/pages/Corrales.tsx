@@ -1,10 +1,16 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { PageHeader } from "@/components/ui/page-header";
+import { MetricCard } from "@/components/ui/metric-card";
+import { SectionCard } from "@/components/ui/section-card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { StickyActionBar } from "@/components/ui/sticky-action-bar";
+import { BadgePill } from "@/components/ui/badge-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin, Move } from "lucide-react";
+import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
@@ -159,13 +165,48 @@ export default function Corrales() {
     setEditDialogOpen(true);
   };
 
+  useEffect(() => {
+    document.title = "Corrales | AgroDeo";
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute("content", "Gestiona corrales y asignación de animales");
+  }, []);
+
+  // Calculate metrics
+  const totalAnimals = corrales.reduce((sum, corral) => sum + corral.animal_count, 0);
+  const totalCorrales = corrales.length;
+  const totalRisks = corrales.reduce((sum, corral) => sum + corral.risk_count, 0);
+  const totalHectareas = corrales.reduce((sum, corral) => sum + (corral.hectareas || 0), 0);
+
+  const stats = [
+    {
+      title: "Total Corrales",
+      value: totalCorrales,
+      icon: MapPin,
+    },
+    {
+      title: "Total Animales",
+      value: totalAnimals,
+      icon: Users,
+    },
+    {
+      title: "Riesgos Activos",
+      value: totalRisks,
+      icon: AlertTriangle,
+    },
+    {
+      title: "Hectáreas",
+      value: totalHectareas || "—",
+      icon: TrendingUp,
+    },
+  ];
+
   if (loading) {
     return (
-      <div className="w-full max-w-full overflow-x-hidden">
+      <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500 mx-auto mb-4"></div>
-            <p className="text-ink-600">Cargando corrales...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+            <p className="text-slate-600">Cargando corrales...</p>
           </div>
         </div>
       </div>
@@ -173,115 +214,147 @@ export default function Corrales() {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-        <div className="min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-ink-900 truncate">Corrales</h1>
-          <p className="text-sm sm:text-base text-ink-600 mt-1">Gestiona los corrales y asignación de animales</p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-          <Button 
-            variant="outline" 
-            onClick={() => setMoveDialogOpen(true)}
-            className="w-full sm:w-auto justify-center h-10 px-4"
-          >
-            <Move className="h-4 w-4 mr-2" />
-            <span className="sm:inline">Mover Animales</span>
-          </Button>
-          <Button 
-            onClick={() => setCreateDialogOpen(true)}
-            className="w-full sm:w-auto justify-center h-10 px-4"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="sm:inline">Nuevo Corral</span>
-          </Button>
-        </div>
-      </div>
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
+      <div className="space-y-3">
+        <PageHeader 
+          title="Corrales"
+          subtitle="Gestiona los corrales y asignación de animales"
+          action={
+            <Button 
+              onClick={() => setCreateDialogOpen(true)}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Nuevo Corral
+            </Button>
+          }
+        />
 
-      <div className="grid gap-3 sm:gap-4">
-        {corrales.map((corral) => (
-          <Card key={corral.id} className="overflow-hidden">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                {/* Header Section */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <MapPin className="h-5 w-5 text-ink-500 flex-shrink-0" />
-                    <h3 className="text-lg font-semibold text-ink-900 truncate">{corral.name}</h3>
-                  </div>
-                  
-                  {corral.has_consanguinity_risk && (
-                    <div className="flex-shrink-0">
-                      {getSeverityBadge(corral.highest_severity, corral.risk_count)}
-                    </div>
-                  )}
-                </div>
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-6">
+          {/* Main Content */}
+          <section className="lg:col-span-2 space-y-4">
+            {/* KPIs */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {stats.map((stat, index) => (
+                <MetricCard
+                  key={index}
+                  title={stat.title}
+                  value={stat.value}
+                  icon={stat.icon}
+                />
+              ))}
+            </div>
 
-                {/* Stats Section */}
-                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
-                  <div className="text-center min-w-[60px]">
-                    <p className="text-xl sm:text-2xl font-bold text-ink-900 tabular-nums">{corral.animal_count}</p>
-                    <p className="text-xs sm:text-sm text-ink-600">Animales</p>
-                  </div>
-                  
-                  <div className="text-center min-w-[50px]">
-                    <p className="text-base sm:text-lg font-semibold text-ink-900 tabular-nums">
-                      {corral.male_count} / {corral.female_count}
-                    </p>
-                    <p className="text-xs sm:text-sm text-ink-600">M / H</p>
-                  </div>
-                  
-                  <div className="text-center min-w-[60px]">
-                    <p className="text-base sm:text-lg font-semibold text-ink-900 tabular-nums">
-                      {corral.hectareas || "—"}
-                    </p>
-                    <p className="text-xs sm:text-sm text-ink-600">Hectáreas</p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto lg:ml-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => openEditDialog(corral.id)}
-                      className="w-full sm:w-auto h-9 text-sm"
-                    >
-                      Editar
-                    </Button>
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={() => openDetailDialog(corral.id)}
-                      className="w-full sm:w-auto h-9 text-sm"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      Ver Detalles
-                    </Button>
-                  </div>
-                </div>
+            {/* Sticky Action Bar for Mobile */}
+            <StickyActionBar>
+              <div className="flex gap-2 w-full">
+                <Button 
+                  variant="outline"
+                  onClick={() => setMoveDialogOpen(true)}
+                  className="flex-1 h-11"
+                >
+                  <Move className="h-4 w-4 mr-1" />
+                  Mover
+                </Button>
+                <Button 
+                  onClick={() => setCreateDialogOpen(true)}
+                  className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Nuevo
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </StickyActionBar>
 
-        {corrales.length === 0 && (
-          <Card>
-            <CardContent className="p-6 sm:p-8 text-center">
-              <MapPin className="h-10 w-10 sm:h-12 sm:w-12 text-ink-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2 text-ink-900">No hay corrales</h3>
-              <p className="text-sm sm:text-base text-ink-600 mb-4 max-w-sm mx-auto">
-                Crea tu primer corral para comenzar a gestionar los animales
-              </p>
-              <Button 
-                onClick={() => setCreateDialogOpen(true)}
-                className="w-full sm:w-auto"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Crear Primer Corral
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+            {/* Corrales List */}
+            <SectionCard
+              title="Lista de Corrales"
+              subtitle="Gestiona la distribución de animales"
+              count={corrales.length}
+            >
+              {corrales.length === 0 ? (
+                <EmptyState
+                  icon={<MapPin className="h-12 w-12" />}
+                  title="No hay corrales"
+                  description="Crea tu primer corral para comenzar a gestionar los animales"
+                  action={{
+                    label: "Crear Primer Corral",
+                    onClick: () => setCreateDialogOpen(true)
+                  }}
+                />
+              ) : (
+                <div className="space-y-3">
+                  {corrales.map((corral) => (
+                    <div key={corral.id} className="rounded-lg border border-slate-200 p-4 bg-white">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <MapPin className="h-4 w-4 text-slate-600" />
+                            <h3 className="text-sm font-medium text-slate-900 truncate">{corral.name}</h3>
+                            {corral.has_consanguinity_risk && (
+                              <BadgePill variant="danger" className="ml-2">
+                                {corral.risk_count} riesgos
+                              </BadgePill>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-slate-600">
+                            <span>{corral.animal_count} animales</span>
+                            <span>{corral.male_count}M / {corral.female_count}H</span>
+                            {corral.hectareas && <span>{corral.hectareas} ha</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 ml-4">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openDetailDialog(corral.id)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </SectionCard>
+          </section>
+
+          {/* Right Sidebar */}
+          <aside className="space-y-4">
+            <SectionCard
+              title="Alertas de Riesgo"
+              subtitle="Monitoreo de consanguinidad"
+              count={totalRisks}
+            >
+              {totalRisks > 0 ? (
+                <div className="space-y-3">
+                  {corrales
+                    .filter(corral => corral.has_consanguinity_risk)
+                    .map((corral) => (
+                      <div key={corral.id} className="flex items-center justify-between p-3 rounded-lg bg-red-50">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {corral.name}
+                          </p>
+                          <p className="text-xs text-slate-500">{corral.risk_count} riesgos detectados</p>
+                        </div>
+                        <BadgePill variant="danger" className="ml-2">
+                          {corral.highest_severity === 'severe' ? 'Alto' : 
+                           corral.highest_severity === 'medium' ? 'Medio' : 'Bajo'}
+                        </BadgePill>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <AlertTriangle className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-sm text-slate-600">No hay riesgos detectados</p>
+                </div>
+              )}
+            </SectionCard>
+          </aside>
+        </div>
       </div>
 
       <CreateCorralDialog

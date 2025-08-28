@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FinancesSummary } from "@/components/finances/FinancesSummary";
@@ -13,15 +15,17 @@ const Finances = () => {
   }, []);
 
   return (
-    <section aria-labelledby="finanzas-title" className="space-y-4 sm:space-y-6">
-      <header className="space-y-2">
-        <h1 id="finanzas-title" className="text-2xl sm:text-3xl font-bold tracking-tight">Finanzas</h1>
-      </header>
-      <Card>
-        <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="text-lg sm:text-xl">Gestión financiera</CardTitle>
-        </CardHeader>
-        <CardContent className="px-3 sm:px-6">
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
+      <div className="space-y-3">
+        <PageHeader 
+          title="Finanzas"
+          subtitle="Gestión completa de ingresos y gastos"
+        />
+        
+        <SectionCard
+          title="Gestión Financiera"
+          subtitle="Seguimiento de movimientos y análisis económico"
+        >
           <Tabs defaultValue="resumen">
             <TabsList className="grid w-full grid-cols-3 h-auto sm:h-10">
               <TabsTrigger value="resumen" className="text-xs sm:text-sm py-2">Resumen</TabsTrigger>
@@ -44,9 +48,9 @@ const Finances = () => {
               <FinancesRecurring />
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-    </section>
+        </SectionCard>
+      </div>
+    </div>
   );
 };
 

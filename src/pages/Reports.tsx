@@ -1,4 +1,6 @@
 import { useEffect } from "react";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionCard } from "@/components/ui/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HerdOverview } from "@/components/reports/HerdOverview";
@@ -16,19 +18,17 @@ const Reports = () => {
   }, []);
 
   return (
-    <section aria-labelledby="reportes-title" className="space-y-4 sm:space-y-6">
-      <header className="space-y-2">
-        <h1 id="reportes-title" className="text-2xl sm:text-3xl font-bold tracking-tight">Reportes y Análisis</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Análisis completo del desempeño de su operación ganadera
-        </p>
-      </header>
-      
-      <Card>
-        <CardHeader className="pb-3 sm:pb-6">
-          <CardTitle className="text-lg sm:text-xl">Panel de Análisis</CardTitle>
-        </CardHeader>
-        <CardContent className="px-3 sm:px-6">
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
+      <div className="space-y-3">
+        <PageHeader 
+          title="Reportes y Análisis"
+          subtitle="Análisis completo del desempeño de su operación ganadera"
+        />
+        
+        <SectionCard
+          title="Panel de Análisis"
+          subtitle="Reportes detallados por categoría"
+        >
           <Tabs defaultValue="herd" className="space-y-4">
             <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 h-auto sm:h-10">
               <TabsTrigger value="herd" className="text-xs sm:text-sm px-1 sm:px-3 py-2">
@@ -81,9 +81,9 @@ const Reports = () => {
               <FinancialAnalytics />
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-    </section>
+        </SectionCard>
+      </div>
+    </div>
   );
 };
 
