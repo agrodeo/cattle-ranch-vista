@@ -73,19 +73,15 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
 
   // Limit warnings
   const animalUsagePercent = (subscriptionStatus.currentAnimalsCount / subscriptionStatus.maxAnimals) * 100;
-  const userUsagePercent = (subscriptionStatus.currentUsersCount / subscriptionStatus.maxUsers) * 100;
 
-  if (animalUsagePercent >= 80 || userUsagePercent >= 80) {
+  if (animalUsagePercent >= 80) {
     return (
       <Alert className="mb-4 border-yellow-200 bg-yellow-50">
         <Clock className="h-4 w-4" />
         <AlertTitle>Acercándose al límite</AlertTitle>
         <AlertDescription className="flex items-center justify-between">
           <span>
-            {animalUsagePercent >= 80 && 
-              `Animales: ${subscriptionStatus.currentAnimalsCount}/${subscriptionStatus.maxAnimals} `}
-            {userUsagePercent >= 80 && 
-              `Usuarios: ${subscriptionStatus.currentUsersCount}/${subscriptionStatus.maxUsers}`}
+            Animales: {subscriptionStatus.currentAnimalsCount}/{subscriptionStatus.maxAnimals}
           </span>
           <Button onClick={onUpgrade} variant="outline" size="sm">
             Actualizar Plan
@@ -119,17 +115,11 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 gap-4 text-sm">
           <div>
             <CardDescription>Animales</CardDescription>
             <p className="font-medium">
               {subscriptionStatus.currentAnimalsCount} / {subscriptionStatus.maxAnimals}
-            </p>
-          </div>
-          <div>
-            <CardDescription>Usuarios</CardDescription>
-            <p className="font-medium">
-              {subscriptionStatus.currentUsersCount} / {subscriptionStatus.maxUsers}
             </p>
           </div>
         </div>

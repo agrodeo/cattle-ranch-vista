@@ -1973,14 +1973,11 @@ export type Database = {
         Args: { cabana_uuid: string }
         Returns: {
           can_add_animals: boolean
-          can_add_users: boolean
           current_animals_count: number
-          current_users_count: number
           is_read_only: boolean
           is_subscription_active: boolean
           is_trial_active: boolean
           max_animals: number
-          max_users: number
           plan: Database["public"]["Enums"]["subscription_plan"]
           trial_days_remaining: number
         }[]

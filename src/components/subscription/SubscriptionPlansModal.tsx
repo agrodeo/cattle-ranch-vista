@@ -20,10 +20,9 @@ const plans = [
     icon: Users,
     color: 'bg-blue-500',
     maxAnimals: 200,
-    maxUsers: 3,
     features: [
       'Hasta 200 animales',
-      'Hasta 3 usuarios',
+      'Usuarios ilimitados',
       'Reportes básicos',
       'Soporte por email'
     ],
@@ -36,10 +35,9 @@ const plans = [
     icon: Zap,
     color: 'bg-indigo-500',
     maxAnimals: 600,
-    maxUsers: 4,
     features: [
       'Hasta 600 animales',
-      'Hasta 4 usuarios',
+      'Usuarios ilimitados',
       'Reportes intermedios',
       'Exportación de datos',
       'Soporte por email'
@@ -53,10 +51,9 @@ const plans = [
     icon: Crown,
     color: 'bg-green-500',
     maxAnimals: 1000,
-    maxUsers: 5,
     features: [
       'Hasta 1,000 animales',
-      'Hasta 5 usuarios',
+      'Usuarios ilimitados',
       'Reportes avanzados',
       'Analytics en tiempo real',
       'Exportación de datos',
@@ -72,10 +69,9 @@ const plans = [
     icon: Building2,
     color: 'bg-purple-500',
     maxAnimals: 5000,
-    maxUsers: 15,
     features: [
       'Hasta 5,000 animales',
-      'Hasta 15 usuarios',
+      'Usuarios ilimitados',
       'Todos los reportes',
       'Dashboard ejecutivo',
       'API access',
@@ -91,7 +87,6 @@ const plans = [
     icon: Briefcase,
     color: 'bg-orange-500',
     maxAnimals: 'Ilimitado',
-    maxUsers: 'Ilimitado',
     features: [
       'Animales ilimitados',
       'Usuarios ilimitados',
@@ -180,7 +175,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>Hasta 2 usuarios</span>
+                    <span>Usuarios ilimitados</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />

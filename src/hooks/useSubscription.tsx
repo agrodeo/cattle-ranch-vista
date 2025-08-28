@@ -10,11 +10,8 @@ export interface SubscriptionStatus {
   trialDaysRemaining: number;
   isSubscriptionActive: boolean;
   maxAnimals: number;
-  maxUsers: number;
   currentAnimalsCount: number;
-  currentUsersCount: number;
   canAddAnimals: boolean;
-  canAddUsers: boolean;
   isReadOnly: boolean;
 }
 
@@ -69,11 +66,8 @@ export const useSubscription = () => {
           trialDaysRemaining: status.trial_days_remaining,
           isSubscriptionActive: status.is_subscription_active,
           maxAnimals: status.max_animals,
-          maxUsers: status.max_users,
           currentAnimalsCount: status.current_animals_count,
-          currentUsersCount: status.current_users_count,
           canAddAnimals: status.can_add_animals,
-          canAddUsers: status.can_add_users,
           isReadOnly: status.is_read_only
         });
       }
@@ -101,18 +95,6 @@ export const useSubscription = () => {
     return true;
   }, [subscriptionStatus]);
 
-  const checkUserLimit = useCallback((): boolean => {
-    if (!subscriptionStatus) return false;
-    if (!subscriptionStatus.canAddUsers) {
-      toast({
-        title: "Límite alcanzado",
-        description: `Has alcanzado el límite de ${subscriptionStatus.maxUsers} usuarios para el plan ${PLAN_NAMES[subscriptionStatus.plan]}. Actualiza tu plan para agregar más usuarios.`,
-        variant: "destructive"
-      });
-      return false;
-    }
-    return true;
-  }, [subscriptionStatus]);
 
   const isFeatureAvailable = useCallback((feature: 'reports' | 'analytics' | 'export'): boolean => {
     if (!subscriptionStatus) return false;
@@ -161,7 +143,6 @@ export const useSubscription = () => {
     loading,
     fetchSubscriptionStatus,
     checkAnimalLimit,
-    checkUserLimit,
     isFeatureAvailable,
     upgradePlan,
     planNames: PLAN_NAMES,
