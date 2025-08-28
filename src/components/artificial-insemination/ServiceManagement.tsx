@@ -164,7 +164,7 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
             Servicios Naturales
           </h3>
           <p className="text-muted-foreground">
-            Gestiona y monitorea todos los servicios de inseminación artificial
+            Gestiona y monitorea todos los servicios naturales
           </p>
         </div>
         <div className="flex items-center gap-2">
