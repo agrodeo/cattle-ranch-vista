@@ -5,18 +5,20 @@ import {
   Syringe, 
   Calendar,
   TrendingUp,
-  Filter
+  Weight,
+  Baby,
+  AlertTriangle,
+  Plus
 } from 'lucide-react';
 import { useActivities } from '@/hooks/useActivities';
-import { useActivityPreferences } from '@/hooks/useActivityPreferences';
-import { MetricsDrawer } from '../MetricsDrawer';
-import { KpiGrid } from '../mobile/KpiGrid';
-import { QuickActionsBar } from '../mobile/QuickActionsBar';
-import { Section } from '../mobile/Section';
-import { UpcomingList } from '../mobile/UpcomingList';
-import { RecentList } from '../mobile/RecentList';
-import { FiltersSheet } from '../mobile/FiltersSheet';
+import { Accordion } from "@/components/ui/accordion";
+import { CompactKpi } from '../mobile/CompactKpi';
+import { FloatingActionBar } from '../mobile/FloatingActionBar';
+import { ActivityAccordion } from '../mobile/ActivityAccordion';
+import { CompactList } from '../mobile/CompactList';
+import { BottomSheet } from '../mobile/BottomSheet';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface FilterOptions {
   corrales: string[];
@@ -27,90 +29,52 @@ interface FilterOptions {
 
 export function ResumenTab() {
   const { stats } = useActivities();
-  const { preferences, toggleSection } = useActivityPreferences();
-  
-  const [filters, setFilters] = useState<FilterOptions>({
-    corrales: [],
-    sexo: 'all',
-    edad: [0, 120],
-    estado: ['activo']
-  });
 
   // Mock data - replace with real data hooks
-  const upcomingActivities = [
-    {
-      id: '1',
-      title: 'Vacunación Antiaftosa',
-      type: 'Vacuna',
-      date: 'Hoy',
-      location: 'Corral A',
-      priority: 'high' as const,
-      animalCount: 15
-    },
-    {
-      id: '2',
-      title: 'Tacto Reproductivo',
-      type: 'Tacto',
-      date: 'Mañana',
-      location: 'Corral B',
-      priority: 'medium' as const,
-      animalCount: 8
-    }
+  const services = [
+    { id: '1', title: 'Servicio Natural #301', subtitle: 'Toro ABC-123 → Vaca DEF-456', date: 'Hace 2 días', location: 'Corral A', status: 'completed' as const },
+    { id: '2', title: 'Servicio Natural #302', subtitle: 'Toro ABC-123 → Vaca GHI-789', date: 'Hace 1 día', location: 'Corral A', status: 'completed' as const },
   ];
 
-  const recentActivities = [
-    {
-      id: '1',
-      title: 'Inseminación Artificial',
-      type: 'Inseminación',
-      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-      user: 'Juan Pérez',
-      location: 'Corral C',
-      animalCount: 5,
-      status: 'completed' as const
-    },
-    {
-      id: '2',
-      title: 'Pesaje Mensual',
-      type: 'Pesaje',
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      user: 'María García',
-      location: 'Manga Principal',
-      animalCount: 25,
-      status: 'completed' as const
-    }
+  const inseminations = [
+    { id: '1', title: 'IA Pajuela Premium', subtitle: 'Vaca JKL-012 - Angus Select', date: 'Hoy', location: 'Manga IA', status: 'pending' as const, priority: 'medium' as const },
   ];
 
-  const availableCorrales = [
-    { id: '1', name: 'Corral A' },
-    { id: '2', name: 'Corral B' },
-    { id: '3', name: 'Corral C' },
-    { id: '4', name: 'Manga Principal' }
+  const pregnancyDetections = [
+    { id: '1', title: 'Tacto Reproductivo', subtitle: '8 vacas programadas', date: 'En 3 días', location: 'Manga Principal', status: 'pending' as const, animalCount: 8 },
+  ];
+
+  const detectionHistory = [
+    { id: '1', title: 'Detección Ecográfica', subtitle: '5 preñeces confirmadas', date: 'Hace 1 semana', user: 'Dr. Martínez', location: 'Corral B', status: 'completed' as const },
+  ];
+
+  const weighings = [
+    { id: '1', title: 'Pesaje Mensual', subtitle: 'Terneros destete', date: 'Hace 3 días', user: 'Juan López', location: 'Manga Principal', animalCount: 15, status: 'completed' as const },
   ];
 
   const kpis = [
     {
-      title: 'Actividades (30 días)',
+      title: 'Act. 30d',
       value: stats.monthlyActivities || 0,
       icon: Activity,
       trend: {
         value: '+12%',
-        trend: 'up' as const
+        direction: 'up' as const
       }
     },
     {
-      title: 'Inseminaciones',
-      value: stats.inseminations || 0,
+      title: 'IA (mes)',
+      value: stats.inseminations || 1,
       icon: Heart
     },
     {
-      title: 'Vacunas próximas',
+      title: 'Vacunas 7d',
       value: 12,
       icon: Syringe
     },
     {
       title: 'Servicios',
-      value: 8,
+      value: services.length,
       icon: TrendingUp
     }
   ];
@@ -123,126 +87,169 @@ export function ResumenTab() {
     console.log('Opening vaccination');
   };
 
-  const handleFiltersChange = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
-    console.log('Filters applied:', newFilters);
+  const handleRegisterService = () => {
+    console.log('Register service');
   };
 
-  const handleClearFilters = () => {
-    setFilters({
-      corrales: [],
-      sexo: 'all',
-      edad: [0, 120],
-      estado: ['activo']
-    });
+  const handleRegisterIA = () => {
+    console.log('Register IA');
   };
 
-  const isRecentActivitiesOpen = !preferences.collapsedSections?.recentActivities;
+  const handleScheduleTacto = () => {
+    console.log('Schedule tacto');
+  };
+
+  const handleRegisterWeighing = () => {
+    console.log('Register weighing');
+  };
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-6">
       {/* Main Content */}
       <section className="lg:col-span-2 space-y-4">
         {/* KPIs */}
-        <KpiGrid kpis={kpis} />
-
-        {/* More Metrics Button */}
-        <div className="flex justify-center lg:justify-start">
-          <MetricsDrawer>
-            <Button variant="outline" className="gap-2">
-              <Activity className="h-4 w-4" />
-              Ver más métricas
-            </Button>
-          </MetricsDrawer>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {kpis.map((kpi, index) => (
+            <CompactKpi key={index} {...kpi} />
+          ))}
         </div>
 
         {/* Quick Actions */}
-        <QuickActionsBar
+        <FloatingActionBar
           onRegisterActivity={handleRegisterActivity}
           onVaccinate={handleVaccinate}
         />
 
-        {/* Upcoming Activities */}
-        <Section
-          title="Próximas Actividades"
-          count={upcomingActivities.length}
-          collapsible
-          defaultOpen={upcomingActivities.length > 0}
-          onFilter={() => {
-            // Open filters sheet
-          }}
-        >
-          <FiltersSheet
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onClearFilters={handleClearFilters}
-            availableCorrales={availableCorrales}
+        {/* Activity Sections as Accordions */}
+        <Accordion type="multiple" className="space-y-3">
+          <ActivityAccordion
+            value="servicios"
+            title="Servicios"
+            summary="Registro de servicios naturales"
+            count={services.length}
+            primaryAction={{
+              label: "Registrar Servicio",
+              onClick: handleRegisterService
+            }}
           >
-            <Button variant="ghost" size="sm" className="lg:hidden">
-              <Filter className="h-4 w-4" />
-            </Button>
-          </FiltersSheet>
-          <UpcomingList activities={upcomingActivities} />
-        </Section>
+            <CompactList items={services} />
+          </ActivityAccordion>
 
-        {/* Recent Activities */}
-        <Section
-          title="Actividades Recientes"
-          count={recentActivities.length}
-          collapsible
-          defaultOpen={isRecentActivitiesOpen}
-        >
-          <RecentList activities={recentActivities} />
-        </Section>
+          <ActivityAccordion
+            value="inseminacion"
+            title="Inseminación Artificial"
+            summary="Programación y registro de IA"
+            count={inseminations.length}
+            primaryAction={{
+              label: "Registrar IA",
+              onClick: handleRegisterIA
+            }}
+          >
+            <CompactList items={inseminations} />
+            <BottomSheet
+              title="Programar Inseminación"
+              trigger={
+                <Button variant="outline" size="sm" className="w-full mt-2">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Programar IA
+                </Button>
+              }
+            >
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600">Formulario de programación de IA</p>
+                <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+                  Confirmar Programación
+                </Button>
+              </div>
+            </BottomSheet>
+          </ActivityAccordion>
+
+          <ActivityAccordion
+            value="deteccion-prenez"
+            title="Detección de Preñez"
+            summary="Tactos y confirmaciones"
+            count={pregnancyDetections.length}
+            primaryAction={{
+              label: "Programar Tacto",
+              onClick: handleScheduleTacto
+            }}
+          >
+            <CompactList items={pregnancyDetections} />
+          </ActivityAccordion>
+
+          <ActivityAccordion
+            value="historial-detecciones"
+            title="Historial de Detecciones"
+            summary="Resultados de tactos anteriores"
+            count={detectionHistory.length}
+          >
+            <CompactList items={detectionHistory} />
+          </ActivityAccordion>
+
+          <ActivityAccordion
+            value="pesajes"
+            title="Gestión de Pesajes"
+            summary="Registro de pesos y crecimiento"
+            count={weighings.length}
+            primaryAction={{
+              label: "Registrar Pesaje",
+              onClick: handleRegisterWeighing
+            }}
+          >
+            <CompactList items={weighings} />
+          </ActivityAccordion>
+        </Accordion>
       </section>
 
-      {/* Right Rail */}
-      <aside className="space-y-4">
+      {/* Right Rail - Desktop Only */}
+      <aside className="hidden lg:block space-y-4">
         {/* Compact Calendar */}
-        <Section title="Próximos 7 días">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 className="font-medium text-slate-900 mb-3">Próximos 7 días</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-ink-900">Hoy</span>
-              <span className="text-ink-600">3 actividades</span>
+              <span className="font-medium text-slate-900">Hoy</span>
+              <Badge variant="outline">3</Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-ink-900">+3 días</span>
-              <span className="text-ink-600">1 actividad</span>
+              <span className="font-medium text-slate-900">+3 días</span>
+              <Badge variant="outline">1</Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-ink-900">+7 días</span>
-              <span className="text-ink-600">2 actividades</span>
+              <span className="font-medium text-slate-900">+7 días</span>
+              <Badge variant="outline">2</Badge>
             </div>
             <Button variant="ghost" size="sm" className="w-full mt-3">
               <Calendar className="h-4 w-4 mr-2" />
               Ver calendario completo
             </Button>
           </div>
-        </Section>
+        </div>
 
         {/* Vaccines Due */}
-        <Section title="Vacunas Próximas">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h3 className="font-medium text-slate-900 mb-3">Vacunas Próximas</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg border border-red-200">
               <div>
                 <p className="text-sm font-medium text-red-900">Antiaftosa</p>
                 <p className="text-xs text-red-600">Vence hoy</p>
               </div>
-              <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+              <Badge className="bg-red-100 text-red-800 text-xs">
                 15 animales
-              </span>
+              </Badge>
             </div>
             <div className="flex items-center justify-between p-2 bg-amber-50 rounded-lg border border-amber-200">
               <div>
                 <p className="text-sm font-medium text-amber-900">Brucelosis</p>
                 <p className="text-xs text-amber-600">En 3 días</p>
               </div>
-              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
+              <Badge className="bg-amber-100 text-amber-800 text-xs">
                 8 animales
-              </span>
+              </Badge>
             </div>
           </div>
-        </Section>
+        </div>
       </aside>
     </div>
   );

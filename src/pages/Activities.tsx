@@ -2,7 +2,7 @@ import { ActivitiesTabs } from "@/components/activities/ActivitiesTabs";
 
 const Activities = () => {
   return (
-    <div className="mx-auto w-full max-w-screen-2xl px-3 sm:px-4 lg:px-6">
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-16 lg:pb-0 overflow-x-hidden">
       <ActivitiesTabs />
     </div>
   );

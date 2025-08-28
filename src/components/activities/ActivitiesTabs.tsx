@@ -1,5 +1,5 @@
 import { useActivityPreferences } from '@/hooks/useActivityPreferences';
-import { TabsChips } from './mobile/TabsChips';
+import { StickyTabs } from './mobile/StickyTabs';
 import { ResumenTab } from './tabs/ResumenTab';
 import { ReproductivasTab } from './tabs/ReproductivasTab';
 import { SanitariasTab } from './tabs/SanitariasTab';
@@ -39,26 +39,26 @@ export function ActivitiesTabs() {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight text-ink-900">
+    <div className="space-y-3">
+      {/* Header - Only on Desktop */}
+      <div className="hidden lg:block space-y-2 mb-6">
+        <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
           Actividades
         </h1>
-        <p className="text-sm sm:text-base text-ink-600">
+        <p className="text-base text-slate-600">
           Gestiona todas las actividades de tu cabaña
         </p>
       </div>
 
-      {/* Tabs Navigation */}
-      <TabsChips
+      {/* Sticky Tabs Navigation */}
+      <StickyTabs
         tabs={tabs}
         activeTab={preferences.activeTab}
         onTabChange={setActiveTab}
       />
 
       {/* Tab Content */}
-      <div className="mt-6">
+      <div>
         {renderTabContent()}
       </div>
     </div>
