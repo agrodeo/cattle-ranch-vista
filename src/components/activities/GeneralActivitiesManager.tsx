@@ -114,40 +114,6 @@ export function GeneralActivitiesManager() {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Tipos de Actividades</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              { name: "Destete", value: "destete", description: "Separación de crías", icon: "🐄" },
-              { name: "Marcación", value: "marcacion", description: "Identificación con hierro", icon: "🔥" },
-              { name: "Castración", value: "castracion", description: "Procedimiento quirúrgico", icon: "✂️" },
-              { name: "Descorne", value: "descorne", description: "Remoción de cuernos", icon: "🦏" },
-              { name: "Traslado", value: "traslado", description: "Movimiento entre corrales", icon: "📦" },
-              { name: "Tratamiento", value: "tratamiento", description: "Cuidados veterinarios", icon: "💊" },
-              { name: "Revisión", value: "revision", description: "Control general de salud", icon: "🔍" },
-              { name: "Apareamiento", value: "apareamiento", description: "Servicio natural", icon: "💕" },
-              { name: "Parto", value: "parto", description: "Registro de nacimientos", icon: "👶" },
-            ].map((activity, index) => (
-              <div
-                key={index}
-                className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => handleActivityTypeClick(activity.value)}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{activity.icon}</span>
-                  <div>
-                    <h4 className="font-medium">{activity.name}</h4>
-                    <p className="text-sm text-muted-foreground">{activity.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
