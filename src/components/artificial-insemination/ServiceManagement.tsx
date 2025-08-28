@@ -202,8 +202,8 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
               <h3 className="text-lg font-medium mb-2">No hay servicios</h3>
               <p className="text-muted-foreground mb-4">
                 {services.length === 0 
-                  ? "Aún no hay servicios de IA registrados" 
-                  : "No se encontraron servicios con el filtro aplicado"
+                  ? "Aún no hay servicios naturales registrados" 
+                  : "No se encontraron servicios naturales con el filtro aplicado"
                 }
               </p>
               <Button>
