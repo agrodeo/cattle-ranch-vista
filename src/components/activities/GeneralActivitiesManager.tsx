@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ClipboardList, Plus, Activity } from "lucide-react";
-import { NewGeneralActivityDialog } from "./NewGeneralActivityDialog";
+import { ClipboardList, Activity } from "lucide-react";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -67,25 +65,6 @@ export function GeneralActivitiesManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-xl font-semibold">Actividades Generales</h3>
-          <p className="text-muted-foreground">
-            Registro de otras actividades de manejo ganadero
-          </p>
-        </div>
-        <NewGeneralActivityDialog 
-          preselectedType={selectedActivityType} 
-          onClose={() => setSelectedActivityType("")}
-          onSuccess={fetchGeneralActivitiesStats}
-        >
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Nueva Actividad
-          </Button>
-        </NewGeneralActivityDialog>
-      </div>
-
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

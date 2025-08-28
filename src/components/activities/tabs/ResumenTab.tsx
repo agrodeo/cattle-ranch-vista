@@ -19,7 +19,6 @@ import { CompactKpi } from '../mobile/CompactKpi';
 import { FloatingActionBar } from '../mobile/FloatingActionBar';
 import { ActivityAccordion } from '../mobile/ActivityAccordion';
 import { CompactList } from '../mobile/CompactList';
-import { BottomSheet } from '../mobile/BottomSheet';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -27,7 +26,6 @@ import { Badge } from '@/components/ui/badge';
 import { ArtificialInseminationManager } from '@/components/artificial-insemination/ArtificialInseminationManager';
 import { PregnancyDetectionManager } from '../PregnancyDetectionManager';
 import { ServiceManagement } from '@/components/artificial-insemination/ServiceManagement';
-import { VaccinationManager } from '../VaccinationManager';
 import { VaccinationDashboard } from '@/components/vaccination/VaccinationDashboard';
 import { WeighingManager } from '../WeighingManager';
 import { GeneralActivitiesManager } from '../GeneralActivitiesManager';
@@ -204,24 +202,11 @@ export function ResumenTab() {
               label: "Nueva Vacunación",
               onClick: handleVaccinate
             }}
-          >
-            <div className="space-y-3">
-              <VaccinationDashboard />
-              <BottomSheet
-                title="Registrar Vacunación"
-                trigger={
-                  <Button variant="outline" size="sm" className="w-full">
-                    <Syringe className="h-4 w-4 mr-2" />
-                    Registrar Vacunación
-                  </Button>
-                }
-              >
-                <div className="space-y-4">
-                  <VaccinationManager />
-                </div>
-              </BottomSheet>
-            </div>
-          </ActivityAccordion>
+           >
+             <div className="space-y-3">
+               <VaccinationDashboard />
+             </div>
+           </ActivityAccordion>
 
           <ActivityAccordion
             value="pesajes"
