@@ -10,6 +10,7 @@ import { es } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useToast } from '@/hooks/use-toast';
+import { ImprovedArtificialInseminationDialog } from './ImprovedArtificialInseminationDialog';
 
 interface Service {
   id: string;
@@ -39,6 +40,7 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<string>('all');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -206,7 +208,7 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
                   : "No se encontraron servicios naturales con el filtro aplicado"
                 }
               </p>
-              <Button>
+              <Button onClick={() => setShowCreateDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Crear Primer Servicio
               </Button>
@@ -268,6 +270,15 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
           )}
         </CardContent>
       </Card>
+
+      <ImprovedArtificialInseminationDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onSuccess={() => {
+          setShowCreateDialog(false);
+          loadServices();
+        }}
+      />
     </div>
   );
 }

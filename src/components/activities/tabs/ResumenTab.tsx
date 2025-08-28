@@ -31,6 +31,10 @@ import { VaccinationManager } from '../VaccinationManager';
 import { VaccinationDashboard } from '@/components/vaccination/VaccinationDashboard';
 import { WeighingManager } from '../WeighingManager';
 import { GeneralActivitiesManager } from '../GeneralActivitiesManager';
+import { ImprovedArtificialInseminationDialog } from '@/components/artificial-insemination/ImprovedArtificialInseminationDialog';
+import { NewTactoDialog } from '../NewTactoDialog';
+import { NewWeighingDialog } from '../NewWeighingDialog';
+import { NewGeneralActivityDialog } from '../NewGeneralActivityDialog';
 
 interface FilterOptions {
   corrales: string[];
@@ -91,8 +95,15 @@ export function ResumenTab() {
     }
   ];
 
+  // Dialog states
+  const [showActivityDialog, setShowActivityDialog] = useState(false);
+  const [showServiceDialog, setShowServiceDialog] = useState(false);
+  const [showIADialog, setShowIADialog] = useState(false);
+  const [showTactoDialog, setShowTactoDialog] = useState(false);
+  const [showWeighingDialog, setShowWeighingDialog] = useState(false);
+
   const handleRegisterActivity = () => {
-    console.log('Opening activity registration');
+    setShowActivityDialog(true);
   };
 
   const handleVaccinate = () => {
@@ -100,19 +111,19 @@ export function ResumenTab() {
   };
 
   const handleRegisterService = () => {
-    console.log('Register service');
+    setShowServiceDialog(true);
   };
 
   const handleRegisterIA = () => {
-    console.log('Register IA');
+    setShowIADialog(true);
   };
 
   const handleScheduleTacto = () => {
-    console.log('Schedule tacto');
+    setShowTactoDialog(true);
   };
 
   const handleRegisterWeighing = () => {
-    console.log('Register weighing');
+    setShowWeighingDialog(true);
   };
 
   const [selectedServiceId, setSelectedServiceId] = useState<string | undefined>(undefined);
@@ -307,6 +318,37 @@ export function ResumenTab() {
           </div>
         </div>
       </aside>
+
+      {/* Dialogs */}
+      <ImprovedArtificialInseminationDialog
+        open={showServiceDialog || showIADialog}
+        onOpenChange={(open) => {
+          setShowServiceDialog(open);
+          setShowIADialog(open);
+        }}
+        onSuccess={() => {
+          setShowServiceDialog(false);
+          setShowIADialog(false);
+        }}
+      />
+
+      {showTactoDialog && (
+        <NewTactoDialog
+          onSuccess={() => setShowTactoDialog(false)}
+        />
+      )}
+
+      {showWeighingDialog && (
+        <NewWeighingDialog
+          onSuccess={() => setShowWeighingDialog(false)}
+        />
+      )}
+
+      {showActivityDialog && (
+        <NewGeneralActivityDialog onSuccess={() => setShowActivityDialog(false)}>
+          <></>
+        </NewGeneralActivityDialog>
+      )}
     </div>
   );
 }
