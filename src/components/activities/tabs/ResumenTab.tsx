@@ -1,166 +1,249 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useState } from 'react';
 import { 
   Activity, 
   Heart, 
   Syringe, 
-  Plus, 
   Calendar,
-  ChevronDown,
-  ChevronUp
+  TrendingUp,
+  Filter
 } from 'lucide-react';
 import { useActivities } from '@/hooks/useActivities';
 import { useActivityPreferences } from '@/hooks/useActivityPreferences';
 import { MetricsDrawer } from '../MetricsDrawer';
+import { KpiGrid } from '../mobile/KpiGrid';
+import { QuickActionsBar } from '../mobile/QuickActionsBar';
+import { Section } from '../mobile/Section';
+import { UpcomingList } from '../mobile/UpcomingList';
+import { RecentList } from '../mobile/RecentList';
+import { FiltersSheet } from '../mobile/FiltersSheet';
+import { Button } from '@/components/ui/button';
+
+interface FilterOptions {
+  corrales: string[];
+  sexo: 'all' | 'macho' | 'hembra';
+  edad: [number, number];
+  estado: string[];
+}
 
 export function ResumenTab() {
   const { stats } = useActivities();
   const { preferences, toggleSection } = useActivityPreferences();
   
-  const isRecentActivitiesOpen = !preferences.collapsedSections.recentActivities;
-  
-  const mainKPIs = [
+  const [filters, setFilters] = useState<FilterOptions>({
+    corrales: [],
+    sexo: 'all',
+    edad: [0, 120],
+    estado: ['activo']
+  });
+
+  // Mock data - replace with real data hooks
+  const upcomingActivities = [
     {
-      title: 'Actividades (30 días)',
-      value: stats.monthlyActivities,
-      icon: Activity,
-      description: 'Este mes'
+      id: '1',
+      title: 'Vacunación Antiaftosa',
+      type: 'Vacuna',
+      date: 'Hoy',
+      location: 'Corral A',
+      priority: 'high' as const,
+      animalCount: 15
     },
     {
-      title: 'Inseminaciones',
-      value: stats.inseminations,
-      icon: Heart,
-      description: 'Del mes'
-    },
-    {
-      title: 'Vacunas próximas',
-      value: 12, // TODO: implement upcoming vaccines count
-      icon: Syringe,
-      description: 'Próximos 7 días'
+      id: '2',
+      title: 'Tacto Reproductivo',
+      type: 'Tacto',
+      date: 'Mañana',
+      location: 'Corral B',
+      priority: 'medium' as const,
+      animalCount: 8
     }
   ];
 
+  const recentActivities = [
+    {
+      id: '1',
+      title: 'Inseminación Artificial',
+      type: 'Inseminación',
+      date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+      user: 'Juan Pérez',
+      location: 'Corral C',
+      animalCount: 5,
+      status: 'completed' as const
+    },
+    {
+      id: '2',
+      title: 'Pesaje Mensual',
+      type: 'Pesaje',
+      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+      user: 'María García',
+      location: 'Manga Principal',
+      animalCount: 25,
+      status: 'completed' as const
+    }
+  ];
+
+  const availableCorrales = [
+    { id: '1', name: 'Corral A' },
+    { id: '2', name: 'Corral B' },
+    { id: '3', name: 'Corral C' },
+    { id: '4', name: 'Manga Principal' }
+  ];
+
+  const kpis = [
+    {
+      title: 'Actividades (30 días)',
+      value: stats.monthlyActivities || 0,
+      icon: Activity,
+      trend: {
+        value: '+12%',
+        trend: 'up' as const
+      }
+    },
+    {
+      title: 'Inseminaciones',
+      value: stats.inseminations || 0,
+      icon: Heart
+    },
+    {
+      title: 'Vacunas próximas',
+      value: 12,
+      icon: Syringe
+    },
+    {
+      title: 'Servicios',
+      value: 8,
+      icon: TrendingUp
+    }
+  ];
+
+  const handleRegisterActivity = () => {
+    console.log('Opening activity registration');
+  };
+
+  const handleVaccinate = () => {
+    console.log('Opening vaccination');
+  };
+
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    console.log('Filters applied:', newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      corrales: [],
+      sexo: 'all',
+      edad: [0, 120],
+      estado: ['activo']
+    });
+  };
+
+  const isRecentActivitiesOpen = !preferences.collapsedSections?.recentActivities;
+
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Main KPIs */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        {mainKPIs.map((kpi, index) => (
-          <Card key={index} className="cursor-pointer hover:bg-muted/50 transition-colors">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {kpi.title}
-              </CardTitle>
-              <kpi.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl sm:text-2xl font-bold">
-                {kpi.value}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {kpi.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+      {/* Main Content */}
+      <section className="lg:col-span-2 space-y-4">
+        {/* KPIs */}
+        <KpiGrid kpis={kpis} />
 
-      {/* More Metrics Button */}
-      <div className="flex justify-center">
-        <MetricsDrawer>
-          <Button variant="outline" className="gap-2">
-            <Activity className="h-4 w-4" />
-            Ver más métricas
-          </Button>
-        </MetricsDrawer>
-      </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base sm:text-lg">
-            Acciones Rápidas
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-            <Button size="lg" className="h-12 sm:h-16 flex-col gap-1 sm:gap-2">
-              <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-sm">Registrar Actividad</span>
+        {/* More Metrics Button */}
+        <div className="flex justify-center lg:justify-start">
+          <MetricsDrawer>
+            <Button variant="outline" className="gap-2">
+              <Activity className="h-4 w-4" />
+              Ver más métricas
             </Button>
-            <Button size="lg" variant="outline" className="h-12 sm:h-16 flex-col gap-1 sm:gap-2">
-              <Syringe className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-sm">Vacunar Ahora</span>
+          </MetricsDrawer>
+        </div>
+
+        {/* Quick Actions */}
+        <QuickActionsBar
+          onRegisterActivity={handleRegisterActivity}
+          onVaccinate={handleVaccinate}
+        />
+
+        {/* Upcoming Activities */}
+        <Section
+          title="Próximas Actividades"
+          count={upcomingActivities.length}
+          collapsible
+          defaultOpen={upcomingActivities.length > 0}
+          onFilter={() => {
+            // Open filters sheet
+          }}
+        >
+          <FiltersSheet
+            filters={filters}
+            onFiltersChange={handleFiltersChange}
+            onClearFilters={handleClearFilters}
+            availableCorrales={availableCorrales}
+          >
+            <Button variant="ghost" size="sm" className="lg:hidden">
+              <Filter className="h-4 w-4" />
+            </Button>
+          </FiltersSheet>
+          <UpcomingList activities={upcomingActivities} />
+        </Section>
+
+        {/* Recent Activities */}
+        <Section
+          title="Actividades Recientes"
+          count={recentActivities.length}
+          collapsible
+          defaultOpen={isRecentActivitiesOpen}
+        >
+          <RecentList activities={recentActivities} />
+        </Section>
+      </section>
+
+      {/* Right Rail */}
+      <aside className="space-y-4">
+        {/* Compact Calendar */}
+        <Section title="Próximos 7 días">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-ink-900">Hoy</span>
+              <span className="text-ink-600">3 actividades</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-ink-900">+3 días</span>
+              <span className="text-ink-600">1 actividad</span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium text-ink-900">+7 días</span>
+              <span className="text-ink-600">2 actividades</span>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full mt-3">
+              <Calendar className="h-4 w-4 mr-2" />
+              Ver calendario completo
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </Section>
 
-      {/* Compact Calendar */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-base sm:text-lg">
-            <span>Próximos 7 días</span>
-            <Button variant="ghost" size="sm" className="text-xs sm:text-sm">
-              <Calendar className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Ver calendario completo</span>
-              <span className="sm:hidden">Ver más</span>
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2 sm:space-y-3">
-            {/* TODO: Implement upcoming activities */}
-            <div className="text-center py-4 text-muted-foreground">
-              <p className="text-sm">
-                No hay actividades programadas para los próximos 7 días
-              </p>
+        {/* Vaccines Due */}
+        <Section title="Vacunas Próximas">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg border border-red-200">
+              <div>
+                <p className="text-sm font-medium text-red-900">Antiaftosa</p>
+                <p className="text-xs text-red-600">Vence hoy</p>
+              </div>
+              <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                15 animales
+              </span>
+            </div>
+            <div className="flex items-center justify-between p-2 bg-amber-50 rounded-lg border border-amber-200">
+              <div>
+                <p className="text-sm font-medium text-amber-900">Brucelosis</p>
+                <p className="text-xs text-amber-600">En 3 días</p>
+              </div>
+              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full">
+                8 animales
+              </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activities - Collapsible */}
-      <Collapsible open={isRecentActivitiesOpen}>
-        <Card>
-          <CollapsibleTrigger asChild>
-            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
-              <CardTitle className="flex items-center justify-between text-base sm:text-lg">
-                <span>Actividades Recientes</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs sm:text-sm text-muted-foreground">5 elementos</span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleSection('recentActivities');
-                    }}
-                  >
-                    {isRecentActivitiesOpen ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent>
-              <div className="space-y-2 sm:space-y-3">
-                {/* TODO: Implement recent activities list */}
-                <div className="text-center py-4 text-muted-foreground">
-                  <p className="text-sm">
-                    No hay actividades recientes
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </CollapsibleContent>
-        </Card>
-      </Collapsible>
+        </Section>
+      </aside>
     </div>
   );
 }
