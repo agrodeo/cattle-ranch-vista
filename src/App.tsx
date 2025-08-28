@@ -28,7 +28,17 @@ import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
-function AppContent() {
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <AppWithConnectivity />
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
+
+function AppWithConnectivity() {
   const { isOnline } = useConnectivity();
 
   useEffect(() => {
@@ -123,13 +133,5 @@ function AppContent() {
     </BrowserRouter>
   );
 }
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  </QueryClientProvider>
-);
 
 export default App;
