@@ -161,7 +161,7 @@ All colors MUST be HSL.
   }
 
   .status-vendido {
-    @apply bg-ink-100 text-ink-700 border border-ink-200;
+    @apply bg-red-100 text-red-800 border border-red-200;
   }
 
   .status-muerto {

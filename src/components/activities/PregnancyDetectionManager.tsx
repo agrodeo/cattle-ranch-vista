@@ -65,19 +65,18 @@ export function PregnancyDetectionManager() {
         .select("*")
         .eq("cabaña_id", currentUser.cabañaId)
         .eq("sex", "Hembra")
-        .neq("status", "vendido")
-        .neq("status", "muerto")
-        .neq("status", "Vendido")
-        .neq("status", "Muerto")
-        .or("status.is.null,status.eq.activo,status.eq.Activo");
+        .not("status", "in", '("vendido","muerto","Vendido","Muerto","sold","dead")');
 
       if (error) throw error;
 
-      // Filtrar por edad (mayores a 15 meses)
+      // Filtrar por edad (mayores a 15 meses) y asegurar que realmente están activos
       const eligibleAnimals = animalsData?.filter(animal => {
         if (!animal.birth_date) return false;
         const ageInMonths = differenceInMonths(new Date(), new Date(animal.birth_date));
-        return ageInMonths >= 15;
+        // Verificar adiccionalmente que el estado es realmente activo
+        const status = animal.status?.toLowerCase().trim();
+        const isActive = !status || ['activo', 'active', 'vivo', 'viva'].includes(status);
+        return ageInMonths >= 15 && isActive;
       }) || [];
 
       setAnimals(eligibleAnimals);
