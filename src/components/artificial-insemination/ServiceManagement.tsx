@@ -208,10 +208,6 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
                   : "No se encontraron servicios naturales con el filtro aplicado"
                 }
               </p>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Crear Primer Servicio
-              </Button>
             </div>
           ) : (
             <Table>
