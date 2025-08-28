@@ -123,7 +123,6 @@ export const useDashboardSummary = (): DashboardSummary => {
           const q = supabase.from('animals').select('id', { count: 'exact', head: true });
           if (filters.cabana && cabanaId) q.eq('cabaña_id', cabanaId);
           if (filters.status) q.in('status', filters.status);
-          if (filters.noPlaceholder) q.is('is_placeholder', false);
           const { count, error } = await q;
           return { label, count: count ?? 0, error: error?.message ?? null, filters, cabanaId };
         } catch (e: any) {
@@ -132,11 +131,11 @@ export const useDashboardSummary = (): DashboardSummary => {
       };
 
       const diag = [];
-      diag.push(await runCount('Total animals (no filters)', { cabana: false, status: null, noPlaceholder: false }));
-      diag.push(await runCount('Animals in cabaña', { cabana: true, status: null, noPlaceholder: false }));
-      diag.push(await runCount('Active animals (Activo)', { cabana: true, status: ['Activo'], noPlaceholder: true }));
-      diag.push(await runCount('Active animals (normalized)', { cabana: true, status: ['active'], noPlaceholder: true }));
-      diag.push(await runCount('Active animals (both)', { cabana: true, status: ['activo', 'active'], noPlaceholder: true }));
+      diag.push(await runCount('Total animals (no filters)', { cabana: false, status: null }));
+      diag.push(await runCount('Animals in cabaña', { cabana: true, status: null }));
+      diag.push(await runCount('Active animals (Activo)', { cabana: true, status: ['Activo'] }));
+      diag.push(await runCount('Active animals (normalized)', { cabana: true, status: ['active'] }));
+      diag.push(await runCount('Active animals (both)', { cabana: true, status: ['activo', 'active'] }));
 
       setDiagnostics(diag);
       console.group('🔍 Dashboard Animal Count Diagnostics');
@@ -155,8 +154,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         .from('animals')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
-        .eq('status', 'Activo')  // Usar "Activo" como en Animals.tsx
-        .is('is_placeholder', false);
+        .eq('status', 'Activo');  // Usar "Activo" como en Animals.tsx
 
       if (animalsError) {
         console.error('Error counting animals:', animalsError);

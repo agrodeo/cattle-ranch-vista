@@ -228,7 +228,7 @@ const Dashboard = () => {
       </div>
 
       {/* Development Diagnostics */}
-      {process.env.NODE_ENV !== 'production' && diagnostics.length > 0 && (
+      {process.env.NODE_ENV !== 'production' && diagnostics.some(d => d.error) && (
         <div className="mt-4 p-4 bg-zinc-900 text-zinc-200 rounded-lg text-xs font-mono">
           <h3 className="font-semibold mb-2">🔍 Dashboard Diagnostics</h3>
           <div className="space-y-1">
