@@ -24,11 +24,13 @@ interface TactoRecord {
 }
 
 interface TactoDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function NewTactoDialog({ onSuccess }: TactoDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: TactoDialogProps) {
+  const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
@@ -42,10 +44,21 @@ export function NewTactoDialog({ onSuccess }: TactoDialogProps) {
   const { getEligibleAnimals, createEvent } = useActivities();
 
   useEffect(() => {
+    if (externalOpen !== undefined) {
+      setOpen(externalOpen);
+    }
+  }, [externalOpen]);
+
+  useEffect(() => {
     if (open) {
       loadAnimals();
     }
   }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
 
   const loadAnimals = async () => {
     try {
@@ -166,6 +179,7 @@ export function NewTactoDialog({ onSuccess }: TactoDialogProps) {
       setSelectedAnimals([]);
       setTactoRecords([]);
       setOpen(false);
+      onOpenChange?.(false);
       
       onSuccess?.();
     } catch (error) {
@@ -181,7 +195,7 @@ export function NewTactoDialog({ onSuccess }: TactoDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Registrar Detección de Preñez</DialogTitle>
@@ -378,7 +392,7 @@ export function NewTactoDialog({ onSuccess }: TactoDialogProps) {
           )}
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
             <Button 

@@ -33,6 +33,7 @@ import { ImprovedArtificialInseminationDialog } from '@/components/artificial-in
 import { NewTactoDialog } from '../NewTactoDialog';
 import { NewWeighingDialog } from '../NewWeighingDialog';
 import { NewGeneralActivityDialog } from '../NewGeneralActivityDialog';
+import { NewVaccinationDialog } from '../NewVaccinationDialog';
 
 interface FilterOptions {
   corrales: string[];
@@ -99,13 +100,14 @@ export function ResumenTab() {
   const [showIADialog, setShowIADialog] = useState(false);
   const [showTactoDialog, setShowTactoDialog] = useState(false);
   const [showWeighingDialog, setShowWeighingDialog] = useState(false);
+  const [showVaccinationDialog, setShowVaccinationDialog] = useState(false);
 
   const handleRegisterActivity = () => {
     setShowActivityDialog(true);
   };
 
   const handleVaccinate = () => {
-    console.log('Opening vaccination');
+    setShowVaccinationDialog(true);
   };
 
   const handleRegisterService = () => {
@@ -317,11 +319,11 @@ export function ResumenTab() {
         }}
       />
 
-      {showTactoDialog && (
-        <NewTactoDialog
-          onSuccess={() => setShowTactoDialog(false)}
-        />
-      )}
+      <NewTactoDialog
+        open={showTactoDialog}
+        onOpenChange={setShowTactoDialog}
+        onSuccess={() => setShowTactoDialog(false)}
+      />
 
       {showWeighingDialog && (
         <NewWeighingDialog
@@ -333,6 +335,12 @@ export function ResumenTab() {
         <NewGeneralActivityDialog onSuccess={() => setShowActivityDialog(false)}>
           <></>
         </NewGeneralActivityDialog>
+      )}
+
+      {showVaccinationDialog && (
+        <NewVaccinationDialog 
+          onSuccess={() => setShowVaccinationDialog(false)}
+        />
       )}
     </div>
   );
