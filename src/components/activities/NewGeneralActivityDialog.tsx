@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,8 @@ import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 
 interface NewGeneralActivityDialogProps {
-  children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   preselectedType?: string;
   onClose?: () => void;
   onSuccess?: () => void;
@@ -100,8 +101,8 @@ const activityTypes = [
   },
 ];
 
-export function NewGeneralActivityDialog({ children, preselectedType, onClose, onSuccess }: NewGeneralActivityDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, preselectedType, onClose, onSuccess }: NewGeneralActivityDialogProps) {
+  const [open, setOpen] = useState(externalOpen || false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAnimals, setLoadingAnimals] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -118,6 +119,12 @@ export function NewGeneralActivityDialog({ children, preselectedType, onClose, o
   const { createEvent } = useActivities();
 
   useEffect(() => {
+    if (externalOpen !== undefined) {
+      setOpen(externalOpen);
+    }
+  }, [externalOpen]);
+
+  useEffect(() => {
     if (open) {
       loadAnimals();
       if (preselectedType) {
@@ -125,6 +132,14 @@ export function NewGeneralActivityDialog({ children, preselectedType, onClose, o
       }
     }
   }, [open, preselectedType]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+    if (!newOpen) {
+      onClose?.();
+    }
+  };
 
   const loadAnimals = async () => {
     setLoadingAnimals(true);
@@ -223,6 +238,7 @@ export function NewGeneralActivityDialog({ children, preselectedType, onClose, o
       setSelectedAnimals([]);
       setActivityData({});
       setOpen(false);
+      onOpenChange?.(false);
       onClose?.();
     } catch (error) {
       toast({
@@ -410,15 +426,7 @@ export function NewGeneralActivityDialog({ children, preselectedType, onClose, o
   };
 
   return (
-    <Dialog open={open || !!preselectedType} onOpenChange={(newOpen) => {
-      setOpen(newOpen);
-      if (!newOpen) {
-        onClose?.();
-      }
-    }}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -572,7 +580,7 @@ export function NewGeneralActivityDialog({ children, preselectedType, onClose, o
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
               disabled={isLoading}
             >
               Cancelar

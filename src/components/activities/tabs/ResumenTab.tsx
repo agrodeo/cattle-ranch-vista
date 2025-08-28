@@ -330,11 +330,11 @@ export function ResumenTab() {
         onSuccess={() => setShowWeighingDialog(false)}
       />
 
-      {showActivityDialog && (
-        <NewGeneralActivityDialog onSuccess={() => setShowActivityDialog(false)}>
-          <></>
-        </NewGeneralActivityDialog>
-      )}
+      <NewGeneralActivityDialog
+        open={showActivityDialog}
+        onOpenChange={setShowActivityDialog}
+        onSuccess={() => setShowActivityDialog(false)}
+      />
 
       <NewVaccinationDialog 
         open={showVaccinationDialog}
