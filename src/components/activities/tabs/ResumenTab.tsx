@@ -337,11 +337,11 @@ export function ResumenTab() {
         </NewGeneralActivityDialog>
       )}
 
-      {showVaccinationDialog && (
-        <NewVaccinationDialog 
-          onSuccess={() => setShowVaccinationDialog(false)}
-        />
-      )}
+      <NewVaccinationDialog 
+        open={showVaccinationDialog}
+        onOpenChange={setShowVaccinationDialog}
+        onSuccess={() => setShowVaccinationDialog(false)}
+      />
     </div>
   );
 }

@@ -16,11 +16,13 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface VaccinationDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function NewVaccinationDialog({ onSuccess }: VaccinationDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSuccess }: VaccinationDialogProps) {
+  const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
@@ -38,10 +40,21 @@ export function NewVaccinationDialog({ onSuccess }: VaccinationDialogProps) {
   const { getEligibleAnimals, createEvent } = useActivities();
 
   useEffect(() => {
+    if (externalOpen !== undefined) {
+      setOpen(externalOpen);
+    }
+  }, [externalOpen]);
+
+  useEffect(() => {
     if (open) {
       loadAnimals();
     }
   }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
 
   const loadAnimals = async () => {
     try {
@@ -125,6 +138,7 @@ export function NewVaccinationDialog({ onSuccess }: VaccinationDialogProps) {
       setNotas("");
       setSelectedAnimals([]);
       setOpen(false);
+      onOpenChange?.(false);
       
       onSuccess?.();
     } catch (error) {
@@ -140,13 +154,7 @@ export function NewVaccinationDialog({ onSuccess }: VaccinationDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Vacunación
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Registrar Vacunación</DialogTitle>
@@ -324,7 +332,7 @@ export function NewVaccinationDialog({ onSuccess }: VaccinationDialogProps) {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
             <Button 
