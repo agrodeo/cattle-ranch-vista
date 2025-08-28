@@ -140,10 +140,9 @@ export function ResumenTab() {
         </div>
 
         {/* Quick Actions */}
-        <FloatingActionBar
-          onRegisterActivity={handleRegisterActivity}
-          onVaccinate={handleVaccinate}
-        />
+      <FloatingActionBar 
+        onRegisterActivity={handleRegisterActivity}
+      />
 
         {/* Activity Sections as Accordions */}
         <Accordion type="multiple" className="space-y-3">
