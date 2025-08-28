@@ -325,11 +325,11 @@ export function ResumenTab() {
         onSuccess={() => setShowTactoDialog(false)}
       />
 
-      {showWeighingDialog && (
-        <NewWeighingDialog
-          onSuccess={() => setShowWeighingDialog(false)}
-        />
-      )}
+      <NewWeighingDialog
+        open={showWeighingDialog}
+        onOpenChange={setShowWeighingDialog}
+        onSuccess={() => setShowWeighingDialog(false)}
+      />
 
       {showActivityDialog && (
         <NewGeneralActivityDialog onSuccess={() => setShowActivityDialog(false)}>

@@ -21,11 +21,13 @@ interface WeighingRecord {
 }
 
 interface WeighingDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function NewWeighingDialog({ onSuccess }: WeighingDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess }: WeighingDialogProps) {
+  const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
@@ -39,10 +41,21 @@ export function NewWeighingDialog({ onSuccess }: WeighingDialogProps) {
   const { getEligibleAnimals, createEvent } = useActivities();
 
   useEffect(() => {
+    if (externalOpen !== undefined) {
+      setOpen(externalOpen);
+    }
+  }, [externalOpen]);
+
+  useEffect(() => {
     if (open) {
       loadAnimals();
     }
   }, [open]);
+
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    onOpenChange?.(newOpen);
+  };
 
   const loadAnimals = async () => {
     try {
@@ -143,6 +156,7 @@ export function NewWeighingDialog({ onSuccess }: WeighingDialogProps) {
       setSelectedAnimals([]);
       setWeighingRecords([]);
       setOpen(false);
+      onOpenChange?.(false);
       
       onSuccess?.();
     } catch (error) {
@@ -158,13 +172,7 @@ export function NewWeighingDialog({ onSuccess }: WeighingDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Pesaje
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Registrar Pesaje</DialogTitle>
@@ -301,7 +309,7 @@ export function NewWeighingDialog({ onSuccess }: WeighingDialogProps) {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Cancelar
             </Button>
             <Button 
