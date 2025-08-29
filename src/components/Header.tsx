@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { LogOut, Building2 } from "lucide-react";
+import { LogOut, Building2, HelpCircle } from "lucide-react";
+import { useSupport } from "@/components/SupportProvider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export function Header() {
   const { currentUser, signOut } = useSupabaseAuth();
+  const support = useSupport();
 
   const handleSignOut = () => {
     signOut();
@@ -61,6 +63,11 @@ export function Header() {
                   </p>
                 </div>
               </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => support.open({ title: "Consulta desde menú de usuario" })} className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50">
+                <HelpCircle className="mr-2 h-4 w-4" />
+                <span>Ayuda & Soporte</span>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600 focus:bg-red-50">
                 <LogOut className="mr-2 h-4 w-4" />

@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useSupabaseAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import SupportProvider from "@/components/SupportProvider";
+import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
@@ -27,10 +29,12 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <SupportProvider>
+        <GlobalErrorBoundary>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/auth" element={<Auth />} />
@@ -103,6 +107,8 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
+        </GlobalErrorBoundary>
+      </SupportProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
