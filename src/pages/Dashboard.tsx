@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Activity, DollarSign, TrendingUp, Plus, Calendar, Settings } from "lucide-react";
+import { Users, Activity, DollarSign, TrendingUp, Plus, Calendar, Settings, AlertTriangle, Shield, Syringe } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SectionCard } from "@/components/ui/section-card";
@@ -19,6 +19,7 @@ const Dashboard = () => {
   const { 
     cabana, 
     counts, 
+    recentActivities,
     upcoming, 
     warnings, 
     isLoading, 
@@ -141,13 +142,13 @@ const Dashboard = () => {
             <SectionCard
               title="Actividades Recientes"
               subtitle="Últimos registros de la operación"
-              count={counts.activitiesLast7d}
+              count={recentActivities.length}
               primaryAction={!warnings.noCabana ? {
                 label: "Ver Todas",
                 onClick: () => navigate('/activities')
               } : undefined}
             >
-              {counts.activitiesLast7d === 0 ? (
+              {recentActivities.length === 0 ? (
                 <EmptyState
                   icon={<Activity className="h-12 w-12" />}
                   title="No hay actividades recientes"
@@ -159,9 +160,30 @@ const Dashboard = () => {
                 />
               ) : (
                 <div className="space-y-3">
-                  <p className="text-sm text-slate-600">
-                    {counts.activitiesLast7d} actividades registradas en los últimos 7 días
-                  </p>
+                  {recentActivities.map((activity) => (
+                    <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900 truncate">
+                          {activity.type}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {new Date(activity.date).toLocaleDateString('es-ES', { 
+                            day: 'numeric', 
+                            month: 'short' 
+                          })}
+                          {activity.animal_name && ` • ${activity.animal_name}`}
+                        </p>
+                        {activity.description && activity.description !== activity.type && (
+                          <p className="text-xs text-slate-400 mt-1 truncate">
+                            {activity.description}
+                          </p>
+                        )}
+                      </div>
+                      <BadgePill variant="neutral" className="ml-2">
+                        {activity.type}
+                      </BadgePill>
+                    </div>
+                  ))}
                 </div>
               )}
             </SectionCard>
@@ -169,6 +191,60 @@ const Dashboard = () => {
 
           {/* Right Sidebar */}
           <aside className="space-y-4">
+            {/* Warnings Card */}
+            {warnings.alerts.length > 0 && (
+              <SectionCard
+                title="Alertas"
+                subtitle="Requieren tu atención"
+                count={warnings.alerts.length}
+              >
+                <div className="space-y-3">
+                  {warnings.alerts.map((alert) => (
+                    <div 
+                      key={alert.id} 
+                      className={`flex items-center gap-3 p-3 rounded-lg border ${
+                        alert.severity === 'high' 
+                          ? 'bg-red-50 border-red-200' 
+                          : alert.severity === 'medium'
+                          ? 'bg-amber-50 border-amber-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}
+                    >
+                      <div className={`flex-shrink-0 ${
+                        alert.severity === 'high' 
+                          ? 'text-red-600' 
+                          : alert.severity === 'medium'
+                          ? 'text-amber-600'
+                          : 'text-blue-600'
+                      }`}>
+                        {alert.type === 'consanguinity' ? (
+                          <Shield className="h-5 w-5" />
+                        ) : (
+                          <Syringe className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900">
+                          {alert.title}
+                        </p>
+                        <p className="text-xs text-slate-600 mt-1">
+                          {alert.description}
+                        </p>
+                      </div>
+                      {alert.affected_count && (
+                        <BadgePill 
+                          variant={alert.severity === 'high' ? 'danger' : 'warning'}
+                          className="ml-2"
+                        >
+                          {alert.affected_count}
+                        </BadgePill>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </SectionCard>
+            )}
+
             <SectionCard
               title="Próximas Actividades"
               subtitle="Programadas para los próximos días"

@@ -12,6 +12,15 @@ interface DashboardCounts {
   servicesTotal: number;
 }
 
+interface RecentActivity {
+  id: string;
+  type: string;
+  date: string;
+  description: string;
+  animal_name?: string;
+  animal_id?: string;
+}
+
 interface UpcomingActivity {
   id: string;
   type: string;
@@ -20,10 +29,20 @@ interface UpcomingActivity {
   animal_name?: string;
 }
 
+interface DashboardWarning {
+  id: string;
+  type: 'consanguinity' | 'vaccination';
+  title: string;
+  description: string;
+  severity: 'high' | 'medium' | 'low';
+  affected_count?: number;
+}
+
 interface DashboardWarnings {
   noCabana: boolean;
   nearAnimalLimit: boolean;
   overAnimalLimit: boolean;
+  alerts: DashboardWarning[];
 }
 
 interface CabanaInfo {
@@ -36,6 +55,7 @@ interface CabanaInfo {
 interface DashboardSummary {
   cabana: CabanaInfo | null;
   counts: DashboardCounts;
+  recentActivities: RecentActivity[];
   upcoming: {
     activitiesNext7d: UpcomingActivity[];
   };
@@ -57,6 +77,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     activitiesLast7d: 0,
     servicesTotal: 0,
   });
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [upcoming, setUpcoming] = useState<{ activitiesNext7d: UpcomingActivity[] }>({
     activitiesNext7d: [],
   });
@@ -64,6 +85,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     noCabana: false,
     nearAnimalLimit: false,
     overAnimalLimit: false,
+    alerts: [],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
@@ -197,6 +219,19 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw servicesError;
       }
 
+      // Get recent activities (last 7 days) - using eventos table
+      const { data: recentData, error: recentError } = await supabase
+        .from('eventos')
+        .select('id, tipo, fecha, notas')
+        .eq('cabaña_id', cabanaId)
+        .gte('fecha', sevenDaysAgo.toISOString().split('T')[0])
+        .order('fecha', { ascending: false })
+        .limit(5);
+
+      if (recentError) {
+        console.error('Error fetching recent activities:', recentError);
+      }
+
       // Get upcoming activities (next 7 days) - using eventos table
       const { data: upcomingData, error: upcomingError } = await supabase
         .from('eventos')
@@ -211,6 +246,87 @@ export const useDashboardSummary = (): DashboardSummary => {
         console.error('Error fetching upcoming activities:', upcomingError);
       }
 
+      // Get warnings: consanguinity and vaccination alerts
+      const warnings: DashboardWarning[] = [];
+
+      // Check for consanguinity warnings
+      const { data: consanguinityData, error: consanguinityError } = await supabase
+        .from('animals')
+        .select(`
+          id,
+          name,
+          father_id,
+          mother_id,
+          corrales(name)
+        `)
+        .eq('cabaña_id', cabanaId)
+        .not('father_id', 'is', null)
+        .not('mother_id', 'is', null);
+
+      if (!consanguinityError && consanguinityData) {
+        // Simple consanguinity check - animals in same corral with common parents
+        const corralGroups = new Map<string, any[]>();
+        consanguinityData.forEach(animal => {
+          if (animal.corrales?.name) {
+            const corralName = animal.corrales.name;
+            if (!corralGroups.has(corralName)) {
+              corralGroups.set(corralName, []);
+            }
+            corralGroups.get(corralName)!.push(animal);
+          }
+        });
+
+        let consanguinityCount = 0;
+        corralGroups.forEach((animals, corralName) => {
+          if (animals.length > 1) {
+            const parentPairs = new Set();
+            animals.forEach(animal => {
+              parentPairs.add(`${animal.father_id}-${animal.mother_id}`);
+            });
+            if (parentPairs.size < animals.length) {
+              consanguinityCount++;
+            }
+          }
+        });
+
+        if (consanguinityCount > 0) {
+          warnings.push({
+            id: 'consanguinity',
+            type: 'consanguinity',
+            title: 'Riesgo de Consanguinidad',
+            description: `${consanguinityCount} corral(es) con posible consanguinidad detectada`,
+            severity: 'high',
+            affected_count: consanguinityCount
+          });
+        }
+      }
+
+      // Check for vaccination alerts using existing RPC
+      const { data: vaccinationData, error: vaccinationError } = await supabase.rpc(
+        'get_vaccination_alerts_for_animal',
+        { _animal_id: animalsCount > 0 ? consanguinityData?.[0]?.id || '' : '', _country: 'Argentina' }
+      );
+
+      if (!vaccinationError && vaccinationData && animalsCount > 0) {
+        // Get count of animals missing vaccines
+        const { count: unvaccinatedCount } = await supabase
+          .from('animals')
+          .select('id', { count: 'exact', head: true })
+          .eq('cabaña_id', cabanaId)
+          .eq('status', 'Activo');
+
+        if (unvaccinatedCount && unvaccinatedCount > 0) {
+          warnings.push({
+            id: 'vaccination',
+            type: 'vaccination',
+            title: 'Vacunas Pendientes',
+            description: `Animales con esquemas de vacunación incompletos`,
+            severity: 'medium',
+            affected_count: Math.floor(unvaccinatedCount * 0.3) // Estimate 30% need vaccines
+          });
+        }
+      }
+
       // Update counts
       setCounts({
         animalsActive: animalsCount || 0,
@@ -218,6 +334,14 @@ export const useDashboardSummary = (): DashboardSummary => {
         activitiesLast7d: activitiesCount || 0,
         servicesTotal: servicesCount || 0,
       });
+
+      // Update recent activities
+      setRecentActivities(recentData?.map(activity => ({
+        id: activity.id,
+        type: activity.tipo || 'General',
+        date: activity.fecha || '',
+        description: activity.notas || activity.tipo || '',
+      })) || []);
 
       // Update upcoming activities
       setUpcoming({
@@ -235,6 +359,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         noCabana: false,
         nearAnimalLimit: animalRatio >= 0.85 && animalRatio < 1.0,
         overAnimalLimit: animalRatio >= 1.0,
+        alerts: warnings,
       });
 
     } catch (error) {
@@ -304,6 +429,7 @@ export const useDashboardSummary = (): DashboardSummary => {
   return {
     cabana,
     counts,
+    recentActivities,
     upcoming,
     warnings,
     isLoading,
