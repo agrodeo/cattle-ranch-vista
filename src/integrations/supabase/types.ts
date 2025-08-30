@@ -418,33 +418,33 @@ export type Database = {
         Row: {
           active: boolean
           amount_cents: number
+          billing_interval: string
           created_at: string | null
           currency: string
           external_sku: string | null
           id: string
-          interval_type: string
           product_code: string
           provider: string
         }
         Insert: {
           active?: boolean
           amount_cents: number
-          created_at?: string | null
-          currency: string
-          external_sku?: string | null
-          id?: string
-          interval_type?: string
-          product_code: string
-          provider: string
-        }
-        Update: {
-          active?: boolean
-          amount_cents?: number
+          billing_interval?: string
           created_at?: string | null
           currency?: string
           external_sku?: string | null
           id?: string
-          interval_type?: string
+          product_code: string
+          provider?: string
+        }
+        Update: {
+          active?: boolean
+          amount_cents?: number
+          billing_interval?: string
+          created_at?: string | null
+          currency?: string
+          external_sku?: string | null
+          id?: string
           product_code?: string
           provider?: string
         }
