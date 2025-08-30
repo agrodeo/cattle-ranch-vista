@@ -1058,7 +1058,18 @@ const Animals = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {/* Mobile: Horizontal scroll */}
+              <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x -mx-3 px-3 sm:hidden">
+                {Object.entries(categoryCounts).map(([category, count]) => (
+                  <div key={category} className="snap-start shrink-0 w-24 text-center p-3 bg-muted/50 rounded-lg">
+                    <div className="text-2xl font-bold text-primary">{count}</div>
+                    <div className="text-xs text-muted-foreground leading-tight">{category}{count !== 1 ? 's' : ''}</div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Desktop: Grid layout */}
+              <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-4">
                 {Object.entries(categoryCounts).map(([category, count]) => (
                   <div key={category} className="text-center p-3 bg-muted/50 rounded-lg">
                     <div className="text-2xl font-bold text-primary">{count}</div>
