@@ -1059,11 +1059,11 @@ const Animals = () => {
             </CardHeader>
             <CardContent>
               {/* Mobile: Horizontal scroll */}
-              <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x -mx-3 px-3 sm:hidden">
+              <div className="flex gap-2 overflow-x-auto scrollbar-none snap-x -mx-3 px-3 sm:hidden">
                 {Object.entries(categoryCounts).map(([category, count]) => (
-                  <div key={category} className="snap-start shrink-0 w-24 text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">{count}</div>
-                    <div className="text-xs text-muted-foreground leading-tight">{category}{count !== 1 ? 's' : ''}</div>
+                  <div key={category} className="snap-start shrink-0 w-16 text-center p-2 bg-muted/50 rounded-lg">
+                    <div className="text-lg font-bold text-primary">{count}</div>
+                    <div className="text-[10px] text-muted-foreground leading-tight">{category}</div>
                   </div>
                 ))}
               </div>
