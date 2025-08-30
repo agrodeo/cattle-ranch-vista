@@ -1052,16 +1052,13 @@ const Animals = () => {
           {/* Category Distribution Cards */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">📊 Distribución por Categoría</CardTitle>
-              <CardDescription>
-                Clasificación automática basada en edad y sexo - Total: {totalActiveAnimals} Animales Activos
-              </CardDescription>
+              <CardTitle className="text-lg">Distribución por Categoría</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Mobile: Horizontal scroll */}
-              <div className="flex gap-2 overflow-x-auto scrollbar-none snap-x -mx-3 px-3 sm:hidden">
+              {/* Mobile: 2x3 Grid layout */}
+              <div className="grid grid-cols-3 gap-2 sm:hidden">
                 {Object.entries(categoryCounts).map(([category, count]) => (
-                  <div key={category} className="snap-start shrink-0 w-16 text-center p-2 bg-muted/50 rounded-lg">
+                  <div key={category} className="text-center p-2 bg-muted/50 rounded-lg">
                     <div className="text-lg font-bold text-primary">{count}</div>
                     <div className="text-[10px] text-muted-foreground leading-tight">{category}</div>
                   </div>
