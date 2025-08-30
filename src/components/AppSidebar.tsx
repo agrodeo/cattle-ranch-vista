@@ -63,6 +63,11 @@ const menuItems = [
     icon: Crown,
   },
   {
+    title: "Planes",
+    url: "/plans",
+    icon: UserCog,
+  },
+  {
     title: "Configuración",
     url: "/settings",
     icon: Settings,

@@ -13,6 +13,7 @@ import Activities from "./pages/Activities";
 
 import AnimalProfile from "./pages/AnimalProfile";
 import Subscription from "./pages/Subscription";
+import Plans from "./pages/Plans";
 import Layout from "@/components/Layout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -103,6 +104,11 @@ const App = () => (
             }>
               <Route index element={<SettingsPage />} />
             </Route>
+            <Route path="/plans" element={
+              <ProtectedRoute>
+                <Plans />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
