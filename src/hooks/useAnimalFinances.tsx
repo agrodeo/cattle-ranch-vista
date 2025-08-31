@@ -14,7 +14,7 @@ export interface AnimalFinanceSummary {
   totalGastos: number;
   totalIngresos: number;
   gastosVeterinarios: number;
-  valorEstimado: number;
+  costoAproximado: number;
   roi: number;
 }
 
@@ -24,7 +24,7 @@ export function useAnimalFinances(animalId: string) {
     totalGastos: 0,
     totalIngresos: 0,
     gastosVeterinarios: 0,
-    valorEstimado: 0,
+    costoAproximado: 0,
     roi: 0
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +35,18 @@ export function useAnimalFinances(animalId: string) {
       
       setIsLoading(true);
       try {
+        // Get user's cabaña_id first using the helper function
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) throw new Error('User not authenticated');
+
+        const { data: userInfo, error: userError } = await supabase
+          .rpc('get_user_cabana_info', { user_uuid: userData.user.id });
+
+        if (userError) throw userError;
+        if (!userInfo || userInfo.length === 0) throw new Error('User has no cabaña');
+
+        const cabanaId = userInfo[0].cabana_id;
+
         // Fetch animal sales records
         const { data: sales, error: salesError } = await supabase
           .from('finances_animal_sales')
@@ -52,6 +64,24 @@ export function useAnimalFinances(animalId: string) {
           .eq('animal_id', animalId);
 
         if (salesError) throw salesError;
+
+        // Fetch total expenses from the cabaña
+        const { data: allExpenses, error: expensesError } = await supabase
+          .from('finances')
+          .select('amount')
+          .eq('cabaña_id', cabanaId)
+          .eq('type', 'expense');
+
+        if (expensesError) throw expensesError;
+
+        // Count active animals in the cabaña
+        const { count: activeAnimalsCount, error: countError } = await supabase
+          .from('animals')
+          .select('*', { count: 'exact', head: true })
+          .eq('cabaña_id', cabanaId)
+          .not('status', 'in', '(muerto,vendido)');
+
+        if (countError) throw countError;
 
         const financeRecords: AnimalFinanceRecord[] = [];
         let totalIngresos = 0;
@@ -77,12 +107,18 @@ export function useAnimalFinances(animalId: string) {
           }
         });
 
+        // Calculate approximate cost per animal
+        const totalCabanaExpenses = allExpenses?.reduce((sum, expense) => sum + (expense.amount || 0), 0) || 0;
+        const costoAproximado = activeAnimalsCount && activeAnimalsCount > 0 
+          ? totalCabanaExpenses / activeAnimalsCount 
+          : 0;
+
         setRecords(financeRecords);
         setSummary({
           totalGastos,
           totalIngresos,
           gastosVeterinarios: 0, // Would need separate calculation
-          valorEstimado: 0, // Would need market value calculation
+          costoAproximado,
           roi: totalIngresos > 0 ? ((totalIngresos - totalGastos) / totalGastos) * 100 : 0
         });
 

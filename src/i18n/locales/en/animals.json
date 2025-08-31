@@ -91,7 +91,7 @@
       "noPhotos": "No photos uploaded"
     },
     "finances": {
-      "estimatedValue": "Estimated Value",
+      "approximateCost": "Approximate Cost",
       "income": "Income",
       "expenses": "Expenses", 
       "roi": "ROI",

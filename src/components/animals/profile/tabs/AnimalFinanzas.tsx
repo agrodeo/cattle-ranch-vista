@@ -16,8 +16,6 @@ interface AnimalFinanzasProps {
 export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
   const { records, summary, isLoading } = useAnimalFinances(animal.id);
 
-  // Estimated market value based on weight and breed (simplified calculation)
-  const estimatedValue = animal.peso_actual_kg ? animal.peso_actual_kg * 3.5 : 0; // $3.5 per kg (example)
 
   const expenseData = [
     { name: 'Veterinario', value: summary.gastosVeterinarios, color: '#ef4444' },
@@ -54,11 +52,11 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center space-x-2">
-              <Banknote className="h-4 w-4 text-green-500" />
+              <Calculator className="h-4 w-4 text-orange-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Valor Estimado</p>
-                <p className="text-2xl font-bold text-green-600">
-                  ${estimatedValue.toFixed(0)}
+                <p className="text-sm font-medium text-muted-foreground">Costo Aproximado</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  ${summary.costoAproximado.toFixed(0)}
                 </p>
               </div>
             </div>
@@ -170,9 +168,9 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                <span className="text-sm font-medium">Valor Estimado Actual:</span>
-                <span className="font-bold text-blue-600">${estimatedValue.toFixed(0)}</span>
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+                <span className="text-sm font-medium">Costo Aproximado:</span>
+                <span className="font-bold text-orange-600">${summary.costoAproximado.toFixed(0)}</span>
               </div>
             </div>
           </CardContent>
@@ -242,7 +240,7 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>• El valor estimado se basa en el peso actual y valores de mercado promedio.</p>
+            <p>• El costo aproximado se calcula dividiendo los gastos totales de la cabaña entre todos los animales activos.</p>
             <p>• Los gastos incluyen costos veterinarios, alimentación y otros gastos asociados.</p>
             <p>• El ROI se calcula como (Ingresos - Gastos) / Gastos × 100.</p>
             <p>• Para un análisis más detallado, consulte el módulo de Finanzas general.</p>

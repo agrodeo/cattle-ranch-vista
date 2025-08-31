@@ -91,7 +91,7 @@
       "noPhotos": "Nenhuma foto enviada"
     },
     "finances": {
-      "estimatedValue": "Valor Estimado", 
+      "approximateCost": "Custo Aproximado", 
       "income": "Receitas",
       "expenses": "Despesas",
       "roi": "ROI",
