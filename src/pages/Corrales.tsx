@@ -10,12 +10,19 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp } from "lucide-react";
+import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
 import { EditCorralDialog } from "@/components/corrales/EditCorralDialog";
 import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
+import { DeleteCorralDialog } from "@/components/corrales/DeleteCorralDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 
 interface Corral {
@@ -39,7 +46,10 @@ export default function Corrales() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
+  const [selectedCorralName, setSelectedCorralName] = useState<string>("");
+  const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
 
   const fetchCorrales = async () => {
     if (!currentUser?.cabañaId) return;
@@ -163,6 +173,18 @@ export default function Corrales() {
   const openEditDialog = (corralId: string) => {
     setSelectedCorral(corralId);
     setEditDialogOpen(true);
+  };
+
+  const openDeleteDialog = (corralId: string, corralName: string, animalCount: number) => {
+    setSelectedCorral(corralId);
+    setSelectedCorralName(corralName);
+    setSelectedCorralAnimalCount(animalCount);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSuccess = () => {
+    fetchCorrales();
+    setDeleteDialogOpen(false);
   };
 
   useEffect(() => {
@@ -304,13 +326,38 @@ export default function Corrales() {
                           </div>
                         </div>
                         <div className="flex gap-2 ml-4">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openDetailDialog(corral.id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="outline" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-background border shadow-md">
+                              <DropdownMenuItem 
+                                onClick={() => openDetailDialog(corral.id)}
+                                className="cursor-pointer"
+                              >
+                                <Eye className="h-4 w-4 mr-2" />
+                                Ver Detalles
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => openEditDialog(corral.id)}
+                                className="cursor-pointer"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => openDeleteDialog(corral.id, corral.name, corral.animal_count)}
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                                disabled={corral.animal_count > 0}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar
+                                {corral.animal_count > 0 && " (tiene animales)"}
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </div>
@@ -381,6 +428,15 @@ export default function Corrales() {
         open={moveDialogOpen}
         onOpenChange={setMoveDialogOpen}
         onSuccess={fetchCorrales}
+      />
+
+      <DeleteCorralDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        corralId={selectedCorral}
+        corralName={selectedCorralName}
+        animalCount={selectedCorralAnimalCount}
+        onSuccess={handleDeleteSuccess}
       />
     </div>
   );

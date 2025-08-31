@@ -20,7 +20,11 @@
     "edit": "Editar", 
     "delete": "Eliminar",
     "assignAnimals": "Asignar Animales",
-    "moveAnimals": "Mover Animales"
+    "moveAnimals": "Mover Animales",
+    "confirmDelete": "¿Estás seguro?",
+    "deleteWarning": "Esta acción eliminará permanentemente el corral. No se puede deshacer.",
+    "cannotDelete": "No se puede eliminar",
+    "hasAnimalsWarning": "El corral tiene animales asignados. Mueve todos los animales antes de eliminar."
   },
   "status": {
     "empty": "Vacío",
