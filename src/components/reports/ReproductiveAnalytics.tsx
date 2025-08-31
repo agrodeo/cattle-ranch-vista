@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { Heart, TrendingUp, Calendar, Users } from "lucide-react";
+import { Heart, TrendingUp, Calendar, Users, Brain, Truck } from "lucide-react";
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
 import { AnimalReproductionTable } from "./AnimalReproductionTable";
 import { CorralKPIsCard } from "./CorralKPIsCard";
+import { BreedingPlanWizard } from "../breeding/BreedingPlanWizard";
+import { BulkMoveDialog } from "../breeding/BulkMoveDialog";
 
 interface ReproductiveStats {
   totalFemales: number;
@@ -33,6 +36,8 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ReproductiveStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showBreedingPlan, setShowBreedingPlan] = useState(false);
+  const [showBulkMove, setShowBulkMove] = useState(false);
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -190,6 +195,37 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
   return (
     <div className="space-y-6">
+      {/* AI Planning Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Herramientas de Planificación IA</span>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowBreedingPlan(true)}
+                className="flex items-center gap-2"
+              >
+                <Brain className="h-4 w-4" />
+                Plan de IA
+              </Button>
+              <Button 
+                onClick={() => setShowBulkMove(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Truck className="h-4 w-4" />
+                Mover en Masa
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Utiliza la IA para optimizar cruces, asignación de corrales y movimientos masivos de animales.
+          </p>
+        </CardContent>
+      </Card>
+
       <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
       <AnimalReproductionTable filters={globalFilters || {}} />
       
@@ -365,6 +401,19 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         </CardContent>
       </Card>
       </div>
+
+      {/* Dialogs */}
+      <BreedingPlanWizard
+        isOpen={showBreedingPlan}
+        onClose={() => setShowBreedingPlan(false)}
+        cabanaId={currentUser?.cabañaId || ''}
+      />
+      
+      <BulkMoveDialog
+        isOpen={showBulkMove}
+        onClose={() => setShowBulkMove(false)}
+        cabanaId={currentUser?.cabañaId || ''}
+      />
     </div>
   );
 };

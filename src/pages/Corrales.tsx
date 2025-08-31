@@ -10,13 +10,15 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2, Brain, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
 import { EditCorralDialog } from "@/components/corrales/EditCorralDialog";
 import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
 import { DeleteCorralDialog } from "@/components/corrales/DeleteCorralDialog";
+import { BreedingPlanWizard } from "@/components/breeding/BreedingPlanWizard";
+import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -47,6 +49,8 @@ export default function Corrales() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [showBreedingPlan, setShowBreedingPlan] = useState(false);
+  const [showBulkMove, setShowBulkMove] = useState(false);
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
   const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
@@ -246,6 +250,22 @@ export default function Corrales() {
           subtitle="Gestiona los corrales y asignación de animales"
           action={
             <div className="flex gap-2">
+              <Button
+                onClick={() => setShowBulkMove(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Truck className="h-4 w-4" />
+                Mover en Masa
+              </Button>
+              <Button
+                onClick={() => setShowBreedingPlan(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Brain className="h-4 w-4" />
+                Plan de IA
+              </Button>
               <Button 
                 variant="outline"
                 onClick={() => setMoveDialogOpen(true)}
@@ -449,6 +469,18 @@ export default function Corrales() {
         corralName={selectedCorralName}
         animalCount={selectedCorralAnimalCount}
         onSuccess={handleDeleteSuccess}
+      />
+
+      <BreedingPlanWizard
+        isOpen={showBreedingPlan}
+        onClose={() => setShowBreedingPlan(false)}
+        cabanaId={currentUser?.cabañaId || ''}
+      />
+
+      <BulkMoveDialog
+        isOpen={showBulkMove}
+        onClose={() => setShowBulkMove(false)}
+        cabanaId={currentUser?.cabañaId || ''}
       />
     </div>
   );
