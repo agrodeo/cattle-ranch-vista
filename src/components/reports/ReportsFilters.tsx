@@ -43,7 +43,6 @@ export interface ReportFilters {
 export function ReportsFilters({ filters, onFiltersChange, className }: ReportsFiltersProps) {
   const [corrals, setCorrales] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
-  const [showFilters, setShowFilters] = useState(true);
 
   // Fetch corrals and breeds for filters
   useEffect(() => {
@@ -97,41 +96,31 @@ export function ReportsFilters({ filters, onFiltersChange, className }: ReportsF
 
   return (
     <div className={cn("space-y-4", className)}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <span className="text-sm font-medium">Filtros</span>
-            {activeFiltersCount > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {activeFiltersCount}
-              </Badge>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {activeFiltersCount > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearFilters}
-                className="text-xs"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Limpiar
-              </Button>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              {showFilters ? 'Ocultar' : 'Mostrar'}
-            </Button>
-          </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4" />
+          <span className="text-sm font-medium">Filtros</span>
+          {activeFiltersCount > 0 && (
+            <Badge variant="secondary" className="text-xs">
+              {activeFiltersCount}
+            </Badge>
+          )}
         </div>
+        
+        {activeFiltersCount > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="text-xs"
+          >
+            <X className="h-3 w-3 mr-1" />
+            Limpiar
+          </Button>
+        )}
+      </div>
 
-        {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4 pt-4 border-t">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
             {/* Date Range */}
             <div className="space-y-2">
               <Label className="text-xs">Período</Label>
@@ -273,7 +262,6 @@ export function ReportsFilters({ filters, onFiltersChange, className }: ReportsF
               </div>
             </div>
           </div>
-        )}
     </div>
   );
 }
