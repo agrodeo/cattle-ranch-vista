@@ -57,7 +57,7 @@ export default function Corrales() {
     try {
       setLoading(true);
 
-      // Fetch corrales with animal counts and consanguinity data
+      // Fetch corrales with all animals, then filter active ones
       const { data: corralesData, error } = await supabase
         .from("corrales")
         .select(`
@@ -69,7 +69,8 @@ export default function Corrales() {
             sex,
             birth_date,
             father_id,
-            mother_id
+            mother_id,
+            status
           )
         `)
         .eq("cabaña_id", currentUser.cabañaId);
@@ -78,18 +79,20 @@ export default function Corrales() {
 
       // Process data to include counts and consanguinity risk
       const processedCorrales = await Promise.all(corralesData?.map(async (corral: any) => {
-        const animals = corral.animals || [];
-        const maleCount = animals.filter((a: any) => a.sex === "Macho").length;
-        const femaleCount = animals.filter((a: any) => a.sex === "Hembra").length;
+        const allAnimals = corral.animals || [];
+        // Filter only active animals for counting and analysis
+        const activeAnimals = allAnimals.filter((a: any) => a.status === "activo");
+        const maleCount = activeAnimals.filter((a: any) => a.sex === "Macho").length;
+        const femaleCount = activeAnimals.filter((a: any) => a.sex === "Hembra").length;
         
-        // Perform comprehensive consanguinity analysis
+        // Perform comprehensive consanguinity analysis (only on active animals)
         let riskCount = 0;
         let highestSeverity: 'severe' | 'medium' | 'low' | null = null;
         
-        if (animals.length > 0) {
+        if (activeAnimals.length > 0) {
           try {
             const risks = await analyzeCorralConsanguinity(
-              animals as ConsanguinityAnimal[], 
+              activeAnimals as ConsanguinityAnimal[], 
               currentUser.cabañaId
             );
             riskCount = risks.length;
@@ -111,7 +114,7 @@ export default function Corrales() {
           id: corral.id,
           name: corral.name,
           hectareas: corral.hectareas,
-          animal_count: animals.length,
+          animal_count: activeAnimals.length, // Only count active animals
           male_count: maleCount,
           female_count: femaleCount,
           has_consanguinity_risk: riskCount > 0,
