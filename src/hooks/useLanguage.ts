@@ -89,7 +89,7 @@ export function useLanguage() {
     };
 
     initializeLanguage();
-  }, [currentUser?.id, i18n.language]);
+  }, [currentUser?.id]); // Removed i18n.language from dependencies
 
   // Handle query parameter language override
   useEffect(() => {
