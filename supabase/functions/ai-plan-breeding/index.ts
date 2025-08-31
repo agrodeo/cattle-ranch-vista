@@ -23,6 +23,7 @@ interface Animal {
   esta_preñada?: boolean;
   name?: string;
   id_tag?: string;
+  cabaña_id: string;
 }
 
 interface Corral {
@@ -30,6 +31,7 @@ interface Corral {
   name: string;
   hectareas?: number;
   capacity?: number;
+  cabaña_id: string;
 }
 
 interface Pairing {
