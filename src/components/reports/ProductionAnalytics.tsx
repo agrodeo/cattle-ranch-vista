@@ -25,7 +25,11 @@ interface ProductionStats {
   breedDistribution: { breed: string; count: number }[];
 }
 
-export const ProductionAnalytics = () => {
+interface ProductionAnalyticsProps {
+  filters?: ReportFilters;
+}
+
+export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyticsProps) => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);

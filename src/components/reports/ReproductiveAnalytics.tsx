@@ -25,7 +25,11 @@ interface ReproductiveStats {
   hasMultipleBreeds: boolean;
 }
 
-export const ReproductiveAnalytics = () => {
+interface ReproductiveAnalyticsProps {
+  filters?: ReportFilters;
+}
+
+export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAnalyticsProps) => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ReproductiveStats | null>(null);
   const [loading, setLoading] = useState(true);

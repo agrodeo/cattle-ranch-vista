@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
+import { ReportFilters } from "../reports/ReportsFilters";
 
 interface MortalityStats {
   totalDeaths: number;
@@ -17,7 +18,11 @@ interface MortalityStats {
   hasMultipleBreeds: boolean;
 }
 
-export const MortalityReports = () => {
+interface MortalityReportsProps {
+  filters?: ReportFilters;
+}
+
+export const MortalityReports = ({ filters: globalFilters }: MortalityReportsProps) => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +31,7 @@ export const MortalityReports = () => {
     if (currentUser?.cabañaId) {
       fetchMortalityStats();
     }
-  }, [currentUser]);
+  }, [currentUser, globalFilters]);
 
   const fetchMortalityStats = async () => {
     try {

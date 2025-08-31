@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { DollarSign, TrendingUp, TrendingDown, Calculator } from "lucide-react";
+import { ReportFilters } from "./ReportsFilters";
 
 interface FinancialStats {
   totalRevenue: number;
@@ -22,7 +23,11 @@ interface FinancialStats {
   hasMultipleBreeds: boolean;
 }
 
-export const FinancialAnalytics = () => {
+interface FinancialAnalyticsProps {
+  filters?: ReportFilters;
+}
+
+export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalyticsProps) => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,28 +37,30 @@ export const FinancialAnalytics = () => {
     if (currentUser?.cabañaId) {
       fetchFinancialStats();
     }
-  }, [currentUser, timeRange]);
+  }, [currentUser, timeRange, globalFilters]);
 
   const fetchFinancialStats = async () => {
     try {
-      // Calculate date range
-      const endDate = new Date();
-      let startDate = new Date();
+      // Calculate date range - use global filters if available
+      const endDate = globalFilters?.date_to || new Date();
+      let startDate = globalFilters?.date_from || new Date();
       
-      switch (timeRange) {
-        case 'quarter':
-          startDate.setMonth(startDate.getMonth() - 3);
-          break;
-        case 'year':
-          startDate.setFullYear(startDate.getFullYear() - 1);
-          break;
-        case 'all':
-          startDate = new Date('2020-01-01'); // Default start date
-          break;
+      if (!globalFilters?.date_from) {
+        switch (timeRange) {
+          case 'quarter':
+            startDate.setMonth(startDate.getMonth() - 3);
+            break;
+          case 'year':
+            startDate.setFullYear(startDate.getFullYear() - 1);
+            break;
+          case 'all':
+            startDate = new Date('2020-01-01'); // Default start date
+            break;
+        }
       }
 
       // Fetch finances data
-      const { data: finances } = await supabase
+      let query = supabase
         .from("finances")
         .select(`
           *,
@@ -64,11 +71,28 @@ export const FinancialAnalytics = () => {
         .lte('date', endDate.toISOString().split('T')[0])
         .order('date', { ascending: true });
 
-      // Fetch animals count for per-animal calculations
-      const { data: animals } = await supabase
+      const { data: finances } = await query;
+
+      // Fetch animals count for per-animal calculations with global filters
+      let animalsQuery = supabase
         .from("animals")
         .select("id, breed")
         .eq("cabaña_id", currentUser?.cabañaId);
+
+      // Apply global filters to animals
+      if (globalFilters?.corral_ids?.length) {
+        animalsQuery = animalsQuery.in("corral_id", globalFilters.corral_ids);
+      }
+
+      if (globalFilters?.breed) {
+        animalsQuery = animalsQuery.eq("breed", globalFilters.breed);
+      }
+
+      if (!globalFilters?.include_sold_dead) {
+        animalsQuery = animalsQuery.or("status.is.null,status.eq.activo");
+      }
+
+      const { data: animals } = await animalsQuery;
 
       const financialStats = calculateFinancialStats(finances || [], animals || []);
       setStats(financialStats);

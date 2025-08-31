@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Calendar, Users, TrendingUp, Activity } from "lucide-react";
+import { ReportFilters } from "./ReportsFilters";
 
 interface HerdStats {
   totalAnimals: number;
@@ -19,7 +20,11 @@ interface HerdStats {
   statusDistribution: { status: string; count: number; color: string }[];
 }
 
-export const HerdOverview = () => {
+interface HerdOverviewProps {
+  filters?: ReportFilters;
+}
+
+export const HerdOverview = ({ filters }: HerdOverviewProps) => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<HerdStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,14 +33,49 @@ export const HerdOverview = () => {
     if (currentUser?.cabañaId) {
       fetchHerdStats();
     }
-  }, [currentUser]);
+  }, [currentUser, filters]);
 
   const fetchHerdStats = async () => {
     try {
-      const { data: animals, error } = await supabase
+      let query = supabase
         .from("animals")
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId);
+
+      // Apply filters
+      if (filters?.corral_ids?.length) {
+        query = query.in("corral_id", filters.corral_ids);
+      }
+
+      if (filters?.category) {
+        // Filter by category based on age
+        const now = new Date();
+        if (filters.category === "ternero") {
+          const cutoff = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+          query = query.gte("birth_date", cutoff.toISOString());
+        } else if (filters.category === "adulto") {
+          const cutoff = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+          query = query.lt("birth_date", cutoff.toISOString());
+        }
+      }
+
+      if (filters?.breed) {
+        query = query.eq("breed", filters.breed);
+      }
+
+      if (!filters?.include_sold_dead) {
+        query = query.or("status.is.null,status.eq.activo");
+      }
+
+      if (filters?.date_from) {
+        query = query.gte("birth_date", filters.date_from.toISOString());
+      }
+
+      if (filters?.date_to) {
+        query = query.lte("birth_date", filters.date_to.toISOString());
+      }
+
+      const { data: animals, error } = await query;
 
       if (error) throw error;
 

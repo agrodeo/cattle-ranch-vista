@@ -10,6 +10,7 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Shield, AlertTriangle, CheckCircle, Calendar, Syringe, Download, Filter, X, Activity } from "lucide-react";
+import { ReportFilters } from "./ReportsFilters";
 import { format, subMonths, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -44,7 +45,11 @@ interface VaccinationStats {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', '#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
-export const VaccinationAnalytics = () => {
+interface VaccinationAnalyticsProps {
+  filters?: ReportFilters;
+}
+
+export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnalyticsProps) => {
   const { user } = useSupabaseAuth();
   const [stats, setStats] = useState<VaccinationStats | null>(null);
   const [herdSettings, setHerdSettings] = useState<any>(null);
@@ -56,14 +61,6 @@ export const VaccinationAnalytics = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [filters, setFilters] = useState<VaccinationFilters>({
-    dateRange: { from: subMonths(new Date(), 12), to: new Date() },
-    vaccines: [],
-    categories: [],
-    corrals: [],
-    animalStatus: ['activo']
-  });
-
   useEffect(() => {
     if (user) {
       loadInitialData();
@@ -74,7 +71,7 @@ export const VaccinationAnalytics = () => {
     if (user && availableVaccines.length > 0) {
       fetchVaccinationStats();
     }
-  }, [user, filters, availableVaccines]);
+  }, [user, globalFilters, availableVaccines]);
 
   const loadInitialData = async () => {
     if (!user) return;
@@ -118,24 +115,23 @@ export const VaccinationAnalytics = () => {
 
       const cabanaId = cabanaInfo;
       
-      // Fetch animals with filters
+      // Fetch animals with global filters
       let animalsQuery = supabase
         .from('animals')
         .select('*')
         .eq('cabaña_id', cabanaId);
 
-      if (filters.animalStatus.length > 0) {
-        animalsQuery = animalsQuery.in('status', filters.animalStatus.map(s => 
-          s === 'activo' ? null : s
-        ).filter(Boolean));
-        
-        if (filters.animalStatus.includes('activo')) {
-          animalsQuery = animalsQuery.or('status.is.null,status.eq.activo');
-        }
+      // Apply global filters
+      if (globalFilters?.corral_ids?.length) {
+        animalsQuery = animalsQuery.in('corral_id', globalFilters.corral_ids);
       }
 
-      if (filters.corrals.length > 0) {
-        animalsQuery = animalsQuery.in('corral_id', filters.corrals);
+      if (globalFilters?.breed) {
+        animalsQuery = animalsQuery.eq('breed', globalFilters.breed);
+      }
+
+      if (!globalFilters?.include_sold_dead) {
+        animalsQuery = animalsQuery.or('status.is.null,status.eq.activo');
       }
 
       const { data: animals, error: animalsError } = await animalsQuery;
@@ -147,11 +143,11 @@ export const VaccinationAnalytics = () => {
         .select('*, animals(name, id_tag)')
         .eq('cabaña_id', cabanaId);
 
-      if (filters.dateRange.from) {
-        historyQuery = historyQuery.gte('date', format(filters.dateRange.from, 'yyyy-MM-dd'));
+      if (globalFilters?.date_from) {
+        historyQuery = historyQuery.gte('date', format(globalFilters.date_from, 'yyyy-MM-dd'));
       }
-      if (filters.dateRange.to) {
-        historyQuery = historyQuery.lte('date', format(filters.dateRange.to, 'yyyy-MM-dd'));
+      if (globalFilters?.date_to) {
+        historyQuery = historyQuery.lte('date', format(globalFilters.date_to, 'yyyy-MM-dd'));
       }
 
       const { data: history, error: historyError } = await historyQuery;
@@ -174,16 +170,16 @@ export const VaccinationAnalytics = () => {
 
   const calculateVaccinationStats = async (animals: any[], history: any[]): Promise<VaccinationStats> => {
     const eligibleAnimals = animals.filter(animal => {
-      if (filters.categories.length > 0) {
+      if (globalFilters?.category) {
         const category = categorizeAnimal(animal);
-        if (!filters.categories.includes(category)) return false;
+        if (category !== globalFilters.category) return false;
       }
       return true;
     });
 
     // Get applicable rules
     const applicableRules = rules.filter(rule => {
-      return filters.vaccines.length === 0 || filters.vaccines.includes(rule.vaccine_code);
+      return true; // Show all vaccines in vaccination analytics
     });
 
     let totalEligible = 0;
@@ -356,15 +352,6 @@ export const VaccinationAnalytics = () => {
     navigate(`/activities?${params.toString()}`);
   };
 
-  const clearFilters = () => {
-    setFilters({
-      dateRange: { from: subMonths(new Date(), 12), to: new Date() },
-      vaccines: [],
-      categories: [],
-      corrals: [],
-      animalStatus: ['activo']
-    });
-  };
 
   if (loading) {
     return (
@@ -397,108 +384,6 @@ export const VaccinationAnalytics = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Global Filters */}
-      <Card className="sticky top-4 z-10 border-2">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filtros de Vacunación
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              {herdSettings && (
-                <Badge variant="outline" className="text-sm">
-                  📍 {herdSettings.country} {herdSettings.region && `- ${herdSettings.region}`}
-                </Badge>
-              )}
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                <X className="h-4 w-4 mr-2" />
-                Limpiar
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Período</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Último año" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="month">Último mes</SelectItem>
-                  <SelectItem value="quarter">Último trimestre</SelectItem>
-                  <SelectItem value="year">Último año</SelectItem>
-                  <SelectItem value="all">Todo el tiempo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium mb-2 block">Vacunas</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas las vacunas" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableVaccines.map(vaccine => (
-                    <SelectItem key={vaccine.code} value={vaccine.code}>
-                      {vaccine.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Categoría</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todas las categorías" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ternero">Ternero</SelectItem>
-                  <SelectItem value="vaquillona">Vaquillona</SelectItem>
-                  <SelectItem value="vaca">Vaca</SelectItem>
-                  <SelectItem value="toro">Toro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Corral</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos los corrales" />
-                </SelectTrigger>
-                <SelectContent>
-                  {corrals.map(corral => (
-                    <SelectItem key={corral.id} value={corral.id}>
-                      {corral.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Estado Animal</label>
-              <Select defaultValue="activo">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="activo">Activo</SelectItem>
-                  <SelectItem value="vendido">Vendido</SelectItem>
-                  <SelectItem value="muerto">Muerto</SelectItem>
-                  <SelectItem value="all">Todos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
