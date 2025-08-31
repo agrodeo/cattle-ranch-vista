@@ -46,7 +46,58 @@
   "actions": {
     "view": "Ver",
     "edit": "Editar",
-    "delete": "Excluir",
+    "delete": "Excluir", 
     "markDead": "Marcar Morto"
+  },
+  "profile": {
+    "tabs": {
+      "production": "Produção",
+      "genealogy": "Genealogia",
+      "corrals": "Currais",
+      "documents": "Documentos", 
+      "finances": "Finanças"
+    },
+    "production": {
+      "currentWeight": "Peso Atual",
+      "dailyGain": "Ganho Diário",
+      "lastWeighing": "Última Pesagem",
+      "totalWeighings": "Total de Pesagens",
+      "weightEvolution": "Evolução do Peso",
+      "weighingHistory": "Histórico de Pesagens",
+      "noRecords": "Não há registros de pesagem para este animal"
+    },
+    "genealogy": {
+      "registrationLevel": "Nível de Registro",
+      "dnaVerified": "DNA Verificado",
+      "father": "Pai",
+      "mother": "Mãe",
+      "fullTree": "Ver Árvore Genealógica Completa", 
+      "registrationOverride": "Substituição do Nível de Registro"
+    },
+    "corrals": {
+      "currentCorral": "Curral Atual",
+      "totalMovements": "Total de Movimentos",
+      "lastMovement": "Último Movimento",
+      "movementHistory": "Histórico de Movimentos",
+      "noMovements": "Nenhum movimento registrado"
+    },
+    "documents": {
+      "uploadFiles": "Enviar Arquivos",
+      "selectFiles": "Selecionar Arquivos",
+      "photos": "Fotos",
+      "certificates": "Certificados",
+      "medical": "Médicos",
+      "noDocuments": "Não há documentos nesta categoria",
+      "noPhotos": "Nenhuma foto enviada"
+    },
+    "finances": {
+      "estimatedValue": "Valor Estimado", 
+      "income": "Receitas",
+      "expenses": "Despesas",
+      "roi": "ROI",
+      "profitabilityAnalysis": "Análise de Rentabilidade",
+      "transactionHistory": "Histórico de Transações",
+      "noTransactions": "Nenhuma transação registrada"
+    }
   }
 }

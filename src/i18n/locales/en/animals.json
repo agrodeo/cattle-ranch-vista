@@ -48,5 +48,56 @@
     "edit": "Edit",
     "delete": "Delete",
     "markDead": "Mark Dead"
+  },
+  "profile": {
+    "tabs": {
+      "production": "Production",
+      "genealogy": "Genealogy",
+      "corrals": "Corrals", 
+      "documents": "Documents",
+      "finances": "Finances"
+    },
+    "production": {
+      "currentWeight": "Current Weight",
+      "dailyGain": "Daily Gain",
+      "lastWeighing": "Last Weighing",
+      "totalWeighings": "Total Weighings",
+      "weightEvolution": "Weight Evolution",
+      "weighingHistory": "Weighing History",
+      "noRecords": "No weighing records for this animal"
+    },
+    "genealogy": {
+      "registrationLevel": "Registration Level",
+      "dnaVerified": "DNA Verified",
+      "father": "Father",
+      "mother": "Mother", 
+      "fullTree": "View Full Genealogy Tree",
+      "registrationOverride": "Registration Level Override"
+    },
+    "corrals": {
+      "currentCorral": "Current Corral",
+      "totalMovements": "Total Movements",
+      "lastMovement": "Last Movement",
+      "movementHistory": "Movement History",
+      "noMovements": "No movements recorded"
+    },
+    "documents": {
+      "uploadFiles": "Upload Files",
+      "selectFiles": "Select Files",
+      "photos": "Photos",
+      "certificates": "Certificates",
+      "medical": "Medical",
+      "noDocuments": "No documents in this category",
+      "noPhotos": "No photos uploaded"
+    },
+    "finances": {
+      "estimatedValue": "Estimated Value",
+      "income": "Income",
+      "expenses": "Expenses", 
+      "roi": "ROI",
+      "profitabilityAnalysis": "Profitability Analysis",
+      "transactionHistory": "Transaction History",
+      "noTransactions": "No transactions recorded"
+    }
   }
 }
