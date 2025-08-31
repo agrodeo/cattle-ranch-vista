@@ -49,6 +49,45 @@ export type Database = {
           },
         ]
       }
+      animal_documents: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          storage_path: string
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          storage_path: string
+          updated_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          storage_path?: string
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       animal_vaccines: {
         Row: {
           animal_id: string
@@ -672,6 +711,42 @@ export type Database = {
           nombre?: string
           orden?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      corral_movements: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          corral_anterior_id: string | null
+          corral_nuevo_id: string | null
+          created_at: string
+          fecha_movimiento: string
+          id: string
+          motivo: string | null
+          registrado_por: string | null
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          corral_anterior_id?: string | null
+          corral_nuevo_id?: string | null
+          created_at?: string
+          fecha_movimiento?: string
+          id?: string
+          motivo?: string | null
+          registrado_por?: string | null
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          corral_anterior_id?: string | null
+          corral_nuevo_id?: string | null
+          created_at?: string
+          fecha_movimiento?: string
+          id?: string
+          motivo?: string | null
+          registrado_por?: string | null
         }
         Relationships: []
       }

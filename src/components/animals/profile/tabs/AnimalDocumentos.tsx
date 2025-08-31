@@ -1,33 +1,26 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Animal } from "@/types/animal";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
+  Upload, 
   FileText, 
   Image, 
-  Upload, 
+  Eye, 
   Download, 
   Trash2, 
-  Eye,
-  Camera,
   File,
-  Award,
-  Stethoscope
+  Heart,
+  Award
 } from "lucide-react";
-import { toast } from "sonner";
-
-interface DocumentFile {
-  id: string;
-  name: string;
-  type: 'certificate' | 'medical' | 'photo' | 'other';
-  url: string;
-  size: number;
-  uploadDate: string;
-}
+import { Badge } from "@/components/ui/badge";
+import { useAnimalDocuments, AnimalDocument } from "@/hooks/useAnimalDocuments";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AnimalDocumentosProps {
   animal: Animal;
@@ -35,82 +28,43 @@ interface AnimalDocumentosProps {
 }
 
 export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
-  const [documents, setDocuments] = useState<DocumentFile[]>([]);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const { documents, isLoading, uploadProgress, uploadDocument, deleteDocument } = useAnimalDocuments(animal.id);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedFileType, setSelectedFileType] = useState<AnimalDocument['file_type']>('other');
 
-  // Mock documents for demonstration
-  const mockDocuments: DocumentFile[] = [
-    {
-      id: '1',
-      name: 'Certificado_Nacimiento.pdf',
-      type: 'certificate',
-      url: '#',
-      size: 245760,
-      uploadDate: '2024-01-15'
-    },
-    {
-      id: '2',
-      name: 'Analisis_Sangre_Marzo.pdf',
-      type: 'medical',
-      url: '#',
-      size: 189432,
-      uploadDate: '2024-03-10'
-    },
-    {
-      id: '3',
-      name: 'Foto_Perfil.jpg',
-      type: 'photo',
-      url: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=400',
-      size: 523456,
-      uploadDate: '2024-02-20'
-    }
-  ];
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
-    setUploading(true);
-    setUploadProgress(0);
-
-    // Simulate upload progress
-    const interval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setUploading(false);
-          toast.success("Archivo subido exitosamente");
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    const file = files[0];
+    await uploadDocument(file, selectedFileType);
+    
+    // Reset the input
+    event.target.value = '';
   };
 
   const getFileIcon = (type: string) => {
+    if (type.startsWith('image/')) return <Image className="h-4 w-4" />;
+    return <File className="h-4 w-4" />;
+  };
+
+  const getTypeIcon = (type: AnimalDocument['file_type']) => {
     switch (type) {
-      case 'certificate': return <Award className="h-4 w-4 text-yellow-500" />;
-      case 'medical': return <Stethoscope className="h-4 w-4 text-red-500" />;
-      case 'photo': return <Image className="h-4 w-4 text-blue-500" />;
-      default: return <File className="h-4 w-4 text-gray-500" />;
+      case 'certificate': return <Award className="h-4 w-4" />;
+      case 'medical': return <Heart className="h-4 w-4" />;
+      case 'photo': return <Image className="h-4 w-4" />;
+      default: return <FileText className="h-4 w-4" />;
     }
   };
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'certificate': return 'Certificado';
-      case 'medical': return 'Médico';
-      case 'photo': return 'Fotografía';
-      default: return 'Otro';
-    }
+  const getTypeLabel = (type: AnimalDocument['file_type']) => {
+    const labels = {
+      certificate: 'Certificado',
+      medical: 'Médico',
+      photo: 'Foto',
+      other: 'Otro'
+    };
+    return labels[type];
   };
 
   const formatFileSize = (bytes: number) => {
@@ -121,6 +75,29 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const filterDocuments = (type: string) => {
+    if (type === 'all') return documents;
+    if (type === 'photos') return documents.filter(doc => doc.file_type === 'photo');
+    return documents.filter(doc => doc.file_type === type);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center h-32">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">Cargando documentos...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Upload Section */}
@@ -128,107 +105,134 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
-            Subir Archivos
+            Subir Documento
           </CardTitle>
           <CardDescription>
-            Sube certificados, análisis médicos, fotografías y otros documentos
+            Sube certificados, registros médicos, fotos y otros documentos del animal
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*,.pdf,.doc,.docx"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            
-            <Button 
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full"
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              {uploading ? 'Subiendo...' : 'Seleccionar Archivos'}
-            </Button>
-
-            {uploading && (
-              <div className="space-y-2">
-                <Progress value={uploadProgress} className="w-full" />
-                <p className="text-sm text-muted-foreground text-center">
-                  Subiendo archivos... {uploadProgress}%
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="file-type">Tipo de documento</Label>
+                <Select value={selectedFileType} onValueChange={(value: AnimalDocument['file_type']) => setSelectedFileType(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="certificate">Certificado</SelectItem>
+                    <SelectItem value="medical">Médico</SelectItem>
+                    <SelectItem value="photo">Foto</SelectItem>
+                    <SelectItem value="other">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+              <div>
+                <Label htmlFor="file-upload">Archivo</Label>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  onChange={handleFileUpload}
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                />
+              </div>
+            </div>
 
-            <p className="text-xs text-muted-foreground">
-              Formatos admitidos: PDF, DOC, DOCX, JPG, PNG. Tamaño máximo: 10MB
-            </p>
+            {/* Upload Progress */}
+            {Object.values(uploadProgress).map((progress) => (
+              <div key={progress.fileName} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>{progress.fileName}</span>
+                  <span>{Math.round(progress.progress)}%</span>
+                </div>
+                <Progress value={progress.progress} className="h-2" />
+              </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
       {/* Documents Tabs */}
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">Todos</TabsTrigger>
-          <TabsTrigger value="photos">Fotos</TabsTrigger>
-          <TabsTrigger value="certificates">Certificados</TabsTrigger>
-          <TabsTrigger value="medical">Médicos</TabsTrigger>
-        </TabsList>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Documentos ({documents.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="all">Todos ({documents.length})</TabsTrigger>
+              <TabsTrigger value="photos">Fotos ({filterDocuments('photos').length})</TabsTrigger>
+              <TabsTrigger value="certificate">Certificados ({filterDocuments('certificate').length})</TabsTrigger>
+              <TabsTrigger value="medical">Médicos ({filterDocuments('medical').length})</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="all" className="space-y-4">
-          <DocumentsList 
-            documents={mockDocuments} 
-            onImageClick={setSelectedImage}
-            getFileIcon={getFileIcon}
-            getTypeLabel={getTypeLabel}
-            formatFileSize={formatFileSize}
-          />
-        </TabsContent>
+            <TabsContent value="all" className="space-y-4">
+              <DocumentsList 
+                documents={filterDocuments('all')} 
+                onImageClick={setSelectedImage}
+                onDelete={deleteDocument}
+                getFileIcon={getFileIcon}
+                getTypeIcon={getTypeIcon}
+                getTypeLabel={getTypeLabel}
+                formatFileSize={formatFileSize}
+              />
+            </TabsContent>
 
-        <TabsContent value="photos" className="space-y-4">
-          <PhotoGallery 
-            documents={mockDocuments.filter(doc => doc.type === 'photo')}
-            onImageClick={setSelectedImage}
-          />
-        </TabsContent>
+            <TabsContent value="photos" className="space-y-4">
+              <PhotoGallery 
+                documents={filterDocuments('photos')} 
+                onImageClick={setSelectedImage} 
+              />
+            </TabsContent>
 
-        <TabsContent value="certificates" className="space-y-4">
-          <DocumentsList 
-            documents={mockDocuments.filter(doc => doc.type === 'certificate')} 
-            onImageClick={setSelectedImage}
-            getFileIcon={getFileIcon}
-            getTypeLabel={getTypeLabel}
-            formatFileSize={formatFileSize}
-          />
-        </TabsContent>
+            <TabsContent value="certificate" className="space-y-4">
+              <DocumentsList 
+                documents={filterDocuments('certificate')} 
+                onImageClick={setSelectedImage}
+                onDelete={deleteDocument}
+                getFileIcon={getFileIcon}
+                getTypeIcon={getTypeIcon}
+                getTypeLabel={getTypeLabel}
+                formatFileSize={formatFileSize}
+              />
+            </TabsContent>
 
-        <TabsContent value="medical" className="space-y-4">
-          <DocumentsList 
-            documents={mockDocuments.filter(doc => doc.type === 'medical')} 
-            onImageClick={setSelectedImage}
-            getFileIcon={getFileIcon}
-            getTypeLabel={getTypeLabel}
-            formatFileSize={formatFileSize}
-          />
-        </TabsContent>
-      </Tabs>
+            <TabsContent value="medical" className="space-y-4">
+              <DocumentsList 
+                documents={filterDocuments('medical')} 
+                onImageClick={setSelectedImage}
+                onDelete={deleteDocument}
+                getFileIcon={getFileIcon}
+                getTypeIcon={getTypeIcon}
+                getTypeLabel={getTypeLabel}
+                formatFileSize={formatFileSize}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
       {/* Image Preview Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Vista Previa</DialogTitle>
+            <DialogTitle>Vista previa de imagen</DialogTitle>
+            <DialogDescription>
+              Haz clic fuera de la imagen para cerrar
+            </DialogDescription>
           </DialogHeader>
           {selectedImage && (
-            <img 
-              src={selectedImage} 
-              alt="Preview" 
-              className="w-full h-auto max-h-[70vh] object-contain rounded-lg"
-            />
+            <div className="flex justify-center">
+              <img 
+                src={selectedImage} 
+                alt="Vista previa" 
+                className="max-w-full max-h-[70vh] object-contain rounded-lg"
+              />
+            </div>
           )}
         </DialogContent>
       </Dialog>
@@ -237,115 +241,132 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
 }
 
 // Documents List Component
+interface DocumentsListProps {
+  documents: AnimalDocument[];
+  onImageClick: (url: string) => void;
+  onDelete: (id: string) => void;
+  getFileIcon: (type: string) => JSX.Element;
+  getTypeIcon: (type: AnimalDocument['file_type']) => JSX.Element;
+  getTypeLabel: (type: AnimalDocument['file_type']) => string;
+  formatFileSize: (bytes: number) => string;
+}
+
 function DocumentsList({ 
   documents, 
-  onImageClick,
+  onImageClick, 
+  onDelete,
   getFileIcon,
+  getTypeIcon,
   getTypeLabel,
-  formatFileSize 
-}: {
-  documents: DocumentFile[];
-  onImageClick: (url: string) => void;
-  getFileIcon: (type: string) => React.ReactNode;
-  getTypeLabel: (type: string) => string;
-  formatFileSize: (bytes: number) => string;
-}) {
+  formatFileSize
+}: DocumentsListProps) {
   if (documents.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No hay documentos en esta categoría</p>
-        </CardContent>
-      </Card>
+      <div className="text-center py-8">
+        <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-muted-foreground">No hay documentos en esta categoría</p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-3">
       {documents.map((doc) => (
-        <Card key={doc.id}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {getFileIcon(doc.type)}
-                <div>
-                  <p className="font-medium">{doc.name}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {getTypeLabel(doc.type)}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {formatFileSize(doc.size)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(doc.uploadDate).toLocaleDateString('es')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                {doc.type === 'photo' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onImageClick(doc.url)}
-                  >
-                    <Eye className="h-3 w-3" />
-                  </Button>
-                )}
-                <Button variant="outline" size="sm">
-                  <Download className="h-3 w-3" />
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Trash2 className="h-3 w-3 text-red-500" />
-                </Button>
+        <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
+          <div className="flex items-center space-x-3">
+            <div className="flex-shrink-0">
+              {getTypeIcon(doc.file_type)}
+            </div>
+            <div>
+              <p className="font-medium">{doc.file_name}</p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Badge variant="outline">{getTypeLabel(doc.file_type)}</Badge>
+                <span>{formatFileSize(doc.file_size)}</span>
+                <span>•</span>
+                <span>{new Date(doc.created_at).toLocaleDateString()}</span>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            {doc.file_type === 'photo' && doc.url && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onImageClick(doc.url!)}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
+            {doc.url && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(doc.url, '_blank')}
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onDelete(doc.id)}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
 // Photo Gallery Component
-function PhotoGallery({ 
-  documents, 
-  onImageClick 
-}: {
-  documents: DocumentFile[];
+interface PhotoGalleryProps {
+  documents: AnimalDocument[];
   onImageClick: (url: string) => void;
-}) {
-  if (documents.length === 0) {
+}
+
+function PhotoGallery({ documents, onImageClick }: PhotoGalleryProps) {
+  const photos = documents.filter(doc => doc.file_type === 'photo');
+  
+  if (photos.length === 0) {
     return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">No hay fotografías subidas</p>
-        </CardContent>
-      </Card>
+      <div className="text-center py-8">
+        <Image className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+        <p className="text-muted-foreground">No hay fotos subidas</p>
+      </div>
     );
   }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {documents.map((photo) => (
-        <Card key={photo.id} className="cursor-pointer hover:shadow-md transition-shadow">
-          <CardContent className="p-2">
-            <img
-              src={photo.url}
-              alt={photo.name}
-              className="w-full h-32 object-cover rounded-md mb-2"
-              onClick={() => onImageClick(photo.url)}
-            />
-            <p className="text-xs font-medium truncate">{photo.name}</p>
+      {photos.map((photo) => (
+        <div key={photo.id} className="group relative">
+          <div 
+            className="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer"
+            onClick={() => photo.url && onImageClick(photo.url)}
+          >
+            {photo.url ? (
+              <img 
+                src={photo.url} 
+                alt={photo.file_name}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Image className="h-8 w-8 text-muted-foreground" />
+              </div>
+            )}
+          </div>
+          <div className="mt-2">
+            <p className="text-sm font-medium truncate">{photo.file_name}</p>
             <p className="text-xs text-muted-foreground">
-              {new Date(photo.uploadDate).toLocaleDateString('es')}
+              {new Date(photo.created_at).toLocaleDateString()}
             </p>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );

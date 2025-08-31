@@ -75,7 +75,7 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
                 <p className="text-sm font-medium text-muted-foreground">Último Movimiento</p>
                 <p className="text-sm font-semibold">
                   {movements.length > 0 
-                    ? format(new Date(movements[0].fecha), 'dd/MM/yyyy', { locale: es })
+                    ? format(new Date(movements[0].fecha_movimiento), 'dd/MM/yyyy', { locale: es })
                     : 'No registrado'
                   }
                 </p>
@@ -139,20 +139,20 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      {movement.corral_anterior && (
+                      {movement.corral_anterior_nombre && (
                         <>
                           <span className="text-sm text-muted-foreground">
-                            {movement.corral_anterior}
+                            {movement.corral_anterior_nombre}
                           </span>
                           <ArrowRight className="h-3 w-3 text-muted-foreground" />
                         </>
                       )}
-                      <span className="font-medium">{movement.corral_nombre}</span>
+                      <span className="font-medium">{movement.corral_nuevo_nombre || 'Sin nombre'}</span>
                     </div>
                     
                     <div className="flex items-center gap-4 mt-1">
                       <span className="text-sm text-muted-foreground">
-                        {format(new Date(movement.fecha), 'dd/MM/yyyy', { locale: es })}
+                        {format(new Date(movement.fecha_movimiento), 'dd/MM/yyyy', { locale: es })}
                       </span>
                       {movement.dias_en_corral && (
                         <Badge variant="outline" className="text-xs">
