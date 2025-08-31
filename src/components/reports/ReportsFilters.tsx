@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ReportsFiltersProps {
+  filters: ReportFilters;
   onFiltersChange: (filters: ReportFilters) => void;
   className?: string;
 }
@@ -39,16 +40,10 @@ export interface ReportFilters {
   include_sold_dead?: boolean;
 }
 
-export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersProps) {
-  const [filters, setFilters] = useState<ReportFilters>({
-    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Last year
-    date_to: new Date(),
-    include_sold_dead: false
-  });
-  
+export function ReportsFilters({ filters, onFiltersChange, className }: ReportsFiltersProps) {
   const [corrals, setCorrales] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
-  const [showFilters, setShowFilters] = useState(false);
+  const [showFilters, setShowFilters] = useState(true);
 
   // Fetch corrals and breeds for filters
   useEffect(() => {
@@ -75,13 +70,8 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
     fetchData();
   }, []);
 
-  // Notify parent when filters change
-  useEffect(() => {
-    onFiltersChange(filters);
-  }, [filters, onFiltersChange]);
-
   const updateFilter = (key: keyof ReportFilters, value: any) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    onFiltersChange({ ...filters, [key]: value });
   };
 
   const toggleCorral = (corralId: string) => {
@@ -94,7 +84,7 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
   };
 
   const clearFilters = () => {
-    setFilters({
+    onFiltersChange({
       date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
       date_to: new Date(),
       include_sold_dead: false
@@ -106,8 +96,7 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
   ).length - 2; // Exclude date_from and date_to from count
 
   return (
-    <Card className={cn("sticky top-0 z-10 mb-4", className)}>
-      <CardContent className="p-4">
+    <div className={cn("space-y-4", className)}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
@@ -285,7 +274,6 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 }

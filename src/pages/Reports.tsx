@@ -58,7 +58,7 @@ const Reports = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ReportsFilters onFiltersChange={setFilters} />
+            <ReportsFilters filters={filters} onFiltersChange={setFilters} />
           </CardContent>
         </Card>
 
