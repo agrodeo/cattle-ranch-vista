@@ -26,7 +26,7 @@ export function useLanguage() {
           .from('profiles')
           .select('language')
           .eq('user_id', currentUser.id)
-          .single();
+          .maybeSingle();
 
         if (profileData?.language && availableLanguages.includes(profileData.language as SupportedLanguage)) {
           setLanguage(profileData.language as SupportedLanguage);
@@ -43,7 +43,7 @@ export function useLanguage() {
             .from('cabañas')
             .select('language')
             .eq('id', userCabanaData[0].cabana_id)
-            .single();
+            .maybeSingle();
 
           if (cabanaData?.language && availableLanguages.includes(cabanaData.language as SupportedLanguage)) {
             setLanguage(cabanaData.language as SupportedLanguage);
@@ -93,26 +93,31 @@ export function useLanguage() {
 
   // Handle query parameter language override
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const langParam = urlParams.get('lang') as SupportedLanguage;
-    
-    if (langParam && availableLanguages.includes(langParam)) {
-      setLanguage(langParam);
+    const handleQueryParam = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const langParam = urlParams.get('lang') as SupportedLanguage;
       
-      // Persist to profile if user is logged in
-      if (currentUser?.id) {
-        supabase
-          .from('profiles')
-          .upsert({
-            user_id: currentUser.id,
-            language: langParam
-          })
-          .then(() => {
+      if (langParam && availableLanguages.includes(langParam)) {
+        setLanguage(langParam);
+        
+        // Persist to profile if user is logged in
+        if (currentUser?.id) {
+          try {
+            await supabase
+              .from('profiles')
+              .upsert({
+                user_id: currentUser.id,
+                language: langParam
+              });
             console.log('Language updated from query parameter:', langParam);
-          })
-          .catch(console.error);
+          } catch (error) {
+            console.error('Error updating language from query parameter:', error);
+          }
+        }
       }
-    }
+    };
+
+    handleQueryParam();
   }, [currentUser?.id]);
 
   const setLang = useCallback(async (newLang: SupportedLanguage) => {
@@ -129,14 +134,18 @@ export function useLanguage() {
 
       // Persist to Supabase profile if user is logged in
       if (currentUser?.id) {
-        const { error } = await supabase
-          .from('profiles')
-          .upsert({
-            user_id: currentUser.id,
-            language: newLang
-          });
+        try {
+          const { error } = await supabase
+            .from('profiles')
+            .upsert({
+              user_id: currentUser.id,
+              language: newLang
+            });
 
-        if (error) {
+          if (error) {
+            console.error('Error saving language to profile:', error);
+          }
+        } catch (error) {
           console.error('Error saving language to profile:', error);
         }
       }

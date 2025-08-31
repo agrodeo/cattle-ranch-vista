@@ -3,6 +3,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { LogOut, Building2, HelpCircle } from "lucide-react";
 import { useSupport } from "@/components/SupportProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 export function Header() {
   const { currentUser, signOut } = useSupabaseAuth();
   const support = useSupport();
+  const { t } = useTranslation(['menu', 'common']);
 
   const handleSignOut = () => {
     signOut();
@@ -39,6 +42,9 @@ export function Header() {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Language Switcher */}
+          <LanguageSwitcher variant="compact" />
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 sm:h-10 sm:w-10 rounded-full hover:bg-ink-50">
@@ -66,12 +72,12 @@ export function Header() {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => support.open({ title: "Consulta desde menú de usuario" })} className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50">
                 <HelpCircle className="mr-2 h-4 w-4" />
-                <span>Ayuda & Soporte</span>
+                <span>{t('common:help')}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={signOut} className="text-red-600 focus:text-red-600 focus:bg-red-50">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Cerrar sesión</span>
+                <span>{t('menu:logout')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

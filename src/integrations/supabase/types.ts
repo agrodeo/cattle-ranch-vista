@@ -616,6 +616,7 @@ export type Database = {
         Row: {
           country_code: string | null
           id: string
+          language: string | null
           location: string | null
           location_updated_at: string | null
           name: string
@@ -625,6 +626,7 @@ export type Database = {
         Insert: {
           country_code?: string | null
           id?: string
+          language?: string | null
           location?: string | null
           location_updated_at?: string | null
           name: string
@@ -634,6 +636,7 @@ export type Database = {
         Update: {
           country_code?: string | null
           id?: string
+          language?: string | null
           location?: string | null
           location_updated_at?: string | null
           name?: string
@@ -1298,6 +1301,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           is_internal_profile: boolean | null
+          language: string | null
           last_login: string | null
           position: string | null
           updated_at: string
@@ -1315,6 +1319,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_internal_profile?: boolean | null
+          language?: string | null
           last_login?: string | null
           position?: string | null
           updated_at?: string
@@ -1332,6 +1337,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           is_internal_profile?: boolean | null
+          language?: string | null
           last_login?: string | null
           position?: string | null
           updated_at?: string

@@ -3,6 +3,7 @@ import React from 'react';
 import { AuthProvider } from "@/hooks/useSupabaseAuth";
 import App from './App.tsx';
 import './index.css';
+import './i18n'; // Initialize i18n
 
 // Register service worker for PWA
 if ('serviceWorker' in navigator) {

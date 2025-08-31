@@ -13,6 +13,7 @@ import {
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 import {
   Sidebar,
   SidebarContent,
@@ -28,47 +29,42 @@ import {
 
 const menuItems = [
   {
-    title: "Tablero",
+    title: "menu:dashboard",
     url: "/dashboard",
     icon: Home,
   },
   {
-    title: "Animales",
+    title: "menu:animals",
     url: "/animals",
     icon: Users,
   },
   {
-    title: "Corrales",
+    title: "menu:corrals",
     url: "/corrales",
     icon: MapPin,
   },
   {
-    title: "Actividades",
+    title: "menu:activities",
     url: "/activities",
     icon: Activity,
   },
   {
-    title: "Finanzas",
+    title: "menu:finance",
     url: "/finances",
     icon: DollarSign,
   },
   {
-    title: "Reportes",
+    title: "menu:reports",
     url: "/reports",
     icon: BarChart3,
   },
   {
-    title: "Suscripción",
+    title: "menu:subscription",
     url: "/subscription",
     icon: Crown,
   },
   {
-    title: "Planes",
-    url: "/plans",
-    icon: UserCog,
-  },
-  {
-    title: "Configuración",
+    title: "menu:settings",
     url: "/settings",
     icon: Settings,
   },
@@ -79,6 +75,7 @@ export function AppSidebar() {
   const location = useLocation();
   const isMobile = useIsMobile();
   const isCollapsed = state === "collapsed";
+  const { t } = useTranslation(['menu', 'common']);
 
   return (
     <Sidebar 
@@ -114,7 +111,7 @@ export function AppSidebar() {
                         )}
                       >
                         <item.icon className="h-5 w-5 flex-shrink-0" />
-                        {(!isCollapsed || isMobile) && <span>{item.title}</span>}
+                        {(!isCollapsed || isMobile) && <span>{t(item.title)}</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

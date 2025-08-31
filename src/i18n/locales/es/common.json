@@ -64,7 +64,8 @@
     "thisYear": "Este año",
     "week": "Semana",
     "month": "Mes",
-    "year": "Año"
+    "year": "Año",
+    "help": "Ayuda & Soporte"
   },
   "validation": {
     "required": "Este campo es requerido",
@@ -80,6 +81,7 @@
   "language": {
     "spanish": "Español",
     "english": "English",
-    "portuguese": "Português"
+    "portuguese": "Português",
+    "switch": "Cambiar idioma"
   }
 }

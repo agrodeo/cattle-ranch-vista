@@ -32,6 +32,8 @@ import { MarkDeathDialog } from "@/components/mortality/MarkDeathDialog";
 import { Animal } from "@/types/animal";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 import { normalizeAnimalStatus, getDisplayStatus } from "@/lib/statusUtils";
+import { useTranslation } from "react-i18next";
+import { formatNumber, formatDate } from "@/lib/format";
 
 interface Cabaña {
   id: string;
@@ -135,6 +137,7 @@ const getAgeCategory = (birthDate: string | null, sex: string) => {
 const Animals = () => {
   const navigate = useNavigate();
   const { currentUser } = useSupabaseAuth();
+  const { t } = useTranslation(['animals', 'common', 'forms']);
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
   const [loading, setLoading] = useState(true);
@@ -714,15 +717,15 @@ const Animals = () => {
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1 sm:space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">Gestión de Animales</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Administra tu ganado y registra información detallada</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">{t('animals:title')}</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">{t('animals:subtitle')}</p>
         </div>
         <div className="flex flex-col space-y-2">
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
               <Button onClick={() => { resetForm(); setEditingAnimal(null); }} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
-                Agregar Animal
+                {t('animals:addAnimal')}
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
