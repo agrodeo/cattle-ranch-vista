@@ -414,41 +414,123 @@ function calculateCorralPlan(
   pairings: Pairing[],
   constraints: any
 ): any[] {
-  const plan = corrals.map(corral => {
+  console.log("Starting intelligent corral redistribution");
+  
+  // Step 1: Build current state analysis
+  const corralStats = corrals.map(corral => {
     const currentAnimals = [...cows, ...bulls].filter(a => a.corral_id === corral.id);
     const capacity = corral.capacity || Math.round((corral.hectareas || 0) * constraints.density_per_hectare);
     const currentBulls = bulls.filter(b => b.corral_id === corral.id);
     const currentCows = cows.filter(c => c.corral_id === corral.id);
+    const eligibleCows = currentCows.filter(c => c.sex === 'Hembra' && calculateAgeMonths(c.birth_date) >= 15);
     
+    return {
+      corral,
+      currentAnimals,
+      currentBulls,
+      currentCows,
+      eligibleCows,
+      capacity,
+      needsBull: eligibleCows.length > 0 && currentBulls.length === 0,
+      hasExcessBulls: currentBulls.length > constraints.max_bulls_per_corral,
+      hasSpace: currentAnimals.length < capacity
+    };
+  });
+
+  // Step 2: Identify redistribution needs
+  const corralsWithExcessBulls = corralStats.filter(stats => stats.hasExcessBulls);
+  const corralsNeedingBulls = corralStats.filter(stats => stats.needsBull && stats.hasSpace);
+  
+  console.log(`Found ${corralsWithExcessBulls.length} corrals with excess bulls, ${corralsNeedingBulls.length} corrals needing bulls`);
+
+  // Step 3: Calculate intelligent moves
+  const moves: { bull: Animal, from: string, to: string }[] = [];
+  
+  // Redistribute excess bulls to corrals that need them
+  for (const sourceStats of corralsWithExcessBulls) {
+    const excessBulls = sourceStats.currentBulls.slice(constraints.max_bulls_per_corral);
+    
+    for (const bull of excessBulls) {
+      // Find best destination corral
+      const targetCorral = corralsNeedingBulls
+        .filter(stats => !moves.some(m => m.to === stats.corral.id)) // Not already receiving a bull
+        .sort((a, b) => b.eligibleCows.length - a.eligibleCows.length)[0]; // Prioritize corrals with more eligible cows
+      
+      if (targetCorral) {
+        moves.push({
+          bull,
+          from: sourceStats.corral.id,
+          to: targetCorral.corral.id
+        });
+        
+        // Update tracking
+        const targetIndex = corralsNeedingBulls.findIndex(s => s.corral.id === targetCorral.corral.id);
+        if (targetIndex !== -1) {
+          corralsNeedingBulls.splice(targetIndex, 1); // Remove from needing bulls list
+        }
+      }
+    }
+  }
+
+  // Step 4: Build final plan with specific moves
+  const plan = corralStats.map(stats => {
+    const movesOut = moves.filter(m => m.from === stats.corral.id);
+    const movesIn = moves.filter(m => m.to === stats.corral.id);
+    
+    // Calculate final bull assignment after moves
+    const finalBulls = [
+      ...stats.currentBulls.filter(b => !movesOut.some(m => m.bull.id === b.id)),
+      ...movesIn.map(m => m.bull)
+    ];
+
     // Generate intelligent suggestions
     let suggestion = "";
-    if (currentAnimals.length > capacity) {
-      suggestion = `Reducir ${currentAnimals.length - capacity} animales para optimizar densidad`;
-    } else if (currentBulls.length === 0 && currentCows.length > 0) {
-      suggestion = "Asignar toro reproductor para activar servicio";
-    } else if (currentBulls.length > constraints.max_bulls_per_corral) {
-      suggestion = `Redistribuir ${currentBulls.length - constraints.max_bulls_per_corral} toros a otros corrales`;
-    } else if (currentAnimals.length < capacity * 0.7) {
-      suggestion = `Capacidad disponible para ${Math.floor(capacity - currentAnimals.length)} animales adicionales`;
+    const finalAnimalsCount = stats.currentAnimals.length - movesOut.length + movesIn.length;
+    
+    if (finalAnimalsCount > stats.capacity) {
+      suggestion = `Reducir ${finalAnimalsCount - stats.capacity} animales para optimizar densidad`;
+    } else if (finalBulls.length === 0 && stats.eligibleCows.length > 0) {
+      suggestion = "Requiere asignación de toro reproductor";
+    } else if (movesIn.length > 0) {
+      suggestion = `Recibiendo ${movesIn.length} toro(s) para optimizar servicio`;
+    } else if (movesOut.length > 0) {
+      suggestion = `Liberando ${movesOut.length} toro(s) para mejor distribución`;
+    } else if (finalAnimalsCount < stats.capacity * 0.7) {
+      suggestion = `Capacidad disponible para ${Math.floor(stats.capacity - finalAnimalsCount)} animales adicionales`;
     } else {
       suggestion = "Distribución óptima - No requiere cambios";
     }
     
     return {
-      corral_id: corral.id,
-      corral_name: corral.name,
-      moves_in: [], // Will be populated with intelligent suggestions
-      moves_out: [], // Will be populated with intelligent suggestions  
-      bulls_assigned: currentBulls.map(b => ({
+      corral_id: stats.corral.id,
+      corral_name: stats.corral.name,
+      moves_in: movesIn.map(m => ({
+        animal_id: m.bull.id,
+        animal_name: m.bull.name || m.bull.id_tag || `T-${m.bull.id.slice(0, 6)}`,
+        animal_type: 'Toro',
+        reason: `Optimizar servicio (${stats.eligibleCows.length} vacas elegibles)`
+      })),
+      moves_out: movesOut.map(m => ({
+        animal_id: m.bull.id,
+        animal_name: m.bull.name || m.bull.id_tag || `T-${m.bull.id.slice(0, 6)}`,
+        animal_type: 'Toro',
+        reason: 'Redistribuir para equilibrar corrales'
+      })),
+      bulls_assigned: finalBulls.map(b => ({
         id: b.id,
         name: b.name || b.id_tag || `T-${b.id.slice(0, 6)}`
       })),
-      capacity_ok: currentAnimals.length <= capacity,
-      ratio_ok: currentBulls.length <= constraints.max_bulls_per_corral,
+      eligible_cows_count: stats.eligibleCows.length,
+      current_capacity: finalAnimalsCount,
+      max_capacity: stats.capacity,
+      capacity_ok: finalAnimalsCount <= stats.capacity,
+      ratio_ok: finalBulls.length <= constraints.max_bulls_per_corral,
+      has_breeding_potential: finalBulls.length > 0 && stats.eligibleCows.length > 0,
       suggestion
     };
   });
 
+  console.log(`Generated ${moves.length} bull movements for optimal distribution`);
   return plan;
 }
 
