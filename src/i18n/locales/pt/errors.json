@@ -1,0 +1,23 @@
+{
+  "generic": "Ocorreu um erro inesperado",
+  "network": "Erro de conexão de rede",
+  "server": "Erro do servidor",
+  "notFound": "Recurso não encontrado",
+  "unauthorized": "Não autorizado",
+  "forbidden": "Acesso negado",
+  "validation": "Erro de validação",
+  "database": "Erro de banco de dados",
+  "file": {
+    "upload": "Erro ao enviar arquivo",
+    "download": "Erro ao baixar arquivo",
+    "format": "Formato de arquivo inválido",
+    "size": "Arquivo muito grande"
+  },
+  "form": {
+    "required": "Este campo é obrigatório",
+    "invalid": "Valor inválido",
+    "email": "Email inválido",
+    "password": "Senha inválida",
+    "mismatch": "As senhas não coincidem"
+  }
+}

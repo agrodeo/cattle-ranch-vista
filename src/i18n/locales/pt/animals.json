@@ -1,0 +1,52 @@
+{
+  "title": "Gestão de Animais",
+  "subtitle": "Gerencie seu rebanho e registre informações detalhadas",
+  "addAnimal": "Adicionar Animal",
+  "editAnimal": "Editar Animal",
+  "animalList": "Lista de Animais",
+  "totalAnimals": "Total de Animais",
+  "activeAnimals": "Animais Ativos",
+  "registeredBreeds": "Raças Registradas",
+  "searchPlaceholder": "Pesquisar por nome, ID ou raça...",
+  "fields": {
+    "id": "Identificação",
+    "name": "Nome",
+    "sex": "Sexo",
+    "breed": "Raça",
+    "birthDate": "Data de Nascimento",
+    "status": "Status",
+    "mother": "Mãe",
+    "father": "Pai",
+    "weight": "Peso",
+    "color": "Cor",
+    "observations": "Observações"
+  },
+  "sex": {
+    "male": "Macho",
+    "female": "Fêmea"
+  },
+  "status": {
+    "active": "Ativo",
+    "sold": "Vendido",
+    "dead": "Morto"
+  },
+  "categories": {
+    "calf": "Bezerro",
+    "heifer": "Bezerra",
+    "bull": "Novilho",
+    "cow": "Novilha",
+    "adult": "Vaca Adulta",
+    "unknown": "Não Classificado"
+  },
+  "filters": {
+    "allCategories": "Todas as categorias",
+    "allBreeds": "Todas as raças",
+    "allStatuses": "Todos os status"
+  },
+  "actions": {
+    "view": "Ver",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "markDead": "Marcar Morto"
+  }
+}

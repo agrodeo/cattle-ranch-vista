@@ -1,0 +1,46 @@
+{
+  "title": "Actividades",
+  "summary": {
+    "title": "Resumen de Actividades",
+    "activities30d": "Actividades (30 días)",
+    "trend": "Tendencia",
+    "total": "Total de Actividades"
+  },
+  "quickActions": {
+    "title": "Acciones Rápidas",
+    "register": "Registrar Actividad",
+    "vaccinateNow": "Vacunar Ahora",
+    "weighAnimals": "Pesar Animales",
+    "inseminate": "Inseminar",
+    "pregnancy": "Control Gestación"
+  },
+  "next7d": {
+    "title": "Próximos 7 Días",
+    "today": "Hoy",
+    "noActivities": "No hay actividades programadas",
+    "upcoming": "Próximamente"
+  },
+  "types": {
+    "vaccination": "Vacunación",
+    "weighing": "Pesaje",
+    "insemination": "Inseminación",
+    "pregnancy": "Control Gestación",
+    "treatment": "Tratamiento",
+    "movement": "Movimiento",
+    "general": "General"
+  },
+  "status": {
+    "scheduled": "Programada",
+    "completed": "Completada",
+    "overdue": "Vencida",
+    "cancelled": "Cancelada"
+  },
+  "tabs": {
+    "summary": "Resumen",
+    "reproductive": "Reproductivas",
+    "productive": "Productivas",
+    "sanitary": "Sanitarias",
+    "management": "Manejo",
+    "calendar": "Calendario"
+  }
+}

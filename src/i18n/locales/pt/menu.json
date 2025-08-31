@@ -1,0 +1,14 @@
+{
+  "dashboard": "Painel",
+  "animals": "Animais",
+  "corrals": "Currais",
+  "activities": "Atividades",
+  "finance": "Finanças",
+  "reports": "Relatórios",
+  "settings": "Configurações",
+  "subscription": "Assinatura",
+  "profile": "Perfil",
+  "logout": "Sair",
+  "login": "Entrar",
+  "register": "Cadastrar"
+}

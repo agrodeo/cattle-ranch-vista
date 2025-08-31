@@ -1,0 +1,36 @@
+{
+  "placeholders": {
+    "searchAnimals": "Pesquisar animais...",
+    "selectOption": "Selecionar opção",
+    "enterText": "Digite o texto",
+    "selectDate": "Selecionar data",
+    "enterNumber": "Digite o número",
+    "optional": "Opcional"
+  },
+  "labels": {
+    "required": "Obrigatório",
+    "optional": "Opcional",
+    "select": "Selecionar",
+    "upload": "Enviar arquivo",
+    "browse": "Procurar"
+  },
+  "buttons": {
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "submit": "Enviar",
+    "reset": "Redefinir",
+    "clear": "Limpar",
+    "back": "Voltar",
+    "continue": "Continuar",
+    "finish": "Finalizar"
+  },
+  "messages": {
+    "saving": "Salvando...",
+    "saved": "Salvo com sucesso",
+    "error": "Erro ao salvar",
+    "loading": "Carregando...",
+    "noData": "Nenhum dado disponível",
+    "confirmDelete": "Tem certeza de que deseja excluir este item?",
+    "unsavedChanges": "Você tem alterações não salvas. Deseja continuar?"
+  }
+}

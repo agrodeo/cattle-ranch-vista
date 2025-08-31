@@ -1,0 +1,23 @@
+{
+  "generic": "An unexpected error occurred",
+  "network": "Network connection error",
+  "server": "Server error",
+  "notFound": "Resource not found",
+  "unauthorized": "Unauthorized",
+  "forbidden": "Access denied",
+  "validation": "Validation error",
+  "database": "Database error",
+  "file": {
+    "upload": "File upload error",
+    "download": "File download error",
+    "format": "Invalid file format",
+    "size": "File too large"
+  },
+  "form": {
+    "required": "This field is required",
+    "invalid": "Invalid value",
+    "email": "Invalid email",
+    "password": "Invalid password",
+    "mismatch": "Passwords do not match"
+  }
+}

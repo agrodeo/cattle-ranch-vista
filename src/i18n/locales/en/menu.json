@@ -1,0 +1,14 @@
+{
+  "dashboard": "Dashboard",
+  "animals": "Animals",
+  "corrals": "Corrals",
+  "activities": "Activities",
+  "finance": "Finance",
+  "reports": "Reports",
+  "settings": "Settings",
+  "subscription": "Subscription",
+  "profile": "Profile",
+  "logout": "Sign Out",
+  "login": "Sign In",
+  "register": "Sign Up"
+}

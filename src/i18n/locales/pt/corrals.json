@@ -1,0 +1,31 @@
+{
+  "title": "Gestão de Currais",
+  "subtitle": "Organize e administre os espaços da sua propriedade",
+  "addCorral": "Adicionar Curral",
+  "editCorral": "Editar Curral",
+  "corralList": "Lista de Currais",
+  "totalCorrals": "Total de Currais",
+  "totalAnimals": "Total de Animais",
+  "capacity": "Capacidade",
+  "occupancy": "Ocupação",
+  "fields": {
+    "name": "Nome",
+    "capacity": "Capacidade",
+    "area": "Área (hectares)",
+    "description": "Descrição",
+    "location": "Localização"
+  },
+  "actions": {
+    "view": "Ver",
+    "edit": "Editar",
+    "delete": "Excluir",
+    "assignAnimals": "Atribuir Animais",
+    "moveAnimals": "Mover Animais"
+  },
+  "status": {
+    "empty": "Vazio",
+    "partial": "Parcial",
+    "full": "Cheio",
+    "overfull": "Superlotado"
+  }
+}

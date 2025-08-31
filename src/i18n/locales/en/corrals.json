@@ -1,0 +1,31 @@
+{
+  "title": "Corral Management",
+  "subtitle": "Organize and manage your facility spaces",
+  "addCorral": "Add Corral",
+  "editCorral": "Edit Corral",
+  "corralList": "Corral List",
+  "totalCorrals": "Total Corrals",
+  "totalAnimals": "Total Animals",
+  "capacity": "Capacity",
+  "occupancy": "Occupancy",
+  "fields": {
+    "name": "Name",
+    "capacity": "Capacity",
+    "area": "Area (hectares)",
+    "description": "Description",
+    "location": "Location"
+  },
+  "actions": {
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "assignAnimals": "Assign Animals",
+    "moveAnimals": "Move Animals"
+  },
+  "status": {
+    "empty": "Empty",
+    "partial": "Partial",
+    "full": "Full",
+    "overfull": "Overfull"
+  }
+}

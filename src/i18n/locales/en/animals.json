@@ -1,0 +1,52 @@
+{
+  "title": "Animal Management",
+  "subtitle": "Manage your livestock and record detailed information",
+  "addAnimal": "Add Animal",
+  "editAnimal": "Edit Animal",
+  "animalList": "Animal List",
+  "totalAnimals": "Total Animals",
+  "activeAnimals": "Active Animals",
+  "registeredBreeds": "Registered Breeds",
+  "searchPlaceholder": "Search by name, ID or breed...",
+  "fields": {
+    "id": "Identification",
+    "name": "Name",
+    "sex": "Sex",
+    "breed": "Breed",
+    "birthDate": "Birth Date",
+    "status": "Status",
+    "mother": "Mother",
+    "father": "Father",
+    "weight": "Weight",
+    "color": "Color",
+    "observations": "Observations"
+  },
+  "sex": {
+    "male": "Male",
+    "female": "Female"
+  },
+  "status": {
+    "active": "Active",
+    "sold": "Sold",
+    "dead": "Dead"
+  },
+  "categories": {
+    "calf": "Calf",
+    "heifer": "Heifer",
+    "bull": "Bull",
+    "cow": "Cow",
+    "adult": "Adult Cow",
+    "unknown": "Unclassified"
+  },
+  "filters": {
+    "allCategories": "All categories",
+    "allBreeds": "All breeds",
+    "allStatuses": "All statuses"
+  },
+  "actions": {
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "markDead": "Mark Dead"
+  }
+}

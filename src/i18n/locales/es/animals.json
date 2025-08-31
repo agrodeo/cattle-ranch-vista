@@ -1,0 +1,52 @@
+{
+  "title": "Gestión de Animales",
+  "subtitle": "Administra tu ganado y registra información detallada",
+  "addAnimal": "Agregar Animal",
+  "editAnimal": "Editar Animal",
+  "animalList": "Lista de Animales",
+  "totalAnimals": "Total de Animales",
+  "activeAnimals": "Animales Activos",
+  "registeredBreeds": "Razas Registradas",
+  "searchPlaceholder": "Buscar por nombre, ID o raza...",
+  "fields": {
+    "id": "Identificación",
+    "name": "Nombre",
+    "sex": "Sexo",
+    "breed": "Raza",
+    "birthDate": "Fecha de Nacimiento",
+    "status": "Estado",
+    "mother": "Madre",
+    "father": "Padre",
+    "weight": "Peso",
+    "color": "Color",
+    "observations": "Observaciones"
+  },
+  "sex": {
+    "male": "Macho",
+    "female": "Hembra"
+  },
+  "status": {
+    "active": "Activo",
+    "sold": "Vendido",
+    "dead": "Muerto"
+  },
+  "categories": {
+    "calf": "Ternero",
+    "heifer": "Ternera",
+    "bull": "Novillo",
+    "cow": "Vaquillona",
+    "adult": "Vaca adulta",
+    "unknown": "Sin clasificar"
+  },
+  "filters": {
+    "allCategories": "Todas las categorías",
+    "allBreeds": "Todas las razas",
+    "allStatuses": "Todos los estados"
+  },
+  "actions": {
+    "view": "Ver",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "markDead": "Marcar Fallecido"
+  }
+}

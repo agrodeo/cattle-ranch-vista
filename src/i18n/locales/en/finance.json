@@ -1,0 +1,48 @@
+{
+  "title": "Finance",
+  "nav": {
+    "summary": "Summary",
+    "movements": "Movements",
+    "recurring": "Recurring"
+  },
+  "kpis": {
+    "income": "Income",
+    "expense": "Expenses",
+    "balance": "Balance",
+    "profit": "Profit",
+    "loss": "Loss"
+  },
+  "chart": {
+    "monthlyEvolution": "Monthly Evolution",
+    "income": "Income",
+    "expenses": "Expenses"
+  },
+  "filters": {
+    "last6m": "Last 6 months",
+    "last12m": "Last 12 months",
+    "thisYear": "This year",
+    "customRange": "Custom range",
+    "from": "From",
+    "to": "To"
+  },
+  "categories": {
+    "animalSales": "Animal Sales",
+    "feed": "Feed",
+    "veterinary": "Veterinary",
+    "equipment": "Equipment",
+    "maintenance": "Maintenance",
+    "other": "Other"
+  },
+  "types": {
+    "income": "Income",
+    "expense": "Expense"
+  },
+  "recurring": {
+    "title": "Recurring Movements",
+    "frequency": "Frequency",
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "yearly": "Yearly"
+  }
+}

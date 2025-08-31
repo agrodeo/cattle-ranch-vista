@@ -1,0 +1,14 @@
+{
+  "dashboard": "Tablero",
+  "animals": "Animales",
+  "corrals": "Corrales", 
+  "activities": "Actividades",
+  "finance": "Finanzas",
+  "reports": "Reportes",
+  "settings": "Configuración",
+  "subscription": "Suscripción",
+  "profile": "Perfil",
+  "logout": "Cerrar Sesión",
+  "login": "Iniciar Sesión",
+  "register": "Registrarse"
+}
