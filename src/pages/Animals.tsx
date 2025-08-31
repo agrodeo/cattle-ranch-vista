@@ -31,6 +31,7 @@ import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo }
 import { MarkDeathDialog } from "@/components/mortality/MarkDeathDialog";
 import { Animal } from "@/types/animal";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
+import { normalizeAnimalStatus, getDisplayStatus } from "@/lib/statusUtils";
 
 interface Cabaña {
   id: string;
@@ -649,14 +650,18 @@ const Animals = () => {
     
     const matchesCategory = !categoryFilter || categoryFilter === "all" || getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
     const matchesBreed = !breedFilter || breedFilter === "all" || animal.breed === breedFilter;
-    const matchesStatus = !statusFilter || statusFilter === "all" || animal.status === statusFilter;
+    
+    // Normalize status comparison to handle case differences
+    const normalizedAnimalStatus = normalizeAnimalStatus(animal.status);
+    const normalizedFilterStatus = normalizeAnimalStatus(statusFilter);
+    const matchesStatus = !statusFilter || statusFilter === "all" || normalizedAnimalStatus === normalizedFilterStatus;
     
     return matchesSearch && matchesCategory && matchesBreed && matchesStatus;
   });
 
   // Calculate category counts
   const getCategoryCounts = () => {
-    const activeAnimals = animals.filter(a => a.status === "Activo");
+    const activeAnimals = animals.filter(a => normalizeAnimalStatus(a.status) === "active");
     const counts = {
       "Ternero": 0,
       "Ternera": 0,
@@ -677,17 +682,21 @@ const Animals = () => {
   };
 
   const categoryCounts = getCategoryCounts();
-  const totalActiveAnimals = animals.filter(a => a.status === "Activo").length;
+  const totalActiveAnimals = animals.filter(a => normalizeAnimalStatus(a.status) === "active").length;
   const uniqueBreeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
   const categories = ["Ternero", "Ternera", "Novillo", "Vaquillona", "Toro", "Vaca adulta"];
 
   const getStatusBadge = (status: string) => {
+    const normalizedStatus = normalizeAnimalStatus(status);
+    const displayStatus = getDisplayStatus(normalizedStatus);
+    
     const variants = {
-      "Activo": "default",
-      "Vendido": "secondary",
-      "Muerto": "destructive"
+      "active": "default",
+      "sold": "secondary", 
+      "dead": "destructive"
     };
-    return <Badge variant={variants[status as keyof typeof variants] as any}>{status}</Badge>;
+    
+    return <Badge variant={variants[normalizedStatus] as any}>{displayStatus}</Badge>;
   };
 
   if (loading) {
@@ -1181,9 +1190,9 @@ const Animals = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
                     <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="Activo">Activo</SelectItem>
-                    <SelectItem value="Vendido">Vendido</SelectItem>
-                    <SelectItem value="Muerto">Muerto</SelectItem>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="sold">Vendido</SelectItem>
+                    <SelectItem value="dead">Muerto</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
