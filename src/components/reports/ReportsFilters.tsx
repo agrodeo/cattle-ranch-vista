@@ -47,20 +47,32 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
   });
   
   const [corrals, setCorrales] = useState<any[]>([]);
+  const [breeds, setBreeds] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch corrals for filter
+  // Fetch corrals and breeds for filters
   useEffect(() => {
-    const fetchCorrales = async () => {
-      const { data } = await supabase
-        .from('corrales')
-        .select('id, name')
-        .order('name');
+    const fetchData = async () => {
+      const [corralesData, animalsData] = await Promise.all([
+        supabase
+          .from('corrales')
+          .select('id, name')
+          .order('name'),
+        supabase
+          .from('animals')
+          .select('breed')
+          .not('breed', 'is', null)
+      ]);
       
-      if (data) setCorrales(data);
+      if (corralesData.data) setCorrales(corralesData.data);
+      
+      if (animalsData.data) {
+        const uniqueBreeds = [...new Set(animalsData.data.map(a => a.breed).filter(Boolean))];
+        setBreeds(uniqueBreeds.sort());
+      }
     };
     
-    fetchCorrales();
+    fetchData();
   }, []);
 
   // Notify parent when filters change
@@ -130,7 +142,7 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-4 pt-4 border-t">
             {/* Date Range */}
             <div className="space-y-2">
               <Label className="text-xs">Período</Label>
@@ -216,20 +228,41 @@ export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersPro
             <div className="space-y-2">
               <Label className="text-xs">Categoría</Label>
               <Select
-                value={filters.category || ""}
-                onValueChange={(value) => updateFilter('category', value || undefined)}
+                value={filters.category || "all"}
+                onValueChange={(value) => updateFilter('category', value === "all" ? undefined : value)}
               >
                 <SelectTrigger className="h-8">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   <SelectItem value="Ternero">Ternero</SelectItem>
                   <SelectItem value="Ternera">Ternera</SelectItem>
                   <SelectItem value="Torete">Torete</SelectItem>
                   <SelectItem value="Vaquillona">Vaquillona</SelectItem>
                   <SelectItem value="Toro">Toro</SelectItem>
                   <SelectItem value="Vaca">Vaca</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Breed */}
+            <div className="space-y-2">
+              <Label className="text-xs">Raza</Label>
+              <Select
+                value={filters.breed || "all"}
+                onValueChange={(value) => updateFilter('breed', value === "all" ? undefined : value)}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  {breeds.map(breed => (
+                    <SelectItem key={breed} value={breed}>
+                      {breed}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

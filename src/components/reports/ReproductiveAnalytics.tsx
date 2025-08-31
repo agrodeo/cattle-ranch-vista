@@ -33,17 +33,12 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ReproductiveStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<ReportFilters>({
-    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-    date_to: new Date(),
-    include_sold_dead: false
-  });
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
       fetchReproductiveStats();
     }
-  }, [currentUser]);
+  }, [currentUser, globalFilters]);
 
   const fetchReproductiveStats = async () => {
     try {
@@ -189,17 +184,14 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   }
 
   const handleViewCorralAnimals = (corralId: string, corralName: string) => {
-    setFilters(prev => ({
-      ...prev,
-      corral_ids: [corralId]
-    }));
+    // This would be handled by the global filters now
+    console.log('View corral animals:', corralId, corralName);
   };
 
   return (
     <div className="space-y-6">
-      <ReportsFilters onFiltersChange={setFilters} />
       <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
-      <AnimalReproductionTable filters={filters} />
+      <AnimalReproductionTable filters={globalFilters || {}} />
       
       {/* Original Analytics */}
       <div className="grid gap-6">

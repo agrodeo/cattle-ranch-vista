@@ -6,7 +6,7 @@ interface MortalityReportsProps {
 }
 
 export const MortalityReports = ({ filters }: MortalityReportsProps) => {
-  // For now, we'll render the original component
-  // In the future, we can pass filters to modify its behavior
+  // For now, we'll render the original component without filters
+  // TODO: Update the original MortalityReports to handle filters
   return <OriginalMortalityReports />;
 };
