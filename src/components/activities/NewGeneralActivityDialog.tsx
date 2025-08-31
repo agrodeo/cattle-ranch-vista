@@ -95,7 +95,7 @@ const activityTypes = [
   { 
     value: "parto", 
     label: "Parto", 
-    icon: "👶",
+    icon: "🐄",
     description: "Registro de nacimientos",
     fields: ["tipo_parto", "dificultad", "peso_cria", "sexo_cria", "vitalidad"]
   },
