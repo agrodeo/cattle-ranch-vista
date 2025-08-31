@@ -23,59 +23,7 @@ interface AnimalReproduccionProps {
   onAnimalUpdate: (animal: Animal) => void;
 }
 
-const mockPregnancies = [
-  {
-    id: '1',
-    origen: 'IA',
-    fechaInicio: '2024-01-05',
-    estado: 'confirmada',
-    fechaEstimadaParto: '2024-10-15',
-    toro: 'Elite #123',
-    observaciones: 'Tacto positivo confirmado'
-  },
-  {
-    id: '2',
-    origen: 'Monta Natural',
-    fechaInicio: '2023-02-10',
-    estado: 'paricion_viva',
-    fechaEstimadaParto: '2023-11-01',
-    fechaParto: '2023-10-28',
-    toro: 'Braford #456',
-    cria: 'Ternera #789'
-  },
-  {
-    id: '3',
-    origen: 'IA',
-    fechaInicio: '2022-03-15',
-    estado: 'perdida',
-    fechaEstimadaParto: '2022-12-15',
-    toro: 'Aberdeen #321',
-    observaciones: 'Pérdida detectada en tacto del mes 6'
-  }
-];
-
-const mockOffspring = [
-  {
-    id: '1',
-    idTag: 'TER-001',
-    nombre: 'Esperanza',
-    sexo: 'Hembra',
-    fechaNacimiento: '2023-10-28',
-    estado: 'activo',
-    pesoNacimiento: 35,
-    padre: 'Braford #456'
-  },
-  {
-    id: '2',
-    idTag: 'TER-002',
-    nombre: 'Valiente',
-    sexo: 'Macho',
-    fechaNacimiento: '2022-11-12',
-    estado: 'vendido',
-    pesoNacimiento: 38,
-    padre: 'Elite #123'
-  }
-];
+// Removed mock data - using real data only
 
 export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
   const [showIADialog, setShowIADialog] = useState(false);
@@ -127,9 +75,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockPregnancies.length}</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              {mockPregnancies.filter(p => p.estado === 'paricion_viva').length} exitosas
+              Sin registros
             </p>
           </CardContent>
         </Card>
@@ -140,9 +88,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">365d</div>
+            <div className="text-2xl font-bold">-</div>
             <p className="text-xs text-muted-foreground">
-              Promedio entre partos
+              Sin datos disponibles
             </p>
           </CardContent>
         </Card>
@@ -153,9 +101,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">67%</div>
+            <div className="text-2xl font-bold">-</div>
             <p className="text-xs text-muted-foreground">
-              Pariciones exitosas
+              Sin datos disponibles
             </p>
           </CardContent>
         </Card>
@@ -196,44 +144,15 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockPregnancies.map((pregnancy) => (
-                <TableRow key={pregnancy.id}>
-                  <TableCell>
-                    <Badge variant="outline">{pregnancy.origen}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    {format(new Date(pregnancy.fechaInicio), 'dd/MM/yyyy', { locale: es })}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={`text-white ${getEstadoColor(pregnancy.estado)}`}>
-                      {getEstadoLabel(pregnancy.estado)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {pregnancy.fechaParto ? 
-                      format(new Date(pregnancy.fechaParto), 'dd/MM/yyyy', { locale: es }) :
-                      format(new Date(pregnancy.fechaEstimadaParto), 'dd/MM/yyyy', { locale: es })
-                    }
-                  </TableCell>
-                  <TableCell>{pregnancy.toro}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      {pregnancy.estado === 'confirmada' && (
-                        <>
-                          <Button size="sm" variant="outline">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Parición
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            Pérdida
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <Heart className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <div className="text-lg font-medium mb-2">Sin registros de preñeces</div>
+                  <div className="text-sm">
+                    Registre servicios de IA o monta natural para comenzar a rastrear preñeces
+                  </div>
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </CardContent>
@@ -246,7 +165,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Baby className="h-4 w-4" />
-                Descendencia ({mockOffspring.length})
+                Descendencia (0)
               </CardTitle>
               <CardDescription>
                 Crías registradas de esta hembra
@@ -259,49 +178,12 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mockOffspring.map((offspring) => (
-              <Card key={offspring.id} className="border-l-4 border-l-blue-500">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-medium">
-                        {offspring.nombre || offspring.idTag}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        {offspring.idTag}
-                      </p>
-                    </div>
-                    <Badge 
-                      variant={offspring.estado === 'activo' ? 'default' : 'secondary'}
-                    >
-                      {offspring.estado}
-                    </Badge>
-                  </div>
-                  
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sexo:</span>
-                      <span>{offspring.sexo}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Nacimiento:</span>
-                      <span>
-                        {format(new Date(offspring.fechaNacimiento), 'dd/MM/yyyy', { locale: es })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Peso nac.:</span>
-                      <span>{offspring.pesoNacimiento} kg</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Padre:</span>
-                      <span>{offspring.padre}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="text-center py-8 text-muted-foreground">
+            <Baby className="h-12 w-12 mx-auto mb-4 opacity-20" />
+            <div className="text-lg font-medium mb-2">Sin descendencia registrada</div>
+            <div className="text-sm">
+              Las crías aparecerán aquí cuando se registren nacimientos
+            </div>
           </div>
         </CardContent>
       </Card>

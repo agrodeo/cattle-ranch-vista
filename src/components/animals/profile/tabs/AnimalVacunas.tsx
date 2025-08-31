@@ -25,56 +25,7 @@ interface AnimalVacunasProps {
   onAnimalUpdate: (animal: Animal) => void;
 }
 
-const mockVaccinations = [
-  {
-    id: '1',
-    vacuna: 'Triple Viral',
-    fecha: '2024-01-15',
-    lote: 'TV2024-01',
-    dosis: '2ml',
-    via: 'Subcutánea',
-    proximaDosis: '2024-07-15',
-    responsable: 'Dr. García'
-  },
-  {
-    id: '2',
-    vacuna: 'Clostridiosis',
-    fecha: '2024-01-10',
-    lote: 'CL2024-05',
-    dosis: '5ml',
-    via: 'Intramuscular',
-    proximaDosis: '2025-01-10',
-    responsable: 'Dr. García'
-  },
-  {
-    id: '3',
-    vacuna: 'Brucelosis',
-    fecha: '2023-12-01',
-    lote: 'BR2023-12',
-    dosis: '2ml',
-    via: 'Subcutánea',
-    proximaDosis: null, // Vacuna única
-    responsable: 'Dr. Rodríguez'
-  },
-  {
-    id: '4',
-    vacuna: 'Carbunclo',
-    fecha: '2023-11-20',
-    lote: 'CB2023-08',
-    dosis: '3ml',
-    via: 'Subcutánea',
-    proximaDosis: '2024-02-20', // Vencida
-    responsable: 'Dr. García'
-  }
-];
-
-const requiredVaccines = [
-  { name: 'Triple Viral', frequency: 180, applied: true },
-  { name: 'Clostridiosis', frequency: 365, applied: true },
-  { name: 'Brucelosis', frequency: null, applied: true }, // Una sola vez
-  { name: 'Carbunclo', frequency: 90, applied: false },
-  { name: 'Aftosa', frequency: 180, applied: false }
-];
+// Removed mock data - using real data only
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   const { alerts, loading: alertsLoading } = useVaccinationAlerts(animal.id);

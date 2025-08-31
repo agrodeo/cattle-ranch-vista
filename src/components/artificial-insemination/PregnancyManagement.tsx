@@ -76,20 +76,8 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
 
       if (error) throw error;
 
-      // Simulate service animals data for demo
-      const mockServiceAnimals: ServiceAnimal[] = (data || []).slice(0, 10).map((animal, index) => ({
-        id: `sa_${animal.id}`,
-        animal_id: animal.id,
-        service_id: serviceId,
-        estado: index < 3 ? 'preñada' : index < 7 ? 'pendiente' : 'vacía',
-        fecha_control: format(new Date(Date.now() + 45 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-        fpp: format(new Date(Date.now() + 283 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-        animal_name: animal.name,
-        animal_id_tag: animal.id_tag,
-        result_source: 'manual'
-      }));
-
-      setServiceAnimals(mockServiceAnimals);
+      // Set empty data - no mock animals
+      setServiceAnimals([]);
     } catch (error) {
       console.error('Error loading service animals:', error);
       toast({
