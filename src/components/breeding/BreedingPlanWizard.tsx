@@ -7,13 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, Target, Eye, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import { Brain, Target, Eye, CheckCircle, AlertTriangle, Info, HelpCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface Pairing {
   cow_id: string;
   bull_id: string;
+  cow_name: string;
+  bull_name: string;
   score: number;
   inbreeding_F: number;
   blocked: boolean;
@@ -24,6 +27,12 @@ interface Pairing {
     ce_cm?: number;
   };
   explain: string;
+  detailed_explanation: {
+    genetic_merit: string;
+    inbreeding_risk: string;
+    predicted_performance: string;
+    recommendation: string;
+  };
 }
 
 interface BreedingPlan {
@@ -36,11 +45,24 @@ interface BreedingPlan {
   pairings: Pairing[];
   corral_plan: Array<{
     corral_id: string;
-    moves_in: string[];
-    moves_out: string[];
-    bulls_assigned: string[];
+    corral_name: string;
+    moves_in: Array<{
+      animal_id: string;
+      animal_name: string;
+      from_corral?: string;
+    }>;
+    moves_out: Array<{
+      animal_id: string;
+      animal_name: string;
+      to_corral?: string;
+    }>;
+    bulls_assigned: Array<{
+      id: string;
+      name: string;
+    }>;
     capacity_ok: boolean;
     ratio_ok: boolean;
+    suggestion: string;
   }>;
   warnings: string[];
 }
@@ -298,24 +320,38 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {plan.pairings.slice(0, 10).map((pairing, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div>
-                          <span className="font-medium">Vaca {pairing.cow_id.slice(0, 8)}</span>
-                          <span className="mx-2">×</span>
-                          <span className="font-medium">Toro {pairing.bull_id.slice(0, 8)}</span>
+                  <TooltipProvider>
+                    {plan.pairings.slice(0, 10).map((pairing, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
+                        <div className="flex items-center gap-4">
+                          <div>
+                            <span className="font-medium">{pairing.cow_name}</span>
+                            <span className="mx-2 text-muted-foreground">×</span>
+                            <span className="font-medium">{pairing.bull_name}</span>
+                          </div>
+                          {getRiskBadge(pairing.inbreeding_F)}
                         </div>
-                        {getRiskBadge(pairing.inbreeding_F)}
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">
+                            Score: {(pairing.score * 100).toFixed(0)}%
+                          </Badge>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-md">
+                              <div className="space-y-2">
+                                <p className="font-medium">{pairing.detailed_explanation.recommendation}</p>
+                                <p className="text-sm">{pairing.detailed_explanation.genetic_merit}</p>
+                                <p className="text-sm">{pairing.detailed_explanation.inbreeding_risk}</p>
+                                <p className="text-sm">{pairing.detailed_explanation.predicted_performance}</p>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          Score: {(pairing.score * 100).toFixed(0)}%
-                        </Badge>
-                        <Info className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </TooltipProvider>
                   {plan.pairings.length > 10 && (
                     <p className="text-sm text-muted-foreground text-center">
                       ... y {plan.pairings.length - 10} cruces más
@@ -334,10 +370,13 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                 <div className="grid gap-3">
                   {plan.corral_plan.slice(0, 5).map((corral, i) => (
                     <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <span className="font-medium">Corral {corral.corral_id.slice(0, 8)}</span>
+                      <div className="flex-1">
+                        <span className="font-medium">{corral.corral_name}</span>
                         <div className="text-sm text-muted-foreground">
-                          Entrantes: {corral.moves_in.length} | Salientes: {corral.moves_out.length}
+                          Toros asignados: {corral.bulls_assigned.map(b => b.name).join(", ") || "Ninguno"}
+                        </div>
+                        <div className="text-xs text-blue-600 mt-1">
+                          💡 {corral.suggestion}
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -348,6 +387,15 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                         ) : (
                           <Badge variant="destructive">
                             Sobre capacidad
+                          </Badge>
+                        )}
+                        {corral.ratio_ok ? (
+                          <Badge variant="default" className="bg-blue-100 text-blue-800">
+                            Ratio OK
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                            Revisar toros
                           </Badge>
                         )}
                       </div>

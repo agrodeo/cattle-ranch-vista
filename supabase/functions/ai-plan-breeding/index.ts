@@ -37,6 +37,8 @@ interface Corral {
 interface Pairing {
   cow_id: string;
   bull_id: string;
+  cow_name: string;
+  bull_name: string;
   score: number;
   inbreeding_F: number;
   blocked: boolean;
@@ -47,6 +49,12 @@ interface Pairing {
     ce_cm?: number;
   };
   explain: string;
+  detailed_explanation: {
+    genetic_merit: string;
+    inbreeding_risk: string;
+    predicted_performance: string;
+    recommendation: string;
+  };
 }
 
 interface BreedingPlan {
@@ -59,11 +67,24 @@ interface BreedingPlan {
   pairings: Pairing[];
   corral_plan: Array<{
     corral_id: string;
-    moves_in: string[];
-    moves_out: string[];
-    bulls_assigned: string[];
+    corral_name: string;
+    moves_in: Array<{
+      animal_id: string;
+      animal_name: string;
+      from_corral?: string;
+    }>;
+    moves_out: Array<{
+      animal_id: string;
+      animal_name: string;
+      to_corral?: string;
+    }>;
+    bulls_assigned: Array<{
+      id: string;
+      name: string;
+    }>;
     capacity_ok: boolean;
     ratio_ok: boolean;
+    suggestion: string;
   }>;
   warnings: string[];
 }
@@ -247,11 +268,14 @@ function calculatePairings(
         bestPairing = {
           cow_id: cow.id,
           bull_id: bull.id,
+          cow_name: cow.name || cow.id_tag || `V-${cow.id.slice(0, 6)}`,
+          bull_name: bull.name || bull.id_tag || `T-${bull.id.slice(0, 6)}`,
           score: finalScore,
           inbreeding_F: F,
           blocked: false,
           predicted: predictOffspringTraits(cow, bull),
-          explain: generateExplanation(cow, bull, F, fitScore)
+          explain: generateExplanation(cow, bull, F, fitScore),
+          detailed_explanation: generateDetailedExplanation(cow, bull, F, fitScore, targets)
         };
       }
     }
@@ -341,6 +365,48 @@ function generateExplanation(cow: Animal, bull: Animal, F: number, fitScore: num
   return parts.join("; ");
 }
 
+function generateDetailedExplanation(cow: Animal, bull: Animal, F: number, fitScore: number, targets: any): any {
+  const predicted = predictOffspringTraits(cow, bull);
+  
+  const genetic_merit = `Mérito genético combinado basado en pesos parentales: Vaca (${cow.peso_final || 'N/A'}kg) × Toro (${bull.peso_final || 'N/A'}kg)`;
+  
+  let inbreeding_risk = "";
+  if (F === 0) {
+    inbreeding_risk = "Riesgo nulo - No hay parentesco conocido entre los reproductores";
+  } else if (F < 0.03) {
+    inbreeding_risk = `Riesgo bajo (${(F * 100).toFixed(1)}%) - Parentesco distante, seguro para el cruce`;
+  } else if (F < 0.0625) {
+    inbreeding_risk = `Riesgo moderado (${(F * 100).toFixed(1)}%) - Requiere monitoreo de la descendencia`;
+  } else {
+    inbreeding_risk = `Riesgo alto (${(F * 100).toFixed(1)}%) - Cruce no recomendado`;
+  }
+
+  const predicted_performance = [
+    predicted.birth_weight ? `Peso nacimiento esperado: ${predicted.birth_weight.toFixed(1)}kg` : null,
+    predicted.weaning_weight ? `Peso destete esperado: ${predicted.weaning_weight.toFixed(1)}kg` : null,
+    predicted.final_weight ? `Peso final esperado: ${predicted.final_weight.toFixed(1)}kg` : null,
+    predicted.ce_cm ? `CE esperada: ${predicted.ce_cm.toFixed(1)}cm` : null
+  ].filter(Boolean).join(", ");
+
+  let recommendation = "";
+  if (fitScore > 0.8 && F < 0.03) {
+    recommendation = "⭐ Cruce altamente recomendado - Excelente potencial genético con riesgo mínimo";
+  } else if (fitScore > 0.6 && F < 0.0625) {
+    recommendation = "✓ Cruce recomendado - Buen balance entre mejora genética y seguridad";
+  } else if (F >= 0.0625) {
+    recommendation = "⚠️ Evaluar alternativas - Riesgo de consanguinidad elevado";
+  } else {
+    recommendation = "➡️ Cruce aceptable - Cumple objetivos básicos";
+  }
+
+  return {
+    genetic_merit,
+    inbreeding_risk,
+    predicted_performance,
+    recommendation
+  };
+}
+
 function calculateCorralPlan(
   cows: Animal[],
   bulls: Animal[],
@@ -351,14 +417,35 @@ function calculateCorralPlan(
   const plan = corrals.map(corral => {
     const currentAnimals = [...cows, ...bulls].filter(a => a.corral_id === corral.id);
     const capacity = corral.capacity || Math.round((corral.hectareas || 0) * constraints.density_per_hectare);
+    const currentBulls = bulls.filter(b => b.corral_id === corral.id);
+    const currentCows = cows.filter(c => c.corral_id === corral.id);
+    
+    // Generate intelligent suggestions
+    let suggestion = "";
+    if (currentAnimals.length > capacity) {
+      suggestion = `Reducir ${currentAnimals.length - capacity} animales para optimizar densidad`;
+    } else if (currentBulls.length === 0 && currentCows.length > 0) {
+      suggestion = "Asignar toro reproductor para activar servicio";
+    } else if (currentBulls.length > constraints.max_bulls_per_corral) {
+      suggestion = `Redistribuir ${currentBulls.length - constraints.max_bulls_per_corral} toros a otros corrales`;
+    } else if (currentAnimals.length < capacity * 0.7) {
+      suggestion = `Capacidad disponible para ${Math.floor(capacity - currentAnimals.length)} animales adicionales`;
+    } else {
+      suggestion = "Distribución óptima - No requiere cambios";
+    }
     
     return {
       corral_id: corral.id,
-      moves_in: [],
-      moves_out: [],
-      bulls_assigned: bulls.filter(b => b.corral_id === corral.id).map(b => b.id),
+      corral_name: corral.name,
+      moves_in: [], // Will be populated with intelligent suggestions
+      moves_out: [], // Will be populated with intelligent suggestions  
+      bulls_assigned: currentBulls.map(b => ({
+        id: b.id,
+        name: b.name || b.id_tag || `T-${b.id.slice(0, 6)}`
+      })),
       capacity_ok: currentAnimals.length <= capacity,
-      ratio_ok: true // Simplified for now
+      ratio_ok: currentBulls.length <= constraints.max_bulls_per_corral,
+      suggestion
     };
   });
 
