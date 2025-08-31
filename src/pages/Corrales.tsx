@@ -242,13 +242,22 @@ export default function Corrales() {
           title="Corrales"
           subtitle="Gestiona los corrales y asignación de animales"
           action={
-            <Button 
-              onClick={() => setCreateDialogOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Nuevo Corral
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={() => setMoveDialogOpen(true)}
+              >
+                <Move className="h-4 w-4 mr-2" />
+                Mover Animales
+              </Button>
+              <Button 
+                onClick={() => setCreateDialogOpen(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Nuevo Corral
+              </Button>
+            </div>
           }
         />
 
