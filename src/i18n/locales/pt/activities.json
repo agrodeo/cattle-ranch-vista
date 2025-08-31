@@ -1,5 +1,6 @@
 {
   "title": "Atividades",
+  "description": "Gerencie todas as atividades da sua fazenda",
   "summary": {
     "title": "Resumo de Atividades",
     "activities30d": "Atividades (30 dias)",
@@ -42,5 +43,56 @@
     "sanitary": "Sanitárias",
     "management": "Manejo",
     "calendar": "Calendário"
+  },
+  "kpis": {
+    "activities30d": "Ativ. 30d",
+    "iaMonth": "IA (mês)",
+    "vaccines7d": "Vacinas 7d",
+    "services": "Serviços"
+  },
+  "sections": {
+    "services": {
+      "title": "Serviços",
+      "summary": "Gestão de serviços naturais",
+      "action": "Gerenciar Serviços"
+    },
+    "artificialInsemination": {
+      "title": "Inseminação Artificial",
+      "summary": "Programação e registro de IA",
+      "action": "Registrar IA"
+    },
+    "pregnancyDetection": {
+      "title": "Detecção de Gestação",
+      "summary": "Exames e confirmações",
+      "action": "Agendar Exame"
+    },
+    "vaccination": {
+      "title": "Vacinação e Sanidade",
+      "summary": "Controle sanitário e vacinas",
+      "action": "Nova Vacinação"
+    },
+    "weighing": {
+      "title": "Gestão de Pesagens",
+      "summary": "Controle produtivo e pesos",
+      "action": "Registrar Pesagem"
+    },
+    "management": {
+      "title": "Manejo Geral",
+      "summary": "Atividades gerais e movimentações",
+      "action": "Nova Atividade"
+    },
+    "calendar": {
+      "title": "Calendário de Atividades",
+      "summary": "Vista temporal de atividades",
+      "action": "Ver calendário completo"
+    }
+  },
+  "sidebar": {
+    "next7days": "Próximos 7 Dias",
+    "upcomingVaccines": "Vacinas Próximas",
+    "viewFullCalendar": "Ver calendário completo",
+    "dueToday": "Vence hoje",
+    "in3Days": "Em 3 dias",
+    "animals": "animais"
   }
 }

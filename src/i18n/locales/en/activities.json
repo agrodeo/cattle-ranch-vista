@@ -1,5 +1,6 @@
 {
   "title": "Activities",
+  "description": "Manage all your farm activities",
   "summary": {
     "title": "Activities Summary",
     "activities30d": "Activities (30 days)",
@@ -42,5 +43,56 @@
     "sanitary": "Sanitary",
     "management": "Management",
     "calendar": "Calendar"
+  },
+  "kpis": {
+    "activities30d": "Act. 30d",
+    "iaMonth": "AI (month)",
+    "vaccines7d": "Vaccines 7d",
+    "services": "Services"
+  },
+  "sections": {
+    "services": {
+      "title": "Services",
+      "summary": "Natural service management",
+      "action": "Manage Services"
+    },
+    "artificialInsemination": {
+      "title": "Artificial Insemination",
+      "summary": "AI scheduling and recording",
+      "action": "Register AI"
+    },
+    "pregnancyDetection": {
+      "title": "Pregnancy Detection",
+      "summary": "Pregnancy checks and confirmations",
+      "action": "Schedule Check"
+    },
+    "vaccination": {
+      "title": "Vaccination & Health",
+      "summary": "Health control and vaccines",
+      "action": "New Vaccination"
+    },
+    "weighing": {
+      "title": "Weighing Management",
+      "summary": "Production control and weights",
+      "action": "Register Weighing"
+    },
+    "management": {
+      "title": "General Management",
+      "summary": "General activities and movements",
+      "action": "New Activity"
+    },
+    "calendar": {
+      "title": "Activities Calendar",
+      "summary": "Temporal view of activities",
+      "action": "View Full Calendar"
+    }
+  },
+  "sidebar": {
+    "next7days": "Next 7 Days",
+    "upcomingVaccines": "Upcoming Vaccines",
+    "viewFullCalendar": "View Full Calendar",
+    "dueToday": "Due today",
+    "in3Days": "In 3 days",
+    "animals": "animals"
   }
 }

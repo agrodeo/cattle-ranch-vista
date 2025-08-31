@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Activity, 
   Heart, 
@@ -43,6 +44,7 @@ interface FilterOptions {
 }
 
 export function ResumenTab() {
+  const { t } = useTranslation('activities');
   const { stats } = useActivities();
 
   // Mock data - replace with real data hooks
@@ -69,7 +71,7 @@ export function ResumenTab() {
 
   const kpis = [
     {
-      title: 'Act. 30d',
+      title: t('kpis.activities30d'),
       value: stats.monthlyActivities || 0,
       icon: Activity,
       trend: {
@@ -78,17 +80,17 @@ export function ResumenTab() {
       }
     },
     {
-      title: 'IA (mes)',
+      title: t('kpis.iaMonth'),
       value: stats.inseminations || 1,
       icon: Heart
     },
     {
-      title: 'Vacunas 7d',
+      title: t('kpis.vaccines7d'),
       value: 12,
       icon: Syringe
     },
     {
-      title: 'Servicios',
+      title: t('kpis.services'),
       value: services.length,
       icon: TrendingUp
     }
@@ -148,11 +150,11 @@ export function ResumenTab() {
         <Accordion type="multiple" className="space-y-3">
           <ActivityAccordion
             value="servicios"
-            title="Servicios"
-            summary="Gestión de servicios naturales"
+            title={t('sections.services.title')}
+            summary={t('sections.services.summary')}
             count={services.length}
             primaryAction={{
-              label: "Gestionar Servicios",
+              label: t('sections.services.action'),
               onClick: handleRegisterService
             }}
           >
@@ -166,11 +168,11 @@ export function ResumenTab() {
 
           <ActivityAccordion
             value="inseminacion"
-            title="Inseminación Artificial"
-            summary="Programación y registro de IA"
+            title={t('sections.artificialInsemination.title')}
+            summary={t('sections.artificialInsemination.summary')}
             count={inseminations.length}
             primaryAction={{
-              label: "Registrar IA",
+              label: t('sections.artificialInsemination.action'),
               onClick: handleRegisterIA
             }}
           >
@@ -181,11 +183,11 @@ export function ResumenTab() {
 
           <ActivityAccordion
             value="deteccion-prenez"
-            title="Detección de Preñez"
-            summary="Tactos y confirmaciones"
+            title={t('sections.pregnancyDetection.title')}
+            summary={t('sections.pregnancyDetection.summary')}
             count={pregnancyDetections.length}
             primaryAction={{
-              label: "Programar Tacto",
+              label: t('sections.pregnancyDetection.action'),
               onClick: handleScheduleTacto
             }}
           >
@@ -196,11 +198,11 @@ export function ResumenTab() {
 
           <ActivityAccordion
             value="vacunacion"
-            title="Vacunación y Sanidad"
-            summary="Control sanitario y vacunas"
+            title={t('sections.vaccination.title')}
+            summary={t('sections.vaccination.summary')}
             count={12}
             primaryAction={{
-              label: "Nueva Vacunación",
+              label: t('sections.vaccination.action'),
               onClick: handleVaccinate
             }}
            >
@@ -211,11 +213,11 @@ export function ResumenTab() {
 
           <ActivityAccordion
             value="pesajes"
-            title="Gestión de Pesajes"
-            summary="Control productivo y pesos"
+            title={t('sections.weighing.title')}
+            summary={t('sections.weighing.summary')}
             count={weighings.length}
             primaryAction={{
-              label: "Registrar Pesaje",
+              label: t('sections.weighing.action'),
               onClick: handleRegisterWeighing
             }}
           >
@@ -226,11 +228,11 @@ export function ResumenTab() {
 
           <ActivityAccordion
             value="manejo"
-            title="Manejo General"
-            summary="Actividades generales y movimientos"
+            title={t('sections.management.title')}
+            summary={t('sections.management.summary')}
             count={8}
             primaryAction={{
-              label: "Nueva Actividad",
+              label: t('sections.management.action'),
               onClick: handleRegisterActivity
             }}
           >
@@ -241,8 +243,8 @@ export function ResumenTab() {
 
           <ActivityAccordion
             value="calendario"
-            title="Calendario de Actividades"
-            summary="Vista temporal de actividades"
+            title={t('sections.calendar.title')}
+            summary={t('sections.calendar.summary')}
             count={15}
           >
             <div className="space-y-3">
@@ -258,14 +260,14 @@ export function ResumenTab() {
       <aside className="hidden lg:block space-y-4">
         {/* Compact Calendar */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="font-medium text-slate-900 mb-3">Próximos 7 días</h3>
+          <h3 className="font-medium text-slate-900 mb-3">{t('sidebar.next7days')}</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-900">Hoy</span>
+              <span className="font-medium text-slate-900">{t('next7d.today')}</span>
               <Badge variant="outline">3</Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-900">+3 días</span>
+              <span className="font-medium text-slate-900">{t('sidebar.in3Days')}</span>
               <Badge variant="outline">1</Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -274,31 +276,31 @@ export function ResumenTab() {
             </div>
             <Button variant="ghost" size="sm" className="w-full mt-3">
               <Calendar className="h-4 w-4 mr-2" />
-              Ver calendario completo
+              {t('sidebar.viewFullCalendar')}
             </Button>
           </div>
         </div>
 
         {/* Vaccines Due */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h3 className="font-medium text-slate-900 mb-3">Vacunas Próximas</h3>
+          <h3 className="font-medium text-slate-900 mb-3">{t('sidebar.upcomingVaccines')}</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg border border-red-200">
               <div>
                 <p className="text-sm font-medium text-red-900">Antiaftosa</p>
-                <p className="text-xs text-red-600">Vence hoy</p>
+                <p className="text-xs text-red-600">{t('sidebar.dueToday')}</p>
               </div>
               <Badge className="bg-red-100 text-red-800 text-xs">
-                15 animales
+                15 {t('sidebar.animals')}
               </Badge>
             </div>
             <div className="flex items-center justify-between p-2 bg-amber-50 rounded-lg border border-amber-200">
               <div>
                 <p className="text-sm font-medium text-amber-900">Brucelosis</p>
-                <p className="text-xs text-amber-600">En 3 días</p>
+                <p className="text-xs text-amber-600">{t('sidebar.in3Days')}</p>
               </div>
               <Badge className="bg-amber-100 text-amber-800 text-xs">
-                8 animales
+                8 {t('sidebar.animals')}
               </Badge>
             </div>
           </div>

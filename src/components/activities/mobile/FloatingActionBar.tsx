@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -6,6 +7,8 @@ interface FloatingActionBarProps {
 }
 
 export function FloatingActionBar({ onRegisterActivity }: FloatingActionBarProps) {
+  const { t } = useTranslation('activities');
+
   return (
     <>
       {/* Desktop: Full width button */}
@@ -15,7 +18,7 @@ export function FloatingActionBar({ onRegisterActivity }: FloatingActionBarProps
           className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Registrar Actividad
+          {t('quickActions.register')}
         </Button>
       </div>
 
@@ -28,7 +31,7 @@ export function FloatingActionBar({ onRegisterActivity }: FloatingActionBarProps
               className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-none focus:ring-2 focus:ring-emerald-600"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Registrar Actividad
+              {t('quickActions.register')}
             </Button>
           </div>
         </div>
