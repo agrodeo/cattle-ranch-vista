@@ -155,9 +155,9 @@ export const useDashboardSummary = (): DashboardSummary => {
       const diag = [];
       diag.push(await runCount('Total animals (no filters)', { cabana: false, status: null }));
       diag.push(await runCount('Animals in cabaña', { cabana: true, status: null }));
-      diag.push(await runCount('Active animals (Activo)', { cabana: true, status: ['Activo'] }));
-      diag.push(await runCount('Active animals (normalized)', { cabana: true, status: ['active'] }));
-      diag.push(await runCount('Active animals (both)', { cabana: true, status: ['activo', 'active'] }));
+      diag.push(await runCount('Active animals (lowercase)', { cabana: true, status: ['activo'] }));
+      diag.push(await runCount('Active animals (uppercase)', { cabana: true, status: ['Activo'] }));
+      diag.push(await runCount('Active animals (both)', { cabana: true, status: ['activo', 'Activo'] }));
 
       setDiagnostics(diag);
       console.group('🔍 Dashboard Animal Count Diagnostics');
@@ -171,12 +171,12 @@ export const useDashboardSummary = (): DashboardSummary => {
       const sevenDaysFromNow = new Date(today);
       sevenDaysFromNow.setDate(today.getDate() + 7);
 
-      // Count active animals - USE "Activo" que es lo que está en la BD
+      // Count active animals - using lowercase 'activo' to match database values
       const { count: animalsCount, error: animalsError } = await supabase
         .from('animals')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
-        .eq('status', 'Activo');  // Usar "Activo" como en Animals.tsx
+        .eq('status', 'activo');
 
       if (animalsError) {
         console.error('Error counting animals:', animalsError);
@@ -313,7 +313,7 @@ export const useDashboardSummary = (): DashboardSummary => {
           .from('animals')
           .select('id', { count: 'exact', head: true })
           .eq('cabaña_id', cabanaId)
-          .eq('status', 'Activo');
+          .eq('status', 'activo');
 
         if (unvaccinatedCount && unvaccinatedCount > 0) {
           warnings.push({
