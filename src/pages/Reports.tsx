@@ -8,9 +8,9 @@ import { ReportsFilters, ReportFilters } from "@/components/reports/ReportsFilte
 import { HerdOverview } from "@/components/reports/HerdOverview";
 import { ReproductiveAnalytics } from "@/components/reports/ReproductiveAnalytics";
 import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
-import { MortalityReports } from "@/components/mortality/MortalityReports";
+import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
-import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalytics";
+import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
 import { Filter } from "lucide-react";
 
 const Reports = () => {

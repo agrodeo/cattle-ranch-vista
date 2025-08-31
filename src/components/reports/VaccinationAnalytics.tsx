@@ -16,14 +16,6 @@ import { es } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
-interface VaccinationFilters {
-  dateRange: { from: Date | null; to: Date | null };
-  vaccines: string[];
-  categories: string[];
-  corrals: string[];
-  animalStatus: string[];
-}
-
 interface VaccinationKPI {
   generalCoverage: number;
   upToDateAnimals: number;

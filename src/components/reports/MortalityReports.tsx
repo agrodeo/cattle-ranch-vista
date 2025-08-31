@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
-import { ReportFilters } from "../reports/ReportsFilters";
+import { ReportFilters } from "./ReportsFilters";
 
 interface MortalityStats {
   totalDeaths: number;
