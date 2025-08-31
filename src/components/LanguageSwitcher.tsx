@@ -38,7 +38,7 @@ export function LanguageSwitcher({ variant = 'full', className = '' }: LanguageS
   const { t } = useTranslation();
   const { lang, setLang, isLoading } = useLanguage();
 
-  const currentOption = languageOptions[lang];
+  const currentOption = languageOptions[lang as keyof typeof languageOptions] || languageOptions.es;
 
   if (variant === 'icon') {
     return (
