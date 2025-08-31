@@ -2426,6 +2426,59 @@ export type Database = {
         }
         Returns: Json
       }
+      rpc_report_corrals_last_season: {
+        Args: { _user_id: string }
+        Returns: {
+          avg_adg_season: number
+          avg_weight: number
+          calving_rate: number
+          corral_id: string
+          headcount: number
+          name: string
+          pregnancy_rate: number
+        }[]
+      }
+      rpc_report_production_animals: {
+        Args: { _user_id: string; filters_json?: Json }
+        Returns: {
+          adg_percentile: number
+          adg_recent_90d: number
+          adg_season: number
+          animal_id: string
+          category: string
+          corral_id: string
+          corral_name: string
+          last_weight_date: string
+          last_weight_kg: number
+          name: string
+          tag: string
+          weighs_count: number
+          weight_birth: number
+          weight_final: number
+          weight_weaning: number
+          weight_yearling: number
+        }[]
+      }
+      rpc_report_reproduction_animals: {
+        Args: { _user_id: string; filters_json?: Json }
+        Returns: {
+          animal_id: string
+          calving_rate: number
+          calvings: number
+          category: string
+          corral_id: string
+          corral_name: string
+          exposures: number
+          is_repeater: boolean
+          live_calving_rate: number
+          live_calvings: number
+          name: string
+          open_days: number
+          pregnancies: number
+          pregnancy_rate: number
+          tag: string
+        }[]
+      }
       update_finance_movement: {
         Args: {
           _amount: number

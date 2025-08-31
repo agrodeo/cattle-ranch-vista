@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Scale, TrendingUp, Target, Award } from "lucide-react";
 import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
+import { ReportsFilters, ReportFilters } from "./ReportsFilters";
+import { AnimalProductionTable } from "./AnimalProductionTable";
+import { CorralKPIsCard } from "./CorralKPIsCard";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -26,6 +29,11 @@ export const ProductionAnalytics = () => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<ReportFilters>({
+    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+    date_to: new Date(),
+    include_sold_dead: false
+  });
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -216,8 +224,21 @@ export const ProductionAnalytics = () => {
     return <div className="text-center p-8">No se pudieron cargar las estadísticas de producción.</div>;
   }
 
+  const handleViewCorralAnimals = (corralId: string, corralName: string) => {
+    setFilters(prev => ({
+      ...prev,
+      corral_ids: [corralId]
+    }));
+  };
+
   return (
-    <div className="grid gap-6">
+    <div className="space-y-6">
+      <ReportsFilters onFiltersChange={setFilters} />
+      <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
+      <AnimalProductionTable filters={filters} />
+      
+      {/* Original Analytics */}
+      <div className="grid gap-6">
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -431,6 +452,7 @@ export const ProductionAnalytics = () => {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

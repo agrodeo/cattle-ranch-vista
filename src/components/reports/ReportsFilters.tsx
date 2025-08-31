@@ -1,0 +1,258 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Filter, X } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ReportsFiltersProps {
+  onFiltersChange: (filters: ReportFilters) => void;
+  className?: string;
+}
+
+export interface ReportFilters {
+  season?: string;
+  date_from?: Date;
+  date_to?: Date;
+  corral_ids?: string[];
+  category?: string;
+  breed?: string;
+  include_sold_dead?: boolean;
+}
+
+export function ReportsFilters({ onFiltersChange, className }: ReportsFiltersProps) {
+  const [filters, setFilters] = useState<ReportFilters>({
+    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Last year
+    date_to: new Date(),
+    include_sold_dead: false
+  });
+  
+  const [corrals, setCorrales] = useState<any[]>([]);
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Fetch corrals for filter
+  useEffect(() => {
+    const fetchCorrales = async () => {
+      const { data } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .order('name');
+      
+      if (data) setCorrales(data);
+    };
+    
+    fetchCorrales();
+  }, []);
+
+  // Notify parent when filters change
+  useEffect(() => {
+    onFiltersChange(filters);
+  }, [filters, onFiltersChange]);
+
+  const updateFilter = (key: keyof ReportFilters, value: any) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const toggleCorral = (corralId: string) => {
+    const current = filters.corral_ids || [];
+    const updated = current.includes(corralId)
+      ? current.filter(id => id !== corralId)
+      : [...current, corralId];
+    
+    updateFilter('corral_ids', updated.length > 0 ? updated : undefined);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+      date_to: new Date(),
+      include_sold_dead: false
+    });
+  };
+
+  const activeFiltersCount = Object.values(filters).filter(v => 
+    v !== undefined && v !== false && (Array.isArray(v) ? v.length > 0 : true)
+  ).length - 2; // Exclude date_from and date_to from count
+
+  return (
+    <Card className={cn("sticky top-0 z-10 mb-4", className)}>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            <span className="text-sm font-medium">Filtros</span>
+            {activeFiltersCount > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {activeFiltersCount}
+              </Badge>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="text-xs"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Limpiar
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              {showFilters ? 'Ocultar' : 'Mostrar'}
+            </Button>
+          </div>
+        </div>
+
+        {showFilters && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t">
+            {/* Date Range */}
+            <div className="space-y-2">
+              <Label className="text-xs">Período</Label>
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "flex-1 justify-start text-left font-normal",
+                        !filters.date_from && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-3 w-3" />
+                      {filters.date_from ? (
+                        format(filters.date_from, "dd/MM/yy", { locale: es })
+                      ) : (
+                        <span>Desde</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filters.date_from}
+                      onSelect={(date) => updateFilter('date_from', date)}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={cn(
+                        "flex-1 justify-start text-left font-normal",
+                        !filters.date_to && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-3 w-3" />
+                      {filters.date_to ? (
+                        format(filters.date_to, "dd/MM/yy", { locale: es })
+                      ) : (
+                        <span>Hasta</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filters.date_to}
+                      onSelect={(date) => updateFilter('date_to', date)}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Corrals */}
+            <div className="space-y-2">
+              <Label className="text-xs">Corrales</Label>
+              <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
+                {corrals.map((corral) => (
+                  <Badge
+                    key={corral.id}
+                    variant={filters.corral_ids?.includes(corral.id) ? "default" : "outline"}
+                    className="cursor-pointer text-xs"
+                    onClick={() => toggleCorral(corral.id)}
+                  >
+                    {corral.name}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            {/* Category */}
+            <div className="space-y-2">
+              <Label className="text-xs">Categoría</Label>
+              <Select
+                value={filters.category || ""}
+                onValueChange={(value) => updateFilter('category', value || undefined)}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="Ternero">Ternero</SelectItem>
+                  <SelectItem value="Ternera">Ternera</SelectItem>
+                  <SelectItem value="Torete">Torete</SelectItem>
+                  <SelectItem value="Vaquillona">Vaquillona</SelectItem>
+                  <SelectItem value="Toro">Toro</SelectItem>
+                  <SelectItem value="Vaca">Vaca</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Options */}
+            <div className="space-y-2">
+              <Label className="text-xs">Opciones</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="include-sold-dead"
+                  checked={filters.include_sold_dead}
+                  onCheckedChange={(checked) => 
+                    updateFilter('include_sold_dead', checked)
+                  }
+                />
+                <Label htmlFor="include-sold-dead" className="text-xs">
+                  Incluir vendidos/muertos
+                </Label>
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

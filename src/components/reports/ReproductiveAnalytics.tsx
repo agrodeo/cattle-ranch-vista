@@ -5,6 +5,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Heart, TrendingUp, Calendar, Users } from "lucide-react";
+import { ReportsFilters, ReportFilters } from "./ReportsFilters";
+import { AnimalReproductionTable } from "./AnimalReproductionTable";
+import { CorralKPIsCard } from "./CorralKPIsCard";
 
 interface ReproductiveStats {
   totalFemales: number;
@@ -26,6 +29,11 @@ export const ReproductiveAnalytics = () => {
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ReproductiveStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState<ReportFilters>({
+    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
+    date_to: new Date(),
+    include_sold_dead: false
+  });
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -176,8 +184,21 @@ export const ReproductiveAnalytics = () => {
     return <div className="text-center p-8">No se pudieron cargar las estadísticas reproductivas.</div>;
   }
 
+  const handleViewCorralAnimals = (corralId: string, corralName: string) => {
+    setFilters(prev => ({
+      ...prev,
+      corral_ids: [corralId]
+    }));
+  };
+
   return (
-    <div className="grid gap-6">
+    <div className="space-y-6">
+      <ReportsFilters onFiltersChange={setFilters} />
+      <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
+      <AnimalReproductionTable filters={filters} />
+      
+      {/* Original Analytics */}
+      <div className="grid gap-6">
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -347,6 +368,7 @@ export const ReproductiveAnalytics = () => {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
