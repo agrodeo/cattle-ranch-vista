@@ -48,27 +48,12 @@ export function ResumenTab() {
   const { t } = useTranslation('activities');
   const { stats } = useActivities();
 
-  // Mock data - replace with real data hooks
-  const services = [
-    { id: '1', title: 'Servicio Natural #301', subtitle: 'Toro ABC-123 → Vaca DEF-456', date: 'Hace 2 días', location: 'Corral A', status: 'completed' as const },
-    { id: '2', title: 'Servicio Natural #302', subtitle: 'Toro ABC-123 → Vaca GHI-789', date: 'Hace 1 día', location: 'Corral A', status: 'completed' as const },
-  ];
-
-  const inseminations = [
-    { id: '1', title: 'IA Pajuela Premium', subtitle: 'Vaca JKL-012 - Angus Select', date: 'Hoy', location: 'Manga IA', status: 'pending' as const, priority: 'medium' as const },
-  ];
-
-  const pregnancyDetections = [
-    { id: '1', title: 'Tacto Reproductivo', subtitle: '8 vacas programadas', date: 'En 3 días', location: 'Manga Principal', status: 'pending' as const, animalCount: 8 },
-  ];
-
-  const detectionHistory = [
-    { id: '1', title: 'Detección Ecográfica', subtitle: '5 preñeces confirmadas', date: 'Hace 1 semana', user: 'Dr. Martínez', location: 'Corral B', status: 'completed' as const },
-  ];
-
-  const weighings = [
-    { id: '1', title: 'Pesaje Mensual', subtitle: 'Terneros destete', date: 'Hace 3 días', user: 'Juan López', location: 'Manga Principal', animalCount: 15, status: 'completed' as const },
-  ];
+  // Real data - will be loaded from API/hooks when available
+  const services: any[] = [];
+  const inseminations: any[] = [];
+  const pregnancyDetections: any[] = [];
+  const detectionHistory: any[] = [];
+  const weighings: any[] = [];
 
   const kpis = [
     {
@@ -87,7 +72,7 @@ export function ResumenTab() {
     },
     {
       title: t('kpis.vaccines7d'),
-      value: 12,
+      value: 0,
       icon: Syringe
     },
     {
@@ -222,7 +207,7 @@ export function ResumenTab() {
             value="vacunacion"
             title={t('sections.vaccination.title')}
             summary={t('sections.vaccination.summary')}
-            count={12}
+            count={0}
             primaryAction={{
               label: t('sections.vaccination.action'),
               onClick: handleVaccinate
@@ -252,7 +237,7 @@ export function ResumenTab() {
             value="manejo"
             title={t('sections.management.title')}
             summary={t('sections.management.summary')}
-            count={8}
+            count={0}
             primaryAction={{
               label: t('sections.management.action'),
               onClick: handleRegisterActivity
@@ -267,7 +252,7 @@ export function ResumenTab() {
             value="calendario"
             title={t('sections.calendar.title')}
             summary={t('sections.calendar.summary')}
-            count={15}
+            count={0}
           >
             <div className="space-y-3">
               <CompactList items={[
@@ -306,25 +291,10 @@ export function ResumenTab() {
         {/* Vaccines Due */}
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <h3 className="font-medium text-slate-900 mb-3">{t('sidebar.upcomingVaccines')}</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg border border-red-200">
-              <div>
-                <p className="text-sm font-medium text-red-900">Antiaftosa</p>
-                <p className="text-xs text-red-600">{t('sidebar.dueToday')}</p>
-              </div>
-              <Badge className="bg-red-100 text-red-800 text-xs">
-                15 {t('sidebar.animals')}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between p-2 bg-amber-50 rounded-lg border border-amber-200">
-              <div>
-                <p className="text-sm font-medium text-amber-900">Brucelosis</p>
-                <p className="text-xs text-amber-600">{t('sidebar.in3Days')}</p>
-              </div>
-              <Badge className="bg-amber-100 text-amber-800 text-xs">
-                8 {t('sidebar.animals')}
-              </Badge>
-            </div>
+          <div className="text-center py-4">
+            <p className="text-sm text-muted-foreground">
+              No hay vacunas próximas a vencer
+            </p>
           </div>
         </div>
       </aside>
