@@ -23,6 +23,10 @@ interface CorralOptimizationPlan {
   corral_plan: Array<{
     corral_id: string;
     corral_name: string;
+    current_animals: number;
+    total_capacity: number;
+    adult_count: number;
+    calf_count: number;
     current_risks: ConsanguinityRisk[];
     moves_suggested: Array<{
       animal_id: string;
@@ -30,6 +34,8 @@ interface CorralOptimizationPlan {
       from_corral: string;
       to_corral: string;
       reason: string;
+      type?: 'consanguinity' | 'mother_calf';
+      associated_animals?: string[];
     }>;
     risk_reduction_score: number;
     capacity_ok: boolean;
@@ -40,6 +46,7 @@ interface CorralOptimizationPlan {
     total_risks_after: number;
     risk_reduction_percentage: number;
     total_moves_suggested: number;
+    calves_moved_with_mothers: number;
   };
   warnings: string[];
 }
@@ -58,8 +65,9 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
   // Step 1: Configuration
   const [config, setConfig] = useState({
     max_bulls_per_corral: 1,
-    min_age_months: 18,
-    density_per_hectare: 1.5
+    max_age_months_with_mother: 8,
+    density_per_hectare: 1.5,
+    calf_space_factor: 0.6
   });
 
   const generateOptimization = async () => {
@@ -160,7 +168,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <Label>Toros por Corral (máx)</Label>
                     <Input
@@ -173,13 +181,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                     />
                   </div>
                   <div>
-                    <Label>Edad Mínima (meses)</Label>
+                    <Label>Edad máx. ternero con madre (meses)</Label>
                     <Input
                       type="number"
-                      value={config.min_age_months}
+                      value={config.max_age_months_with_mother}
                       onChange={(e) => setConfig(prev => ({
                         ...prev,
-                        min_age_months: Number(e.target.value)
+                        max_age_months_with_mother: Number(e.target.value)
                       }))}
                     />
                   </div>
@@ -195,14 +203,30 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       }))}
                     />
                   </div>
+                  <div>
+                    <Label>Factor espacio ternero (0-1)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="1"
+                      value={config.calf_space_factor}
+                      onChange={(e) => setConfig(prev => ({
+                        ...prev,
+                        calf_space_factor: Number(e.target.value)
+                      }))}
+                    />
+                  </div>
                 </div>
                 
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h4 className="font-medium text-blue-900 mb-2">Objetivo de la Optimización</h4>
                   <p className="text-sm text-blue-700">
-                    Esta herramienta analizará los corrales actuales para detectar riesgos de consanguinidad 
-                    y sugerirá movimientos de animales para minimizar estos riesgos, priorizando la separación 
-                    de animales con parentesco directo.
+                    Esta herramienta analizará todos los animales (adultos y terneros) considerando que:
+                    • Solo analiza consanguinidad entre animales adultos (≥18 meses)
+                    • Los terneros deben permanecer con sus madres hasta la edad configurada
+                    • Los movimientos incluyen automáticamente terneros con sus madres
+                    • Los terneros ocupan menos espacio según el factor configurado
                   </p>
                 </div>
               </CardContent>
@@ -247,7 +271,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="text-center p-3 bg-red-50 rounded-lg">
                     <div className="text-2xl font-bold text-red-600">{plan.summary.total_risks_before}</div>
                     <div className="text-sm text-red-600">Riesgos Actuales</div>
@@ -263,6 +287,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                   <div className="text-center p-3 bg-orange-50 rounded-lg">
                     <div className="text-2xl font-bold text-orange-600">{plan.summary.total_moves_suggested}</div>
                     <div className="text-sm text-orange-600">Movimientos</div>
+                  </div>
+                  <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <div className="text-2xl font-bold text-purple-600">{plan.summary.calves_moved_with_mothers}</div>
+                    <div className="text-sm text-purple-600">Terneros c/Madre</div>
                   </div>
                 </div>
               </CardContent>
@@ -282,7 +310,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           <div>
                             <span className="font-medium">{corral.corral_name}</span>
                             <div className="text-sm text-muted-foreground">
-                              {corral.current_risks.length} riesgos actuales • {corral.moves_suggested.length} movimientos sugeridos
+                              {corral.current_animals} animales ({corral.adult_count} adultos, {corral.calf_count} terneros) • 
+                              {corral.current_risks.length} riesgos • {corral.moves_suggested.length} movimientos
                             </div>
                           </div>
                           <div className="flex gap-2">
@@ -329,9 +358,14 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             <h5 className="text-sm font-medium mb-2">Movimientos Sugeridos:</h5>
                             <div className="space-y-1">
                               {corral.moves_suggested.map((move, j) => (
-                                <div key={j} className="text-sm p-2 bg-blue-50 rounded">
+                                <div key={j} className={`text-sm p-2 rounded ${
+                                  move.type === 'mother_calf' ? 'bg-purple-50' : 'bg-blue-50'
+                                }`}>
                                   <span className="font-medium">{move.animal_name}</span>
                                   <span className="text-muted-foreground"> • {move.reason}</span>
+                                  {move.type === 'mother_calf' && (
+                                    <span className="text-purple-600 text-xs ml-2">👶 Ternero</span>
+                                  )}
                                 </div>
                               ))}
                             </div>

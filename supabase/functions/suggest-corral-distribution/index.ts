@@ -19,6 +19,9 @@ interface Animal {
   name?: string;
   id_tag?: string;
   cabaña_id: string;
+  age_months?: number;
+  is_calf?: boolean;
+  is_reproductive_age?: boolean;
 }
 
 interface Corral {
@@ -42,6 +45,10 @@ interface CorralOptimizationPlan {
   corral_plan: Array<{
     corral_id: string;
     corral_name: string;
+    current_animals: number;
+    total_capacity: number;
+    adult_count: number;
+    calf_count: number;
     current_risks: ConsanguinityRisk[];
     moves_suggested: Array<{
       animal_id: string;
@@ -49,6 +56,8 @@ interface CorralOptimizationPlan {
       from_corral: string;
       to_corral: string;
       reason: string;
+      type: 'consanguinity' | 'mother_calf';
+      associated_animals?: string[];
     }>;
     risk_reduction_score: number;
     capacity_ok: boolean;
@@ -59,6 +68,7 @@ interface CorralOptimizationPlan {
     total_risks_after: number;
     risk_reduction_percentage: number;
     total_moves_suggested: number;
+    calves_moved_with_mothers: number;
   };
   warnings: string[];
 }
@@ -82,8 +92,9 @@ serve(async (req) => {
     const {
       cabanaId,
       max_bulls_per_corral = 1,
-      min_age_months = 18,
-      density_per_hectare = 1.5
+      max_age_months_with_mother = 8,
+      density_per_hectare = 1.5,
+      calf_space_factor = 0.6
     } = await req.json();
 
     console.log(`Analyzing corral distribution for cabana ${cabanaId}`);
@@ -105,21 +116,22 @@ serve(async (req) => {
     
     if (corralsError) throw corralsError;
 
-    // Filter eligible animals (breeding age)
+    // Categorize animals by age and role
     const currentDate = new Date();
-    const eligibleAnimals = (animals || []).filter(animal => {
-      if (!animal.birth_date) return false;
-      const ageMonths = calculateAgeMonths(animal.birth_date, currentDate);
-      return ageMonths >= min_age_months;
-    });
+    const allAnimals = (animals || []).map(animal => ({
+      ...animal,
+      age_months: animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) : 0,
+      is_calf: animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) < max_age_months_with_mother : false,
+      is_reproductive_age: animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) >= 18 : false
+    }));
 
-    console.log(`Found ${eligibleAnimals.length} breeding-age animals`);
+    console.log(`Found ${allAnimals.length} total animals (${allAnimals.filter(a => a.is_reproductive_age).length} reproductive age)`);
 
     // Analyze current consanguinity risks and optimize
     const optimizationPlan = await optimizeCorralDistribution(
-      eligibleAnimals,
+      allAnimals,
       corrals || [],
-      { max_bulls_per_corral, density_per_hectare },
+      { max_bulls_per_corral, max_age_months_with_mother, density_per_hectare, calf_space_factor },
       cabanaId
     );
 
@@ -156,18 +168,28 @@ async function optimizeCorralDistribution(
   // Step 1: Build current state analysis for each corral
   const corralAnalysis = await Promise.all(corrals.map(async (corral) => {
     const corralAnimals = animals.filter(a => a.corral_id === corral.id);
-    const capacity = corral.capacity || Math.round((corral.hectareas || 0) * constraints.density_per_hectare);
+    const adultsCount = corralAnimals.filter(a => a.is_reproductive_age).length;
+    const calvesCount = corralAnimals.filter(a => a.is_calf).length;
     
-    // Analyze current consanguinity risks in this corral
-    const currentRisks = await analyzeCorralConsanguinity(corralAnimals, cabanaId);
+    // Calculate capacity considering calves take less space
+    const totalCapacityUsed = adultsCount + (calvesCount * constraints.calf_space_factor);
+    const totalCapacity = corral.capacity || Math.round((corral.hectareas || 0) * constraints.density_per_hectare);
+    
+    // Analyze current consanguinity risks only among reproductive age animals
+    const reproductiveAnimals = corralAnimals.filter(a => a.is_reproductive_age);
+    const currentRisks = await analyzeCorralConsanguinity(reproductiveAnimals, cabanaId);
     
     return {
       corral,
       animals: corralAnimals,
-      capacity,
+      reproductiveAnimals,
+      capacity: totalCapacity,
+      currentCapacityUsed: totalCapacityUsed,
+      adultsCount,
+      calvesCount,
       currentRisks,
-      bulls: corralAnimals.filter(a => a.sex === 'Macho'),
-      cows: corralAnimals.filter(a => a.sex === 'Hembra'),
+      bulls: reproductiveAnimals.filter(a => a.sex === 'Macho'),
+      cows: reproductiveAnimals.filter(a => a.sex === 'Hembra'),
     };
   }));
 
@@ -176,6 +198,7 @@ async function optimizeCorralDistribution(
   
   // Step 3: Generate optimization moves to reduce consanguinity
   const allMoves: any[] = [];
+  const calvesMovedWithMothers = new Set<string>();
   
   for (const sourceCorral of corralAnalysis) {
     if (sourceCorral.currentRisks.length === 0) continue; // No risks to solve
@@ -184,33 +207,65 @@ async function optimizeCorralDistribution(
     for (const risk of sourceCorral.currentRisks) {
       if (risk.severity === 'severe' || risk.severity === 'medium') {
         // Prioritize moving males (bulls) to reduce multiple female risks
-        const animalToMove = sourceCorral.animals.find(a => 
+        const animalToMove = sourceCorral.reproductiveAnimals.find(a => 
           a.id === risk.animal1_id && a.sex === 'Macho'
-        ) || sourceCorral.animals.find(a => a.id === risk.animal1_id);
+        ) || sourceCorral.reproductiveAnimals.find(a => a.id === risk.animal1_id);
         
         if (!animalToMove) continue;
         
-        // Find best destination corral (least consanguinity risk potential)
+        // Find best destination corral
         const bestDestination = await findBestDestinationCorral(
           animalToMove,
           corralAnalysis.filter(c => c.corral.id !== sourceCorral.corral.id),
+          constraints,
           cabanaId
         );
         
         if (bestDestination) {
+          const associatedAnimals: string[] = [];
+          
+          // Check if this animal has calves that must move with it
+          if (animalToMove.sex === 'Hembra') {
+            const calvesToMove = sourceCorral.animals.filter(calf => 
+              calf.is_calf && calf.mother_id === animalToMove.id
+            );
+            
+            for (const calf of calvesToMove) {
+              associatedAnimals.push(calf.id);
+              calvesMovedWithMothers.add(calf.id);
+              
+              // Add separate move entry for the calf
+              allMoves.push({
+                animal_id: calf.id,
+                animal_name: calf.name || calf.id_tag || calf.id,
+                from_corral: sourceCorral.corral.id,
+                to_corral: bestDestination.corral.id,
+                reason: `Acompañar a madre: ${animalToMove.name || animalToMove.id_tag}`,
+                type: 'mother_calf',
+                associated_animals: [animalToMove.id]
+              });
+            }
+          }
+          
           allMoves.push({
             animal_id: animalToMove.id,
             animal_name: animalToMove.name || animalToMove.id_tag || animalToMove.id,
             from_corral: sourceCorral.corral.id,
             to_corral: bestDestination.corral.id,
             reason: `Reducir riesgo ${risk.severity}: ${risk.relationship}`,
+            type: 'consanguinity',
             risk_severity: risk.severity,
-            original_risk: risk
+            original_risk: risk,
+            associated_animals
           });
           
           // Update tracking for next iterations
-          sourceCorral.animals = sourceCorral.animals.filter(a => a.id !== animalToMove.id);
+          sourceCorral.animals = sourceCorral.animals.filter(a => 
+            a.id !== animalToMove.id && !associatedAnimals.includes(a.id)
+          );
+          sourceCorral.reproductiveAnimals = sourceCorral.reproductiveAnimals.filter(a => a.id !== animalToMove.id);
           bestDestination.animals.push(animalToMove);
+          bestDestination.reproductiveAnimals.push(animalToMove);
         }
       }
     }
@@ -227,18 +282,26 @@ async function optimizeCorralDistribution(
       ...movesIn.map(m => animals.find(a => a.id === m.animal_id)!).filter(Boolean)
     ];
     
-    // Calculate projected risks after moves
-    const projectedRisks = await analyzeCorralConsanguinity(finalAnimals, cabanaId);
+    const finalReproductiveAnimals = finalAnimals.filter(a => a.is_reproductive_age);
+    const finalCalves = finalAnimals.filter(a => a.is_calf);
+    const finalCapacityUsed = finalReproductiveAnimals.length + (finalCalves.length * constraints.calf_space_factor);
+    
+    // Calculate projected risks after moves (only reproductive animals)
+    const projectedRisks = await analyzeCorralConsanguinity(finalReproductiveAnimals, cabanaId);
     const riskReduction = Math.max(0, analysis.currentRisks.length - projectedRisks.length);
     const riskReductionScore = analysis.currentRisks.length > 0 ? 
       (riskReduction / analysis.currentRisks.length) * 100 : 0;
     
     // Generate intelligent suggestion
     let suggestion = "";
-    const capacityOk = finalAnimals.length <= analysis.capacity;
+    const capacityOk = finalCapacityUsed <= analysis.capacity;
+    const calvesMoving = movesOut.filter(m => m.type === 'mother_calf').length;
     
     if (riskReduction > 0) {
       suggestion = `Reducirá ${riskReduction} riesgo(s) de consanguinidad`;
+      if (calvesMoving > 0) {
+        suggestion += ` (incluye ${calvesMoving} ternero(s) con madre)`;
+      }
     } else if (movesIn.length > 0) {
       suggestion = `Recibiendo ${movesIn.length} animal(es) de redistribución`;
     } else if (movesOut.length > 0) {
@@ -252,6 +315,10 @@ async function optimizeCorralDistribution(
     return {
       corral_id: analysis.corral.id,
       corral_name: analysis.corral.name,
+      current_animals: analysis.animals.length,
+      total_capacity: analysis.capacity,
+      adult_count: analysis.adultsCount,
+      calf_count: analysis.calvesCount,
       current_risks: analysis.currentRisks,
       moves_suggested: [...movesOut, ...movesIn],
       risk_reduction_score: riskReductionScore,
@@ -262,20 +329,23 @@ async function optimizeCorralDistribution(
 
   // Step 5: Calculate summary metrics
   const totalMovesCount = allMoves.length;
-  const estimatedRisksAfter = Math.max(0, totalCurrentRisks - allMoves.filter(m => 
-    m.risk_severity === 'severe' || m.risk_severity === 'medium'
-  ).length);
+  const calvesMovedCount = calvesMovedWithMothers.size;
+  const consanguinityMoves = allMoves.filter(m => m.type === 'consanguinity').length;
+  const estimatedRisksAfter = Math.max(0, totalCurrentRisks - consanguinityMoves);
   
   const riskReductionPercentage = totalCurrentRisks > 0 ? 
     ((totalCurrentRisks - estimatedRisksAfter) / totalCurrentRisks) * 100 : 0;
 
   // Step 6: Generate warnings
   const warnings: string[] = [];
-  if (totalMovesCount === 0 && totalCurrentRisks > 0) {
+  if (consanguinityMoves === 0 && totalCurrentRisks > 0) {
     warnings.push("No se pudieron generar movimientos para reducir los riesgos detectados");
   }
   if (totalMovesCount > animals.length * 0.3) {
     warnings.push(`Gran cantidad de movimientos sugeridos (${totalMovesCount})`);
+  }
+  if (calvesMovedCount > 0) {
+    warnings.push(`${calvesMovedCount} ternero(s) se moverán automáticamente con sus madres`);
   }
 
   return {
@@ -285,6 +355,7 @@ async function optimizeCorralDistribution(
       total_risks_after: estimatedRisksAfter,
       risk_reduction_percentage: Math.round(riskReductionPercentage),
       total_moves_suggested: totalMovesCount,
+      calves_moved_with_mothers: calvesMovedCount,
     },
     warnings
   };
@@ -293,19 +364,35 @@ async function optimizeCorralDistribution(
 async function findBestDestinationCorral(
   animal: Animal, 
   targetCorrals: any[], 
+  constraints: any,
   cabanaId: string
 ): Promise<any | null> {
   let bestCorral = null;
   let lowestRiskIncrease = Infinity;
   
   for (const targetCorral of targetCorrals) {
-    // Check capacity
-    if (targetCorral.animals.length >= targetCorral.capacity) continue;
+    // Calculate capacity considering the animal to move and any associated calves
+    let additionalCapacityNeeded = animal.is_reproductive_age ? 1 : constraints.calf_space_factor;
     
-    // Simulate adding this animal and calculate new risk count
-    const simulatedAnimals = [...targetCorral.animals, animal];
-    const simulatedRisks = await analyzeCorralConsanguinity(simulatedAnimals, cabanaId);
-    const riskIncrease = simulatedRisks.length - targetCorral.currentRisks.length;
+    // If it's a female with calves, account for them too
+    if (animal.sex === 'Hembra') {
+      const calvesCount = targetCorral.animals.filter(a => 
+        a.is_calf && a.mother_id === animal.id
+      ).length;
+      additionalCapacityNeeded += calvesCount * constraints.calf_space_factor;
+    }
+    
+    // Check capacity
+    if (targetCorral.currentCapacityUsed + additionalCapacityNeeded > targetCorral.capacity) continue;
+    
+    // Only analyze consanguinity risk if the animal is reproductive age
+    let riskIncrease = 0;
+    if (animal.is_reproductive_age) {
+      // Simulate adding this animal and calculate new risk count
+      const simulatedReproductiveAnimals = [...targetCorral.reproductiveAnimals, animal];
+      const simulatedRisks = await analyzeCorralConsanguinity(simulatedReproductiveAnimals, cabanaId);
+      riskIncrease = simulatedRisks.length - targetCorral.currentRisks.length;
+    }
     
     // Prefer corrals that introduce the least new risks
     if (riskIncrease < lowestRiskIncrease) {
