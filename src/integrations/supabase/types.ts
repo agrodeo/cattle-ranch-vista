@@ -839,6 +839,36 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_vaccines: {
+        Row: {
+          cabaña_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          cabaña_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          cabaña_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       defunciones: {
         Row: {
           animal_id: string

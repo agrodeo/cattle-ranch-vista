@@ -26,43 +26,13 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
   const [loading, setLoading] = useState(false);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [customVaccineName, setCustomVaccineName] = useState("");
-  const [herdSettings, setHerdSettings] = useState<any>(null);
+  const [customVaccines, setCustomVaccines] = useState<string[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     loadVaccines();
-    loadHerdSettings();
+    loadCustomVaccines();
   }, []);
-
-  const loadHerdSettings = async () => {
-    try {
-      const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser.user) return;
-
-      // Get user's cabaña info
-      const { data: cabanaInfo, error: cabanaError } = await supabase
-        .rpc('get_user_cabana_info', { user_uuid: currentUser.user.id });
-
-      if (cabanaError) throw cabanaError;
-
-      if (cabanaInfo && cabanaInfo.length > 0) {
-        const cabanaId = cabanaInfo[0].cabana_id;
-        
-        // Get herd settings for this cabaña
-        const { data: settings, error: settingsError } = await supabase
-          .from('herd_settings')
-          .select('*')
-          .eq('cabaña_id', cabanaId)
-          .single();
-
-        if (!settingsError && settings) {
-          setHerdSettings(settings);
-        }
-      }
-    } catch (error) {
-      console.error('Error loading herd settings:', error);
-    }
-  };
 
   const loadVaccines = async () => {
     try {
@@ -78,35 +48,14 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
 
       if (officialError) throw officialError;
 
-      // Load custom vaccines for this cabaña
-      const { data: currentUser } = await supabase.auth.getUser();
-      let customVaccines: any[] = [];
-      
-      if (currentUser.user) {
-        const { data: customVaccinesData, error: customError } = await supabase
-          .from('custom_vaccines')
-          .select('name, description')
-          .order('name');
-
-        if (!customError && customVaccinesData) {
-          customVaccines = customVaccinesData.map(v => ({
-            code: v.name,
-            name: v.name,
-            description: v.description,
-            category: 'custom' as const
-          }));
-        }
-      }
-
-      // Combine official and custom vaccines
+      // Convert to our interface format
       const allVaccines: VaccineOption[] = [
         ...(officialVaccines || []).map(v => ({
           code: v.code,
           name: v.name,
           description: v.description,
           category: 'official' as const
-        })),
-        ...customVaccines
+        }))
       ];
 
       setVaccines(allVaccines);
@@ -122,7 +71,21 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
     }
   };
 
-  const handleAddCustomVaccine = async () => {
+  const loadCustomVaccines = () => {
+    // Load custom vaccines from localStorage for now
+    const stored = localStorage.getItem('custom_vaccines');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setCustomVaccines(Array.isArray(parsed) ? parsed : []);
+      } catch (error) {
+        console.error('Error parsing custom vaccines:', error);
+        setCustomVaccines([]);
+      }
+    }
+  };
+
+  const handleAddCustomVaccine = () => {
     try {
       if (!customVaccineName.trim()) {
         toast({
@@ -133,22 +96,15 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
         return;
       }
 
-      const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser.user) return;
-
-      const { data: cabanaInfo } = await supabase
-        .rpc('get_user_cabana_info', { user_uuid: currentUser.user.id });
-
-      if (!cabanaInfo || cabanaInfo.length === 0) return;
-
-      const cabanaId = cabanaInfo[0].cabana_id;
-
       // Check if vaccine already exists
-      const existingVaccine = vaccines.find(v => 
+      const existingOfficial = vaccines.find(v => 
         v.name.toLowerCase() === customVaccineName.trim().toLowerCase()
       );
+      const existingCustom = customVaccines.find(v => 
+        v.toLowerCase() === customVaccineName.trim().toLowerCase()
+      );
 
-      if (existingVaccine) {
+      if (existingOfficial || existingCustom) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -157,27 +113,13 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
         return;
       }
 
-      // Create custom vaccine entry
-      const { error } = await supabase
-        .from('custom_vaccines')
-        .insert({
-          cabaña_id: cabanaId,
-          name: customVaccineName.trim(),
-          description: `Vacuna personalizada - ${customVaccineName.trim()}`,
-          created_by: currentUser.user.id
-        });
+      // Add to custom vaccines
+      const newCustomVaccines = [...customVaccines, customVaccineName.trim()];
+      setCustomVaccines(newCustomVaccines);
+      
+      // Save to localStorage
+      localStorage.setItem('custom_vaccines', JSON.stringify(newCustomVaccines));
 
-      if (error) throw error;
-
-      // Add to local state
-      const newVaccine: VaccineOption = {
-        code: customVaccineName.trim(),
-        name: customVaccineName.trim(),
-        description: `Vacuna personalizada - ${customVaccineName.trim()}`,
-        category: 'custom'
-      };
-
-      setVaccines(prev => [...prev, newVaccine]);
       onChange(customVaccineName.trim());
       setCustomVaccineName("");
       setShowCustomDialog(false);
@@ -197,18 +139,34 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
     }
   };
 
-  // Filter vaccines based on location if herd settings are available
-  const getRecommendedVaccines = () => {
-    if (!herdSettings) return vaccines;
+  // Combine official and custom vaccines
+  const allVaccineOptions = [
+    ...vaccines,
+    ...customVaccines.map(name => ({
+      code: name,
+      name: name,
+      description: `Vacuna personalizada - ${name}`,
+      category: 'custom' as const
+    }))
+  ];
 
-    // You can implement filtering logic based on country/region here
-    // For now, return all vaccines but could filter by jurisdiction in the future
-    return vaccines;
-  };
+  const officialVaccines = allVaccineOptions.filter(v => v.category === 'official');
+  const customVaccineOptions = allVaccineOptions.filter(v => v.category === 'custom');
 
-  const recommendedVaccines = getRecommendedVaccines();
-  const officialVaccines = recommendedVaccines.filter(v => v.category === 'official');
-  const customVaccines = recommendedVaccines.filter(v => v.category === 'custom');
+  // Common vaccines for Argentina/Latin America
+  const commonVaccines = [
+    "Aftosa (Fiebre Aftosa)",
+    "Brucelosis",
+    "Carbunco",
+    "Mancha",
+    "Gangrena Gaseosa",
+    "Enterotoxemia",
+    "IBR/DVB/PI3/BRSV",
+    "Leptospirosis",
+    "Queratoconjuntivitis",
+    "Rabia",
+    "Vacuna Triple (Mancha, Carbunco, Gangrena)"
+  ];
 
   return (
     <div className="space-y-2">
@@ -219,16 +177,28 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent className="bg-background border border-border z-50 max-h-[300px] overflow-y-auto">
-            {herdSettings && (
-              <div className="px-2 py-1 text-xs text-muted-foreground border-b">
-                Recomendadas para {herdSettings.country || 'tu ubicación'}
-              </div>
-            )}
+            <div className="px-2 py-1 text-xs text-muted-foreground border-b">
+              Vacunas Comunes para Bovinos
+            </div>
             
+            {/* Common vaccines */}
+            {commonVaccines.map((vaccine) => (
+              <SelectItem 
+                key={vaccine} 
+                value={vaccine}
+                className="bg-background hover:bg-muted"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                  <div className="font-medium">{vaccine}</div>
+                </div>
+              </SelectItem>
+            ))}
+
             {officialVaccines.length > 0 && (
               <>
-                <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                  Vacunas Oficiales
+                <div className="px-2 py-1 text-xs font-medium text-muted-foreground border-t mt-1 pt-2">
+                  Catálogo Oficial
                 </div>
                 {officialVaccines.map((vaccine) => (
                   <SelectItem 
@@ -237,6 +207,7 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
                     className="bg-background hover:bg-muted"
                   >
                     <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 bg-green-500 rounded-full" />
                       <div>
                         <div className="font-medium">{vaccine.name}</div>
                         {vaccine.description && (
@@ -251,12 +222,12 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
               </>
             )}
 
-            {customVaccines.length > 0 && (
+            {customVaccineOptions.length > 0 && (
               <>
                 <div className="px-2 py-1 text-xs font-medium text-muted-foreground border-t mt-1 pt-2">
                   Vacunas Personalizadas
                 </div>
-                {customVaccines.map((vaccine) => (
+                {customVaccineOptions.map((vaccine) => (
                   <SelectItem 
                     key={vaccine.code} 
                     value={vaccine.name}
@@ -266,11 +237,9 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
                       <div className="h-2 w-2 bg-primary rounded-full" />
                       <div>
                         <div className="font-medium">{vaccine.name}</div>
-                        {vaccine.description && (
-                          <div className="text-xs text-muted-foreground">
-                            {vaccine.description}
-                          </div>
-                        )}
+                        <div className="text-xs text-muted-foreground">
+                          Personalizada
+                        </div>
                       </div>
                     </div>
                   </SelectItem>
@@ -282,7 +251,7 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
 
         <Dialog open={showCustomDialog} onOpenChange={setShowCustomDialog}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" title="Agregar vacuna personalizada">
               <Plus className="h-4 w-4" />
             </Button>
           </DialogTrigger>
@@ -323,12 +292,9 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
         </Dialog>
       </div>
       
-      {herdSettings && (
-        <p className="text-xs text-muted-foreground">
-          Mostrando vacunas recomendadas para {herdSettings.country}
-          {herdSettings.region && `, ${herdSettings.region}`}
-        </p>
-      )}
+      <p className="text-xs text-muted-foreground">
+        Selecciona una vacuna del listado o agrega una personalizada con el botón +
+      </p>
     </div>
   );
 }

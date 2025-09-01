@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { VaccineSelector } from "./VaccineSelector";
 
 interface VaccinationDialogProps {
   open?: boolean;
@@ -198,15 +199,11 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
               </Popover>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="vacuna">Vacuna *</Label>
-              <Input
-                id="vacuna"
-                value={vacuna}
-                onChange={(e) => setVacuna(e.target.value)}
-                placeholder="Nombre de la vacuna"
-              />
-            </div>
+            <VaccineSelector
+              value={vacuna}
+              onChange={setVacuna}
+              placeholder="Seleccionar vacuna"
+            />
 
             <div className="space-y-2">
               <Label htmlFor="lote">Lote</Label>
