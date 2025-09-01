@@ -94,5 +94,28 @@
     "dueToday": "Vence hoy",
     "in3Days": "En 3 días",
     "animals": "animales"
+  },
+  "typeSelector": {
+    "title": "Seleccionar Tipo de Actividad",
+    "general": {
+      "title": "Actividad General",
+      "description": "Destete, marcación, tratamientos y otras actividades de manejo"
+    },
+    "insemination": {
+      "title": "Inseminación Artificial",
+      "description": "Registro de inseminaciones y servicios reproductivos"
+    },
+    "vaccination": {
+      "title": "Vacunación",
+      "description": "Aplicación de vacunas y control sanitario del rodeo"
+    },
+    "weighing": {
+      "title": "Pesaje",
+      "description": "Registro de pesos y control productivo de animales"
+    },
+    "pregnancy": {
+      "title": "Diagnóstico de Preñez",
+      "description": "Tactos, ecografías y confirmación de gestaciones"
+    }
   }
 }

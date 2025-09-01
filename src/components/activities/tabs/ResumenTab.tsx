@@ -35,6 +35,7 @@ import { NewTactoDialog } from '../NewTactoDialog';
 import { NewWeighingDialog } from '../NewWeighingDialog';
 import { NewGeneralActivityDialog } from '../NewGeneralActivityDialog';
 import { NewVaccinationDialog } from '../NewVaccinationDialog';
+import { ActivityTypeSelector } from '../ActivityTypeSelector';
 
 interface FilterOptions {
   corrales: string[];
@@ -97,6 +98,7 @@ export function ResumenTab() {
   ];
 
   // Dialog states
+  const [showActivityTypeSelector, setShowActivityTypeSelector] = useState(false);
   const [showActivityDialog, setShowActivityDialog] = useState(false);
   const [showServiceDialog, setShowServiceDialog] = useState(false);
   const [showIADialog, setShowIADialog] = useState(false);
@@ -105,7 +107,27 @@ export function ResumenTab() {
   const [showVaccinationDialog, setShowVaccinationDialog] = useState(false);
 
   const handleRegisterActivity = () => {
-    setShowActivityDialog(true);
+    setShowActivityTypeSelector(true);
+  };
+
+  const handleActivityTypeSelect = (type: string) => {
+    switch (type) {
+      case 'general':
+        setShowActivityDialog(true);
+        break;
+      case 'insemination':
+        setShowIADialog(true);
+        break;
+      case 'vaccination':
+        setShowVaccinationDialog(true);
+        break;
+      case 'weighing':
+        setShowWeighingDialog(true);
+        break;
+      case 'pregnancy':
+        setShowTactoDialog(true);
+        break;
+    }
   };
 
   const handleVaccinate = () => {
@@ -308,6 +330,12 @@ export function ResumenTab() {
       </aside>
 
       {/* Dialogs */}
+      <ActivityTypeSelector
+        open={showActivityTypeSelector}
+        onOpenChange={setShowActivityTypeSelector}
+        onSelectType={handleActivityTypeSelect}
+      />
+
       <ImprovedArtificialInseminationDialog
         open={showServiceDialog || showIADialog}
         onOpenChange={(open) => {
