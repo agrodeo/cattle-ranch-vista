@@ -1,7 +1,9 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Crown, Zap } from "lucide-react";
+import { Lock, Crown, Zap, Smartphone, Globe } from "lucide-react";
+import { detectPlatform, getPlatformStoreName } from "@/lib/platformDetection";
+import { usePlatformPurchase } from "@/hooks/usePlatformPurchase";
 
 interface ReadOnlyModeModalProps {
   open: boolean;
@@ -10,9 +12,21 @@ interface ReadOnlyModeModalProps {
 }
 
 export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyModeModalProps) => {
+  const platform = detectPlatform();
+  const { initiatePurchase } = usePlatformPurchase();
+  const storeName = getPlatformStoreName(platform);
+
   const handleUpgrade = () => {
     onOpenChange(false);
     onUpgrade();
+  };
+
+  const handleQuickPurchase = async (planId: string) => {
+    await initiatePurchase({
+      planId,
+      billingCycle: 'monthly',
+      platform
+    });
   };
 
   return (
@@ -22,10 +36,14 @@ export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyMod
           <div className="mx-auto mb-4 p-3 rounded-full bg-orange-100">
             <Lock className="h-8 w-8 text-orange-600" />
           </div>
-          <DialogTitle className="text-xl">Prueba gratuita finalizada</DialogTitle>
+          <DialogTitle className="text-xl">Límite de animales superado</DialogTitle>
           <DialogDescription>
-            Tu prueba gratuita de 30 días ha expirado. Actualiza tu plan para continuar agregando y editando datos.
+            Has superado el límite de tu plan actual. Actualiza para continuar agregando y editando datos.
           </DialogDescription>
+          <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
+            {platform === 'web' ? <Globe className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}
+            <span>Comprar en {storeName}</span>
+          </div>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -61,22 +79,34 @@ export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyMod
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Card className="text-center">
+          <div className="space-y-3">
+            <Card 
+              className="text-center cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleQuickPurchase('productor')}
+            >
               <CardContent className="p-4">
                 <Zap className="h-6 w-6 mx-auto mb-2 text-green-600" />
                 <CardTitle className="text-sm">Plan Productor</CardTitle>
-                <CardDescription className="text-xs">Más popular</CardDescription>
-                <p className="text-lg font-bold mt-1">$8,900/mes</p>
+                <CardDescription className="text-xs">Más popular • 1,000 animales</CardDescription>
+                <p className="text-lg font-bold mt-1">$69,900/mes</p>
+                <Button size="sm" className="w-full mt-2">
+                  Comprar en {storeName}
+                </Button>
               </CardContent>
             </Card>
 
-            <Card className="text-center">
+            <Card 
+              className="text-center cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => handleQuickPurchase('cabana')}
+            >
               <CardContent className="p-4">
                 <Crown className="h-6 w-6 mx-auto mb-2 text-purple-600" />
                 <CardTitle className="text-sm">Plan Cabaña</CardTitle>
-                <CardDescription className="text-xs">Para grandes productores</CardDescription>
-                <p className="text-lg font-bold mt-1">$29,900/mes</p>
+                <CardDescription className="text-xs">Para grandes productores • 5,000 animales</CardDescription>
+                <p className="text-lg font-bold mt-1">$149,000/mes</p>
+                <Button size="sm" variant="outline" className="w-full mt-2">
+                  Comprar en {storeName}
+                </Button>
               </CardContent>
             </Card>
           </div>

@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
+import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 
 interface Corral {
   id: string;
@@ -273,13 +274,15 @@ export default function Corrales() {
                 <Move className="h-4 w-4 mr-2" />
                 Mover Animales
               </Button>
-              <Button 
-                onClick={() => setCreateDialogOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Corral
-              </Button>
+              <ReadOnlyProtectedAction>
+                <Button 
+                  onClick={() => setCreateDialogOpen(true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nuevo Corral
+                </Button>
+              </ReadOnlyProtectedAction>
             </div>
           }
         />
@@ -310,13 +313,15 @@ export default function Corrales() {
                   <Move className="h-4 w-4 mr-1" />
                   Mover
                 </Button>
-                <Button 
-                  onClick={() => setCreateDialogOpen(true)}
-                  className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Nuevo
-                </Button>
+                <ReadOnlyProtectedAction>
+                  <Button 
+                    onClick={() => setCreateDialogOpen(true)}
+                    className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Nuevo
+                  </Button>
+                </ReadOnlyProtectedAction>
               </div>
             </StickyActionBar>
 

@@ -34,6 +34,7 @@ import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 import { normalizeAnimalStatus, getDisplayStatus } from "@/lib/statusUtils";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatDate } from "@/lib/format";
+import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 
 interface Cabaña {
   id: string;
@@ -723,10 +724,12 @@ const Animals = () => {
         <div className="flex flex-col space-y-2">
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
-              <Button onClick={() => { resetForm(); setEditingAnimal(null); }} className="w-full sm:w-auto">
-                <Plus className="h-4 w-4 mr-2" />
-                {t('animals:addAnimal')}
-              </Button>
+              <ReadOnlyProtectedAction>
+                <Button onClick={() => { resetForm(); setEditingAnimal(null); }} className="w-full sm:w-auto">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('animals:addAnimal')}
+                </Button>
+              </ReadOnlyProtectedAction>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
             <DialogHeader>
