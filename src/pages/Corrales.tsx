@@ -10,14 +10,14 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2, Brain, Truck } from "lucide-react";
+import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2, Shuffle, Truck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
 import { EditCorralDialog } from "@/components/corrales/EditCorralDialog";
 import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
 import { DeleteCorralDialog } from "@/components/corrales/DeleteCorralDialog";
-import { BreedingPlanWizard } from "@/components/breeding/BreedingPlanWizard";
+import { CorralOptimizationWizard } from "@/components/corrales/CorralOptimizationWizard";
 import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
 import {
   DropdownMenu,
@@ -50,7 +50,7 @@ export default function Corrales() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [showBreedingPlan, setShowBreedingPlan] = useState(false);
+  const [showCorralOptimization, setShowCorralOptimization] = useState(false);
   const [showBulkMove, setShowBulkMove] = useState(false);
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
@@ -260,12 +260,12 @@ export default function Corrales() {
                 Mover en Masa
               </Button>
               <Button
-                onClick={() => setShowBreedingPlan(true)}
+                onClick={() => setShowCorralOptimization(true)}
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                <Brain className="h-4 w-4" />
-                Plan de IA
+                <Shuffle className="h-4 w-4" />
+                Optimizar Corrales
               </Button>
               <Button 
                 variant="outline"
@@ -476,9 +476,9 @@ export default function Corrales() {
         onSuccess={handleDeleteSuccess}
       />
 
-      <BreedingPlanWizard
-        isOpen={showBreedingPlan}
-        onClose={() => setShowBreedingPlan(false)}
+      <CorralOptimizationWizard
+        isOpen={showCorralOptimization}
+        onClose={() => setShowCorralOptimization(false)}
         cabanaId={currentUser?.cabañaId || ''}
       />
 
