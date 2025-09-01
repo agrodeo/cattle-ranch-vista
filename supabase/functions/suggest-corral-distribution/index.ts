@@ -89,13 +89,16 @@ serve(async (req) => {
       }
     );
 
+    const requestBody = await req.json();
+    console.log('Request body:', JSON.stringify(requestBody));
+
     const {
       cabanaId,
       max_bulls_per_corral = 1,
       max_age_months_with_mother = 8,
       density_per_hectare = 1.5,
       calf_space_factor = 0.6
-    } = await req.json();
+    } = requestBody;
 
     console.log(`Analyzing corral distribution for cabana ${cabanaId}`);
 
@@ -106,7 +109,10 @@ serve(async (req) => {
       .eq('cabaña_id', cabanaId)
       .not('status', 'in', '("vendido","muerto")');
     
-    if (animalsError) throw animalsError;
+    if (animalsError) {
+      console.error('Error fetching animals:', animalsError);
+      throw animalsError;
+    }
 
     // Get corrals
     const { data: corrals, error: corralsError } = await supabaseClient
@@ -114,18 +120,26 @@ serve(async (req) => {
       .select('*')
       .eq('cabaña_id', cabanaId);
     
-    if (corralsError) throw corralsError;
+    if (corralsError) {
+      console.error('Error fetching corrals:', corralsError);
+      throw corralsError;
+    }
+
+    console.log(`Found ${(animals || []).length} total animals and ${(corrals || []).length} corrals`);
 
     // Categorize animals by age and role
     const currentDate = new Date();
-    const allAnimals = (animals || []).map(animal => ({
-      ...animal,
-      age_months: animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) : 0,
-      is_calf: animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) < max_age_months_with_mother : false,
-      is_reproductive_age: animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) >= 18 : false
-    }));
+    const allAnimals = (animals || []).map(animal => {
+      const ageMonths = animal.birth_date ? calculateAgeMonths(animal.birth_date, currentDate) : 0;
+      return {
+        ...animal,
+        age_months: ageMonths,
+        is_calf: ageMonths < max_age_months_with_mother,
+        is_reproductive_age: ageMonths >= 18
+      };
+    });
 
-    console.log(`Found ${allAnimals.length} total animals (${allAnimals.filter(a => a.is_reproductive_age).length} reproductive age)`);
+    console.log(`Found ${allAnimals.length} total animals (${allAnimals.filter(a => a.is_reproductive_age).length} reproductive age, ${allAnimals.filter(a => a.is_calf).length} calves)`);
 
     // Analyze current consanguinity risks and optimize
     const optimizationPlan = await optimizeCorralDistribution(
@@ -160,7 +174,12 @@ function calculateAgeMonths(birthDate: string, currentDate: Date): number {
 async function optimizeCorralDistribution(
   animals: Animal[],
   corrals: Corral[],
-  constraints: any,
+  constraints: {
+    max_bulls_per_corral: number;
+    max_age_months_with_mother: number;
+    density_per_hectare: number;
+    calf_space_factor: number;
+  },
   cabanaId: string
 ): Promise<CorralOptimizationPlan> {
   console.log("Starting corral optimization for consanguinity reduction");
@@ -364,7 +383,12 @@ async function optimizeCorralDistribution(
 async function findBestDestinationCorral(
   animal: Animal, 
   targetCorrals: any[], 
-  constraints: any,
+  constraints: {
+    max_bulls_per_corral: number;
+    max_age_months_with_mother: number;
+    density_per_hectare: number;
+    calf_space_factor: number;
+  },
   cabanaId: string
 ): Promise<any | null> {
   let bestCorral = null;
