@@ -24,9 +24,9 @@ serve(async (req) => {
     );
 
     const { cabanaId, plan, options = {} } = await req.json();
-    const { createServices = true, createMoves = true } = options;
+    const { createMoves = false } = options; // Solo permitir movimientos, no servicios de IA
 
-    console.log(`Committing breeding plan for cabana ${cabanaId}`);
+    console.log(`Committing corral distribution plan for cabana ${cabanaId}`);
 
     // Get user ID from auth
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
@@ -35,61 +35,11 @@ serve(async (req) => {
     }
 
     const results = {
-      services_created: 0,
       moves_created: 0,
       errors: []
     };
 
-    // Create breeding services/AI activities
-    if (createServices && plan.pairings?.length > 0) {
-      try {
-        // Create event first
-        const { data: evento, error: eventoError } = await supabaseClient
-          .from('eventos')
-          .insert({
-            cabaña_id: cabanaId,
-            tipo: 'IA',
-            fecha: new Date().toISOString().split('T')[0],
-            creado_por: user.id,
-            notas: `Plan IA generado automáticamente - ${plan.season}`
-          })
-          .select()
-          .single();
-
-        if (eventoError) throw eventoError;
-
-        // Group pairings by bull for efficient batch processing
-        const bullGroups = new Map<string, string[]>();
-        for (const pairing of plan.pairings) {
-          if (!bullGroups.has(pairing.bull_id)) {
-            bullGroups.set(pairing.bull_id, []);
-          }
-          bullGroups.get(pairing.bull_id)!.push(pairing.cow_id);
-        }
-
-        // Create IA records for each bull group
-        for (const [bullId, cowIds] of bullGroups.entries()) {
-          const { error: iaError } = await supabaseClient
-            .from('ia')
-            .insert({
-              evento_id: evento.id,
-              toro_id: bullId,
-              toro_nombre: `Toro ${bullId.slice(0, 8)}`, // Simplified, should get actual name
-              animales_ids: cowIds
-            });
-
-          if (iaError) {
-            console.error('Error creating IA record:', iaError);
-            results.errors.push(`Error creating service for bull ${bullId}: ${iaError.message}`);
-          } else {
-            results.services_created += cowIds.length;
-          }
-        }
-      } catch (error) {
-        console.error('Error creating breeding services:', error);
-        results.errors.push(`Error creating breeding services: ${error.message}`);
-      }
-    }
+    // Solo procesar movimientos de corrales, no crear servicios de IA
 
     // Create movement activities
     if (createMoves && plan.corral_plan?.length > 0) {
@@ -135,7 +85,7 @@ serve(async (req) => {
     const response = {
       success: true,
       results,
-      message: `Plan ejecutado: ${results.services_created} servicios, ${results.moves_created} movimientos`
+      message: `Plan de distribución ejecutado: ${results.moves_created} movimientos de corrales`
     };
 
     return new Response(JSON.stringify(response), {

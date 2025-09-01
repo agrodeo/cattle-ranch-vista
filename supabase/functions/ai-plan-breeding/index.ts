@@ -160,18 +160,12 @@ serve(async (req) => {
 
     console.log(`Found ${eligibleCows.length} eligible cows and ${eligibleBulls.length} eligible bulls`);
 
-    // Calculate pairings if mode includes PAIRINGS
-    let pairings: Pairing[] = [];
-    if (mode === 'PAIRINGS' || mode === 'BOTH') {
-      pairings = calculatePairings(eligibleCows, eligibleBulls, targets, weights);
-    }
-
-    // Calculate corral plan
+    // Only calculate corral distribution to minimize consanguinity risks
     const corralPlan = calculateCorralPlan(
       eligibleCows,
       eligibleBulls,
       corrals || [],
-      pairings,
+      [],
       { cow_per_bull_max, max_bulls_per_corral, density_per_hectare }
     );
 
@@ -182,9 +176,9 @@ serve(async (req) => {
         max_bulls_per_corral,
         capacity_respected: corralPlan.every(c => c.capacity_ok)
       },
-      pairings,
+      pairings: [], // Solo recomendaciones de corrales, no servicios de IA
       corral_plan: corralPlan,
-      warnings: generateWarnings(pairings, corralPlan, eligibleCows, eligibleBulls)
+      warnings: generateWarnings([], corralPlan, eligibleCows, eligibleBulls)
     };
 
     return new Response(JSON.stringify(plan), {
