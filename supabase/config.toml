@@ -76,5 +76,8 @@ verify_jwt = false
 [functions.mp-webhook]
 verify_jwt = false
 
+[functions.send-email]
+verify_jwt = true
+
 [functions.verify-purchase]
 verify_jwt = true
