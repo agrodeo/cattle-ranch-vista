@@ -275,7 +275,7 @@ async function optimizeCorralDistribution(
             type: 'consanguinity',
             risk_severity: risk.severity,
             original_risk: risk,
-            associated_animals
+            associated_animals: associatedAnimals
           });
           
           // Update tracking for next iterations
