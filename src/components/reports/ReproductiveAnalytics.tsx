@@ -230,7 +230,6 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       <AnimalReproductionTable filters={globalFilters || {}} />
       
       {/* Original Analytics */}
-      <div className="grid gap-6">
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -400,7 +399,6 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
           </div>
         </CardContent>
       </Card>
-      </div>
 
       {/* Dialogs */}
       <BreedingPlanWizard
