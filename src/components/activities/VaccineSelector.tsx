@@ -34,41 +34,22 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
     loadCustomVaccines();
   }, []);
 
-  const loadVaccines = async () => {
-    try {
-      setLoading(true);
-      
-      // Load official vaccines from the catalog
-      const { data: officialVaccines, error: officialError } = await supabase
-        .from('vaccines')
-        .select('code, name, description')
-        .eq('active', true)
-        .eq('species', 'bovine')
-        .order('name');
+  // Using hardcoded vaccine list for now since database is empty
+  const commonVaccineList = [
+    { code: "aftosa", name: "Aftosa (Fiebre Aftosa)", description: "Vacuna contra fiebre aftosa", category: "official" as const },
+    { code: "brucelosis", name: "Brucelosis", description: "Vacuna contra brucelosis bovina", category: "official" as const },
+    { code: "carbunco", name: "Carbunco", description: "Vacuna contra carbunclo bacteridiano", category: "official" as const },
+    { code: "mancha", name: "Mancha", description: "Vacuna contra mancha infecciosa", category: "official" as const },
+    { code: "gangrena", name: "Gangrena Gaseosa", description: "Vacuna contra gangrena gaseosa", category: "official" as const },
+    { code: "triple", name: "Vacuna Triple (Mancha, Carbunco, Gangrena)", description: "Vacuna combinada", category: "official" as const },
+    { code: "ibr_dvb", name: "IBR/DVB/PI3/BRSV", description: "Vacuna combinada respiratoria", category: "official" as const },
+    { code: "leptospirosis", name: "Leptospirosis", description: "Vacuna contra leptospirosis bovina", category: "official" as const },
+    { code: "queratoconjuntivitis", name: "Queratoconjuntivitis", description: "Vacuna contra queratoconjuntivitis infecciosa", category: "official" as const },
+    { code: "rabia", name: "Rabia", description: "Vacuna antirrábica", category: "official" as const }
+  ];
 
-      if (officialError) throw officialError;
-
-      // Convert to our interface format
-      const allVaccines: VaccineOption[] = [
-        ...(officialVaccines || []).map(v => ({
-          code: v.code,
-          name: v.name,
-          description: v.description,
-          category: 'official' as const
-        }))
-      ];
-
-      setVaccines(allVaccines);
-    } catch (error) {
-      console.error('Error loading vaccines:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar las vacunas disponibles"
-      });
-    } finally {
-      setLoading(false);
-    }
+  const loadVaccines = () => {
+    setVaccines(commonVaccineList);
   };
 
   const loadCustomVaccines = () => {
