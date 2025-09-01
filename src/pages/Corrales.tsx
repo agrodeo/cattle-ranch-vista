@@ -372,79 +372,99 @@ export default function Corrales() {
                 />
               ) : (
                 <div className="space-y-3">
-                  {corrales.map((corral) => (
-                    <div key={corral.id} className="rounded-lg border border-slate-200 p-4 bg-white">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <MapPin className="h-4 w-4 text-slate-600" />
-                            <h3 className="text-sm font-medium text-slate-900 truncate">{corral.name}</h3>
-                            {corral.has_consanguinity_risk && (
-                              <BadgePill variant="danger" className="ml-2">
-                                {corral.risk_count} riesgos
-                              </BadgePill>
-                            )}
-                            {corral.vaccination_percentage !== undefined && (
-                              <BadgePill 
-                                variant={
-                                  corral.vaccination_status === 'excellent' ? 'success' : 
-                                  corral.vaccination_status === 'good' ? 'info' :
-                                  corral.vaccination_status === 'warning' ? 'warning' : 'danger'
-                                }
-                                className="ml-1"
-                              >
-                                {corral.vaccination_percentage.toFixed(0)}% vac
-                              </BadgePill>
-                            )}
-                            {corral.avg_daily_gain !== undefined && corral.avg_daily_gain > 0 && (
-                              <BadgePill variant="info" className="ml-1">
-                                {corral.avg_daily_gain.toFixed(2)} kg/día
-                              </BadgePill>
-                            )}
+                  {corrales.map((corral) => {
+                    // Get specific KPIs for this corral
+                    const corralKPI = corralKPIs.find(kpi => kpi.corral_id === corral.id);
+                    
+                    return (
+                      <div key={corral.id} className="rounded-lg border border-slate-200 p-4 bg-white">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <MapPin className="h-4 w-4 text-slate-600" />
+                              <h3 className="text-sm font-medium text-slate-900 truncate">{corral.name}</h3>
+                              {corral.has_consanguinity_risk && (
+                                <BadgePill variant="danger" className="ml-2">
+                                  {corral.risk_count} riesgos
+                                </BadgePill>
+                              )}
+                              {/* Vaccination Status Badge for this specific corral */}
+                              {corralKPI?.vaccination_percentage !== undefined && (
+                                <BadgePill 
+                                  variant={
+                                    corralKPI.vaccination_status === 'excellent' ? 'success' : 
+                                    corralKPI.vaccination_status === 'good' ? 'info' :
+                                    corralKPI.vaccination_status === 'warning' ? 'warning' : 'danger'
+                                  }
+                                  className="ml-1"
+                                >
+                                  <Syringe className="h-3 w-3 mr-1" />
+                                  {corralKPI.vaccination_percentage.toFixed(0)}%
+                                </BadgePill>
+                              )}
+                              {/* GDP Badge for this specific corral */}
+                              {corralKPI?.avg_daily_gain !== undefined && corralKPI.avg_daily_gain > 0 && (
+                                <BadgePill variant="info" className="ml-1">
+                                  <Scale className="h-3 w-3 mr-1" />
+                                  {corralKPI.avg_daily_gain.toFixed(2)} kg/día
+                                </BadgePill>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-slate-600">
+                              <span>{corral.animal_count} animales</span>
+                              <span>{corral.male_count}M / {corral.female_count}H</span>
+                              {corral.hectareas && <span>{corral.hectareas} ha</span>}
+                              {/* Show specific metrics for this corral */}
+                              {corralKPI?.avg_weight && corralKPI.avg_weight > 0 && (
+                                <span className="text-blue-600 font-medium">
+                                  ⚖️ {corralKPI.avg_weight.toFixed(0)} kg prom
+                                </span>
+                              )}
+                              {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
+                                <span className="text-pink-600 font-medium">
+                                  🤰 {corralKPI.pregnancy_rate.toFixed(0)}% preñez
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-slate-600">
-                            <span>{corral.animal_count} animales</span>
-                            <span>{corral.male_count}M / {corral.female_count}H</span>
-                            {corral.hectareas && <span>{corral.hectareas} ha</span>}
+                          <div className="flex gap-2 ml-4">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="bg-background border shadow-md">
+                                <DropdownMenuItem 
+                                  onClick={() => openDetailDialog(corral.id)}
+                                  className="cursor-pointer"
+                                >
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  Ver Detalles
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => openEditDialog(corral.id)}
+                                  className="cursor-pointer"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Editar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem 
+                                  onClick={() => openDeleteDialog(corral.id, corral.name, corral.animal_count)}
+                                  className="cursor-pointer text-destructive focus:text-destructive"
+                                  disabled={corral.animal_count > 0}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Eliminar
+                                  {corral.animal_count > 0 && " (tiene animales)"}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
-                        </div>
-                        <div className="flex gap-2 ml-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-background border shadow-md">
-                              <DropdownMenuItem 
-                                onClick={() => openDetailDialog(corral.id)}
-                                className="cursor-pointer"
-                              >
-                                <Eye className="h-4 w-4 mr-2" />
-                                Ver Detalles
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => openEditDialog(corral.id)}
-                                className="cursor-pointer"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                              <DropdownMenuItem 
-                                onClick={() => openDeleteDialog(corral.id, corral.name, corral.animal_count)}
-                                className="cursor-pointer text-destructive focus:text-destructive"
-                                disabled={corral.animal_count > 0}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Eliminar
-                                {corral.animal_count > 0 && " (tiene animales)"}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </SectionCard>
