@@ -10,7 +10,7 @@ import { BadgePill } from "@/components/ui/badge-pill";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2, Shuffle, Truck } from "lucide-react";
+import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2, Shuffle, Truck, Syringe, Scale } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
+import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 
 interface Corral {
   id: string;
@@ -38,11 +39,20 @@ interface Corral {
   has_consanguinity_risk: boolean;
   risk_count: number;
   highest_severity: 'severe' | 'medium' | 'low' | null;
+  vaccination_percentage?: number;
+  vaccination_alerts?: number;
+  avg_daily_gain?: number;
+  recent_weighings_count?: number;
+  last_weighing_date?: string;
+  vaccination_status?: 'excellent' | 'good' | 'warning' | 'critical' | 'unknown';
+  pregnancy_rate?: number;
+  avg_weight?: number;
 }
 
 export default function Corrales() {
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
+  const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -115,6 +125,9 @@ export default function Corrales() {
           }
         }
 
+        // Merge with KPI data if available
+        const kpiData = corralKPIs.find(kpi => kpi.corral_id === corral.id);
+
         return {
           id: corral.id,
           name: corral.name,
@@ -125,6 +138,14 @@ export default function Corrales() {
           has_consanguinity_risk: riskCount > 0,
           risk_count: riskCount,
           highest_severity: highestSeverity,
+          vaccination_percentage: kpiData?.vaccination_percentage,
+          vaccination_alerts: kpiData?.vaccination_alerts,
+          avg_daily_gain: kpiData?.avg_daily_gain,
+          recent_weighings_count: kpiData?.recent_weighings_count,
+          last_weighing_date: kpiData?.last_weighing_date,
+          vaccination_status: kpiData?.vaccination_status,
+          pregnancy_rate: kpiData?.pregnancy_rate,
+          avg_weight: kpiData?.avg_weight,
         };
       }) || []);
 
@@ -206,6 +227,14 @@ export default function Corrales() {
   const totalCorrales = corrales.length;
   const totalRisks = corrales.reduce((sum, corral) => sum + corral.risk_count, 0);
   const totalHectareas = corrales.reduce((sum, corral) => sum + (corral.hectareas || 0), 0);
+  
+  // Calculate aggregate KPIs
+  const avgVaccinationPercentage = corrales.length > 0 
+    ? corrales.reduce((sum, corral) => sum + (corral.vaccination_percentage || 0), 0) / corrales.length 
+    : 0;
+  const avgGDP = corrales.length > 0 
+    ? corrales.reduce((sum, corral) => sum + (corral.avg_daily_gain || 0), 0) / corrales.length 
+    : 0;
 
   const stats = [
     {
@@ -219,14 +248,14 @@ export default function Corrales() {
       icon: Users,
     },
     {
-      title: "Riesgos Activos",
-      value: totalRisks,
-      icon: AlertTriangle,
+      title: "% Vacunación Promedio",
+      value: `${avgVaccinationPercentage.toFixed(1)}%`,
+      icon: Syringe,
     },
     {
-      title: "Hectáreas",
-      value: totalHectareas || "—",
-      icon: TrendingUp,
+      title: "GDP Promedio",
+      value: `${avgGDP.toFixed(3)} kg/día`,
+      icon: Scale,
     },
   ];
 
@@ -353,6 +382,23 @@ export default function Corrales() {
                             {corral.has_consanguinity_risk && (
                               <BadgePill variant="danger" className="ml-2">
                                 {corral.risk_count} riesgos
+                              </BadgePill>
+                            )}
+                            {corral.vaccination_percentage !== undefined && (
+                              <BadgePill 
+                                variant={
+                                  corral.vaccination_status === 'excellent' ? 'success' : 
+                                  corral.vaccination_status === 'good' ? 'info' :
+                                  corral.vaccination_status === 'warning' ? 'warning' : 'danger'
+                                }
+                                className="ml-1"
+                              >
+                                {corral.vaccination_percentage.toFixed(0)}% vac
+                              </BadgePill>
+                            )}
+                            {corral.avg_daily_gain !== undefined && corral.avg_daily_gain > 0 && (
+                              <BadgePill variant="info" className="ml-1">
+                                {corral.avg_daily_gain.toFixed(2)} kg/día
                               </BadgePill>
                             )}
                           </div>

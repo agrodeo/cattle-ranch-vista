@@ -11,6 +11,8 @@ interface KpiData {
   };
   loading?: boolean;
   error?: boolean;
+  status?: 'excellent' | 'good' | 'warning' | 'critical' | 'unknown';
+  badge?: string;
 }
 
 interface KpiGridProps {
@@ -19,8 +21,8 @@ interface KpiGridProps {
 }
 
 export function KpiGrid({ kpis, onRetry }: KpiGridProps) {
-  // For mobile, if more than 4 KPIs, use horizontal scroll
-  const showHorizontalScroll = kpis.length > 4;
+  // For mobile, if more than 6 KPIs, use horizontal scroll
+  const showHorizontalScroll = kpis.length > 6;
 
   if (showHorizontalScroll) {
     return (

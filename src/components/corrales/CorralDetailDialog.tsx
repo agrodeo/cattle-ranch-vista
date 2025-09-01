@@ -12,6 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { AlertTriangle, Users, MapPin, Calendar, Filter, Move, Info } from "lucide-react";
+import { CorralHealthCard } from "./CorralHealthCard";
+import { CorralProductionCard } from "./CorralProductionCard";
+import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 import { useToast } from "@/hooks/use-toast";
 import { AnimalAssignmentDialog } from "./AnimalAssignmentDialog";
 import { 
@@ -45,6 +48,7 @@ interface CorralDetailDialogProps {
 export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: CorralDetailDialogProps) {
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
+  const { kpis } = useCorralKPIs();
   const [loading, setLoading] = useState(true);
   const [corral, setCorral] = useState<any>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -52,6 +56,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const [severityFilter, setSeverityFilter] = useState<'all' | 'severe' | 'medium' | 'low'>('all');
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [userCabañaId, setUserCabañaId] = useState<string>('');
+  
+  // Get current corral KPIs
+  const currentCorralKPI = kpis.find(kpi => kpi.corral_id === corralId);
 
   useEffect(() => {
     if (open && corralId && currentUser) {
@@ -222,6 +229,14 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
               </CardContent>
             </Card>
           </div>
+
+          {/* Health and Production KPIs */}
+          {currentCorralKPI && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <CorralHealthCard corral={currentCorralKPI} />
+              <CorralProductionCard corral={currentCorralKPI} />
+            </div>
+          )}
 
           {/* Consanguinity Alerts */}
           {filteredRisks.length > 0 && (
