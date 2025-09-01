@@ -42,6 +42,12 @@ export function useCorralKPIs() {
 
       setKpis((data || []).map((item: any) => ({
         ...item,
+        // Convert bigint values to numbers for React compatibility
+        animal_count: Number(item.animal_count),
+        male_count: Number(item.male_count),
+        female_count: Number(item.female_count),
+        vaccination_alerts: Number(item.vaccination_alerts),
+        recent_weighings_count: Number(item.recent_weighings_count),
         vaccination_status: item.vaccination_status as 'excellent' | 'good' | 'warning' | 'critical' | 'unknown'
       })));
     } catch (error) {
