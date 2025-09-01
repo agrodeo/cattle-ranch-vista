@@ -195,6 +195,36 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
   return (
     <div className="space-y-6">
+      {/* AI Planning Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Herramientas de Planificación IA</span>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => setShowBreedingPlan(true)}
+                className="flex items-center gap-2"
+              >
+                <Brain className="h-4 w-4" />
+                Plan de IA
+              </Button>
+              <Button 
+                onClick={() => setShowBulkMove(true)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Truck className="h-4 w-4" />
+                Mover en Masa
+              </Button>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">
+            Utiliza la IA para optimizar cruces, asignación de corrales y movimientos masivos de animales.
+          </p>
+        </CardContent>
+      </Card>
 
       <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
       <AnimalReproductionTable filters={globalFilters || {}} />

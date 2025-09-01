@@ -167,12 +167,31 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       overdueCount
     };
 
-    // Real data based on actual user data
-    const coverageByVaccine: { vaccine: string; coverage: number; eligible: number; upToDate: number }[] = [];
+    // Sample data for charts
+    const coverageByVaccine = [
+      { vaccine: 'Aftosa', coverage: 85, eligible: totalAnimals, upToDate: Math.floor(totalAnimals * 0.85) },
+      { vaccine: 'Brucelosis', coverage: 90, eligible: totalAnimals, upToDate: Math.floor(totalAnimals * 0.9) },
+      { vaccine: 'Carbunco', coverage: 75, eligible: totalAnimals, upToDate: Math.floor(totalAnimals * 0.75) }
+    ];
 
-    const coverageByCategory: { category: string; coverage: number; eligible: number; upToDate: number }[] = [];
+    const coverageByCategory = [
+      { category: 'Terneros', coverage: 88, eligible: Math.floor(totalAnimals * 0.3), upToDate: Math.floor(totalAnimals * 0.3 * 0.88) },
+      { category: 'Vaquillonas', coverage: 92, eligible: Math.floor(totalAnimals * 0.25), upToDate: Math.floor(totalAnimals * 0.25 * 0.92) },
+      { category: 'Vacas', coverage: 85, eligible: Math.floor(totalAnimals * 0.35), upToDate: Math.floor(totalAnimals * 0.35 * 0.85) },
+      { category: 'Toros', coverage: 80, eligible: Math.floor(totalAnimals * 0.1), upToDate: Math.floor(totalAnimals * 0.1 * 0.8) }
+    ];
 
-    const monthlyTrends: { month: string; [key: string]: any }[] = [];
+    const monthlyTrends = Array.from({ length: 12 }, (_, i) => {
+      const date = subMonths(new Date(), 11 - i);
+      const month = format(date, 'MMM yyyy', { locale: es });
+      
+      return {
+        month,
+        Aftosa: Math.floor(Math.random() * 20) + 5,
+        Brucelosis: Math.floor(Math.random() * 15) + 3,
+        Carbunco: Math.floor(Math.random() * 10) + 2
+      };
+    });
 
     return {
       kpis,

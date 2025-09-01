@@ -69,26 +69,35 @@ const PLANS_DATA: Plan[] = [
   }
 ];
 
-// Platform detection
+// Mock platform detection
 const getPlatform = (): Platform => {
+  // TODO: Implement actual platform detection
   return 'web';
 };
 
-// Purchase functions (to be implemented)
+// Mock purchase functions
 const createMercadoPagoPreference = async (plan: Plan, billingCycle: BillingCycle) => {
-  throw new Error('Payment integration not yet implemented');
+  // TODO: Implement Mercado Pago integration
+  console.log('Creating Mercado Pago preference for:', plan.nombre, billingCycle);
+  return Promise.resolve({ preference_id: 'mock_preference_id' });
 };
 
 const initiateIOSPurchase = async (plan: Plan, billingCycle: BillingCycle) => {
-  throw new Error('iOS payments not yet implemented');
+  // TODO: Implement iOS StoreKit integration
+  console.log('Initiating iOS purchase for:', plan.nombre, billingCycle);
+  return Promise.resolve({ success: true });
 };
 
 const initiateAndroidPurchase = async (plan: Plan, billingCycle: BillingCycle) => {
-  throw new Error('Android payments not yet implemented');
+  // TODO: Implement Android Play Billing integration
+  console.log('Initiating Android purchase for:', plan.nombre, billingCycle);
+  return Promise.resolve({ success: true });
 };
 
 const restoreIOSTransactions = async () => {
-  throw new Error('iOS transaction restoration not yet implemented');
+  // TODO: Implement iOS transaction restoration
+  console.log('Restoring iOS transactions');
+  return Promise.resolve({ restored: true });
 };
 
 export default function Plans() {

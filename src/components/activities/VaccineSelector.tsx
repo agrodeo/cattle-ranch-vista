@@ -153,7 +153,20 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
   const officialVaccines = allVaccineOptions.filter(v => v.category === 'official');
   const customVaccineOptions = allVaccineOptions.filter(v => v.category === 'custom');
 
-  // No hardcoded vaccines - users must add their own
+  // Common vaccines for Argentina/Latin America
+  const commonVaccines = [
+    "Aftosa (Fiebre Aftosa)",
+    "Brucelosis",
+    "Carbunco",
+    "Mancha",
+    "Gangrena Gaseosa",
+    "Enterotoxemia",
+    "IBR/DVB/PI3/BRSV",
+    "Leptospirosis",
+    "Queratoconjuntivitis",
+    "Rabia",
+    "Vacuna Triple (Mancha, Carbunco, Gangrena)"
+  ];
 
   return (
     <div className="space-y-2">
@@ -164,16 +177,27 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent className="bg-background border border-border z-50 max-h-[300px] overflow-y-auto">
-            {officialVaccines.length === 0 && customVaccineOptions.length === 0 && (
-              <div className="px-4 py-8 text-center text-muted-foreground">
-                <div className="text-sm">No hay vacunas disponibles</div>
-                <div className="text-xs mt-1">Agregue una vacuna personalizada con el botón +</div>
-              </div>
-            )}
+            <div className="px-2 py-1 text-xs text-muted-foreground border-b">
+              Vacunas Comunes para Bovinos
+            </div>
+            
+            {/* Common vaccines */}
+            {commonVaccines.map((vaccine) => (
+              <SelectItem 
+                key={vaccine} 
+                value={vaccine}
+                className="bg-background hover:bg-muted"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 bg-blue-500 rounded-full" />
+                  <div className="font-medium">{vaccine}</div>
+                </div>
+              </SelectItem>
+            ))}
 
             {officialVaccines.length > 0 && (
               <>
-                <div className="px-2 py-1 text-xs font-medium text-muted-foreground border-b">
+                <div className="px-2 py-1 text-xs font-medium text-muted-foreground border-t mt-1 pt-2">
                   Catálogo Oficial
                 </div>
                 {officialVaccines.map((vaccine) => (
