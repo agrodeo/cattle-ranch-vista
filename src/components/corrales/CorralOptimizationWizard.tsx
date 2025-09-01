@@ -98,27 +98,46 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
     setLoading(true);
     try {
-      // Apply moves via bulk-move-animals function
+      // Apply moves by updating animals directly
       const moves = plan.corral_plan.flatMap(corral => 
         corral.moves_suggested.filter(move => move.from_corral !== move.to_corral)
       );
 
       if (moves.length > 0) {
-        const { error } = await supabase.functions.invoke('bulk-move-animals', {
-          body: {
-            cabanaId,
-            moves: moves.map(move => ({
-              animalId: move.animal_id,
-              targetCorralId: move.to_corral,
-              motivo: `Optimización: ${move.reason}`
-            }))
-          }
-        });
+        let successfulMoves = 0;
+        const errors: string[] = [];
 
-        if (error) throw error;
+        for (const move of moves) {
+          try {
+            // Update animal corral
+            const { error: updateError } = await supabase
+              .from('animals')
+              .update({ corral_id: move.to_corral })
+              .eq('id', move.animal_id);
+
+            if (updateError) {
+              errors.push(`Error moviendo ${move.animal_name}: ${updateError.message}`);
+            } else {
+              successfulMoves++;
+            }
+          } catch (error) {
+            errors.push(`Error moviendo ${move.animal_name}: ${error.message}`);
+          }
+        }
+
+        if (errors.length > 0) {
+          console.warn('Some moves failed:', errors);
+        }
+
+        toast.success(`${successfulMoves} movimientos aplicados exitosamente`);
+        
+        if (errors.length > 0) {
+          toast.error(`${errors.length} movimientos fallaron`);
+        }
+      } else {
+        toast.info("No hay movimientos para aplicar");
       }
 
-      toast.success(`${moves.length} movimientos aplicados exitosamente`);
       setStep(3);
     } catch (error) {
       console.error('Error applying suggestions:', error);
