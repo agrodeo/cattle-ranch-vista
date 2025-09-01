@@ -201,7 +201,9 @@ serve(async (req) => {
 });
 
 function calculateAgeMonths(birthDate: string, currentDate: Date): number {
+  if (!birthDate) return 0;
   const birth = new Date(birthDate);
+  if (isNaN(birth.getTime())) return 0;
   const diffTime = currentDate.getTime() - birth.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.floor(diffDays / 30.44); // Average days per month
@@ -422,7 +424,7 @@ function calculateCorralPlan(
     const capacity = corral.capacity || Math.round((corral.hectareas || 0) * constraints.density_per_hectare);
     const currentBulls = bulls.filter(b => b.corral_id === corral.id);
     const currentCows = cows.filter(c => c.corral_id === corral.id);
-    const eligibleCows = currentCows.filter(c => c.sex === 'Hembra' && calculateAgeMonths(c.birth_date) >= 15);
+    const eligibleCows = currentCows.filter(c => c.sex === 'Hembra' && c.birth_date && calculateAgeMonths(c.birth_date, new Date()) >= 15);
     
     return {
       corral,
