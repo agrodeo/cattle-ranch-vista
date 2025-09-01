@@ -60,3 +60,21 @@ verify_jwt = true
 
 [functions.bulk-move-animals]
 verify_jwt = true
+
+[functions.create-user]
+verify_jwt = false
+
+[functions.hash-existing-passwords]
+verify_jwt = false
+
+[functions.manage-user]
+verify_jwt = false
+
+[functions.migrate-employee-passwords]
+verify_jwt = false
+
+[functions.mp-webhook]
+verify_jwt = false
+
+[functions.verify-purchase]
+verify_jwt = true

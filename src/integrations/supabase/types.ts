@@ -2089,6 +2089,14 @@ export type Database = {
           total_reproductive_years: number
         }[]
       }
+      can_add_animals: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
+      can_modify_data: {
+        Args: { user_uuid: string }
+        Returns: boolean
+      }
       categorize_animal: {
         Args: { birth_date: string; reference_date?: string; sex: string }
         Returns: string
