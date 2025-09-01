@@ -15,7 +15,7 @@ interface VaccinationAlert {
   description: string;
 }
 
-export function useVaccinationAlerts(animalId: string, country: string = 'Argentina') {
+export function useVaccinationAlerts(animalId: string) {
   const [alerts, setAlerts] = useState<VaccinationAlert[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -26,9 +26,13 @@ export function useVaccinationAlerts(animalId: string, country: string = 'Argent
     try {
       setLoading(true);
       
+      // For now, use Argentina as default country
+      // TODO: Get actual country from cabaña settings
+      const countryCode = 'Argentina';
+      
       const { data, error } = await supabase.rpc('get_vaccination_alerts_for_animal', {
         _animal_id: animalId,
-        _country: country
+        _country: countryCode
       });
 
       if (error) throw error;
@@ -54,7 +58,7 @@ export function useVaccinationAlerts(animalId: string, country: string = 'Argent
 
   useEffect(() => {
     fetchAlerts();
-  }, [animalId, country]);
+  }, [animalId]);
 
   return {
     alerts,
