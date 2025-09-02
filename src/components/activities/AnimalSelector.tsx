@@ -111,7 +111,6 @@ export function AnimalSelector({
             corrales:corral_id(name)
           `)
           .eq('cabaña_id', currentUser?.cabañaId)
-          .or('status.is.null,status.eq.Activo') // Only active animals by default
           .order('name'),
         
         supabase

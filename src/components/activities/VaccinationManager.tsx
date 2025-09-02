@@ -55,7 +55,14 @@ export function VaccinationManager() {
   };
 
   const vaccinationEligibilityFilter = (animal: any): boolean => {
-    return !animal.status || animal.status === 'activo';
+    // Only allow animals with explicit 'Activo' status
+    console.log('Filtering animal for vaccination:', { 
+      id: animal.id, 
+      name: animal.name, 
+      status: animal.status, 
+      eligible: animal.status === 'Activo' 
+    });
+    return animal.status === 'Activo';
   };
 
   const handleSubmit = async () => {

@@ -96,11 +96,19 @@ export function useActivities() {
       let query = supabase
         .from("animals")
         .select("*")
-        .eq("cabaña_id", currentUser.cabañaId)
-        .neq("status", "Vendido")
-        .neq("status", "Muerto");
+        .eq("cabaña_id", currentUser.cabañaId);
 
       // Apply specific filters based on activity type
+      if (activityType === 'VACUNACION') {
+        // Only active animals for vaccination
+        query = query.eq("status", "Activo");
+      } else {
+        // For other activities, exclude sold and dead animals
+        query = query
+          .neq("status", "Vendido")
+          .neq("status", "Muerto");
+      }
+
       if (activityType === 'IA') {
         // Only females >= 15 months, not pregnant
         query = query
