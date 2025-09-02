@@ -2110,14 +2110,8 @@ export type Database = {
         }[]
       }
       calculate_reproductive_performance: {
-        Args: { animal_uuid: string }
-        Returns: {
-          confirmed_pregnancies: number
-          live_calves: number
-          porcentaje_paricion: number
-          porcentaje_preñez: number
-          total_reproductive_years: number
-        }[]
+        Args: { _animal_id: string }
+        Returns: Json
       }
       can_add_animals: {
         Args: { user_uuid: string }

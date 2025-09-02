@@ -30,11 +30,21 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
 
       try {
         const { data, error } = await supabase
-          .rpc("calculate_reproductive_performance", { animal_uuid: animalId });
+          .rpc("calculate_reproductive_performance", { _animal_id: animalId });
 
         if (error) throw error;
-        if (data && data.length > 0) {
-          setMetrics(data[0]);
+        if (data && typeof data === 'object' && data !== null) {
+          const result = data as any;
+          if (!result.error) {
+            // Map the returned jsonb structure to our interface
+            setMetrics({
+              porcentaje_preñez: result.pregnancy_percentage || 0,
+              porcentaje_paricion: result.calving_percentage || 0,
+              total_reproductive_years: result.total_reproductive_years || 0,
+              confirmed_pregnancies: result.confirmed_pregnancies || 0,
+              live_calves: result.live_calves || 0
+            });
+          }
         }
       } catch (error) {
         console.error("Error fetching reproductive metrics:", error);
