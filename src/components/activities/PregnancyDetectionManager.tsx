@@ -42,7 +42,7 @@ interface PregnancyRecord {
 export function PregnancyDetectionManager() {
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [corrales, setCorrales] = useState<any[]>([]);
-  const [selectedCorral, setSelectedCorral] = useState<string>("");
+  const [selectedCorral, setSelectedCorral] = useState<string>("all");
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [pregnancyRecords, setPregnancyRecords] = useState<PregnancyRecord[]>([]);
   const [detectionDate, setDetectionDate] = useState<Date>(new Date());
@@ -260,7 +260,7 @@ export function PregnancyDetectionManager() {
     setPregnancyRecords([]);
   };
 
-  const filteredAnimals = selectedCorral 
+  const filteredAnimals = selectedCorral && selectedCorral !== "all"
     ? animals.filter(a => a.corral_id === selectedCorral)
     : animals;
 
@@ -304,7 +304,7 @@ export function PregnancyDetectionManager() {
                         <SelectValue placeholder="Todos los corrales" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos los corrales</SelectItem>
+                        <SelectItem value="all">Todos los corrales</SelectItem>
                         {corrales.map((corral) => (
                           <SelectItem key={corral.id} value={corral.id}>
                             {corral.name}
@@ -312,7 +312,7 @@ export function PregnancyDetectionManager() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {selectedCorral && (
+                    {selectedCorral && selectedCorral !== "all" && (
                       <Button
                         variant="outline"
                         onClick={() => selectCorralAnimals(selectedCorral)}
@@ -387,11 +387,11 @@ export function PregnancyDetectionManager() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">
-                    Hembras Elegibles ({filteredAnimals.length} {selectedCorral ? 'en corral seleccionado' : 'disponibles'})
+                    Hembras Elegibles ({filteredAnimals.length} {selectedCorral !== "all" ? 'en corral seleccionado' : 'disponibles'})
                   </Label>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                      Seleccionar {selectedCorral ? 'Corral' : 'Todas'}
+                      Seleccionar {selectedCorral !== "all" ? 'Corral' : 'Todas'}
                     </Button>
                     <Button variant="outline" size="sm" onClick={clearSelection}>
                       Limpiar

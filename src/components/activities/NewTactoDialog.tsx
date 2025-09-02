@@ -35,7 +35,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [corrales, setCorrales] = useState<any[]>([]);
-  const [selectedCorral, setSelectedCorral] = useState<string>("");
+  const [selectedCorral, setSelectedCorral] = useState<string>("all");
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [tactoRecords, setTactoRecords] = useState<TactoRecord[]>([]);
   const [defaultResult, setDefaultResult] = useState<"preñada" | "vacia" | null>(null);
@@ -160,7 +160,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
     setTactoRecords([]);
   };
 
-  const filteredAnimals = selectedCorral 
+  const filteredAnimals = selectedCorral && selectedCorral !== "all"
     ? animals.filter(a => a.corral_id === selectedCorral)
     : animals;
 
@@ -283,7 +283,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     <SelectValue placeholder="Todos los corrales" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Todos los corrales</SelectItem>
+                    <SelectItem value="all">Todos los corrales</SelectItem>
                     {corrales.map((corral) => (
                       <SelectItem key={corral.id} value={corral.id}>
                         {corral.name}
@@ -291,7 +291,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedCorral && (
+                {selectedCorral && selectedCorral !== "all" && (
                   <Button
                     variant="outline"
                     onClick={() => selectCorralAnimals(selectedCorral)}
@@ -370,11 +370,11 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                Hembras Elegibles ({filteredAnimals.length} {selectedCorral ? 'en corral seleccionado' : 'disponibles'})
+                Hembras Elegibles ({filteredAnimals.length} {selectedCorral !== "all" ? 'en corral seleccionado' : 'disponibles'})
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar {selectedCorral ? 'Corral' : 'Todas'}
+                  Seleccionar {selectedCorral !== "all" ? 'Corral' : 'Todas'}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
                   Limpiar
