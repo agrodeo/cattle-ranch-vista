@@ -136,7 +136,10 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     
     // Count live births (animals with this animal as mother)
     const liveBirths = animals.filter(a => a.mother_id && animals.some(mother => mother.id === a.mother_id)).length;
-    const calvingRate = confirmedPregnancies > 0 ? (liveBirths / confirmedPregnancies) * 100 : 0;
+    
+    // Calving rate should be calculated based on confirmed pregnancies that resulted in births
+    // Since we don't have a direct link between pregnancies and births, we'll estimate conservatively
+    const calvingRate = confirmedPregnancies > 0 ? Math.min((liveBirths / confirmedPregnancies) * 100, 100) : 0;
     
     const aiSuccessRate = totalInseminations > 0 ? (confirmedPregnancies / totalInseminations) * 100 : 0;
 
@@ -192,25 +195,35 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         return ageInMonths >= 15;
       });
       
-      // Count IA services for this breed
-      let breedInseminationsCount = 0;
+      // Get unique animals served for this breed
+      const breedServedAnimals = new Set<string>();
       iaServices.forEach(ia => {
         ia.animales_ids.forEach((animalId: string) => {
           const animal = animals.find(a => a.id === animalId);
-          if (animal?.breed === breed) breedInseminationsCount++;
+          if (animal?.breed === breed) breedServedAnimals.add(animalId);
         });
       });
       
-      // Count pregnancies for this breed
-      let breedPregnancies = 0;
+      // Count unique pregnancies for this breed (avoid double counting)
+      const breedPregnantAnimals = new Set<string>();
       tactos.forEach(tacto => {
         if (tacto.resultados) {
           tacto.resultados.forEach((result: any) => {
             const animal = animals.find(a => a.id === result.animal_id);
             if (animal?.breed === breed && result.resultado === 'preñada') {
-              breedPregnancies++;
+              breedPregnantAnimals.add(result.animal_id);
             }
           });
+        }
+      });
+      
+      // Also check preñeces table for confirmed pregnancies
+      pregnancies.forEach(p => {
+        if (p.estado === 'confirmada') {
+          const animal = animals.find(a => a.id === p.animal_id);
+          if (animal?.breed === breed) {
+            breedPregnantAnimals.add(p.animal_id);
+          }
         }
       });
       
@@ -218,11 +231,14 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         a.mother_id && animals.some(mother => mother.id === a.mother_id && mother.breed === breed)
       ).length;
 
+      const breedPregnancies = breedPregnantAnimals.size;
+      const breedServices = breedServedAnimals.size;
+
       return {
         breed,
-        pregnancyRate: breedReproductiveFemales.length > 0 ? (breedPregnancies / breedReproductiveFemales.length) * 100 : 0,
-        calvingRate: breedPregnancies > 0 ? (breedBirths / breedPregnancies) * 100 : 0,
-        aiSuccessRate: breedInseminationsCount > 0 ? (breedPregnancies / breedInseminationsCount) * 100 : 0
+        pregnancyRate: breedServices > 0 ? (breedPregnancies / breedServices) * 100 : 0,
+        calvingRate: breedPregnancies > 0 ? Math.min((breedBirths / breedPregnancies) * 100, 100) : 0,
+        aiSuccessRate: breedServices > 0 ? (breedPregnancies / breedServices) * 100 : 0
       };
     });
 
