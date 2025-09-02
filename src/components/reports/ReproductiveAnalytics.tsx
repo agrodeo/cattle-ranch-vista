@@ -95,26 +95,44 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       if (!f.birth_date) return false;
       const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
       return ageInMonths >= 15;
-    }).length;
+    });
 
     const totalInseminations = iaServices.length;
     
-    // Count confirmed pregnancies from tactos results
-    let confirmedPregnancies = 0;
+    // Get unique animals that had services (denominator for pregnancy rate)
+    const servedAnimalIds = new Set<string>();
+    iaServices.forEach(ia => {
+      if (ia.animales_ids) {
+        ia.animales_ids.forEach((animalId: string) => servedAnimalIds.add(animalId));
+      }
+    });
+    
+    // Count unique animals with confirmed pregnancies (avoid double counting)
+    const pregnantAnimalIds = new Set<string>();
+    
+    // From tactos results
     tactos.forEach(tacto => {
       if (tacto.resultados) {
         tacto.resultados.forEach((result: any) => {
-          if (result.resultado === 'preñada') {
-            confirmedPregnancies++;
+          if (result.animal_id && result.resultado === 'preñada') {
+            pregnantAnimalIds.add(result.animal_id);
           }
         });
       }
     });
     
-    // Add confirmed pregnancies from preñeces table
-    confirmedPregnancies += pregnancies.filter(p => p.estado === 'confirmada').length;
+    // From preñeces table (only if not already counted from tactos)
+    pregnancies.forEach(p => {
+      if (p.estado === 'confirmada' && !pregnantAnimalIds.has(p.animal_id)) {
+        pregnantAnimalIds.add(p.animal_id);
+      }
+    });
     
-    const pregnancyRate = reproductiveFemales > 0 ? (confirmedPregnancies / reproductiveFemales) * 100 : 0;
+    const confirmedPregnancies = pregnantAnimalIds.size;
+    const servedFemalesCount = servedAnimalIds.size;
+    
+    // Pregnancy rate should be based on served females, not all reproductive females
+    const pregnancyRate = servedFemalesCount > 0 ? (confirmedPregnancies / servedFemalesCount) * 100 : 0;
     
     // Count live births (animals with this animal as mother)
     const liveBirths = animals.filter(a => a.mother_id && animals.some(mother => mother.id === a.mother_id)).length;
