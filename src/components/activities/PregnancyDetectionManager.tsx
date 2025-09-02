@@ -46,6 +46,7 @@ export function PregnancyDetectionManager() {
   const [observations, setObservations] = useState("");
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [defaultResult, setDefaultResult] = useState<"yes" | "no" | null>(null);
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
 
@@ -144,13 +145,19 @@ export function PregnancyDetectionManager() {
     try {
       setLoading(true);
       
-      const validRecords = pregnancyRecords.filter(record => record.isPregnant !== null);
+      // Apply default result to animals without explicit results if set
+      const finalRecords = pregnancyRecords.map(record => ({
+        ...record,
+        isPregnant: record.isPregnant || defaultResult
+      }));
+
+      const validRecords = finalRecords.filter(record => record.isPregnant !== null);
       
       if (validRecords.length === 0) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Debe marcar el estado de preñez para al menos un animal",
+          description: "Debe marcar el estado de preñez para al menos un animal o configurar un resultado por defecto",
         });
         return;
       }
@@ -202,16 +209,24 @@ export function PregnancyDetectionManager() {
     setSelectedAnimals(allIds);
     setPregnancyRecords(animals.map(animal => ({
       animal,
-      isPregnant: null,
+      isPregnant: defaultResult,
       detectionDate: detectionDate,
       observations: "",
-      estimatedDueDate: null
+      estimatedDueDate: defaultResult === 'yes' ? addDays(detectionDate, 283) : null
     })));
   };
 
   const clearSelection = () => {
     setSelectedAnimals([]);
     setPregnancyRecords([]);
+  };
+
+  const markAllAs = (result: "yes" | "no") => {
+    setPregnancyRecords(prev => prev.map(record => ({
+      ...record,
+      isPregnant: result,
+      estimatedDueDate: result === 'yes' ? addDays(record.detectionDate, 283) : null
+    })));
   };
 
   return (
@@ -237,7 +252,7 @@ export function PregnancyDetectionManager() {
 
             <div className="space-y-6">
               {/* Configuración general */}
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label>Fecha de Detección</Label>
                   <Popover>
@@ -256,6 +271,32 @@ export function PregnancyDetectionManager() {
                       />
                     </PopoverContent>
                   </Popover>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Resultado Por Defecto</Label>
+                  <RadioGroup
+                    value={defaultResult || ""}
+                    onValueChange={(value) => setDefaultResult(value as "yes" | "no" | null)}
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="yes" id="def-pregnant" />
+                      <Label htmlFor="def-pregnant" className="text-sm">Preñada</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="no" id="def-empty" />
+                      <Label htmlFor="def-empty" className="text-sm">Vacía</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="" id="def-manual" />
+                      <Label htmlFor="def-manual" className="text-sm">Manual</Label>
+                    </div>
+                  </RadioGroup>
+                  {defaultResult && (
+                    <p className="text-xs text-muted-foreground">
+                      Se aplicará automáticamente a animales seleccionados
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -334,9 +375,31 @@ export function PregnancyDetectionManager() {
               {/* Registro de resultados */}
               {pregnancyRecords.length > 0 && (
                 <div className="space-y-4">
-                  <Label className="text-sm font-medium">
-                    Resultado de Detección ({pregnancyRecords.length} animales seleccionados)
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">
+                      Resultado de Detección ({pregnancyRecords.length} animales seleccionados)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => markAllAs('yes')}
+                        className="text-green-600 border-green-200 hover:bg-green-50"
+                      >
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Todas Preñadas
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => markAllAs('no')}
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        Todas Vacías
+                      </Button>
+                    </div>
+                  </div>
                   
                   <div className="space-y-4 max-h-60 overflow-y-auto border rounded-lg p-4">
                     {pregnancyRecords.map((record) => (
@@ -404,7 +467,7 @@ export function PregnancyDetectionManager() {
                 </Button>
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={loading || pregnancyRecords.filter(r => r.isPregnant !== null).length === 0}
+                  disabled={loading || pregnancyRecords.length === 0}
                 >
                   {loading ? "Guardando..." : "Guardar Detecciones"}
                 </Button>

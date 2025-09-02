@@ -35,6 +35,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   const [animals, setAnimals] = useState<any[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [tactoRecords, setTactoRecords] = useState<TactoRecord[]>([]);
+  const [defaultResult, setDefaultResult] = useState<"preñada" | "vacia" | null>(null);
   
   // Form data
   const [fecha, setFecha] = useState<Date>(new Date());
@@ -110,15 +111,23 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
     setSelectedAnimals(allIds);
     setTactoRecords(allIds.map(id => ({ 
       animalId: id, 
-      resultado: null, 
+      resultado: defaultResult, 
       observaciones: "",
-      fechaEstimadaParto: undefined 
+      fechaEstimadaParto: defaultResult === 'preñada' ? addDays(fecha, 283) : undefined 
     })));
   };
 
   const clearSelection = () => {
     setSelectedAnimals([]);
     setTactoRecords([]);
+  };
+
+  const markAllAs = (result: "preñada" | "vacia") => {
+    setTactoRecords(prev => prev.map(record => ({
+      ...record,
+      resultado: result,
+      fechaEstimadaParto: result === 'preñada' ? addDays(fecha, 283) : undefined
+    })));
   };
 
   const handleSubmit = async () => {
@@ -132,14 +141,20 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         return;
       }
 
+      // Apply default result to animals without explicit results if set
+      const finalRecords = tactoRecords.map(record => ({
+        ...record,
+        resultado: record.resultado || defaultResult
+      }));
+
       // Validate that all selected animals have results
-      const invalidRecords = tactoRecords.filter(record => record.resultado === null);
+      const invalidRecords = finalRecords.filter(record => record.resultado === null);
 
       if (invalidRecords.length > 0) {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Todas las hembras seleccionadas deben tener un resultado",
+          description: `${invalidRecords.length} animal(es) sin resultado. Configure un resultado por defecto o márquelos individualmente.`,
         });
         return;
       }
@@ -150,7 +165,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       const event = await createEvent('TACTO', fecha, notas);
 
       // Prepare results data
-      const resultados = tactoRecords.map(record => ({
+      const resultados = finalRecords.map(record => ({
         animal_id: record.animalId,
         resultado: record.resultado,
         observaciones: record.observaciones || null
@@ -166,8 +181,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
       if (error) throw error;
 
-      const pregnantCount = tactoRecords.filter(r => r.resultado === 'preñada').length;
-      const emptyCount = tactoRecords.filter(r => r.resultado === 'vacia').length;
+      const pregnantCount = finalRecords.filter(r => r.resultado === 'preñada').length;
+      const emptyCount = finalRecords.filter(r => r.resultado === 'vacia').length;
 
       toast({
         title: "Tacto registrado",
@@ -216,8 +231,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         )}
 
         <div className="space-y-6">
-          {/* Detection Details */}
-          <div className="grid gap-4 md:grid-cols-2">
+          {/* Detection Details & Default Result */}
+          <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="fecha">Fecha de Detección</Label>
               <Popover>
@@ -237,6 +252,32 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                   />
                 </PopoverContent>
               </Popover>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Resultado Por Defecto</Label>
+              <RadioGroup
+                value={defaultResult || ""}
+                onValueChange={(value) => setDefaultResult(value as "preñada" | "vacia" | null)}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="preñada" id="default-pregnant" />
+                  <Label htmlFor="default-pregnant" className="text-sm">Preñada</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="vacia" id="default-empty" />
+                  <Label htmlFor="default-empty" className="text-sm">Vacía</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="" id="default-none" />
+                  <Label htmlFor="default-none" className="text-sm">Manual</Label>
+                </div>
+              </RadioGroup>
+              {defaultResult && (
+                <p className="text-xs text-muted-foreground">
+                  Se aplicará automáticamente a animales seleccionados
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -323,9 +364,31 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           {/* Tacto Results */}
           {tactoRecords.length > 0 && (
             <div className="space-y-4">
-              <Label className="text-sm font-medium">
-                Resultados de Detección ({tactoRecords.length} animales)
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">
+                  Resultados de Detección ({tactoRecords.length} animales)
+                </Label>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => markAllAs('preñada')}
+                    className="text-green-600 border-green-200 hover:bg-green-50"
+                  >
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Todas Preñadas
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => markAllAs('vacia')}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Todas Vacías
+                  </Button>
+                </div>
+              </div>
               
               <div className="space-y-4 max-h-60 overflow-y-auto">
                 {tactoRecords.map((record) => {
@@ -397,7 +460,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
             </Button>
             <Button 
               onClick={handleSubmit} 
-              disabled={loading || tactoRecords.filter(r => r.resultado !== null).length === 0}
+              disabled={loading || (tactoRecords.length === 0)}
             >
               {loading ? "Guardando..." : "Registrar Detecciones"}
             </Button>
