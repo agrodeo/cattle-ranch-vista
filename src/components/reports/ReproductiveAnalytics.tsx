@@ -47,14 +47,27 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
   const fetchReproductiveStats = async () => {
     try {
-      // Fetch animals data
-      const { data: animals } = await supabase
+      let animalsQuery = supabase
         .from("animals")
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId);
 
-      // Fetch IA services (correct table name)
-      const { data: iaServices } = await supabase
+      // Apply filters
+      if (globalFilters) {
+        if (!globalFilters.include_sold_dead) {
+          animalsQuery = animalsQuery.not("status", "in", '("vendido","muerto")');
+        }
+        if (globalFilters.corral_ids && globalFilters.corral_ids.length > 0) {
+          animalsQuery = animalsQuery.in("corral_id", globalFilters.corral_ids);
+        }
+        if (globalFilters.breed) {
+          animalsQuery = animalsQuery.eq("breed", globalFilters.breed);
+        }
+      }
+
+      const { data: animals } = await animalsQuery;
+
+      let iaQuery = supabase
         .from("ia")
         .select(`
           *,
@@ -62,8 +75,17 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         `)
         .eq("eventos.cabaña_id", currentUser?.cabañaId);
 
-      // Fetch tactos (pregnancy detection results)
-      const { data: tactos } = await supabase
+      // Apply date filters to IA services
+      if (globalFilters?.date_from) {
+        iaQuery = iaQuery.gte("eventos.fecha", globalFilters.date_from);
+      }
+      if (globalFilters?.date_to) {
+        iaQuery = iaQuery.lte("eventos.fecha", globalFilters.date_to);
+      }
+
+      const { data: iaServices } = await iaQuery;
+
+      let tactosQuery = supabase
         .from("tactos")
         .select(`
           *,
@@ -71,11 +93,30 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         `)
         .eq("eventos.cabaña_id", currentUser?.cabañaId);
 
-      // Fetch preñeces (pregnancy records)
-      const { data: pregnancies } = await supabase
+      // Apply date filters to tactos
+      if (globalFilters?.date_from) {
+        tactosQuery = tactosQuery.gte("eventos.fecha", globalFilters.date_from);
+      }
+      if (globalFilters?.date_to) {
+        tactosQuery = tactosQuery.lte("eventos.fecha", globalFilters.date_to);
+      }
+
+      const { data: tactos } = await tactosQuery;
+
+      let pregnanciesQuery = supabase
         .from("preñeces")
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId);
+
+      // Apply date filters to pregnancies
+      if (globalFilters?.date_from) {
+        pregnanciesQuery = pregnanciesQuery.gte("fecha_inicio", globalFilters.date_from);
+      }
+      if (globalFilters?.date_to) {
+        pregnanciesQuery = pregnanciesQuery.lte("fecha_inicio", globalFilters.date_to);
+      }
+
+      const { data: pregnancies } = await pregnanciesQuery;
 
       const reproStats = calculateReproductiveStats(animals || [], iaServices || [], tactos || [], pregnancies || []);
       setStats(reproStats);
@@ -99,7 +140,11 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
     const totalInseminations = iaServices.length;
     
-    // Get unique animals that had services (denominator for pregnancy rate)
+    // PRIMARY: Use esta_preñada field from animals table
+    const pregnantFemales = reproductiveFemales.filter(f => f.esta_preñada === true);
+    const primaryPregnantCount = pregnantFemales.length;
+    
+    // SECONDARY: Get unique animals that had services (for AI success rate)
     const servedAnimalIds = new Set<string>();
     iaServices.forEach(ia => {
       if (ia.animales_ids) {
@@ -107,7 +152,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       }
     });
     
-    // Count unique animals with confirmed pregnancies (avoid double counting)
+    // BACKUP: Count pregnancies from tactos/preñeces if no pregnant animals from primary method
     const pregnantAnimalIds = new Set<string>();
     
     // From tactos results
@@ -121,18 +166,28 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       }
     });
     
-    // From preñeces table (only if not already counted from tactos)
+    // From preñeces table
     pregnancies.forEach(p => {
-      if (p.estado === 'confirmada' && !pregnantAnimalIds.has(p.animal_id)) {
+      if (p.estado === 'confirmada') {
         pregnantAnimalIds.add(p.animal_id);
       }
     });
     
-    const confirmedPregnancies = pregnantAnimalIds.size;
+    // Use primary count if available, otherwise use backup count
+    const confirmedPregnancies = primaryPregnantCount > 0 ? primaryPregnantCount : pregnantAnimalIds.size;
     const servedFemalesCount = servedAnimalIds.size;
     
-    // Pregnancy rate should be based on served females, not all reproductive females
-    const pregnancyRate = servedFemalesCount > 0 ? (confirmedPregnancies / servedFemalesCount) * 100 : 0;
+    // Pregnancy rate: pregnant females / reproductive females (not just served)
+    const pregnancyRate = reproductiveFemales.length > 0 ? (confirmedPregnancies / reproductiveFemales.length) * 100 : 0;
+    
+    console.log('Pregnancy calculation:', {
+      reproductiveFemales: reproductiveFemales.length,
+      pregnantFromAnimalsTable: primaryPregnantCount,
+      pregnantFromTactos: pregnantAnimalIds.size,
+      confirmedPregnancies,
+      pregnancyRate,
+      servedFemalesCount
+    });
     
     // Count live births (animals with this animal as mother)
     const liveBirths = animals.filter(a => a.mother_id && animals.some(mother => mother.id === a.mother_id)).length;
@@ -319,7 +374,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.pregnancyRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
-              {stats.confirmedPregnancies} de {stats.reproductiveFemales} hembras reproductivas
+              {stats.confirmedPregnancies} preñadas de {stats.reproductiveFemales} hembras reproductivas
             </p>
           </CardContent>
         </Card>
