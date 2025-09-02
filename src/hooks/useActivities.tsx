@@ -99,24 +99,28 @@ export function useActivities() {
         .eq("cabaña_id", currentUser.cabañaId);
 
       // Apply specific filters based on activity type
-      if (activityType === 'VACUNACION') {
-        // Only active animals for vaccination
+      if (activityType === 'VACUNACION' || activityType === 'PESAJE') {
+        // Only active animals for vaccination and weighing
+        console.log(`Loading animals for ${activityType} - filtering for Activo status only`);
         query = query.eq("status", "Activo");
       } else {
-        // For other activities, exclude sold and dead animals
+        // For other activities, exclude sold and dead animals but be more permissive
         query = query
           .neq("status", "Vendido")
           .neq("status", "Muerto");
       }
 
       if (activityType === 'IA') {
-        // Only females >= 15 months, not pregnant
+        // Only females >= 15 months, not pregnant, and active
         query = query
           .eq("sex", "Hembra")
-          .eq("esta_preñada", false);
+          .eq("esta_preñada", false)
+          .eq("status", "Activo");
       } else if (activityType === 'TACTO') {
-        // Only females >= 15 months
-        query = query.eq("sex", "Hembra");
+        // Only females >= 15 months and active
+        query = query
+          .eq("sex", "Hembra")
+          .eq("status", "Activo");
       }
 
       const { data: animals, error } = await query;
@@ -133,6 +137,13 @@ export function useActivities() {
         }
         return true;
       }) || [];
+      
+      // Debug: Log what animals are being returned
+      console.log(`getEligibleAnimals(${activityType}) results:`, {
+        totalAnimals: animals?.length || 0,
+        filteredAnimals: eligibleAnimals.length,
+        animalStatuses: eligibleAnimals.map(a => ({ id: a.id, name: a.name, status: a.status }))
+      });
       
       return eligibleAnimals as EligibleAnimal[];
     } catch (error) {
