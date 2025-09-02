@@ -100,27 +100,30 @@ export function useActivities() {
 
       // Apply specific filters based on activity type
       if (activityType === 'VACUNACION' || activityType === 'PESAJE') {
-        // Only active animals for vaccination and weighing
-        console.log(`Loading animals for ${activityType} - filtering for Activo status only`);
-        query = query.eq("status", "Activo");
-      } else {
-        // For other activities, exclude sold and dead animals but be more permissive
+        // For vaccination and weighing - exclude sold and dead animals, allow active/null status
+        console.log(`Loading animals for ${activityType} - excluding sold/dead animals`);
         query = query
-          .neq("status", "Vendido")
-          .neq("status", "Muerto");
+          .not('status', 'eq', 'Vendido')
+          .not('status', 'eq', 'Muerto')
+          .not('status', 'eq', 'vendido')
+          .not('status', 'eq', 'muerto');
+      } else {
+        // For other activities, exclude sold and dead animals
+        query = query
+          .not('status', 'eq', 'Vendido')
+          .not('status', 'eq', 'Muerto')
+          .not('status', 'eq', 'vendido')
+          .not('status', 'eq', 'muerto');
       }
 
       if (activityType === 'IA') {
-        // Only females >= 15 months, not pregnant, and active
+        // Only females >= 15 months, not pregnant
         query = query
           .eq("sex", "Hembra")
-          .eq("esta_preñada", false)
-          .eq("status", "Activo");
+          .eq("esta_preñada", false);
       } else if (activityType === 'TACTO') {
-        // Only females >= 15 months and active
-        query = query
-          .eq("sex", "Hembra")
-          .eq("status", "Activo");
+        // Only females >= 15 months
+        query = query.eq("sex", "Hembra");
       }
 
       const { data: animals, error } = await query;

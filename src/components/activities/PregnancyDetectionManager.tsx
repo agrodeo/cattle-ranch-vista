@@ -73,15 +73,20 @@ export function PregnancyDetectionManager() {
       const eligibleAnimals = animalsData?.filter(animal => {
         if (!animal.birth_date) return false;
         const ageInMonths = differenceInMonths(new Date(), new Date(animal.birth_date));
-        // Only allow animals with explicit 'Activo' status
+        // Exclude sold and dead animals, allow active and null status
+        const status = animal.status?.toLowerCase();
+        const isInactive = status === 'vendido' || status === 'muerto' || status === 'sold' || status === 'dead';
+        
         console.log('Filtering animal for pregnancy detection:', { 
           id: animal.id, 
           name: animal.name, 
           status: animal.status, 
           ageInMonths,
-          eligible: ageInMonths >= 15 && animal.status === 'Activo' 
+          isInactive,
+          eligible: ageInMonths >= 15 && !isInactive 
         });
-        return ageInMonths >= 15 && animal.status === 'Activo';
+        
+        return ageInMonths >= 15 && !isInactive;
       }) || [];
 
       setAnimals(eligibleAnimals);

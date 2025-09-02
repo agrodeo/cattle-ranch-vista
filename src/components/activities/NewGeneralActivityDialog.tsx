@@ -157,7 +157,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           corral_id,
           corral:corrales(name)
         `)
-        .eq('status', 'Activo')
+        .not('status', 'in', '("Vendido","Muerto","vendido","muerto")')
         .order('id_tag');
 
       if (error) throw error;

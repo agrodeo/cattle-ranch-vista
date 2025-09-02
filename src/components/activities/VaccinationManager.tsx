@@ -55,14 +55,19 @@ export function VaccinationManager() {
   };
 
   const vaccinationEligibilityFilter = (animal: any): boolean => {
-    // Only allow animals with explicit 'Activo' status
+    // Exclude sold and dead animals, allow active and null status
+    const status = animal.status?.toLowerCase();
+    const isInactive = status === 'vendido' || status === 'muerto' || status === 'sold' || status === 'dead';
+    
     console.log('Filtering animal for vaccination:', { 
       id: animal.id, 
       name: animal.name, 
       status: animal.status, 
-      eligible: animal.status === 'Activo' 
+      isInactive,
+      eligible: !isInactive 
     });
-    return animal.status === 'Activo';
+    
+    return !isInactive;
   };
 
   const handleSubmit = async () => {
