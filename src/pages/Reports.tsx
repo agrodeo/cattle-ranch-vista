@@ -14,11 +14,16 @@ import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsW
 import { Filter } from "lucide-react";
 
 const Reports = () => {
-  const [filters, setFilters] = useState<ReportFilters>({
+  // Default filter values
+  const defaultFilters: ReportFilters = {
     date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
     date_to: new Date(),
     include_sold_dead: false
-  });
+  };
+
+  // Separate state for pending (being edited) and applied filters (used by analytics)
+  const [pendingFilters, setPendingFilters] = useState<ReportFilters>(defaultFilters);
+  const [appliedFilters, setAppliedFilters] = useState<ReportFilters>(defaultFilters);
 
   useEffect(() => {
     document.title = "Reportes y Análisis | AgroDeo";
@@ -26,7 +31,7 @@ const Reports = () => {
     if (meta) meta.setAttribute("content", "Reportes y análisis: ganadería, reproducción, producción, mortalidad y finanzas");
   }, []);
 
-  const getActiveFiltersCount = () => {
+  const getActiveFiltersCount = (filters: ReportFilters) => {
     let count = 0;
     if (filters.corral_ids?.length) count++;
     if (filters.category) count++;
@@ -34,6 +39,10 @@ const Reports = () => {
     if (filters.include_sold_dead) count++;
     if (filters.date_from || filters.date_to) count++;
     return count;
+  };
+
+  const applyFilters = () => {
+    setAppliedFilters(pendingFilters);
   };
 
   return (
@@ -50,15 +59,19 @@ const Reports = () => {
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
               Filtros Globales
-              {getActiveFiltersCount() > 0 && (
+              {getActiveFiltersCount(pendingFilters) > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {getActiveFiltersCount()} filtro{getActiveFiltersCount() > 1 ? 's' : ''}
+                  {getActiveFiltersCount(pendingFilters)} filtro{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
                 </Badge>
               )}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ReportsFilters filters={filters} onFiltersChange={setFilters} />
+            <ReportsFilters 
+              filters={pendingFilters} 
+              onFiltersChange={setPendingFilters}
+              onApplyFilters={applyFilters}
+            />
           </CardContent>
         </Card>
 
@@ -95,27 +108,27 @@ const Reports = () => {
             </TabsList>
             
             <TabsContent value="herd" className="space-y-4">
-              <HerdOverview filters={filters} />
+              <HerdOverview filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="reproductive" className="space-y-4">
-              <ReproductiveAnalytics filters={filters} />
+              <ReproductiveAnalytics filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="production" className="space-y-4">
-              <ProductionAnalytics filters={filters} />
+              <ProductionAnalytics filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="mortality" className="space-y-4">
-              <MortalityReports filters={filters} />
+              <MortalityReports filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="vaccines" className="space-y-4">
-              <VaccinationAnalytics filters={filters} />
+              <VaccinationAnalytics filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="financial" className="space-y-4">
-              <FinancialAnalytics filters={filters} />
+              <FinancialAnalytics filters={appliedFilters} />
             </TabsContent>
           </Tabs>
         </SectionCard>
