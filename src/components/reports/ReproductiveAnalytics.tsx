@@ -53,19 +53,31 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId);
 
-      // Fetch artificial inseminations
-      const { data: inseminations } = await supabase
-        .from("artificial_inseminations")
+      // Fetch IA services (correct table name)
+      const { data: iaServices } = await supabase
+        .from("ia")
+        .select(`
+          *,
+          eventos!inner(fecha, cabaña_id)
+        `)
+        .eq("eventos.cabaña_id", currentUser?.cabañaId);
+
+      // Fetch tactos (pregnancy detection results)
+      const { data: tactos } = await supabase
+        .from("tactos")
+        .select(`
+          *,
+          eventos!inner(fecha, cabaña_id)
+        `)
+        .eq("eventos.cabaña_id", currentUser?.cabañaId);
+
+      // Fetch preñeces (pregnancy records)
+      const { data: pregnancies } = await supabase
+        .from("preñeces")
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId);
 
-      // Fetch reproductive events
-      const { data: reproductiveEvents } = await supabase
-        .from("reproductive_events")
-        .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
-
-      const reproStats = calculateReproductiveStats(animals || [], inseminations || [], reproductiveEvents || []);
+      const reproStats = calculateReproductiveStats(animals || [], iaServices || [], tactos || [], pregnancies || []);
       setStats(reproStats);
     } catch (error) {
       console.error("Error fetching reproductive stats:", error);
@@ -74,7 +86,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     }
   };
 
-  const calculateReproductiveStats = (animals: any[], inseminations: any[], reproductiveEvents: any[]): ReproductiveStats => {
+  const calculateReproductiveStats = (animals: any[], iaServices: any[], tactos: any[], pregnancies: any[]): ReproductiveStats => {
     const females = animals.filter(a => a.sex === 'Hembra' && (!a.status || a.status === 'activo'));
     const totalFemales = females.length;
     
@@ -85,13 +97,27 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       return ageInMonths >= 15;
     }).length;
 
-    const totalInseminations = inseminations.length;
-    const confirmedPregnancies = inseminations.filter(i => i.is_pregnant === true).length + 
-                                 reproductiveEvents.filter(r => r.pregnancy_status === 'pregnant').length;
+    const totalInseminations = iaServices.length;
+    
+    // Count confirmed pregnancies from tactos results
+    let confirmedPregnancies = 0;
+    tactos.forEach(tacto => {
+      if (tacto.resultados) {
+        tacto.resultados.forEach((result: any) => {
+          if (result.resultado === 'preñada') {
+            confirmedPregnancies++;
+          }
+        });
+      }
+    });
+    
+    // Add confirmed pregnancies from preñeces table
+    confirmedPregnancies += pregnancies.filter(p => p.estado === 'confirmada').length;
     
     const pregnancyRate = reproductiveFemales > 0 ? (confirmedPregnancies / reproductiveFemales) * 100 : 0;
     
-    const liveBirths = reproductiveEvents.filter(r => r.pregnancy_outcome === 'live_calf').length;
+    // Count live births (animals with this animal as mother)
+    const liveBirths = animals.filter(a => a.mother_id && animals.some(mother => mother.id === a.mother_id)).length;
     const calvingRate = confirmedPregnancies > 0 ? (liveBirths / confirmedPregnancies) * 100 : 0;
     
     const aiSuccessRate = totalInseminations > 0 ? (confirmedPregnancies / totalInseminations) * 100 : 0;
@@ -100,10 +126,17 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     const currentYear = new Date().getFullYear();
     const yearlyData = [];
     for (let year = currentYear - 4; year <= currentYear; year++) {
-      const yearInseminations = inseminations.filter(i => new Date(i.insemination_date).getFullYear() === year).length;
-      const yearPregnancies = inseminations.filter(i => i.is_pregnant === true && new Date(i.insemination_date).getFullYear() === year).length +
-                             reproductiveEvents.filter(r => r.pregnancy_status === 'pregnant' && r.year === year).length;
-      const yearBirths = reproductiveEvents.filter(r => r.pregnancy_outcome === 'live_calf' && r.year === year).length;
+      const yearInseminations = iaServices.filter(ia => 
+        ia.eventos && new Date(ia.eventos.fecha).getFullYear() === year
+      ).length;
+      
+      const yearPregnancies = pregnancies.filter(p => 
+        new Date(p.fecha_inicio).getFullYear() === year && p.estado === 'confirmada'
+      ).length;
+      
+      const yearBirths = animals.filter(a => 
+        a.birth_date && new Date(a.birth_date).getFullYear() === year
+      ).length;
       
       yearlyData.push({
         year,
@@ -114,7 +147,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     }
 
     // Service type data (artificial vs natural)
-    const artificialServices = inseminations.length;
+    const artificialServices = iaServices.length;
     const naturalServices = animals.filter(a => a.tipo_servicio === 'natural').length;
     const serviceTypeData = [
       { type: 'Inseminación Artificial', count: artificialServices, successRate: aiSuccessRate },
@@ -124,7 +157,9 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     // Monthly breeding patterns
     const monthlyBreeding = Array.from({ length: 12 }, (_, i) => {
       const month = new Date(0, i).toLocaleString('es', { month: 'long' });
-      const count = inseminations.filter(ins => new Date(ins.insemination_date).getMonth() === i).length;
+      const count = iaServices.filter(ia => 
+        ia.eventos && new Date(ia.eventos.fecha).getMonth() === i
+      ).length;
       return { month: month.charAt(0).toUpperCase() + month.slice(1), count };
     });
 
@@ -139,27 +174,37 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         return ageInMonths >= 15;
       });
       
-      const breedInseminations = inseminations.filter(i => {
-        const female = animals.find(a => a.id === i.female_id);
-        return female?.breed === breed;
+      // Count IA services for this breed
+      let breedInseminationsCount = 0;
+      iaServices.forEach(ia => {
+        ia.animales_ids.forEach((animalId: string) => {
+          const animal = animals.find(a => a.id === animalId);
+          if (animal?.breed === breed) breedInseminationsCount++;
+        });
       });
       
-      const breedPregnancies = breedInseminations.filter(i => i.is_pregnant === true).length +
-                              reproductiveEvents.filter(r => {
-                                const animal = animals.find(a => a.id === r.animal_id);
-                                return animal?.breed === breed && r.pregnancy_status === 'pregnant';
-                              }).length;
+      // Count pregnancies for this breed
+      let breedPregnancies = 0;
+      tactos.forEach(tacto => {
+        if (tacto.resultados) {
+          tacto.resultados.forEach((result: any) => {
+            const animal = animals.find(a => a.id === result.animal_id);
+            if (animal?.breed === breed && result.resultado === 'preñada') {
+              breedPregnancies++;
+            }
+          });
+        }
+      });
       
-      const breedBirths = reproductiveEvents.filter(r => {
-        const animal = animals.find(a => a.id === r.animal_id);
-        return animal?.breed === breed && r.pregnancy_outcome === 'live_calf';
-      }).length;
+      const breedBirths = animals.filter(a => 
+        a.mother_id && animals.some(mother => mother.id === a.mother_id && mother.breed === breed)
+      ).length;
 
       return {
         breed,
         pregnancyRate: breedReproductiveFemales.length > 0 ? (breedPregnancies / breedReproductiveFemales.length) * 100 : 0,
         calvingRate: breedPregnancies > 0 ? (breedBirths / breedPregnancies) * 100 : 0,
-        aiSuccessRate: breedInseminations.length > 0 ? (breedInseminations.filter(i => i.is_pregnant === true).length / breedInseminations.length) * 100 : 0
+        aiSuccessRate: breedInseminationsCount > 0 ? (breedPregnancies / breedInseminationsCount) * 100 : 0
       };
     });
 
