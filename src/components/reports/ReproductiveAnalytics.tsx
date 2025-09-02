@@ -228,7 +228,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
     return {
       totalFemales,
-      reproductiveFemales,
+      reproductiveFemales: reproductiveFemales.length,
       totalInseminations,
       confirmedPregnancies,
       pregnancyRate,
