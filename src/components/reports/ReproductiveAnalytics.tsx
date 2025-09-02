@@ -330,7 +330,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   return (
     <div className="space-y-6">
 
-      <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
+      <CorralKPIsCard filters={globalFilters} onViewCorralAnimals={handleViewCorralAnimals} />
       <AnimalReproductionTable filters={globalFilters || {}} />
       
       {/* Original Analytics */}

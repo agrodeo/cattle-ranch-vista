@@ -13,6 +13,7 @@ import {
 import { Building2, Users, Heart, TrendingUp, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReportFilters } from "./ReportsFilters";
 
 interface CorralKPI {
   corral_id: string;
@@ -25,16 +26,17 @@ interface CorralKPI {
 }
 
 interface CorralKPIsCardProps {
+  filters?: ReportFilters;
   onViewCorralAnimals?: (corralId: string, corralName: string) => void;
 }
 
-export function CorralKPIsCard({ onViewCorralAnimals }: CorralKPIsCardProps) {
+export function CorralKPIsCard({ filters, onViewCorralAnimals }: CorralKPIsCardProps) {
   const [corrals, setCorrals] = useState<CorralKPI[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchCorralKPIs();
-  }, []);
+  }, [filters]);
 
   const fetchCorralKPIs = async () => {
     setLoading(true);

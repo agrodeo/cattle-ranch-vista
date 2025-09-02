@@ -229,7 +229,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
   return (
     <div className="space-y-6">
-      <CorralKPIsCard onViewCorralAnimals={handleViewCorralAnimals} />
+      <CorralKPIsCard filters={globalFilters} onViewCorralAnimals={handleViewCorralAnimals} />
       <AnimalProductionTable filters={globalFilters || {}} />
       
       {/* Original Analytics */}
