@@ -75,7 +75,7 @@ export function PregnancyDetectionManager() {
         const ageInMonths = differenceInMonths(new Date(), new Date(animal.birth_date));
         // Exclude sold and dead animals, allow active and null status
         const status = animal.status?.toLowerCase();
-        const isInactive = status === 'vendido' || status === 'muerto' || status === 'sold' || status === 'dead';
+        const isInactive = status === 'vendido' || status === 'muerto';
         
         console.log('Filtering animal for pregnancy detection:', { 
           id: animal.id, 

@@ -157,7 +157,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           corral_id,
           corral:corrales(name)
         `)
-        .not('status', 'in', '("Vendido","Muerto","vendido","muerto")')
+        .not('status', 'ilike', 'vendido')
+        .not('status', 'ilike', 'muerto')
         .order('id_tag');
 
       if (error) throw error;

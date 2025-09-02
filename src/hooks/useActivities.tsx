@@ -98,23 +98,11 @@ export function useActivities() {
         .select("*")
         .eq("cabaña_id", currentUser.cabañaId);
 
-      // Apply specific filters based on activity type
-      if (activityType === 'VACUNACION' || activityType === 'PESAJE') {
-        // For vaccination and weighing - exclude sold and dead animals, allow active/null status
-        console.log(`Loading animals for ${activityType} - excluding sold/dead animals`);
-        query = query
-          .not('status', 'eq', 'Vendido')
-          .not('status', 'eq', 'Muerto')
-          .not('status', 'eq', 'vendido')
-          .not('status', 'eq', 'muerto');
-      } else {
-        // For other activities, exclude sold and dead animals
-        query = query
-          .not('status', 'eq', 'Vendido')
-          .not('status', 'eq', 'Muerto')
-          .not('status', 'eq', 'vendido')
-          .not('status', 'eq', 'muerto');
-      }
+      // Apply specific filters based on activity type - exclude sold and dead animals
+      console.log(`Loading animals for ${activityType} - excluding sold/dead animals`);
+      query = query
+        .not('status', 'ilike', 'vendido')
+        .not('status', 'ilike', 'muerto');
 
       if (activityType === 'IA') {
         // Only females >= 15 months, not pregnant

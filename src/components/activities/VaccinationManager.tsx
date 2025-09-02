@@ -57,7 +57,7 @@ export function VaccinationManager() {
   const vaccinationEligibilityFilter = (animal: any): boolean => {
     // Exclude sold and dead animals, allow active and null status
     const status = animal.status?.toLowerCase();
-    const isInactive = status === 'vendido' || status === 'muerto' || status === 'sold' || status === 'dead';
+    const isInactive = status === 'vendido' || status === 'muerto';
     
     console.log('Filtering animal for vaccination:', { 
       id: animal.id, 

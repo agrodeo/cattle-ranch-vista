@@ -99,7 +99,8 @@ export function VaccinationDashboard() {
       const { data: animalsData, error: animalsError } = await supabase
         .from('animals')
         .select('id, name, id_tag, sex, birth_date, status')
-        .not('status', 'in', '("Vendido","Muerto","vendido","muerto")');
+        .not('status', 'ilike', 'vendido')
+        .not('status', 'ilike', 'muerto');
 
       if (animalsError) throw animalsError;
 
