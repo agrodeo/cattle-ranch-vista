@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface ReportsFiltersProps {
   filters: ReportFilters;
   onFiltersChange: (filters: ReportFilters) => void;
+  onApplyFilters?: () => void;
   className?: string;
 }
 
@@ -40,7 +41,7 @@ export interface ReportFilters {
   include_sold_dead?: boolean;
 }
 
-export function ReportsFilters({ filters, onFiltersChange, className }: ReportsFiltersProps) {
+export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, className }: ReportsFiltersProps) {
   const [corrals, setCorrales] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
 
@@ -98,26 +99,37 @@ export function ReportsFilters({ filters, onFiltersChange, className }: ReportsF
     <div className={cn("space-y-4", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4" />
-          <span className="text-sm font-medium">Filtros</span>
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="text-xs">
-              {activeFiltersCount}
+              {activeFiltersCount} filtro{activeFiltersCount > 1 ? 's' : ''}
             </Badge>
           )}
         </div>
         
-        {activeFiltersCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={clearFilters}
-            className="text-xs"
-          >
-            <X className="h-3 w-3 mr-1" />
-            Limpiar
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {activeFiltersCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Limpiar
+            </Button>
+          )}
+          
+          {onApplyFilters && (
+            <Button
+              size="sm"
+              onClick={onApplyFilters}
+              className="text-xs"
+            >
+              <Filter className="h-3 w-3 mr-1" />
+              Aplicar Filtros
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
