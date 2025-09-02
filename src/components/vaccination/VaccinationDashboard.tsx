@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { vaccinesForRanch, pendingVaccinesForAnimal } from "@/lib/vaccines";
+import { getVaccineRulesForRanch, getDueVaccinesForAnimal } from "@/lib/vaccines";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
