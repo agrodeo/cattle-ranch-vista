@@ -10,9 +10,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Search, Calendar as CalendarIcon, Heart, AlertTriangle, CheckCircle } from "lucide-react";
+import { Plus, Search, Calendar as CalendarIcon, Heart, AlertTriangle, CheckCircle, Users } from "lucide-react";
 import { NewTactoDialog } from "./NewTactoDialog";
 import { format, addDays, differenceInMonths, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
@@ -40,6 +41,8 @@ interface PregnancyRecord {
 
 export function PregnancyDetectionManager() {
   const [animals, setAnimals] = useState<Animal[]>([]);
+  const [corrales, setCorrales] = useState<any[]>([]);
+  const [selectedCorral, setSelectedCorral] = useState<string>("");
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [pregnancyRecords, setPregnancyRecords] = useState<PregnancyRecord[]>([]);
   const [detectionDate, setDetectionDate] = useState<Date>(new Date());
@@ -52,6 +55,7 @@ export function PregnancyDetectionManager() {
 
   useEffect(() => {
     fetchEligibleAnimals();
+    loadCorrales();
   }, []);
 
   const fetchEligibleAnimals = async () => {
@@ -100,6 +104,20 @@ export function PregnancyDetectionManager() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCorrales = async () => {
+    try {
+      const { data: corralesData, error } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      setCorrales(corralesData || []);
+    } catch (error) {
+      console.error("Error loading corrales:", error);
     }
   };
 
@@ -205,9 +223,9 @@ export function PregnancyDetectionManager() {
   };
 
   const selectAllAnimals = () => {
-    const allIds = animals.map(a => a.id);
+    const allIds = filteredAnimals.map(a => a.id);
     setSelectedAnimals(allIds);
-    setPregnancyRecords(animals.map(animal => ({
+    setPregnancyRecords(filteredAnimals.map(animal => ({
       animal,
       isPregnant: defaultResult,
       detectionDate: detectionDate,
@@ -216,10 +234,35 @@ export function PregnancyDetectionManager() {
     })));
   };
 
+  const selectCorralAnimals = (corralId: string) => {
+    const corralAnimals = filteredAnimals.filter(a => a.corral_id === corralId);
+    const corralIds = corralAnimals.map(a => a.id);
+    const newSelectedAnimals = [...new Set([...selectedAnimals, ...corralIds])];
+    
+    setSelectedAnimals(newSelectedAnimals);
+    
+    // Add new records for animals not already selected
+    const newRecords = corralAnimals
+      .filter(animal => !pregnancyRecords.some(r => r.animal.id === animal.id))
+      .map(animal => ({
+        animal,
+        isPregnant: defaultResult,
+        detectionDate: detectionDate,
+        observations: "",
+        estimatedDueDate: defaultResult === 'yes' ? addDays(detectionDate, 283) : null
+      }));
+    
+    setPregnancyRecords(prev => [...prev, ...newRecords]);
+  };
+
   const clearSelection = () => {
     setSelectedAnimals([]);
     setPregnancyRecords([]);
   };
+
+  const filteredAnimals = selectedCorral 
+    ? animals.filter(a => a.corral_id === selectedCorral)
+    : animals;
 
   const markAllAs = (result: "yes" | "no") => {
     setPregnancyRecords(prev => prev.map(record => ({
@@ -251,6 +294,37 @@ export function PregnancyDetectionManager() {
             </DialogHeader>
 
             <div className="space-y-6">
+              {/* Filter by Corral */}
+              {corrales.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Filtrar por Corral</Label>
+                  <div className="flex gap-2">
+                    <Select value={selectedCorral} onValueChange={setSelectedCorral}>
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Todos los corrales" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">Todos los corrales</SelectItem>
+                        {corrales.map((corral) => (
+                          <SelectItem key={corral.id} value={corral.id}>
+                            {corral.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {selectedCorral && (
+                      <Button
+                        variant="outline"
+                        onClick={() => selectCorralAnimals(selectedCorral)}
+                        className="flex items-center gap-2"
+                      >
+                        <Users className="h-4 w-4" />
+                        Agregar Corral
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
               {/* Configuración general */}
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
@@ -313,11 +387,11 @@ export function PregnancyDetectionManager() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">
-                    Hembras Elegibles ({animals.length} disponibles)
+                    Hembras Elegibles ({filteredAnimals.length} {selectedCorral ? 'en corral seleccionado' : 'disponibles'})
                   </Label>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                      Seleccionar Todas
+                      Seleccionar {selectedCorral ? 'Corral' : 'Todas'}
                     </Button>
                     <Button variant="outline" size="sm" onClick={clearSelection}>
                       Limpiar
@@ -337,7 +411,7 @@ export function PregnancyDetectionManager() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {animals.map((animal) => (
+                      {filteredAnimals.map((animal) => (
                         <TableRow key={animal.id}>
                           <TableCell>
                             <Checkbox
@@ -351,6 +425,11 @@ export function PregnancyDetectionManager() {
                             <div>
                               <div className="font-medium">{animal.name || "Sin nombre"}</div>
                               <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                              {animal.corral_id && (
+                                <div className="text-xs text-muted-foreground">
+                                  Corral: {corrales.find(c => c.id === animal.corral_id)?.name || 'N/A'}
+                                </div>
+                              )}
                             </div>
                           </TableCell>
                           <TableCell>

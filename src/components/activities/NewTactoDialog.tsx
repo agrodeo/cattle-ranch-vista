@@ -9,10 +9,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Calendar as CalendarIcon, Stethoscope, CheckCircle, AlertTriangle } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Stethoscope, CheckCircle, AlertTriangle, Users } from "lucide-react";
 import { format, differenceInMonths, addDays } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -33,6 +34,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
+  const [corrales, setCorrales] = useState<any[]>([]);
+  const [selectedCorral, setSelectedCorral] = useState<string>("");
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [tactoRecords, setTactoRecords] = useState<TactoRecord[]>([]);
   const [defaultResult, setDefaultResult] = useState<"preñada" | "vacia" | null>(null);
@@ -53,6 +56,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   useEffect(() => {
     if (open) {
       loadAnimals();
+      loadCorrales();
     }
   }, [open]);
 
@@ -70,6 +74,20 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       console.error("Error loading animals:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCorrales = async () => {
+    try {
+      const { data: corralesData, error } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      setCorrales(corralesData || []);
+    } catch (error) {
+      console.error("Error loading corrales:", error);
     }
   };
 
@@ -107,7 +125,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   };
 
   const selectAllAnimals = () => {
-    const allIds = animals.map(a => a.id);
+    const allIds = filteredAnimals.map(a => a.id);
     setSelectedAnimals(allIds);
     setTactoRecords(allIds.map(id => ({ 
       animalId: id, 
@@ -117,10 +135,34 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
     })));
   };
 
+  const selectCorralAnimals = (corralId: string) => {
+    const corralAnimals = filteredAnimals.filter(a => a.corral_id === corralId);
+    const corralIds = corralAnimals.map(a => a.id);
+    const newSelectedAnimals = [...new Set([...selectedAnimals, ...corralIds])];
+    
+    setSelectedAnimals(newSelectedAnimals);
+    
+    // Add new records for animals not already selected
+    const newRecords = corralIds
+      .filter(id => !tactoRecords.some(r => r.animalId === id))
+      .map(id => ({ 
+        animalId: id, 
+        resultado: defaultResult, 
+        observaciones: "",
+        fechaEstimadaParto: defaultResult === 'preñada' ? addDays(fecha, 283) : undefined 
+      }));
+    
+    setTactoRecords(prev => [...prev, ...newRecords]);
+  };
+
   const clearSelection = () => {
     setSelectedAnimals([]);
     setTactoRecords([]);
   };
+
+  const filteredAnimals = selectedCorral 
+    ? animals.filter(a => a.corral_id === selectedCorral)
+    : animals;
 
   const markAllAs = (result: "preñada" | "vacia") => {
     setTactoRecords(prev => prev.map(record => ({
@@ -231,6 +273,38 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         )}
 
         <div className="space-y-6">
+          {/* Filter by Corral */}
+          {corrales.length > 0 && (
+            <div className="space-y-2">
+              <Label>Filtrar por Corral</Label>
+              <div className="flex gap-2">
+                <Select value={selectedCorral} onValueChange={setSelectedCorral}>
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Todos los corrales" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Todos los corrales</SelectItem>
+                    {corrales.map((corral) => (
+                      <SelectItem key={corral.id} value={corral.id}>
+                        {corral.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedCorral && (
+                  <Button
+                    variant="outline"
+                    onClick={() => selectCorralAnimals(selectedCorral)}
+                    className="flex items-center gap-2"
+                  >
+                    <Users className="h-4 w-4" />
+                    Agregar Corral
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Detection Details & Default Result */}
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
@@ -296,11 +370,11 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                Hembras Elegibles ({animals.length} disponibles)
+                Hembras Elegibles ({filteredAnimals.length} {selectedCorral ? 'en corral seleccionado' : 'disponibles'})
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar Todas
+                  Seleccionar {selectedCorral ? 'Corral' : 'Todas'}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
                   Limpiar
@@ -320,7 +394,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {animals.map((animal) => (
+                  {filteredAnimals.map((animal) => (
                     <TableRow key={animal.id}>
                       <TableCell>
                         <Checkbox
@@ -334,6 +408,9 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                         <div>
                           <div className="font-medium">{animal.name || "Sin nombre"}</div>
                           <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                          {animal.corral && (
+                            <div className="text-xs text-muted-foreground">Corral: {animal.corral.name}</div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
