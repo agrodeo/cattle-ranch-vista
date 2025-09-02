@@ -73,10 +73,15 @@ export function PregnancyDetectionManager() {
       const eligibleAnimals = animalsData?.filter(animal => {
         if (!animal.birth_date) return false;
         const ageInMonths = differenceInMonths(new Date(), new Date(animal.birth_date));
-        // Verificar adiccionalmente que el estado es realmente activo
-        const status = animal.status?.toLowerCase().trim();
-        const isActive = !status || ['activo', 'active', 'vivo', 'viva'].includes(status);
-        return ageInMonths >= 15 && isActive;
+        // Only allow animals with explicit 'Activo' status
+        console.log('Filtering animal for pregnancy detection:', { 
+          id: animal.id, 
+          name: animal.name, 
+          status: animal.status, 
+          ageInMonths,
+          eligible: ageInMonths >= 15 && animal.status === 'Activo' 
+        });
+        return ageInMonths >= 15 && animal.status === 'Activo';
       }) || [];
 
       setAnimals(eligibleAnimals);
