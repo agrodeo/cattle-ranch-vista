@@ -1,0 +1,143 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface ReproductiveMetric {
+  animal_id: string;
+  tag: string;
+  name?: string;
+  age_months: number;
+  category: string;
+  corral_id?: string;
+  corral_name?: string;
+  is_pregnant: boolean;
+  pregnancy_date?: string;
+  expected_calving_date?: string;
+  last_service_date?: string;
+  days_open?: number;
+  reproductive_years: number;
+  total_offspring: number;
+  lifetime_services: number;
+  lifetime_pregnancies: number;
+  lifetime_calvings: number;
+  individual_pregnancy_rate: number;
+  individual_calving_rate: number;
+  performance_level: string;
+  active_alerts: number;
+  alert_types: string[];
+}
+
+interface ReproductiveAlert {
+  id: string;
+  animal_id: string;
+  alert_type: string;
+  alert_date: string;
+  expected_date?: string;
+  days_overdue: number;
+  status: string;
+  notes?: string;
+}
+
+interface Filters {
+  [key: string]: any;
+  corral_ids?: string[];
+  performance?: string;
+  alert_status?: string;
+  include_sold_dead?: boolean;
+}
+
+export function useReproductiveMetrics(filters: Filters = {}) {
+  const [metrics, setMetrics] = useState<ReproductiveMetric[]>([]);
+  const [alerts, setAlerts] = useState<ReproductiveAlert[]>([]);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const fetchMetrics = async () => {
+    try {
+      setLoading(true);
+      
+      const { data: currentUser } = await supabase.auth.getUser();
+      if (!currentUser.user) return;
+
+      // Fetch reproductive metrics
+      const { data: metricsData, error: metricsError } = await supabase
+        .rpc('rpc_reproductive_detailed_metrics', {
+          _user_id: currentUser.user.id,
+          filters_json: filters
+        });
+
+      if (metricsError) throw metricsError;
+
+      // Fetch active alerts
+      const { data: alertsData, error: alertsError } = await supabase
+        .from('reproductive_alerts')
+        .select('*')
+        .eq('status', 'pending')
+        .order('days_overdue', { ascending: false });
+
+      if (alertsError) throw alertsError;
+
+      setMetrics(metricsData || []);
+      setAlerts(alertsData || []);
+    } catch (error) {
+      console.error("Error fetching reproductive metrics:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron cargar las métricas reproductivas",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAlertAsResolved = async (alertId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reproductive_alerts')
+        .update({ status: 'resolved' })
+        .eq('id', alertId);
+
+      if (error) throw error;
+
+      setAlerts(prev => prev.filter(alert => alert.id !== alertId));
+      
+      toast({
+        title: "Alerta resuelta",
+        description: "La alerta ha sido marcada como resuelta",
+      });
+    } catch (error) {
+      console.error("Error resolving alert:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo resolver la alerta",
+      });
+    }
+  };
+
+  const checkAndCreateAlerts = async () => {
+    try {
+      const { error } = await supabase.rpc('check_reproductive_alerts');
+      if (error) throw error;
+      
+      // Refresh alerts after check
+      await fetchMetrics();
+    } catch (error) {
+      console.error("Error checking alerts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchMetrics();
+  }, [filters]);
+
+  return {
+    metrics,
+    alerts,
+    loading,
+    refresh: fetchMetrics,
+    markAlertAsResolved,
+    checkAndCreateAlerts,
+  };
+}

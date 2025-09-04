@@ -1459,6 +1459,129 @@ export type Database = {
           },
         ]
       }
+      reproductive_active_years: {
+        Row: {
+          animal_id: string
+          calving_occurred: boolean | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          pregnancy_detected: boolean | null
+          started_at_18_months: boolean | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          animal_id: string
+          calving_occurred?: boolean | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          pregnancy_detected?: boolean | null
+          started_at_18_months?: boolean | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          animal_id?: string
+          calving_occurred?: boolean | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          pregnancy_detected?: boolean | null
+          started_at_18_months?: boolean | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      reproductive_alerts: {
+        Row: {
+          alert_date: string
+          alert_type: string
+          animal_id: string
+          cabaña_id: string
+          created_at: string
+          days_overdue: number | null
+          expected_date: string | null
+          id: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          alert_date?: string
+          alert_type: string
+          animal_id: string
+          cabaña_id: string
+          created_at?: string
+          days_overdue?: number | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          alert_date?: string
+          alert_type?: string
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string
+          days_overdue?: number | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reproductive_annual_metrics: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          calving_rate: number | null
+          calvings_count: number | null
+          created_at: string
+          days_open_total: number | null
+          id: string
+          pregnancies_count: number | null
+          pregnancy_rate: number | null
+          services_count: number | null
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          calving_rate?: number | null
+          calvings_count?: number | null
+          created_at?: string
+          days_open_total?: number | null
+          id?: string
+          pregnancies_count?: number | null
+          pregnancy_rate?: number | null
+          services_count?: number | null
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          calving_rate?: number | null
+          calvings_count?: number | null
+          created_at?: string
+          days_open_total?: number | null
+          id?: string
+          pregnancies_count?: number | null
+          pregnancy_rate?: number | null
+          services_count?: number | null
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
       reproductive_events: {
         Row: {
           animal_id: string
@@ -2129,6 +2252,10 @@ export type Database = {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
       }
+      check_reproductive_alerts: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       compile_rules_for_ranch: {
         Args: { _cabana_id: string }
         Returns: {
@@ -2550,6 +2677,33 @@ export type Database = {
           tag: string
         }[]
       }
+      rpc_reproductive_detailed_metrics: {
+        Args: { _user_id: string; filters_json?: Json }
+        Returns: {
+          active_alerts: number
+          age_months: number
+          alert_types: string[]
+          animal_id: string
+          category: string
+          corral_id: string
+          corral_name: string
+          days_open: number
+          expected_calving_date: string
+          individual_calving_rate: number
+          individual_pregnancy_rate: number
+          is_pregnant: boolean
+          last_service_date: string
+          lifetime_calvings: number
+          lifetime_pregnancies: number
+          lifetime_services: number
+          name: string
+          performance_level: string
+          pregnancy_date: string
+          reproductive_years: number
+          tag: string
+          total_offspring: number
+        }[]
+      }
       update_finance_movement: {
         Args: {
           _amount: number
@@ -2573,6 +2727,16 @@ export type Database = {
           _user_id: string
         }
         Returns: Json
+      }
+      update_reproductive_metrics: {
+        Args: {
+          _animal_id: string
+          _increment_calvings?: number
+          _increment_pregnancies?: number
+          _increment_services?: number
+          _year: number
+        }
+        Returns: undefined
       }
       update_subscription_plan: {
         Args: {
