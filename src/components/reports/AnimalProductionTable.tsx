@@ -23,6 +23,7 @@ import { ReportFilters } from "./ReportsFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatDateForDB } from "@/lib/dateFormatters";
 
 interface ProductionAnimal {
   animal_id: string;
@@ -60,8 +61,8 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
     setLoading(true);
     try {
       const filtersJson = {
-        date_from: filters.date_from?.toISOString().split('T')[0],
-        date_to: filters.date_to?.toISOString().split('T')[0],
+        date_from: formatDateForDB(filters.date_from),
+        date_to: formatDateForDB(filters.date_to),
         corral_ids: filters.corral_ids,
         category: filters.category,
         breed: filters.breed,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { formatFiltersForDB } from "@/lib/dateFormatters";
 
 interface ReproductiveMetric {
   animal_id: string;
@@ -65,11 +66,15 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       console.log("Fetching reproductive metrics for user:", currentUser.user.id);
       console.log("Filters applied:", filters);
 
+      // Format dates properly for database
+      const formattedFilters = formatFiltersForDB(filters);
+      console.log("Formatted filters for DB:", formattedFilters);
+
       // Fetch reproductive metrics
       const { data: metricsData, error: metricsError } = await supabase
         .rpc('rpc_reproductive_detailed_metrics', {
           _user_id: currentUser.user.id,
-          filters_json: filters
+          filters_json: formattedFilters
         });
 
       if (metricsError) {

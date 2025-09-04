@@ -6,6 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { DollarSign, TrendingUp, TrendingDown, Calculator } from "lucide-react";
 import { ReportFilters } from "./ReportsFilters";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { formatDateForDB, ensureDateObject } from "@/lib/dateFormatters";
 
 interface FinancialStats {
   totalRevenue: number;
@@ -42,8 +45,8 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
   const fetchFinancialStats = async () => {
     try {
       // Calculate date range - use global filters if available
-      const endDate = globalFilters?.date_to || new Date();
-      let startDate = globalFilters?.date_from || new Date();
+      const endDate = ensureDateObject(globalFilters?.date_to) || new Date();
+      let startDate = ensureDateObject(globalFilters?.date_from) || new Date();
       
       if (!globalFilters?.date_from) {
         switch (timeRange) {
@@ -67,8 +70,8 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
           finance_categories(name)
         `)
         .eq("cabaña_id", currentUser?.cabañaId)
-        .gte('date', startDate.toISOString().split('T')[0])
-        .lte('date', endDate.toISOString().split('T')[0])
+        .gte('date', formatDateForDB(startDate))
+        .lte('date', formatDateForDB(endDate))
         .order('date', { ascending: true });
 
       const { data: finances } = await query;

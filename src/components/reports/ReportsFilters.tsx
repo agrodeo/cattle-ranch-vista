@@ -33,8 +33,8 @@ interface ReportsFiltersProps {
 
 export interface ReportFilters {
   season?: string;
-  date_from?: Date;
-  date_to?: Date;
+  date_from?: Date | string;
+  date_to?: Date | string;
   corral_ids?: string[];
   category?: string;
   breed?: string;
@@ -158,7 +158,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={filters.date_from}
+                      selected={filters.date_from instanceof Date ? filters.date_from : undefined}
                       onSelect={(date) => updateFilter('date_from', date)}
                       initialFocus
                       className="p-3 pointer-events-auto"
@@ -187,7 +187,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={filters.date_to}
+                      selected={filters.date_to instanceof Date ? filters.date_to : undefined}
                       onSelect={(date) => updateFilter('date_to', date)}
                       initialFocus
                       className="p-3 pointer-events-auto"

@@ -12,14 +12,16 @@ import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
 import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
 import { Filter } from "lucide-react";
+import { formatFiltersForDB } from "@/lib/dateFormatters";
 
 const Reports = () => {
-  // Default filter values
+  // Default filter values - convert to ISO date strings for database compatibility
   const defaultFilters: ReportFilters = {
     date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
     date_to: new Date(),
     include_sold_dead: false
   };
+
 
   // Separate state for pending (being edited) and applied filters (used by analytics)
   const [pendingFilters, setPendingFilters] = useState<ReportFilters>(defaultFilters);
@@ -42,7 +44,7 @@ const Reports = () => {
   };
 
   const applyFilters = () => {
-    setAppliedFilters(pendingFilters);
+    setAppliedFilters(formatFiltersForDB(pendingFilters));
   };
 
   return (
@@ -108,27 +110,27 @@ const Reports = () => {
             </TabsList>
             
             <TabsContent value="herd" className="space-y-4">
-              <HerdOverview filters={appliedFilters} />
+              <HerdOverview filters={formatFiltersForDB(appliedFilters)} />
             </TabsContent>
             
             <TabsContent value="reproductive" className="space-y-4">
-              <ReproductiveAnalytics filters={appliedFilters} />
+              <ReproductiveAnalytics filters={formatFiltersForDB(appliedFilters)} />
             </TabsContent>
             
             <TabsContent value="production" className="space-y-4">
-              <ProductionAnalytics filters={appliedFilters} />
+              <ProductionAnalytics filters={formatFiltersForDB(appliedFilters)} />
             </TabsContent>
             
             <TabsContent value="mortality" className="space-y-4">
-              <MortalityReports filters={appliedFilters} />
+              <MortalityReports filters={formatFiltersForDB(appliedFilters)} />
             </TabsContent>
             
             <TabsContent value="vaccines" className="space-y-4">
-              <VaccinationAnalytics filters={appliedFilters} />
+              <VaccinationAnalytics filters={formatFiltersForDB(appliedFilters)} />
             </TabsContent>
             
             <TabsContent value="financial" className="space-y-4">
-              <FinancialAnalytics filters={appliedFilters} />
+              <FinancialAnalytics filters={formatFiltersForDB(appliedFilters)} />
             </TabsContent>
           </Tabs>
         </SectionCard>

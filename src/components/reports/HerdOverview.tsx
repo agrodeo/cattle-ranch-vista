@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Calendar, Users, TrendingUp, Activity } from "lucide-react";
 import { ReportFilters } from "./ReportsFilters";
+import { formatDateForDB } from "@/lib/dateFormatters";
 
 interface HerdStats {
   totalAnimals: number;
@@ -68,11 +69,11 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
       }
 
       if (filters?.date_from) {
-        query = query.gte("birth_date", filters.date_from.toISOString());
+        query = query.gte("birth_date", formatDateForDB(filters.date_from));
       }
 
       if (filters?.date_to) {
-        query = query.lte("birth_date", filters.date_to.toISOString());
+        query = query.lte("birth_date", formatDateForDB(filters.date_to));
       }
 
       const { data: animals, error } = await query;

@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportFilters } from "./ReportsFilters";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDateForDB } from "@/lib/dateFormatters";
 
 interface ReproductiveFemale {
   animal_id: string;
@@ -50,8 +51,8 @@ export function ReproductiveFemalesTable({ filters }: ReproductiveFemalesTablePr
       setLoading(true);
 
       const filtersJson = {
-        date_from: filters.date_from?.toISOString().split('T')[0],
-        date_to: filters.date_to?.toISOString().split('T')[0],
+        date_from: formatDateForDB(filters.date_from),
+        date_to: formatDateForDB(filters.date_to),
         corral_ids: filters.corral_ids,
         category: filters.category,
         breed: filters.breed,
