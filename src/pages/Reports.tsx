@@ -17,8 +17,8 @@ import { formatFiltersForDB } from "@/lib/dateFormatters";
 const Reports = () => {
   // Default filter values - convert to ISO date strings for database compatibility
   const defaultFilters: ReportFilters = {
-    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
-    date_to: new Date(),
+    date_from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    date_to: new Date().toISOString().split('T')[0],
     include_sold_dead: false
   };
 
