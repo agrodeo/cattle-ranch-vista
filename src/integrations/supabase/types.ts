@@ -2513,7 +2513,7 @@ export type Database = {
         }[]
       }
       rpc_report_reproduction_animals: {
-        Args: { _user_id: string; filters_json?: Json }
+        Args: { _user_id: string; filters_json: Json }
         Returns: {
           animal_id: string
           calving_rate: number
