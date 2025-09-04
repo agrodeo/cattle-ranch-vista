@@ -2532,6 +2532,24 @@ export type Database = {
           tag: string
         }[]
       }
+      rpc_report_reproductive_females: {
+        Args: { _user_id: string; filters_json?: Json }
+        Returns: {
+          age_months: number
+          animal_id: string
+          category: string
+          corral_id: string
+          corral_name: string
+          expected_calving_date: string
+          is_pregnant: boolean
+          last_service_date: string
+          name: string
+          pregnancy_checks_count: number
+          pregnancy_date: string
+          services_count: number
+          tag: string
+        }[]
+      }
       update_finance_movement: {
         Args: {
           _amount: number

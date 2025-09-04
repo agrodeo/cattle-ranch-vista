@@ -8,8 +8,9 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Heart, TrendingUp, Calendar, Users, Brain, Truck } from "lucide-react";
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
 import { AnimalReproductionTable } from "./AnimalReproductionTable";
+import { ReproductiveFemalesTable } from "./ReproductiveFemalesTable";
 import { CorralReproductiveKPIs } from "./CorralReproductiveKPIs";
-import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
+
 import { BreedingPlanWizard } from "../breeding/BreedingPlanWizard";
 import { BulkMoveDialog } from "../breeding/BulkMoveDialog";
 
@@ -331,7 +332,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   return (
     <div className="space-y-6">
       <CorralReproductiveKPIs filters={globalFilters} />
-      <PregnantAnimalsReport filters={globalFilters} />
+      <ReproductiveFemalesTable filters={globalFilters || {}} />
       <AnimalReproductionTable filters={globalFilters || {}} />
       
       {/* Original Analytics */}
