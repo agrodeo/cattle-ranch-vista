@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Heart, TrendingUp, Calendar, Users, Brain, Truck } from "lucide-react";
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
-import { AnimalReproductionTable } from "./AnimalReproductionTable";
+
 import { ReproductiveFemalesTable } from "./ReproductiveFemalesTable";
 import { CorralReproductiveKPIs } from "./CorralReproductiveKPIs";
 
@@ -333,7 +333,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     <div className="space-y-6">
       <CorralReproductiveKPIs filters={globalFilters} />
       <ReproductiveFemalesTable filters={globalFilters || {}} />
-      <AnimalReproductionTable filters={globalFilters || {}} />
+      
       
       {/* Original Analytics */}
       {/* Key Metrics Cards */}
