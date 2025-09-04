@@ -36,15 +36,24 @@ export const ensureDateObject = (date: Date | string | undefined | null): Date |
 
 // Helper to format filters object with proper date strings
 export const formatFiltersForDB = (filters: any) => {
-  const formatted = { ...filters };
+  if (!filters) return {};
   
-  if (formatted.date_from) {
-    formatted.date_from = formatDateForDB(formatted.date_from);
-  }
+  const formatted: any = {};
   
-  if (formatted.date_to) {
-    formatted.date_to = formatDateForDB(formatted.date_to);
-  }
+  // Only copy defined values to prevent undefined pollution
+  Object.keys(filters).forEach(key => {
+    const value = filters[key];
+    if (value !== undefined && value !== null) {
+      if (key === 'date_from' || key === 'date_to') {
+        const formattedDate = formatDateForDB(value);
+        if (formattedDate) {
+          formatted[key] = formattedDate;
+        }
+      } else {
+        formatted[key] = value;
+      }
+    }
+  });
   
   return formatted;
 };

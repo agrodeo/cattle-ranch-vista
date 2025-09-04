@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,8 +44,13 @@ const Reports = () => {
   };
 
   const applyFilters = () => {
-    setAppliedFilters(formatFiltersForDB(pendingFilters));
+    setAppliedFilters({ ...pendingFilters });
   };
+
+  // Memoize the formatted filters to prevent unnecessary re-renders
+  const stableAppliedFilters = useMemo(() => {
+    return formatFiltersForDB(appliedFilters);
+  }, [appliedFilters]);
 
   return (
     <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
@@ -110,27 +115,27 @@ const Reports = () => {
             </TabsList>
             
             <TabsContent value="herd" className="space-y-4">
-              <HerdOverview filters={appliedFilters} />
+              <HerdOverview filters={stableAppliedFilters} />
             </TabsContent>
             
             <TabsContent value="reproductive" className="space-y-4">
-              <ReproductiveAnalytics filters={appliedFilters} />
+              <ReproductiveAnalytics filters={stableAppliedFilters} />
             </TabsContent>
             
             <TabsContent value="production" className="space-y-4">
-              <ProductionAnalytics filters={appliedFilters} />
+              <ProductionAnalytics filters={stableAppliedFilters} />
             </TabsContent>
             
             <TabsContent value="mortality" className="space-y-4">
-              <MortalityReports filters={appliedFilters} />
+              <MortalityReports filters={stableAppliedFilters} />
             </TabsContent>
             
             <TabsContent value="vaccines" className="space-y-4">
-              <VaccinationAnalytics filters={appliedFilters} />
+              <VaccinationAnalytics filters={stableAppliedFilters} />
             </TabsContent>
             
             <TabsContent value="financial" className="space-y-4">
-              <FinancialAnalytics filters={appliedFilters} />
+              <FinancialAnalytics filters={stableAppliedFilters} />
             </TabsContent>
           </Tabs>
         </SectionCard>

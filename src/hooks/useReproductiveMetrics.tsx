@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
@@ -53,6 +53,11 @@ export function useReproductiveMetrics(filters: Filters = {}) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Memoize filters to prevent unnecessary re-renders
+  const stableFilters = useMemo(() => {
+    return JSON.stringify(filters);
+  }, [filters]);
+
   const fetchMetrics = async () => {
     try {
       setLoading(true);
@@ -63,11 +68,12 @@ export function useReproductiveMetrics(filters: Filters = {}) {
         return;
       }
 
+      const parsedFilters = JSON.parse(stableFilters);
       console.log("Fetching reproductive metrics for user:", currentUser.user.id);
-      console.log("Filters applied:", filters);
+      console.log("Filters applied:", parsedFilters);
 
       // Format dates properly for database
-      const formattedFilters = formatFiltersForDB(filters);
+      const formattedFilters = formatFiltersForDB(parsedFilters);
       console.log("Formatted filters for DB:", formattedFilters);
 
       // Fetch reproductive metrics
@@ -150,7 +156,7 @@ export function useReproductiveMetrics(filters: Filters = {}) {
 
   useEffect(() => {
     fetchMetrics();
-  }, [filters]);
+  }, [stableFilters]);
 
   return {
     metrics,
