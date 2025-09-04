@@ -25,10 +25,10 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
   // Enhanced filters for the hook - memoized to prevent constant re-renders
   const enhancedFilters = useMemo(() => {
     const baseFilters = { ...filters };
-    if (performanceFilter) {
+    if (performanceFilter && performanceFilter !== "all") {
       baseFilters.performance = performanceFilter;
     }
-    if (alertFilter) {
+    if (alertFilter && alertFilter !== "all") {
       baseFilters.alert_status = alertFilter;
     }
     return baseFilters;
@@ -170,12 +170,12 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-medium">Rendimiento:</label>
-                    <Select value={performanceFilter} onValueChange={setPerformanceFilter}>
+                    <Select value={performanceFilter || "all"} onValueChange={(value) => setPerformanceFilter(value === "all" ? "" : value)}>
                       <SelectTrigger className="w-32">
                         <SelectValue placeholder="Todos" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos</SelectItem>
+                        <SelectItem value="all">Todos</SelectItem>
                         <SelectItem value="Excelente">Excelente</SelectItem>
                         <SelectItem value="Bueno">Bueno</SelectItem>
                         <SelectItem value="Regular">Regular</SelectItem>
@@ -185,12 +185,12 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="text-sm font-medium">Alertas:</label>
-                    <Select value={alertFilter} onValueChange={setAlertFilter}>
+                    <Select value={alertFilter || "all"} onValueChange={(value) => setAlertFilter(value === "all" ? "" : value)}>
                       <SelectTrigger className="w-32">
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todas</SelectItem>
+                        <SelectItem value="all">Todas</SelectItem>
                         <SelectItem value="with_alerts">Con Alertas</SelectItem>
                         <SelectItem value="no_alerts">Sin Alertas</SelectItem>
                       </SelectContent>

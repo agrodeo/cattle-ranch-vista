@@ -248,7 +248,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todas</SelectItem>
-                  {breeds.map(breed => (
+                  {breeds.filter(breed => breed && breed.trim()).map(breed => (
                     <SelectItem key={breed} value={breed}>
                       {breed}
                     </SelectItem>
