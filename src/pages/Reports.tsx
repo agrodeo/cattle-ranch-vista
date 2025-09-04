@@ -110,27 +110,27 @@ const Reports = () => {
             </TabsList>
             
             <TabsContent value="herd" className="space-y-4">
-              <HerdOverview filters={formatFiltersForDB(appliedFilters)} />
+              <HerdOverview filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="reproductive" className="space-y-4">
-              <ReproductiveAnalytics filters={formatFiltersForDB(appliedFilters)} />
+              <ReproductiveAnalytics filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="production" className="space-y-4">
-              <ProductionAnalytics filters={formatFiltersForDB(appliedFilters)} />
+              <ProductionAnalytics filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="mortality" className="space-y-4">
-              <MortalityReports filters={formatFiltersForDB(appliedFilters)} />
+              <MortalityReports filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="vaccines" className="space-y-4">
-              <VaccinationAnalytics filters={formatFiltersForDB(appliedFilters)} />
+              <VaccinationAnalytics filters={appliedFilters} />
             </TabsContent>
             
             <TabsContent value="financial" className="space-y-4">
-              <FinancialAnalytics filters={formatFiltersForDB(appliedFilters)} />
+              <FinancialAnalytics filters={appliedFilters} />
             </TabsContent>
           </Tabs>
         </SectionCard>
