@@ -57,7 +57,13 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       setLoading(true);
       
       const { data: currentUser } = await supabase.auth.getUser();
-      if (!currentUser.user) return;
+      if (!currentUser.user) {
+        console.log("No authenticated user found");
+        return;
+      }
+
+      console.log("Fetching reproductive metrics for user:", currentUser.user.id);
+      console.log("Filters applied:", filters);
 
       // Fetch reproductive metrics
       const { data: metricsData, error: metricsError } = await supabase
@@ -66,7 +72,12 @@ export function useReproductiveMetrics(filters: Filters = {}) {
           filters_json: filters
         });
 
-      if (metricsError) throw metricsError;
+      if (metricsError) {
+        console.error("Database error:", metricsError);
+        throw metricsError;
+      }
+
+      console.log("Metrics data received:", metricsData);
 
       // Fetch active alerts
       const { data: alertsData, error: alertsError } = await supabase
@@ -75,16 +86,20 @@ export function useReproductiveMetrics(filters: Filters = {}) {
         .eq('status', 'pending')
         .order('days_overdue', { ascending: false });
 
-      if (alertsError) throw alertsError;
+      if (alertsError) {
+        console.log("Alerts error (not critical):", alertsError);
+        // Don't throw for alerts error since table might not exist yet
+      }
 
       setMetrics(metricsData || []);
       setAlerts(alertsData || []);
+      console.log("Successfully set metrics:", metricsData?.length || 0, "records");
     } catch (error) {
       console.error("Error fetching reproductive metrics:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudieron cargar las métricas reproductivas",
+        description: `No se pudieron cargar las métricas reproductivas: ${error.message || error}`,
       });
     } finally {
       setLoading(false);
