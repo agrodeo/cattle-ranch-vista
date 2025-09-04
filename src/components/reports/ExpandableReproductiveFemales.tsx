@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, Heart, Baby, Calendar, AlertTriangle, TrendingUp, Eye, Filter, TrendingDown } from "lucide-react";
@@ -22,12 +22,17 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Enhanced filters for the hook
-  const enhancedFilters = {
-    ...filters,
-    performance: performanceFilter || undefined,
-    alert_status: alertFilter || undefined,
-  };
+  // Enhanced filters for the hook - memoized to prevent constant re-renders
+  const enhancedFilters = useMemo(() => {
+    const baseFilters = { ...filters };
+    if (performanceFilter) {
+      baseFilters.performance = performanceFilter;
+    }
+    if (alertFilter) {
+      baseFilters.alert_status = alertFilter;
+    }
+    return baseFilters;
+  }, [filters, performanceFilter, alertFilter]);
 
   const { metrics: animals, alerts, loading, markAlertAsResolved, checkAndCreateAlerts } = useReproductiveMetrics(enhancedFilters);
 
