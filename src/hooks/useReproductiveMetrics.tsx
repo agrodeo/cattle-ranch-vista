@@ -83,7 +83,8 @@ export function useReproductiveMetrics(filters: Filters = {}) {
         .select('id, id_tag, name, birth_date, esta_preñada, fecha_ultima_preñez, fecha_probable_parto, sex, status, corral_id')
         .eq('cabaña_id', '26a4288b-0ab5-4abf-b88c-25de5dca0273')
         .eq('sex', 'Hembra')
-        .not('status', 'in', '(vendido,muerto)');
+        .neq('status', 'vendido')
+        .neq('status', 'muerto');
 
       if (metricsError) {
         console.error("Database error:", metricsError);
@@ -91,6 +92,32 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       }
 
       console.log("Raw animal data received:", metricsData);
+
+      // Fetch offspring data for all animals in one query
+      const animalIds = metricsData?.map((animal: any) => animal.id) || [];
+      let offspringData = {};
+      
+      if (animalIds.length > 0) {
+        console.log("Fetching offspring for", animalIds.length, "animals");
+        const { data: offspringQuery, error: offspringError } = await supabase
+          .from('animals')
+          .select('id, mother_id, father_id, status')
+          .or(animalIds.map(id => `mother_id.eq.${id}`).join(','));
+
+        if (offspringError) {
+          console.error("Error fetching offspring:", offspringError);
+        } else {
+          // Group offspring by mother
+          offspringData = (offspringQuery || []).reduce((acc, child) => {
+            if (child.mother_id) {
+              if (!acc[child.mother_id]) acc[child.mother_id] = [];
+              acc[child.mother_id].push(child);
+            }
+            return acc;
+          }, {});
+          console.log("Offspring data fetched:", Object.keys(offspringData).length, "mothers have offspring");
+        }
+      }
 
       // Transform the data to match the expected format
       const transformedData = metricsData
@@ -106,6 +133,11 @@ export function useReproductiveMetrics(filters: Filters = {}) {
               (new Date().getMonth() - new Date(animal.birth_date).getMonth())
             : 24;
 
+          // Calculate offspring data
+          const animalOffspring = offspringData[animal.id] || [];
+          const totalOffspring = animalOffspring.length;
+          const liveOffspring = animalOffspring.filter(child => child.status !== 'muerto').length;
+
           return {
             animal_id: animal.id,
             tag: animal.id_tag || '',
@@ -120,19 +152,19 @@ export function useReproductiveMetrics(filters: Filters = {}) {
             last_service_date: null,
             days_open: 0,
             reproductive_years: Math.max(1, Math.ceil(ageMonths / 12)),
-            total_offspring: 0,
+            total_offspring: totalOffspring,
             lifetime_services: 0,
             lifetime_pregnancies: animal.esta_preñada ? 1 : 0,
-            lifetime_calvings: 0,
+            lifetime_calvings: liveOffspring, // Live offspring as calvings
             individual_pregnancy_rate: animal.esta_preñada ? 100.0 : 0.0,
-            individual_calving_rate: 0.0,
-            performance_level: animal.esta_preñada ? 'Excelente' : 'Bajo',
+            individual_calving_rate: totalOffspring > 0 ? Math.round((liveOffspring / totalOffspring) * 100) : 0.0,
+            performance_level: totalOffspring >= 3 ? 'Excelente' : totalOffspring >= 1 ? 'Bueno' : 'Bajo',
             active_alerts: 0,
             alert_types: []
           };
         }) || [];
 
-      console.log("Transformed metrics data:", transformedData);
+      console.log("Transformed metrics data with offspring:", transformedData);
 
       // Fetch active alerts
       const { data: alertsData, error: alertsError } = await supabase

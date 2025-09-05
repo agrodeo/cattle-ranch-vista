@@ -17,6 +17,7 @@ import { es } from "date-fns/locale";
 import { useState } from "react";
 import { ImprovedArtificialInseminationDialog } from "@/components/artificial-insemination/ImprovedArtificialInseminationDialog";
 import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
+import { useAnimalOffspring } from "@/hooks/useAnimalOffspring";
 
 interface AnimalReproduccionProps {
   animal: Animal;
@@ -27,6 +28,7 @@ interface AnimalReproduccionProps {
 
 export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
   const [showIADialog, setShowIADialog] = useState(false);
+  const { offspring, loading: offspringLoading, totalCount, liveCount } = useAnimalOffspring(animal.id, animal.sex);
 
   if (animal.sex !== 'Hembra') {
     return (
@@ -75,22 +77,22 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">{animal.esta_preñada ? '1' : '0'}</div>
             <p className="text-xs text-muted-foreground">
-              Sin registros
+              {animal.esta_preñada ? 'Preñada actualmente' : 'Sin preñez actual'}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Intervalo Parto</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Crías</CardTitle>
+            <Baby className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
+            <div className="text-2xl font-bold">{offspringLoading ? '...' : totalCount}</div>
             <p className="text-xs text-muted-foreground">
-              Sin datos disponibles
+              {offspringLoading ? 'Cargando...' : `${liveCount} vivas de ${totalCount} total`}
             </p>
           </CardContent>
         </Card>
@@ -101,9 +103,11 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">-</div>
+            <div className="text-2xl font-bold">
+              {totalCount > 0 ? Math.round((liveCount / totalCount) * 100) + '%' : '-'}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Sin datos disponibles
+              {totalCount > 0 ? 'Crías vivas vs total' : 'Sin datos disponibles'}
             </p>
           </CardContent>
         </Card>
@@ -165,7 +169,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Baby className="h-4 w-4" />
-                Descendencia (0)
+                Descendencia ({offspringLoading ? '...' : totalCount})
               </CardTitle>
               <CardDescription>
                 Crías registradas de esta hembra
@@ -178,13 +182,66 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <Baby className="h-12 w-12 mx-auto mb-4 opacity-20" />
-            <div className="text-lg font-medium mb-2">Sin descendencia registrada</div>
-            <div className="text-sm">
-              Las crías aparecerán aquí cuando se registren nacimientos
+          {offspringLoading ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Baby className="h-12 w-12 mx-auto mb-4 opacity-20 animate-pulse" />
+              <div className="text-lg font-medium mb-2">Cargando descendencia...</div>
             </div>
-          </div>
+          ) : totalCount > 0 ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold text-primary">{totalCount}</div>
+                  <div className="text-sm text-muted-foreground">Total crías</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold text-success">{liveCount}</div>
+                  <div className="text-sm text-muted-foreground">Vivas</div>
+                </div>
+              </div>
+              
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID/Tag</TableHead>
+                    <TableHead>Nombre</TableHead>
+                    <TableHead>Sexo</TableHead>
+                    <TableHead>Nacimiento</TableHead>
+                    <TableHead>Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {offspring.map((child) => (
+                    <TableRow key={child.id}>
+                      <TableCell className="font-medium">{child.id_tag}</TableCell>
+                      <TableCell>{child.name || '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant={child.sex === 'Macho' ? 'default' : 'secondary'}>
+                          {child.sex}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {child.birth_date ? format(new Date(child.birth_date), 'dd/MM/yyyy', { locale: es }) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={child.status === 'activo' ? 'default' : 'destructive'}>
+                          {child.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Baby className="h-12 w-12 mx-auto mb-4 opacity-20" />
+              <div className="text-lg font-medium mb-2">Sin descendencia registrada</div>
+              <div className="text-sm">
+                Las crías aparecerán aquí cuando se registren nacimientos
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
