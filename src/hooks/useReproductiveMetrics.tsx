@@ -96,6 +96,8 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       // Fetch offspring data for all animals in one query
       const animalIds = metricsData?.map((animal: any) => animal.id) || [];
       let offspringData = {};
+      let pregnancyData = {};
+      let serviceData = {};
       
       if (animalIds.length > 0) {
         console.log("Fetching offspring for", animalIds.length, "animals");
@@ -116,6 +118,44 @@ export function useReproductiveMetrics(filters: Filters = {}) {
             return acc;
           }, {});
           console.log("Offspring data fetched:", Object.keys(offspringData).length, "mothers have offspring");
+        }
+
+        // Fetch pregnancy history from preñeces table
+        console.log("Fetching pregnancy history...");
+        const { data: pregnancyQuery, error: pregnancyError } = await supabase
+          .from('preñeces')
+          .select('animal_id, estado, fecha_inicio')
+          .in('animal_id', animalIds);
+
+        if (!pregnancyError && pregnancyQuery) {
+          pregnancyData = pregnancyQuery.reduce((acc, preg) => {
+            if (!acc[preg.animal_id]) acc[preg.animal_id] = [];
+            acc[preg.animal_id].push(preg);
+            return acc;
+          }, {});
+          console.log("Pregnancy history fetched for", Object.keys(pregnancyData).length, "animals");
+        }
+
+        // Fetch service history from ia table
+        console.log("Fetching service history...");
+        const { data: serviceQuery, error: serviceError } = await supabase
+          .from('ia')
+          .select('id, animales_ids, evento_id')
+          .not('animales_ids', 'is', null);
+
+        if (!serviceError && serviceQuery) {
+          // Process service data to count services per animal
+          serviceQuery.forEach(service => {
+            if (service.animales_ids) {
+              service.animales_ids.forEach(animalId => {
+                if (animalIds.includes(animalId)) {
+                  if (!serviceData[animalId]) serviceData[animalId] = [];
+                  serviceData[animalId].push(service);
+                }
+              });
+            }
+          });
+          console.log("Service history fetched for", Object.keys(serviceData).length, "animals");
         }
       }
 
@@ -138,6 +178,28 @@ export function useReproductiveMetrics(filters: Filters = {}) {
           const totalOffspring = animalOffspring.length;
           const liveOffspring = animalOffspring.filter(child => child.status !== 'muerto').length;
 
+          // Calculate reproductive metrics based on historical data
+          const animalPregnancies = pregnancyData[animal.id] || [];
+          const animalServices = serviceData[animal.id] || [];
+          
+          const totalServices = animalServices.length;
+          const confirmedPregnancies = animalPregnancies.filter(p => p.estado === 'confirmada').length;
+          const reproductiveYears = Math.max(1, Math.ceil((ageMonths - 15) / 12)); // Start counting from 15 months
+
+          // Calculate pregnancy rate based on actual data
+          let pregnancyRate = 0;
+          if (totalServices > 0) {
+            // If we have service records, calculate based on services vs pregnancies
+            pregnancyRate = Math.round((confirmedPregnancies / totalServices) * 100);
+          } else if (totalOffspring > 0 && reproductiveYears > 0) {
+            // Fallback: estimate based on offspring per reproductive year
+            const expectedServices = reproductiveYears * 1.5; // Assume 1.5 services per year on average
+            pregnancyRate = Math.min(100, Math.round((totalOffspring / expectedServices) * 100));
+          } else if (ageMonths >= 18 && totalOffspring === 0) {
+            // Animals over 18 months with no offspring get a low rate
+            pregnancyRate = 0;
+          }
+
           return {
             animal_id: animal.id,
             tag: animal.id_tag || '',
@@ -151,14 +213,14 @@ export function useReproductiveMetrics(filters: Filters = {}) {
             expected_calving_date: animal.fecha_probable_parto,
             last_service_date: null,
             days_open: 0,
-            reproductive_years: Math.max(1, Math.ceil(ageMonths / 12)),
+            reproductive_years: reproductiveYears,
             total_offspring: totalOffspring,
-            lifetime_services: 0,
-            lifetime_pregnancies: animal.esta_preñada ? 1 : 0,
-            lifetime_calvings: liveOffspring, // Live offspring as calvings
-            individual_pregnancy_rate: animal.esta_preñada ? 100.0 : 0.0,
+            lifetime_services: totalServices,
+            lifetime_pregnancies: confirmedPregnancies,
+            lifetime_calvings: liveOffspring,
+            individual_pregnancy_rate: pregnancyRate,
             individual_calving_rate: totalOffspring > 0 ? Math.round((liveOffspring / totalOffspring) * 100) : 0.0,
-            performance_level: totalOffspring >= 3 ? 'Excelente' : totalOffspring >= 1 ? 'Bueno' : 'Bajo',
+            performance_level: pregnancyRate >= 80 ? 'Excelente' : pregnancyRate >= 60 ? 'Bueno' : pregnancyRate >= 40 ? 'Regular' : 'Bajo',
             active_alerts: 0,
             alert_types: []
           };
