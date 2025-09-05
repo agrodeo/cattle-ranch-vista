@@ -125,22 +125,27 @@ export function calculatePregnancyRate(
     calvingRate = totalServices > 0 ? Math.round((liveOffspring / totalServices) * 100) : 0;
     calculationMethod = 'service_based';
   }
-  // Method 2: Historical offspring-based calculation
-  else if (totalOffspring > 0 && reproductiveYears > 0) {
-    // Calculate based on actual reproductive history only
-    // We can't estimate opportunities without real service data
-    pregnancyRate = 0; // No services = no pregnancy rate
-    calvingRate = totalOffspring > 0 ? Math.round((liveOffspring / totalOffspring) * 100) : 0;
+  // Method 2: Offspring-based calculation (when no services but has offspring)
+  else if (totalOffspring > 0) {
+    // Calculate calving rate based on actual offspring
+    pregnancyRate = 0; // No services = can't calculate pregnancy rate
+    calvingRate = Math.round((liveOffspring / totalOffspring) * 100);
     calculationMethod = 'offspring_only';
   }
-  // Method 3: No historical data available
-  else if (ageMonths >= 18) {
-    // Animals with no reproductive history - no assumptions
+  // Method 3: Current pregnancy only (no history)
+  else if (animal.esta_preñada && ageMonths >= 18) {
+    // Currently pregnant but no reproductive history
     pregnancyRate = 0; // No services = no pregnancy rate
-    calvingRate = 0; // No births = no calving rate
+    calvingRate = 0; // No births = no calving rate  
+    calculationMethod = 'current_pregnancy_only';
+  }
+  // Method 4: No reproductive data available
+  else if (ageMonths >= 18) {
+    pregnancyRate = 0;
+    calvingRate = 0;
     calculationMethod = 'no_historical_data';
   }
-  // Method 4: Young animals not yet reproductive
+  // Method 5: Young animals not yet reproductive
   else {
     pregnancyRate = 0;
     calvingRate = 0;
