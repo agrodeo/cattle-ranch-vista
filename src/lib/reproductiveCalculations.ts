@@ -127,30 +127,18 @@ export function calculatePregnancyRate(
   }
   // Method 2: Historical offspring-based calculation
   else if (totalOffspring > 0 && reproductiveYears > 0) {
-    // Expected opportunity rate: 1.2 pregnancies per year (accounting for gestation)
-    const expectedOpportunities = reproductiveYears * 1.2;
-    
-    // Include current pregnancy in success calculation
-    const currentPregnancy = animal.esta_preñada ? 1 : 0;
-    const totalSuccesses = totalOffspring + currentPregnancy;
-    
-    pregnancyRate = Math.min(100, Math.round((totalSuccesses / expectedOpportunities) * 100));
+    // Calculate based on actual reproductive history only
+    // We can't estimate opportunities without real service data
+    pregnancyRate = 0; // No services = no pregnancy rate
     calvingRate = totalOffspring > 0 ? Math.round((liveOffspring / totalOffspring) * 100) : 0;
-    calculationMethod = 'offspring_based';
+    calculationMethod = 'offspring_only';
   }
-  // Method 3: Age-based estimation for animals with no history
+  // Method 3: No historical data available
   else if (ageMonths >= 18) {
-    // Animals over 18 months with no reproductive history
-    if (animal.esta_preñada) {
-      // Currently pregnant but no history - moderate success
-      pregnancyRate = 60;
-      calvingRate = 50; // Conservative estimate
-    } else {
-      // No pregnancy, no history - poor performance
-      pregnancyRate = 10; // Very low but not zero (benefit of doubt)
-      calvingRate = 0;
-    }
-    calculationMethod = 'age_based_estimation';
+    // Animals with no reproductive history - no assumptions
+    pregnancyRate = 0; // No services = no pregnancy rate
+    calvingRate = 0; // No births = no calving rate
+    calculationMethod = 'no_historical_data';
   }
   // Method 4: Young animals not yet reproductive
   else {
