@@ -188,19 +188,19 @@ export function useReproductiveMetrics(filters: Filters = {}) {
 
            // Calculate pregnancy rate including current pregnancy status
            let pregnancyRate = 0;
-           const currentPregnancy = animal.esta_preñada ? 1 : 0;
-           const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
-           const totalOpportunities = totalServices + currentPregnancy;
            
-           if (totalOpportunities > 0) {
-             pregnancyRate = Math.round((totalSuccessfulPregnancies / totalOpportunities) * 100);
+           if (totalServices > 0) {
+             // If we have service records, include current pregnancy as success
+             const currentPregnancy = animal.esta_preñada ? 1 : 0;
+             const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
+             pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
            } else if (totalOffspring > 0 && reproductiveYears > 0) {
              // Fallback: estimate based on offspring per reproductive year
-             const expectedServices = reproductiveYears * 1.5; // Assume 1.5 services per year on average
+             const expectedServices = reproductiveYears * 1.5;
              pregnancyRate = Math.min(100, Math.round((totalOffspring / expectedServices) * 100));
-           } else if (ageMonths >= 18 && totalOffspring === 0) {
-             // Animals over 18 months with no offspring get a low rate
-             pregnancyRate = 0;
+           } else if (ageMonths >= 18) {
+             // Animals over 18 months with no records
+             pregnancyRate = animal.esta_preñada ? 50 : 0; // Give current pregnancy some credit but not 100%
            }
 
           return {
