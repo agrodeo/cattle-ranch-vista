@@ -62,6 +62,13 @@ const App = () => (
             }>
               <Route index element={<Animals />} />
             </Route>
+            <Route path="/finances" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Finances />} />
+            </Route>
             <Route path="/corrales" element={
               <ProtectedRoute>
                 <Layout />
