@@ -199,8 +199,8 @@ export function useReproductiveMetrics(filters: Filters = {}) {
              const expectedServices = reproductiveYears * 1.5;
              pregnancyRate = Math.min(100, Math.round((totalOffspring / expectedServices) * 100));
            } else if (ageMonths >= 18) {
-             // Animals over 18 months with no records
-             pregnancyRate = animal.esta_preñada ? 50 : 0; // Give current pregnancy some credit but not 100%
+             // Animals over 18 months with no offspring or service records have poor performance
+             pregnancyRate = 0; // Historical performance is poor regardless of current status
            }
 
           return {
