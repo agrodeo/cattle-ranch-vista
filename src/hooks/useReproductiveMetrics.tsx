@@ -186,19 +186,22 @@ export function useReproductiveMetrics(filters: Filters = {}) {
           const confirmedPregnancies = animalPregnancies.filter(p => p.estado === 'confirmada').length;
           const reproductiveYears = Math.max(1, Math.ceil((ageMonths - 15) / 12)); // Start counting from 15 months
 
-          // Calculate pregnancy rate based on actual data
-          let pregnancyRate = 0;
-          if (totalServices > 0) {
-            // If we have service records, calculate based on services vs pregnancies
-            pregnancyRate = Math.round((confirmedPregnancies / totalServices) * 100);
-          } else if (totalOffspring > 0 && reproductiveYears > 0) {
-            // Fallback: estimate based on offspring per reproductive year
-            const expectedServices = reproductiveYears * 1.5; // Assume 1.5 services per year on average
-            pregnancyRate = Math.min(100, Math.round((totalOffspring / expectedServices) * 100));
-          } else if (ageMonths >= 18 && totalOffspring === 0) {
-            // Animals over 18 months with no offspring get a low rate
-            pregnancyRate = 0;
-          }
+           // Calculate pregnancy rate including current pregnancy status
+           let pregnancyRate = 0;
+           const currentPregnancy = animal.esta_preñada ? 1 : 0;
+           const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
+           const totalOpportunities = totalServices + currentPregnancy;
+           
+           if (totalOpportunities > 0) {
+             pregnancyRate = Math.round((totalSuccessfulPregnancies / totalOpportunities) * 100);
+           } else if (totalOffspring > 0 && reproductiveYears > 0) {
+             // Fallback: estimate based on offspring per reproductive year
+             const expectedServices = reproductiveYears * 1.5; // Assume 1.5 services per year on average
+             pregnancyRate = Math.min(100, Math.round((totalOffspring / expectedServices) * 100));
+           } else if (ageMonths >= 18 && totalOffspring === 0) {
+             // Animals over 18 months with no offspring get a low rate
+             pregnancyRate = 0;
+           }
 
           return {
             animal_id: animal.id,
