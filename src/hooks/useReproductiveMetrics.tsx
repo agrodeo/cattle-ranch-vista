@@ -189,19 +189,20 @@ export function useReproductiveMetrics(filters: Filters = {}) {
            // Calculate pregnancy rate including current pregnancy status
            let pregnancyRate = 0;
            
-           if (totalServices > 0) {
-             // If we have service records, include current pregnancy as success
-             const currentPregnancy = animal.esta_preñada ? 1 : 0;
-             const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
-             pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
-           } else if (totalOffspring > 0 && reproductiveYears > 0) {
-             // Fallback: estimate based on offspring per reproductive year
-             const expectedServices = reproductiveYears * 1.5;
-             pregnancyRate = Math.min(100, Math.round((totalOffspring / expectedServices) * 100));
-           } else if (ageMonths >= 18) {
-             // Animals over 18 months with no offspring or service records have poor performance
-             pregnancyRate = 0; // Historical performance is poor regardless of current status
-           }
+            if (totalServices > 0) {
+              // If we have service records, include current pregnancy as success
+              const currentPregnancy = animal.esta_preñada ? 1 : 0;
+              const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
+              pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
+            } else if (totalOffspring > 0 && reproductiveYears > 0) {
+              // Include current pregnancy in the calculation for animals with offspring
+              const expectedServices = reproductiveYears * 1.5;
+              const currentPregnancy = animal.esta_preñada ? 1 : 0;
+              pregnancyRate = Math.min(100, Math.round(((totalOffspring + currentPregnancy) / expectedServices) * 100));
+            } else if (ageMonths >= 18) {
+              // Animals over 18 months with no history - current pregnancy provides some indication
+              pregnancyRate = animal.esta_preñada ? 60 : 0; // Give credit for current pregnancy but not full 100%
+            }
 
           return {
             animal_id: animal.id,
