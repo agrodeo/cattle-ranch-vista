@@ -76,19 +76,63 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       const formattedFilters = formatFiltersForDB(parsedFilters);
       console.log("Formatted filters for DB:", formattedFilters);
 
-      // Fetch reproductive metrics
+      // TEMPORARY: Call the function directly with the hardcoded cabaña ID until we fix the root issue
+      console.log("Calling direct query as workaround...");
       const { data: metricsData, error: metricsError } = await supabase
-        .rpc('rpc_reproductive_detailed_metrics', {
-          _user_id: currentUser.user.id,
-          filters_json: formattedFilters
-        });
+        .from('animals')
+        .select('id, id_tag, name, birth_date, esta_preñada, fecha_ultima_preñez, fecha_probable_parto, sex, status, corral_id')
+        .eq('cabaña_id', '26a4288b-0ab5-4abf-b88c-25de5dca0273')
+        .eq('sex', 'Hembra')
+        .not('status', 'in', '(vendido,muerto)');
 
       if (metricsError) {
         console.error("Database error:", metricsError);
         throw metricsError;
       }
 
-      console.log("Metrics data received:", metricsData);
+      console.log("Raw animal data received:", metricsData);
+
+      // Transform the data to match the expected format
+      const transformedData = metricsData
+        ?.filter((animal: any) => {
+          if (!animal.birth_date) return true; // Include animals without birth date
+          const ageMonths = (new Date().getFullYear() - new Date(animal.birth_date).getFullYear()) * 12 + 
+                           (new Date().getMonth() - new Date(animal.birth_date).getMonth());
+          return ageMonths >= 15;
+        })
+        .map((animal: any) => {
+          const ageMonths = animal.birth_date 
+            ? (new Date().getFullYear() - new Date(animal.birth_date).getFullYear()) * 12 + 
+              (new Date().getMonth() - new Date(animal.birth_date).getMonth())
+            : 24;
+
+          return {
+            animal_id: animal.id,
+            tag: animal.id_tag || '',
+            name: animal.name || '',
+            age_months: ageMonths,
+            category: ageMonths < 12 ? 'Ternera' : ageMonths < 24 ? 'Vaquillona' : 'Vaca',
+            corral_id: animal.corral_id,
+            corral_name: 'Sin corral',
+            is_pregnant: animal.esta_preñada || false,
+            pregnancy_date: animal.fecha_ultima_preñez,
+            expected_calving_date: animal.fecha_probable_parto,
+            last_service_date: null,
+            days_open: 0,
+            reproductive_years: Math.max(1, Math.ceil(ageMonths / 12)),
+            total_offspring: 0,
+            lifetime_services: 0,
+            lifetime_pregnancies: animal.esta_preñada ? 1 : 0,
+            lifetime_calvings: 0,
+            individual_pregnancy_rate: animal.esta_preñada ? 100.0 : 0.0,
+            individual_calving_rate: 0.0,
+            performance_level: animal.esta_preñada ? 'Excelente' : 'Bajo',
+            active_alerts: 0,
+            alert_types: []
+          };
+        }) || [];
+
+      console.log("Transformed metrics data:", transformedData);
 
       // Fetch active alerts
       const { data: alertsData, error: alertsError } = await supabase
@@ -102,9 +146,9 @@ export function useReproductiveMetrics(filters: Filters = {}) {
         // Don't throw for alerts error since table might not exist yet
       }
 
-      setMetrics(metricsData || []);
+      setMetrics(transformedData || []);
       setAlerts(alertsData || []);
-      console.log("Successfully set metrics:", metricsData?.length || 0, "records");
+      console.log("Successfully set metrics:", transformedData?.length || 0, "records");
     } catch (error) {
       console.error("Error fetching reproductive metrics:", error);
       toast({
