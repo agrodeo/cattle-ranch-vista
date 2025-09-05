@@ -2,50 +2,21 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
-
-interface ReproductiveMetric {
-  animal_id: string;
-  tag: string;
-  name?: string;
-  age_months: number;
-  category: string;
-  corral_id?: string;
-  corral_name?: string;
-  is_pregnant: boolean;
-  pregnancy_date?: string;
-  expected_calving_date?: string;
-  last_service_date?: string;
-  days_open?: number;
-  reproductive_years: number;
-  total_offspring: number;
-  lifetime_services: number;
-  lifetime_pregnancies: number;
-  lifetime_calvings: number;
-  individual_pregnancy_rate: number;
-  individual_calving_rate: number;
-  performance_level: string;
-  active_alerts: number;
-  alert_types: string[];
-}
-
-interface ReproductiveAlert {
-  id: string;
-  animal_id: string;
-  alert_type: string;
-  alert_date: string;
-  expected_date?: string;
-  days_overdue: number;
-  status: string;
-  notes?: string;
-}
-
-interface Filters {
-  [key: string]: any;
-  corral_ids?: string[];
-  performance?: string;
-  alert_status?: string;
-  include_sold_dead?: boolean;
-}
+import { 
+  calculateAgeInMonths, 
+  getAnimalCategory, 
+  calculatePregnancyRate,
+  validateReproductiveData
+} from "@/lib/reproductiveCalculations";
+import type {
+  AnimalReproductiveData,
+  OffspringRecord,
+  PregnancyRecord,
+  ServiceRecord,
+  ReproductiveMetric,
+  ReproductiveAlert,
+  Filters
+} from "@/types/reproductive";
 
 export function useReproductiveMetrics(filters: Filters = {}) {
   const [metrics, setMetrics] = useState<ReproductiveMetric[]>([]);
@@ -76,9 +47,8 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       const formattedFilters = formatFiltersForDB(parsedFilters);
       console.log("Formatted filters for DB:", formattedFilters);
 
-      // TEMPORARY: Call the function directly with the hardcoded cabaña ID until we fix the root issue
-      console.log("Calling direct query as workaround...");
-      const { data: metricsData, error: metricsError } = await supabase
+      // Fetch female animals
+      const { data: animalData, error: animalError } = await supabase
         .from('animals')
         .select('id, id_tag, name, birth_date, esta_preñada, fecha_ultima_preñez, fecha_probable_parto, sex, status, corral_id')
         .eq('cabaña_id', '26a4288b-0ab5-4abf-b88c-25de5dca0273')
@@ -86,167 +56,152 @@ export function useReproductiveMetrics(filters: Filters = {}) {
         .neq('status', 'vendido')
         .neq('status', 'muerto');
 
-      if (metricsError) {
-        console.error("Database error:", metricsError);
-        throw metricsError;
+      if (animalError) {
+        console.error("Database error:", animalError);
+        throw animalError;
       }
 
-      console.log("Raw animal data received:", metricsData);
+      console.log("Raw animal data received:", animalData);
 
-      // Fetch offspring data for all animals in one query
-      const animalIds = metricsData?.map((animal: any) => animal.id) || [];
-      let offspringData = {};
-      let pregnancyData = {};
-      let serviceData = {};
+      // Fetch all related data in parallel
+      const animalIds = animalData?.map((animal: any) => animal.id) || [];
       
-      if (animalIds.length > 0) {
-        console.log("Fetching offspring for", animalIds.length, "animals");
-        const { data: offspringQuery, error: offspringError } = await supabase
+      if (animalIds.length === 0) {
+        setMetrics([]);
+        setAlerts([]);
+        return;
+      }
+
+      const [offspringResponse, pregnancyResponse, serviceResponse, alertsResponse] = await Promise.all([
+        // Fetch offspring data
+        supabase
           .from('animals')
           .select('id, mother_id, father_id, status')
-          .or(animalIds.map(id => `mother_id.eq.${id}`).join(','));
-
-        if (offspringError) {
-          console.error("Error fetching offspring:", offspringError);
-        } else {
-          // Group offspring by mother
-          offspringData = (offspringQuery || []).reduce((acc, child) => {
-            if (child.mother_id) {
-              if (!acc[child.mother_id]) acc[child.mother_id] = [];
-              acc[child.mother_id].push(child);
-            }
-            return acc;
-          }, {});
-          console.log("Offspring data fetched:", Object.keys(offspringData).length, "mothers have offspring");
-        }
-
-        // Fetch pregnancy history from preñeces table
-        console.log("Fetching pregnancy history...");
-        const { data: pregnancyQuery, error: pregnancyError } = await supabase
+          .or(animalIds.map(id => `mother_id.eq.${id}`).join(',')),
+        
+        // Fetch pregnancy history
+        supabase
           .from('preñeces')
           .select('animal_id, estado, fecha_inicio')
-          .in('animal_id', animalIds);
-
-        if (!pregnancyError && pregnancyQuery) {
-          pregnancyData = pregnancyQuery.reduce((acc, preg) => {
-            if (!acc[preg.animal_id]) acc[preg.animal_id] = [];
-            acc[preg.animal_id].push(preg);
-            return acc;
-          }, {});
-          console.log("Pregnancy history fetched for", Object.keys(pregnancyData).length, "animals");
-        }
-
-        // Fetch service history from ia table
-        console.log("Fetching service history...");
-        const { data: serviceQuery, error: serviceError } = await supabase
+          .in('animal_id', animalIds),
+        
+        // Fetch service history
+        supabase
           .from('ia')
           .select('id, animales_ids, evento_id')
-          .not('animales_ids', 'is', null);
+          .not('animales_ids', 'is', null),
+        
+        // Fetch active alerts
+        supabase
+          .from('reproductive_alerts')
+          .select('*')
+          .eq('status', 'pending')
+          .order('days_overdue', { ascending: false })
+      ]);
 
-        if (!serviceError && serviceQuery) {
-          // Process service data to count services per animal
-          serviceQuery.forEach(service => {
-            if (service.animales_ids) {
-              service.animales_ids.forEach(animalId => {
-                if (animalIds.includes(animalId)) {
-                  if (!serviceData[animalId]) serviceData[animalId] = [];
-                  serviceData[animalId].push(service);
-                }
-              });
-            }
-          });
-          console.log("Service history fetched for", Object.keys(serviceData).length, "animals");
-        }
+      // Process offspring data
+      const offspringData: Record<string, OffspringRecord[]> = {};
+      if (!offspringResponse.error && offspringResponse.data) {
+        offspringResponse.data.forEach((child: any) => {
+          if (child.mother_id) {
+            if (!offspringData[child.mother_id]) offspringData[child.mother_id] = [];
+            offspringData[child.mother_id].push(child);
+          }
+        });
       }
 
-      // Transform the data to match the expected format
-      const transformedData = metricsData
+      // Process pregnancy data
+      const pregnancyData: Record<string, PregnancyRecord[]> = {};
+      if (!pregnancyResponse.error && pregnancyResponse.data) {
+        pregnancyResponse.data.forEach((preg: any) => {
+          if (!pregnancyData[preg.animal_id]) pregnancyData[preg.animal_id] = [];
+          pregnancyData[preg.animal_id].push(preg);
+        });
+      }
+
+      // Process service data
+      const serviceData: Record<string, ServiceRecord[]> = {};
+      if (!serviceResponse.error && serviceResponse.data) {
+        serviceResponse.data.forEach((service: any) => {
+          if (service.animales_ids) {
+            service.animales_ids.forEach((animalId: string) => {
+              if (animalIds.includes(animalId)) {
+                if (!serviceData[animalId]) serviceData[animalId] = [];
+                serviceData[animalId].push(service);
+              }
+            });
+          }
+        });
+      }
+
+      // Transform data using new calculation logic
+      const transformedData = animalData
         ?.filter((animal: any) => {
-          if (!animal.birth_date) return true; // Include animals without birth date
-          const ageMonths = (new Date().getFullYear() - new Date(animal.birth_date).getFullYear()) * 12 + 
-                           (new Date().getMonth() - new Date(animal.birth_date).getMonth());
-          return ageMonths >= 15;
+          const ageMonths = calculateAgeInMonths(animal.birth_date);
+          return ageMonths >= 15; // Only include animals in reproductive age
         })
         .map((animal: any) => {
-          const ageMonths = animal.birth_date 
-            ? (new Date().getFullYear() - new Date(animal.birth_date).getFullYear()) * 12 + 
-              (new Date().getMonth() - new Date(animal.birth_date).getMonth())
-            : 24;
-
-          // Calculate offspring data
+          const ageMonths = calculateAgeInMonths(animal.birth_date);
+          const category = getAnimalCategory(ageMonths);
+          
+          // Get related data for this animal
           const animalOffspring = offspringData[animal.id] || [];
-          const totalOffspring = animalOffspring.length;
-          const liveOffspring = animalOffspring.filter(child => child.status !== 'muerto').length;
-
-          // Calculate reproductive metrics based on historical data
           const animalPregnancies = pregnancyData[animal.id] || [];
           const animalServices = serviceData[animal.id] || [];
           
-          const totalServices = animalServices.length;
-          const confirmedPregnancies = animalPregnancies.filter(p => p.estado === 'confirmada').length;
-          const reproductiveYears = Math.max(1, Math.ceil((ageMonths - 15) / 12)); // Start counting from 15 months
+          // Calculate reproductive metrics using new logic
+          const reproductiveResult = calculatePregnancyRate(
+            animal,
+            animalPregnancies,
+            animalServices,
+            animalOffspring
+          );
+          
+          // Validate data and log warnings
+          const warnings = validateReproductiveData(
+            animal,
+            animalPregnancies,
+            animalServices,
+            animalOffspring
+          );
+          
+          if (warnings.length > 0) {
+            console.warn(`Data warnings for animal ${animal.id_tag}:`, warnings);
+          }
 
-           // Calculate pregnancy rate including current pregnancy status
-           let pregnancyRate = 0;
-           
-            if (totalServices > 0) {
-              // If we have service records, include current pregnancy as success
-              const currentPregnancy = animal.esta_preñada ? 1 : 0;
-              const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
-              pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
-            } else if (totalOffspring > 0 && reproductiveYears > 0) {
-              // Include current pregnancy in the calculation for animals with offspring
-              const expectedServices = reproductiveYears * 1.5;
-              const currentPregnancy = animal.esta_preñada ? 1 : 0;
-              pregnancyRate = Math.min(100, Math.round(((totalOffspring + currentPregnancy) / expectedServices) * 100));
-            } else if (ageMonths >= 18) {
-              // Animals over 18 months with no history - current pregnancy provides some indication
-              pregnancyRate = animal.esta_preñada ? 60 : 0; // Give credit for current pregnancy but not full 100%
-            }
-
-          return {
+          const metric: ReproductiveMetric = {
             animal_id: animal.id,
             tag: animal.id_tag || '',
             name: animal.name || '',
             age_months: ageMonths,
-            category: ageMonths < 12 ? 'Ternera' : ageMonths < 24 ? 'Vaquillona' : 'Vaca',
+            category: category,
             corral_id: animal.corral_id,
-            corral_name: 'Sin corral',
+            corral_name: 'Sin corral', // TODO: Fetch actual corral names
             is_pregnant: animal.esta_preñada || false,
             pregnancy_date: animal.fecha_ultima_preñez,
             expected_calving_date: animal.fecha_probable_parto,
-            last_service_date: null,
-            days_open: 0,
-            reproductive_years: reproductiveYears,
-            total_offspring: totalOffspring,
-            lifetime_services: totalServices,
-            lifetime_pregnancies: confirmedPregnancies,
-            lifetime_calvings: liveOffspring,
-            individual_pregnancy_rate: pregnancyRate,
-            individual_calving_rate: totalOffspring > 0 ? Math.round((liveOffspring / totalOffspring) * 100) : 0.0,
-            performance_level: pregnancyRate >= 80 ? 'Excelente' : pregnancyRate >= 60 ? 'Bueno' : pregnancyRate >= 40 ? 'Regular' : 'Bajo',
-            active_alerts: 0,
-            alert_types: []
+            last_service_date: null, // TODO: Calculate from service records
+            days_open: 0, // TODO: Calculate based on last calving
+            reproductive_years: reproductiveResult.reproductive_years,
+            total_offspring: animalOffspring.length,
+            lifetime_services: reproductiveResult.total_services,
+            lifetime_pregnancies: reproductiveResult.total_pregnancies,
+            lifetime_calvings: reproductiveResult.total_calvings,
+            individual_pregnancy_rate: reproductiveResult.pregnancy_rate,
+            individual_calving_rate: reproductiveResult.calving_rate,
+            performance_level: reproductiveResult.performance_level,
+            active_alerts: 0, // TODO: Count alerts for this animal
+            alert_types: [] // TODO: Get alert types for this animal
           };
+
+          return metric;
         }) || [];
 
-      console.log("Transformed metrics data with offspring:", transformedData);
+      console.log("Transformed metrics with new calculation logic:", transformedData);
 
-      // Fetch active alerts
-      const { data: alertsData, error: alertsError } = await supabase
-        .from('reproductive_alerts')
-        .select('*')
-        .eq('status', 'pending')
-        .order('days_overdue', { ascending: false });
-
-      if (alertsError) {
-        console.log("Alerts error (not critical):", alertsError);
-        // Don't throw for alerts error since table might not exist yet
-      }
-
-      setMetrics(transformedData || []);
-      setAlerts(alertsData || []);
-      console.log("Successfully set metrics:", transformedData?.length || 0, "records");
+      setMetrics(transformedData);
+      setAlerts(alertsResponse.data || []);
+      console.log("Successfully set metrics:", transformedData.length, "records");
     } catch (error) {
       console.error("Error fetching reproductive metrics:", error);
       toast({
