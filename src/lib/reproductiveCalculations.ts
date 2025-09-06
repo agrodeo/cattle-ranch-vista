@@ -113,39 +113,41 @@ export function calculatePregnancyRate(
   const totalOffspring = offspring.length;
   const liveOffspring = offspring.filter(child => child.status !== 'muerto').length;
   
+  console.log(`DEBUG calculatePregnancyRate for ${animal.id_tag}:`, {
+    ageMonths,
+    reproductiveYears,
+    totalServices,
+    confirmedPregnancies,
+    totalOffspring,
+    liveOffspring
+  });
+  
   let pregnancyRate = 0;
   let calvingRate = 0;
   let calculationMethod = '';
   
-  // Method 1: Service-based calculation (most accurate)
-  if (totalServices > 0) {
+  // NEW METHOD: Calculate based on offspring per reproductive cycle (as requested by user)
+  if (reproductiveYears > 0) {
+    // Include current pregnancy in the count if animal is pregnant
     const currentPregnancy = animal.esta_preñada ? 1 : 0;
-    const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
-    pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
-    calvingRate = totalServices > 0 ? Math.round((liveOffspring / totalServices) * 100) : 0;
-    calculationMethod = 'service_based';
+    const totalReproductiveEvents = totalOffspring + currentPregnancy;
+    
+    // Pregnancy rate = (total offspring + current pregnancy) / reproductive years * 100
+    pregnancyRate = Math.round((totalReproductiveEvents / reproductiveYears) * 100);
+    
+    // Calving rate = actual offspring born / total reproductive events * 100
+    calvingRate = totalReproductiveEvents > 0 ? Math.round((liveOffspring / totalReproductiveEvents) * 100) : 0;
+    
+    calculationMethod = 'offspring_per_cycle';
+    
+    console.log(`DEBUG ${animal.id_tag} cycle-based calculation:`, {
+      totalReproductiveEvents,
+      reproductiveYears,
+      pregnancyRate,
+      calvingRate
+    });
   }
-  // Method 2: Offspring-based calculation (when no services but has offspring)
-  else if (totalOffspring > 0) {
-    // Calculate calving rate based on actual offspring
-    pregnancyRate = 0; // No services = can't calculate pregnancy rate
-    calvingRate = Math.round((liveOffspring / totalOffspring) * 100);
-    calculationMethod = 'offspring_only';
-  }
-  // Method 3: Current pregnancy only (no history)
-  else if (animal.esta_preñada && ageMonths >= 18) {
-    // Currently pregnant but no reproductive history
-    pregnancyRate = 0; // No services = no pregnancy rate
-    calvingRate = 0; // No births = no calving rate  
-    calculationMethod = 'current_pregnancy_only';
-  }
-  // Method 4: No reproductive data available
-  else if (ageMonths >= 18) {
-    pregnancyRate = 0;
-    calvingRate = 0;
-    calculationMethod = 'no_historical_data';
-  }
-  // Method 5: Young animals not yet reproductive
+  // Fallback for very young animals
   else {
     pregnancyRate = 0;
     calvingRate = 0;
