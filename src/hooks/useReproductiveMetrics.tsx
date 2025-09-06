@@ -47,11 +47,21 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       const formattedFilters = formatFiltersForDB(parsedFilters);
       console.log("Formatted filters for DB:", formattedFilters);
 
+      // Get user's cabaña_id using the existing function
+      const { data: cabanaInfo } = await supabase.rpc('get_current_user_cabana_id');
+      
+      if (!cabanaInfo) {
+        console.log("No cabaña found for user");
+        return;
+      }
+
+      console.log("Using cabana_id:", cabanaInfo);
+
       // Fetch female animals
       const { data: animalData, error: animalError } = await supabase
         .from('animals')
         .select('id, id_tag, name, birth_date, esta_preñada, fecha_ultima_preñez, fecha_probable_parto, sex, status, corral_id')
-        .eq('cabaña_id', '26a4288b-0ab5-4abf-b88c-25de5dca0273')
+        .eq('cabaña_id', cabanaInfo)
         .eq('sex', 'Hembra')
         .neq('status', 'vendido')
         .neq('status', 'muerto');

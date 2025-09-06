@@ -142,50 +142,25 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
     const totalInseminations = iaServices.length;
     
-    // PRIMARY: Use esta_preñada field from animals table
+    // Count pregnant females directly from esta_preñada field
     const pregnantFemales = reproductiveFemales.filter(f => f.esta_preñada === true);
-    const primaryPregnantCount = pregnantFemales.length;
+    const confirmedPregnancies = pregnantFemales.length;
     
-    // SECONDARY: Get unique animals that had services (for AI success rate)
+    // Get unique animals that had services (for AI success rate)
     const servedAnimalIds = new Set<string>();
     iaServices.forEach(ia => {
       if (ia.animales_ids) {
         ia.animales_ids.forEach((animalId: string) => servedAnimalIds.add(animalId));
       }
     });
-    
-    // BACKUP: Count pregnancies from tactos/preñeces if no pregnant animals from primary method
-    const pregnantAnimalIds = new Set<string>();
-    
-    // From tactos results
-    tactos.forEach(tacto => {
-      if (tacto.resultados) {
-        tacto.resultados.forEach((result: any) => {
-          if (result.animal_id && result.resultado === 'preñada') {
-            pregnantAnimalIds.add(result.animal_id);
-          }
-        });
-      }
-    });
-    
-    // From preñeces table
-    pregnancies.forEach(p => {
-      if (p.estado === 'confirmada') {
-        pregnantAnimalIds.add(p.animal_id);
-      }
-    });
-    
-    // Use primary count if available, otherwise use backup count
-    const confirmedPregnancies = primaryPregnantCount > 0 ? primaryPregnantCount : pregnantAnimalIds.size;
     const servedFemalesCount = servedAnimalIds.size;
     
-    // Pregnancy rate: pregnant females / reproductive females (not just served)
+    // Pregnancy rate: pregnant females / reproductive females
     const pregnancyRate = reproductiveFemales.length > 0 ? (confirmedPregnancies / reproductiveFemales.length) * 100 : 0;
     
     console.log('Pregnancy calculation:', {
       reproductiveFemales: reproductiveFemales.length,
-      pregnantFromAnimalsTable: primaryPregnantCount,
-      pregnantFromTactos: pregnantAnimalIds.size,
+      pregnantFromAnimalsTable: confirmedPregnancies,
       confirmedPregnancies,
       pregnancyRate,
       servedFemalesCount
