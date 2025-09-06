@@ -7,16 +7,19 @@ import { MobileLayout } from "@/components/mobile/MobileLayout";
 const Layout = () => {
   const isMobile = useIsMobile();
 
-  if (isMobile) {
-    return <MobileLayout />;
-  }
-
   return (
     <SidebarProvider defaultOpen={!isMobile}>
-      <div className="min-h-screen flex w-full bg-background">
-        <AppSidebar />
-        <MobileLayout />
-      </div>
+      {isMobile ? (
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar />
+          <MobileLayout />
+        </div>
+      ) : (
+        <div className="min-h-screen flex w-full bg-background">
+          <AppSidebar />
+          <MobileLayout />
+        </div>
+      )}
     </SidebarProvider>
   );
 };
