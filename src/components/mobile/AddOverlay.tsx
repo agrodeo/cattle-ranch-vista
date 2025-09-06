@@ -1,18 +1,32 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { X, Users, Activity, DollarSign, Home } from "lucide-react";
+import { X, Users, Activity, DollarSign, Home, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { AnimalCreationFlow } from "./flows/AnimalCreationFlow";
+import { ActivityCreationFlow } from "./flows/ActivityCreationFlow";
+import { FinanceCreationFlow } from "./flows/FinanceCreationFlow";
+import { CorralCreationFlow } from "./flows/CorralCreationFlow";
 
 interface AddOverlayProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectFlow: (flow: string) => void;
+  selectedFlow: string | null;
 }
 
-export function AddOverlay({ isOpen, onClose, onSelectFlow }: AddOverlayProps) {
+export function AddOverlay({ isOpen, onClose, onSelectFlow, selectedFlow }: AddOverlayProps) {
   const { t } = useTranslation(['activities', 'animals', 'common']);
+  
+  const { isRefreshing, pullDistance, isPulling } = usePullToRefresh({
+    onRefresh: async () => {
+      // Simulate refresh
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    },
+    disabled: !isOpen || !!selectedFlow,
+  });
 
   const addOptions = [
     {
@@ -47,8 +61,43 @@ export function AddOverlay({ isOpen, onClose, onSelectFlow }: AddOverlayProps) {
 
   if (!isOpen) return null;
 
+  // Show individual flows
+  if (selectedFlow === 'animals') {
+    return <AnimalCreationFlow onClose={onClose} />;
+  }
+  
+  if (selectedFlow === 'activity') {
+    return <ActivityCreationFlow onClose={onClose} />;
+  }
+  
+  if (selectedFlow === 'finance') {
+    return <FinanceCreationFlow onClose={onClose} />;
+  }
+  
+  if (selectedFlow === 'corral') {
+    return <CorralCreationFlow onClose={onClose} />;
+  }
+
   return (
     <div className="lg:hidden fixed inset-0 z-50 bg-background">
+      {/* Pull to refresh indicator */}
+      {isPulling && (
+        <div 
+          className="absolute top-0 left-0 right-0 bg-primary/10 flex items-center justify-center transition-all duration-200 ease-out z-10"
+          style={{ height: `${Math.min(pullDistance, 80)}px` }}
+        >
+          <RefreshCw 
+            className={cn(
+              "h-5 w-5 text-primary transition-transform duration-200",
+              isRefreshing && "animate-spin"
+            )}
+            style={{ 
+              transform: `rotate(${Math.min(pullDistance * 4, 360)}deg)` 
+            }}
+          />
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h1 className="text-xl font-semibold">Cargar Datos</h1>

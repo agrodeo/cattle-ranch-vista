@@ -35,6 +35,10 @@ import { normalizeAnimalStatus, getDisplayStatus } from "@/lib/statusUtils";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatDate } from "@/lib/format";
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
+import { usePullToRefresh } from "@/hooks/usePullToRefresh";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { RefreshCw } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Cabaña {
   id: string;
@@ -139,6 +143,7 @@ const Animals = () => {
   const navigate = useNavigate();
   const { currentUser } = useSupabaseAuth();
   const { t } = useTranslation(['animals', 'common', 'forms']);
+  const isMobile = useIsMobile();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
   const [loading, setLoading] = useState(true);
@@ -176,6 +181,13 @@ const Animals = () => {
     condicion_corporal: "",
     observaciones: "",
     registration_level: ""
+  });
+
+  const { isRefreshing, pullDistance, isPulling } = usePullToRefresh({
+    onRefresh: async () => {
+      await fetchAnimals();
+    },
+    disabled: !isMobile,
   });
 
   useEffect(() => {
@@ -715,7 +727,24 @@ const Animals = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-4 sm:space-y-6 relative">
+      {/* Pull to refresh indicator for mobile */}
+      {isMobile && isPulling && (
+        <div 
+          className="absolute top-0 left-0 right-0 bg-primary/10 flex items-center justify-center transition-all duration-200 ease-out z-10"
+          style={{ height: `${Math.min(pullDistance, 80)}px` }}
+        >
+          <RefreshCw 
+            className={cn(
+              "h-5 w-5 text-primary transition-transform duration-200",
+              isRefreshing && "animate-spin"
+            )}
+            style={{ 
+              transform: `rotate(${Math.min(pullDistance * 4, 360)}deg)` 
+            }}
+          />
+        </div>
+      )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1 sm:space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold">{t('animals:title')}</h1>

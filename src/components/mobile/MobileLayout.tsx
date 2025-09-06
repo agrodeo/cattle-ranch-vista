@@ -23,9 +23,7 @@ export function MobileLayout() {
 
   const handleSelectFlow = (flow: string) => {
     setSelectedFlow(flow);
-    // For now, just close the overlay. Individual flows will be implemented separately
     setShowAddOverlay(false);
-    console.log('Selected flow:', flow);
   };
 
   if (!isMobile) {
@@ -61,6 +59,7 @@ export function MobileLayout() {
         isOpen={showAddOverlay}
         onClose={handleCloseOverlay}
         onSelectFlow={handleSelectFlow}
+        selectedFlow={selectedFlow}
       />
     </>
   );
