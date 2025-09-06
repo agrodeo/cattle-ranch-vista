@@ -142,20 +142,45 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     
     console.log("Total females found:", totalFemales);
     
-    // Reproductive females (15+ months old)
+    // Calculate reproductive performance for ALL females based on offspring/cycles
+    let totalOffspring = 0;
+    let totalReproductiveCycles = 0;
+    
     const reproductiveFemales = females.filter(f => {
       if (!f.birth_date) return false;
+      
+      // Calculate age in months from birth to today
       const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-      return ageInMonths >= 15;
+      
+      // Only include females that are at least 15 months old (reproductive age)
+      if (ageInMonths < 15) return false;
+      
+      // Count offspring (crias) for this female
+      const offspring = animals.filter(a => a.mother_id === f.id);
+      const offspringCount = offspring.length;
+      
+      // Calculate reproductive cycles: roughly one cycle per year after reaching reproductive age
+      // Start counting from 18 months (1.5 years) when they typically start reproducing
+      const reproductiveAgeMonths = Math.max(0, ageInMonths - 18);
+      const reproductiveCycles = Math.max(1, Math.floor(reproductiveAgeMonths / 12) + 1);
+      
+      totalOffspring += offspringCount;
+      totalReproductiveCycles += reproductiveCycles;
+      
+      console.log(`Female ${f.id_tag}: age=${ageInMonths}mo, offspring=${offspringCount}, cycles=${reproductiveCycles}`);
+      
+      return true;
     });
 
     console.log("Reproductive females (15+ months):", reproductiveFemales.length);
+    console.log("Total offspring across all females:", totalOffspring);
+    console.log("Total reproductive cycles:", totalReproductiveCycles);
     
-    // Count pregnant females directly from esta_preñada field
-    const pregnantFemales = reproductiveFemales.filter(f => f.esta_preñada === true);
-    const confirmedPregnancies = pregnantFemales.length;
+    // Pregnancy rate = total offspring / total reproductive cycles * 100
+    const pregnancyRate = totalReproductiveCycles > 0 ? (totalOffspring / totalReproductiveCycles) * 100 : 0;
     
-    console.log("Pregnant reproductive females:", confirmedPregnancies);
+    // For confirmed pregnancies count, use actual offspring count
+    const confirmedPregnancies = totalOffspring;
     
     // Get unique animals that had services (for AI success rate)
     const servedAnimalIds = new Set<string>();
@@ -166,27 +191,23 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     });
     const servedFemalesCount = servedAnimalIds.size;
     
-    // Pregnancy rate: pregnant females / reproductive females
-    const pregnancyRate = reproductiveFemales.length > 0 ? (confirmedPregnancies / reproductiveFemales.length) * 100 : 0;
-    
     const totalInseminations = iaServices.length;
 
-    console.log('Pregnancy calculation:', {
+    console.log('Pregnancy calculation (based on offspring/cycles):', {
       reproductiveFemales: reproductiveFemales.length,
-      pregnantFromAnimalsTable: confirmedPregnancies,
-      confirmedPregnancies,
+      totalOffspring,
+      totalReproductiveCycles,
       pregnancyRate: pregnancyRate.toFixed(1),
       servedFemalesCount
     });
     
-    // Count live births (animals with this animal as mother)
-    const liveBirths = animals.filter(a => a.mother_id && animals.some(mother => mother.id === a.mother_id)).length;
+    // Count live births (same as total offspring)
+    const liveBirths = totalOffspring;
     
-    // Calving rate should be calculated based on confirmed pregnancies that resulted in births
-    // Since we don't have a direct link between pregnancies and births, we'll estimate conservatively
-    const calvingRate = confirmedPregnancies > 0 ? Math.min((liveBirths / confirmedPregnancies) * 100, 100) : 0;
+    // Calving rate based on offspring vs cycles
+    const calvingRate = pregnancyRate; // Same calculation since we're using actual births
     
-    const aiSuccessRate = totalInseminations > 0 ? (confirmedPregnancies / totalInseminations) * 100 : 0;
+    const aiSuccessRate = totalInseminations > 0 ? (totalOffspring / totalInseminations) * 100 : 0;
 
     // Yearly data
     const currentYear = new Date().getFullYear();
