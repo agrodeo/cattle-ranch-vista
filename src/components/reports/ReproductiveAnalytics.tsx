@@ -42,6 +42,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   const [showBulkMove, setShowBulkMove] = useState(false);
 
   useEffect(() => {
+    console.log("DEBUG: Current user cabaña_id:", currentUser?.cabañaId);
     if (currentUser?.cabañaId) {
       fetchReproductiveStats();
     }
@@ -49,6 +50,8 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
   const fetchReproductiveStats = async () => {
     try {
+      console.log("DEBUG: Fetching reproductive stats for user:", currentUser?.cabañaId);
+      
       let animalsQuery = supabase
         .from("animals")
         .select("*")
@@ -68,6 +71,8 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       }
 
       const { data: animals } = await animalsQuery;
+      
+      console.log("DEBUG: Fetched", animals?.length || 0, "animals for cabaña:", currentUser?.cabañaId);
 
       let iaQuery = supabase
         .from("ia")
@@ -120,6 +125,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
 
       const { data: pregnancies } = await pregnanciesQuery;
 
+      console.log("DEBUG: About to calculate stats with animals:", animals?.length, "ia:", iaServices?.length);
       const reproStats = calculateReproductiveStats(animals || [], iaServices || [], tactos || [], pregnancies || []);
       setStats(reproStats);
     } catch (error) {
@@ -146,18 +152,30 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     let totalOffspring = 0;
     let totalReproductiveCycles = 0;
     
+    console.log("DEBUG: Starting reproductive calculation with", females.length, "total females");
+    
     const reproductiveFemales = females.filter(f => {
-      if (!f.birth_date) return false;
+      if (!f.birth_date) {
+        console.log("DEBUG: Skipping female", f.id_tag, "- no birth date");
+        return false;
+      }
       
       // Calculate age in months from birth to today
       const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
       
+      console.log("DEBUG: Female", f.id_tag, "is", ageInMonths, "months old");
+      
       // Only include females that are at least 15 months old (reproductive age)
-      if (ageInMonths < 15) return false;
+      if (ageInMonths < 15) {
+        console.log("DEBUG: Skipping female", f.id_tag, "- too young (", ageInMonths, "months)");
+        return false;
+      }
       
       // Count offspring (crias) for this female
       const offspring = animals.filter(a => a.mother_id === f.id);
       const offspringCount = offspring.length;
+      
+      console.log("DEBUG: Female", f.id_tag, "has", offspringCount, "offspring:", offspring.map(o => o.id_tag));
       
       // Calculate reproductive cycles: roughly one cycle per year after reaching reproductive age
       // Start counting from 18 months (1.5 years) when they typically start reproducing
@@ -167,7 +185,7 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       totalOffspring += offspringCount;
       totalReproductiveCycles += reproductiveCycles;
       
-      console.log(`Female ${f.id_tag}: age=${ageInMonths}mo, offspring=${offspringCount}, cycles=${reproductiveCycles}`);
+      console.log("DEBUG: Female", f.id_tag, "- age:", ageInMonths, "mo, offspring:", offspringCount, "cycles:", reproductiveCycles);
       
       return true;
     });
@@ -350,12 +368,17 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tasa de Preñez</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={fetchReproductiveStats}>
+                Recalcular
+              </Button>
+              <Heart className="h-4 w-4 text-muted-foreground" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.pregnancyRate.toFixed(1)}%</div>
             <p className="text-xs text-muted-foreground">
-              {stats.confirmedPregnancies} preñadas de {stats.reproductiveFemales} hembras reproductivas
+              {stats.confirmedPregnancies} crías de {stats.reproductiveFemales} hembras reproductivas
             </p>
           </CardContent>
         </Card>
