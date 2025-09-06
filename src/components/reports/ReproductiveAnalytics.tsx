@@ -130,8 +130,17 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
   };
 
   const calculateReproductiveStats = (animals: any[], iaServices: any[], tactos: any[], pregnancies: any[]): ReproductiveStats => {
+    console.log("Calculating reproductive stats with data:", {
+      animalsCount: animals.length,
+      iaServicesCount: iaServices.length,
+      tactosCount: tactos.length,
+      pregnanciesCount: pregnancies.length
+    });
+
     const females = animals.filter(a => a.sex === 'Hembra' && (!a.status || a.status === 'activo'));
     const totalFemales = females.length;
+    
+    console.log("Total females found:", totalFemales);
     
     // Reproductive females (15+ months old)
     const reproductiveFemales = females.filter(f => {
@@ -140,11 +149,13 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
       return ageInMonths >= 15;
     });
 
-    const totalInseminations = iaServices.length;
+    console.log("Reproductive females (15+ months):", reproductiveFemales.length);
     
     // Count pregnant females directly from esta_preñada field
     const pregnantFemales = reproductiveFemales.filter(f => f.esta_preñada === true);
     const confirmedPregnancies = pregnantFemales.length;
+    
+    console.log("Pregnant reproductive females:", confirmedPregnancies);
     
     // Get unique animals that had services (for AI success rate)
     const servedAnimalIds = new Set<string>();
@@ -158,11 +169,13 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
     // Pregnancy rate: pregnant females / reproductive females
     const pregnancyRate = reproductiveFemales.length > 0 ? (confirmedPregnancies / reproductiveFemales.length) * 100 : 0;
     
+    const totalInseminations = iaServices.length;
+
     console.log('Pregnancy calculation:', {
       reproductiveFemales: reproductiveFemales.length,
       pregnantFromAnimalsTable: confirmedPregnancies,
       confirmedPregnancies,
-      pregnancyRate,
+      pregnancyRate: pregnancyRate.toFixed(1),
       servedFemalesCount
     });
     
