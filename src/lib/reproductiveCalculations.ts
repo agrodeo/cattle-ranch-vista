@@ -126,33 +126,33 @@ export function calculatePregnancyRate(
   let calvingRate = 0;
   let calculationMethod = '';
   
-  // NEW METHOD: Calculate based on offspring per reproductive cycle (as requested by user)
-  if (reproductiveYears > 0) {
-    // Include current pregnancy in the count if animal is pregnant
+  // NEW METHOD: Calving rate = successful calvings / total pregnancies 
+  // Note: For individual animal calculation, we'll use the simplified approach
+  // The auto-pregnancy generation will be handled at the herd level in ReproductiveAnalytics
+  const totalPregnancies = pregnancies.length;
+  
+  if (totalPregnancies > 0) {
+    // Calving rate = live offspring / total pregnancies * 100
+    calvingRate = Math.round((liveOffspring / totalPregnancies) * 100);
+    calculationMethod = 'pregnancy_based';
+  }
+  
+  // For pregnancy rate, use service-based calculation if available
+  if (totalServices > 0) {
     const currentPregnancy = animal.esta_preñada ? 1 : 0;
-    const totalReproductiveEvents = totalOffspring + currentPregnancy;
-    
-    // Pregnancy rate = (total offspring + current pregnancy) / reproductive years * 100
-    pregnancyRate = Math.round((totalReproductiveEvents / reproductiveYears) * 100);
-    
-    // Calving rate = actual offspring born / total reproductive events * 100
-    calvingRate = totalReproductiveEvents > 0 ? Math.round((liveOffspring / totalReproductiveEvents) * 100) : 0;
-    
-    calculationMethod = 'offspring_per_cycle';
-    
-    console.log(`DEBUG ${animal.id_tag} cycle-based calculation:`, {
-      totalReproductiveEvents,
-      reproductiveYears,
-      pregnancyRate,
-      calvingRate
-    });
+    const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
+    pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
+  } else if (reproductiveYears > 0 && totalOffspring > 0) {
+    // Fallback: use offspring per reproductive year
+    pregnancyRate = Math.round((totalOffspring / reproductiveYears) * 100);
   }
-  // Fallback for very young animals
-  else {
-    pregnancyRate = 0;
-    calvingRate = 0;
-    calculationMethod = 'too_young';
-  }
+  
+  console.log(`DEBUG ${animal.id_tag} pregnancy-based calculation:`, {
+    totalPregnancies,
+    liveOffspring,
+    calvingRate,
+    pregnancyRate
+  });
   
   // Determine performance level
   let performanceLevel = 'Bajo';
