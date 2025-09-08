@@ -4,9 +4,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Heart, TrendingUp, Calendar, Users } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ReproductiveFemalesTable } from "./ReproductiveFemalesTable";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
+import { calculateReproductiveRates } from "@/lib/pregnancyManagement";
 
 interface ReportFilters {
   date_from?: string;
@@ -14,8 +16,6 @@ interface ReportFilters {
   corral_ids?: string[];
   include_sold_dead?: boolean;
 }
-import { toast } from "sonner";
-import { calculateReproductiveRates } from "@/lib/pregnancyManagement";
 
 interface SummaryMetrics {
   totalFemales: number;
