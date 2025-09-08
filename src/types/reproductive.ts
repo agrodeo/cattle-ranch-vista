@@ -19,9 +19,22 @@ export interface OffspringRecord {
 }
 
 export interface PregnancyRecord {
+  id: string;
   animal_id: string;
   estado: string;
+  estado_final: 'activa' | 'exitosa' | 'fallida';
   fecha_inicio: string;
+  fecha_estimada_parto?: string;
+  fecha_finalizacion?: string;
+  motivo_finalizacion?: string;
+  cria_id?: string;
+}
+
+export interface PregnancyHistory {
+  active_pregnancies: number;
+  successful_pregnancies: number;
+  failed_pregnancies: number;
+  total_pregnancies: number;
 }
 
 export interface ServiceRecord {

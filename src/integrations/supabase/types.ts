@@ -1349,11 +1349,15 @@ export type Database = {
           animal_id: string
           cabaña_id: string
           created_at: string
+          cria_id: string | null
           estado: string
+          estado_final: string | null
           evento_id: string | null
           fecha_estimada_parto: string | null
+          fecha_finalizacion: string | null
           fecha_inicio: string
           id: string
+          motivo_finalizacion: string | null
           notas: string | null
           origen: string
           updated_at: string
@@ -1362,11 +1366,15 @@ export type Database = {
           animal_id: string
           cabaña_id: string
           created_at?: string
+          cria_id?: string | null
           estado?: string
+          estado_final?: string | null
           evento_id?: string | null
           fecha_estimada_parto?: string | null
+          fecha_finalizacion?: string | null
           fecha_inicio: string
           id?: string
+          motivo_finalizacion?: string | null
           notas?: string | null
           origen: string
           updated_at?: string
@@ -1375,16 +1383,27 @@ export type Database = {
           animal_id?: string
           cabaña_id?: string
           created_at?: string
+          cria_id?: string | null
           estado?: string
+          estado_final?: string | null
           evento_id?: string | null
           fecha_estimada_parto?: string | null
+          fecha_finalizacion?: string | null
           fecha_inicio?: string
           id?: string
+          motivo_finalizacion?: string | null
           notas?: string | null
           origen?: string
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "preñeces_cria_id_fkey"
+            columns: ["cria_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "preñeces_evento_id_fkey"
             columns: ["evento_id"]
@@ -2258,6 +2277,10 @@ export type Database = {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
       }
+      check_overdue_pregnancies: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       check_reproductive_alerts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2574,6 +2597,10 @@ export type Database = {
               _user_id: string
             }
         Returns: Json
+      }
+      mark_pregnancy_failed: {
+        Args: { _pregnancy_id: string; _reason?: string }
+        Returns: boolean
       }
       prepare_user_migration: {
         Args: Record<PropertyKey, never>

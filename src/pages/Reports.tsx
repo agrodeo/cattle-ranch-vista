@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ReportsFilters, ReportFilters } from "@/components/reports/ReportsFilters";
 import { HerdOverview } from "@/components/reports/HerdOverview";
-import { ReproductiveAnalytics } from "@/components/reports/ReproductiveAnalytics";
+import ReproductiveAnalytics from "@/components/reports/ReproductiveAnalytics";
 import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
 import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";

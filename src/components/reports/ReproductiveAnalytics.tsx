@@ -1,427 +1,347 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, Heart, TrendingUp, Calendar, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { Heart, TrendingUp, Calendar, Users, Brain, Truck } from "lucide-react";
-import { ReportsFilters, ReportFilters } from "./ReportsFilters";
+import { ReproductiveFemalesTable } from "./ReproductiveFemalesTable";
+import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
 
-import { ExpandableReproductiveFemales } from "./ExpandableReproductiveFemales";
-import { CorralReproductiveKPIs } from "./CorralReproductiveKPIs";
+interface ReportFilters {
+  date_from?: string;
+  date_to?: string;
+  corral_ids?: string[];
+  include_sold_dead?: boolean;
+}
+import { toast } from "sonner";
+import { calculateReproductiveRates } from "@/lib/pregnancyManagement";
 
-import { BreedingPlanWizard } from "../breeding/BreedingPlanWizard";
-import { BulkMoveDialog } from "../breeding/BulkMoveDialog";
-
-interface ReproductiveStats {
+interface SummaryMetrics {
   totalFemales: number;
-  reproductiveFemales: number;
-  totalInseminations: number;
-  confirmedPregnancies: number;
+  currentlyPregnant: number;
+  totalServices: number;
   pregnancyRate: number;
   calvingRate: number;
-  averageCalvingInterval: number;
-  aiSuccessRate: number;
-  yearlyData: { year: number; pregnancies: number; births: number; inseminations: number }[];
-  serviceTypeData: { type: string; count: number; successRate: number }[];
-  monthlyBreeding: { month: string; count: number }[];
-  breedComparison: { breed: string; pregnancyRate: number; calvingRate: number; aiSuccessRate: number }[];
-  hasMultipleBreeds: boolean;
+  openFemales: number;
+  avgDaysOpen: number;
+  successfulPregnancies?: number;
+  failedPregnancies?: number;
+  activePregnancies?: number;
+  totalReproductiveYears?: number;
+  completedPregnancies?: number;
 }
 
 interface ReproductiveAnalyticsProps {
   filters?: ReportFilters;
 }
 
-export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAnalyticsProps) => {
-  const { currentUser } = useSupabaseAuth();
-  const [stats, setStats] = useState<ReproductiveStats | null>(null);
+const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => {
+  const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetrics>({
+    totalFemales: 0,
+    currentlyPregnant: 0,
+    totalServices: 0,
+    pregnancyRate: 0,
+    calvingRate: 0,
+    openFemales: 0,
+    avgDaysOpen: 0,
+  });
+  
   const [loading, setLoading] = useState(true);
-  const [showBreedingPlan, setShowBreedingPlan] = useState(false);
-  const [showBulkMove, setShowBulkMove] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log("DEBUG: Current user cabaña_id:", currentUser?.cabañaId);
-    if (currentUser?.cabañaId) {
-      fetchReproductiveStats();
-    }
-  }, [currentUser, globalFilters]);
-
-  const fetchReproductiveStats = async () => {
+  const fetchReproductiveData = async () => {
     try {
-      console.log("DEBUG: Fetching reproductive stats for user:", currentUser?.cabañaId);
-      
+      setLoading(true);
+      setError(null);
+
+      // Get current user and their cabaña_id
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setError('Usuario no autenticado');
+        return;
+      }
+
+      const { data: userInfo, error: userError } = await supabase.rpc('get_user_cabana_info', { user_uuid: user.id });
+
+      if (userError || !userInfo?.[0]?.cabana_id) {
+        setError('No se pudo obtener información del usuario');
+        return;
+      }
+
+      const cabanaId = userInfo[0].cabana_id;
+
+      // Build date filter
+      let dateFilter = '';
+      if (filters.date_from && filters.date_to) {
+        dateFilter = `fecha_inicio.gte.${filters.date_from},fecha_inicio.lte.${filters.date_to}`;
+      }
+
+      // Fetch animals with corral filter
       let animalsQuery = supabase
-        .from("animals")
-        .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .from('animals')
+        .select('*, corrales(name)')
+        .eq('cabaña_id', cabanaId);
 
-      // Apply filters
-      if (globalFilters) {
-        if (!globalFilters.include_sold_dead) {
-          animalsQuery = animalsQuery.not("status", "in", '("vendido","muerto")');
-        }
-        if (globalFilters.corral_ids && globalFilters.corral_ids.length > 0) {
-          animalsQuery = animalsQuery.in("corral_id", globalFilters.corral_ids);
-        }
-        if (globalFilters.breed) {
-          animalsQuery = animalsQuery.eq("breed", globalFilters.breed);
-        }
+      if (filters.corral_ids && filters.corral_ids.length > 0) {
+        animalsQuery = animalsQuery.in('corral_id', filters.corral_ids);
       }
 
-      const { data: animals } = await animalsQuery;
+      if (!filters.include_sold_dead) {
+        animalsQuery = animalsQuery.not('status', 'in', '(vendido,muerto)');
+      }
+
+      const { data: animals, error: animalsError } = await animalsQuery;
+
+      if (animalsError) {
+        console.error('Error fetching animals:', animalsError);
+        setError('Error al obtener datos de animales');
+        return;
+      }
+
+      console.log('DEBUG: Fetched', animals?.length || 0, 'animals for cabaña:', cabanaId);
+
+      // Get IA services
+      const { data: iaServices, error: iaError } = await supabase
+        .from('ia')
+        .select(`
+          *,
+          eventos!inner(fecha, cabaña_id)
+        `)
+        .eq('eventos.cabaña_id', cabanaId);
+
+      if (iaError) {
+        console.error('Error fetching IA services:', iaError);
+      }
+
+      // Get pregnancies
+      const { data: pregnancies, error: pregnanciesError } = await supabase
+        .from('preñeces')
+        .select('*')
+        .eq('cabaña_id', cabanaId);
+
+      if (pregnanciesError) {
+        console.error('Error fetching pregnancies:', pregnanciesError);
+      }
+
+      // Filter females and reproductive females
+      const females = (animals || []).filter(a => a.sex === 'Hembra');
       
-      console.log("DEBUG: Fetched", animals?.length || 0, "animals for cabaña:", currentUser?.cabañaId);
+      const reproductiveFemales = females.filter(f => {
+        if (!f.birth_date) return false;
+        const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+        return ageInMonths >= 15;
+      });
 
-      let iaQuery = supabase
-        .from("ia")
-        .select(`
-          *,
-          eventos!inner(fecha, cabaña_id)
-        `)
-        .eq("eventos.cabaña_id", currentUser?.cabañaId);
+      // Get all pregnancies with their final states
+      const { data: pregnanciesWithState, error: pregnanciesStateError } = await supabase
+        .from('preñeces')
+        .select('animal_id, estado_final, fecha_inicio, fecha_finalizacion, cria_id')
+        .eq('cabaña_id', cabanaId);
 
-      // Apply date filters to IA services
-      if (globalFilters?.date_from) {
-        iaQuery = iaQuery.gte("eventos.fecha", globalFilters.date_from);
-      }
-      if (globalFilters?.date_to) {
-        iaQuery = iaQuery.lte("eventos.fecha", globalFilters.date_to);
-      }
-
-      const { data: iaServices } = await iaQuery;
-
-      let tactosQuery = supabase
-        .from("tactos")
-        .select(`
-          *,
-          eventos!inner(fecha, cabaña_id)
-        `)
-        .eq("eventos.cabaña_id", currentUser?.cabañaId);
-
-      // Apply date filters to tactos
-      if (globalFilters?.date_from) {
-        tactosQuery = tactosQuery.gte("eventos.fecha", globalFilters.date_from);
-      }
-      if (globalFilters?.date_to) {
-        tactosQuery = tactosQuery.lte("eventos.fecha", globalFilters.date_to);
+      if (pregnanciesStateError) {
+        console.error('Error fetching pregnancies with state:', pregnanciesStateError);
+        setError('Error al obtener estados de preñeces');
+        return;
       }
 
-      const { data: tactos } = await tactosQuery;
+      const pregnancyHistory = pregnanciesWithState || [];
+      
+      // Auto-generate pregnancies for mothers with offspring but no pregnancy records
+      const allOffspring = (animals || []).filter(a => a.mother_id && a.status !== 'muerto');
+      const autoGeneratedPregnancies: any[] = [];
+      
+      console.log('DEBUG: Starting auto-generation for offspring without pregnancies');
+      
+      // For each offspring, check if mother has a corresponding successful pregnancy
+      allOffspring.forEach(calf => {
+        if (!calf.mother_id || !calf.birth_date) return;
+        
+        const hasSuccessfulPregnancy = pregnancyHistory.some(p => 
+          p.animal_id === calf.mother_id && 
+          p.estado_final === 'exitosa' && 
+          p.cria_id === calf.id
+        );
+        
+        if (!hasSuccessfulPregnancy) {
+          console.log(`DEBUG: Auto-generating successful pregnancy for offspring ${calf.id_tag} of mother ${calf.mother_id}`);
+          
+          const estimatedConceptionDate = new Date(calf.birth_date);
+          estimatedConceptionDate.setDate(estimatedConceptionDate.getDate() - 283);
+          
+          autoGeneratedPregnancies.push({
+            animal_id: calf.mother_id,
+            estado_final: 'exitosa',
+            fecha_inicio: estimatedConceptionDate.toISOString().split('T')[0],
+            fecha_finalizacion: calf.birth_date,
+            cria_id: calf.id,
+            motivo_finalizacion: 'parto_exitoso_auto'
+          });
+        }
+      });
 
-      let pregnanciesQuery = supabase
-        .from("preñeces")
-        .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+      // Calculate reproductive metrics based on pregnancy history
+      const allPregnancyData = [...pregnancyHistory, ...autoGeneratedPregnancies];
+      
+      const successfulPregnancies = allPregnancyData.filter(p => p.estado_final === 'exitosa').length;
+      const failedPregnancies = allPregnancyData.filter(p => p.estado_final === 'fallida').length;
+      const activePregnancies = allPregnancyData.filter(p => p.estado_final === 'activa').length;
+      const completedPregnancies = successfulPregnancies + failedPregnancies;
+      
+      // Calculate total reproductive years for all females
+      const totalReproductiveYears = reproductiveFemales.reduce((sum, female) => {
+        const ageMonths = female.birth_date 
+          ? Math.floor((new Date().getTime() - new Date(female.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+          : 24; // Default if no birth date
+        const reproductiveYears = Math.max(0, Math.floor((ageMonths - 15) / 12)); // Start at 15 months
+        return sum + Math.max(1, reproductiveYears); // At least 1 year for active females
+      }, 0);
+      
+      // NEW FORMULAS:
+      // Pregnancy rate = (successful + failed pregnancies) / total reproductive years * 100
+      const pregnancyRate = totalReproductiveYears > 0 
+        ? Math.round((completedPregnancies / totalReproductiveYears) * 100) 
+        : 0;
+      
+      // Calving rate = successful pregnancies / (successful + failed pregnancies) * 100  
+      const calvingRate = completedPregnancies > 0 
+        ? Math.round((successfulPregnancies / completedPregnancies) * 100) 
+        : 0;
+      
+      console.log('DEBUG NEW CALCULATION METHOD:', {
+        successfulPregnancies,
+        failedPregnancies,
+        activePregnancies,
+        completedPregnancies,
+        totalReproductiveYears,
+        pregnancyRate: `${completedPregnancies} / ${totalReproductiveYears} * 100 = ${pregnancyRate}%`,
+        calvingRate: `${successfulPregnancies} / ${completedPregnancies} * 100 = ${calvingRate}%`
+      });
 
-      // Apply date filters to pregnancies
-      if (globalFilters?.date_from) {
-        pregnanciesQuery = pregnanciesQuery.gte("fecha_inicio", globalFilters.date_from);
-      }
-      if (globalFilters?.date_to) {
-        pregnanciesQuery = pregnanciesQuery.lte("fecha_inicio", globalFilters.date_to);
-      }
+      // Calculate additional metrics
+      const currentPregnant = females.filter(f => f.esta_preñada).length;
+      const openFemales = reproductiveFemales.length - currentPregnant;
+      
+      // Services data for additional context  
+      const totalServices = (iaServices || []).reduce((sum, service: any) => {
+        try {
+          const animalIds = service.animales_ids;
+          if (animalIds && Array.isArray(animalIds)) {
+            return sum + animalIds.length;
+          }
+        } catch (e) {
+          console.warn('Error parsing animales_ids:', e);
+        }
+        return sum;
+      }, 0);
 
-      const { data: pregnancies } = await pregnanciesQuery;
+      // Calculate average days open (simplified)
+      const femalesWithDaysOpen = reproductiveFemales.filter(f => f.fecha_ultimo_pesaje);
+      const avgDaysOpen = femalesWithDaysOpen.length > 0 
+        ? Math.round(femalesWithDaysOpen.reduce((sum, f) => {
+            if (f.fecha_ultimo_pesaje) {
+              const daysSinceLastWeighing = Math.floor((new Date().getTime() - new Date(f.fecha_ultimo_pesaje).getTime()) / (1000 * 60 * 60 * 24));
+              return sum + daysSinceLastWeighing;
+            }
+            return sum;
+          }, 0) / femalesWithDaysOpen.length)
+        : 0;
 
-      console.log("DEBUG: About to calculate stats with animals:", animals?.length, "ia:", iaServices?.length);
-      const reproStats = calculateReproductiveStats(animals || [], iaServices || [], tactos || [], pregnancies || []);
-      setStats(reproStats);
+      // Update summary metrics with new calculation method
+      setSummaryMetrics({
+        totalFemales: reproductiveFemales.length,
+        currentlyPregnant: currentPregnant,
+        totalServices: totalServices,
+        pregnancyRate: pregnancyRate,
+        calvingRate: calvingRate,
+        openFemales: openFemales,
+        avgDaysOpen: avgDaysOpen,
+        // Additional metrics for transparency
+        successfulPregnancies,
+        failedPregnancies,
+        activePregnancies,
+        totalReproductiveYears,
+        completedPregnancies
+      });
+
     } catch (error) {
-      console.error("Error fetching reproductive stats:", error);
+      console.error('Error in fetchReproductiveData:', error);
+      setError('Error al cargar datos reproductivos');
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateReproductiveStats = (animals: any[], iaServices: any[], tactos: any[], pregnancies: any[]): ReproductiveStats => {
-    console.log("Calculating reproductive stats with data:", {
-      animalsCount: animals.length,
-      iaServicesCount: iaServices.length,
-      tactosCount: tactos.length,
-      pregnanciesCount: pregnancies.length
-    });
+  useEffect(() => {
+    fetchReproductiveData();
+  }, [filters]);
 
-    const females = animals.filter(a => a.sex === 'Hembra' && (!a.status || a.status === 'activo'));
-    const totalFemales = females.length;
-    
-    console.log("Total females found:", totalFemales);
-    
-    const reproductiveFemales = females.filter(f => {
-      if (!f.birth_date) return false;
-      const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-      return ageInMonths >= 15;
-    });
-
-    // NEW CALVING PERCENTAGE LOGIC: successful calvings / total pregnancies
-    const allOffspring = animals.filter(a => a.mother_id && a.status !== 'muerto');
-    
-    // Create auto-pregnancies for mothers with offspring but no pregnancy records
-    const autoGeneratedPregnancies: any[] = [];
-    
-    reproductiveFemales.forEach(mother => {
-      const motherOffspring = allOffspring.filter(a => a.mother_id === mother.id);
-      const motherPregnancies = pregnancies.filter(p => p.animal_id === mother.id);
-      
-      console.log(`DEBUG ${mother.id_tag}:`, {
-        offspring: motherOffspring.length,
-        pregnancies: motherPregnancies.length
-      });
-      
-      // For each offspring, check if there's a corresponding pregnancy record
-      motherOffspring.forEach(offspring => {
-        if (!offspring.birth_date) return;
-        
-        const hasMatchingPregnancy = motherPregnancies.some(p => {
-          const birthDate = new Date(offspring.birth_date);
-          const pregnancyStart = new Date(p.fecha_inicio);
-          const expectedCalving = new Date(pregnancyStart);
-          expectedCalving.setMonth(expectedCalving.getMonth() + 9);
-          
-          // Check if pregnancy timing matches offspring birth (within 60 days)
-          const timeDiff = Math.abs(birthDate.getTime() - expectedCalving.getTime());
-          const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
-          return daysDiff <= 60;
-        });
-        
-        if (!hasMatchingPregnancy) {
-          // Create auto-pregnancy 9 months before birth
-          const birthDate = new Date(offspring.birth_date);
-          const pregnancyDate = new Date(birthDate);
-          pregnancyDate.setMonth(pregnancyDate.getMonth() - 9);
-          
-          autoGeneratedPregnancies.push({
-            id: `auto_${offspring.id}`,
-            animal_id: mother.id,
-            fecha_inicio: pregnancyDate.toISOString().split('T')[0],
-            estado: 'confirmada',
-            origen: 'auto_generated',
-            offspring_id: offspring.id
-          });
-          
-          console.log(`DEBUG: Auto-generated pregnancy for ${mother.id_tag} for offspring ${offspring.id_tag}`);
-        }
-      });
-    });
-
-    // Count total successful calvings = live offspring count
-    const totalSuccessfulCalvings = allOffspring.length;
-
-    // Total pregnancies = registered + auto-generated
-    const totalPregnancies = pregnancies.length + autoGeneratedPregnancies.length;
-    
-    console.log('DEBUG FINAL calving calculation:', {
-      allOffspring: allOffspring.length,
-      totalSuccessfulCalvings,
-      registeredPregnancies: pregnancies.length,
-      autoGeneratedPregnancies: autoGeneratedPregnancies.length,
-      totalPregnancies,
-      reproductiveFemalesCount: reproductiveFemales.length
-    });
-    
-    // Calving rate = successful calvings / total pregnancies * 100
-    const calvingRate = totalPregnancies > 0 ? Math.round((totalSuccessfulCalvings / totalPregnancies) * 100) : 0;
-    
-    console.log('DEBUG calving result:', {
-      calvingRate,
-      calculation: `${totalSuccessfulCalvings} / ${totalPregnancies} * 100 = ${calvingRate}%`
-    });
-
-    // For pregnancy rate, use traditional calculation based on services
-    let totalPregnancyRateSum = 0;
-    let validPregnancyCalculations = 0;
-
-    reproductiveFemales.forEach(animal => {
-      const animalServices = iaServices.filter(ia => ia.animales_ids?.includes(animal.id));
-      const animalPregnancies = pregnancies.filter(p => p.animal_id === animal.id);
-      
-      if (animalServices.length > 0) {
-        const currentPregnancy = animal.esta_preñada ? 1 : 0;
-        const totalSuccessfulPregnancies = animalPregnancies.filter(p => p.estado === 'confirmada').length + currentPregnancy;
-        const pregnancyRate = Math.round((totalSuccessfulPregnancies / animalServices.length) * 100);
-        
-        totalPregnancyRateSum += pregnancyRate;
-        validPregnancyCalculations++;
-      }
-    });
-
-    const pregnancyRate = validPregnancyCalculations > 0 ? Math.round(totalPregnancyRateSum / validPregnancyCalculations) : 0;
-    const confirmedPregnancies = totalPregnancies;
-    
-    // Get unique animals that had services (for AI success rate)
-    const servedAnimalIds = new Set<string>();
-    iaServices.forEach(ia => {
-      if (ia.animales_ids) {
-        ia.animales_ids.forEach((animalId: string) => servedAnimalIds.add(animalId));
-      }
-    });
-    const servedFemalesCount = servedAnimalIds.size;
-    
-    const totalInseminations = iaServices.length;
-
-    console.log('New calving calculation (pregnancies/calvings):', {
-      reproductiveFemales: reproductiveFemales.length,
-      totalSuccessfulCalvings,
-      totalPregnancies,
-      calvingRate,
-      pregnancyRate
-    });
-    
-    const aiSuccessRate = totalInseminations > 0 ? (totalSuccessfulCalvings / totalInseminations) * 100 : 0;
-
-    // Yearly data
-    const currentYear = new Date().getFullYear();
-    const yearlyData = [];
-    for (let year = currentYear - 4; year <= currentYear; year++) {
-      const yearInseminations = iaServices.filter(ia => 
-        ia.eventos && new Date(ia.eventos.fecha).getFullYear() === year
-      ).length;
-      
-      const yearPregnancies = pregnancies.filter(p => 
-        new Date(p.fecha_inicio).getFullYear() === year && p.estado === 'confirmada'
-      ).length;
-      
-      const yearBirths = animals.filter(a => 
-        a.birth_date && new Date(a.birth_date).getFullYear() === year
-      ).length;
-      
-      yearlyData.push({
-        year,
-        pregnancies: yearPregnancies,
-        births: yearBirths,
-        inseminations: yearInseminations
-      });
-    }
-
-    // Service type data (artificial vs natural)
-    const artificialServices = iaServices.length;
-    const naturalServices = animals.filter(a => a.tipo_servicio === 'natural').length;
-    const serviceTypeData = [
-      { type: 'Inseminación Artificial', count: artificialServices, successRate: aiSuccessRate },
-      { type: 'Servicio Natural', count: naturalServices, successRate: 0 } // We don't track natural service success rates directly
-    ].filter(item => item.count > 0);
-
-    // Monthly breeding patterns
-    const monthlyBreeding = Array.from({ length: 12 }, (_, i) => {
-      const month = new Date(0, i).toLocaleString('es', { month: 'long' });
-      const count = iaServices.filter(ia => 
-        ia.eventos && new Date(ia.eventos.fecha).getMonth() === i
-      ).length;
-      return { month: month.charAt(0).toUpperCase() + month.slice(1), count };
-    });
-
-    // Breed comparison
-    const breeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
-    const hasMultipleBreeds = breeds.length > 1;
-    const breedComparison = breeds.map(breed => {
-      const breedFemales = females.filter(f => f.breed === breed);
-      const breedReproductiveFemales = breedFemales.filter(f => {
-        if (!f.birth_date) return false;
-        const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-        return ageInMonths >= 15;
-      });
-      
-      // Get unique animals served for this breed
-      const breedServedAnimals = new Set<string>();
-      iaServices.forEach(ia => {
-        ia.animales_ids.forEach((animalId: string) => {
-          const animal = animals.find(a => a.id === animalId);
-          if (animal?.breed === breed) breedServedAnimals.add(animalId);
-        });
-      });
-      
-      // Count unique pregnancies for this breed (avoid double counting)
-      const breedPregnantAnimals = new Set<string>();
-      tactos.forEach(tacto => {
-        if (tacto.resultados) {
-          tacto.resultados.forEach((result: any) => {
-            const animal = animals.find(a => a.id === result.animal_id);
-            if (animal?.breed === breed && result.resultado === 'preñada') {
-              breedPregnantAnimals.add(result.animal_id);
-            }
-          });
-        }
-      });
-      
-      // Also check preñeces table for confirmed pregnancies
-      pregnancies.forEach(p => {
-        if (p.estado === 'confirmada') {
-          const animal = animals.find(a => a.id === p.animal_id);
-          if (animal?.breed === breed) {
-            breedPregnantAnimals.add(p.animal_id);
-          }
-        }
-      });
-      
-      const breedBirths = animals.filter(a => 
-        a.mother_id && animals.some(mother => mother.id === a.mother_id && mother.breed === breed)
-      ).length;
-
-      const breedPregnancies = breedPregnantAnimals.size;
-      const breedServices = breedServedAnimals.size;
-
-      return {
-        breed,
-        pregnancyRate: breedServices > 0 ? (breedPregnancies / breedServices) * 100 : 0,
-        calvingRate: breedPregnancies > 0 ? Math.min((breedBirths / breedPregnancies) * 100, 100) : 0,
-        aiSuccessRate: breedServices > 0 ? (breedPregnancies / breedServices) * 100 : 0
-      };
-    });
-
-    return {
-      totalFemales,
-      reproductiveFemales: reproductiveFemales.length,
-      totalInseminations,
-      confirmedPregnancies,
-      pregnancyRate,
-      calvingRate,
-      averageCalvingInterval: 365, // Default - would need more complex calculation
-      aiSuccessRate,
-      yearlyData,
-      serviceTypeData,
-      monthlyBreeding,
-      breedComparison,
-      hasMultipleBreeds
-    };
+  const handleRefresh = () => {
+    fetchReproductiveData();
+    toast.success("Datos actualizados");
   };
 
   if (loading) {
-    return <div className="text-center p-8">Cargando análisis reproductivo...</div>;
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-200 rounded animate-pulse mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
 
-  if (!stats) {
-    return <div className="text-center p-8">No se pudieron cargar las estadísticas reproductivas.</div>;
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Error al cargar datos</h3>
+          <p className="text-muted-foreground mb-4">{error}</p>
+          <Button onClick={handleRefresh}>
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
   }
-
-  const handleViewCorralAnimals = (corralId: string, corralName: string) => {
-    // This would be handled by the global filters now
-    console.log('View corral animals:', corralId, corralName);
-  };
 
   return (
     <div className="space-y-6">
-      <CorralReproductiveKPIs filters={globalFilters} />
-      <ExpandableReproductiveFemales filters={globalFilters || {}} />
-      
-      
-      {/* Original Analytics */}
-      {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Hembras Reproductivas</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{summaryMetrics.totalFemales}</div>
+            <p className="text-xs text-muted-foreground">
+              ≥15 meses de edad
+            </p>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tasa de Preñez</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={fetchReproductiveStats}>
-                Recalcular
-              </Button>
-              <Heart className="h-4 w-4 text-muted-foreground" />
-            </div>
+            <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.pregnancyRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.confirmedPregnancies} crías de {stats.reproductiveFemales} hembras reproductivas
+            <div className="text-2xl font-bold">{summaryMetrics.pregnancyRate}%</div>
+            <p className="text-sm text-muted-foreground">
+              (Exitosas + Fallidas) / Años reproductivos × 100
             </p>
           </CardContent>
         </Card>
@@ -429,170 +349,76 @@ export const ReproductiveAnalytics = ({ filters: globalFilters }: ReproductiveAn
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tasa de Parición</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.calvingRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              Partos exitosos de preñeces confirmadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Éxito IA</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-purple-600">{stats.aiSuccessRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.totalInseminations} inseminaciones realizadas
+            <div className="text-2xl font-bold">{summaryMetrics.calvingRate}%</div>
+            <p className="text-sm text-muted-foreground">
+              Exitosas / (Exitosas + Fallidas) × 100
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Hembras Reproductivas</CardTitle>
+            <CardTitle className="text-sm font-medium">Preñadas Actuales</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.reproductiveFemales}</div>
+            <div className="text-2xl font-bold">{summaryMetrics.currentlyPregnant}</div>
             <p className="text-xs text-muted-foreground">
-              De {stats.totalFemales} hembras totales
+              Hembras con preñez activa
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Yearly Performance */}
+      {/* Additional Details */}
+      {summaryMetrics.successfulPregnancies !== undefined && (
         <Card>
           <CardHeader>
-            <CardTitle>Rendimiento Reproductivo por Año</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              Detalle del Cálculo
+              <Button onClick={handleRefresh} size="sm" variant="outline">
+                Actualizar
+              </Button>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.yearlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="year" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="inseminations" fill="#8884d8" name="Inseminaciones" />
-                <Bar dataKey="pregnancies" fill="#10b981" name="Preñeces" />
-                <Bar dataKey="births" fill="#3b82f6" name="Partos" />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">{summaryMetrics.successfulPregnancies}</div>
+                <p className="text-sm text-muted-foreground">Preñeces Exitosas</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-red-600">{summaryMetrics.failedPregnancies}</div>
+                <p className="text-sm text-muted-foreground">Preñeces Fallidas</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{summaryMetrics.activePregnancies}</div>
+                <p className="text-sm text-muted-foreground">Preñeces Activas</p>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">{summaryMetrics.totalReproductiveYears}</div>
+                <p className="text-sm text-muted-foreground">Años Reproductivos</p>
+              </div>
+            </div>
+            <Separator className="my-4" />
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p><strong>Cálculo de Tasa de Preñez:</strong> ({summaryMetrics.successfulPregnancies} + {summaryMetrics.failedPregnancies}) / {summaryMetrics.totalReproductiveYears} × 100 = {summaryMetrics.pregnancyRate}%</p>
+              <p><strong>Cálculo de Tasa de Parición:</strong> {summaryMetrics.successfulPregnancies} / ({summaryMetrics.successfulPregnancies} + {summaryMetrics.failedPregnancies}) × 100 = {summaryMetrics.calvingRate}%</p>
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Service Type Distribution */}
-        {stats.serviceTypeData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Tipos de Servicio</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.serviceTypeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ type, count }) => `${type}: ${count}`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="count"
-                  >
-                    {stats.serviceTypeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? '#10b981' : '#3b82f6'} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Monthly Breeding Pattern */}
-        <Card className={stats.hasMultipleBreeds ? "" : "lg:col-span-2"}>
-          <CardHeader>
-            <CardTitle>Patrón Estacional de Servicios</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={stats.monthlyBreeding}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Breed Comparison - Only show if multiple breeds */}
-        {stats.hasMultipleBreeds && stats.breedComparison.length > 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Comparación Reproductiva por Raza</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.breedComparison}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="breed" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="pregnancyRate" fill="#10b981" name="% Preñez" />
-                  <Bar dataKey="calvingRate" fill="#3b82f6" name="% Parición" />
-                  <Bar dataKey="aiSuccessRate" fill="#8b5cf6" name="% Éxito IA" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
+      {/* Reproductive Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ReproductiveFemalesTable filters={filters} />
+        <PregnantAnimalsReport filters={filters} />
       </div>
-
-      {/* Performance Badges */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Indicadores de Rendimiento</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={stats.pregnancyRate >= 80 ? "default" : stats.pregnancyRate >= 60 ? "secondary" : "destructive"}>
-              Preñez: {stats.pregnancyRate.toFixed(1)}%
-            </Badge>
-            <Badge variant={stats.calvingRate >= 90 ? "default" : stats.calvingRate >= 80 ? "secondary" : "destructive"}>
-              Parición: {stats.calvingRate.toFixed(1)}%
-            </Badge>
-            <Badge variant={stats.aiSuccessRate >= 60 ? "default" : stats.aiSuccessRate >= 40 ? "secondary" : "destructive"}>
-              IA: {stats.aiSuccessRate.toFixed(1)}%
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Dialogs */}
-      <BreedingPlanWizard
-        isOpen={showBreedingPlan}
-        onClose={() => setShowBreedingPlan(false)}
-        cabanaId={currentUser?.cabañaId || ''}
-      />
-      
-      <BulkMoveDialog
-        isOpen={showBulkMove}
-        onClose={() => setShowBulkMove(false)}
-        cabanaId={currentUser?.cabañaId || ''}
-      />
     </div>
   );
 };
+
+export default ReproductiveAnalytics;
