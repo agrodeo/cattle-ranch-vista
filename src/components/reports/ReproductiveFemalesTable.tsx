@@ -24,13 +24,15 @@ interface ReproductiveFemale {
   category: string;
   corral_id: string;
   corral_name: string;
-  is_pregnant: boolean;
-  pregnancy_date: string | null;
-  expected_calving_date: string | null;
-  age_months: number;
-  last_service_date: string | null;
-  services_count: number;
-  pregnancy_checks_count: number;
+  exposures: number;
+  pregnancies: number;
+  pregnancy_rate: number;
+  calvings: number;
+  live_calvings: number;
+  calving_rate: number;
+  live_calving_rate: number;
+  open_days: number;
+  is_repeater: boolean;
 }
 
 interface ReproductiveFemalesTableProps {
@@ -62,13 +64,13 @@ export function ReproductiveFemalesTable({ filters }: ReproductiveFemalesTablePr
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
 
-      const { data, error } = await supabase.rpc('rpc_report_reproductive_females', {
+      const { data, error } = await supabase.rpc('rpc_report_reproduction_animals', {
         _user_id: userData.user.id,
         filters_json: filtersJson
       });
 
       if (error) {
-        console.error('Error fetching reproductive females data:', error);
+        console.error('Error fetching reproduction animals data:', error);
         return;
       }
 
@@ -109,18 +111,26 @@ export function ReproductiveFemalesTable({ filters }: ReproductiveFemalesTablePr
     );
   }
 
-  // Separate pregnant and non-pregnant animals
-  const pregnantAnimals = animals.filter(a => a.is_pregnant);
-  const nonPregnantAnimals = animals.filter(a => !a.is_pregnant);
+  const getStatusBadge = (pregnancyRate: number, calvingRate: number) => {
+    if (pregnancyRate >= 80 && calvingRate >= 90) {
+      return <Badge className="bg-emerald-100 text-emerald-800">Excelente</Badge>;
+    } else if (pregnancyRate >= 60 && calvingRate >= 75) {
+      return <Badge className="bg-blue-100 text-blue-800">Buena</Badge>;
+    } else if (pregnancyRate >= 40 && calvingRate >= 60) {
+      return <Badge className="bg-yellow-100 text-yellow-800">Regular</Badge>;
+    } else {
+      return <Badge className="bg-red-100 text-red-800">Deficiente</Badge>;
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Heart className="h-5 w-5" />
-          Hembras Reproductivas
+          Rendimiento Reproductivo Individual
           <Badge variant="secondary" className="ml-2">
-            {animals.length} total, {pregnantAnimals.length} preñadas
+            {animals.length} hembras reproductivas
           </Badge>
         </CardTitle>
       </CardHeader>
@@ -130,119 +140,87 @@ export function ReproductiveFemalesTable({ filters }: ReproductiveFemalesTablePr
             No se encontraron hembras reproductivas con los filtros aplicados.
           </div>
         ) : (
-          <div className="space-y-6">
-            {/* Pregnant Animals Section */}
-            {pregnantAnimals.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <Baby className="h-5 w-5 text-emerald-600" />
-                  Hembras Preñadas ({pregnantAnimals.length})
-                </h3>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tag</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Corral</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead>Edad (meses)</TableHead>
-                        <TableHead>Fecha Preñez</TableHead>
-                        <TableHead>Parto Esperado</TableHead>
-                        <TableHead>Servicios</TableHead>
-                        <TableHead>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {pregnantAnimals.map((animal) => (
-                        <TableRow key={animal.animal_id}>
-                          <TableCell className="font-medium">{animal.tag}</TableCell>
-                          <TableCell>{animal.name || '-'}</TableCell>
-                          <TableCell>{animal.corral_name || '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{animal.category}</Badge>
-                          </TableCell>
-                          <TableCell>{animal.age_months || '-'}</TableCell>
-                          <TableCell>{formatDate(animal.pregnancy_date)}</TableCell>
-                          <TableCell className="font-medium text-emerald-600">
-                            {formatDate(animal.expected_calving_date)}
-                          </TableCell>
-                          <TableCell>{animal.services_count}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewAnimal(animal.animal_id)}
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-
-            {/* Non-Pregnant Animals Section */}
-            {nonPregnantAnimals.length > 0 && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <Heart className="h-5 w-5 text-slate-600" />
-                  Hembras No Preñadas ({nonPregnantAnimals.length})
-                </h3>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Tag</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Corral</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead>Edad (meses)</TableHead>
-                        <TableHead>Último Servicio</TableHead>
-                        <TableHead>Total Servicios</TableHead>
-                        <TableHead>Tactos</TableHead>
-                        <TableHead>Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {nonPregnantAnimals.map((animal) => (
-                        <TableRow key={animal.animal_id}>
-                          <TableCell className="font-medium">{animal.tag}</TableCell>
-                          <TableCell>{animal.name || '-'}</TableCell>
-                          <TableCell>{animal.corral_name || '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{animal.category}</Badge>
-                          </TableCell>
-                          <TableCell>{animal.age_months || '-'}</TableCell>
-                          <TableCell>
-                            {animal.last_service_date ? (
-                              <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {formatDate(animal.last_service_date)}
-                              </div>
-                            ) : '-'}
-                          </TableCell>
-                          <TableCell>{animal.services_count}</TableCell>
-                          <TableCell>{animal.pregnancy_checks_count}</TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleViewAnimal(animal.animal_id)}
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tag</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Corral</TableHead>
+                  <TableHead>Exposiciones</TableHead>
+                  <TableHead>Preñeces</TableHead>
+                  <TableHead>Tasa Preñez</TableHead>
+                  <TableHead>Partos</TableHead>
+                  <TableHead>Tasa Parición</TableHead>
+                  <TableHead>Días Abierta</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {animals.map((animal) => (
+                  <TableRow key={animal.animal_id}>
+                    <TableCell className="font-medium">{animal.tag}</TableCell>
+                    <TableCell>{animal.name || '-'}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{animal.category}</Badge>
+                    </TableCell>
+                    <TableCell>{animal.corral_name || '-'}</TableCell>
+                    <TableCell className="text-center">{animal.exposures}</TableCell>
+                    <TableCell className="text-center">{animal.pregnancies}</TableCell>
+                    <TableCell className="text-center">
+                      <span className={`font-medium ${
+                        animal.pregnancy_rate >= 80 ? 'text-emerald-600' :
+                        animal.pregnancy_rate >= 60 ? 'text-blue-600' :
+                        animal.pregnancy_rate >= 40 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {animal.pregnancy_rate.toFixed(1)}%
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center">{animal.calvings}</TableCell>
+                    <TableCell className="text-center">
+                      <span className={`font-medium ${
+                        animal.calving_rate >= 90 ? 'text-emerald-600' :
+                        animal.calving_rate >= 75 ? 'text-blue-600' :
+                        animal.calving_rate >= 60 ? 'text-yellow-600' :
+                        'text-red-600'
+                      }`}>
+                        {animal.calving_rate.toFixed(1)}%
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {animal.open_days > 0 ? (
+                        <span className={`${
+                          animal.open_days > 120 ? 'text-red-600' :
+                          animal.open_days > 90 ? 'text-yellow-600' :
+                          'text-green-600'
+                        }`}>
+                          {animal.open_days} días
+                        </span>
+                      ) : '-'}
+                    </TableCell>
+                    <TableCell>
+                      {animal.is_repeater ? (
+                        <Badge variant="destructive">Repetidora</Badge>
+                      ) : (
+                        getStatusBadge(animal.pregnancy_rate, animal.calving_rate)
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewAnimal(animal.animal_id)}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         )}
       </CardContent>
