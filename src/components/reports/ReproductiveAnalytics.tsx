@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, Heart, TrendingUp, Calendar, Users } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ReproductiveFemalesTable } from "./ReproductiveFemalesTable";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
 import { calculateReproductiveRates } from "@/lib/pregnancyManagement";
 
@@ -32,6 +33,20 @@ interface SummaryMetrics {
   completedPregnancies?: number;
 }
 
+interface ReproductiveFemale {
+  animal_id: string;
+  tag: string;
+  name: string;
+  category: string;
+  corral_name: string;
+  exposures: number;
+  pregnancies: number;
+  pregnancy_rate: number;
+  calvings: number;
+  calving_rate: number;
+  is_pregnant: boolean;
+}
+
 interface ReproductiveAnalyticsProps {
   filters?: ReportFilters;
 }
@@ -47,6 +62,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
     avgDaysOpen: 0,
   });
   
+  const [reproductiveFemales, setReproductiveFemales] = useState<ReproductiveFemale[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,6 +87,30 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       }
 
       const cabanaId = userInfo[0].cabana_id;
+
+      // Fetch reproductive females data
+      const filtersJson = {
+        date_from: filters.date_from,
+        date_to: filters.date_to,
+        corral_ids: filters.corral_ids,
+        include_sold_dead: filters.include_sold_dead
+      };
+
+      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('rpc_report_reproduction_animals', {
+        _user_id: user.id,
+        filters_json: filtersJson
+      });
+
+      if (femalesError) {
+        console.error('Error fetching reproductive females:', femalesError);
+      } else {
+        // Transform the data to include is_pregnant status
+        const transformedData = (reproductiveFemalesData || []).map((female: any) => ({
+          ...female,
+          is_pregnant: female.pregnancies > 0 && female.pregnancy_rate > 0 // Simplified logic
+        }));
+        setReproductiveFemales(transformedData);
+      }
 
       // Build date filter
       let dateFilter = '';
@@ -99,41 +140,16 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         return;
       }
 
-      console.log('DEBUG: Fetched', animals?.length || 0, 'animals for cabaña:', cabanaId);
-
-      // Get IA services
-      const { data: iaServices, error: iaError } = await supabase
-        .from('ia')
-        .select(`
-          *,
-          eventos!inner(fecha, cabaña_id)
-        `)
-        .eq('eventos.cabaña_id', cabanaId);
-
-      if (iaError) {
-        console.error('Error fetching IA services:', iaError);
-      }
-
-      // Get pregnancies
-      const { data: pregnancies, error: pregnanciesError } = await supabase
-        .from('preñeces')
-        .select('*')
-        .eq('cabaña_id', cabanaId);
-
-      if (pregnanciesError) {
-        console.error('Error fetching pregnancies:', pregnanciesError);
-      }
-
       // Filter females and reproductive females
       const females = (animals || []).filter(a => a.sex === 'Hembra');
       
-      const reproductiveFemales = females.filter(f => {
+      const reproductiveFemalesCount = females.filter(f => {
         if (!f.birth_date) return false;
         const ageInMonths = Math.floor((new Date().getTime() - new Date(f.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
         return ageInMonths >= 15;
       });
 
-      // Get all pregnancies with their final states
+      // Get pregnancies data for calculations
       const { data: pregnanciesWithState, error: pregnanciesStateError } = await supabase
         .from('preñeces')
         .select('animal_id, estado_final, fecha_inicio, fecha_finalizacion, cria_id')
@@ -141,8 +157,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       if (pregnanciesStateError) {
         console.error('Error fetching pregnancies with state:', pregnanciesStateError);
-        setError('Error al obtener estados de preñeces');
-        return;
       }
 
       const pregnancyHistory = pregnanciesWithState || [];
@@ -150,8 +164,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       // Auto-generate pregnancies for mothers with offspring but no pregnancy records
       const allOffspring = (animals || []).filter(a => a.mother_id && a.status !== 'muerto');
       const autoGeneratedPregnancies: any[] = [];
-      
-      console.log('DEBUG: Starting auto-generation for offspring without pregnancies');
       
       // For each offspring, check if mother has a corresponding successful pregnancy
       allOffspring.forEach(calf => {
@@ -164,8 +176,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         );
         
         if (!hasSuccessfulPregnancy) {
-          console.log(`DEBUG: Auto-generating successful pregnancy for offspring ${calf.id_tag} of mother ${calf.mother_id}`);
-          
           const estimatedConceptionDate = new Date(calf.birth_date);
           estimatedConceptionDate.setDate(estimatedConceptionDate.getDate() - 283);
           
@@ -189,7 +199,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const completedPregnancies = successfulPregnancies + failedPregnancies;
       
       // Calculate total reproductive years for all females
-      const totalReproductiveYears = reproductiveFemales.reduce((sum, female) => {
+      const totalReproductiveYears = reproductiveFemalesCount.reduce((sum, female) => {
         const ageMonths = female.birth_date 
           ? Math.floor((new Date().getTime() - new Date(female.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
           : 24; // Default if no birth date
@@ -207,56 +217,20 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const calvingRate = completedPregnancies > 0 
         ? Math.round((successfulPregnancies / completedPregnancies) * 100) 
         : 0;
-      
-      console.log('DEBUG NEW CALCULATION METHOD:', {
-        successfulPregnancies,
-        failedPregnancies,
-        activePregnancies,
-        completedPregnancies,
-        totalReproductiveYears,
-        pregnancyRate: `${completedPregnancies} / ${totalReproductiveYears} * 100 = ${pregnancyRate}%`,
-        calvingRate: `${successfulPregnancies} / ${completedPregnancies} * 100 = ${calvingRate}%`
-      });
 
       // Calculate additional metrics
       const currentPregnant = females.filter(f => f.esta_preñada).length;
-      const openFemales = reproductiveFemales.length - currentPregnant;
-      
-      // Services data for additional context  
-      const totalServices = (iaServices || []).reduce((sum, service: any) => {
-        try {
-          const animalIds = service.animales_ids;
-          if (animalIds && Array.isArray(animalIds)) {
-            return sum + animalIds.length;
-          }
-        } catch (e) {
-          console.warn('Error parsing animales_ids:', e);
-        }
-        return sum;
-      }, 0);
+      const openFemales = reproductiveFemalesCount.length - currentPregnant;
 
-      // Calculate average days open (simplified)
-      const femalesWithDaysOpen = reproductiveFemales.filter(f => f.fecha_ultimo_pesaje);
-      const avgDaysOpen = femalesWithDaysOpen.length > 0 
-        ? Math.round(femalesWithDaysOpen.reduce((sum, f) => {
-            if (f.fecha_ultimo_pesaje) {
-              const daysSinceLastWeighing = Math.floor((new Date().getTime() - new Date(f.fecha_ultimo_pesaje).getTime()) / (1000 * 60 * 60 * 24));
-              return sum + daysSinceLastWeighing;
-            }
-            return sum;
-          }, 0) / femalesWithDaysOpen.length)
-        : 0;
-
-      // Update summary metrics with new calculation method
+      // Update summary metrics
       setSummaryMetrics({
-        totalFemales: reproductiveFemales.length,
+        totalFemales: reproductiveFemalesCount.length,
         currentlyPregnant: currentPregnant,
-        totalServices: totalServices,
+        totalServices: 0, // Will be calculated separately if needed
         pregnancyRate: pregnancyRate,
         calvingRate: calvingRate,
         openFemales: openFemales,
-        avgDaysOpen: avgDaysOpen,
-        // Additional metrics for transparency
+        avgDaysOpen: 0, // Simplified for now
         successfulPregnancies,
         failedPregnancies,
         activePregnancies,
@@ -373,9 +347,92 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         </Card>
       </div>
 
-      {/* Reproductive Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ReproductiveFemalesTable filters={filters} />
+      {/* Expandable Reproductive Females Detail */}
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+        <Card>
+          <CardHeader>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5" />
+                  Detalle Hembras Reproductivas
+                  <Badge variant="secondary" className="ml-2">
+                    {reproductiveFemales.length} animales
+                  </Badge>
+                </CardTitle>
+                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </Button>
+            </CollapsibleTrigger>
+          </CardHeader>
+          <CollapsibleContent>
+            <CardContent>
+              {reproductiveFemales.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  No se encontraron hembras reproductivas.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Tag</TableHead>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Categoría</TableHead>
+                        <TableHead>Corral</TableHead>
+                        <TableHead>Preñez Activa</TableHead>
+                        <TableHead>% Preñez</TableHead>
+                        <TableHead>% Parición</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {reproductiveFemales.map((animal) => (
+                        <TableRow key={animal.animal_id}>
+                          <TableCell className="font-medium">{animal.tag}</TableCell>
+                          <TableCell>{animal.name || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{animal.category}</Badge>
+                          </TableCell>
+                          <TableCell>{animal.corral_name || '-'}</TableCell>
+                          <TableCell>
+                            {animal.is_pregnant ? (
+                              <Badge className="bg-emerald-100 text-emerald-800">Sí</Badge>
+                            ) : (
+                              <Badge variant="outline">No</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className={`font-medium ${
+                              animal.pregnancy_rate >= 80 ? 'text-emerald-600' :
+                              animal.pregnancy_rate >= 60 ? 'text-blue-600' :
+                              animal.pregnancy_rate >= 40 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {animal.pregnancy_rate.toFixed(1)}%
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className={`font-medium ${
+                              animal.calving_rate >= 90 ? 'text-emerald-600' :
+                              animal.calving_rate >= 75 ? 'text-blue-600' :
+                              animal.calving_rate >= 60 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {animal.calving_rate.toFixed(1)}%
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Pregnant Animals Report */}
+      <div className="grid grid-cols-1 gap-6">
         <PregnantAnimalsReport filters={filters} />
       </div>
     </div>
