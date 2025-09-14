@@ -340,8 +340,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summaryMetrics.pregnancyRate}%</div>
-            <p className="text-sm text-muted-foreground">
-              (Exitosas + Fallidas) / Años reproductivos × 100
+            <p className="text-xs text-muted-foreground">
+              Preñeces confirmadas
             </p>
           </CardContent>
         </Card>
@@ -353,8 +353,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summaryMetrics.calvingRate}%</div>
-            <p className="text-sm text-muted-foreground">
-              Exitosas / (Exitosas + Fallidas) × 100
+            <p className="text-xs text-muted-foreground">
+              Partos exitosos
             </p>
           </CardContent>
         </Card>
@@ -372,45 +372,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           </CardContent>
         </Card>
       </div>
-
-      {/* Additional Details */}
-      {summaryMetrics.successfulPregnancies !== undefined && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              Detalle del Cálculo
-              <Button onClick={handleRefresh} size="sm" variant="outline">
-                Actualizar
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">{summaryMetrics.successfulPregnancies}</div>
-                <p className="text-sm text-muted-foreground">Preñeces Exitosas</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-red-600">{summaryMetrics.failedPregnancies}</div>
-                <p className="text-sm text-muted-foreground">Preñeces Fallidas</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">{summaryMetrics.activePregnancies}</div>
-                <p className="text-sm text-muted-foreground">Preñeces Activas</p>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-purple-600">{summaryMetrics.totalReproductiveYears}</div>
-                <p className="text-sm text-muted-foreground">Años Reproductivos</p>
-              </div>
-            </div>
-            <Separator className="my-4" />
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p><strong>Cálculo de Tasa de Preñez:</strong> ({summaryMetrics.successfulPregnancies} + {summaryMetrics.failedPregnancies}) / {summaryMetrics.totalReproductiveYears} × 100 = {summaryMetrics.pregnancyRate}%</p>
-              <p><strong>Cálculo de Tasa de Parición:</strong> {summaryMetrics.successfulPregnancies} / ({summaryMetrics.successfulPregnancies} + {summaryMetrics.failedPregnancies}) × 100 = {summaryMetrics.calvingRate}%</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Reproductive Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
