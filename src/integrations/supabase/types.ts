@@ -1354,12 +1354,15 @@ export type Database = {
           estado_final: string | null
           evento_id: string | null
           fecha_estimada_parto: string | null
+          fecha_fin: string | null
           fecha_finalizacion: string | null
           fecha_inicio: string
           id: string
           motivo_finalizacion: string | null
           notas: string | null
           origen: string
+          resultado_parto: string | null
+          tipo: string | null
           updated_at: string
         }
         Insert: {
@@ -1371,12 +1374,15 @@ export type Database = {
           estado_final?: string | null
           evento_id?: string | null
           fecha_estimada_parto?: string | null
+          fecha_fin?: string | null
           fecha_finalizacion?: string | null
           fecha_inicio: string
           id?: string
           motivo_finalizacion?: string | null
           notas?: string | null
           origen: string
+          resultado_parto?: string | null
+          tipo?: string | null
           updated_at?: string
         }
         Update: {
@@ -1388,12 +1394,15 @@ export type Database = {
           estado_final?: string | null
           evento_id?: string | null
           fecha_estimada_parto?: string | null
+          fecha_fin?: string | null
           fecha_finalizacion?: string | null
           fecha_inicio?: string
           id?: string
           motivo_finalizacion?: string | null
           notas?: string | null
           origen?: string
+          resultado_parto?: string | null
+          tipo?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1514,6 +1523,53 @@ export type Database = {
         }
         Relationships: []
       }
+      reproductive_activities: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string | null
+          created_by: string | null
+          detalle: Json | null
+          evento_id: string | null
+          fecha_actividad: string
+          id: string
+          resultado: string | null
+          tipo_actividad: string
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string | null
+          created_by?: string | null
+          detalle?: Json | null
+          evento_id?: string | null
+          fecha_actividad: string
+          id?: string
+          resultado?: string | null
+          tipo_actividad: string
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string | null
+          created_by?: string | null
+          detalle?: Json | null
+          evento_id?: string | null
+          fecha_actividad?: string
+          id?: string
+          resultado?: string | null
+          tipo_actividad?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reproductive_activities_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reproductive_alerts: {
         Row: {
           alert_date: string
@@ -1601,6 +1657,36 @@ export type Database = {
         }
         Relationships: []
       }
+      reproductive_config: {
+        Row: {
+          cabaña_id: string
+          created_at: string | null
+          edad_minima_hembra_servicio: number | null
+          gestacion_default: number | null
+          id: string
+          periodo_check_parto: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          cabaña_id: string
+          created_at?: string | null
+          edad_minima_hembra_servicio?: number | null
+          gestacion_default?: number | null
+          id?: string
+          periodo_check_parto?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          cabaña_id?: string
+          created_at?: string | null
+          edad_minima_hembra_servicio?: number | null
+          gestacion_default?: number | null
+          id?: string
+          periodo_check_parto?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       reproductive_events: {
         Row: {
           animal_id: string
@@ -1642,6 +1728,50 @@ export type Database = {
           year?: number
         }
         Relationships: []
+      }
+      reproductive_states: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string | null
+          estado_reproductivo: string
+          fecha_ultima_ia: string | null
+          fecha_ultima_preñez: string | null
+          fecha_ultimo_servicio: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string | null
+          estado_reproductivo?: string
+          fecha_ultima_ia?: string | null
+          fecha_ultima_preñez?: string | null
+          fecha_ultimo_servicio?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string | null
+          estado_reproductivo?: string
+          fecha_ultima_ia?: string | null
+          fecha_ultima_preñez?: string | null
+          fecha_ultimo_servicio?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reproductive_states_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_audit_log: {
         Row: {
@@ -2216,6 +2346,60 @@ export type Database = {
           },
         ]
       }
+      verification_tasks: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          completed_at: string | null
+          created_at: string | null
+          estado: string | null
+          fecha_programada: string
+          id: string
+          notas: string | null
+          preñez_id: string | null
+          tipo_tarea: string
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          estado?: string | null
+          fecha_programada: string
+          id?: string
+          notas?: string | null
+          preñez_id?: string | null
+          tipo_tarea: string
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          estado?: string | null
+          fecha_programada?: string
+          id?: string
+          notas?: string | null
+          preñez_id?: string | null
+          tipo_tarea?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_tasks_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "verification_tasks_preñez_id_fkey"
+            columns: ["preñez_id"]
+            isOneToOne: false
+            referencedRelation: "preñeces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -2617,6 +2801,16 @@ export type Database = {
           _vaccine_code: string
         }
         Returns: Json
+      }
+      register_reproductive_activity: {
+        Args: {
+          _animal_id: string
+          _detalle?: Json
+          _fecha_actividad: string
+          _resultado?: string
+          _tipo_actividad: string
+        }
+        Returns: string
       }
       rpc_corral_complete_kpis: {
         Args: { _user_id: string }
