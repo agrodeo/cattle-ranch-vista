@@ -108,6 +108,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         console.error('Error fetching reproductive females:', femalesError);
         setReproductiveFemales([]);
       } else {
+        console.log('Reproductive females data:', reproductiveFemalesData);
         setReproductiveFemales(reproductiveFemalesData || []);
       }
 
@@ -367,7 +368,13 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
             <CardContent>
               {reproductiveFemales.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  No se encontraron hembras reproductivas.
+                  <p className="text-lg font-medium">No se encontraron hembras reproductivas.</p>
+                  <p className="text-sm mt-2">
+                    Las hembras deben tener al menos 15 meses de edad para aparecer en este reporte.
+                  </p>
+                  <p className="text-sm text-blue-600 mt-1">
+                    Actualmente todas las hembras son menores a 15 meses.
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
