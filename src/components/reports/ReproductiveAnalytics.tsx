@@ -39,10 +39,10 @@ interface ReproductiveFemale {
   name: string;
   category: string;
   corral_name: string;
-  exposures: number;
-  pregnancies: number;
+  total_services: number;
+  total_pregnancies: number;
   pregnancy_rate: number;
-  calvings: number;
+  successful_pregnancies: number;
   calving_rate: number;
   is_pregnant: boolean;
 }
@@ -96,55 +96,19 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         include_sold_dead: filters.include_sold_dead
       };
 
-      // Fetch reproductive females directly from animals table  
-      let femalesQuery = supabase
-        .from('animals')
-        .select('id, id_tag, name, birth_date, sex, status, "esta_preñada", corrales(name)')
-        .eq('cabaña_id', cabanaId)
-        .eq('sex', 'Hembra');
-
-      if (filters.corral_ids && filters.corral_ids.length > 0) {
-        femalesQuery = femalesQuery.in('corral_id', filters.corral_ids);
-      }
-
-      if (!filters.include_sold_dead) {
-        femalesQuery = femalesQuery.not('status', 'in', '(vendido,muerto)');
-      }
-
-      const { data: femalesData, error: femalesError } = await femalesQuery;
+      // Use the new KPI function to get reproductive data
+      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('calculate_reproductive_kpis', {
+        _cabana_id: cabanaId,
+        _date_from: filtersJson.date_from || null,
+        _date_to: filtersJson.date_to || null,
+        _corral_ids: filters.corral_ids && filters.corral_ids.length > 0 ? filters.corral_ids : null
+      });
 
       if (femalesError) {
         console.error('Error fetching reproductive females:', femalesError);
         setReproductiveFemales([]);
       } else {
-        // Filter and transform reproductive females (≥15 months old)
-        const reproductiveFemalesData = (femalesData || [])
-          .filter(female => {
-            if (!female.birth_date) return false;
-            const ageInMonths = Math.floor((new Date().getTime() - new Date(female.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-            return ageInMonths >= 15;
-          })
-          .map((female: any) => ({
-            animal_id: female.id,
-            tag: female.id_tag || 'Sin tag',
-            name: female.name || '',
-            category: (() => {
-              if (!female.birth_date) return 'Desconocido';
-              const ageInMonths = Math.floor((new Date().getTime() - new Date(female.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-              if (ageInMonths < 15) return 'Ternera';
-              if (ageInMonths < 36) return 'Vaquillona';
-              return 'Vaca';
-            })(),
-            corral_name: female.corrales?.name || 'Sin corral',
-            exposures: 0, // TODO: Calculate from services
-            pregnancies: 0, // TODO: Calculate from pregnancy records
-            pregnancy_rate: 0, // TODO: Calculate
-            calvings: 0, // TODO: Calculate from offspring
-            calving_rate: 0, // TODO: Calculate
-            is_pregnant: female.esta_preñada || false
-          }));
-        
-        setReproductiveFemales(reproductiveFemalesData);
+        setReproductiveFemales(reproductiveFemalesData || []);
       }
 
       // Build date filter

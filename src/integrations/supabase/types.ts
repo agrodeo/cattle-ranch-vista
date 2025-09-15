@@ -1767,7 +1767,7 @@ export type Database = {
           {
             foreignKeyName: "reproductive_states_animal_id_fkey"
             columns: ["animal_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "animals"
             referencedColumns: ["id"]
           },
@@ -2433,6 +2433,27 @@ export type Database = {
           success_rate: number
           total_inseminations: number
           total_pregnancies: number
+        }[]
+      }
+      calculate_reproductive_kpis: {
+        Args: {
+          _cabana_id: string
+          _corral_ids?: string[]
+          _date_from?: string
+          _date_to?: string
+        }
+        Returns: {
+          animal_id: string
+          calving_rate: number
+          category: string
+          corral_name: string
+          is_pregnant: boolean
+          name: string
+          pregnancy_rate: number
+          successful_pregnancies: number
+          tag: string
+          total_pregnancies: number
+          total_services: number
         }[]
       }
       calculate_reproductive_performance: {
