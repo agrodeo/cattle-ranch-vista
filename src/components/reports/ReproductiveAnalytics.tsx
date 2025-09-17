@@ -35,16 +35,27 @@ interface SummaryMetrics {
 
 interface ReproductiveFemale {
   animal_id: string;
-  tag: string;
+  id_tag: string;
   name: string;
+  age_months: number;
   category: string;
+  corral_id: string;
   corral_name: string;
-  total_services: number;
-  total_pregnancies: number;
-  pregnancy_rate: number;
-  successful_pregnancies: number;
-  calving_rate: number;
   is_pregnant: boolean;
+  pregnancy_date: string;
+  expected_calving_date: string;
+  last_service_date: string;
+  days_open: number;
+  reproductive_years: number;
+  total_offspring: number;
+  lifetime_services: number;
+  lifetime_pregnancies: number;
+  lifetime_calvings: number;
+  individual_pregnancy_rate: number;
+  individual_calving_rate: number;
+  performance_level: string;
+  active_alerts: number;
+  alert_types: string[];
 }
 
 interface ReproductiveAnalyticsProps {
@@ -96,12 +107,9 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         include_sold_dead: filters.include_sold_dead
       };
 
-      // Use the new KPI function to get reproductive data
+      // Use the correct single-parameter KPI function to get reproductive data
       const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('calculate_reproductive_kpis', {
-        _cabana_id: cabanaId,
-        _date_from: filtersJson.date_from || null,
-        _date_to: filtersJson.date_to || null,
-        _corral_ids: filters.corral_ids && filters.corral_ids.length > 0 ? filters.corral_ids : null
+        _cabana_id: cabanaId
       });
 
       if (femalesError) {
@@ -393,7 +401,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                     <TableBody>
                       {reproductiveFemales.map((animal) => (
                         <TableRow key={animal.animal_id}>
-                          <TableCell className="font-medium">{animal.tag}</TableCell>
+                          <TableCell className="font-medium">{animal.id_tag}</TableCell>
                           <TableCell>{animal.name || '-'}</TableCell>
                           <TableCell>
                             <Badge variant="outline">{animal.category}</Badge>
@@ -408,22 +416,22 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={`font-medium ${
-                              animal.pregnancy_rate >= 80 ? 'text-emerald-600' :
-                              animal.pregnancy_rate >= 60 ? 'text-blue-600' :
-                              animal.pregnancy_rate >= 40 ? 'text-yellow-600' :
+                              animal.individual_pregnancy_rate >= 80 ? 'text-emerald-600' :
+                              animal.individual_pregnancy_rate >= 60 ? 'text-blue-600' :
+                              animal.individual_pregnancy_rate >= 40 ? 'text-yellow-600' :
                               'text-red-600'
                             }`}>
-                              {animal.pregnancy_rate.toFixed(1)}%
+                              {animal.individual_pregnancy_rate.toFixed(1)}%
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={`font-medium ${
-                              animal.calving_rate >= 90 ? 'text-emerald-600' :
-                              animal.calving_rate >= 75 ? 'text-blue-600' :
-                              animal.calving_rate >= 60 ? 'text-yellow-600' :
+                              animal.individual_calving_rate >= 90 ? 'text-emerald-600' :
+                              animal.individual_calving_rate >= 75 ? 'text-blue-600' :
+                              animal.individual_calving_rate >= 60 ? 'text-yellow-600' :
                               'text-red-600'
                             }`}>
-                              {animal.calving_rate.toFixed(1)}%
+                              {animal.individual_calving_rate.toFixed(1)}%
                             </span>
                           </TableCell>
                         </TableRow>

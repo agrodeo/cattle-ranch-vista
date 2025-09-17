@@ -2436,14 +2436,7 @@ export type Database = {
         }[]
       }
       calculate_reproductive_kpis: {
-        Args:
-          | { _cabana_id: string }
-          | {
-              _cabana_id: string
-              _corral_ids?: string[]
-              _date_from?: string
-              _date_to?: string
-            }
+        Args: { _cabana_id: string }
         Returns: {
           active_alerts: number
           age_months: number
