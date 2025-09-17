@@ -2620,7 +2620,7 @@ export type Database = {
       }
       calculate_individual_reproductive_percentages: {
         Args: { _animal_id: string }
-        Returns: undefined
+        Returns: Json
       }
       calculate_reproductive_kpis: {
         Args: { _cabana_id: string }
