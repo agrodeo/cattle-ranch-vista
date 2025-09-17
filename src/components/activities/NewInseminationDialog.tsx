@@ -102,6 +102,18 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
 
       setLoading(true);
 
+      // Get user's cabaña
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) throw new Error("Usuario no autenticado");
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('cabaña_id')
+        .eq('id', user.data.user.id)
+        .single();
+
+      if (!userData?.cabaña_id) throw new Error("Usuario sin cabaña asignada");
+
       // Create the event
       const event = await createEvent('IA', fecha, notas);
 
@@ -117,6 +129,22 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
         });
 
       if (error) throw error;
+
+      // Update reproductive states for each animal using new function
+      for (const animalId of selectedAnimals) {
+        const { error: stateError } = await supabase.rpc('register_reproductive_activity', {
+          _animal_id: animalId,
+          _tipo_actividad: 'inseminacion_artificial',
+          _fecha_actividad: format(fecha, 'yyyy-MM-dd'),
+          _cabana_id: userData.cabaña_id,
+          _detalle: extrasToro
+        });
+
+        if (stateError) {
+          console.error('Error updating reproductive state:', stateError);
+          // Don't fail the whole operation, just log the error
+        }
+      }
 
       toast({
         title: "Inseminación registrada",

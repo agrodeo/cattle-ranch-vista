@@ -223,6 +223,34 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
       if (error) throw error;
 
+      // Get user's cabaña
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) throw new Error("Usuario no autenticado");
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('cabaña_id')
+        .eq('id', user.data.user.id)
+        .single();
+
+      if (!userData?.cabaña_id) throw new Error("Usuario sin cabaña asignada");
+
+      // Process pregnancy detection using new function
+      for (const record of finalRecords) {
+        const { error: detectionError } = await supabase.rpc('process_pregnancy_detection', {
+          _animal_id: record.animalId,
+          _fecha_tacto: format(fecha, 'yyyy-MM-dd'),
+          _resultado: record.resultado,
+          _cabana_id: userData.cabaña_id,
+          _observaciones: record.observaciones
+        });
+
+        if (detectionError) {
+          console.error('Error processing pregnancy detection:', detectionError);
+          // Don't fail the whole operation, just log the error
+        }
+      }
+
       const pregnantCount = finalRecords.filter(r => r.resultado === 'preñada').length;
       const emptyCount = finalRecords.filter(r => r.resultado === 'vacia').length;
 

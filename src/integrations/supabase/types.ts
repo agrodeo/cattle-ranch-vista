@@ -2522,6 +2522,14 @@ export type Database = {
           total_pregnancies: number
         }[]
       }
+      calculate_corral_kpis: {
+        Args: { _corral_id: string; _year?: number }
+        Returns: Json
+      }
+      calculate_individual_kpis: {
+        Args: { _animal_id: string; _year?: number }
+        Returns: Json
+      }
       calculate_reproductive_kpis: {
         Args: { _cabana_id: string }
         Returns: {
@@ -2899,6 +2907,10 @@ export type Database = {
       mark_pregnancy_failed: {
         Args: { _pregnancy_id: string; _reason?: string }
         Returns: boolean
+      }
+      migrate_existing_reproductive_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       prepare_user_migration: {
         Args: Record<PropertyKey, never>
