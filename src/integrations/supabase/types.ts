@@ -3031,14 +3031,34 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      process_pregnancy_detection: {
+      process_calving_event: {
         Args: {
-          _animal_id: string
           _cabana_id: string
-          _fecha_tacto: string
-          _observaciones?: string
-          _resultado: string
+          _cria_id?: string
+          _evento_id?: string
+          _fecha_parto: string
+          _mother_id: string
+          _notas?: string
         }
+        Returns: string
+      }
+      process_pregnancy_detection: {
+        Args:
+          | {
+              _animal_id: string
+              _cabana_id: string
+              _evento_id: string
+              _fecha_tacto: string
+              _observaciones?: string
+              _resultado: string
+            }
+          | {
+              _animal_id: string
+              _cabana_id: string
+              _fecha_tacto: string
+              _observaciones?: string
+              _resultado: string
+            }
         Returns: string
       }
       record_vaccination: {
@@ -3079,6 +3099,17 @@ export type Database = {
               _resultado?: string
               _tipo_actividad: string
             }
+        Returns: string
+      }
+      register_service_activity: {
+        Args: {
+          _animal_id: string
+          _cabana_id: string
+          _evento_id: string
+          _fecha_servicio: string
+          _notas?: string
+          _tipo_servicio: string
+        }
         Returns: string
       }
       rpc_corral_complete_kpis: {
