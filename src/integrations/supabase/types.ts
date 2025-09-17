@@ -1350,19 +1350,24 @@ export type Database = {
           cabaña_id: string
           created_at: string
           cria_id: string | null
+          dias_gestacion: number | null
           estado: string
           estado_final: string | null
           evento_id: string | null
+          fecha_deteccion: string | null
           fecha_estimada_parto: string | null
           fecha_fin: string | null
           fecha_finalizacion: string | null
           fecha_inicio: string
+          fecha_parto_real: string | null
+          fecha_servicio_ia: string | null
           id: string
           motivo_finalizacion: string | null
           notas: string | null
           origen: string
           resultado_parto: string | null
           tipo: string | null
+          tipo_origen: string | null
           updated_at: string
         }
         Insert: {
@@ -1370,19 +1375,24 @@ export type Database = {
           cabaña_id: string
           created_at?: string
           cria_id?: string | null
+          dias_gestacion?: number | null
           estado?: string
           estado_final?: string | null
           evento_id?: string | null
+          fecha_deteccion?: string | null
           fecha_estimada_parto?: string | null
           fecha_fin?: string | null
           fecha_finalizacion?: string | null
           fecha_inicio: string
+          fecha_parto_real?: string | null
+          fecha_servicio_ia?: string | null
           id?: string
           motivo_finalizacion?: string | null
           notas?: string | null
           origen: string
           resultado_parto?: string | null
           tipo?: string | null
+          tipo_origen?: string | null
           updated_at?: string
         }
         Update: {
@@ -1390,19 +1400,24 @@ export type Database = {
           cabaña_id?: string
           created_at?: string
           cria_id?: string | null
+          dias_gestacion?: number | null
           estado?: string
           estado_final?: string | null
           evento_id?: string | null
+          fecha_deteccion?: string | null
           fecha_estimada_parto?: string | null
           fecha_fin?: string | null
           fecha_finalizacion?: string | null
           fecha_inicio?: string
+          fecha_parto_real?: string | null
+          fecha_servicio_ia?: string | null
           id?: string
           motivo_finalizacion?: string | null
           notas?: string | null
           origen?: string
           resultado_parto?: string | null
           tipo?: string | null
+          tipo_origen?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1575,12 +1590,15 @@ export type Database = {
           alert_date: string
           alert_type: string
           animal_id: string
+          animal_tag: string | null
           cabaña_id: string
           created_at: string
           days_overdue: number | null
           expected_date: string | null
+          fecha_limite: string | null
           id: string
           notes: string | null
+          prioridad: string | null
           status: string
           updated_at: string
         }
@@ -1588,12 +1606,15 @@ export type Database = {
           alert_date?: string
           alert_type: string
           animal_id: string
+          animal_tag?: string | null
           cabaña_id: string
           created_at?: string
           days_overdue?: number | null
           expected_date?: string | null
+          fecha_limite?: string | null
           id?: string
           notes?: string | null
+          prioridad?: string | null
           status?: string
           updated_at?: string
         }
@@ -1601,12 +1622,15 @@ export type Database = {
           alert_date?: string
           alert_type?: string
           animal_id?: string
+          animal_tag?: string | null
           cabaña_id?: string
           created_at?: string
           days_overdue?: number | null
           expected_date?: string | null
+          fecha_limite?: string | null
           id?: string
           notes?: string | null
+          prioridad?: string | null
           status?: string
           updated_at?: string
         }
@@ -1729,16 +1753,71 @@ export type Database = {
         }
         Relationships: []
       }
+      reproductive_kpis: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string | null
+          dias_abiertos: number | null
+          id: string
+          porcentaje_paricion: number | null
+          porcentaje_preñez: number | null
+          preñeces_detectadas: number | null
+          preñeces_exitosas: number | null
+          servicios_totales: number | null
+          ultimo_parto: string | null
+          ultimo_servicio: string | null
+          updated_at: string | null
+          year: number
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string | null
+          dias_abiertos?: number | null
+          id?: string
+          porcentaje_paricion?: number | null
+          porcentaje_preñez?: number | null
+          preñeces_detectadas?: number | null
+          preñeces_exitosas?: number | null
+          servicios_totales?: number | null
+          ultimo_parto?: string | null
+          ultimo_servicio?: string | null
+          updated_at?: string | null
+          year: number
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string | null
+          dias_abiertos?: number | null
+          id?: string
+          porcentaje_paricion?: number | null
+          porcentaje_preñez?: number | null
+          preñeces_detectadas?: number | null
+          preñeces_exitosas?: number | null
+          servicios_totales?: number | null
+          ultimo_parto?: string | null
+          ultimo_servicio?: string | null
+          updated_at?: string | null
+          year?: number
+        }
+        Relationships: []
+      }
       reproductive_states: {
         Row: {
           animal_id: string
           cabaña_id: string
           created_at: string | null
           estado_reproductivo: string
+          fecha_deteccion_preñez: string | null
+          fecha_ia: string | null
+          fecha_servicio: string | null
           fecha_ultima_ia: string | null
           fecha_ultima_preñez: string | null
           fecha_ultimo_servicio: string | null
           id: string
+          notas: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1746,10 +1825,14 @@ export type Database = {
           cabaña_id: string
           created_at?: string | null
           estado_reproductivo?: string
+          fecha_deteccion_preñez?: string | null
+          fecha_ia?: string | null
+          fecha_servicio?: string | null
           fecha_ultima_ia?: string | null
           fecha_ultima_preñez?: string | null
           fecha_ultimo_servicio?: string | null
           id?: string
+          notas?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1757,10 +1840,14 @@ export type Database = {
           cabaña_id?: string
           created_at?: string | null
           estado_reproductivo?: string
+          fecha_deteccion_preñez?: string | null
+          fecha_ia?: string | null
+          fecha_servicio?: string | null
           fecha_ultima_ia?: string | null
           fecha_ultima_preñez?: string | null
           fecha_ultimo_servicio?: string | null
           id?: string
+          notas?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2817,6 +2904,16 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      process_pregnancy_detection: {
+        Args: {
+          _animal_id: string
+          _cabana_id: string
+          _fecha_tacto: string
+          _observaciones?: string
+          _resultado: string
+        }
+        Returns: string
+      }
       record_vaccination: {
         Args: {
           _animal_id: string
@@ -2829,14 +2926,32 @@ export type Database = {
         }
         Returns: Json
       }
-      register_reproductive_activity: {
+      register_calving_event: {
         Args: {
-          _animal_id: string
-          _detalle?: Json
-          _fecha_actividad: string
-          _resultado?: string
-          _tipo_actividad: string
+          _cabana_id?: string
+          _calf_id?: string
+          _fecha_parto?: string
+          _mother_id: string
+          _observaciones?: string
         }
+        Returns: string
+      }
+      register_reproductive_activity: {
+        Args:
+          | {
+              _animal_id: string
+              _cabana_id: string
+              _detalle?: Json
+              _fecha_actividad: string
+              _tipo_actividad: string
+            }
+          | {
+              _animal_id: string
+              _detalle?: Json
+              _fecha_actividad: string
+              _resultado?: string
+              _tipo_actividad: string
+            }
         Returns: string
       }
       rpc_corral_complete_kpis: {
