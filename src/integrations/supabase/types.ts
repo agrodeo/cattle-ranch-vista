@@ -2436,24 +2436,37 @@ export type Database = {
         }[]
       }
       calculate_reproductive_kpis: {
-        Args: {
-          _cabana_id: string
-          _corral_ids?: string[]
-          _date_from?: string
-          _date_to?: string
-        }
+        Args:
+          | { _cabana_id: string }
+          | {
+              _cabana_id: string
+              _corral_ids?: string[]
+              _date_from?: string
+              _date_to?: string
+            }
         Returns: {
+          active_alerts: number
+          age_months: number
+          alert_types: string[]
           animal_id: string
-          calving_rate: number
           category: string
+          corral_id: string
           corral_name: string
+          days_open: number
+          expected_calving_date: string
+          id_tag: string
+          individual_calving_rate: number
+          individual_pregnancy_rate: number
           is_pregnant: boolean
+          last_service_date: string
+          lifetime_calvings: number
+          lifetime_pregnancies: number
+          lifetime_services: number
           name: string
-          pregnancy_rate: number
-          successful_pregnancies: number
-          tag: string
-          total_pregnancies: number
-          total_services: number
+          performance_level: string
+          pregnancy_date: string
+          reproductive_years: number
+          total_offspring: number
         }[]
       }
       calculate_reproductive_performance: {
