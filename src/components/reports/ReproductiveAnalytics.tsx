@@ -99,13 +99,9 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       const cabanaId = userInfo[0].cabana_id;
 
-      // Use the new enhanced reproductive metrics function
-      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('get_enhanced_reproductive_metrics', {
-        _cabana_id: cabanaId,
-        _filters: {
-          corral_ids: filters.corral_ids,
-          include_sold_dead: filters.include_sold_dead || false
-        }
+      // Use the existing calculate_reproductive_kpis function
+      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('calculate_reproductive_kpis', {
+        _cabana_id: cabanaId
       });
 
       if (femalesError) {
@@ -116,16 +112,16 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         setReproductiveFemales(reproductiveFemalesData || []);
       }
 
-      // Calculate summary metrics from the enhanced data
-      const totalFemales = reproductiveFemalesData?.length || 0;
-      const currentlyPregnant = reproductiveFemalesData?.filter((f: any) => f.is_pregnant).length || 0;
+      // Calculate summary metrics from the KPI data
+      const totalFemales = (reproductiveFemalesData as any[])?.length || 0;
+      const currentlyPregnant = (reproductiveFemalesData as any[])?.filter((f: any) => f.is_pregnant).length || 0;
       
       // Calculate overall pregnancy and calving rates
       let totalReproductiveYears = 0;
       let totalPregnancies = 0;
       let totalCalvings = 0;
       
-      reproductiveFemalesData?.forEach((female: any) => {
+      (reproductiveFemalesData as any[])?.forEach((female: any) => {
         totalReproductiveYears += female.reproductive_years || 1;
         totalPregnancies += female.lifetime_pregnancies || 0;
         totalCalvings += female.lifetime_calvings || 0;
@@ -143,11 +139,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       setSummaryMetrics({
         totalFemales,
         currentlyPregnant,
-        totalServices: reproductiveFemalesData?.reduce((sum: number, f: any) => sum + (f.lifetime_services || 0), 0) || 0,
+        totalServices: (reproductiveFemalesData as any[])?.reduce((sum: number, f: any) => sum + (f.lifetime_services || 0), 0) || 0,
         pregnancyRate,
         calvingRate,
         openFemales: totalFemales - currentlyPregnant,
-        avgDaysOpen: reproductiveFemalesData?.reduce((sum: number, f: any) => sum + (f.days_open || 0), 0) / Math.max(1, totalFemales) || 0,
+        avgDaysOpen: (reproductiveFemalesData as any[])?.reduce((sum: number, f: any) => sum + (f.days_open || 0), 0) / Math.max(1, totalFemales) || 0,
         successfulPregnancies: totalCalvings,
         failedPregnancies: totalPregnancies - totalCalvings,
         activePregnancies: currentlyPregnant,

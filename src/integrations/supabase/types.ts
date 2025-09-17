@@ -2695,6 +2695,33 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_enhanced_reproductive_metrics: {
+        Args: { _cabana_id: string; _filters?: Json }
+        Returns: {
+          active_alerts: number
+          age_months: number
+          alert_types: string[]
+          animal_id: string
+          category: string
+          corral_id: string
+          corral_name: string
+          days_open: number
+          expected_calving_date: string
+          id_tag: string
+          individual_calving_rate: number
+          individual_pregnancy_rate: number
+          is_pregnant: boolean
+          last_service_date: string
+          lifetime_calvings: number
+          lifetime_pregnancies: number
+          lifetime_services: number
+          name: string
+          performance_level: string
+          pregnancy_date: string
+          reproductive_years: number
+          total_offspring: number
+        }[]
+      }
       get_finance_summary: {
         Args: { _from_date?: string; _to_date?: string; _user_id: string }
         Returns: {
