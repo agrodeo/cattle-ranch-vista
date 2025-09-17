@@ -233,7 +233,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         .eq('id', user.data.user.id)
         .single();
 
-      if (!userData?.cabaña_id) throw new Error("Usuario sin cabaña asignada");
+      if (!userData?.['cabaña_id']) throw new Error("Usuario sin cabaña asignada");
 
       // Process pregnancy detection using new function
       for (const record of finalRecords) {
@@ -241,7 +241,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           _animal_id: record.animalId,
           _fecha_tacto: format(fecha, 'yyyy-MM-dd'),
           _resultado: record.resultado,
-          _cabana_id: userData.cabaña_id,
+          _cabana_id: userData['cabaña_id'],
           _observaciones: record.observaciones
         });
 

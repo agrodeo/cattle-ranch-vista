@@ -112,7 +112,7 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
         .eq('id', user.data.user.id)
         .single();
 
-      if (!userData?.cabaña_id) throw new Error("Usuario sin cabaña asignada");
+      if (!userData?.['cabaña_id']) throw new Error("Usuario sin cabaña asignada");
 
       // Create the event
       const event = await createEvent('IA', fecha, notas);
@@ -136,7 +136,7 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
           _animal_id: animalId,
           _tipo_actividad: 'inseminacion_artificial',
           _fecha_actividad: format(fecha, 'yyyy-MM-dd'),
-          _cabana_id: userData.cabaña_id,
+          _cabana_id: userData['cabaña_id'],
           _detalle: extrasToro
         });
 
