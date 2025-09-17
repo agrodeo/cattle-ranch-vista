@@ -17,7 +17,9 @@ import { es } from "date-fns/locale";
 import { useState } from "react";
 import { ImprovedArtificialInseminationDialog } from "@/components/artificial-insemination/ImprovedArtificialInseminationDialog";
 import { ReproductivePerformance } from "@/components/reproductive/ReproductivePerformance";
+import { ReproductiveStateIndicator } from "@/components/reproductive/ReproductiveStateIndicator";
 import { useAnimalOffspring } from "@/hooks/useAnimalOffspring";
+import { useReproductiveState } from "@/hooks/useReproductiveState";
 
 interface AnimalReproduccionProps {
   animal: Animal;
@@ -29,6 +31,7 @@ interface AnimalReproduccionProps {
 export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
   const [showIADialog, setShowIADialog] = useState(false);
   const { offspring, loading: offspringLoading, totalCount, liveCount } = useAnimalOffspring(animal.id, animal.sex);
+  const { currentState, pregnancyHistory, loading: stateLoading } = useReproductiveState(animal.id);
 
   if (animal.sex !== 'Hembra') {
     return (
@@ -66,8 +69,18 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Reproductive Performance Analytics */}
-      <ReproductivePerformance animalId={animal.id} animalSex={animal.sex} />
+      {/* Current Reproductive State */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ReproductiveStateIndicator
+          state={currentState?.estado_actual || 'sin_actividad'}
+          lastUpdate={currentState?.fecha_ultimo_cambio}
+          expectedDate={currentState?.fecha_esperada_parto}
+          serviceType={currentState?.tipo_servicio}
+          notes={currentState?.notas}
+        />
+        {/* Reproductive Performance Analytics */}
+        <ReproductivePerformance animalId={animal.id} animalSex={animal.sex} />
+      </div>
       
       {/* Header con métricas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -148,15 +161,57 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                  <Heart className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                  <div className="text-lg font-medium mb-2">Sin registros de preñeces</div>
-                  <div className="text-sm">
-                    Registre servicios de IA o monta natural para comenzar a rastrear preñeces
-                  </div>
-                </TableCell>
-              </TableRow>
+              {stateLoading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    Cargando historial...
+                  </TableCell>
+                </TableRow>
+              ) : pregnancyHistory.length > 0 ? (
+                pregnancyHistory.map((pregnancy) => (
+                  <TableRow key={pregnancy.id}>
+                    <TableCell>
+                      <Badge variant={pregnancy.origen === 'IA' ? 'default' : 'secondary'}>
+                        {pregnancy.origen}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(pregnancy.fecha_inicio), 'dd/MM/yyyy', { locale: es })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        pregnancy.estado_final === 'exitosa' ? 'default' :
+                        pregnancy.estado_final === 'fallida' ? 'destructive' : 'secondary'
+                      }>
+                        {pregnancy.estado_final === 'exitosa' ? 'Exitosa' :
+                         pregnancy.estado_final === 'fallida' ? 'Fallida' : 'Activa'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {pregnancy.fecha_estimada_parto ? 
+                        format(new Date(pregnancy.fecha_estimada_parto), 'dd/MM/yyyy', { locale: es }) : 
+                        '-'
+                      }
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="sm">
+                        Ver detalles
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    <Heart className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                    <div className="text-lg font-medium mb-2">Sin registros de preñeces</div>
+                    <div className="text-sm">
+                      Registre servicios de IA o monta natural para comenzar a rastrear preñeces
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>
