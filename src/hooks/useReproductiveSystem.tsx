@@ -5,10 +5,10 @@ import { useToast } from '@/hooks/use-toast';
 interface ReproductiveState {
   id: string;
   animal_id: string;
-  estado_reproductivo: string;
+  estado_actual: string;
   fecha_servicio?: string;
-  fecha_ia?: string;
   fecha_deteccion_preñez?: string;
+  fecha_esperada_parto?: string;
   notas?: string;
   updated_at: string;
 }
@@ -28,15 +28,27 @@ interface ReproductiveAlert {
 
 interface ReproductiveKPI {
   animal_id: string;
-  year: number;
-  servicios_totales: number;
-  preñeces_detectadas: number;
-  preñeces_exitosas: number;
-  porcentaje_preñez: number;
-  porcentaje_paricion: number;
-  dias_abiertos?: number;
-  ultimo_parto?: string;
-  ultimo_servicio?: string;
+  id_tag: string;
+  name?: string;
+  age_months: number;
+  category: string;
+  corral_id?: string;
+  corral_name?: string;
+  is_pregnant: boolean;
+  pregnancy_date?: string;
+  expected_calving_date?: string;
+  last_service_date?: string;
+  days_open: number;
+  reproductive_years: number;
+  total_offspring: number;
+  lifetime_services: number;
+  lifetime_pregnancies: number;
+  lifetime_calvings: number;
+  individual_pregnancy_rate: number;
+  individual_calving_rate: number;
+  performance_level: string;
+  active_alerts: number;
+  alert_types: string[];
 }
 
 export function useReproductiveSystem() {
@@ -203,7 +215,7 @@ export function useReproductiveSystem() {
   const loadStates = async (cabanaId: string) => {
     try {
       const { data, error } = await supabase
-        .from('reproductive_states')
+        .from('reproductive_current_state')
         .select('*')
         .eq('cabaña_id', cabanaId)
         .order('updated_at', { ascending: false });
@@ -235,12 +247,10 @@ export function useReproductiveSystem() {
   // Load reproductive KPIs
   const loadKPIs = async (cabanaId: string, year?: number) => {
     try {
-      const { data, error } = await supabase
-        .from('reproductive_kpis')
-        .select('*')
-        .eq('cabaña_id', cabanaId)
-        .eq('year', year || new Date().getFullYear())
-        .order('porcentaje_preñez', { ascending: false });
+      // Use the calculate_reproductive_kpis function instead of direct table access
+      const { data, error } = await supabase.rpc('calculate_reproductive_kpis', { 
+        _cabana_id: cabanaId 
+      });
 
       if (error) throw error;
       setKpis(data || []);

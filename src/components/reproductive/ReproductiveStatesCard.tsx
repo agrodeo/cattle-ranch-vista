@@ -76,7 +76,7 @@ export function ReproductiveStatesCard() {
 
   // Group states by status
   const stateGroups = states.reduce((groups, state) => {
-    const key = state.estado_reproductivo;
+    const key = state.estado_actual;
     if (!groups[key]) {
       groups[key] = [];
     }

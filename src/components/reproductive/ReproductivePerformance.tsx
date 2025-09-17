@@ -30,7 +30,7 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
 
       try {
         const { data, error } = await supabase
-          .rpc("calculate_reproductive_performance", { _animal_id: animalId });
+          .rpc("calculate_individual_reproductive_percentages", { _animal_id: animalId });
 
         if (error) throw error;
         if (data && typeof data === 'object' && data !== null) {
@@ -114,7 +114,7 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
               {metrics.porcentaje_preñez?.toFixed(1) || 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {metrics.confirmed_pregnancies} de {metrics.total_reproductive_years} años reproductivos
+              {metrics.confirmed_pregnancies} preñeces en {metrics.total_reproductive_years} años reproductivos
             </p>
           </div>
 
