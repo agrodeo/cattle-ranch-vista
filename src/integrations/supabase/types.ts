@@ -1280,6 +1280,63 @@ export type Database = {
           },
         ]
       }
+      individual_reproductive_kpis: {
+        Row: {
+          animal_id: string
+          años_reproductivos: number
+          cabaña_id: string
+          created_at: string
+          id: string
+          last_calculated_at: string
+          porcentaje_paricion: number
+          porcentaje_preñez: number
+          total_ias_fallidas: number
+          total_inseminaciones: number
+          total_partos_exitosos: number
+          total_preñeces_detectadas: number
+          total_preñeces_perdidas: number
+          total_servicios: number
+          total_servicios_fallidos: number
+          updated_at: string
+        }
+        Insert: {
+          animal_id: string
+          años_reproductivos?: number
+          cabaña_id: string
+          created_at?: string
+          id?: string
+          last_calculated_at?: string
+          porcentaje_paricion?: number
+          porcentaje_preñez?: number
+          total_ias_fallidas?: number
+          total_inseminaciones?: number
+          total_partos_exitosos?: number
+          total_preñeces_detectadas?: number
+          total_preñeces_perdidas?: number
+          total_servicios?: number
+          total_servicios_fallidos?: number
+          updated_at?: string
+        }
+        Update: {
+          animal_id?: string
+          años_reproductivos?: number
+          cabaña_id?: string
+          created_at?: string
+          id?: string
+          last_calculated_at?: string
+          porcentaje_paricion?: number
+          porcentaje_preñez?: number
+          total_ias_fallidas?: number
+          total_inseminaciones?: number
+          total_partos_exitosos?: number
+          total_preñeces_detectadas?: number
+          total_preñeces_perdidas?: number
+          total_servicios?: number
+          total_servicios_fallidos?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       jurisdictions: {
         Row: {
           code: string
@@ -1711,6 +1768,57 @@ export type Database = {
         }
         Relationships: []
       }
+      reproductive_current_state: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string
+          estado_actual: string
+          evento_deteccion_id: string | null
+          evento_servicio_id: string | null
+          fecha_deteccion_preñez: string | null
+          fecha_esperada_parto: string | null
+          fecha_servicio: string | null
+          fecha_ultimo_cambio: string
+          id: string
+          notas: string | null
+          tipo_servicio: string | null
+          updated_at: string
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string
+          estado_actual?: string
+          evento_deteccion_id?: string | null
+          evento_servicio_id?: string | null
+          fecha_deteccion_preñez?: string | null
+          fecha_esperada_parto?: string | null
+          fecha_servicio?: string | null
+          fecha_ultimo_cambio?: string
+          id?: string
+          notas?: string | null
+          tipo_servicio?: string | null
+          updated_at?: string
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string
+          estado_actual?: string
+          evento_deteccion_id?: string | null
+          evento_servicio_id?: string | null
+          fecha_deteccion_preñez?: string | null
+          fecha_esperada_parto?: string | null
+          fecha_servicio?: string | null
+          fecha_ultimo_cambio?: string
+          id?: string
+          notas?: string | null
+          tipo_servicio?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reproductive_events: {
         Row: {
           animal_id: string
@@ -1753,112 +1861,92 @@ export type Database = {
         }
         Relationships: []
       }
-      reproductive_kpis: {
+      reproductive_outcomes: {
         Row: {
           animal_id: string
           cabaña_id: string
-          created_at: string | null
-          dias_abiertos: number | null
+          created_at: string
+          cria_id: string | null
+          dias_gestacion: number | null
+          evento_origen_id: string | null
+          fecha_deteccion_preñez: string | null
+          fecha_outcome: string
+          fecha_servicio: string | null
           id: string
-          porcentaje_paricion: number | null
-          porcentaje_preñez: number | null
-          preñeces_detectadas: number | null
-          preñeces_exitosas: number | null
-          servicios_totales: number | null
-          ultimo_parto: string | null
-          ultimo_servicio: string | null
-          updated_at: string | null
-          year: number
+          notas: string | null
+          tipo_outcome: string
         }
         Insert: {
           animal_id: string
           cabaña_id: string
-          created_at?: string | null
-          dias_abiertos?: number | null
+          created_at?: string
+          cria_id?: string | null
+          dias_gestacion?: number | null
+          evento_origen_id?: string | null
+          fecha_deteccion_preñez?: string | null
+          fecha_outcome: string
+          fecha_servicio?: string | null
           id?: string
-          porcentaje_paricion?: number | null
-          porcentaje_preñez?: number | null
-          preñeces_detectadas?: number | null
-          preñeces_exitosas?: number | null
-          servicios_totales?: number | null
-          ultimo_parto?: string | null
-          ultimo_servicio?: string | null
-          updated_at?: string | null
-          year: number
+          notas?: string | null
+          tipo_outcome: string
         }
         Update: {
           animal_id?: string
           cabaña_id?: string
-          created_at?: string | null
-          dias_abiertos?: number | null
+          created_at?: string
+          cria_id?: string | null
+          dias_gestacion?: number | null
+          evento_origen_id?: string | null
+          fecha_deteccion_preñez?: string | null
+          fecha_outcome?: string
+          fecha_servicio?: string | null
           id?: string
-          porcentaje_paricion?: number | null
-          porcentaje_preñez?: number | null
-          preñeces_detectadas?: number | null
-          preñeces_exitosas?: number | null
-          servicios_totales?: number | null
-          ultimo_parto?: string | null
-          ultimo_servicio?: string | null
-          updated_at?: string | null
-          year?: number
+          notas?: string | null
+          tipo_outcome?: string
         }
         Relationships: []
       }
-      reproductive_states: {
+      reproductive_state_history: {
         Row: {
+          actividad_origen_id: string | null
           animal_id: string
           cabaña_id: string
-          created_at: string | null
-          estado_reproductivo: string
-          fecha_deteccion_preñez: string | null
-          fecha_ia: string | null
-          fecha_servicio: string | null
-          fecha_ultima_ia: string | null
-          fecha_ultima_preñez: string | null
-          fecha_ultimo_servicio: string | null
+          created_at: string
+          estado_anterior: string | null
+          estado_nuevo: string
+          evento_origen_id: string | null
+          fecha_cambio: string
           id: string
           notas: string | null
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
+          actividad_origen_id?: string | null
           animal_id: string
           cabaña_id: string
-          created_at?: string | null
-          estado_reproductivo?: string
-          fecha_deteccion_preñez?: string | null
-          fecha_ia?: string | null
-          fecha_servicio?: string | null
-          fecha_ultima_ia?: string | null
-          fecha_ultima_preñez?: string | null
-          fecha_ultimo_servicio?: string | null
+          created_at?: string
+          estado_anterior?: string | null
+          estado_nuevo: string
+          evento_origen_id?: string | null
+          fecha_cambio?: string
           id?: string
           notas?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
+          actividad_origen_id?: string | null
           animal_id?: string
           cabaña_id?: string
-          created_at?: string | null
-          estado_reproductivo?: string
-          fecha_deteccion_preñez?: string | null
-          fecha_ia?: string | null
-          fecha_servicio?: string | null
-          fecha_ultima_ia?: string | null
-          fecha_ultima_preñez?: string | null
-          fecha_ultimo_servicio?: string | null
+          created_at?: string
+          estado_anterior?: string | null
+          estado_nuevo?: string
+          evento_origen_id?: string | null
+          fecha_cambio?: string
           id?: string
           notas?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "reproductive_states_animal_id_fkey"
-            columns: ["animal_id"]
-            isOneToOne: true
-            referencedRelation: "animals"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       security_audit_log: {
         Row: {
