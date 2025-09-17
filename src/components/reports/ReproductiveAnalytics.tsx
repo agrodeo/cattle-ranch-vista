@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,7 +8,6 @@ import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, Chevron
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
-import { calculateReproductiveRates } from "@/lib/pregnancyManagement";
 
 interface ReportFilters {
   date_from?: string;
@@ -99,9 +97,13 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       const cabanaId = userInfo[0].cabana_id;
 
-      // Use the existing calculate_reproductive_kpis function
-      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('calculate_reproductive_kpis', {
-        _cabana_id: cabanaId
+      // Use the new enhanced reproductive metrics function
+      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('get_enhanced_reproductive_metrics', {
+        _cabana_id: cabanaId,
+        _filters: {
+          corral_ids: filters.corral_ids,
+          include_sold_dead: filters.include_sold_dead || false
+        }
       });
 
       if (femalesError) {
@@ -109,19 +111,21 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         setReproductiveFemales([]);
       } else {
         console.log('Reproductive females data:', reproductiveFemalesData);
-        setReproductiveFemales(reproductiveFemalesData || []);
+        const typedData = reproductiveFemalesData as ReproductiveFemale[];
+        setReproductiveFemales(typedData || []);
       }
 
-      // Calculate summary metrics from the KPI data
-      const totalFemales = (reproductiveFemalesData as any[])?.length || 0;
-      const currentlyPregnant = (reproductiveFemalesData as any[])?.filter((f: any) => f.is_pregnant).length || 0;
+      // Calculate summary metrics from the enhanced data
+      const typedReproductiveFemales = reproductiveFemalesData as ReproductiveFemale[] || [];
+      const totalFemales = typedReproductiveFemales.length;
+      const currentlyPregnant = typedReproductiveFemales.filter((f: any) => f.is_pregnant).length;
       
       // Calculate overall pregnancy and calving rates
       let totalReproductiveYears = 0;
       let totalPregnancies = 0;
       let totalCalvings = 0;
       
-      (reproductiveFemalesData as any[])?.forEach((female: any) => {
+      typedReproductiveFemales.forEach((female: any) => {
         totalReproductiveYears += female.reproductive_years || 1;
         totalPregnancies += female.lifetime_pregnancies || 0;
         totalCalvings += female.lifetime_calvings || 0;
@@ -139,11 +143,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       setSummaryMetrics({
         totalFemales,
         currentlyPregnant,
-        totalServices: (reproductiveFemalesData as any[])?.reduce((sum: number, f: any) => sum + (f.lifetime_services || 0), 0) || 0,
+        totalServices: typedReproductiveFemales.reduce((sum: number, f: any) => sum + (f.lifetime_services || 0), 0),
         pregnancyRate,
         calvingRate,
         openFemales: totalFemales - currentlyPregnant,
-        avgDaysOpen: (reproductiveFemalesData as any[])?.reduce((sum: number, f: any) => sum + (f.days_open || 0), 0) / Math.max(1, totalFemales) || 0,
+        avgDaysOpen: Math.round(typedReproductiveFemales.reduce((sum: number, f: any) => sum + (f.days_open || 0), 0) / Math.max(1, totalFemales)),
         successfulPregnancies: totalCalvings,
         failedPregnancies: totalPregnancies - totalCalvings,
         activePregnancies: currentlyPregnant,

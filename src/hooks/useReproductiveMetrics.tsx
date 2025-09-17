@@ -2,17 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
-import { 
-  calculateAgeInMonths, 
-  getAnimalCategory, 
-  calculatePregnancyRate,
-  validateReproductiveData
-} from "@/lib/reproductiveCalculations";
 import type {
-  AnimalReproductiveData,
-  OffspringRecord,
-  PregnancyRecord,
-  ServiceRecord,
   ReproductiveMetric,
   ReproductiveAlert,
   Filters
@@ -43,6 +33,10 @@ export function useReproductiveMetrics(filters: Filters = {}) {
       console.log("Fetching reproductive metrics for user:", currentUser.user.id);
       console.log("Filters applied:", parsedFilters);
 
+      // Format dates properly for database
+      const formattedFilters = formatFiltersForDB(parsedFilters);
+      console.log("Formatted filters for DB:", formattedFilters);
+
       // Get user's cabaña_id using the existing function
       const { data: cabanaInfo } = await supabase.rpc('get_current_user_cabana_id');
       
@@ -53,55 +47,58 @@ export function useReproductiveMetrics(filters: Filters = {}) {
 
       console.log("Using cabana_id:", cabanaInfo);
 
-      // Use the existing calculate_reproductive_kpis function  
-      const { data: reproductiveKpis, error: kpisError } = await supabase.rpc('calculate_reproductive_kpis', {
-        _cabana_id: cabanaInfo
+      // Use the new enhanced reproductive metrics function
+      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('get_enhanced_reproductive_metrics', {
+        _cabana_id: cabanaInfo,
+        _filters: formattedFilters
       });
 
-      if (kpisError) {
-        console.error("Database error fetching KPIs:", kpisError);
-        throw kpisError;
+      if (femalesError) {
+        console.error("Database error:", femalesError);
+        throw femalesError;
       }
 
-      console.log("Reproductive KPIs received:", reproductiveKpis);
+      console.log("Raw reproductive data received:", reproductiveFemalesData);
 
-      // Transform KPI data to ReproductiveMetric format
-      const transformedData: ReproductiveMetric[] = (reproductiveKpis as any[] || []).map((kpi: any) => ({
-        animal_id: kpi.animal_id,
-        tag: kpi.id_tag || '',
-        name: kpi.name || '',
-        age_months: kpi.age_months || 0,
-        category: kpi.category || 'Desconocida',
-        corral_id: kpi.corral_id,
-        corral_name: kpi.corral_name || 'Sin corral',
-        is_pregnant: kpi.is_pregnant || false,
-        pregnancy_date: kpi.pregnancy_date,
-        expected_calving_date: kpi.expected_calving_date,
-        last_service_date: null, // TODO: Add to KPI function
-        days_open: kpi.days_open || 0,
-        reproductive_years: kpi.reproductive_years || 1,
-        total_offspring: kpi.total_offspring || 0,
-        lifetime_services: kpi.lifetime_services || 0,
-        lifetime_pregnancies: kpi.lifetime_pregnancies || 0,
-        lifetime_calvings: kpi.lifetime_calvings || 0,
-        individual_pregnancy_rate: kpi.individual_pregnancy_rate || 0,
-        individual_calving_rate: kpi.individual_calving_rate || 0,
-        performance_level: kpi.performance_level || 'Sin datos',
-        active_alerts: kpi.active_alerts || 0,
-        alert_types: kpi.alert_types || []
-      }));
+      // Transform the data to match our ReproductiveMetric interface
+      const transformedData = (reproductiveFemalesData as any[] || []).map((item: any) => {
+        const metric: ReproductiveMetric = {
+          animal_id: item.animal_id,
+          tag: item.id_tag || '',
+          name: item.name || '',
+          age_months: item.age_months,
+          category: item.category,
+          corral_id: item.corral_id,
+          corral_name: item.corral_name || 'Sin corral',
+          is_pregnant: item.is_pregnant || false,
+          pregnancy_date: item.pregnancy_date,
+          expected_calving_date: item.expected_calving_date,
+          last_service_date: item.last_service_date,
+          days_open: item.days_open || 0,
+          reproductive_years: item.reproductive_years || 1,
+          total_offspring: item.total_offspring || 0,
+          lifetime_services: item.lifetime_services || 0,
+          lifetime_pregnancies: item.lifetime_pregnancies || 0,
+          lifetime_calvings: item.lifetime_calvings || 0,
+          individual_pregnancy_rate: item.individual_pregnancy_rate || 0,
+          individual_calving_rate: item.individual_calving_rate || 0,
+          performance_level: item.performance_level || 'Sin servicios',
+          active_alerts: item.active_alerts || 0,
+          alert_types: item.alert_types || []
+        };
+        return metric;
+      });
 
-      console.log("Transformed metrics with KPI data:", transformedData);
+      console.log("Transformed metrics with new calculation logic:", transformedData);
 
-      setMetrics(transformedData);
-      
       // Fetch alerts separately
       const { data: alertsData } = await supabase
         .from('reproductive_alerts')
         .select('*')
         .eq('status', 'pending')
         .order('days_overdue', { ascending: false });
-      
+
+      setMetrics(transformedData);
       setAlerts(alertsData || []);
       console.log("Successfully set metrics:", transformedData.length, "records");
     } catch (error) {
