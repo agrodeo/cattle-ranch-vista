@@ -2618,6 +2618,10 @@ export type Database = {
         Args: { _animal_id: string; _year?: number }
         Returns: Json
       }
+      calculate_individual_reproductive_percentages: {
+        Args: { _animal_id: string }
+        Returns: undefined
+      }
       calculate_reproductive_kpis: {
         Args: { _cabana_id: string }
         Returns: {
@@ -2672,7 +2676,7 @@ export type Database = {
         Returns: number
       }
       check_overdue_pregnancies: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { _cabana_id: string }
         Returns: undefined
       }
       check_reproductive_alerts: {
@@ -2770,6 +2774,23 @@ export type Database = {
       delete_finance_recurring: {
         Args: { _id: string; _user_id: string }
         Returns: undefined
+      }
+      get_animal_reproductive_report: {
+        Args: { _animal_id: string }
+        Returns: {
+          calving_percentage: number
+          current_state: string
+          outcomes_history: Json
+          pregnancy_percentage: number
+          reproductive_years: number
+          state_history: Json
+          state_since: string
+          total_failed_pregnancies: number
+          total_inseminations: number
+          total_pregnancies: number
+          total_services: number
+          total_successful_births: number
+        }[]
       }
       get_current_entitlements: {
         Args: { cabana_uuid: string }
@@ -3022,6 +3043,10 @@ export type Database = {
       mark_pregnancy_failed: {
         Args: { _pregnancy_id: string; _reason?: string }
         Returns: boolean
+      }
+      migrate_existing_offspring_to_outcomes: {
+        Args: { _cabana_id: string }
+        Returns: number
       }
       migrate_existing_reproductive_data: {
         Args: Record<PropertyKey, never>
