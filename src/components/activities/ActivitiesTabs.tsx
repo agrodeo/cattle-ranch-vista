@@ -1,5 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResumenTab } from './tabs/ResumenTab';
+import { ReproductivasTab } from './tabs/ReproductivasTab';
+import { SanitariasTab } from './tabs/SanitariasTab';
+import { ProductivasTab } from './tabs/ProductivasTab';
+import { ManejoTab } from './tabs/ManejoTab';
+import { CalendarioTab } from './tabs/CalendarioTab';
 
 export function ActivitiesTabs() {
   const { t } = useTranslation('activities');
@@ -16,10 +22,41 @@ export function ActivitiesTabs() {
         </p>
       </div>
 
-      {/* Unified Content */}
-      <div className="pb-24">
-        <ResumenTab />
-      </div>
+      {/* Tabs */}
+      <Tabs defaultValue="resumen" className="pb-24">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="resumen">Resumen</TabsTrigger>
+          <TabsTrigger value="reproductivas">Reproductivas</TabsTrigger>
+          <TabsTrigger value="sanitarias">Sanitarias</TabsTrigger>
+          <TabsTrigger value="productivas">Productivas</TabsTrigger>
+          <TabsTrigger value="manejo">Manejo</TabsTrigger>
+          <TabsTrigger value="calendario">Calendario</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="resumen">
+          <ResumenTab />
+        </TabsContent>
+        
+        <TabsContent value="reproductivas">
+          <ReproductivasTab />
+        </TabsContent>
+        
+        <TabsContent value="sanitarias">
+          <SanitariasTab />
+        </TabsContent>
+        
+        <TabsContent value="productivas">
+          <ProductivasTab />
+        </TabsContent>
+        
+        <TabsContent value="manejo">
+          <ManejoTab />
+        </TabsContent>
+        
+        <TabsContent value="calendario">
+          <CalendarioTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
