@@ -78,12 +78,59 @@ export function useReproductiveState(animalId: string) {
         console.error("Error fetching pregnancy history:", pregnancyError);
       }
 
-      // If no pregnancy history in preñeces table but animal is/was pregnant, create mock records
+      // Fetch offspring to create missing pregnancy records
+      const { data: offspringData, error: offspringError } = await supabase
+        .from('animals')
+        .select('id, birth_date, name, id_tag')
+        .eq('mother_id', animalId)
+        .not('birth_date', 'is', null)
+        .order('birth_date', { ascending: false });
+
       let pregnancyHistory: any[] = pregnancyData || [];
       
+      // Create pregnancy records for offspring that don't have corresponding pregnancies
+      if (offspringData && offspringData.length > 0) {
+        for (const offspring of offspringData) {
+          const birthDate = new Date(offspring.birth_date);
+          
+          // Check if there's already a pregnancy record around this birth date
+          const existingPregnancy = pregnancyHistory.find(p => {
+            if (!p.fecha_finalizacion && !p.fecha_estimada_parto) return false;
+            
+            const pregnancyEndDate = new Date(p.fecha_finalizacion || p.fecha_estimada_parto);
+            const timeDiff = Math.abs(pregnancyEndDate.getTime() - birthDate.getTime());
+            const daysDiff = timeDiff / (1000 * 3600 * 24);
+            
+            return daysDiff <= 30; // Within 30 days of each other
+          });
+          
+          if (!existingPregnancy) {
+            // Calculate pregnancy start date (283 days before birth)
+            const gestationPeriod = 283;
+            const pregnancyStart = new Date(birthDate);
+            pregnancyStart.setDate(pregnancyStart.getDate() - gestationPeriod);
+            
+            const mockPregnancy = {
+              id: 'offspring-' + offspring.id,
+              animal_id: animalId,
+              estado_final: 'exitosa',
+              fecha_inicio: pregnancyStart.toISOString().split('T')[0],
+              fecha_estimada_parto: offspring.birth_date,
+              fecha_finalizacion: offspring.birth_date,
+              origen: 'detectada',
+              tipo: 'exitosa',
+              motivo_finalizacion: 'parto_exitoso',
+              cria_id: offspring.id
+            };
+            pregnancyHistory.push(mockPregnancy);
+          }
+        }
+      }
+      
+      // If no pregnancy history and animal is/was pregnant, create current pregnancy record
       if (pregnancyHistory.length === 0 && animalData && (animalData.esta_preñada || animalData.fecha_ultima_preñez)) {
         const mockPregnancy = {
-          id: 'mock-' + animalData.id,
+          id: 'current-' + animalData.id,
           animal_id: animalData.id,
           estado_final: animalData.esta_preñada ? 'activa' : 'exitosa',
           fecha_inicio: animalData.fecha_ultima_preñez || animalData.fecha_servicio || new Date().toISOString().split('T')[0],
@@ -91,8 +138,11 @@ export function useReproductiveState(animalId: string) {
           origen: animalData.tipo_servicio === 'inseminacion_artificial' ? 'IA' : 'servicio',
           tipo: animalData.esta_preñada ? 'activa' : 'exitosa'
         };
-        pregnancyHistory = [mockPregnancy];
+        pregnancyHistory.unshift(mockPregnancy);
       }
+
+      // Sort by fecha_inicio descending
+      pregnancyHistory.sort((a, b) => new Date(b.fecha_inicio).getTime() - new Date(a.fecha_inicio).getTime());
 
       setPregnancyHistory(pregnancyHistory);
     } catch (error) {
