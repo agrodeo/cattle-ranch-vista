@@ -288,12 +288,23 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         ? Math.round((totalCalvings / totalPregnancies) * 100) 
         : 0;
 
+      console.log('Herd Summary Calculations:', {
+        totalFemales,
+        currentlyPregnant,
+        totalServices,
+        totalPregnancies,
+        totalCalvings,
+        totalReproductiveYears,
+        herdPregnancyRate,
+        herdCalvingRate
+      });
+
       setSummaryMetrics({
         totalFemales,
         currentlyPregnant,
         totalServices,
-        pregnancyRate: herdPregnancyRate,
-        calvingRate: herdCalvingRate,
+        pregnancyRate: herdPregnancyRate || 0,
+        calvingRate: herdCalvingRate || 0,
         openFemales: totalFemales - currentlyPregnant,
         avgDaysOpen: 0, // TODO: Calculate average days open
         successfulPregnancies: totalCalvings,
@@ -383,7 +394,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summaryMetrics.pregnancyRate}%</div>
+            <div className="text-2xl font-bold">
+              {summaryMetrics.pregnancyRate !== undefined && !isNaN(summaryMetrics.pregnancyRate) 
+                ? summaryMetrics.pregnancyRate 
+                : 0}%
+            </div>
             <p className="text-xs text-muted-foreground">
               Preñeces confirmadas
             </p>
@@ -396,7 +411,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summaryMetrics.calvingRate}%</div>
+            <div className="text-2xl font-bold">
+              {summaryMetrics.calvingRate !== undefined && !isNaN(summaryMetrics.calvingRate) 
+                ? summaryMetrics.calvingRate 
+                : 0}%
+            </div>
             <p className="text-xs text-muted-foreground">
               Partos exitosos
             </p>
