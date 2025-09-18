@@ -278,14 +278,21 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         totalReproductiveYears += female.reproductive_years;
       });
 
-      // Herd pregnancy rate = total pregnancies / total reproductive years * 100
-      const herdPregnancyRate = totalReproductiveYears > 0 
-        ? Math.round((totalPregnancies / totalReproductiveYears) * 100) 
+      // Calculate herd-level metrics as average of individual animal rates
+      const validPregnancyRates = reproductiveData
+        .map(animal => animal.individual_pregnancy_rate)
+        .filter(rate => !isNaN(rate) && rate >= 0);
+      
+      const validCalvingRates = reproductiveData
+        .map(animal => animal.individual_calving_rate)
+        .filter(rate => !isNaN(rate) && rate >= 0);
+
+      const herdPregnancyRate = validPregnancyRates.length > 0
+        ? Math.round(validPregnancyRates.reduce((sum, rate) => sum + rate, 0) / validPregnancyRates.length)
         : 0;
       
-      // Herd calving rate = total calvings / total pregnancies * 100
-      const herdCalvingRate = totalPregnancies > 0 
-        ? Math.round((totalCalvings / totalPregnancies) * 100) 
+      const herdCalvingRate = validCalvingRates.length > 0
+        ? Math.round(validCalvingRates.reduce((sum, rate) => sum + rate, 0) / validCalvingRates.length)
         : 0;
 
       console.log('Herd Summary Calculations:', {
