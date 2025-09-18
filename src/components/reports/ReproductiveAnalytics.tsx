@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, ChevronUp } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
+import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
+import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
 
 interface ReportFilters {
   date_from?: string;
@@ -54,6 +56,7 @@ interface ReproductiveFemale {
   performance_level: string;
   active_alerts: number;
   alert_types: string[];
+  current_state: string;
 }
 
 interface ReproductiveAnalyticsProps {
@@ -97,57 +100,194 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       const cabanaId = userInfo[0].cabana_id;
 
-      // Use the new enhanced reproductive metrics function
-      const { data: reproductiveFemalesData, error: femalesError } = await supabase.rpc('get_enhanced_reproductive_metrics', {
-        _cabana_id: cabanaId,
-        _filters: {
-          corral_ids: filters.corral_ids,
-          include_sold_dead: filters.include_sold_dead || false
-        }
+      // Get all reproductive females (15+ months old)
+      const { data: animals, error: animalsError } = await supabase
+        .from('animals')
+        .select('*')
+        .eq('cabaña_id', cabanaId)
+        .eq('sex', 'Hembra')
+        .not('status', 'in', filters.include_sold_dead ? [] : ['vendido', 'muerto']);
+
+      if (animalsError) throw animalsError;
+
+      // Filter females 15+ months old
+      const reproductiveFemales = (animals || []).filter(animal => {
+        if (!animal.birth_date) return true; // Include animals without birth date
+        const ageMonths = (new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+        return ageMonths >= 15;
       });
 
-      if (femalesError) {
-        console.error('Error fetching reproductive females:', femalesError);
-        setReproductiveFemales([]);
-      } else {
-        console.log('Reproductive females data:', reproductiveFemalesData);
-        const typedData = reproductiveFemalesData as ReproductiveFemale[];
-        setReproductiveFemales(typedData || []);
-      }
+      // Get all pregnancy records for these animals
+      const animalIds = reproductiveFemales.map(a => a.id);
+      const { data: pregnancies, error: pregnanciesError } = await supabase
+        .from('preñeces')
+        .select('*')
+        .in('animal_id', animalIds);
 
-      // Calculate summary metrics from the enhanced data
-      const typedReproductiveFemales = reproductiveFemalesData as ReproductiveFemale[] || [];
-      const totalFemales = typedReproductiveFemales.length;
-      const currentlyPregnant = typedReproductiveFemales.filter((f: any) => f.is_pregnant).length;
+      if (pregnanciesError) throw pregnanciesError;
+
+      // Get all service records (IA)
+      const { data: services, error: servicesError } = await supabase
+        .from('ia')
+        .select('id, evento_id, animales_ids');
+
+      if (servicesError) throw servicesError;
+
+      // Get all offspring for these animals
+      const { data: offspring, error: offspringError } = await supabase
+        .from('animals')
+        .select('id, mother_id, father_id, status, birth_date')
+        .in('mother_id', animalIds);
+
+      if (offspringError) throw offspringError;
+
+      // Get corral information
+      const { data: corrales, error: corralesError } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .eq('cabaña_id', cabanaId);
+
+      if (corralesError) throw corralesError;
+
+      const corralesMap = new Map(corrales?.map(c => [c.id, c.name]) || []);
+
+      // Calculate metrics for each animal
+      const reproductiveData: ReproductiveFemale[] = reproductiveFemales.map(animal => {
+        // Get data for this animal
+        const animalPregnancies = (pregnancies || []).filter(p => p.animal_id === animal.id);
+        const animalServices = (services || []).filter(s => s.animales_ids?.includes(animal.id));
+        const animalOffspring = (offspring || []).filter(o => o.mother_id === animal.id);
+
+        // Convert to proper types
+        const animalData: AnimalReproductiveData = {
+          id: animal.id,
+          id_tag: animal.id_tag,
+          name: animal.name,
+          birth_date: animal.birth_date,
+          esta_preñada: animal.esta_preñada,
+          fecha_ultima_preñez: animal.fecha_ultima_preñez,
+          fecha_probable_parto: animal.fecha_probable_parto,
+          sex: animal.sex,
+          status: animal.status,
+          corral_id: animal.corral_id
+        };
+
+        const pregnancyRecords: PregnancyRecord[] = animalPregnancies.map(p => ({
+          id: p.id,
+          animal_id: p.animal_id,
+          estado: p.estado,
+          estado_final: (p.estado_final as 'activa' | 'exitosa' | 'fallida') || 'activa',
+          fecha_inicio: p.fecha_inicio,
+          fecha_estimada_parto: p.fecha_estimada_parto,
+          fecha_finalizacion: p.fecha_finalizacion,
+          motivo_finalizacion: p.motivo_finalizacion,
+          cria_id: p.cria_id
+        }));
+
+        const serviceRecords: ServiceRecord[] = animalServices.map(s => ({
+          id: s.id,
+          animales_ids: s.animales_ids,
+          evento_id: s.evento_id
+        }));
+
+        const offspringRecords: OffspringRecord[] = animalOffspring.map(o => ({
+          id: o.id,
+          mother_id: o.mother_id,
+          father_id: o.father_id,
+          status: o.status
+        }));
+
+        // Calculate reproductive metrics
+        const metrics = calculatePregnancyRate(animalData, pregnancyRecords, serviceRecords, offspringRecords);
+
+        // Calculate age and category
+        const ageMonths = animal.birth_date 
+          ? Math.floor((new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+          : 24;
+        
+        const category = ageMonths < 12 ? 'Ternera' : ageMonths < 24 ? 'Vaquillona' : 'Vaca';
+
+        // Determine current reproductive state
+        let currentState = 'Vacía';
+        if (animal.esta_preñada) {
+          currentState = 'Preñada';
+        } else if (animalOffspring.length > 0) {
+          const lastCalving = animalOffspring
+            .filter(o => o.birth_date)
+            .sort((a, b) => new Date(b.birth_date!).getTime() - new Date(a.birth_date!).getTime())[0];
+          
+          if (lastCalving && lastCalving.birth_date) {
+            const daysSinceCalving = Math.floor((new Date().getTime() - new Date(lastCalving.birth_date).getTime()) / (1000 * 60 * 60 * 24));
+            if (daysSinceCalving <= 60) {
+              currentState = 'Post-parto';
+            }
+          }
+        }
+
+        return {
+          animal_id: animal.id,
+          id_tag: animal.id_tag || '',
+          name: animal.name || '',
+          age_months: ageMonths,
+          category,
+          corral_id: animal.corral_id || '',
+          corral_name: corralesMap.get(animal.corral_id) || '',
+          is_pregnant: animal.esta_preñada || false,
+          pregnancy_date: animal.fecha_ultima_preñez || '',
+          expected_calving_date: animal.fecha_probable_parto || '',
+          last_service_date: '', // TODO: Calculate from service records
+          days_open: 0, // TODO: Calculate from calving to next service
+          reproductive_years: metrics.reproductive_years,
+          total_offspring: animalOffspring.length,
+          lifetime_services: animalServices.length,
+          lifetime_pregnancies: pregnancyRecords.length,
+          lifetime_calvings: metrics.total_calvings,
+          individual_pregnancy_rate: metrics.pregnancy_rate,
+          individual_calving_rate: metrics.calving_rate,
+          performance_level: metrics.performance_level,
+          active_alerts: 0, // TODO: Get from alerts table
+          alert_types: [], // TODO: Get from alerts table
+          current_state: currentState
+        };
+      });
+
+      setReproductiveFemales(reproductiveData);
+
+      // Calculate herd summary metrics
+      const totalFemales = reproductiveData.length;
+      const currentlyPregnant = reproductiveData.filter(f => f.is_pregnant).length;
       
-      // Calculate overall pregnancy and calving rates
-      let totalReproductiveYears = 0;
+      // Calculate overall pregnancy and calving rates from all animals
+      let totalServices = 0;
       let totalPregnancies = 0;
       let totalCalvings = 0;
+      let totalReproductiveYears = 0;
       
-      typedReproductiveFemales.forEach((female: any) => {
-        totalReproductiveYears += female.reproductive_years || 1;
-        totalPregnancies += female.lifetime_pregnancies || 0;
-        totalCalvings += female.lifetime_calvings || 0;
+      reproductiveData.forEach(female => {
+        totalServices += female.lifetime_services;
+        totalPregnancies += female.lifetime_pregnancies;
+        totalCalvings += female.lifetime_calvings;
+        totalReproductiveYears += female.reproductive_years;
       });
 
-      const pregnancyRate = totalReproductiveYears > 0 
+      // Herd pregnancy rate = total pregnancies / total reproductive years * 100
+      const herdPregnancyRate = totalReproductiveYears > 0 
         ? Math.round((totalPregnancies / totalReproductiveYears) * 100) 
         : 0;
       
-      const calvingRate = totalPregnancies > 0 
+      // Herd calving rate = total calvings / total pregnancies * 100
+      const herdCalvingRate = totalPregnancies > 0 
         ? Math.round((totalCalvings / totalPregnancies) * 100) 
         : 0;
 
-      // Update summary metrics
       setSummaryMetrics({
         totalFemales,
         currentlyPregnant,
-        totalServices: typedReproductiveFemales.reduce((sum: number, f: any) => sum + (f.lifetime_services || 0), 0),
-        pregnancyRate,
-        calvingRate,
+        totalServices,
+        pregnancyRate: herdPregnancyRate,
+        calvingRate: herdCalvingRate,
         openFemales: totalFemales - currentlyPregnant,
-        avgDaysOpen: Math.round(typedReproductiveFemales.reduce((sum: number, f: any) => sum + (f.days_open || 0), 0) / Math.max(1, totalFemales)),
+        avgDaysOpen: 0, // TODO: Calculate average days open
         successfulPregnancies: totalCalvings,
         failedPregnancies: totalPregnancies - totalCalvings,
         activePregnancies: currentlyPregnant,
@@ -167,9 +307,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
     fetchReproductiveData();
   }, [filters]);
 
+  const { toast } = useToast();
+
   const handleRefresh = () => {
     fetchReproductiveData();
-    toast.success("Datos actualizados");
+    toast({
+      title: "Datos actualizados",
+      description: "Los datos reproductivos han sido actualizados correctamente."
+    });
   };
 
   if (loading) {
@@ -302,9 +447,10 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                         <TableHead>Nombre</TableHead>
                         <TableHead>Categoría</TableHead>
                         <TableHead>Corral</TableHead>
-                        <TableHead>Preñez Activa</TableHead>
+                        <TableHead>Estado Actual</TableHead>
                         <TableHead>% Preñez</TableHead>
                         <TableHead>% Parición</TableHead>
+                        <TableHead>Crías</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -317,11 +463,20 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                           </TableCell>
                           <TableCell>{animal.corral_name || '-'}</TableCell>
                           <TableCell>
-                            {animal.is_pregnant ? (
-                              <Badge className="bg-emerald-100 text-emerald-800">Sí</Badge>
-                            ) : (
-                              <Badge variant="outline">No</Badge>
-                            )}
+                            <Badge 
+                              variant={
+                                animal.current_state === 'Preñada' ? 'default' :
+                                animal.current_state === 'Post-parto' ? 'secondary' :
+                                'outline'
+                              }
+                              className={
+                                animal.current_state === 'Preñada' ? 'bg-emerald-100 text-emerald-800' :
+                                animal.current_state === 'Post-parto' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }
+                            >
+                              {animal.current_state}
+                            </Badge>
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={`font-medium ${
@@ -342,6 +497,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                             }`}>
                               {animal.individual_calving_rate.toFixed(1)}%
                             </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">
+                              {animal.total_offspring}
+                            </Badge>
                           </TableCell>
                         </TableRow>
                       ))}
