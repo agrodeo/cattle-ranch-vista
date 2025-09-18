@@ -109,15 +109,45 @@ export function calculatePregnancyRate(
   const reproductiveYears = calculateReproductiveYears(ageMonths);
   
   const totalServices = services.length;
-  const confirmedPregnancies = pregnancies.filter(p => p.estado === 'confirmada').length;
   const totalOffspring = offspring.length;
   const liveOffspring = offspring.filter(child => child.status !== 'muerto').length;
+  
+  // CRITICAL: Ensure we have successful pregnancies for each offspring
+  // If animal has offspring but no corresponding successful pregnancies, 
+  // we need to account for missing pregnancy records
+  let adjustedPregnancies = [...pregnancies];
+  const successfulPregnancies = pregnancies.filter(p => p.estado_final === 'exitosa').length;
+  
+  // If we have more offspring than successful pregnancies, add missing successful pregnancies
+  if (totalOffspring > successfulPregnancies) {
+    const missingPregnancies = totalOffspring - successfulPregnancies;
+    for (let i = 0; i < missingPregnancies; i++) {
+      adjustedPregnancies.push({
+        id: `auto-generated-${i}`,
+        animal_id: animal.id,
+        estado: 'confirmada',
+        estado_final: 'exitosa',
+        fecha_inicio: new Date(Date.now() - (283 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0], // 283 days ago
+        fecha_estimada_parto: new Date().toISOString().split('T')[0],
+        fecha_finalizacion: new Date().toISOString().split('T')[0],
+        motivo_finalizacion: 'parto_exitoso',
+        cria_id: offspring[successfulPregnancies + i]?.id
+      });
+    }
+  }
+  
+  const confirmedPregnancies = adjustedPregnancies.filter(p => p.estado === 'confirmada' || p.estado_final === 'exitosa').length;
+  const totalPregnancies = adjustedPregnancies.length;
+  const finalSuccessfulPregnancies = adjustedPregnancies.filter(p => p.estado_final === 'exitosa').length;
   
   console.log(`DEBUG calculatePregnancyRate for ${animal.id_tag}:`, {
     ageMonths,
     reproductiveYears,
     totalServices,
+    originalPregnancies: pregnancies.length,
+    adjustedPregnancies: totalPregnancies,
     confirmedPregnancies,
+    finalSuccessfulPregnancies,
     totalOffspring,
     liveOffspring
   });
@@ -126,30 +156,26 @@ export function calculatePregnancyRate(
   let calvingRate = 0;
   let calculationMethod = '';
   
-  // NEW METHOD: Calving rate = successful calvings / total pregnancies 
-  // Note: For individual animal calculation, we'll use the simplified approach
-  // The auto-pregnancy generation will be handled at the herd level in ReproductiveAnalytics
-  const totalPregnancies = pregnancies.length;
-  
-  if (totalPregnancies > 0) {
-    // Calving rate = live offspring / total pregnancies * 100
-    calvingRate = Math.round((liveOffspring / totalPregnancies) * 100);
+  // Calculate calving rate: offspring / successful pregnancies
+  // Since we adjusted pregnancies to match offspring, this should never be 0 if there are offspring
+  if (finalSuccessfulPregnancies > 0) {
+    calvingRate = Math.round((totalOffspring / finalSuccessfulPregnancies) * 100);
     calculationMethod = 'pregnancy_based';
   }
   
   // For pregnancy rate, use service-based calculation if available
   if (totalServices > 0) {
     const currentPregnancy = animal.esta_preñada ? 1 : 0;
-    const totalSuccessfulPregnancies = confirmedPregnancies + currentPregnancy;
-    pregnancyRate = Math.round((totalSuccessfulPregnancies / totalServices) * 100);
-  } else if (reproductiveYears > 0 && totalOffspring > 0) {
-    // Fallback: use offspring per reproductive year
-    pregnancyRate = Math.round((totalOffspring / reproductiveYears) * 100);
+    pregnancyRate = Math.round((confirmedPregnancies + currentPregnancy) / totalServices * 100);
+  } else if (reproductiveYears > 0 && confirmedPregnancies > 0) {
+    // Fallback: use pregnancies per reproductive year
+    pregnancyRate = Math.round((confirmedPregnancies / reproductiveYears) * 100);
   }
   
-  console.log(`DEBUG ${animal.id_tag} pregnancy-based calculation:`, {
+  console.log(`DEBUG ${animal.id_tag} final calculation:`, {
     totalPregnancies,
-    liveOffspring,
+    finalSuccessfulPregnancies,
+    totalOffspring,
     calvingRate,
     pregnancyRate
   });
@@ -167,7 +193,7 @@ export function calculatePregnancyRate(
     reproductive_years: reproductiveYears,
     total_services: totalServices,
     total_pregnancies: confirmedPregnancies,
-    total_calvings: liveOffspring,
+    total_calvings: totalOffspring, // Use total offspring, not just live ones for calving count
     performance_level: performanceLevel,
     calculation_method: calculationMethod
   };
