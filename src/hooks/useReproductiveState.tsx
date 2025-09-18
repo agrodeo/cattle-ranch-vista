@@ -24,7 +24,7 @@ interface PregnancyRecord {
   fecha_estimada_parto?: string;
   fecha_finalizacion?: string;
   origen: string;
-  tipo: string;
+  tipo?: string;
   motivo_finalizacion?: string;
   cria_id?: string;
 }
@@ -41,31 +41,60 @@ export function useReproductiveState(animalId: string) {
     try {
       setLoading(true);
       
-      // Fetch current reproductive state
-      const { data: stateData, error: stateError } = await supabase
-        .from('reproductive_current_state')
+      // Fetch animal data for current state
+      const { data: animalData, error: animalError } = await supabase
+        .from('animals')
         .select('*')
-        .eq('animal_id', animalId)
+        .eq('id', animalId)
         .single();
 
-      if (stateError && stateError.code !== 'PGRST116') {
-        throw stateError;
+      if (animalError) {
+        throw animalError;
       }
 
-      setCurrentState(stateData);
+      // Create current state from animal data
+      if (animalData) {
+        const currentState: ReproductiveState = {
+          id: animalData.id,
+          animal_id: animalData.id,
+          estado_actual: animalData.esta_preñada ? 'preñez_activa' : 'sin_actividad',
+          fecha_ultimo_cambio: animalData.fecha_ultima_preñez || new Date().toISOString().split('T')[0],
+          fecha_servicio: animalData.fecha_servicio,
+          fecha_esperada_parto: animalData.fecha_probable_parto,
+          tipo_servicio: animalData.tipo_servicio,
+          notas: animalData.observaciones
+        };
+        setCurrentState(currentState);
+      }
 
-      // Fetch pregnancy history
+      // Fetch pregnancy history from preñeces table
       const { data: pregnancyData, error: pregnancyError } = await supabase
         .from('preñeces')
         .select('*')
         .eq('animal_id', animalId)
         .order('fecha_inicio', { ascending: false });
 
-      if (pregnancyError) {
-        throw pregnancyError;
+      if (pregnancyError && pregnancyError.code !== 'PGRST116') {
+        console.error("Error fetching pregnancy history:", pregnancyError);
       }
 
-      setPregnancyHistory(pregnancyData || []);
+      // If no pregnancy history in preñeces table but animal is/was pregnant, create mock records
+      let pregnancyHistory: any[] = pregnancyData || [];
+      
+      if (pregnancyHistory.length === 0 && animalData && (animalData.esta_preñada || animalData.fecha_ultima_preñez)) {
+        const mockPregnancy = {
+          id: 'mock-' + animalData.id,
+          animal_id: animalData.id,
+          estado_final: animalData.esta_preñada ? 'activa' : 'exitosa',
+          fecha_inicio: animalData.fecha_ultima_preñez || animalData.fecha_servicio || new Date().toISOString().split('T')[0],
+          fecha_estimada_parto: animalData.fecha_probable_parto,
+          origen: animalData.tipo_servicio === 'inseminacion_artificial' ? 'IA' : 'servicio',
+          tipo: animalData.esta_preñada ? 'activa' : 'exitosa'
+        };
+        pregnancyHistory = [mockPregnancy];
+      }
+
+      setPregnancyHistory(pregnancyHistory);
     } catch (error) {
       console.error("Error fetching reproductive state:", error);
       toast({
