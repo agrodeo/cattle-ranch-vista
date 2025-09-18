@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { ArrowLeft, Syringe, Weight, Heart, Activity } from "lucide-react";
+import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewVaccinationDialog } from "@/components/activities/NewVaccinationDialog";
 import { NewWeighingDialog } from "@/components/activities/NewWeighingDialog";
 import { NewInseminationDialog } from "@/components/activities/NewInseminationDialog";
 import { NewGeneralActivityDialog } from "@/components/activities/NewGeneralActivityDialog";
+import { NewPregnancyLossDialog } from "@/components/activities/NewPregnancyLossDialog";
+import { NewTactoDialog } from "@/components/activities/NewTactoDialog";
 
 interface ActivityCreationFlowProps {
   onClose: () => void;
 }
 
-type ActivityType = "vaccination" | "weighing" | "insemination" | "general";
+type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto";
 
 export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
@@ -44,6 +46,20 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       description: "Otras actividades de manejo",
       icon: Activity,
       color: "bg-green-500",
+    },
+    {
+      id: "tacto" as ActivityType,
+      title: "Tacto/Detección",
+      description: "Detectar preñeces",
+      icon: Stethoscope,
+      color: "bg-purple-500",
+    },
+    {
+      id: "pregnancy_loss" as ActivityType,
+      title: "Pérdida de Preñez",
+      description: "Registrar pérdidas reproductivas",
+      icon: AlertTriangle,
+      color: "bg-orange-500",
     },
   ];
 
@@ -114,6 +130,18 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       
       <NewGeneralActivityDialog
         open={selectedActivity === "general"}
+        onOpenChange={handleDialogClose}
+        onSuccess={handleSuccess}
+      />
+      
+      <NewTactoDialog
+        open={selectedActivity === "tacto"}
+        onOpenChange={handleDialogClose}
+        onSuccess={handleSuccess}
+      />
+      
+      <NewPregnancyLossDialog
+        open={selectedActivity === "pregnancy_loss"}
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
