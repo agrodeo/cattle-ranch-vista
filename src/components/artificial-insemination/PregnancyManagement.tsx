@@ -313,6 +313,15 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
               <AlertCircle className="h-4 w-4 mr-2" />
               Marcar Vacía ({selectedAnimals.length})
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {/* TODO: Open loss management dialog */}}
+              className="bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100"
+            >
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Gestionar Pérdidas
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,7 @@
 import { ArtificialInseminationManager } from '@/components/artificial-insemination/ArtificialInseminationManager';
 import { PregnancyDetectionManager } from '../PregnancyDetectionManager';
 import { PregnancyManagement } from '@/components/artificial-insemination/PregnancyManagement';
+import { ReproductiveEventManager } from '@/components/reproductive/ReproductiveEventManager';
 import { ServiceManagement } from '@/components/artificial-insemination/ServiceManagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useActivityPreferences } from '@/hooks/useActivityPreferences';
@@ -67,6 +68,21 @@ export function ReproductivasTab() {
             serviceId={selectedServiceId}
             onClose={() => setSelectedServiceId(undefined)}
           />
+        </CardContent>
+      </Card>
+
+      {/* Reproductive Events & Loss Management - Full Width */}
+      <Card>
+        <CardHeader>
+          <CardTitle className={cn(
+            'text-lg',
+            isCompact && 'text-base'
+          )}>
+            Eventos Reproductivos y Pérdidas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ReproductiveEventManager />
         </CardContent>
       </Card>
     </div>

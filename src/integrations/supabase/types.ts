@@ -1405,9 +1405,11 @@ export type Database = {
         Row: {
           animal_id: string
           cabaña_id: string
+          causa_perdida: string | null
           created_at: string
           cria_id: string | null
           dias_gestacion: number | null
+          dias_gestacion_perdida: number | null
           estado: string
           estado_final: string | null
           evento_id: string | null
@@ -1417,22 +1419,27 @@ export type Database = {
           fecha_finalizacion: string | null
           fecha_inicio: string
           fecha_parto_real: string | null
+          fecha_perdida: string | null
           fecha_servicio_ia: string | null
           id: string
           motivo_finalizacion: string | null
           notas: string | null
+          observaciones_perdida: string | null
           origen: string
           resultado_parto: string | null
           tipo: string | null
           tipo_origen: string | null
+          tipo_perdida: string | null
           updated_at: string
         }
         Insert: {
           animal_id: string
           cabaña_id: string
+          causa_perdida?: string | null
           created_at?: string
           cria_id?: string | null
           dias_gestacion?: number | null
+          dias_gestacion_perdida?: number | null
           estado?: string
           estado_final?: string | null
           evento_id?: string | null
@@ -1442,22 +1449,27 @@ export type Database = {
           fecha_finalizacion?: string | null
           fecha_inicio: string
           fecha_parto_real?: string | null
+          fecha_perdida?: string | null
           fecha_servicio_ia?: string | null
           id?: string
           motivo_finalizacion?: string | null
           notas?: string | null
+          observaciones_perdida?: string | null
           origen: string
           resultado_parto?: string | null
           tipo?: string | null
           tipo_origen?: string | null
+          tipo_perdida?: string | null
           updated_at?: string
         }
         Update: {
           animal_id?: string
           cabaña_id?: string
+          causa_perdida?: string | null
           created_at?: string
           cria_id?: string | null
           dias_gestacion?: number | null
+          dias_gestacion_perdida?: number | null
           estado?: string
           estado_final?: string | null
           evento_id?: string | null
@@ -1467,14 +1479,17 @@ export type Database = {
           fecha_finalizacion?: string | null
           fecha_inicio?: string
           fecha_parto_real?: string | null
+          fecha_perdida?: string | null
           fecha_servicio_ia?: string | null
           id?: string
           motivo_finalizacion?: string | null
           notas?: string | null
+          observaciones_perdida?: string | null
           origen?: string
           resultado_parto?: string | null
           tipo?: string | null
           tipo_origen?: string | null
+          tipo_perdida?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1858,6 +1873,36 @@ export type Database = {
           pregnancy_status?: string | null
           updated_at?: string
           year?: number
+        }
+        Relationships: []
+      }
+      reproductive_loss_causes: {
+        Row: {
+          categoria: string | null
+          causa: string
+          created_at: string
+          descripcion: string | null
+          id: string
+          is_active: boolean
+          tipo: string
+        }
+        Insert: {
+          categoria?: string | null
+          causa: string
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          is_active?: boolean
+          tipo: string
+        }
+        Update: {
+          categoria?: string | null
+          causa?: string
+          created_at?: string
+          descripcion?: string | null
+          id?: string
+          is_active?: boolean
+          tipo?: string
         }
         Relationships: []
       }
