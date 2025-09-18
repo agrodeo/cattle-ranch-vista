@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
+import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
 
 interface ReproductiveMetrics {
   porcentaje_preñez: number;
@@ -29,23 +31,89 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
       }
 
       try {
-        const { data, error } = await supabase
-          .rpc("calculate_individual_reproductive_percentages", { _animal_id: animalId });
+        // Get animal data
+        const { data: animalData, error: animalError } = await supabase
+          .from('animals')
+          .select('*')
+          .eq('id', animalId)
+          .single();
 
-        if (error) throw error;
-        if (data && typeof data === 'object' && data !== null) {
-          const result = data as any;
-          if (!result.error) {
-            // Map the returned jsonb structure to our interface
-            setMetrics({
-              porcentaje_preñez: result.pregnancy_percentage || 0,
-              porcentaje_paricion: result.calving_percentage || 0,
-              total_reproductive_years: result.total_reproductive_years || 0,
-              confirmed_pregnancies: result.confirmed_pregnancies || 0,
-              live_calves: result.live_calves || 0
-            });
-          }
-        }
+        if (animalError) throw animalError;
+
+        // Get pregnancy history
+        const { data: pregnancies, error: pregnancyError } = await supabase
+          .from('preñeces')
+          .select('*')
+          .eq('animal_id', animalId);
+
+        if (pregnancyError) throw pregnancyError;
+
+        // Get services (from IA and eventos)
+        const { data: services, error: servicesError } = await supabase
+          .from('ia')
+          .select('id, evento_id, animales_ids')
+          .contains('animales_ids', [animalId]);
+
+        if (servicesError) throw servicesError;
+
+        // Get offspring
+        const { data: offspring, error: offspringError } = await supabase
+          .from('animals')
+          .select('id, mother_id, father_id, status')
+          .eq('mother_id', animalId);
+
+        if (offspringError) throw offspringError;
+
+        // Convert to proper types
+        const animal: AnimalReproductiveData = {
+          id: animalData.id,
+          id_tag: animalData.id_tag,
+          name: animalData.name,
+          birth_date: animalData.birth_date,
+          esta_preñada: animalData.esta_preñada,
+          fecha_ultima_preñez: animalData.fecha_ultima_preñez,
+          fecha_probable_parto: animalData.fecha_probable_parto,
+          sex: animalData.sex,
+          status: animalData.status,
+          corral_id: animalData.corral_id
+        };
+
+        const pregnancyRecords: PregnancyRecord[] = (pregnancies || []).map(p => ({
+          id: p.id,
+          animal_id: p.animal_id,
+          estado: p.estado,
+          estado_final: (p.estado_final as 'activa' | 'exitosa' | 'fallida') || 'activa',
+          fecha_inicio: p.fecha_inicio,
+          fecha_estimada_parto: p.fecha_estimada_parto,
+          fecha_finalizacion: p.fecha_finalizacion,
+          motivo_finalizacion: p.motivo_finalizacion,
+          cria_id: p.cria_id
+        }));
+
+        const serviceRecords: ServiceRecord[] = (services || []).map(s => ({
+          id: s.id,
+          animales_ids: s.animales_ids,
+          evento_id: s.evento_id
+        }));
+
+        const offspringRecords: OffspringRecord[] = (offspring || []).map(o => ({
+          id: o.id,
+          mother_id: o.mother_id,
+          father_id: o.father_id,
+          status: o.status
+        }));
+
+        // Calculate metrics using pregnancy history
+        const result = calculatePregnancyRate(animal, pregnancyRecords, serviceRecords, offspringRecords);
+
+        setMetrics({
+          porcentaje_preñez: result.pregnancy_rate,
+          porcentaje_paricion: result.calving_rate,
+          total_reproductive_years: result.reproductive_years,
+          confirmed_pregnancies: result.total_pregnancies,
+          live_calves: result.total_calvings
+        });
+
       } catch (error) {
         console.error("Error fetching reproductive metrics:", error);
       } finally {
