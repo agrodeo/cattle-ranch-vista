@@ -101,12 +101,20 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const cabanaId = userInfo[0].cabana_id;
 
       // Get all reproductive females (15+ months old)
-      const { data: animals, error: animalsError } = await supabase
+      let animalsQuery = supabase
         .from('animals')
         .select('*')
         .eq('cabaña_id', cabanaId)
-        .eq('sex', 'Hembra')
-        .not('status', 'in', filters.include_sold_dead ? [] : ['vendido', 'muerto']);
+        .eq('sex', 'Hembra');
+
+      // Apply filter for sold/dead animals if needed
+      if (!filters.include_sold_dead) {
+        animalsQuery = animalsQuery
+          .neq('status', 'vendido')
+          .neq('status', 'muerto');
+      }
+
+      const { data: animals, error: animalsError } = await animalsQuery;
 
       if (animalsError) throw animalsError;
 
