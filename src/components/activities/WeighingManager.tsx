@@ -1,9 +1,15 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scale, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Scale, TrendingUp, Upload, Plus } from "lucide-react";
 import { useActivities } from "@/hooks/useActivities";
+import { NewWeighingDialog } from "./NewWeighingDialog";
+import { BulkWeighingUpload } from "./BulkWeighingUpload";
 
 export function WeighingManager() {
   const { stats } = useActivities();
+  const [showWeighingDialog, setShowWeighingDialog] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   
   return (
     <div className="space-y-6">
@@ -56,9 +62,31 @@ export function WeighingManager() {
             <p className="mb-4">
               Registro y análisis del rendimiento de peso de tu ganado
             </p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => setShowWeighingDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Registrar Pesaje
+              </Button>
+              <Button variant="outline" onClick={() => setShowBulkUpload(true)}>
+                <Upload className="h-4 w-4 mr-2" />
+                Carga Masiva
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      <NewWeighingDialog
+        open={showWeighingDialog}
+        onOpenChange={setShowWeighingDialog}
+        onSuccess={() => setShowWeighingDialog(false)}
+      />
+
+      <BulkWeighingUpload
+        open={showBulkUpload}
+        onOpenChange={setShowBulkUpload}
+        onSuccess={() => setShowBulkUpload(false)}
+      />
     </div>
   );
 }
