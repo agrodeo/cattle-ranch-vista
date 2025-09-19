@@ -1,15 +1,27 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Scale, TrendingUp, Upload, Plus } from "lucide-react";
+import { Scale, TrendingUp, Plus } from "lucide-react";
 import { useActivities } from "@/hooks/useActivities";
 import { NewWeighingDialog } from "./NewWeighingDialog";
 import { BulkWeighingUpload } from "./BulkWeighingUpload";
+import { WeighingMethodSelector } from "./WeighingMethodSelector";
 
 export function WeighingManager() {
   const { stats } = useActivities();
+  const [showMethodSelector, setShowMethodSelector] = useState(false);
   const [showWeighingDialog, setShowWeighingDialog] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+
+  const handleSelectManual = () => {
+    setShowMethodSelector(false);
+    setShowWeighingDialog(true);
+  };
+
+  const handleSelectBulk = () => {
+    setShowMethodSelector(false);
+    setShowBulkUpload(true);
+  };
   
   return (
     <div className="space-y-6">
@@ -63,18 +75,21 @@ export function WeighingManager() {
               Registro y análisis del rendimiento de peso de tu ganado
             </p>
             <div className="flex gap-2 justify-center">
-              <Button onClick={() => setShowWeighingDialog(true)}>
+              <Button onClick={() => setShowMethodSelector(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Registrar Pesaje
-              </Button>
-              <Button variant="outline" onClick={() => setShowBulkUpload(true)}>
-                <Upload className="h-4 w-4 mr-2" />
-                Carga Masiva
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      <WeighingMethodSelector
+        open={showMethodSelector}
+        onOpenChange={setShowMethodSelector}
+        onSelectManual={handleSelectManual}
+        onSelectBulk={handleSelectBulk}
+      />
 
       <NewWeighingDialog
         open={showWeighingDialog}
