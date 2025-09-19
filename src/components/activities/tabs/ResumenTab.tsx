@@ -32,7 +32,7 @@ import { WeighingManager } from '../WeighingManager';
 import { GeneralActivitiesManager } from '../GeneralActivitiesManager';
 import { ImprovedArtificialInseminationDialog } from '@/components/artificial-insemination/ImprovedArtificialInseminationDialog';
 import { NewTactoDialog } from '../NewTactoDialog';
-import { NewWeighingDialog } from '../NewWeighingDialog';
+import { WeighingFlowDialog } from '../WeighingFlowDialog';
 import { NewGeneralActivityDialog } from '../NewGeneralActivityDialog';
 import { NewVaccinationDialog } from '../NewVaccinationDialog';
 import { ActivityTypeSelector } from '../ActivityTypeSelector';
@@ -324,7 +324,7 @@ export function ResumenTab() {
         onSuccess={() => setShowTactoDialog(false)}
       />
 
-      <NewWeighingDialog
+      <WeighingFlowDialog
         open={showWeighingDialog}
         onOpenChange={setShowWeighingDialog}
         onSuccess={() => setShowWeighingDialog(false)}

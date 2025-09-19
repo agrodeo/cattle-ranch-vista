@@ -3,7 +3,7 @@ import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewVaccinationDialog } from "@/components/activities/NewVaccinationDialog";
-import { NewWeighingDialog } from "@/components/activities/NewWeighingDialog";
+import { WeighingFlowDialog } from "@/components/activities/WeighingFlowDialog";
 import { NewInseminationDialog } from "@/components/activities/NewInseminationDialog";
 import { NewGeneralActivityDialog } from "@/components/activities/NewGeneralActivityDialog";
 import { NewPregnancyLossDialog } from "@/components/activities/NewPregnancyLossDialog";
@@ -156,7 +156,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
         onSuccess={handleSuccess}
       />
       
-      <NewWeighingDialog
+      <WeighingFlowDialog
         open={selectedActivity === "weighing"}
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
