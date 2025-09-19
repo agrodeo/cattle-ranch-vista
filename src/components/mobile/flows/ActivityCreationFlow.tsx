@@ -64,6 +64,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   ];
 
   const handleActivitySelect = (activityId: ActivityType) => {
+    console.log('Activity selected:', activityId);
     setSelectedActivity(activityId);
   };
 

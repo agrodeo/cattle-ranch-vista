@@ -128,7 +128,10 @@ export function SimpleActivitiesList() {
       {/* Main Action Button - Desktop */}
       <div className="hidden lg:block">
         <Button 
-          onClick={() => setShowActivityCreation(true)}
+          onClick={() => {
+            console.log('Desktop button clicked, opening activity creation');
+            setShowActivityCreation(true);
+          }}
           className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white"
           size="lg"
         >
@@ -149,7 +152,10 @@ export function SimpleActivitiesList() {
         <div className="mx-auto max-w-screen-sm px-3 pb-[env(safe-area-inset-bottom)] pointer-events-auto">
           <div className="rounded-full bg-white/95 shadow-lg backdrop-blur border border-slate-200 p-2 mb-3">
             <Button 
-              onClick={() => setShowActivityCreation(true)}
+              onClick={() => {
+                console.log('Mobile button clicked, opening activity creation');
+                setShowActivityCreation(true);
+              }}
               className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-none"
             >
               <Plus className="h-4 w-4 mr-1" />
