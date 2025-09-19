@@ -79,6 +79,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
 
   return (
     <>
+      {/* Mobile view - Full screen */}
       <div className="fixed inset-0 z-50 bg-background lg:hidden">
         {/* Header */}
         <div className="flex items-center p-4 border-b border-border">
@@ -109,6 +110,42 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
               </CardHeader>
             </Card>
           ))}
+        </div>
+      </div>
+
+      {/* Desktop view - Modal overlay */}
+      <div className="hidden lg:block fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background rounded-lg shadow-xl">
+          {/* Header */}
+          <div className="flex items-center p-6 border-b border-border">
+            <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-xl font-semibold">Cargar Actividad</h1>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-4">
+            {activities.map((activity) => (
+              <Card
+                key={activity.id}
+                className="cursor-pointer border-2 hover:border-primary/50 transition-colors"
+                onClick={() => handleActivitySelect(activity.id)}
+              >
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className={`p-3 rounded-lg text-white ${activity.color}`}>
+                      <activity.icon className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <CardTitle>{activity.title}</CardTitle>
+                      <CardDescription>{activity.description}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
 
