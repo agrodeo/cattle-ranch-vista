@@ -110,8 +110,10 @@ export function useActivities() {
           .eq("sex", "Hembra")
           .eq("esta_preñada", false);
       } else if (activityType === 'TACTO') {
-        // Only females >= 15 months
-        query = query.eq("sex", "Hembra");
+        // Only females >= 15 months, not pregnant (can't detect pregnancy on already pregnant females)
+        query = query
+          .eq("sex", "Hembra")
+          .eq("esta_preñada", false);
       }
 
       const { data: animals, error } = await query;

@@ -311,10 +311,10 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         {animals.length === 0 && !loading && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-2">
-              No hay hembras elegibles para tacto.
+              No hay hembras elegibles para detección de preñez.
             </p>
             <p className="text-sm text-muted-foreground">
-              Se requieren hembras ≥15 meses.
+              Se requieren hembras ≥15 meses que NO estén preñadas.
             </p>
           </div>
         )}
