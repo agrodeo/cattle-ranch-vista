@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TabsChips } from './mobile/TabsChips';
 import { ResumenTab } from './tabs/ResumenTab';
 import { ReproductivasTab } from './tabs/ReproductivasTab';
 import { SanitariasTab } from './tabs/SanitariasTab';
@@ -9,6 +11,16 @@ import { CalendarioTab } from './tabs/CalendarioTab';
 
 export function ActivitiesTabs() {
   const { t } = useTranslation('activities');
+  const [activeTab, setActiveTab] = useState("resumen");
+
+  const tabs = [
+    { id: "resumen", label: "Resumen", shortLabel: "Resumen" },
+    { id: "reproductivas", label: "Reproductivas", shortLabel: "Repro" },
+    { id: "sanitarias", label: "Sanitarias", shortLabel: "Sanit" },
+    { id: "productivas", label: "Productivas", shortLabel: "Prod" },
+    { id: "manejo", label: "Manejo", shortLabel: "Manejo" },
+    { id: "calendario", label: "Calendario", shortLabel: "Cal" }
+  ];
 
   return (
     <div className="space-y-3">
@@ -22,16 +34,28 @@ export function ActivitiesTabs() {
         </p>
       </div>
 
+      {/* Mobile Navigation - Scrollable Chips */}
+      <div className="lg:hidden mb-4">
+        <TabsChips 
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
+      </div>
+
       {/* Tabs */}
-      <Tabs defaultValue="resumen" className="pb-24">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="resumen">Resumen</TabsTrigger>
-          <TabsTrigger value="reproductivas">Reproductivas</TabsTrigger>
-          <TabsTrigger value="sanitarias">Sanitarias</TabsTrigger>
-          <TabsTrigger value="productivas">Productivas</TabsTrigger>
-          <TabsTrigger value="manejo">Manejo</TabsTrigger>
-          <TabsTrigger value="calendario">Calendario</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="pb-24">
+        {/* Desktop Navigation - Standard Tabs */}
+        <div className="hidden lg:block">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="resumen">Resumen</TabsTrigger>
+            <TabsTrigger value="reproductivas">Reproductivas</TabsTrigger>
+            <TabsTrigger value="sanitarias">Sanitarias</TabsTrigger>
+            <TabsTrigger value="productivas">Productivas</TabsTrigger>
+            <TabsTrigger value="manejo">Manejo</TabsTrigger>
+            <TabsTrigger value="calendario">Calendario</TabsTrigger>
+          </TabsList>
+        </div>
         
         <TabsContent value="resumen">
           <ResumenTab />

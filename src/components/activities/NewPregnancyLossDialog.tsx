@@ -235,8 +235,27 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-full max-w-2xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto overflow-y-auto p-0 lg:p-6 lg:rounded-lg">
+        {/* Mobile Header */}
+        <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-orange-500" />
+            <h2 className="font-semibold text-lg">Pérdida de Preñez</h2>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => handleOpenChange(false)}
+            className="h-8 w-8 p-0"
+          >
+            ✕
+          </Button>
+        </div>
+
+        {/* Content wrapper */}
+        <div className="p-4 lg:p-0">
+        {/* Desktop Header */}
+        <DialogHeader className="hidden lg:block">
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
             Registrar Pérdida de Preñez
@@ -257,12 +276,12 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
           </div>
         )}
 
-        <div className="space-y-6">
+        <div className="space-y-4 lg:space-y-6">
           {/* Animal Selection */}
           <div className="space-y-2">
-            <Label>Animal Preñado *</Label>
+            <Label className="text-base font-medium">Animal Preñado *</Label>
             <Select value={selectedPregnancy} onValueChange={setSelectedPregnancy}>
-              <SelectTrigger>
+              <SelectTrigger className="h-12">
                 <SelectValue placeholder="Seleccionar animal preñado" />
               </SelectTrigger>
               <SelectContent>
@@ -299,10 +318,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Loss Date */}
           <div className="space-y-2">
-            <Label>Fecha de Pérdida *</Label>
+            <Label className="text-base font-medium">Fecha de Pérdida *</Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <Button variant="outline" className="w-full h-12 justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {format(lossDate, "PPP", { locale: es })}
                 </Button>
@@ -325,9 +344,9 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Loss Type */}
           <div className="space-y-2">
-            <Label>Tipo de Pérdida *</Label>
+            <Label className="text-base font-medium">Tipo de Pérdida *</Label>
             <Select value={lossType} onValueChange={setLossType}>
-              <SelectTrigger>
+              <SelectTrigger className="h-12">
                 <SelectValue placeholder="Seleccionar tipo de pérdida" />
               </SelectTrigger>
               <SelectContent>
@@ -346,9 +365,9 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
           {/* Specific Cause */}
           {lossType && (
             <div className="space-y-2">
-              <Label>Causa Específica *</Label>
+              <Label className="text-base font-medium">Causa Específica *</Label>
               <Select value={lossReason} onValueChange={setLossReason}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12">
                   <SelectValue placeholder="Seleccionar causa" />
                 </SelectTrigger>
                 <SelectContent>
@@ -370,28 +389,34 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Observations */}
           <div className="space-y-2">
-            <Label>Observaciones</Label>
+            <Label className="text-base font-medium">Observaciones</Label>
             <Textarea
               placeholder="Detalles adicionales sobre la pérdida reproductiva..."
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
               rows={3}
+              className="min-h-[80px]"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+          <div className="flex flex-col gap-3 lg:flex-row lg:justify-end lg:gap-2 mt-6 lg:mt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => handleOpenChange(false)}
+              className="h-12 lg:h-10 w-full lg:w-auto"
+            >
               Cancelar
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={loading || !selectedPregnancy || !lossType || !lossReason}
-              className="bg-orange-600 hover:bg-orange-700"
+              className="h-12 lg:h-10 w-full lg:w-auto bg-orange-600 hover:bg-orange-700"
             >
               {loading ? "Registrando..." : "Registrar Pérdida"}
             </Button>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

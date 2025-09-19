@@ -281,8 +281,27 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-full max-w-6xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto overflow-y-auto p-0 lg:p-6 lg:rounded-lg">
+        {/* Mobile Header */}
+        <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Stethoscope className="h-5 w-5 text-brand-600" />
+            <h2 className="font-semibold text-lg">Detección de Preñez</h2>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => handleOpenChange(false)}
+            className="h-8 w-8 p-0"
+          >
+            ✕
+          </Button>
+        </div>
+
+        {/* Content wrapper */}
+        <div className="p-4 lg:p-0">
+        {/* Desktop Header */}
+        <DialogHeader className="hidden lg:block">
           <DialogTitle>Registrar Detección de Preñez</DialogTitle>
           <DialogDescription>
             Registre el resultado del tacto rectal para detección de preñez
@@ -570,6 +589,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
               {loading ? "Guardando..." : "Registrar Detecciones"}
             </Button>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
