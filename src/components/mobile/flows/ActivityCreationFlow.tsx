@@ -125,6 +125,8 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       />
       
       <NewInseminationDialog
+        open={selectedActivity === "insemination"}
+        onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
       

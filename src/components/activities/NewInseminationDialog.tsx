@@ -12,16 +12,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Calendar as CalendarIcon, Heart, Info } from "lucide-react";
+import { Plus, Calendar as CalendarIcon, Heart, Info, ArrowLeft } from "lucide-react";
 import { format, differenceInMonths } from "date-fns";
 import { es } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface InseminationDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
-  const [open, setOpen] = useState(false);
+export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSuccess }: InseminationDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange || setInternalOpen;
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
@@ -45,6 +50,7 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
 
   const { toast } = useToast();
   const { getEligibleAnimals, createEvent } = useActivities();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (open) {
@@ -241,14 +247,245 @@ export function NewInseminationDialog({ onSuccess }: InseminationDialogProps) {
     return null;
   };
 
+  if (isMobile && open) {
+    return (
+      <div className="fixed inset-0 z-50 bg-background lg:hidden">
+        {/* Mobile Header */}
+        <div className="flex items-center p-4 border-b border-border">
+          <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="mr-2">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-semibold">Inseminación Artificial</h1>
+        </div>
+
+        {/* Mobile Content */}
+        <div className="flex-1 p-4 overflow-y-auto pb-20">
+          {animals.length === 0 && !loading && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-2">
+                No hay hembras elegibles para inseminación artificial.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Se requieren hembras ≥15 meses que no estén preñadas.
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {/* Service Details */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="fecha">Fecha de Servicio</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {format(fecha, "PPP", { locale: es })}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={fecha}
+                      onSelect={(date) => date && setFecha(date)}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="toro_nombre">Nombre del Toro *</Label>
+                <Input
+                  id="toro_nombre"
+                  value={toroNombre}
+                  onChange={(e) => setToroNombre(e.target.value)}
+                  placeholder="Nombre o código del toro"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="raza_toro">Raza del Toro</Label>
+                <Select value={razaToro} onValueChange={setRazaToro}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar raza" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Braford">Braford</SelectItem>
+                    <SelectItem value="Brangus">Brangus</SelectItem>
+                    <SelectItem value="Angus">Angus</SelectItem>
+                    <SelectItem value="Hereford">Hereford</SelectItem>
+                    <SelectItem value="Limousin">Limousin</SelectItem>
+                    <SelectItem value="Charolais">Charolais</SelectItem>
+                    <SelectItem value="Otra">Otra</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {renderBreedSpecificFields()}
+            </div>
+
+            {/* Bull Additional Details */}
+            <div className="space-y-4">
+              <Label className="text-sm font-medium">Datos Adicionales del Toro</Label>
+              <div className="grid gap-4 grid-cols-2">
+                <div className="space-y-2">
+                  <Label className="text-xs">Peso Nacimiento (kg)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={extrasToro.peso_nacimiento}
+                    onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_nacimiento: e.target.value }))}
+                    placeholder="35.0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Peso Destete (kg)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={extrasToro.peso_destete}
+                    onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_destete: e.target.value }))}
+                    placeholder="200.0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Peso Final (kg)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={extrasToro.peso_final}
+                    onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_final: e.target.value }))}
+                    placeholder="450.0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">CE (cm)</Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    value={extrasToro.ce}
+                    onChange={(e) => setExtrasToro(prev => ({ ...prev, ce: e.target.value }))}
+                    placeholder="34.0"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Registro Racial</Label>
+                  <Input
+                    value={extrasToro.registro}
+                    onChange={(e) => setExtrasToro(prev => ({ ...prev, registro: e.target.value }))}
+                    placeholder="Número de registro"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs">Origen</Label>
+                  <Input
+                    value={extrasToro.origen}
+                    onChange={(e) => setExtrasToro(prev => ({ ...prev, origen: e.target.value }))}
+                    placeholder="País/región de origen"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notas">Observaciones</Label>
+              <Textarea
+                id="notas"
+                value={notas}
+                onChange={(e) => setNotas(e.target.value)}
+                placeholder="Observaciones del servicio..."
+                rows={3}
+              />
+            </div>
+
+            {/* Animal Selection */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">
+                  Hembras Elegibles ({animals.length})
+                </Label>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={selectAllAnimals}>
+                    Todas
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={clearSelection}>
+                    Limpiar
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {animals.map((animal) => (
+                  <div key={animal.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                    <Checkbox
+                      checked={selectedAnimals.includes(animal.id)}
+                      onCheckedChange={(checked) => 
+                        handleAnimalSelection(animal.id, checked as boolean)
+                      }
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                      <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {animal.birth_date ? 
+                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
+                          : "No registrada"
+                        } • {animal.breed || "No especificada"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Heart className={`h-3 w-3 ${animal.esta_preñada ? 'text-red-500' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {selectedAnimals.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                  {selectedAnimals.length} hembra(s) seleccionada(s)
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Fixed Bottom Actions */}
+        <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()}
+              className="flex-1"
+            >
+              {loading ? "Guardando..." : "Registrar"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Nueva Inseminación
-        </Button>
-      </DialogTrigger>
+      {/* Only show trigger if not controlled externally */}
+      {controlledOpen === undefined && (
+        <DialogTrigger asChild>
+          <Button className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Nueva Inseminación
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Registrar Inseminación Artificial</DialogTitle>
