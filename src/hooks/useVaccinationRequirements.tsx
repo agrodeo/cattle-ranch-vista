@@ -27,6 +27,22 @@ export interface VaccinationStatus {
   days_overdue?: number;
 }
 
+const getCurrentCabanaId = async (): Promise<string> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Usuario no autenticado');
+
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select('cabaña_id')
+    .eq('user_id', user.id)
+    .single();
+
+  if (error) throw error;
+  if (!profile || !profile['cabaña_id']) throw new Error('No se pudo obtener la cabaña del usuario');
+  
+  return profile['cabaña_id'];
+};
+
 export function useVaccinationRequirements() {
   const [requirements, setRequirements] = useState<VaccinationRequirement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,18 +68,23 @@ export function useVaccinationRequirements() {
 
   const createRequirement = async (requirementData: Omit<VaccinationRequirement, 'id' | 'is_active'>) => {
     try {
-      // Use RPC function to insert requirement
-      const { error } = await supabase.rpc('create_vaccination_requirement', {
-        p_vaccine_name: requirementData.vaccine_name,
-        p_vaccine_type: requirementData.vaccine_type,
-        p_description: requirementData.description || null,
-        p_is_mandatory: requirementData.is_mandatory,
-        p_sex_restriction: requirementData.sex_restriction || null,
-        p_min_age_months: requirementData.min_age_months || null,
-        p_max_age_months: requirementData.max_age_months || null,
-        p_frequency_months: requirementData.frequency_months || null,
-        p_country: requirementData.country
-      });
+      const cabanaId = await getCurrentCabanaId();
+      
+      const { error } = await supabase
+        .from('cabaña_vaccination_requirements')
+        .insert({
+          'cabaña_id': cabanaId,
+          vaccine_name: requirementData.vaccine_name,
+          vaccine_type: requirementData.vaccine_type,
+          description: requirementData.description || null,
+          is_mandatory: requirementData.is_mandatory,
+          sex_restriction: requirementData.sex_restriction || null,
+          min_age_months: requirementData.min_age_months || null,
+          max_age_months: requirementData.max_age_months || null,
+          frequency_months: requirementData.frequency_months || null,
+          country: requirementData.country,
+          is_active: true
+        });
 
       if (error) throw error;
       toast.success('Requisito de vacunación creado');
@@ -151,18 +172,6 @@ export function useAnimalVaccinationStatus(animalId?: string) {
     }
   };
 
-  const getCurrentCabanaId = async (): Promise<string> => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Usuario no autenticado');
-
-    const { data: cabanaInfo, error } = await supabase
-      .rpc('get_user_cabana_info', { user_uuid: user.id });
-
-    if (error) throw error;
-    if (!cabanaInfo || cabanaInfo.length === 0) throw new Error('No se pudo obtener la cabaña del usuario');
-    
-    return cabanaInfo[0].cabana_id;
-  };
 
   useEffect(() => {
     if (animalId) {
