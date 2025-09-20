@@ -421,8 +421,8 @@ export default function Corrales() {
                                 </span>
                               )}
                               {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
-                                <span className="text-pink-600 font-medium">
-                                  🤰 {corralKPI.pregnancy_rate.toFixed(0)}% preñez
+                                <span className={`font-medium ${corralKPI.pregnancy_rate >= 70 ? 'text-green-600' : corralKPI.pregnancy_rate >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                  {corralKPI.pregnancy_rate.toFixed(0)}% preñez
                                 </span>
                               )}
                             </div>
