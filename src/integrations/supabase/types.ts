@@ -651,6 +651,65 @@ export type Database = {
           },
         ]
       }
+      cabaña_vaccination_requirements: {
+        Row: {
+          cabaña_id: string
+          country: string
+          created_at: string
+          description: string | null
+          frequency_months: number | null
+          id: string
+          is_active: boolean
+          is_mandatory: boolean
+          max_age_months: number | null
+          min_age_months: number | null
+          sex_restriction: string | null
+          updated_at: string
+          vaccine_name: string
+          vaccine_type: string
+        }
+        Insert: {
+          cabaña_id: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          frequency_months?: number | null
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          max_age_months?: number | null
+          min_age_months?: number | null
+          sex_restriction?: string | null
+          updated_at?: string
+          vaccine_name: string
+          vaccine_type: string
+        }
+        Update: {
+          cabaña_id?: string
+          country?: string
+          created_at?: string
+          description?: string | null
+          frequency_months?: number | null
+          id?: string
+          is_active?: boolean
+          is_mandatory?: boolean
+          max_age_months?: number | null
+          min_age_months?: number | null
+          sex_restriction?: string | null
+          updated_at?: string
+          vaccine_name?: string
+          vaccine_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_cabaña_vaccination_requirements_cabaña"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cabañas: {
         Row: {
           country_code: string | null
@@ -2835,6 +2894,19 @@ export type Database = {
           total_pregnancies: number
           total_services: number
           total_successful_births: number
+        }[]
+      }
+      get_animal_vaccination_status: {
+        Args: { _animal_id: string; _cabaña_id: string }
+        Returns: {
+          days_overdue: number
+          is_mandatory: boolean
+          last_vaccination_date: string
+          next_due_date: string
+          requirement_id: string
+          status: string
+          vaccine_name: string
+          vaccine_type: string
         }[]
       }
       get_current_entitlements: {
