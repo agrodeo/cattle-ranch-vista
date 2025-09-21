@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,9 @@ import { VaccinationRequirementsManager } from "@/components/settings/Vaccinatio
 import { Settings as SettingsIcon, Target, Users, CreditCard, Syringe } from "lucide-react";
 
 export const SettingsPage = () => {
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get("tab") || "benchmarks";
+
   useEffect(() => {
     document.title = "Configuración - AgroDeo";
     const metaDescription = document.querySelector('meta[name="description"]');
@@ -28,7 +32,7 @@ export const SettingsPage = () => {
           title="Configuraciones del Sistema"
           subtitle="Gestiona las opciones y preferencias"
         >
-          <Tabs defaultValue="benchmarks" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto sm:h-10">
               <TabsTrigger value="benchmarks" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <Target className="h-3 w-3 sm:h-4 sm:w-4" />

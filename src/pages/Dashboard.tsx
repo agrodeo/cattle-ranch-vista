@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Users, Activity, DollarSign, TrendingUp, Plus, Calendar, Settings, AlertTriangle, Shield, Syringe } from "lucide-react";
+import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
+import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
 import { SectionCard } from "@/components/ui/section-card";
@@ -16,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const navigate = useNavigate();
+  const { requirements: vaccinationRequirements } = useVaccinationRequirements();
   const { 
     cabana, 
     counts, 
@@ -191,6 +194,11 @@ const Dashboard = () => {
 
           {/* Right Sidebar */}
           <aside className="space-y-4">
+            {/* Vaccination Setup Prompt */}
+            {vaccinationRequirements.length === 0 && (
+              <VaccinationPrompt />
+            )}
+
             {/* Warnings Card */}
             {warnings.alerts.length > 0 && (
               <SectionCard
