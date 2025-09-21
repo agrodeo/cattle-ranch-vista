@@ -904,36 +904,6 @@ export type Database = {
         }
         Relationships: []
       }
-      custom_vaccines: {
-        Row: {
-          cabaña_id: string
-          created_at: string
-          created_by: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          cabaña_id: string
-          created_at?: string
-          created_by: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          cabaña_id?: string
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       defunciones: {
         Row: {
           animal_id: string
@@ -1267,36 +1237,6 @@ export type Database = {
           lng?: number | null
           region?: string | null
           service_type?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      herd_vaccine_overrides: {
-        Row: {
-          active: boolean
-          cabaña_id: string
-          created_at: string
-          id: string
-          jurisdiction_code: string
-          rule_jsonb: Json
-          updated_at: string
-        }
-        Insert: {
-          active?: boolean
-          cabaña_id: string
-          created_at?: string
-          id?: string
-          jurisdiction_code: string
-          rule_jsonb: Json
-          updated_at?: string
-        }
-        Update: {
-          active?: boolean
-          cabaña_id?: string
-          created_at?: string
-          id?: string
-          jurisdiction_code?: string
-          rule_jsonb?: Json
           updated_at?: string
         }
         Relationships: []
@@ -3023,7 +2963,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       get_vaccination_alerts_for_animal: {
-        Args: { _animal_id: string; _country?: string }
+        Args: { _animal_id: string; _cabaña_id: string }
         Returns: {
           days_since_last: number
           days_until_due: number
@@ -3031,7 +2971,7 @@ export type Database = {
           is_mandatory: boolean
           last_vaccination_date: string
           next_due_date: string
-          scheme_id: string
+          requirement_id: string
           status: string
           vaccine_name: string
           vaccine_type: string

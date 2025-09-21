@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface VaccinationAlert {
-  scheme_id: string;
+  requirement_id: string;
   vaccine_name: string;
   vaccine_type: string;
   is_mandatory: boolean;
@@ -25,17 +25,45 @@ export function useVaccinationAlerts(animalId: string) {
     
     try {
       setLoading(true);
+      console.log('🔍 Fetching vaccination alerts for animal:', animalId);
       
-      // For now, use Argentina as default country
-      // TODO: Get actual country from cabaña settings
-      const countryCode = 'Argentina';
+      // Get user's cabana_id to fetch only user-configured alerts
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('❌ No authenticated user');
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profileError || !profile) {
+        console.error('❌ No profile found for user:', profileError);
+        return;
+      }
+
+      const cabanaId = profile.cabaña_id;
+      if (!cabanaId) {
+        console.error('❌ No cabaña found for user');
+        return;
+      }
+
+      console.log('✅ Using cabaña_id:', cabanaId);
       
       const { data, error } = await supabase.rpc('get_vaccination_alerts_for_animal', {
         _animal_id: animalId,
-        _country: countryCode
+        _cabaña_id: cabanaId
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ RPC error:', error);
+        throw error;
+      }
+
+      console.log('✅ Received alerts:', data?.length || 0);
 
       // Type assertion to ensure status is correctly typed
       const typedAlerts = (data || []).map(alert => ({
@@ -45,12 +73,13 @@ export function useVaccinationAlerts(animalId: string) {
       
       setAlerts(typedAlerts);
     } catch (error) {
-      console.error("Error fetching vaccination alerts:", error);
+      console.error("💥 Error fetching vaccination alerts:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "No se pudieron cargar las alertas de vacunación",
       });
+      setAlerts([]);
     } finally {
       setLoading(false);
     }

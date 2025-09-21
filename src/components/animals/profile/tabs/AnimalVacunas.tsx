@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
+import { Link } from "react-router-dom";
 import { 
   Syringe, 
   Plus, 
@@ -170,21 +171,8 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     }
   };
 
-  // Only use the new requirements-based system, ignore legacy alerts
-  // if user has no requirements configured, show empty state
+  // Only use the new requirements-based system
   const hasConfiguredRequirements = compliance && compliance.totalRequired > 0;
-  
-  // Legacy system data (keep for historical compatibility but don't show)
-  const combinedAlerts = hasConfiguredRequirements ? [] : locationAlerts.length > 0 ? locationAlerts : alerts;
-  const mandatoryAlerts = combinedAlerts.filter(alert => alert.mandatory);
-  const overdue = combinedAlerts.filter(alert => alert.is_due && alert.mandatory).length;
-  const dueSoon = combinedAlerts.filter(alert => alert.is_due && !alert.mandatory).length;
-  const upToDate = combinedAlerts.filter(alert => !alert.is_due).length;
-  const missing = combinedAlerts.filter(alert => alert.is_due).length;
-  
-  const totalRequired = combinedAlerts.length;
-  const applied = upToDate;
-  const coveragePercentage = totalRequired > 0 ? (applied / totalRequired) * 100 : 0;
 
   return (
     <div className="space-y-6">
@@ -202,90 +190,33 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         loading={complianceLoading} 
       />
 
-      {/* Show legacy vaccination coverage only if no requirements configured */}
+      {/* Encourage users to configure their own vaccination requirements */}
       {!hasConfiguredRequirements && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Cobertura de Vacunación (Sistema Nacional)
+              Configurar Vacunación
             </CardTitle>
             <CardDescription>
-              Estado según plan sanitario nacional - Configure sus propios requisitos en Configuración
+              Configure los requisitos de vacunación específicos de su cabaña
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  Esquema de vacunación: {applied}/{totalRequired}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {coveragePercentage.toFixed(0)}%
-                </span>
-              </div>
-              <Progress value={coveragePercentage} className="h-2" />
-              
-              {/* Status Summary */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                <div className="bg-green-50 border border-green-200 text-green-800 p-2 rounded text-center">
-                  <div className="font-medium">{upToDate}</div>
-                  <div>Al día</div>
-                </div>
-                <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-2 rounded text-center">
-                  <div className="font-medium">{dueSoon}</div>
-                  <div>Próximas</div>
-                </div>
-                <div className="bg-red-50 border border-red-200 text-red-800 p-2 rounded text-center">
-                  <div className="font-medium">{overdue}</div>
-                  <div>Vencidas</div>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 text-gray-800 p-2 rounded text-center">
-                  <div className="font-medium">{missing}</div>
-                  <div>Faltantes</div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                {combinedAlerts.map((alert, index) => (
-                  <div 
-                    key={alert.vaccine_code || alert.scheme_id || index}
-                    className={`p-2 rounded-lg border text-sm ${
-                      !alert.is_due || alert.rationale?.includes('Al día')
-                        ? 'bg-green-50 border-green-200 text-green-800'
-                        : alert.mandatory
-                        ? 'bg-red-50 border-red-200 text-red-800'
-                        : 'bg-yellow-50 border-yellow-200 text-yellow-800'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {!alert.is_due || alert.rationale?.includes('Al día') ? (
-                        <CheckCircle className="h-3 w-3" />
-                      ) : alert.mandatory ? (
-                        <AlertTriangle className="h-3 w-3" />
-                      ) : (
-                        <Clock className="h-3 w-3" />
-                      )}
-                      <span className="font-medium">
-                        {alert.vaccine_name || alert.scheme_id}
-                      </span>
-                      {alert.mandatory && (
-                        <Badge variant="outline" className="text-xs px-1 py-0">
-                          Obligatoria
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs mt-1 text-muted-foreground">
-                      {alert.rationale || (alert.is_due ? 'Pendiente' : 'Al día')}
-                    </div>
-                    {alert.campaign_active && (
-                      <Badge variant="destructive" className="text-xs mt-1">
-                        Campaña Activa
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-              </div>
+            <div className="text-center py-8">
+              <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                No hay requisitos de vacunación configurados
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Configure los requisitos de vacunación específicos de su cabaña para hacer 
+                seguimiento automático del estado de vacunación de sus animales.
+              </p>
+              <Button asChild>
+                <Link to="/settings">
+                  Configurar Vacunas
+                </Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -386,24 +317,18 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               <div className="text-center py-4 text-muted-foreground">
                 Cargando alertas...
               </div>
-            ) : (!hasConfiguredRequirements && combinedAlerts.length === 0) ? (
+            ) : !hasConfiguredRequirements ? (
               <div className="text-center py-4 text-muted-foreground">
                 No hay alertas de vacunación. Configure sus requisitos en Configuración.
               </div>
-            ) : hasConfiguredRequirements ? (
+            ) : (
               <div className="text-center py-4 text-muted-foreground">
                 No hay próximas vacunas según sus requisitos configurados.
               </div>
-            ) : (
-              combinedAlerts
-                .filter(alert => alert.is_due)
-                .sort((a, b) => {
-                  // Sort mandatory first, then by due status
-                  if (a.mandatory && !b.mandatory) return -1;
-                  if (!a.mandatory && b.mandatory) return 1;
-                  return 0;
-                })
-                .map((alert, index) => (
+            )}
+          </div>
+        </CardContent>
+      </Card>
                   <div 
                     key={alert.vaccine_code || alert.scheme_id || index}
                     className={`p-3 rounded-lg border ${

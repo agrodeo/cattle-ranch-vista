@@ -301,31 +301,8 @@ export const useDashboardSummary = (): DashboardSummary => {
         }
       }
 
-      // Check for vaccination alerts using existing RPC
-      const { data: vaccinationData, error: vaccinationError } = await supabase.rpc(
-        'get_vaccination_alerts_for_animal',
-        { _animal_id: animalsCount > 0 ? consanguinityData?.[0]?.id || '' : '', _country: 'Argentina' }
-      );
-
-      if (!vaccinationError && vaccinationData && animalsCount > 0) {
-        // Get count of animals missing vaccines
-        const { count: unvaccinatedCount } = await supabase
-          .from('animals')
-          .select('id', { count: 'exact', head: true })
-          .eq('cabaña_id', cabanaId)
-          .eq('status', 'activo');
-
-        if (unvaccinatedCount && unvaccinatedCount > 0) {
-          warnings.push({
-            id: 'vaccination',
-            type: 'vaccination',
-            title: 'Vacunas Pendientes',
-            description: `Animales con esquemas de vacunación incompletos`,
-            severity: 'medium',
-            affected_count: Math.floor(unvaccinatedCount * 0.3) // Estimate 30% need vaccines
-          });
-        }
-      }
+      // Skip vaccination alerts since national system was removed
+      // Users should configure their own vaccination requirements in settings
 
       // Update counts
       setCounts({
