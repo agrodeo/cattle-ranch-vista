@@ -16,6 +16,8 @@ interface VaccineTemplate {
   min_age_months?: number;
   max_age_months?: number;
   frequency_months?: number;
+  doses_required?: number;
+  interval_between_doses_days?: number;
   country: string;
 }
 
@@ -27,6 +29,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     is_mandatory: true,
     min_age_months: 3,
     frequency_months: 6,
+    doses_required: 1,
     country: "Argentina"
   },
   {
@@ -37,6 +40,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     sex_restriction: "Hembra",
     min_age_months: 3,
     max_age_months: 8,
+    doses_required: 1,
     country: "Argentina"
   },
   {
@@ -46,6 +50,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     is_mandatory: false,
     min_age_months: 6,
     frequency_months: 12,
+    doses_required: 1,
     country: "Argentina"
   },
   {
@@ -55,6 +60,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     is_mandatory: false,
     min_age_months: 2,
     frequency_months: 12,
+    doses_required: 1,
     country: "Argentina"
   },
   {
@@ -64,6 +70,8 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     is_mandatory: false,
     min_age_months: 6,
     frequency_months: 12,
+    doses_required: 2,
+    interval_between_doses_days: 21,
     country: "Argentina"
   }
 ];
@@ -174,6 +182,11 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
                       {vaccine.frequency_months && (
                         <span className="bg-muted px-2 py-1 rounded">
                           Cada {vaccine.frequency_months} meses
+                        </span>
+                      )}
+                      {vaccine.doses_required && vaccine.doses_required > 1 && (
+                        <span className="bg-muted px-2 py-1 rounded">
+                          {vaccine.doses_required} dosis
                         </span>
                       )}
                     </div>

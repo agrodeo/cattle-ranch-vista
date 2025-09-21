@@ -12,6 +12,8 @@ export interface VaccinationRequirement {
   min_age_months?: number;
   max_age_months?: number;
   frequency_months?: number;
+  doses_required?: number;
+  interval_between_doses_days?: number;
   country: string;
   is_active: boolean;
 }

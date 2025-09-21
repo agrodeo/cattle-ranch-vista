@@ -24,6 +24,8 @@ const requirementSchema = z.object({
   min_age_months: z.number().min(0).optional(),
   max_age_months: z.number().min(0).optional(),
   frequency_months: z.number().min(1).optional(),
+  doses_required: z.number().min(1).max(5).optional(),
+  interval_between_doses_days: z.number().min(1).optional(),
   country: z.string().min(1, "El país es requerido"),
 });
 
@@ -45,6 +47,8 @@ export const VaccinationRequirementsManager = () => {
       min_age_months: undefined,
       max_age_months: undefined,
       frequency_months: undefined,
+      doses_required: 1,
+      interval_between_doses_days: undefined,
       country: "Argentina",
     },
   });
@@ -59,8 +63,10 @@ export const VaccinationRequirementsManager = () => {
         sex_restriction: data.sex_restriction === "ninguno" ? null : data.sex_restriction,
         min_age_months: data.min_age_months,
         max_age_months: data.max_age_months,
-        frequency_months: data.frequency_months,
-        country: data.country,
+          frequency_months: data.frequency_months,
+          doses_required: data.doses_required,
+          interval_between_doses_days: data.interval_between_doses_days,
+          country: data.country,
       };
 
       if (editingRequirement) {
@@ -87,6 +93,8 @@ export const VaccinationRequirementsManager = () => {
       min_age_months: requirement.min_age_months || undefined,
       max_age_months: requirement.max_age_months || undefined,
       frequency_months: requirement.frequency_months || undefined,
+      doses_required: requirement.doses_required || 1,
+      interval_between_doses_days: requirement.interval_between_doses_days || undefined,
       country: requirement.country,
     });
     setIsDialogOpen(true);
@@ -216,7 +224,7 @@ export const VaccinationRequirementsManager = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <FormField
                     control={form.control}
                     name="min_age_months"
@@ -264,14 +272,63 @@ export const VaccinationRequirementsManager = () => {
                             type="number"
                             {...field}
                             onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            placeholder="Una sola vez"
+                            placeholder="Una vez"
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="doses_required"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Dosis Requeridas</FormLabel>
+                        <Select 
+                          onValueChange={(value) => field.onChange(Number(value))} 
+                          value={field.value?.toString() || "1"}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-background border z-50">
+                            <SelectItem value="1">1 dosis</SelectItem>
+                            <SelectItem value="2">2 dosis</SelectItem>
+                            <SelectItem value="3">3 dosis</SelectItem>
+                            <SelectItem value="4">4 dosis</SelectItem>
+                            <SelectItem value="5">5 dosis</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
+
+                {/* Interval between doses field - only show if doses > 1 */}
+                {form.watch('doses_required') && form.watch('doses_required')! > 1 && (
+                  <FormField
+                    control={form.control}
+                    name="interval_between_doses_days"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Intervalo entre dosis (días)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
+                            placeholder="Ej: 21, 30, 45"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}
@@ -346,6 +403,12 @@ export const VaccinationRequirementsManager = () => {
                     )}
                     {requirement.frequency_months && (
                       <span>Cada {requirement.frequency_months} meses</span>
+                    )}
+                    {requirement.doses_required && requirement.doses_required > 1 && (
+                      <span>{requirement.doses_required} dosis</span>
+                    )}
+                    {requirement.interval_between_doses_days && (
+                      <span>Intervalo: {requirement.interval_between_doses_days} días</span>
                     )}
                   </div>
                 </div>
