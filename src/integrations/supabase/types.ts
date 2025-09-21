@@ -657,8 +657,10 @@ export type Database = {
           country: string
           created_at: string
           description: string | null
+          doses_required: number | null
           frequency_months: number | null
           id: string
+          interval_between_doses_days: number | null
           is_active: boolean
           is_mandatory: boolean
           max_age_months: number | null
@@ -673,8 +675,10 @@ export type Database = {
           country?: string
           created_at?: string
           description?: string | null
+          doses_required?: number | null
           frequency_months?: number | null
           id?: string
+          interval_between_doses_days?: number | null
           is_active?: boolean
           is_mandatory?: boolean
           max_age_months?: number | null
@@ -689,8 +693,10 @@ export type Database = {
           country?: string
           created_at?: string
           description?: string | null
+          doses_required?: number | null
           frequency_months?: number | null
           id?: string
+          interval_between_doses_days?: number | null
           is_active?: boolean
           is_mandatory?: boolean
           max_age_months?: number | null
@@ -2580,6 +2586,7 @@ export type Database = {
           animal_id: string
           cabaña_id: string
           created_at: string
+          dose_number: number | null
           dosis: string | null
           evento_id: string | null
           fecha: string
@@ -2593,6 +2600,7 @@ export type Database = {
           animal_id: string
           cabaña_id: string
           created_at?: string
+          dose_number?: number | null
           dosis?: string | null
           evento_id?: string | null
           fecha: string
@@ -2606,6 +2614,7 @@ export type Database = {
           animal_id?: string
           cabaña_id?: string
           created_at?: string
+          dose_number?: number | null
           dosis?: string | null
           evento_id?: string | null
           fecha?: string
