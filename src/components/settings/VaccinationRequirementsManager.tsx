@@ -121,7 +121,7 @@ export const VaccinationRequirementsManager = () => {
             Configura las vacunas requeridas para tu cabaña
           </p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogClose}>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
