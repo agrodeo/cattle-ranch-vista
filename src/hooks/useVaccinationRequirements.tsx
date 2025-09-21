@@ -30,19 +30,37 @@ export interface VaccinationStatus {
 }
 
 const getCurrentCabanaId = async (): Promise<string> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Usuario no autenticado');
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      console.error('❌ No authenticated user found');
+      throw new Error('Usuario no autenticado');
+    }
 
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('cabaña_id')
-    .eq('user_id', user.id)
-    .single();
+    console.log('👤 Getting cabaña for user:', user.id);
 
-  if (error) throw error;
-  if (!profile || !profile['cabaña_id']) throw new Error('No se pudo obtener la cabaña del usuario');
-  
-  return profile['cabaña_id'];
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('cabaña_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      console.error('❌ Error fetching profile:', error);
+      throw error;
+    }
+    
+    if (!profile || !profile['cabaña_id']) {
+      console.error('❌ No cabaña_id found for user profile');
+      throw new Error('No se pudo obtener la cabaña del usuario');
+    }
+    
+    console.log('✅ Found cabaña_id:', profile['cabaña_id']);
+    return profile['cabaña_id'];
+  } catch (error) {
+    console.error('💥 Error in getCurrentCabanaId:', error);
+    throw error;
+  }
 };
 
 export function useVaccinationRequirements() {
@@ -52,6 +70,8 @@ export function useVaccinationRequirements() {
   const fetchRequirements = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching vaccination requirements...');
+      
       const cabanaId = await getCurrentCabanaId();
       
       const { data, error } = await supabase
@@ -62,13 +82,23 @@ export function useVaccinationRequirements() {
         .order('is_mandatory', { ascending: false })
         .order('vaccine_name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database error:', error);
+        throw error;
+      }
       
-      console.log(`[VaccinationRequirements] Loaded ${data?.length || 0} requirements for cabaña ${cabanaId}`);
+      console.log(`✅ [VaccinationRequirements] Loaded ${data?.length || 0} requirements for cabaña ${cabanaId}`);
       setRequirements(data || []);
     } catch (error) {
-      console.error('Error fetching vaccination requirements:', error);
-      toast.error('Error al cargar los requisitos de vacunación');
+      console.error('💥 Error fetching vaccination requirements:', error);
+      if (error.message.includes('Usuario no autenticado')) {
+        toast.error('Debes iniciar sesión para acceder a las vacunas');
+      } else if (error.message.includes('No se pudo obtener la cabaña')) {
+        toast.error('No se pudo encontrar tu cabaña. Contacta al administrador.');
+      } else {
+        toast.error('Error al cargar los requisitos de vacunación');
+      }
+      setRequirements([]);
     } finally {
       setLoading(false);
     }

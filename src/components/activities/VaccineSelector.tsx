@@ -45,19 +45,23 @@ export function VaccineSelector({
     loadCustomVaccines();
   }, [selectedAnimals]);
 
-  const loadVaccines = () => {
+  const loadVaccines = async () => {
     try {
       setLoading(true);
+      console.log('🩹 Loading vaccines for animals:', selectedAnimals);
+      
       // Get vaccines from vaccination requirements
       const eligibleVaccines = getEligibleVaccines(selectedAnimals);
+      console.log('✅ Eligible vaccines loaded:', eligibleVaccines.length);
       setVaccines(eligibleVaccines);
     } catch (error) {
-      console.error('Error loading vaccines:', error);
+      console.error('💥 Error loading vaccines:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudieron cargar las vacunas"
+        description: "No se pudieron cargar las vacunas. Verifica tu configuración."
       });
+      setVaccines([]);
     } finally {
       setLoading(false);
     }
