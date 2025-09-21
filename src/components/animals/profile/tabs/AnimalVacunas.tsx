@@ -329,56 +329,67 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
           </div>
         </CardContent>
       </Card>
-                  <div 
-                    key={alert.vaccine_code || alert.scheme_id || index}
-                    className={`p-3 rounded-lg border ${
-                      alert.mandatory ? 'border-red-200 bg-red-50' :
-                      'border-yellow-200 bg-yellow-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium flex items-center gap-2">
-                          {alert.vaccine_name || alert.scheme_id}
-                          {alert.mandatory && (
-                            <Badge variant="destructive" className="text-xs">
-                              OBLIGATORIA
-                            </Badge>
-                          )}
-                          {alert.campaign_active && (
-                            <Badge variant="outline" className="text-xs">
-                              CAMPAÑA ACTIVA
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {alert.rationale}
-                        </div>
-                        {alert.next_due_date && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Próxima: {format(new Date(alert.next_due_date), 'dd/MM/yyyy', { locale: es })}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <Badge 
-                          variant={alert.mandatory ? 'destructive' : 'secondary'}
-                          className="flex items-center gap-1"
-                        >
-                          {alert.mandatory ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                          {alert.mandatory ? 'Obligatoria' : 'Recomendada'}
-                        </Badge>
-                        {alert.last_dose_date && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Última: {format(new Date(alert.last_dose_date), 'dd/MM/yy')}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-            )}
+
+      {/* Historial de Vacunaciones */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Syringe className="h-4 w-4" />
+                Historial de Vacunaciones
+              </CardTitle>
+              <CardDescription>
+                Registro completo de vacunas aplicadas
+              </CardDescription>
+            </div>
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Agregar Vacuna
+            </Button>
           </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Vacuna</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Lote</TableHead>
+                <TableHead>Dosis</TableHead>
+                <TableHead>Vía</TableHead>
+                <TableHead>Próxima</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {vaccinations.map((vaccination) => (
+                <TableRow key={vaccination.id}>
+                  <TableCell className="font-medium">{vaccination.vacuna}</TableCell>
+                  <TableCell>
+                    {vaccination.fecha 
+                      ? format(new Date(vaccination.fecha), "d 'de' MMMM 'de' yyyy", { locale: es })
+                      : 'No registrada'
+                    }
+                  </TableCell>
+                  <TableCell>{vaccination.lote || '-'}</TableCell>
+                  <TableCell>{vaccination.dosis || '-'}</TableCell>
+                  <TableCell>{vaccination.via || '-'}</TableCell>
+                  <TableCell>
+                    {vaccination.proximaDosis ? getStatusBadge(vaccination.proximaDosis) : '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {vaccinations.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8">
+                    <div className="text-muted-foreground">
+                      No hay registros de vacunación para este animal
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
