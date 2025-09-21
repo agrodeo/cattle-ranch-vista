@@ -51,14 +51,20 @@ export function useVaccinationRequirements() {
 
   const fetchRequirements = async () => {
     try {
+      setLoading(true);
+      const cabanaId = await getCurrentCabanaId();
+      
       const { data, error } = await supabase
         .from('cabaña_vaccination_requirements')
         .select('*')
+        .eq('cabaña_id', cabanaId)
         .eq('is_active', true)
         .order('is_mandatory', { ascending: false })
         .order('vaccine_name');
 
       if (error) throw error;
+      
+      console.log(`[VaccinationRequirements] Loaded ${data?.length || 0} requirements for cabaña ${cabanaId}`);
       setRequirements(data || []);
     } catch (error) {
       console.error('Error fetching vaccination requirements:', error);
