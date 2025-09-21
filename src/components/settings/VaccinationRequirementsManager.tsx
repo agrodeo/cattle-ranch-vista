@@ -41,7 +41,7 @@ export const VaccinationRequirementsManager = () => {
       vaccine_type: "",
       description: "",
       is_mandatory: false,
-      sex_restriction: "",
+      sex_restriction: "ninguno",
       min_age_months: undefined,
       max_age_months: undefined,
       frequency_months: undefined,
@@ -56,7 +56,7 @@ export const VaccinationRequirementsManager = () => {
         vaccine_type: data.vaccine_type,
         description: data.description,
         is_mandatory: data.is_mandatory,
-        sex_restriction: data.sex_restriction,
+        sex_restriction: data.sex_restriction === "ninguno" ? null : data.sex_restriction,
         min_age_months: data.min_age_months,
         max_age_months: data.max_age_months,
         frequency_months: data.frequency_months,
@@ -83,7 +83,7 @@ export const VaccinationRequirementsManager = () => {
       vaccine_type: requirement.vaccine_type,
       description: requirement.description || "",
       is_mandatory: requirement.is_mandatory,
-      sex_restriction: requirement.sex_restriction || "",
+      sex_restriction: requirement.sex_restriction || "ninguno",
       min_age_months: requirement.min_age_months || undefined,
       max_age_months: requirement.max_age_months || undefined,
       frequency_months: requirement.frequency_months || undefined,
@@ -198,14 +198,14 @@ export const VaccinationRequirementsManager = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Restricción de Sexo</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccionar sexo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="">Sin restricción</SelectItem>
+                            <SelectItem value="ninguno">Sin restricción</SelectItem>
                             <SelectItem value="Macho">Solo Machos</SelectItem>
                             <SelectItem value="Hembra">Solo Hembras</SelectItem>
                           </SelectContent>
