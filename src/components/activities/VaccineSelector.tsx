@@ -5,51 +5,62 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { Plus, Check } from "lucide-react";
+import { useVaccinationLogic } from "@/hooks/useVaccinationLogic";
+import { Plus, Check, Shield, AlertTriangle } from "lucide-react";
 
 interface VaccineSelectorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  selectedAnimals?: string[];
 }
 
 interface VaccineOption {
+  id: string;
   code: string;
   name: string;
+  type: string;
+  mandatory: boolean;
   description?: string;
-  category: 'official' | 'custom';
+  category: 'requirement' | 'custom';
+  requirement?: any;
 }
 
-export function VaccineSelector({ value, onChange, placeholder = "Seleccionar vacuna" }: VaccineSelectorProps) {
+export function VaccineSelector({ 
+  value, 
+  onChange, 
+  placeholder = "Seleccionar vacuna",
+  selectedAnimals = []
+}: VaccineSelectorProps) {
   const [vaccines, setVaccines] = useState<VaccineOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [customVaccineName, setCustomVaccineName] = useState("");
   const [customVaccines, setCustomVaccines] = useState<string[]>([]);
   const { toast } = useToast();
+  const { getEligibleVaccines } = useVaccinationLogic();
 
   useEffect(() => {
     loadVaccines();
     loadCustomVaccines();
-  }, []);
-
-  // Using hardcoded vaccine list for now since database is empty
-  const commonVaccineList = [
-    { code: "aftosa", name: "Aftosa (Fiebre Aftosa)", description: "Vacuna contra fiebre aftosa", category: "official" as const },
-    { code: "brucelosis", name: "Brucelosis", description: "Vacuna contra brucelosis bovina", category: "official" as const },
-    { code: "carbunco", name: "Carbunco", description: "Vacuna contra carbunclo bacteridiano", category: "official" as const },
-    { code: "mancha", name: "Mancha", description: "Vacuna contra mancha infecciosa", category: "official" as const },
-    { code: "gangrena", name: "Gangrena Gaseosa", description: "Vacuna contra gangrena gaseosa", category: "official" as const },
-    { code: "triple", name: "Vacuna Triple (Mancha, Carbunco, Gangrena)", description: "Vacuna combinada", category: "official" as const },
-    { code: "ibr_dvb", name: "IBR/DVB/PI3/BRSV", description: "Vacuna combinada respiratoria", category: "official" as const },
-    { code: "leptospirosis", name: "Leptospirosis", description: "Vacuna contra leptospirosis bovina", category: "official" as const },
-    { code: "queratoconjuntivitis", name: "Queratoconjuntivitis", description: "Vacuna contra queratoconjuntivitis infecciosa", category: "official" as const },
-    { code: "rabia", name: "Rabia", description: "Vacuna antirrábica", category: "official" as const }
-  ];
+  }, [selectedAnimals]);
 
   const loadVaccines = () => {
-    setVaccines(commonVaccineList);
+    try {
+      setLoading(true);
+      // Get vaccines from vaccination requirements
+      const eligibleVaccines = getEligibleVaccines(selectedAnimals);
+      setVaccines(eligibleVaccines);
+    } catch (error) {
+      console.error('Error loading vaccines:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudieron cargar las vacunas"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadCustomVaccines = () => {
@@ -120,18 +131,21 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
     }
   };
 
-  // Combine official and custom vaccines
+  // Combine requirement-based and custom vaccines
   const allVaccineOptions = [
     ...vaccines,
     ...customVaccines.map(name => ({
+      id: name,
       code: name,
       name: name,
+      type: 'custom',
+      mandatory: false,
       description: `Vacuna personalizada - ${name}`,
       category: 'custom' as const
     }))
   ];
 
-  const officialVaccines = allVaccineOptions.filter(v => v.category === 'official');
+  const requirementVaccines = allVaccineOptions.filter(v => v.category === 'requirement');
   const customVaccineOptions = allVaccineOptions.filter(v => v.category === 'custom');
 
   // Common vaccines for Argentina/Latin America
@@ -158,49 +172,51 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
             <SelectValue placeholder={placeholder} />
           </SelectTrigger>
           <SelectContent className="bg-background border border-border z-50 max-h-[300px] overflow-y-auto">
-            <div className="px-2 py-1 text-xs text-muted-foreground border-b">
-              Vacunas Comunes para Bovinos
-            </div>
-            
-            {/* Common vaccines */}
-            {commonVaccines.map((vaccine) => (
-              <SelectItem 
-                key={vaccine} 
-                value={vaccine}
-                className="bg-background hover:bg-muted"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 bg-blue-500 rounded-full" />
-                  <div className="font-medium">{vaccine}</div>
-                </div>
-              </SelectItem>
-            ))}
-
-            {officialVaccines.length > 0 && (
+            {requirementVaccines.length > 0 && (
               <>
-                <div className="px-2 py-1 text-xs font-medium text-muted-foreground border-t mt-1 pt-2">
-                  Catálogo Oficial
+                <div className="px-2 py-1 text-xs text-muted-foreground border-b">
+                  Vacunas Configuradas para tu Cabaña
                 </div>
-                {officialVaccines.map((vaccine) => (
+                {requirementVaccines.map((vaccine) => (
                   <SelectItem 
-                    key={vaccine.code} 
-                    value={vaccine.name}
+                    key={vaccine.id} 
+                    value={vaccine.id}
                     className="bg-background hover:bg-muted"
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 bg-green-500 rounded-full" />
-                      <div>
-                        <div className="font-medium">{vaccine.name}</div>
-                        {vaccine.description && (
-                          <div className="text-xs text-muted-foreground">
-                            {vaccine.description}
-                          </div>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-2">
+                        {vaccine.mandatory ? (
+                          <Shield className="h-3 w-3 text-red-500" />
+                        ) : (
+                          <div className="h-3 w-3 rounded-full bg-blue-500" />
                         )}
+                        <div>
+                          <div className="font-medium">{vaccine.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {vaccine.type}
+                            {vaccine.category === 'requirement' && vaccine.requirement?.doses_required > 1 && 
+                              ` • ${vaccine.requirement.doses_required} dosis`
+                            }
+                          </div>
+                        </div>
                       </div>
+                      {vaccine.mandatory && (
+                        <div className="text-xs text-red-600 font-medium">
+                          Obligatoria
+                        </div>
+                      )}
                     </div>
                   </SelectItem>
                 ))}
               </>
+            )}
+
+            {requirementVaccines.length === 0 && customVaccineOptions.length === 0 && (
+              <div className="px-2 py-4 text-center text-muted-foreground">
+                <AlertTriangle className="h-4 w-4 mx-auto mb-2" />
+                <div className="text-sm">No hay vacunas configuradas</div>
+                <div className="text-xs">Configura vacunas en Configuración</div>
+              </div>
             )}
 
             {customVaccineOptions.length > 0 && (
@@ -210,8 +226,8 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
                 </div>
                 {customVaccineOptions.map((vaccine) => (
                   <SelectItem 
-                    key={vaccine.code} 
-                    value={vaccine.name}
+                    key={vaccine.id} 
+                    value={vaccine.id}
                     className="bg-background hover:bg-muted"
                   >
                     <div className="flex items-center gap-2">
@@ -274,7 +290,10 @@ export function VaccineSelector({ value, onChange, placeholder = "Seleccionar va
       </div>
       
       <p className="text-xs text-muted-foreground">
-        Selecciona una vacuna del listado o agrega una personalizada con el botón +
+        {requirementVaccines.length > 0 
+          ? "Selecciona una vacuna de las configuradas en tu cabaña o agrega una personalizada"
+          : "Configura vacunas en Configuración o agrega una personalizada con el botón +"
+        }
       </p>
     </div>
   );

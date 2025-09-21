@@ -17,6 +17,8 @@ import {
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
+import { useVaccinationLogic } from "@/hooks/useVaccinationLogic";
+import { VaccinationStatusCard } from "@/components/vaccination/VaccinationStatusCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 
@@ -29,9 +31,12 @@ interface AnimalVacunasProps {
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   const { alerts, loading: alertsLoading } = useVaccinationAlerts(animal.id);
+  const { calculateAnimalCompliance } = useVaccinationLogic();
   const [vaccinations, setVaccinations] = useState<any[]>([]);
   const [locationAlerts, setLocationAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [compliance, setCompliance] = useState<any>(null);
+  const [complianceLoading, setComplianceLoading] = useState(true);
 
   const fetchVaccinations = async () => {
     try {
@@ -95,7 +100,20 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
 
   useEffect(() => {
     fetchVaccinations();
+    loadCompliance();
   }, [animal.id]);
+
+  const loadCompliance = async () => {
+    try {
+      setComplianceLoading(true);
+      const animalCompliance = await calculateAnimalCompliance(animal.id);
+      setCompliance(animalCompliance);
+    } catch (error) {
+      console.error('Error loading compliance:', error);
+    } finally {
+      setComplianceLoading(false);
+    }
+  };
 
   const calculateStatus = (proximaDosis: string | null) => {
     if (!proximaDosis) return { status: 'unique', days: 0 };
@@ -166,7 +184,15 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
 
   return (
     <div className="space-y-6">
-      {/* Cobertura de Vacunación */}
+      {/* New Requirements-Based Vaccination Status */}
+      {compliance && (
+        <VaccinationStatusCard 
+          compliance={compliance} 
+          loading={complianceLoading} 
+        />
+      )}
+
+      {/* Legacy Cobertura de Vacunación */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
