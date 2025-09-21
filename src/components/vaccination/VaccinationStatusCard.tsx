@@ -60,77 +60,96 @@ export function VaccinationStatusCard({ compliance, loading }: VaccinationStatus
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Overall Status */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {getStatusIcon(compliance.percentage)}
-            <span className={`font-medium ${getStatusColor(compliance.percentage)}`}>
-              {getStatusText(compliance.percentage)}
-            </span>
+        {/* Handle no requirements case */}
+        {compliance.totalRequired === 0 ? (
+          <div className="text-center py-6">
+            <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-medium text-muted-foreground mb-2">
+              Sin requisitos de vacunación
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              No hay vacunas requeridas para este animal según su edad y sexo actual
+            </p>
           </div>
-          <Badge variant={compliance.percentage >= 90 ? "default" : compliance.percentage >= 70 ? "secondary" : "destructive"}>
-            {compliance.percentage}%
-          </Badge>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <Progress value={compliance.percentage} className="h-2" />
-          <div className="text-sm text-muted-foreground">
-            {compliance.completed} de {compliance.totalRequired} vacunas requeridas
-          </div>
-        </div>
-
-        {/* Status Details */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-lg font-semibold text-red-600">
-              {compliance.missing.length}
-            </div>
-            <div className="text-xs text-muted-foreground">Faltantes</div>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-yellow-600">
-              {compliance.overdue.length}
-            </div>
-            <div className="text-xs text-muted-foreground">Vencidas</div>
-          </div>
-          <div>
-            <div className="text-lg font-semibold text-blue-600">
-              {compliance.upcoming.length}
-            </div>
-            <div className="text-xs text-muted-foreground">Próximas</div>
-          </div>
-        </div>
-
-        {/* Critical Issues */}
-        {(compliance.missing.length > 0 || compliance.overdue.length > 0) && (
-          <div className="space-y-2">
-            <div className="text-sm font-medium text-destructive">
-              Atención Requerida:
-            </div>
-            {compliance.missing.slice(0, 2).map((vaccine) => (
-              <div key={vaccine.id} className="flex items-center gap-2 text-sm">
-                <AlertTriangle className="h-3 w-3 text-red-500" />
-                <span className="text-muted-foreground">
-                  {vaccine.vaccine_name} {vaccine.is_mandatory && "(Obligatoria)"}
+        ) : (
+          <>
+            {/* Overall Status */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(compliance.percentage)}
+                <span className={`font-medium ${getStatusColor(compliance.percentage)}`}>
+                  {getStatusText(compliance.percentage)}
                 </span>
               </div>
-            ))}
-            {compliance.overdue.slice(0, 2).map((vaccine) => (
-              <div key={vaccine.id} className="flex items-center gap-2 text-sm">
-                <Clock className="h-3 w-3 text-yellow-500" />
-                <span className="text-muted-foreground">
-                  {vaccine.vaccine_name} (Vencida)
-                </span>
+              <Badge variant={compliance.percentage >= 90 ? "default" : compliance.percentage >= 70 ? "secondary" : "destructive"}>
+                {compliance.percentage}%
+              </Badge>
+            </div>
+
+            {/* Progress Bar */}
+            <div className="space-y-2">
+              <Progress value={compliance.percentage} className="h-2" />
+              <div className="text-sm text-muted-foreground">
+                {compliance.completed} de {compliance.totalRequired} vacunas requeridas
               </div>
-            ))}
-            {(compliance.missing.length + compliance.overdue.length) > 4 && (
-              <div className="text-xs text-muted-foreground">
-                +{(compliance.missing.length + compliance.overdue.length) - 4} más...
+            </div>
+          </>
+        )}
+
+        {/* Status Details - Only show if there are requirements */}
+        {compliance.totalRequired > 0 && (
+          <>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <div className="text-lg font-semibold text-red-600">
+                  {compliance.missing.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Faltantes</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-yellow-600">
+                  {compliance.overdue.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Vencidas</div>
+              </div>
+              <div>
+                <div className="text-lg font-semibold text-blue-600">
+                  {compliance.upcoming.length}
+                </div>
+                <div className="text-xs text-muted-foreground">Próximas</div>
+              </div>
+            </div>
+
+            {/* Critical Issues */}
+            {(compliance.missing.length > 0 || compliance.overdue.length > 0) && (
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-destructive">
+                  Atención Requerida:
+                </div>
+                {compliance.missing.slice(0, 2).map((vaccine) => (
+                  <div key={vaccine.id} className="flex items-center gap-2 text-sm">
+                    <AlertTriangle className="h-3 w-3 text-red-500" />
+                    <span className="text-muted-foreground">
+                      {vaccine.vaccine_name} {vaccine.is_mandatory && "(Obligatoria)"}
+                    </span>
+                  </div>
+                ))}
+                {compliance.overdue.slice(0, 2).map((vaccine) => (
+                  <div key={vaccine.id} className="flex items-center gap-2 text-sm">
+                    <Clock className="h-3 w-3 text-yellow-500" />
+                    <span className="text-muted-foreground">
+                      {vaccine.vaccine_name} (Vencida)
+                    </span>
+                  </div>
+                ))}
+                {(compliance.missing.length + compliance.overdue.length) > 4 && (
+                  <div className="text-xs text-muted-foreground">
+                    +{(compliance.missing.length + compliance.overdue.length) - 4} más...
+                  </div>
+                )}
               </div>
             )}
-          </div>
+          </>
         )}
       </CardContent>
     </Card>

@@ -63,13 +63,27 @@ export function useVaccinationLogic() {
         ? Math.floor((new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
         : 0;
 
-      // Filter applicable requirements
+      console.log(`[Vaccination Logic] Animal ${animalId}: Age ${animalAge} months, Sex: ${animal.sex}`);
+
+      // Filter applicable requirements based on age, sex, and current date
       const applicableRequirements = requirements.filter(req => {
-        if (req.sex_restriction && req.sex_restriction !== animal.sex) return false;
-        if (req.min_age_months && animalAge < req.min_age_months) return false;
-        if (req.max_age_months && animalAge > req.max_age_months) return false;
+        if (req.sex_restriction && req.sex_restriction !== animal.sex) {
+          console.log(`[Vaccination Logic] Excluding ${req.vaccine_name}: Sex restriction (need ${req.sex_restriction}, animal is ${animal.sex})`);
+          return false;
+        }
+        if (req.min_age_months && animalAge < req.min_age_months) {
+          console.log(`[Vaccination Logic] Excluding ${req.vaccine_name}: Too young (need ${req.min_age_months} months, animal is ${animalAge} months)`);
+          return false;
+        }
+        if (req.max_age_months && animalAge > req.max_age_months) {
+          console.log(`[Vaccination Logic] Excluding ${req.vaccine_name}: Too old (max ${req.max_age_months} months, animal is ${animalAge} months)`);
+          return false;
+        }
+        console.log(`[Vaccination Logic] Including ${req.vaccine_name}: Applies to this animal`);
         return true;
       });
+
+      console.log(`[Vaccination Logic] Applicable requirements: ${applicableRequirements.length} out of ${requirements.length}`);
 
       // Get vaccination history
       const { data: vaccinations, error: vacError } = await supabase
@@ -86,10 +100,28 @@ export function useVaccinationLogic() {
       let completed = 0;
 
       for (const requirement of applicableRequirements) {
-        const relevantVaccinations = vaccinations?.filter(v => 
-          v.vacuna.toLowerCase().includes(requirement.vaccine_name.toLowerCase()) ||
-          v.vacuna.toLowerCase().includes(requirement.vaccine_type.toLowerCase())
-        ) || [];
+        // More precise matching - only exact name or type matches
+        const relevantVaccinations = vaccinations?.filter(v => {
+          const vaccineName = v.vacuna.toLowerCase().trim();
+          const reqName = requirement.vaccine_name.toLowerCase().trim();
+          const reqType = requirement.vaccine_type.toLowerCase().trim();
+          
+          // Check if vaccination was given when animal was at appropriate age
+          const vaccinationDate = new Date(v.fecha);
+          const animalAgeAtVaccination = animal.birth_date 
+            ? Math.floor((vaccinationDate.getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+            : 0;
+          
+          const ageAppropriate = (!requirement.min_age_months || animalAgeAtVaccination >= requirement.min_age_months) &&
+                                (!requirement.max_age_months || animalAgeAtVaccination <= requirement.max_age_months);
+          
+          const nameMatch = vaccineName === reqName || vaccineName.includes(reqName) || reqName.includes(vaccineName);
+          const typeMatch = vaccineName === reqType || vaccineName.includes(reqType) || reqType.includes(vaccineName);
+          
+          return ageAppropriate && (nameMatch || typeMatch);
+        }) || [];
+
+        console.log(`[Vaccination Logic] ${requirement.vaccine_name}: Found ${relevantVaccinations.length} relevant vaccinations`);
 
         const lastVaccination = relevantVaccinations[0];
         const dosesGiven = relevantVaccinations.length;
@@ -128,7 +160,11 @@ export function useVaccinationLogic() {
       }
 
       const totalRequired = applicableRequirements.length;
-      const percentage = totalRequired > 0 ? Math.round((completed / totalRequired) * 100) : 100;
+      // If no requirements apply, show 0% instead of 100%
+      const percentage = totalRequired > 0 ? Math.round((completed / totalRequired) * 100) : 0;
+
+      console.log(`[Vaccination Logic] Final compliance: ${completed}/${totalRequired} (${percentage}%)`);
+      console.log(`[Vaccination Logic] Missing: ${missing.length}, Overdue: ${overdue.length}, Upcoming: ${upcoming.length}`);
 
       return {
         animalId,

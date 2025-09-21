@@ -185,12 +185,18 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   return (
     <div className="space-y-6">
       {/* New Requirements-Based Vaccination Status */}
-      {compliance && (
-        <VaccinationStatusCard 
-          compliance={compliance} 
-          loading={complianceLoading} 
-        />
-      )}
+      <VaccinationStatusCard 
+        compliance={compliance || {
+          animalId: animal.id,
+          totalRequired: 0,
+          completed: 0,
+          percentage: 0,
+          missing: [],
+          overdue: [],
+          upcoming: []
+        }} 
+        loading={complianceLoading} 
+      />
 
       {/* Legacy Cobertura de Vacunación */}
       <Card>
