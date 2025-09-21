@@ -4,7 +4,8 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BenchmarkSettings } from "@/components/settings/BenchmarkSettings";
-import { Settings as SettingsIcon, Target, Users, CreditCard } from "lucide-react";
+import { VaccinationRequirementsManager } from "@/components/settings/VaccinationRequirementsManager";
+import { Settings as SettingsIcon, Target, Users, CreditCard, Syringe } from "lucide-react";
 
 export const SettingsPage = () => {
   useEffect(() => {
@@ -28,11 +29,16 @@ export const SettingsPage = () => {
           subtitle="Gestiona las opciones y preferencias"
         >
           <Tabs defaultValue="benchmarks" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto sm:h-10">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto sm:h-10">
               <TabsTrigger value="benchmarks" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
                 <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Benchmarks</span>
                 <span className="sm:hidden">Config.</span>
+              </TabsTrigger>
+              <TabsTrigger value="vaccines" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+                <Syringe className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Vacunas</span>
+                <span className="sm:hidden">Vacunas</span>
               </TabsTrigger>
               <TabsTrigger value="users" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2" disabled>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -56,6 +62,10 @@ export const SettingsPage = () => {
               >
                 <BenchmarkSettings />
               </SectionCard>
+            </TabsContent>
+
+            <TabsContent value="vaccines" className="mt-6">
+              <VaccinationRequirementsManager />
             </TabsContent>
 
             <TabsContent value="users" className="mt-6">
