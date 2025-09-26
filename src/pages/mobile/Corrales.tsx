@@ -54,7 +54,6 @@ export function MobileCorrales() {
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedCorrals, setExpandedCorrals] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchCorrales();
@@ -151,16 +150,6 @@ export function MobileCorrales() {
     }
   };
 
-  const toggleCorralExpansion = (corralId: string) => {
-    const newExpanded = new Set(expandedCorrals);
-    if (newExpanded.has(corralId)) {
-      newExpanded.delete(corralId);
-    } else {
-      newExpanded.add(corralId);
-    }
-    setExpandedCorrals(newExpanded);
-  };
-
   const getOccupancyColor = (percentage: number) => {
     if (percentage >= 90) return 'bg-red-500';
     if (percentage >= 75) return 'bg-amber-500';
@@ -248,7 +237,6 @@ export function MobileCorrales() {
           <div className="space-y-3">
             {corrales.map((corral) => {
               const corralKPI = corralKPIs.find(kpi => kpi.corral_id === corral.id);
-              const isExpanded = expandedCorrals.has(corral.id);
               
               // Calculate capacity metrics (assuming 2 animals per hectare if hectareas exists)
               const estimatedCapacity = corral.hectareas ? Math.round(corral.hectareas * 2) : null;
@@ -256,178 +244,246 @@ export function MobileCorrales() {
               const occupancyStatus = getOccupancyStatus(occupancyPercentage);
               
               return (
-                <Collapsible key={corral.id} open={isExpanded} onOpenChange={() => toggleCorralExpansion(corral.id)}>
-                  <Card className="overflow-hidden transition-all duration-200">
-                    <CollapsibleTrigger className="w-full text-left">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="p-2 rounded-lg bg-primary/10">
-                              <MapPin className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <CardTitle className="text-base font-medium truncate">
-                                  {corral.name}
-                                </CardTitle>
-                                {corral.has_consanguinity_risk && (
-                                  <Badge variant="destructive" className="text-xs px-1 py-0">
-                                    <AlertTriangle className="h-3 w-3" />
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Users className="h-3 w-3" />
-                                  {corral.animal_count}
-                                </span>
-                                <span className="text-xs">{corral.male_count}M/{corral.female_count}H</span>
-                                {corral.hectareas && (
-                                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                                    {corral.hectareas}ha
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          
+                <Card key={corral.id} className="overflow-hidden transition-all duration-200">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-primary/10">
+                          <MapPin className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            {/* Quick status indicators */}
-                            <div className="flex flex-col items-end gap-1">
-                              {corralKPI?.vaccination_percentage !== undefined && (
-                                <Badge 
-                                  variant={
-                                    corralKPI.vaccination_status === 'excellent' ? 'default' : 
-                                    corralKPI.vaccination_status === 'good' ? 'secondary' :
-                                    corralKPI.vaccination_status === 'warning' ? 'outline' : 'destructive'
-                                  }
-                                  className="text-xs px-1.5 py-0"
-                                >
-                                  <Syringe className="h-2.5 w-2.5 mr-0.5" />
-                                  {corralKPI.vaccination_percentage.toFixed(0)}%
-                                </Badge>
-                              )}
-                              
-                              {estimatedCapacity && (
-                                <Badge 
-                                  variant="outline" 
-                                  className={cn("text-xs px-1.5 py-0", occupancyStatus.color)}
-                                >
-                                  {occupancyPercentage}%
-                                </Badge>
-                              )}
-                            </div>
-
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-base font-medium truncate">
+                              {corral.name}
+                            </CardTitle>
+                            {corral.has_consanguinity_risk && (
+                              <Badge variant="destructive" className="text-xs px-1 py-0">
+                                <AlertTriangle className="h-3 w-3" />
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {corral.animal_count}
+                            </span>
+                            <span className="text-xs">{corral.male_count}M/{corral.female_count}H</span>
+                            {corral.hectareas && (
+                              <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                                {corral.hectareas}ha
+                              </span>
                             )}
                           </div>
                         </div>
-                      </CardHeader>
-                    </CollapsibleTrigger>
-                    
-                    <CollapsibleContent>
-                      <CardContent className="pt-0 pb-4">
-                        {/* Capacity Bar */}
-                        {estimatedCapacity && (
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Ocupación</span>
-                              <span className="font-medium">
-                                {corral.animal_count} / {estimatedCapacity} ({occupancyPercentage}%)
-                              </span>
-                            </div>
-                            <div className="w-full bg-muted rounded-full h-2">
-                              <div 
-                                className={cn("h-2 rounded-full transition-all", getOccupancyColor(occupancyPercentage))}
-                                style={{ width: `${Math.min(occupancyPercentage, 100)}%` }}
-                              />
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {Math.max(0, estimatedCapacity - corral.animal_count)} espacios libres
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-2 gap-3">
-                          {/* Health Metrics */}
-                          {corralKPI && (
-                            <div className="space-y-2">
-                              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Salud</h4>
-                              <div className="space-y-1">
-                                {corralKPI.vaccination_percentage !== undefined && (
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Vacunación</span>
-                                    <span className="font-medium">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
-                                  </div>
-                                )}
-                                {corralKPI.vaccination_alerts > 0 && (
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Alertas</span>
-                                    <span className="font-medium text-amber-600">{corralKPI.vaccination_alerts}</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {/* Quick status indicators */}
+                        <div className="flex flex-col items-end gap-1">
+                          {corralKPI?.vaccination_percentage !== undefined && (
+                            <Badge 
+                              variant={
+                                corralKPI.vaccination_status === 'excellent' ? 'default' : 
+                                corralKPI.vaccination_status === 'good' ? 'secondary' :
+                                corralKPI.vaccination_status === 'warning' ? 'outline' : 'destructive'
+                              }
+                              className="text-xs px-1.5 py-0"
+                            >
+                              <Syringe className="h-2.5 w-2.5 mr-0.5" />
+                              {corralKPI.vaccination_percentage.toFixed(0)}%
+                            </Badge>
                           )}
-
-                          {/* Production Metrics */}
-                          {corralKPI && (corralKPI.avg_daily_gain > 0 || corralKPI.avg_weight > 0) && (
-                            <div className="space-y-2">
-                              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Producción</h4>
-                              <div className="space-y-1">
-                                {corralKPI.avg_daily_gain > 0 && (
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">GDP</span>
-                                    <span className="font-medium">{corralKPI.avg_daily_gain.toFixed(2)}kg/d</span>
-                                  </div>
-                                )}
-                                {corralKPI.avg_weight > 0 && (
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Peso prom</span>
-                                    <span className="font-medium">{corralKPI.avg_weight.toFixed(0)}kg</span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Reproductive Performance */}
-                          {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
-                            <div className="space-y-2 col-span-2">
-                              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Reproducción</h4>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Tasa de preñez</span>
-                                <span className={cn("font-medium", 
-                                  corralKPI.pregnancy_rate >= 70 ? 'text-emerald-600' : 
-                                  corralKPI.pregnancy_rate >= 50 ? 'text-amber-600' : 'text-red-600'
-                                )}>
-                                  {corralKPI.pregnancy_rate.toFixed(0)}%
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Risk Information */}
-                          {corral.has_consanguinity_risk && (
-                            <div className="space-y-2 col-span-2">
-                              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Riesgos</h4>
-                              <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Consanguinidad</span>
-                                <Badge variant="destructive" className="text-xs">
-                                  {corral.risk_count} riesgos
-                                </Badge>
-                              </div>
-                            </div>
+                          
+                          {estimatedCapacity && (
+                            <Badge 
+                              variant="outline" 
+                              className={cn("text-xs px-1.5 py-0", occupancyStatus.color)}
+                            >
+                              {occupancyPercentage}%
+                            </Badge>
                           )}
                         </div>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Card>
-                </Collapsible>
+
+                        <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="pt-0 pb-4">
+                    {/* Capacity Bar */}
+                    {estimatedCapacity && (
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Ocupación</span>
+                          <span className="font-medium">
+                            {corral.animal_count} / {estimatedCapacity} ({occupancyPercentage}%)
+                          </span>
+                        </div>
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className={cn("h-2 rounded-full transition-all", getOccupancyColor(occupancyPercentage))}
+                            style={{ width: `${Math.min(occupancyPercentage, 100)}%` }}
+                          />
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {Math.max(0, estimatedCapacity - corral.animal_count)} espacios libres
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Metrics Grid - Always visible */}
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {/* Health Metrics */}
+                      {corralKPI && (
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Salud</h4>
+                          <div className="space-y-1">
+                            {corralKPI.vaccination_percentage !== undefined && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Vacunación</span>
+                                <span className="font-medium">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
+                              </div>
+                            )}
+                            {corralKPI.vaccination_alerts > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Alertas</span>
+                                <span className="font-medium text-amber-600">{corralKPI.vaccination_alerts}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Production Metrics */}
+                      {corralKPI && (corralKPI.avg_daily_gain > 0 || corralKPI.avg_weight > 0) && (
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Producción</h4>
+                          <div className="space-y-1">
+                            {corralKPI.avg_daily_gain > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">GDP</span>
+                                <span className="font-medium">{corralKPI.avg_daily_gain.toFixed(2)}kg/d</span>
+                              </div>
+                            )}
+                            {corralKPI.avg_weight > 0 && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Peso prom</span>
+                                <span className="font-medium">{corralKPI.avg_weight.toFixed(0)}kg</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Expandable Sections */}
+                    <div className="space-y-2">
+                      {/* Vaccination Details */}
+                      {corralKPI && (
+                        <Collapsible>
+                          <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <Syringe className="h-3 w-3 text-primary" />
+                                <span className="text-sm font-medium">Detalles de Vacunación</span>
+                              </div>
+                              <ChevronDown className="h-3 w-3" />
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="p-2 text-xs space-y-2">
+                              <div className="bg-muted/20 rounded p-2">
+                                <p className="text-muted-foreground mb-1">Vacunas pendientes:</p>
+                                <div className="space-y-1">
+                                  <div className="flex items-center justify-between">
+                                    <span>Aftosa</span>
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-12 bg-muted rounded-full h-1">
+                                        <div className="w-3/5 bg-emerald-500 h-1 rounded-full"></div>
+                                      </div>
+                                      <span className="text-xs">12/20</span>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span>Brucelosis</span>
+                                    <div className="flex items-center gap-1">
+                                      <div className="w-12 bg-muted rounded-full h-1">
+                                        <div className="w-1/4 bg-amber-500 h-1 rounded-full"></div>
+                                      </div>
+                                      <span className="text-xs">3/12</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )}
+
+                      {/* Pregnancy Rate Details */}
+                      {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
+                        <Collapsible>
+                          <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
+                              <div className="flex items-center gap-2">
+                                <TrendingUp className="h-3 w-3 text-primary" />
+                                <span className="text-sm font-medium">Detalles de Preñez</span>
+                              </div>
+                              <ChevronDown className="h-3 w-3" />
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="p-2 text-xs">
+                              <div className="bg-muted/20 rounded p-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <span className="text-muted-foreground">Servidas:</span>
+                                    <span className="font-medium ml-1">
+                                      {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">Preñadas:</span>
+                                    <span className="font-medium ml-1">
+                                      {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      )}
+                    </div>
+
+                    {/* Risk Indicators */}
+                    {corral.has_consanguinity_risk && (
+                      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 mt-3">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-3 w-3 text-destructive" />
+                          <span className="text-xs font-medium text-destructive">
+                            Riesgo de Consanguinidad
+                          </span>
+                        </div>
+                        <p className="text-xs text-destructive/80 mt-1">
+                          {corral.risk_count} animales con riesgo ({corral.highest_severity})
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-2 mt-4">
+                      <Button variant="outline" size="sm" className="flex-1 text-xs">
+                        <Eye className="h-3 w-3 mr-1" />
+                        Ver
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex-1 text-xs">
+                        <Activity className="h-3 w-3 mr-1" />
+                        Editar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
@@ -436,3 +492,5 @@ export function MobileCorrales() {
     </div>
   );
 }
+
+export default MobileCorrales;
