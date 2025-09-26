@@ -3,14 +3,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
-import { SectionCard } from "@/components/ui/section-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
-import { BadgePill } from "@/components/ui/badge-pill";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Plus, AlertTriangle, MapPin, Move, Users, TrendingUp, MoreVertical, Edit, Trash2, Shuffle, Truck, Syringe, Scale } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { 
+  Eye, 
+  Plus, 
+  MapPin, 
+  Move, 
+  Users, 
+  MoreVertical, 
+  Edit, 
+  Trash2, 
+  Shuffle, 
+  Truck, 
+  Syringe, 
+  Scale, 
+  ChevronDown,
+  ChevronRight,
+  TrendingUp,
+  Activity,
+  AlertTriangle
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
@@ -28,6 +45,7 @@ import {
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
+import { cn } from "@/lib/utils";
 
 interface Corral {
   id: string;
@@ -65,6 +83,7 @@ export default function Corrales() {
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
   const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
+  const [expandedCorrals, setExpandedCorrals] = useState<Set<string>>(new Set());
 
   const fetchCorrales = async () => {
     if (!currentUser?.cabañaId) return;
@@ -162,24 +181,6 @@ export default function Corrales() {
     }
   };
 
-  const getSeverityBadge = (severity: 'severe' | 'medium' | 'low' | null, riskCount: number) => {
-    if (!severity || riskCount === 0) return null;
-    
-    const severityConfig = {
-      severe: { emoji: '🔴', label: 'Alto Riesgo', variant: 'destructive' as const },
-      medium: { emoji: '🟠', label: 'Riesgo Medio', variant: 'secondary' as const },
-      low: { emoji: '🟡', label: 'Riesgo Bajo', variant: 'outline' as const }
-    };
-    
-    const config = severityConfig[severity];
-    return (
-      <Badge variant={config.variant} className="flex items-center space-x-1">
-        <span>{config.emoji}</span>
-        <span>{config.label} ({riskCount})</span>
-      </Badge>
-    );
-  };
-
   useEffect(() => {
     fetchCorrales();
   }, [currentUser]);
@@ -216,6 +217,30 @@ export default function Corrales() {
     setDeleteDialogOpen(false);
   };
 
+  const toggleCorralExpansion = (corralId: string) => {
+    const newExpanded = new Set(expandedCorrals);
+    if (newExpanded.has(corralId)) {
+      newExpanded.delete(corralId);
+    } else {
+      newExpanded.add(corralId);
+    }
+    setExpandedCorrals(newExpanded);
+  };
+
+  const getOccupancyColor = (percentage: number) => {
+    if (percentage >= 90) return 'bg-red-500';
+    if (percentage >= 75) return 'bg-amber-500';
+    if (percentage >= 50) return 'bg-blue-500';
+    return 'bg-emerald-500';
+  };
+
+  const getOccupancyStatus = (percentage: number) => {
+    if (percentage >= 90) return { label: 'Sobrecargado', color: 'text-red-600' };
+    if (percentage >= 75) return { label: 'Casi lleno', color: 'text-amber-600' };
+    if (percentage >= 50) return { label: 'Medio', color: 'text-blue-600' };
+    return { label: 'Disponible', color: 'text-emerald-600' };
+  };
+
   useEffect(() => {
     document.title = "Corrales | AgroDeo";
     const meta = document.querySelector('meta[name="description"]');
@@ -226,7 +251,6 @@ export default function Corrales() {
   const totalAnimals = corrales.reduce((sum, corral) => sum + corral.animal_count, 0);
   const totalCorrales = corrales.length;
   const totalRisks = corrales.reduce((sum, corral) => sum + corral.risk_count, 0);
-  const totalHectareas = corrales.reduce((sum, corral) => sum + (corral.hectareas || 0), 0);
   
   // Calculate aggregate KPIs
   const avgVaccinationPercentage = corrales.length > 0 
@@ -274,7 +298,7 @@ export default function Corrales() {
 
   return (
     <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
-      <div className="space-y-3">
+      <div className="space-y-6">
         <PageHeader 
           title="Corrales"
           subtitle="Gestiona los corrales y asignación de animales"
@@ -316,9 +340,9 @@ export default function Corrales() {
           }
         />
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
           {/* Main Content */}
-          <section className="lg:col-span-2 space-y-4">
+          <section className="lg:col-span-3 space-y-6">
             {/* KPIs */}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {stats.map((stat, index) => (
@@ -355,11 +379,14 @@ export default function Corrales() {
             </StickyActionBar>
 
             {/* Corrales List */}
-            <SectionCard
-              title="Lista de Corrales"
-              subtitle="Gestiona la distribución de animales"
-              count={corrales.length}
-            >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-foreground">Lista de Corrales</h2>
+                  <p className="text-sm text-muted-foreground">{corrales.length} corrales disponibles</p>
+                </div>
+              </div>
+
               {corrales.length === 0 ? (
                 <EmptyState
                   icon={<MapPin className="h-12 w-12" />}
@@ -373,136 +400,252 @@ export default function Corrales() {
               ) : (
                 <div className="space-y-3">
                   {corrales.map((corral) => {
-                    // Get specific KPIs for this corral
                     const corralKPI = corralKPIs.find(kpi => kpi.corral_id === corral.id);
+                    const isExpanded = expandedCorrals.has(corral.id);
+                    
+                    // Calculate capacity metrics (assuming 2 animals per hectare if hectareas exists)
+                    const estimatedCapacity = corral.hectareas ? Math.round(corral.hectareas * 2) : null;
+                    const occupancyPercentage = estimatedCapacity ? Math.round((corral.animal_count / estimatedCapacity) * 100) : 0;
+                    const occupancyStatus = getOccupancyStatus(occupancyPercentage);
                     
                     return (
-                      <div key={corral.id} className="rounded-lg border border-slate-200 p-4 bg-white">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-2">
-                              <MapPin className="h-4 w-4 text-slate-600" />
-                              <h3 className="text-sm font-medium text-slate-900 truncate">{corral.name}</h3>
-                              {corral.has_consanguinity_risk && (
-                                <BadgePill variant="danger" className="ml-2">
-                                  {corral.risk_count} riesgos
-                                </BadgePill>
-                              )}
-                              {/* Vaccination Status Badge for this specific corral */}
-                              {corralKPI?.vaccination_percentage !== undefined && (
-                                <BadgePill 
-                                  variant={
-                                    corralKPI.vaccination_status === 'excellent' ? 'success' : 
-                                    corralKPI.vaccination_status === 'good' ? 'info' :
-                                    corralKPI.vaccination_status === 'warning' ? 'warning' : 'danger'
-                                  }
-                                  className="ml-1"
-                                >
-                                  <Syringe className="h-3 w-3 mr-1" />
-                                  {corralKPI.vaccination_percentage.toFixed(0)}%
-                                </BadgePill>
-                              )}
-                              {/* GDP Badge for this specific corral */}
-                              {corralKPI?.avg_daily_gain !== undefined && corralKPI.avg_daily_gain > 0 && (
-                                <BadgePill variant="info" className="ml-1">
-                                  <Scale className="h-3 w-3 mr-1" />
-                                  {corralKPI.avg_daily_gain.toFixed(2)} kg/día
-                                </BadgePill>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-slate-600">
-                              <span>{corral.animal_count} animales</span>
-                              <span>{corral.male_count}M / {corral.female_count}H</span>
-                              {corral.hectareas && <span>{corral.hectareas} ha</span>}
-                              {/* Show specific metrics for this corral */}
-                              {corralKPI?.avg_weight && corralKPI.avg_weight > 0 && (
-                                <span className="text-blue-600 font-medium">
-                                  ⚖️ {corralKPI.avg_weight.toFixed(0)} kg prom
-                                </span>
-                              )}
-                              {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
-                                <span className={`font-medium ${corralKPI.pregnancy_rate >= 70 ? 'text-green-600' : corralKPI.pregnancy_rate >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                                  {corralKPI.pregnancy_rate.toFixed(0)}% preñez
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-2 ml-4">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="bg-background border shadow-md">
-                                <DropdownMenuItem 
-                                  onClick={() => openDetailDialog(corral.id)}
-                                  className="cursor-pointer"
-                                >
-                                  <Eye className="h-4 w-4 mr-2" />
-                                  Ver Detalles
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => openEditDialog(corral.id)}
-                                  className="cursor-pointer"
-                                >
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Editar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem 
-                                  onClick={() => openDeleteDialog(corral.id, corral.name, corral.animal_count)}
-                                  className="cursor-pointer text-destructive focus:text-destructive"
-                                  disabled={corral.animal_count > 0}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Eliminar
-                                  {corral.animal_count > 0 && " (tiene animales)"}
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        </div>
-                      </div>
+                      <Collapsible key={corral.id} open={isExpanded} onOpenChange={() => toggleCorralExpansion(corral.id)}>
+                        <Card className="overflow-hidden transition-all duration-200 hover:shadow-md border-border/40">
+                          <CollapsibleTrigger asChild>
+                            <CardHeader className="cursor-pointer hover:bg-muted/30 transition-colors pb-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                  <div className="p-2 rounded-lg bg-primary/10">
+                                    <MapPin className="h-5 w-5 text-primary" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <h3 className="font-medium text-foreground truncate">{corral.name}</h3>
+                                      {corral.has_consanguinity_risk && (
+                                        <Badge variant="destructive" className="text-xs">
+                                          <AlertTriangle className="h-3 w-3 mr-1" />
+                                          {corral.risk_count}
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                                      <span className="flex items-center gap-1">
+                                        <Users className="h-3 w-3" />
+                                        {corral.animal_count} animales
+                                      </span>
+                                      <span>{corral.male_count}M / {corral.female_count}H</span>
+                                      {corral.hectareas && (
+                                        <span className="text-xs bg-muted px-2 py-1 rounded">
+                                          {corral.hectareas} ha
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-3">
+                                  {/* Quick metrics */}
+                                  <div className="hidden sm:flex items-center gap-2">
+                                    {corralKPI?.vaccination_percentage !== undefined && (
+                                      <Badge 
+                                        variant={
+                                          corralKPI.vaccination_status === 'excellent' ? 'default' : 
+                                          corralKPI.vaccination_status === 'good' ? 'secondary' :
+                                          corralKPI.vaccination_status === 'warning' ? 'outline' : 'destructive'
+                                        }
+                                        className="text-xs"
+                                      >
+                                        <Syringe className="h-3 w-3 mr-1" />
+                                        {corralKPI.vaccination_percentage.toFixed(0)}%
+                                      </Badge>
+                                    )}
+                                    
+                                    {estimatedCapacity && (
+                                      <Badge variant="outline" className={cn("text-xs", occupancyStatus.color)}>
+                                        {occupancyStatus.label}
+                                      </Badge>
+                                    )}
+                                  </div>
+
+                                  <div className="flex items-center gap-2">
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                          <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => openDetailDialog(corral.id)}>
+                                          <Eye className="h-4 w-4 mr-2" />
+                                          Ver Detalles
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => openEditDialog(corral.id)}>
+                                          <Edit className="h-4 w-4 mr-2" />
+                                          Editar
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem 
+                                          onClick={() => openDeleteDialog(corral.id, corral.name, corral.animal_count)}
+                                          className="text-destructive"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Eliminar
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                    
+                                    {isExpanded ? (
+                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </CardHeader>
+                          </CollapsibleTrigger>
+                          
+                          <CollapsibleContent>
+                            <CardContent className="pt-0 px-6 pb-4">
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {/* Capacity and Occupancy */}
+                                {estimatedCapacity && (
+                                  <div className="space-y-2">
+                                    <h4 className="text-sm font-medium text-foreground">Ocupación</h4>
+                                    <div className="space-y-2">
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Capacidad estimada</span>
+                                        <span className="font-medium">{estimatedCapacity}</span>
+                                      </div>
+                                      <div className="w-full bg-muted rounded-full h-2">
+                                        <div 
+                                          className={cn("h-2 rounded-full transition-all", getOccupancyColor(occupancyPercentage))}
+                                          style={{ width: `${Math.min(occupancyPercentage, 100)}%` }}
+                                        />
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {occupancyPercentage}% ocupado • {Math.max(0, estimatedCapacity - corral.animal_count)} espacios libres
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Health & Vaccination */}
+                                {corralKPI && (
+                                  <div className="space-y-2">
+                                    <h4 className="text-sm font-medium text-foreground">Salud</h4>
+                                    <div className="space-y-2">
+                                      {corralKPI.vaccination_percentage !== undefined && (
+                                        <div className="flex justify-between text-sm">
+                                          <span className="text-muted-foreground">Vacunación</span>
+                                          <span className="font-medium">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
+                                        </div>
+                                      )}
+                                      {corralKPI.vaccination_alerts > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                          <span className="text-muted-foreground">Alertas</span>
+                                          <span className="font-medium text-amber-600">{corralKPI.vaccination_alerts}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Production Metrics */}
+                                {corralKPI && (corralKPI.avg_daily_gain > 0 || corralKPI.avg_weight > 0) && (
+                                  <div className="space-y-2">
+                                    <h4 className="text-sm font-medium text-foreground">Producción</h4>
+                                    <div className="space-y-2">
+                                      {corralKPI.avg_daily_gain > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                          <span className="text-muted-foreground">GDP promedio</span>
+                                          <span className="font-medium">{corralKPI.avg_daily_gain.toFixed(2)} kg/día</span>
+                                        </div>
+                                      )}
+                                      {corralKPI.avg_weight > 0 && (
+                                        <div className="flex justify-between text-sm">
+                                          <span className="text-muted-foreground">Peso promedio</span>
+                                          <span className="font-medium">{corralKPI.avg_weight.toFixed(0)} kg</span>
+                                        </div>
+                                      )}
+                                      {corralKPI.last_weighing_date && (
+                                        <div className="flex justify-between text-sm">
+                                          <span className="text-muted-foreground">Último pesaje</span>
+                                          <span className="text-xs">{new Date(corralKPI.last_weighing_date).toLocaleDateString()}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Reproductive Performance */}
+                                {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
+                                  <div className="space-y-2">
+                                    <h4 className="text-sm font-medium text-foreground">Reproducción</h4>
+                                    <div className="space-y-2">
+                                      <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Tasa de preñez</span>
+                                        <span className={cn("font-medium", 
+                                          corralKPI.pregnancy_rate >= 70 ? 'text-emerald-600' : 
+                                          corralKPI.pregnancy_rate >= 50 ? 'text-amber-600' : 'text-red-600'
+                                        )}>
+                                          {corralKPI.pregnancy_rate.toFixed(0)}%
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </CardContent>
+                          </CollapsibleContent>
+                        </Card>
+                      </Collapsible>
                     );
                   })}
                 </div>
               )}
-            </SectionCard>
+            </div>
           </section>
 
           {/* Right Sidebar */}
           <aside className="space-y-4">
-            <SectionCard
-              title="Alertas de Riesgo"
-              subtitle="Monitoreo de consanguinidad"
-              count={totalRisks}
-            >
-              {totalRisks > 0 ? (
-                <div className="space-y-3">
-                  {corrales
-                    .filter(corral => corral.has_consanguinity_risk)
-                    .map((corral) => (
-                      <div key={corral.id} className="flex items-center justify-between p-3 rounded-lg bg-red-50">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900 truncate">
-                            {corral.name}
-                          </p>
-                          <p className="text-xs text-slate-500">{corral.risk_count} riesgos detectados</p>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <div>
+                    <h3 className="font-semibold">Alertas de Riesgo</h3>
+                    <p className="text-sm text-muted-foreground">{totalRisks} riesgos detectados</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {totalRisks > 0 ? (
+                  <div className="space-y-3">
+                    {corrales
+                      .filter(corral => corral.has_consanguinity_risk)
+                      .map((corral) => (
+                        <div key={corral.id} className="flex items-center justify-between p-3 rounded-lg bg-destructive/5 border border-destructive/20">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground truncate">
+                              {corral.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{corral.risk_count} riesgos detectados</p>
+                          </div>
+                          <Badge variant="destructive" className="text-xs">
+                            {corral.highest_severity === 'severe' ? 'Alto' : 
+                             corral.highest_severity === 'medium' ? 'Medio' : 'Bajo'}
+                          </Badge>
                         </div>
-                        <BadgePill variant="danger" className="ml-2">
-                          {corral.highest_severity === 'severe' ? 'Alto' : 
-                           corral.highest_severity === 'medium' ? 'Medio' : 'Bajo'}
-                        </BadgePill>
-                      </div>
-                    ))}
-                </div>
-              ) : (
-                <div className="text-center py-4">
-                  <AlertTriangle className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-                  <p className="text-sm text-slate-600">No hay riesgos detectados</p>
-                </div>
-              )}
-            </SectionCard>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <AlertTriangle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">No hay riesgos detectados</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </aside>
         </div>
       </div>
