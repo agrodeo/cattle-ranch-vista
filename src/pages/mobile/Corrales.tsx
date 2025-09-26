@@ -248,8 +248,8 @@ export function MobileCorrales() {
                 <Card key={corral.id} className="overflow-hidden transition-all duration-200">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="p-2 rounded-lg bg-primary/10">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
                           <MapPin className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -258,19 +258,19 @@ export function MobileCorrales() {
                               {corral.name}
                             </CardTitle>
                             {corral.has_consanguinity_risk && (
-                              <Badge variant="destructive" className="text-xs px-1 py-0">
+                              <Badge variant="destructive" className="text-xs px-1 py-0 flex-shrink-0">
                                 <AlertTriangle className="h-3 w-3" />
                               </Badge>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-                            <span className="flex items-center gap-1">
+                          <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground flex-wrap">
+                            <span className="flex items-center gap-1 flex-shrink-0">
                               <Users className="h-3 w-3" />
                               {corral.animal_count}
                             </span>
-                            <span className="text-xs">{corral.male_count}M/{corral.female_count}H</span>
+                            <span className="text-xs flex-shrink-0">{corral.male_count}M/{corral.female_count}H</span>
                             {corral.hectareas && (
-                              <span className="text-xs bg-muted px-1.5 py-0.5 rounded">
+                              <span className="text-xs bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
                                 {corral.hectareas}ha
                               </span>
                             )}
@@ -278,7 +278,7 @@ export function MobileCorrales() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         {/* Quick status indicators */}
                         <div className="flex flex-col items-end gap-1">
                           {corralKPI?.vaccination_percentage !== undefined && (

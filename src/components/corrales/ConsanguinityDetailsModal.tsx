@@ -110,40 +110,42 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
         <div className="p-2 space-y-2">
           {risks.map((risk, index) => (
             <div key={index} className="bg-background rounded-lg p-2 border border-muted/50">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 mb-1">
-                    <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                    <span className="text-xs font-medium truncate">
-                      {risk.animal1.id_tag || risk.animal1.name} × {risk.animal2.id_tag || risk.animal2.name}
-                    </span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Users className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      <span className="text-xs font-medium break-words">
+                        {risk.animal1.id_tag || risk.animal1.name} × {risk.animal2.id_tag || risk.animal2.name}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {risk.relationship}
+                    </p>
                   </div>
-                  <p className="text-xs text-muted-foreground capitalize">
-                    {risk.relationship}
-                  </p>
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-xs px-1.5 py-0 text-white border-0 flex-shrink-0",
+                      getSeverityColor(risk.severity)
+                    )}
+                  >
+                    {getSeverityLabel(risk.severity)}
+                  </Badge>
                 </div>
-                <Badge 
-                  variant="outline" 
-                  className={cn(
-                    "text-xs px-1.5 py-0 text-white border-0",
-                    getSeverityColor(risk.severity)
-                  )}
-                >
-                  {getSeverityLabel(risk.severity)}
-                </Badge>
-              </div>
-              
-              <div className="space-y-1">
-                {risk.inbreedingCoefficient && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-muted-foreground">Coeficiente:</span>
-                    <span className="font-mono">{(risk.inbreedingCoefficient * 100).toFixed(1)}%</span>
-                  </div>
-                )}
                 
-                <div className="text-xs">
-                  <span className="text-muted-foreground">Descripción: </span>
-                  <span className="text-xs">{risk.description}</span>
+                <div className="space-y-1">
+                  {risk.inbreedingCoefficient && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Coeficiente:</span>
+                      <span className="font-mono">{(risk.inbreedingCoefficient * 100).toFixed(1)}%</span>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs">
+                    <span className="text-muted-foreground">Descripción: </span>
+                    <span className="text-xs break-words">{risk.description}</span>
+                  </div>
                 </div>
               </div>
             </div>
