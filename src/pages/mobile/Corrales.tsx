@@ -27,6 +27,7 @@ import {
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 import { cn } from "@/lib/utils";
+import { ConsanguinityDetailsModal } from "@/components/corrales/ConsanguinityDetailsModal";
 
 interface Corral {
   id: string;
@@ -447,17 +448,27 @@ export function MobileCorrales() {
 
                     {/* Risk Indicators */}
                     {corral.has_consanguinity_risk && (
-                      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 mt-3">
-                        <div className="flex items-center gap-2">
-                          <AlertTriangle className="h-3 w-3 text-destructive" />
-                          <span className="text-xs font-medium text-destructive">
-                            Riesgo de Consanguinidad
-                          </span>
-                        </div>
-                        <p className="text-xs text-destructive/80 mt-1">
-                          {corral.risk_count} animales con riesgo ({corral.highest_severity})
-                        </p>
-                      </div>
+                      <Collapsible className="mt-3">
+                        <CollapsibleTrigger asChild>
+                          <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2 cursor-pointer hover:bg-destructive/15 transition-colors">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle className="h-3 w-3 text-destructive" />
+                                <span className="text-xs font-medium text-destructive">
+                                  Riesgo de Consanguinidad
+                                </span>
+                              </div>
+                              <ChevronDown className="h-3 w-3 text-destructive" />
+                            </div>
+                            <p className="text-xs text-destructive/80 mt-1">
+                              {corral.risk_count} animales con riesgo ({corral.highest_severity})
+                            </p>
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2">
+                          <ConsanguinityDetailsModal corralId={corral.id} />
+                        </CollapsibleContent>
+                      </Collapsible>
                     )}
 
                     {/* Actions */}
