@@ -564,83 +564,74 @@ export default function Corrales() {
                             )}
                           </div>
 
-                          {/* Expandable Sections */}
+                          {/* Details Sections */}
                           <div className="space-y-3">
                             {/* Vaccination Details */}
                             {corralKPI && (
-                              <Collapsible>
-                                <CollapsibleTrigger className="w-full">
-                                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
-                                    <div className="flex items-center gap-2">
-                                      <Syringe className="h-4 w-4 text-primary" />
-                                      <span className="font-medium">Detalles de Vacunación</span>
-                                    </div>
-                                    <ChevronDown className="h-4 w-4" />
+                              <div className="bg-muted/30 rounded-lg">
+                                <div className="p-3 border-b border-muted/50">
+                                  <div className="flex items-center gap-2">
+                                    <Syringe className="h-4 w-4 text-primary" />
+                                    <span className="font-medium">Detalles de Vacunación</span>
                                   </div>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                  <div className="p-3 pt-2 space-y-2 text-sm">
-                                    <div className="bg-muted/20 rounded p-2">
-                                      <p className="text-muted-foreground text-xs mb-2">Ejemplo de vacunas pendientes:</p>
-                                      <div className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                          <span>Aftosa</span>
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-20 bg-muted rounded-full h-1.5">
-                                              <div className="w-3/5 bg-emerald-500 h-1.5 rounded-full"></div>
-                                            </div>
-                                            <span className="text-xs">12 de 20</span>
-                                          </div>
+                                </div>
+                                <div className="p-3 space-y-2 text-sm">
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span>Aftosa</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-20 bg-muted rounded-full h-1.5">
+                                          <div className="w-3/5 bg-emerald-500 h-1.5 rounded-full"></div>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                          <span>Brucelosis</span>
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-20 bg-muted rounded-full h-1.5">
-                                              <div className="w-1/4 bg-amber-500 h-1.5 rounded-full"></div>
-                                            </div>
-                                            <span className="text-xs">3 de 12</span>
-                                          </div>
-                                        </div>
+                                        <span className="text-xs">12 de 20</span>
                                       </div>
                                     </div>
+                                    <span className="text-xs text-muted-foreground block">12 de 20 animales vacunados</span>
+                                    
+                                    <div className="flex items-center justify-between">
+                                      <span>Brucelosis</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-20 bg-muted rounded-full h-1.5">
+                                          <div className="w-1/4 bg-amber-500 h-1.5 rounded-full"></div>
+                                        </div>
+                                        <span className="text-xs">3 de 12</span>
+                                      </div>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground block">3 de 12 animales vacunados</span>
                                   </div>
-                                </CollapsibleContent>
-                              </Collapsible>
+                                </div>
+                              </div>
                             )}
 
                             {/* Pregnancy Rate Details */}
                             {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
-                              <Collapsible>
-                                <CollapsibleTrigger className="w-full">
-                                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors">
+                              <div className="bg-muted/30 rounded-lg">
+                                <div className="p-3 border-b border-muted/50">
+                                  <div className="flex items-center gap-2">
+                                    <TrendingUp className="h-4 w-4 text-primary" />
+                                    <span className="font-medium">Detalles de Preñez</span>
+                                  </div>
+                                </div>
+                                <div className="p-3 space-y-2 text-sm">
+                                  <div className="flex items-center justify-between">
+                                    <span>Hembras Preñadas</span>
                                     <div className="flex items-center gap-2">
-                                      <TrendingUp className="h-4 w-4 text-primary" />
-                                      <span className="font-medium">Detalles de Preñez</span>
-                                    </div>
-                                    <ChevronDown className="h-4 w-4" />
-                                  </div>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent>
-                                  <div className="p-3 pt-2 space-y-2 text-sm">
-                                    <div className="bg-muted/20 rounded p-2">
-                                      <div className="grid grid-cols-2 gap-2 text-xs">
-                                        <div>
-                                          <span className="text-muted-foreground">Hembras servidas:</span>
-                                          <span className="font-medium ml-1">
-                                            {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}
-                                          </span>
-                                        </div>
-                                        <div>
-                                          <span className="text-muted-foreground">Preñadas:</span>
-                                          <span className="font-medium ml-1">
-                                            {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}
-                                          </span>
-                                        </div>
+                                      <div className="w-20 bg-muted rounded-full h-1.5">
+                                        <div 
+                                          className="bg-pink-500 h-1.5 rounded-full" 
+                                          style={{ width: `${corralKPI.pregnancy_rate}%` }}
+                                        ></div>
                                       </div>
+                                      <span className="text-xs">
+                                        {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)} de {corral.female_count}
+                                      </span>
                                     </div>
                                   </div>
-                                </CollapsibleContent>
-                              </Collapsible>
+                                  <span className="text-xs text-muted-foreground block">
+                                    {corralKPI.pregnancy_rate.toFixed(1)}% de las hembras están preñadas
+                                  </span>
+                                </div>
+                              </div>
                             )}
                           </div>
 

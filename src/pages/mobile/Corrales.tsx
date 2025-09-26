@@ -376,83 +376,72 @@ export function MobileCorrales() {
                       )}
                     </div>
 
-                    {/* Expandable Sections */}
+                    {/* Details Sections */}
                     <div className="space-y-2">
                       {/* Vaccination Details */}
                       {corralKPI && (
-                        <Collapsible>
-                          <CollapsibleTrigger className="w-full">
-                            <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
-                              <div className="flex items-center gap-2">
-                                <Syringe className="h-3 w-3 text-primary" />
-                                <span className="text-sm font-medium">Detalles de Vacunación</span>
-                              </div>
-                              <ChevronDown className="h-3 w-3" />
+                        <div className="bg-muted/30 rounded-lg">
+                          <div className="p-2 border-b border-muted/50">
+                            <div className="flex items-center gap-2">
+                              <Syringe className="h-3 w-3 text-primary" />
+                              <span className="text-sm font-medium">Detalles de Vacunación</span>
                             </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="p-2 text-xs space-y-2">
-                              <div className="bg-muted/20 rounded p-2">
-                                <p className="text-muted-foreground mb-1">Vacunas pendientes:</p>
-                                <div className="space-y-1">
-                                  <div className="flex items-center justify-between">
-                                    <span>Aftosa</span>
-                                    <div className="flex items-center gap-1">
-                                      <div className="w-12 bg-muted rounded-full h-1">
-                                        <div className="w-3/5 bg-emerald-500 h-1 rounded-full"></div>
-                                      </div>
-                                      <span className="text-xs">12/20</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between">
-                                    <span>Brucelosis</span>
-                                    <div className="flex items-center gap-1">
-                                      <div className="w-12 bg-muted rounded-full h-1">
-                                        <div className="w-1/4 bg-amber-500 h-1 rounded-full"></div>
-                                      </div>
-                                      <span className="text-xs">3/12</span>
-                                    </div>
-                                  </div>
+                          </div>
+                          <div className="p-2 space-y-1 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span>Aftosa</span>
+                              <div className="flex items-center gap-1">
+                                <div className="w-12 bg-muted rounded-full h-1">
+                                  <div className="w-3/5 bg-emerald-500 h-1 rounded-full"></div>
                                 </div>
+                                <span className="text-xs">12/20</span>
                               </div>
                             </div>
-                          </CollapsibleContent>
-                        </Collapsible>
+                            <span className="text-xs text-muted-foreground block">12 de 20 animales vacunados</span>
+                            
+                            <div className="flex items-center justify-between">
+                              <span>Brucelosis</span>
+                              <div className="flex items-center gap-1">
+                                <div className="w-12 bg-muted rounded-full h-1">
+                                  <div className="w-1/4 bg-amber-500 h-1 rounded-full"></div>
+                                </div>
+                                <span className="text-xs">3/12</span>
+                              </div>
+                            </div>
+                            <span className="text-xs text-muted-foreground block">3 de 12 animales vacunados</span>
+                          </div>
+                        </div>
                       )}
 
                       {/* Pregnancy Rate Details */}
                       {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
-                        <Collapsible>
-                          <CollapsibleTrigger className="w-full">
-                            <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
-                              <div className="flex items-center gap-2">
-                                <TrendingUp className="h-3 w-3 text-primary" />
-                                <span className="text-sm font-medium">Detalles de Preñez</span>
-                              </div>
-                              <ChevronDown className="h-3 w-3" />
+                        <div className="bg-muted/30 rounded-lg">
+                          <div className="p-2 border-b border-muted/50">
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="h-3 w-3 text-primary" />
+                              <span className="text-sm font-medium">Detalles de Preñez</span>
                             </div>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="p-2 text-xs">
-                              <div className="bg-muted/20 rounded p-2">
-                                <div className="grid grid-cols-2 gap-2">
-                                  <div>
-                                    <span className="text-muted-foreground">Servidas:</span>
-                                    <span className="font-medium ml-1">
-                                      {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}
-                                    </span>
-                                  </div>
-                                  <div>
-                                    <span className="text-muted-foreground">Preñadas:</span>
-                                    <span className="font-medium ml-1">
-                                      {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}
-                                    </span>
-                                  </div>
+                          </div>
+                          <div className="p-2 space-y-1 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span>Hembras Preñadas</span>
+                              <div className="flex items-center gap-1">
+                                <div className="w-12 bg-muted rounded-full h-1">
+                                  <div 
+                                    className="bg-pink-500 h-1 rounded-full" 
+                                    style={{ width: `${corralKPI.pregnancy_rate}%` }}
+                                  ></div>
                                 </div>
+                                <span className="text-xs">
+                                  {Math.round((corral.female_count * corralKPI.pregnancy_rate) / 100)}/{corral.female_count}
+                                </span>
                               </div>
                             </div>
-                          </CollapsibleContent>
-                        </Collapsible>
+                            <span className="text-xs text-muted-foreground block">
+                              {corralKPI.pregnancy_rate.toFixed(1)}% de las hembras están preñadas
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
 
