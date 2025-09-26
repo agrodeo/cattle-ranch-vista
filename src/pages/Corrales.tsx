@@ -730,56 +730,57 @@ export default function Corrales() {
       </div>
 
       {/* Dialogs */}
-      {createDialogOpen && (
-        <CreateCorralDialog 
-          onClose={() => setCreateDialogOpen(false)}
-          onSuccess={handleCreateSuccess}
-        />
+      <CreateCorralDialog 
+        open={createDialogOpen} 
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleCreateSuccess}
+      />
+
+      {selectedCorral && (
+        <>
+          <CorralDetailDialog 
+            open={detailDialogOpen} 
+            onOpenChange={setDetailDialogOpen}
+            corralId={selectedCorral}
+            onUpdate={fetchCorrales}
+          />
+          <EditCorralDialog 
+            open={editDialogOpen} 
+            onOpenChange={setEditDialogOpen}
+            corralId={selectedCorral}
+            onSuccess={handleEditSuccess}
+          />
+          <DeleteCorralDialog 
+            open={deleteDialogOpen} 
+            onOpenChange={setDeleteDialogOpen}
+            corralId={selectedCorral}
+            corralName={selectedCorralName}
+            animalCount={selectedCorralAnimalCount}
+            onSuccess={handleDeleteSuccess}
+          />
+        </>
       )}
 
-      {selectedCorral && detailDialogOpen && (
-        <CorralDetailDialog 
-          corralId={selectedCorral}
-          onClose={() => setDetailDialogOpen(false)} 
-        />
-      )}
+      <MoveAnimalDialog 
+        open={moveDialogOpen} 
+        onOpenChange={setMoveDialogOpen}
+        onSuccess={fetchCorrales}
+      />
 
-      {selectedCorral && editDialogOpen && (
-        <EditCorralDialog 
-          corralId={selectedCorral}
-          onClose={() => setEditDialogOpen(false)}
-          onSuccess={handleEditSuccess}
-        />
-      )}
+      {currentUser?.cabañaId && (
+        <>
+          <CorralOptimizationWizard 
+            isOpen={showCorralOptimization}
+            onClose={() => setShowCorralOptimization(false)}
+            cabanaId={currentUser.cabañaId}
+          />
 
-      {selectedCorral && deleteDialogOpen && (
-        <DeleteCorralDialog 
-          corralId={selectedCorral}
-          corralName={selectedCorralName}
-          animalCount={selectedCorralAnimalCount}
-          onClose={() => setDeleteDialogOpen(false)}
-          onSuccess={handleDeleteSuccess}
-        />
-      )}
-
-      {moveDialogOpen && (
-        <MoveAnimalDialog 
-          onClose={() => setMoveDialogOpen(false)}
-          onSuccess={fetchCorrales}
-        />
-      )}
-
-      {showCorralOptimization && (
-        <CorralOptimizationWizard 
-          onClose={() => setShowCorralOptimization(false)}
-        />
-      )}
-
-      {showBulkMove && (
-        <BulkMoveDialog 
-          onClose={() => setShowBulkMove(false)}
-          onSuccess={fetchCorrales}
-        />
+          <BulkMoveDialog 
+            isOpen={showBulkMove}
+            onClose={() => setShowBulkMove(false)}
+            cabanaId={currentUser.cabañaId}
+          />
+        </>
       )}
     </div>
   );
