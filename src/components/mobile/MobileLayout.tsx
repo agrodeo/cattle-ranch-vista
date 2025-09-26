@@ -23,7 +23,6 @@ export function MobileLayout() {
 
   const handleSelectFlow = (flow: string) => {
     setSelectedFlow(flow);
-    setShowAddOverlay(false);
   };
 
   if (!isMobile) {
