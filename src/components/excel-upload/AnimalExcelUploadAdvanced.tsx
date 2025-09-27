@@ -74,6 +74,7 @@ export interface DefaultValues {
 interface AnimalExcelUploadAdvancedProps {
   userCabañaId: string;
   onUploadComplete: () => void;
+  isMobileMode?: boolean;
 }
 
 export const SUPPORTED_FIELDS = {
@@ -110,7 +111,7 @@ export const SUPPORTED_FIELDS = {
 
 type UploadStep = 'upload' | 'mapping' | 'preview' | 'consanguinity' | 'family-tree' | 'complete';
 
-const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete }: AnimalExcelUploadAdvancedProps) => {
+const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMode = false }: AnimalExcelUploadAdvancedProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<UploadStep>('upload');
   const [file, setFile] = useState<File | null>(null);
@@ -287,10 +288,144 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete }: AnimalEx
 
   const handleComplete = () => {
     onUploadComplete();
-    setIsOpen(false);
+    if (!isMobileMode) {
+      setIsOpen(false);
+    }
     resetForm();
   };
 
+  // Mobile mode renders without dialog wrapper
+  if (isMobileMode) {
+    return (
+      <div className="space-y-6 w-full">
+        {/* Progress indicator */}
+        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+          <div className={`w-3 h-3 rounded-full ${currentStep === 'upload' ? 'bg-primary' : 'bg-muted'}`} />
+          <span>Subir</span>
+          <div className="flex-1 h-0.5 bg-muted" />
+          <div className={`w-3 h-3 rounded-full ${currentStep === 'mapping' ? 'bg-primary' : 'bg-muted'}`} />
+          <span>Mapear</span>
+          <div className="flex-1 h-0.5 bg-muted" />
+          <div className={`w-3 h-3 rounded-full ${currentStep === 'preview' ? 'bg-primary' : 'bg-muted'}`} />
+          <span>Previsualizar</span>
+          <div className="flex-1 h-0.5 bg-muted" />
+          <div className={`w-3 h-3 rounded-full ${currentStep === 'consanguinity' ? 'bg-primary' : 'bg-muted'}`} />
+          <span>Análisis</span>
+        </div>
+
+        {/* Step 1: File Upload */}
+        {currentStep === 'upload' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Paso 1: Seleccionar Archivo</CardTitle>
+              <CardDescription>
+                Formatos soportados: .xlsx, .xls, .csv
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  isDragOver 
+                    ? 'border-primary bg-primary/5' 
+                    : 'border-muted-foreground/25 hover:border-primary/50'
+                }`}
+                onDrop={handleDrop}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragOver(true);
+                }}
+                onDragLeave={() => setIsDragOver(false)}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileSelect(file);
+                  }}
+                  className="hidden"
+                />
+                <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <div className="space-y-2">
+                  <p className="text-lg font-medium">
+                    {file ? file.name : 'Arrastre un archivo aquí o haga clic para seleccionar'}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    El sistema detectará automáticamente las columnas y le permitirá mapearlas a los campos del sistema
+                  </p>
+                </div>
+              </div>
+
+              {isProcessing && (
+                <div className="mt-4 flex items-center space-x-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                  <span className="text-sm">Procesando archivo...</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 2: Column Mapping */}
+        {currentStep === 'mapping' && (
+          <ColumnMappingStep
+            rawData={rawData}
+            columnMapping={columnMapping}
+            defaultValues={defaultValues}
+            onMappingChange={setColumnMapping}
+            onDefaultValuesChange={setDefaultValues}
+            onNext={(mappedData) => {
+              setMappedAnimals(mappedData);
+              setCurrentStep('preview');
+            }}
+            onBack={() => setCurrentStep('upload')}
+          />
+        )}
+
+        {/* Step 3: Preview and Edit */}
+        {currentStep === 'preview' && (
+          <PreviewAndEditStep
+            animals={mappedAnimals}
+            userCabañaId={userCabañaId}
+            onEdit={setMappedAnimals}
+            onNext={(animals) => {
+              setMappedAnimals(animals);
+              setCurrentStep('consanguinity');
+            }}
+            onBack={() => setCurrentStep('mapping')}
+            onComplete={handleComplete}
+          />
+        )}
+
+        {/* Step 4: Consanguinity Analysis */}
+        {currentStep === 'consanguinity' && (
+          <ConsanguinityAnalysis
+            animals={mappedAnimals}
+            onNext={(results) => {
+              setConsanguinityResults(results);
+              setCurrentStep('family-tree');
+            }}
+            onBack={() => setCurrentStep('preview')}
+            onSkip={() => setCurrentStep('family-tree')}
+          />
+        )}
+
+        {/* Step 5: Family Tree Visualization */}
+        {currentStep === 'family-tree' && (
+          <FamilyTreeVisualization
+            animals={mappedAnimals}
+            consanguinityResults={consanguinityResults}
+            onComplete={handleComplete}
+            onBack={() => setCurrentStep('consanguinity')}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Desktop mode with dialog
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
