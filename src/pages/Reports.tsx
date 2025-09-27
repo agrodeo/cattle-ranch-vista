@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ReportsFilters, ReportFilters } from "@/components/reports/ReportsFilters";
 import { MobileReportsFilters } from "@/components/reports/MobileReportsFilters";
 import { MobilePageHeader } from "@/components/mobile/MobilePageHeader";
-import { TabsChips } from "@/components/activities/mobile/TabsChips";
+import { IconTabsBar } from "@/components/reports/IconTabsBar";
 import { HerdOverview } from "@/components/reports/HerdOverview";
 import ReproductiveAnalytics from "@/components/reports/ReproductiveAnalytics";
 import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
@@ -109,11 +109,11 @@ const Reports = () => {
 
           {/* Mobile Tab Navigation */}
           <div className="sticky top-0 z-10 bg-background pb-3">
-            <TabsChips
-              tabs={tabs}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-            />
+        <IconTabsBar 
+          tabs={tabs} 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+        />
           </div>
 
           {/* Content */}
