@@ -299,7 +299,7 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete }: AnimalEx
           <span>📊 Carga Masiva Avanzada</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>Carga Masiva Avanzada de Animales</DialogTitle>
           <DialogDescription>
