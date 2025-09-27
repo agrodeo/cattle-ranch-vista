@@ -500,79 +500,46 @@ const Animals = () => {
            submitData.status === "Vendido" || submitData.status === "Muerto")) {
         await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
       }
-    } catch (error) {
-      console.error("Error saving animal:", error, {
-        userCabaña,
-        editingAnimal: editingAnimal?.id,
-        formData,
-        submitData: {
-          cabaña_id: editingAnimal ? formData.cabaña_id : userCabaña,
-          id_tag: formData.id_tag,
-          sex: formData.sex
-        }
-      });
+    } catch (error: any) {
+      console.error("Error saving animal:", error);
       
-      let errorMessage = "No se pudo guardar el animal";
-      if (error && typeof error === 'object' && 'message' in error) {
-        const errorMsg = (error as any).message;
-        if (errorMsg.includes('row-level security policy')) {
-          errorMessage = "Error de permisos: Verifica que tengas una cabaña asociada";
-        } else if (errorMsg.includes('duplicate key')) {
-          errorMessage = "Ya existe un animal con ese ID";
-        }
+      // Handle unique constraint violation
+      if (error.code === '23505' || error.message?.includes('duplicate')) {
+        toast({
+          title: "Error",
+          description: "Ya existe un animal con ese ID en esta cabaña",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "No se pudo guardar el animal",
+          variant: "destructive",
+        });
       }
-      
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
     }
   };
 
-  const handleEdit = async (animal: Animal) => {
+  const handleEdit = (animal: Animal) => {
     setEditingAnimal(animal);
-    
-    // Convert parent UUIDs to id_tag values for display
-    let motherIdTag = "";
-    let fatherIdTag = "";
-    
-    if (animal.mother_id) {
-      const { data: motherData } = await supabase
-        .from("animals")
-        .select("id_tag")
-        .eq("id", animal.mother_id)
-        .single();
-      motherIdTag = motherData?.id_tag || "";
-    }
-    
-    if (animal.father_id) {
-      const { data: fatherData } = await supabase
-        .from("animals")
-        .select("id_tag")
-        .eq("id", animal.father_id)
-        .single();
-      fatherIdTag = fatherData?.id_tag || "";
-    }
-    
     setFormData({
       name: animal.name || "",
-      id_tag: animal.id_tag || "",
-      sex: animal.sex || "",
-      breed: animal.breed || "",
+      id_tag: animal.id_tag,
+      sex: animal.sex,
+      breed: animal.breed,
       birth_date: animal.birth_date || "",
-      status: animal.status || "Activo",
-      mother_id: motherIdTag,
-      father_id: fatherIdTag,
-      mother_name: "",
-      father_name: "",
-      mother_breed: "",
-      father_breed: "",
-      mother_registration: "",
-      father_registration: "",
-      cabaña_id: animal.cabaña_id || "",
+      status: animal.status,
+      mother_id: animal.mother_name || "",
+      father_id: animal.father_name || "",
+      mother_name: animal.mother_name || "",
+      father_name: animal.father_name || "",
+      mother_breed: animal.mother_breed || "",
+      father_breed: animal.father_breed || "",
+      mother_registration: animal.mother_registration || "",
+      father_registration: animal.father_registration || "",
+      cabaña_id: animal.cabaña_id,
       peso_nacimiento: animal.peso_nacimiento?.toString() || "",
-      mocho: animal.mocho || (animal.breed && HORNED_BREEDS.includes(animal.breed) ? "Desconocido" : ""),
+      mocho: animal.mocho || "",
       color: animal.color || "",
       condicion_corporal: animal.condicion_corporal || "",
       observaciones: animal.observaciones || "",
@@ -581,19 +548,17 @@ const Animals = () => {
     setShowAddDialog(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este animal?")) {
-      return;
-    }
+  const handleDelete = async (animalId: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este animal?")) return;
 
     try {
       const { error } = await supabase
         .from("animals")
         .delete()
-        .eq("id", id);
+        .eq("id", animalId);
 
       if (error) throw error;
-      
+
       toast({
         title: "Éxito",
         description: "Animal eliminado correctamente",
@@ -601,6 +566,7 @@ const Animals = () => {
       
       fetchAnimals();
     } catch (error) {
+      console.error("Error deleting animal:", error);
       toast({
         title: "Error",
         description: "No se pudo eliminar el animal",
@@ -615,9 +581,9 @@ const Animals = () => {
   };
 
   const handleDeathSuccess = () => {
-    fetchAnimals();
     setShowDeathDialog(false);
     setAnimalToMarkDead(null);
+    fetchAnimals();
   };
 
   const resetForm = () => {
@@ -647,8 +613,7 @@ const Animals = () => {
     setShowOptionalFields(false);
   };
 
-  // Toggle expanded row
-  const toggleExpandedRow = async (animalId: string) => {
+  const toggleExpandedRow = (animalId: string) => {
     const newExpanded = new Set(expandedRows);
     if (newExpanded.has(animalId)) {
       newExpanded.delete(animalId);
@@ -658,61 +623,59 @@ const Animals = () => {
     setExpandedRows(newExpanded);
   };
 
-  // Enhanced filtering with categories
+  // Filter animals based on search term and filters
   const filteredAnimals = animals.filter(animal => {
-    const matchesSearch = animal.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      animal.id_tag?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = 
+      !searchTerm ||
+      animal.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      animal.id_tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
       animal.breed?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesCategory = !categoryFilter || categoryFilter === "all" || getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
-    const matchesBreed = !breedFilter || breedFilter === "all" || animal.breed === breedFilter;
-    
-    // Normalize status comparison to handle case differences
-    const normalizedAnimalStatus = normalizeAnimalStatus(animal.status);
-    const normalizedFilterStatus = normalizeAnimalStatus(statusFilter);
-    const matchesStatus = !statusFilter || statusFilter === "all" || normalizedAnimalStatus === normalizedFilterStatus;
-    
+
+    const matchesCategory = 
+      categoryFilter === "all" || 
+      getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
+
+    const matchesBreed = 
+      breedFilter === "all" || 
+      animal.breed === breedFilter;
+
+    const normalizedStatus = normalizeAnimalStatus(animal.status);
+    const matchesStatus = 
+      statusFilter === "all" || 
+      normalizedStatus === statusFilter;
+
     return matchesSearch && matchesCategory && matchesBreed && matchesStatus;
   });
 
-  // Calculate category counts
-  const getCategoryCounts = () => {
-    const activeAnimals = animals.filter(a => normalizeAnimalStatus(a.status) === "active");
-    const counts = {
-      "Ternero": 0,
-      "Ternera": 0,
-      "Novillo": 0,
-      "Vaquillona": 0,
-      "Toro": 0,
-      "Vaca adulta": 0
-    };
+  // Get unique breeds for filter
+  const availableBreeds = Array.from(new Set(animals.map(animal => animal.breed))).filter(Boolean);
 
-    activeAnimals.forEach(animal => {
-      const category = getAgeCategory(animal.birth_date, animal.sex);
-      if (counts.hasOwnProperty(category)) {
-        counts[category as keyof typeof counts]++;
-      }
-    });
-
-    return counts;
-  };
-
-  const categoryCounts = getCategoryCounts();
-  const totalActiveAnimals = animals.filter(a => normalizeAnimalStatus(a.status) === "active").length;
-  const uniqueBreeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
-  const categories = ["Ternero", "Ternera", "Novillo", "Vaquillona", "Toro", "Vaca adulta"];
+  // Calculate metrics
+  const totalAnimals = animals.length;
+  const activeAnimals = animals.filter(animal => {
+    const status = normalizeAnimalStatus(animal.status);
+    return status === "activo";
+  }).length;
+  const femaleAnimals = animals.filter(animal => animal.sex === "Hembra").length;
+  const maleAnimals = animals.filter(animal => animal.sex === "Macho").length;
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = normalizeAnimalStatus(status);
     const displayStatus = getDisplayStatus(normalizedStatus);
     
-    const variants = {
-      "active": "default",
-      "sold": "secondary", 
-      "dead": "destructive"
-    };
+    let variant: "default" | "secondary" | "destructive" | "outline" = "default";
     
-    return <Badge variant={variants[normalizedStatus] as any}>{displayStatus}</Badge>;
+    if (normalizedStatus === "activo") {
+      variant = "default";
+    } else if (normalizedStatus === "vendido") {
+      variant = "secondary";
+    } else if (normalizedStatus === "muerto") {
+      variant = "destructive";
+    } else {
+      variant = "outline";
+    }
+    
+    return <Badge variant={variant}>{displayStatus}</Badge>;
   };
 
   if (loading) {
@@ -748,9 +711,12 @@ const Animals = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1 sm:space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold">{t('animals:title')}</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">{t('animals:subtitle')}</p>
+          <p className="text-muted-foreground">
+            Gestiona y monitorea tu inventario ganadero
+          </p>
         </div>
-        <div className="flex flex-col space-y-2">
+        
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
               <ReadOnlyProtectedAction>
@@ -1082,171 +1048,93 @@ const Animals = () => {
                 </Button>
               </div>
             </form>
-          </DialogContent>
-        </Dialog>
-        
-        <AnimalExcelUploadAdvanced
-          userCabañaId={userCabaña}
-          onUploadComplete={fetchAnimals}
+            </DialogContent>
+          </Dialog>
+          
+          <AnimalExcelUploadAdvanced userCabañaId={userCabaña} onUploadComplete={fetchAnimals} />
+        </div>
+      </div>
+
+      {/* Metrics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard
+          title="Total de Animales"
+          value={totalAnimals}
+          icon={Users}
+        />
+        <MetricCard
+          title="Animales Activos"
+          value={activeAnimals}
+          icon={Activity}
+        />
+        <MetricCard
+          title="Hembras"
+          value={femaleAnimals}
+          icon={TrendingUp}
+        />
+        <MetricCard
+          title="Machos"
+          value={maleAnimals}
+          icon={TrendingUp}
         />
       </div>
-    </div>
 
-      <div className="space-y-4">
-          {/* Category Distribution Cards */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Distribución por Categoría</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Mobile: 2x3 Grid layout */}
-              <div className="grid grid-cols-3 gap-2 sm:hidden">
-                {Object.entries(categoryCounts).map(([category, count]) => (
-                  <div key={category} className="text-center p-2 bg-muted/50 rounded-lg">
-                    <div className="text-lg font-bold text-primary">{count}</div>
-                    <div className="text-[10px] text-muted-foreground leading-tight">{category}</div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Desktop: Grid layout */}
-              <div className="hidden sm:grid sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                {Object.entries(categoryCounts).map(([category, count]) => (
-                  <div key={category} className="text-center p-3 bg-muted/50 rounded-lg">
-                    <div className="text-2xl font-bold text-primary">{count}</div>
-                    <div className="text-sm text-muted-foreground">{category}{count !== 1 ? 's' : ''}</div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Stats Cards */}
-          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total de Animales</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">{animals.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Registrados en el sistema
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Animales Activos</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">{totalActiveAnimals}</div>
-                <p className="text-xs text-muted-foreground">
-                  En la cabaña actualmente
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Razas Registradas</CardTitle>
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-xl sm:text-2xl font-bold">{uniqueBreeds.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Diferentes razas
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
+      {/* Filters and Search */}
+      <Card>
         <CardHeader>
-          <CardTitle>Lista de Animales</CardTitle>
-          <CardDescription>
-            Visualiza y gestiona todos los animales registrados
-          </CardDescription>
-          
-          {/* Enhanced Search and Filter Controls */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center space-x-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre, ID o raza..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 sm:max-w-sm"
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-medium">Categoría</Label>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <CardTitle className="text-lg">{t('animals:animalsList')}</CardTitle>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, ID o raza..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 w-full sm:w-80"
+                />
+              </div>
+              
+              <div className="flex gap-2">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                  <SelectTrigger className="w-full bg-background">
-                    <SelectValue placeholder="Todas las categorías" />
+                  <SelectTrigger className="w-full sm:w-auto">
+                    <SelectValue placeholder="Categoría" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-md z-50">
+                  <SelectContent>
                     <SelectItem value="all">Todas las categorías</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="Ternero">Terneros</SelectItem>
+                    <SelectItem value="Ternera">Terneras</SelectItem>
+                    <SelectItem value="Novillo">Novillos</SelectItem>
+                    <SelectItem value="Vaquillona">Vaquillonas</SelectItem>
+                    <SelectItem value="Toro">Toros</SelectItem>
+                    <SelectItem value="Vaca adulta">Vacas adultas</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-medium">Raza</Label>
+
                 <Select value={breedFilter} onValueChange={setBreedFilter}>
-                  <SelectTrigger className="w-full bg-background">
-                    <SelectValue placeholder="Todas" />
+                  <SelectTrigger className="w-full sm:w-auto">
+                    <SelectValue placeholder="Raza" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-md z-50">
+                  <SelectContent>
                     <SelectItem value="all">Todas las razas</SelectItem>
-                    {uniqueBreeds.map((breed) => (
-                      <SelectItem key={breed} value={breed}>
-                        {breed}
-                      </SelectItem>
+                    {availableBreeds.map(breed => (
+                      <SelectItem key={breed} value={breed}>{breed}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-medium">Estado</Label>
+
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full bg-background">
-                    <SelectValue placeholder="Todos" />
+                  <SelectTrigger className="w-full sm:w-auto">
+                    <SelectValue placeholder="Estado" />
                   </SelectTrigger>
-                  <SelectContent className="bg-background border shadow-md z-50">
+                  <SelectContent>
                     <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="sold">Vendido</SelectItem>
-                    <SelectItem value="dead">Muerto</SelectItem>
+                    <SelectItem value="activo">Activos</SelectItem>
+                    <SelectItem value="vendido">Vendidos</SelectItem>
+                    <SelectItem value="muerto">Muertos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
-              {(categoryFilter && categoryFilter !== "all" || breedFilter && breedFilter !== "all" || statusFilter && statusFilter !== "all") && (
-                <div className="flex flex-col justify-end">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => {
-                      setCategoryFilter("all");
-                      setBreedFilter("all");
-                      setStatusFilter("all");
-                    }}
-                    className="w-full"
-                  >
-                    Limpiar filtros
-                  </Button>
-                </div>
-              )}
             </div>
           </div>
         </CardHeader>
@@ -1256,196 +1144,361 @@ const Animals = () => {
               {searchTerm ? "No se encontraron animales que coincidan con tu búsqueda." : "No hay animales registrados aún."}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead></TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Raza</TableHead>
-                  <TableHead>Fecha de Nacimiento</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAnimals.map((animal) => (
-                  <>
-                    <TableRow key={animal.id} className="hover:bg-muted/50">
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleExpandedRow(animal.id)}
-                          className="p-1"
-                        >
-                          {expandedRows.has(animal.id) ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TableCell>
-                       <TableCell 
-                         className="font-medium cursor-pointer hover:text-primary"
-                         onClick={() => navigate(`/animales/${animal.id}`)}
-                       >
-                         {getAnimalDisplayName(animal)}
-                       </TableCell>
-                      <TableCell>{animal.id_tag}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {getAgeCategory(animal.birth_date, animal.sex)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{animal.breed}</TableCell>
-                      <TableCell>
-                        {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(animal.status)}</TableCell>
-                       <TableCell>
-                         <div className="flex items-center gap-2">
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => navigate(`/animales/${animal.id}`)}
-                             className="flex items-center gap-1"
-                           >
-                             <Eye className="h-4 w-4" />
-                             Ver
-                           </Button>
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => handleEdit(animal)}
-                           >
-                             <Edit className="h-4 w-4" />
-                           </Button>
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => handleDelete(animal.id)}
-                           >
-                             <Trash2 className="h-4 w-4" />
-                           </Button>
-                           {animal.status !== 'muerto' && animal.status !== 'vendido' && (
-                             <Button
-                               variant="outline"
-                               size="sm"
-                               onClick={() => handleMarkDeath(animal)}
-                               className="text-destructive hover:text-destructive"
-                             >
-                               <Skull className="h-4 w-4" />
-                             </Button>
-                           )}
-                         </div>
-                       </TableCell>
+            <>
+              {/* Desktop Table */}
+              <div className="hidden lg:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead></TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Raza</TableHead>
+                      <TableHead>Fecha de Nacimiento</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Acciones</TableHead>
                     </TableRow>
-                    
-                    {/* Expandable Animal Details */}
-                    {expandedRows.has(animal.id) && (
-                      <TableRow>
-                        <TableCell colSpan={8} className="p-0">
-                           <div className="p-6 bg-muted/20 border-t space-y-6">
-                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                               {/* Basic Info Recap */}
-                               <div className="space-y-3">
-                                 <h4 className="font-semibold text-lg">Información Básica</h4>
-                                 <div className="grid grid-cols-2 gap-3 text-sm">
-                                   <div>
-                                     <span className="font-medium">Sexo:</span> {animal.sex}
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAnimals.map((animal) => (
+                      <>
+                        <TableRow key={animal.id} className="hover:bg-muted/50">
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleExpandedRow(animal.id)}
+                              className="p-1"
+                            >
+                              {expandedRows.has(animal.id) ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableCell>
+                           <TableCell 
+                             className="font-medium cursor-pointer hover:text-primary"
+                             onClick={() => navigate(`/animales/${animal.id}`)}
+                           >
+                             {getAnimalDisplayName(animal)}
+                           </TableCell>
+                          <TableCell>{animal.id_tag}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {getAgeCategory(animal.birth_date, animal.sex)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{animal.breed}</TableCell>
+                          <TableCell>
+                            {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
+                          </TableCell>
+                          <TableCell>{getStatusBadge(animal.status)}</TableCell>
+                           <TableCell>
+                             <div className="flex items-center gap-2">
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => navigate(`/animales/${animal.id}`)}
+                                 className="flex items-center gap-1"
+                               >
+                                 <Eye className="h-4 w-4" />
+                                 Ver
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => handleEdit(animal)}
+                               >
+                                 <Edit className="h-4 w-4" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => handleDelete(animal.id)}
+                               >
+                                 <Trash2 className="h-4 w-4" />
+                               </Button>
+                               {animal.status !== 'muerto' && animal.status !== 'vendido' && (
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => handleMarkDeath(animal)}
+                                   className="text-destructive hover:text-destructive"
+                                 >
+                                   <Skull className="h-4 w-4" />
+                                 </Button>
+                               )}
+                             </div>
+                           </TableCell>
+                        </TableRow>
+                        
+                        {/* Expandable Animal Details */}
+                        {expandedRows.has(animal.id) && (
+                          <TableRow>
+                            <TableCell colSpan={8} className="p-0">
+                               <div className="p-6 bg-muted/20 border-t space-y-6">
+                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                   {/* Basic Info Recap */}
+                                   <div className="space-y-3">
+                                     <h4 className="font-semibold text-lg">Información Básica</h4>
+                                     <div className="grid grid-cols-2 gap-3 text-sm">
+                                       <div>
+                                         <span className="font-medium">Sexo:</span> {animal.sex}
+                                       </div>
+                                       <div>
+                                         <span className="font-medium">Raza:</span> {animal.breed}
+                                       </div>
+                                       <div>
+                                         <span className="font-medium">Fecha de Nacimiento:</span> {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
+                                       </div>
+                                       <div>
+                                         <span className="font-medium">Estado de Cuernos:</span> {animal.mocho || "N/A"}
+                                       </div>
+                                       <div>
+                                         <span className="font-medium">Peso al Nacer:</span> {animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}
+                                       </div>
+                                       <div>
+                                         <span className="font-medium">Estado Actual:</span> {animal.status}
+                                       </div>
+                                        <div>
+                                          <span className="font-medium">Color:</span> {animal.color || "N/A"}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Registro:</span> {animal.registration_level || "N/A"}
+                                        </div>
+                                     </div>
+                                     {animal.observaciones && (
+                                       <div className="mt-4">
+                                         <span className="font-medium">Observaciones:</span>
+                                         <p className="text-sm text-muted-foreground mt-1">{animal.observaciones}</p>
+                                       </div>
+                                     )}
                                    </div>
-                                   <div>
-                                     <span className="font-medium">Raza:</span> {animal.breed}
-                                   </div>
-                                   <div>
-                                     <span className="font-medium">Fecha de Nacimiento:</span> {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
-                                   </div>
-                                   <div>
-                                     <span className="font-medium">Estado de Cuernos:</span> {animal.mocho || "N/A"}
-                                   </div>
-                                   <div>
-                                     <span className="font-medium">Peso al Nacer:</span> {animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}
-                                   </div>
-                                   <div>
-                                     <span className="font-medium">Estado Actual:</span> {animal.status}
-                                   </div>
-                                    <div>
-                                      <span className="font-medium">Color:</span> {animal.color || "N/A"}
+                                   
+                                    {/* Enhanced Genealogy Tree */}
+                                    <div className="space-y-3">
+                                      <GenealogyTree 
+                                        animalId={animal.id}
+                                        animalName={animal.name}
+                                        animalIdTag={animal.id_tag}
+                                      />
                                     </div>
-                                    <div>
-                                      <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
+                                  </div>
+
+                                  {/* Registration System for Braford and Brangus */}
+                                  {(animal.breed === 'Braford' || animal.breed === 'Brangus') && (
+                                    <div className="space-y-3">
+                                      <BrafordRegistrationDisplay
+                                        breed={animal.breed}
+                                        currentLevel={animal.registration_level as RegistrationLevel}
+                                        overrideLevel={animal.registration_level_override as RegistrationLevel}
+                                        overrideReason={animal.registration_override_reason}
+                                        readonly
+                                      />
                                     </div>
-                                    <div>
-                                      <span className="font-medium">Registro:</span> {animal.registration_level || "N/A"}
+                                  )}
+                                  
+                                  {/* Activities History for all animals */}
+                                  <div className="space-y-4">
+                                    <AnimalActivitiesHistory 
+                                      animalId={animal.id}
+                                      animalName={animal.name || animal.id_tag}
+                                    />
+                                  </div>
+                                  
+                                  {/* Reproductive Performance Section - Only for females */}
+                                  {animal.sex === "Hembra" && (
+                                    <div className="space-y-4">
+                                      <ReproductivePerformance 
+                                        animalId={animal.id}
+                                        animalSex={animal.sex}
+                                      />
+                                      <ReproductiveEventsTable
+                                        animalId={animal.id}
+                                        animalSex={animal.sex}
+                                        cabaña_id={animal.cabaña_id}
+                                      />
                                     </div>
-                                 </div>
-                                 {animal.observaciones && (
-                                   <div className="mt-4">
-                                     <span className="font-medium">Observaciones:</span>
-                                     <p className="text-sm text-muted-foreground mt-1">{animal.observaciones}</p>
-                                   </div>
-                                 )}
-                               </div>
-                               
-                                {/* Enhanced Genealogy Tree */}
-                                <div className="space-y-3">
-                                  <GenealogyTree 
-                                    animalId={animal.id}
-                                    animalName={animal.name}
-                                    animalIdTag={animal.id_tag}
-                                  />
+                                  )}
+                                </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile Card Layout */}
+              <div className="lg:hidden space-y-3">
+                {filteredAnimals.map((animal) => (
+                  <Card key={animal.id} className="overflow-hidden">
+                    <Collapsible
+                      open={expandedRows.has(animal.id)}
+                      onOpenChange={() => toggleExpandedRow(animal.id)}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <CardContent className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <div className="flex items-center gap-2">
+                                <h3 
+                                  className="font-medium truncate cursor-pointer hover:text-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/animales/${animal.id}`);
+                                  }}
+                                >
+                                  {getAnimalDisplayName(animal)}
+                                </h3>
+                                <Badge variant="outline" className="shrink-0">
+                                  {getAgeCategory(animal.birth_date, animal.sex)}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                                <span className="truncate">{animal.breed}</span>
+                                <span className="shrink-0">
+                                  {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "Sin fecha"}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                {getStatusBadge(animal.status)}
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigate(`/animales/${animal.id}`);
+                                    }}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(animal);
+                                    }}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  {animal.status !== 'muerto' && animal.status !== 'vendido' && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleMarkDeath(animal);
+                                      }}
+                                      className="text-destructive hover:text-destructive"
+                                    >
+                                      <Skull className="h-4 w-4" />
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
-
-                              {/* Registration System for Braford and Brangus */}
-                              {(animal.breed === 'Braford' || animal.breed === 'Brangus') && (
-                                <div className="space-y-3">
-                                  <BrafordRegistrationDisplay
-                                    breed={animal.breed}
-                                    currentLevel={animal.registration_level as RegistrationLevel}
-                                    overrideLevel={animal.registration_level_override as RegistrationLevel}
-                                    overrideReason={animal.registration_override_reason}
-                                    readonly
-                                  />
-                                </div>
+                            </div>
+                            
+                            <Button variant="ghost" size="sm" className="shrink-0 ml-2">
+                              {expandedRows.has(animal.id) ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
                               )}
-                              
-                              {/* Activities History for all animals */}
-                              <div className="space-y-4">
-                                <AnimalActivitiesHistory 
-                                  animalId={animal.id}
-                                  animalName={animal.name || animal.id_tag}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent>
+                        <div className="px-4 pb-4 border-t border-border bg-muted/20">
+                          <div className="space-y-4 pt-4">
+                            {/* Basic Info */}
+                            <div className="space-y-2">
+                              <h4 className="font-medium">Información Básica</h4>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Sexo:</span>
+                                  <span>{animal.sex}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Color:</span>
+                                  <span>{animal.color || "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Peso nacer:</span>
+                                  <span>{animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Registro:</span>
+                                  <span>{animal.registration_level || "N/A"}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Genealogy */}
+                            <div className="space-y-2">
+                              <GenealogyTree 
+                                animalId={animal.id}
+                                animalName={animal.name}
+                                animalIdTag={animal.id_tag}
+                              />
+                            </div>
+
+                            {/* Registration System for Braford and Brangus */}
+                            {(animal.breed === 'Braford' || animal.breed === 'Brangus') && (
+                              <div className="space-y-2">
+                                <BrafordRegistrationDisplay
+                                  breed={animal.breed}
+                                  currentLevel={animal.registration_level as RegistrationLevel}
+                                  overrideLevel={animal.registration_level_override as RegistrationLevel}
+                                  overrideReason={animal.registration_override_reason}
+                                  readonly
                                 />
                               </div>
-                              
-                              {/* Reproductive Performance Section - Only for females */}
-                              {animal.sex === "Hembra" && (
-                                <div className="space-y-4">
-                                  <ReproductivePerformance 
-                                    animalId={animal.id}
-                                    animalSex={animal.sex}
-                                  />
-                                  <ReproductiveEventsTable
-                                    animalId={animal.id}
-                                    animalSex={animal.sex}
-                                    cabaña_id={animal.cabaña_id}
-                                  />
-                                </div>
-                              )}
+                            )}
+                            
+                            {/* Activities History */}
+                            <div className="space-y-2">
+                              <AnimalActivitiesHistory 
+                                animalId={animal.id}
+                                animalName={animal.name || animal.id_tag}
+                              />
                             </div>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </>
+                            
+                            {/* Reproductive Performance - Only for females */}
+                            {animal.sex === "Hembra" && (
+                              <div className="space-y-2">
+                                <ReproductivePerformance 
+                                  animalId={animal.id}
+                                  animalSex={animal.sex}
+                                />
+                                <ReproductiveEventsTable
+                                  animalId={animal.id}
+                                  animalSex={animal.sex}
+                                  cabaña_id={animal.cabaña_id}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </Card>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
-      </div>
 
       <MarkDeathDialog
         open={showDeathDialog}
