@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 export interface ChatMessage {
   id: string;
@@ -59,11 +60,13 @@ export function useAIChat() {
         }
       }
 
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const response = await fetch(`https://yjzxbjwewzyhjquhrfzv.supabase.co/functions/v1/ai-chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqenhiandld3p5aGpxdWhyZnp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwODUxNDUsImV4cCI6MjA2NzY2MTE0NX0.q78732rZWj61LtlkEBOYj259ML4cHkRTTy60nhlsBH8`,
+          'Authorization': `Bearer ${session?.access_token || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqenhiandld3p5aGpxdWhyZnp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwODUxNDUsImV4cCI6MjA2NzY2MTE0NX0.q78732rZWj61LtlkEBOYj259ML4cHkRTTy60nhlsBH8'}`,
         },
         body: JSON.stringify({
           messages: aiMessages,
