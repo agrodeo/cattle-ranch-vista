@@ -33,18 +33,24 @@ serve(async (req) => {
 
     // Get current user and their cabaña (only required for context)
     let user = null;
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      user = userData.user;
-    } catch (error) {
-      console.log('Auth error (non-critical):', error);
+    let shouldIncludeContext = includeContext;
+    
+    // Only try to get user if auth header is present
+    if (req.headers.get('Authorization')) {
+      try {
+        const { data: userData, error: authError } = await supabase.auth.getUser();
+        if (!authError && userData.user) {
+          user = userData.user;
+        }
+      } catch (error) {
+        console.log('Auth error (non-critical):', error);
+      }
     }
     
-    if (!user && includeContext) {
-      return new Response(JSON.stringify({ error: 'Authentication required for context features' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    // If context is requested but no user found, proceed without context instead of failing
+    if (!user && shouldIncludeContext) {
+      console.log('Context requested but no authenticated user found, proceeding without context');
+      shouldIncludeContext = false;
     }
 
     let systemPrompt = `Eres un asistente experto en ganadería y manejo de haciendas. Tienes conocimiento profundo sobre:
@@ -59,7 +65,7 @@ serve(async (req) => {
 Responde de manera clara, práctica y siempre considerando las mejores prácticas en ganadería. Usa un tono profesional pero amigable.`;
 
     // Add cabaña context if requested and user is authenticated
-    if (includeContext && user) {
+    if (shouldIncludeContext && user) {
       try {
         const cabanaContext = await getCabanaContext(supabase);
         if (cabanaContext) {
