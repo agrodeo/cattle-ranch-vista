@@ -297,20 +297,20 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
   // Mobile mode renders without dialog wrapper
   if (isMobileMode) {
     return (
-      <div className="space-y-6 w-full">
+      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
         {/* Progress indicator */}
-        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-          <div className={`w-3 h-3 rounded-full ${currentStep === 'upload' ? 'bg-primary' : 'bg-muted'}`} />
-          <span>Subir</span>
-          <div className="flex-1 h-0.5 bg-muted" />
-          <div className={`w-3 h-3 rounded-full ${currentStep === 'mapping' ? 'bg-primary' : 'bg-muted'}`} />
-          <span>Mapear</span>
-          <div className="flex-1 h-0.5 bg-muted" />
-          <div className={`w-3 h-3 rounded-full ${currentStep === 'preview' ? 'bg-primary' : 'bg-muted'}`} />
-          <span>Previsualizar</span>
-          <div className="flex-1 h-0.5 bg-muted" />
-          <div className={`w-3 h-3 rounded-full ${currentStep === 'consanguinity' ? 'bg-primary' : 'bg-muted'}`} />
-          <span>Análisis</span>
+        <div className="flex items-center space-x-1 text-xs text-muted-foreground overflow-x-auto">
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'upload' ? 'bg-primary' : 'bg-muted'}`} />
+          <span className="whitespace-nowrap">Subir</span>
+          <div className="flex-1 h-0.5 bg-muted min-w-[10px]" />
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'mapping' ? 'bg-primary' : 'bg-muted'}`} />
+          <span className="whitespace-nowrap">Mapear</span>
+          <div className="flex-1 h-0.5 bg-muted min-w-[10px]" />
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'preview' ? 'bg-primary' : 'bg-muted'}`} />
+          <span className="whitespace-nowrap">Previsualizar</span>
+          <div className="flex-1 h-0.5 bg-muted min-w-[10px]" />
+          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'consanguinity' ? 'bg-primary' : 'bg-muted'}`} />
+          <span className="whitespace-nowrap">Análisis</span>
         </div>
 
         {/* Step 1: File Upload */}
