@@ -307,26 +307,27 @@ export const ColumnMappingStep = ({
   };
 
   return (
-    <Card className="w-full max-w-full overflow-x-hidden">
-      <CardHeader>
-        <CardTitle className="text-sm">Paso 2: Mapear Columnas y Valores por Defecto</CardTitle>
-        <CardDescription>
-          Asocie las columnas de su archivo con los campos del sistema y proporcione valores por defecto para campos faltantes
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6 max-w-full overflow-x-hidden">
+    <div className="w-full space-y-6 px-1">
+      <Card className="w-full">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-sm">Paso 2: Mapear Columnas y Valores por Defecto</CardTitle>
+          <CardDescription className="text-xs">
+            Asocie las columnas de su archivo con los campos del sistema y proporcione valores por defecto para campos faltantes
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6 w-full">
         {/* Preview of data */}
-        <div className="max-w-full overflow-x-hidden">
+        <div className="w-full">
           <h4 className="font-medium mb-2">Vista previa de datos ({rawData.length} filas)</h4>
-          <div className="border rounded max-h-40 overflow-y-auto max-w-full">
-            <div className="space-y-2 p-3 max-w-full overflow-x-hidden">
+          <div className="border rounded max-h-40 overflow-y-auto w-full">
+            <div className="space-y-2 p-3 w-full">
               {rawData.slice(0, 3).map((row, index) => (
-                <Card key={index} className="p-3 w-full">
-                  <div className="space-y-1">
+                <Card key={index} className="p-2 w-full">
+                  <div className="space-y-1 w-full">
                     {excelColumns.map(col => (
-                      <div key={col} className="flex justify-between items-center text-xs gap-2">
-                        <span className="font-medium text-muted-foreground truncate flex-shrink-0 max-w-[40%]">{col}:</span>
-                        <span className="text-right truncate min-w-0 flex-1">{row[col]?.toString() || '-'}</span>
+                      <div key={col} className="flex justify-between items-start text-xs gap-1 w-full min-w-0">
+                        <span className="font-medium text-muted-foreground text-left max-w-[35%] break-words">{col}:</span>
+                        <span className="text-right max-w-[65%] break-words min-w-0">{row[col]?.toString() || '-'}</span>
                       </div>
                     ))}
                   </div>
@@ -337,12 +338,12 @@ export const ColumnMappingStep = ({
         </div>
 
         {/* Column mapping */}
-        <div className="max-w-full overflow-x-hidden">
+        <div className="w-full">
           <h4 className="font-medium mb-3">Mapeo de Columnas</h4>
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {excelColumns.map(excelCol => (
               <div key={excelCol} className="space-y-2 w-full">
-                <Label className="text-sm font-medium block truncate">
+                <Label className="text-sm font-medium block break-words">
                   Columna: "{excelCol}"
                 </Label>
                 <Select 
@@ -352,7 +353,7 @@ export const ColumnMappingStep = ({
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccionar campo del sistema" />
                   </SelectTrigger>
-                  <SelectContent className="max-w-[90vw]">
+                  <SelectContent className="max-w-[calc(100vw-2rem)]">
                     <SelectItem value="__no_mapping__">No mapear</SelectItem>
                     {supportedFieldKeys.map(field => (
                       <SelectItem key={field} value={field}>
@@ -371,19 +372,19 @@ export const ColumnMappingStep = ({
 
         {/* Default values for unmapped required fields */}
         {unmappedRequiredFields.length > 0 && (
-          <div className="max-w-full overflow-x-hidden">
+          <div className="w-full">
             <h4 className="font-medium mb-3">Valores por Defecto para Campos Requeridos no Mapeados</h4>
             <Alert className="mb-4">
               <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
+              <AlertDescription className="text-xs">
                 Los siguientes campos son requeridos pero no están mapeadas a columnas. Proporcione valores por defecto:
               </AlertDescription>
             </Alert>
-            <div className="space-y-3">
+            <div className="space-y-3 w-full">
               {unmappedRequiredFields.map(field => (
                 <div key={field} className="space-y-2 w-full">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <span className="truncate">{SUPPORTED_FIELDS[field].label}</span>
+                  <Label className="text-sm font-medium flex items-center gap-2 break-words">
+                    <span className="break-words">{SUPPORTED_FIELDS[field].label}</span>
                     <Badge variant="destructive" className="text-xs shrink-0">Req</Badge>
                   </Label>
                   <div className="w-full">
@@ -396,17 +397,17 @@ export const ColumnMappingStep = ({
         )}
 
         {/* Optional default values */}
-        <div className="max-w-full overflow-x-hidden">
+        <div className="w-full">
           <h4 className="font-medium mb-3">Valores por Defecto Opcionales</h4>
           <p className="text-sm text-muted-foreground mb-4">
             Proporcione valores por defecto para campos que no estén en su archivo Excel
           </p>
-          <div className="space-y-3">
+          <div className="space-y-3 w-full">
             {supportedFieldKeys
               .filter(field => !SUPPORTED_FIELDS[field].required && !Object.values(currentMapping).includes(field))
               .map(field => (
                 <div key={field} className="space-y-2 w-full">
-                  <Label className="text-sm font-medium block truncate">
+                  <Label className="text-sm font-medium block break-words">
                     {SUPPORTED_FIELDS[field].label}
                   </Label>
                   <div className="w-full">
@@ -429,6 +430,7 @@ export const ColumnMappingStep = ({
           </Button>
         </div>
       </CardContent>
+      </Card>
       <SexValueMappingDialog
         open={sexMappingOpen}
         onOpenChange={setSexMappingOpen}
@@ -437,6 +439,6 @@ export const ColumnMappingStep = ({
         onMappingsChange={handleSexMappingsChange}
         onSaveForFuture={handleSaveForFuture}
       />
-    </Card>
+    </div>
   );
 };
