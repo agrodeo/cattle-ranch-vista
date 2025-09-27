@@ -299,18 +299,26 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
     return (
       <div className="space-y-4 w-full max-w-full overflow-x-hidden">
         {/* Progress indicator */}
-        <div className="flex items-center space-x-1 text-xs text-muted-foreground overflow-x-auto">
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'upload' ? 'bg-primary' : 'bg-muted'}`} />
-          <span className="whitespace-nowrap">Subir</span>
-          <div className="flex-1 h-0.5 bg-muted min-w-[10px]" />
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'mapping' ? 'bg-primary' : 'bg-muted'}`} />
-          <span className="whitespace-nowrap">Mapear</span>
-          <div className="flex-1 h-0.5 bg-muted min-w-[10px]" />
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'preview' ? 'bg-primary' : 'bg-muted'}`} />
-          <span className="whitespace-nowrap">Previsualizar</span>
-          <div className="flex-1 h-0.5 bg-muted min-w-[10px]" />
-          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentStep === 'consanguinity' ? 'bg-primary' : 'bg-muted'}`} />
-          <span className="whitespace-nowrap">Análisis</span>
+        <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground overflow-x-hidden max-w-full px-2">
+          <div className="flex items-center space-x-1">
+            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-medium ${currentStep === 'upload' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>1</div>
+            <span className="hidden sm:inline">Subir</span>
+          </div>
+          <div className="w-4 h-0.5 bg-muted flex-shrink-0" />
+          <div className="flex items-center space-x-1">
+            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-medium ${currentStep === 'mapping' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>2</div>
+            <span className="hidden sm:inline">Mapear</span>
+          </div>
+          <div className="w-4 h-0.5 bg-muted flex-shrink-0" />
+          <div className="flex items-center space-x-1">
+            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-medium ${currentStep === 'preview' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>3</div>
+            <span className="hidden sm:inline">Vista</span>
+          </div>
+          <div className="w-4 h-0.5 bg-muted flex-shrink-0" />
+          <div className="flex items-center space-x-1">
+            <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-medium ${currentStep === 'consanguinity' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>4</div>
+            <span className="hidden sm:inline">Análisis</span>
+          </div>
         </div>
 
         {/* Step 1: File Upload */}
