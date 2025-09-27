@@ -6,6 +6,7 @@ import { AddOverlay } from "./AddOverlay";
 import { SupportFooter } from "@/components/SupportFooter";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Menu } from "lucide-react";
+import { AIChatButton } from "@/components/ai-chat/AIChatButton";
 
 export function MobileLayout() {
   const isMobile = useIsMobile();
@@ -60,6 +61,8 @@ export function MobileLayout() {
         onSelectFlow={handleSelectFlow}
         selectedFlow={selectedFlow}
       />
+      
+      <AIChatButton />
     </>
   );
 }
