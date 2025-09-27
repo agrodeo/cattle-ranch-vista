@@ -318,51 +318,47 @@ export const ColumnMappingStep = ({
         {/* Preview of data */}
         <div>
           <h4 className="font-medium mb-2">Vista previa de datos ({rawData.length} filas)</h4>
-          <div className="overflow-x-auto border rounded max-h-40">
-            <table className="w-full text-sm">
-              <thead className="bg-muted">
-                <tr>
-                  {excelColumns.map(col => (
-                    <th key={col} className="p-2 text-left border-r">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {rawData.slice(0, 3).map((row, index) => (
-                  <tr key={index} className="border-t">
+          <div className="border rounded max-h-40 overflow-y-auto">
+            <div className="space-y-2 p-3">
+              {rawData.slice(0, 3).map((row, index) => (
+                <Card key={index} className="p-3">
+                  <div className="space-y-1">
                     {excelColumns.map(col => (
-                      <td key={col} className="p-2 border-r text-xs">{row[col]?.toString() || '-'}</td>
+                      <div key={col} className="flex justify-between items-center text-xs">
+                        <span className="font-medium text-muted-foreground truncate w-1/3">{col}:</span>
+                        <span className="text-right truncate w-2/3">{row[col]?.toString() || '-'}</span>
+                      </div>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                  </div>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Column mapping */}
         <div>
           <h4 className="font-medium mb-3">Mapeo de Columnas</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
             {excelColumns.map(excelCol => (
               <div key={excelCol} className="space-y-2">
-                <Label className="text-sm font-medium">
+                <Label className="text-sm font-medium truncate">
                   Columna: "{excelCol}"
                 </Label>
                 <Select 
                   value={currentMapping[excelCol] || "__no_mapping__"} 
                   onValueChange={(value) => updateMapping(excelCol, value === "__no_mapping__" ? null : value as keyof typeof SUPPORTED_FIELDS)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Seleccionar campo del sistema" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__no_mapping__">No mapear</SelectItem>
                     {supportedFieldKeys.map(field => (
                       <SelectItem key={field} value={field}>
-                        <div className="flex items-center">
-                          <span>{SUPPORTED_FIELDS[field].label}</span>
-                          {SUPPORTED_FIELDS[field].required && <Badge variant="destructive" className="ml-2 text-xs">Requerido</Badge>}
+                        <div className="flex items-center justify-between w-full">
+                          <span className="truncate">{SUPPORTED_FIELDS[field].label}</span>
+                          {SUPPORTED_FIELDS[field].required && <Badge variant="destructive" className="ml-2 text-xs shrink-0">Req</Badge>}
                         </div>
                       </SelectItem>
                     ))}
@@ -383,11 +379,12 @@ export const ColumnMappingStep = ({
                 Los siguientes campos son requeridos pero no están mapeadas a columnas. Proporcione valores por defecto:
               </AlertDescription>
             </Alert>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {unmappedRequiredFields.map(field => (
                 <div key={field} className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {SUPPORTED_FIELDS[field].label} <Badge variant="destructive" className="ml-1 text-xs">Requerido</Badge>
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <span className="truncate">{SUPPORTED_FIELDS[field].label}</span>
+                    <Badge variant="destructive" className="text-xs shrink-0">Req</Badge>
                   </Label>
                   {renderDefaultValueInput(field)}
                 </div>
@@ -402,12 +399,12 @@ export const ColumnMappingStep = ({
           <p className="text-sm text-muted-foreground mb-4">
             Proporcione valores por defecto para campos que no estén en su archivo Excel
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-3">
             {supportedFieldKeys
               .filter(field => !SUPPORTED_FIELDS[field].required && !Object.values(currentMapping).includes(field))
               .map(field => (
                 <div key={field} className="space-y-2">
-                  <Label className="text-sm font-medium">
+                  <Label className="text-sm font-medium truncate">
                     {SUPPORTED_FIELDS[field].label}
                   </Label>
                   {renderDefaultValueInput(field)}
