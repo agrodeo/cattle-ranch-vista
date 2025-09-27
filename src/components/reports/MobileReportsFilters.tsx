@@ -149,12 +149,12 @@ export function MobileReportsFilters({
           {/* Category */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Categoría</label>
-            <Select value={tempFilters.category || ""} onValueChange={(value) => updateTempFilter('category', value || null)}>
+            <Select value={tempFilters.category || "all"} onValueChange={(value) => updateTempFilter('category', value === "all" ? null : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Todas las categorías" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las categorías</SelectItem>
+                <SelectItem value="all">Todas las categorías</SelectItem>
                 <SelectItem value="ternero">Ternero</SelectItem>
                 <SelectItem value="novillo">Novillo</SelectItem>
                 <SelectItem value="toro">Toro</SelectItem>
@@ -168,12 +168,12 @@ export function MobileReportsFilters({
           {/* Breed */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Raza</label>
-            <Select value={tempFilters.breed || ""} onValueChange={(value) => updateTempFilter('breed', value || null)}>
+            <Select value={tempFilters.breed || "all"} onValueChange={(value) => updateTempFilter('breed', value === "all" ? null : value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Todas las razas" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas las razas</SelectItem>
+                <SelectItem value="all">Todas las razas</SelectItem>
                 <SelectItem value="braford">Braford</SelectItem>
                 <SelectItem value="angus">Angus</SelectItem>
                 <SelectItem value="hereford">Hereford</SelectItem>
