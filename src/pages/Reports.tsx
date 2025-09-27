@@ -15,7 +15,7 @@ import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
 import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
 import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
-import { Filter } from "lucide-react";
+import { Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -31,6 +31,9 @@ const Reports = () => {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState("herd");
+  
+  // Collapsible filters state
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   // Separate state for pending (being edited) and applied filters (used by analytics)
   const [pendingFilters, setPendingFilters] = useState<ReportFilters>(defaultFilters);
@@ -135,7 +138,10 @@ const Reports = () => {
         
         {/* Desktop Global Filters */}
         <Card>
-          <CardHeader>
+          <CardHeader 
+            className="cursor-pointer"
+            onClick={() => setFiltersExpanded(!filtersExpanded)}
+          >
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
               Filtros Globales
@@ -144,15 +150,24 @@ const Reports = () => {
                   {getActiveFiltersCount(pendingFilters)} filtro{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
                 </Badge>
               )}
+              <div className="ml-auto">
+                {filtersExpanded ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <ReportsFilters 
-              filters={pendingFilters} 
-              onFiltersChange={setPendingFilters}
-              onApplyFilters={applyFilters}
-            />
-          </CardContent>
+          {filtersExpanded && (
+            <CardContent>
+              <ReportsFilters 
+                filters={pendingFilters} 
+                onFiltersChange={setPendingFilters}
+                onApplyFilters={applyFilters}
+              />
+            </CardContent>
+          )}
         </Card>
 
         <SectionCard

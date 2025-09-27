@@ -251,30 +251,6 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
 
   return (
     <div className="grid gap-6">
-      {/* Time Range Selector */}
-      <div className="flex gap-2">
-        <Badge 
-          variant={timeRange === 'quarter' ? 'default' : 'outline'}
-          className="cursor-pointer"
-          onClick={() => setTimeRange('quarter')}
-        >
-          Último Trimestre
-        </Badge>
-        <Badge 
-          variant={timeRange === 'year' ? 'default' : 'outline'}
-          className="cursor-pointer"
-          onClick={() => setTimeRange('year')}
-        >
-          Último Año
-        </Badge>
-        <Badge 
-          variant={timeRange === 'all' ? 'default' : 'outline'}
-          className="cursor-pointer"
-          onClick={() => setTimeRange('all')}
-        >
-          Todos los Datos
-        </Badge>
-      </div>
 
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
