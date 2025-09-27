@@ -453,8 +453,8 @@ export const PreviewAndEditStep = ({
           </div>
         )}
 
-        {/* Preview table */}
-        <div className="max-h-96 overflow-y-auto border rounded">
+        {/* Preview table - Desktop only */}
+        <div className="hidden lg:block max-h-96 overflow-y-auto border rounded">
           <Table>
             <TableHeader>
               <TableRow>
@@ -488,7 +488,7 @@ export const PreviewAndEditStep = ({
                             <TooltipContent>
                               <p>Avisos: {animal._warnings.join('; ')}</p>
                             </TooltipContent>
-                          </Tooltip>
+                           </Tooltip>
                         </TooltipProvider>
                       )}
                     </div>
@@ -538,6 +538,122 @@ export const PreviewAndEditStep = ({
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Mobile cards view */}
+        <div className="lg:hidden space-y-3 max-w-full overflow-x-hidden">
+          {animals.slice(0, 20).map((animal, index) => (
+            <Card 
+              key={index} 
+              className={`w-full ${animal._isValid ? '' : 'border-red-200 bg-red-50'}`}
+            >
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Status and action row */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      {animal._isValid ? (
+                        <Check className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-600" />
+                      )}
+                      {animal._warnings && animal._warnings.length > 0 && (
+                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                      )}
+                      <span className="text-xs text-muted-foreground">
+                        {animal._isValid ? 'Válido' : 'Error'}
+                        {animal._warnings && animal._warnings.length > 0 && ' + Avisos'}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditAnimal(animal)}
+                      className="flex items-center gap-1"
+                    >
+                      <Edit className="h-3 w-3" />
+                      <span className="text-xs">Editar</span>
+                    </Button>
+                  </div>
+
+                  {/* Animal details */}
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">ID:</span>
+                      <span className="text-sm font-mono">{animal.identificacion}</span>
+                    </div>
+                    
+                    {animal.nombre && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Nombre:</span>
+                        <span className="text-sm">{animal.nombre}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">Sexo:</span>
+                        <Badge variant={animal.sexo === 'Macho' ? 'default' : 'secondary'} className="text-xs">
+                          {animal.sexo}
+                        </Badge>
+                      </div>
+                      <div>
+                        <span className="font-medium">Raza:</span>
+                        <span className="ml-1">{animal.raza}</span>
+                      </div>
+                    </div>
+
+                    {animal.fecha_nacimiento && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">F. Nacimiento:</span>
+                        <span className="text-sm">{animal.fecha_nacimiento}</span>
+                      </div>
+                    )}
+
+                    {animal._category && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Categoría:</span>
+                        <Badge variant="outline" className="text-xs">{animal._category}</Badge>
+                      </div>
+                    )}
+
+                    {animal.raza === 'Braford' && animal.registro_sugerido && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Registro:</span>
+                        <Badge variant="secondary" className="text-xs">
+                          {animal.registro_sugerido}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Errors and warnings */}
+                  {(!animal._isValid || (animal._warnings && animal._warnings.length > 0)) && (
+                    <div className="pt-3 border-t space-y-1">
+                      {animal._errors?.map((error, errorIndex) => (
+                        <p key={errorIndex} className="text-xs text-red-600 flex items-start gap-1">
+                          <X className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                          <span>{error}</span>
+                        </p>
+                      ))}
+                      {animal._warnings?.map((warning, warningIndex) => (
+                        <p key={warningIndex} className="text-xs text-yellow-600 flex items-start gap-1">
+                          <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                          <span>{warning}</span>
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          
+          {animals.length > 20 && (
+            <div className="text-center text-sm text-muted-foreground py-4">
+              ... y {animals.length - 20} animales más
+            </div>
+          )}
         </div>
 
         {/* Navigation and actions */}
