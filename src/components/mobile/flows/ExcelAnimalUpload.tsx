@@ -21,19 +21,19 @@ export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps)
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-4 overflow-y-auto pb-20">
-        <Card>
-          <CardHeader>
+      <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden pb-20">
+        <Card className="mx-0">
+          <CardHeader className="px-3 py-4">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-green-500 text-white">
-                <FileSpreadsheet className="h-6 w-6" />
+              <div className="p-2 rounded-lg bg-green-500 text-white">
+                <FileSpreadsheet className="h-5 w-5" />
               </div>
               <div>
-                <CardTitle>Subir Archivo Excel</CardTitle>
+                <CardTitle className="text-lg">Subir Archivo Excel</CardTitle>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-3 pb-4">
             <AnimalExcelUploadAdvanced 
               userCabañaId="" 
               onUploadComplete={onSuccess}
