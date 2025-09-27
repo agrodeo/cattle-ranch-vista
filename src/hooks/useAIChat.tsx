@@ -75,8 +75,13 @@ export function useAIChat() {
         signal: abortControllerRef.current.signal,
       });
 
-      if (!response.ok || !response.body) {
-        throw new Error('Failed to get AI response');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to get AI response`);
+      }
+      
+      if (!response.body) {
+        throw new Error('No response body received from AI service');
       }
 
       const reader = response.body.getReader();

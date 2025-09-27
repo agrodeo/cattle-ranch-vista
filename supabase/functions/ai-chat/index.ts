@@ -30,10 +30,17 @@ serve(async (req) => {
       }
     );
 
-    // Get current user and their cabaña
-    const { data: { user } } = await supabase.auth.getUser();
+    // Get current user and their cabaña (only required for context)
+    let user = null;
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      user = userData.user;
+    } catch (error) {
+      console.log('Auth error (non-critical):', error);
+    }
+    
     if (!user && includeContext) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      return new Response(JSON.stringify({ error: 'Authentication required for context features' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
