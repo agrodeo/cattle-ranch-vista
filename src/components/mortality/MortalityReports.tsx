@@ -2,15 +2,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
   Table,
   TableBody,
   TableCell,
@@ -20,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { FileDown, Calendar, Filter } from "lucide-react";
+import { FileDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -51,20 +42,24 @@ interface DeathsByCause {
   count: number;
 }
 
+interface MortalityReportsProps {
+  filters?: {
+    date_from?: Date;
+    date_to?: Date;
+    breed?: string;
+    category?: string;
+    corral_ids?: string[];
+    include_sold_dead?: boolean;
+  };
+}
+
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
-export function MortalityReports() {
+export function MortalityReports({ filters: globalFilters }: MortalityReportsProps) {
   const [deaths, setDeaths] = useState<DeathRecord[]>([]);
   const [deathsByAge, setDeathsByAge] = useState<DeathsByAge[]>([]);
   const [deathsByCause, setDeathsByCause] = useState<DeathsByCause[]>([]);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    dateFrom: "",
-    dateTo: "",
-    breed: "",
-    sex: "all",
-    cause: "",
-  });
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
 
@@ -72,7 +67,7 @@ export function MortalityReports() {
     if (currentUser) {
       loadMortalityData();
     }
-  }, [currentUser]);
+  }, [currentUser, globalFilters]);
 
   const loadMortalityData = async () => {
     if (!currentUser) {
@@ -82,11 +77,15 @@ export function MortalityReports() {
 
     setLoading(true);
     try {
+      // Convert global filters to the format expected by the RPC function
+      const dateFrom = globalFilters?.date_from ? globalFilters.date_from.toISOString().split('T')[0] : null;
+      const dateTo = globalFilters?.date_to ? globalFilters.date_to.toISOString().split('T')[0] : null;
+      
       // Use the new database function to get mortality data with proper joins
       const { data: deathsData, error } = await supabase.rpc('get_mortality_reports', {
         _user_id: currentUser.id,
-        _date_from: filters.dateFrom || null,
-        _date_to: filters.dateTo || null
+        _date_from: dateFrom,
+        _date_to: dateTo
       });
 
       if (error) {
@@ -96,15 +95,12 @@ export function MortalityReports() {
 
       console.log('🔍 MortalityReports fetched data:', deathsData);
 
-      // Apply client-side filters for sex and breed
+      // Apply global filters for breed
       let processedDeaths = deathsData || [];
       
-      if (filters.sex && filters.sex !== 'all') {
-        processedDeaths = processedDeaths.filter(death => death.animal_sex === filters.sex);
-      }
-      if (filters.breed) {
+      if (globalFilters?.breed) {
         processedDeaths = processedDeaths.filter(death => 
-          death.animal_breed?.toLowerCase().includes(filters.breed.toLowerCase())
+          death.animal_breed?.toLowerCase().includes(globalFilters.breed.toLowerCase())
         );
       }
 
@@ -180,14 +176,6 @@ export function MortalityReports() {
       .sort((a, b) => b.count - a.count);
   };
 
-  const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  const applyFilters = () => {
-    loadMortalityData();
-  };
-
   const exportToCSV = () => {
     const headers = [
       'Fecha Defunción',
@@ -235,62 +223,6 @@ export function MortalityReports() {
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filtros de Mortalidad
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-            <div>
-              <Label>Fecha desde</Label>
-              <Input
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Fecha hasta</Label>
-              <Input
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Raza</Label>
-              <Input
-                placeholder="Filtrar por raza"
-                value={filters.breed}
-                onChange={(e) => handleFilterChange('breed', e.target.value)}
-              />
-            </div>
-            <div>
-              <Label>Sexo</Label>
-              <Select value={filters.sex} onValueChange={(value) => handleFilterChange('sex', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Todos" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="Macho">Macho</SelectItem>
-                  <SelectItem value="Hembra">Hembra</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button onClick={applyFilters} disabled={loading} className="w-full">
-                Aplicar Filtros
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
