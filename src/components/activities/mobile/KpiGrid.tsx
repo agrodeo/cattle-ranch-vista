@@ -21,35 +21,15 @@ interface KpiGridProps {
 }
 
 export function KpiGrid({ kpis, onRetry }: KpiGridProps) {
-  // For mobile, if more than 6 KPIs, use horizontal scroll
-  const showHorizontalScroll = kpis.length > 6;
-
-  if (showHorizontalScroll) {
-    return (
-      <div className="sm:hidden">
-        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x -mx-3 px-3">
-          {kpis.map((kpi, index) => (
-            <div key={index} className="snap-start shrink-0 w-40">
-              <KpiCard
-                {...kpi}
-                onRetry={onRetry ? () => onRetry(index) : undefined}
-                className="h-full"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Standard grid for desktop and mobile with ≤4 KPIs
+  // Always use responsive grid - no horizontal scrolling
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
       {kpis.map((kpi, index) => (
         <KpiCard
           key={index}
           {...kpi}
           onRetry={onRetry ? () => onRetry(index) : undefined}
+          className="min-w-0"
         />
       ))}
     </div>

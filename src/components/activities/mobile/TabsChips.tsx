@@ -13,18 +13,25 @@ interface TabsChipsProps {
 }
 
 export function TabsChips({ tabs, activeTab, onTabChange }: TabsChipsProps) {
+  // Split tabs into rows if more than 4 on mobile
+  const mobileTabsPerRow = 2;
+  const shouldSplit = tabs.length > 4;
+  
   return (
     <>
-      {/* Mobile: Scrollable chips */}
+      {/* Mobile: Multi-row grid */}
       <div className="lg:hidden">
-        <div className="flex gap-2 overflow-x-auto scrollbar-none snap-x -mx-3 px-3 sm:-mx-4 sm:px-4">
+        <div className={cn(
+          "grid gap-2 -mx-3 px-3 sm:-mx-4 sm:px-4",
+          shouldSplit ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-4"
+        )}>
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "snap-start shrink-0 px-3 py-2 rounded-full text-sm border font-medium transition-colors",
-                "min-w-fit whitespace-nowrap",
+                "px-3 py-2 rounded-full text-sm border font-medium transition-colors",
+                "min-w-0 truncate text-center",
                 activeTab === tab.id
                   ? "bg-brand-600 text-white border-brand-600"
                   : "bg-white text-ink-700 border-ink-200 hover:bg-ink-50"
