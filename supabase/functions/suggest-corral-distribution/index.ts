@@ -155,7 +155,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in suggest-corral-distribution:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -400,7 +400,7 @@ async function findBestDestinationCorral(
     
     // If it's a female with calves, account for them too
     if (animal.sex === 'Hembra') {
-      const calvesCount = targetCorral.animals.filter(a => 
+      const calvesCount = targetCorral.animals.filter((a: any) => 
         a.is_calf && a.mother_id === animal.id
       ).length;
       additionalCapacityNeeded += calvesCount * constraints.calf_space_factor;

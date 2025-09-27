@@ -171,7 +171,7 @@ serve(async (req) => {
 
         movedCount++;
       } catch (error) {
-        errors.push(`Error moving ${animal.id_tag}: ${error.message}`);
+        errors.push(`Error moving ${animal.id_tag}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
@@ -191,7 +191,7 @@ serve(async (req) => {
     console.error('Error in bulk-move-animals:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

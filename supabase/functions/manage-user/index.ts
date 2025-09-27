@@ -62,7 +62,7 @@ serve(async (req) => {
 
         // Hash the new password
         const saltRounds = 12
-        const hashedPassword = await bcrypt.hash(newPassword, saltRounds)
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds.toString())
 
         // Update password in auth system
         const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
@@ -150,7 +150,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in manage-user function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

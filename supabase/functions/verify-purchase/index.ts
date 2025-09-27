@@ -49,19 +49,19 @@ serve(async (req) => {
       // Get user's cabaña
       const { data: profile } = await supabaseClient
         .from('profiles')
-        .select('cabaña_id')
+        .select('cabana_id')
         .eq('user_id', userData.user.id)
         .single();
 
-      if (profile?.cabaña_id) {
+      if (profile?.cabana_id) {
         // Update subscription
         await supabaseClient.rpc('activate_subscription', {
-          cabana_uuid: profile.cabaña_id,
+          cabana_uuid: profile.cabana_id,
           plan_name: planId,
           duration_months: 1
         });
 
-        console.log(`Subscription activated for cabaña ${profile.cabaña_id} with plan ${planId}`);
+        console.log(`Subscription activated for cabaña ${profile.cabana_id} with plan ${planId}`);
       }
     }
 
@@ -77,7 +77,7 @@ serve(async (req) => {
     console.error('Purchase verification error:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

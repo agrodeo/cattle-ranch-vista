@@ -50,7 +50,7 @@ serve(async (req) => {
 
     // Hash the password securely
     const saltRounds = 12
-    const hashedPassword = await bcrypt.hash(password, saltRounds)
+    const hashedPassword = await bcrypt.hash(password, saltRounds.toString())
 
     // Create user with admin privileges
     const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -117,7 +117,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in create-user function:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

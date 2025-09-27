@@ -36,7 +36,7 @@ serve(async (req) => {
 
     const results = {
       moves_created: 0,
-      errors: []
+      errors: [] as string[]
     };
 
     // Solo procesar movimientos de corrales, no crear servicios de IA
@@ -78,7 +78,7 @@ serve(async (req) => {
         }
       } catch (error) {
         console.error('Error creating movements:', error);
-        results.errors.push(`Error creating movements: ${error.message}`);
+        results.errors.push(`Error creating movements: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
 
@@ -96,7 +96,7 @@ serve(async (req) => {
     console.error('Error in ai-plan-commit:', error);
     return new Response(JSON.stringify({ 
       success: false, 
-      error: error.message 
+      error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
