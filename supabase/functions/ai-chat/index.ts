@@ -145,9 +145,9 @@ async function getCabanaContext(supabase: any): Promise<string> {
 
   if (animals && animals.length > 0) {
     const totalAnimals = animals.length;
-    const activeAnimals = animals.filter(a => a.status !== 'vendido' && a.status !== 'muerto').length;
-    const femaleAnimals = animals.filter(a => a.sex === 'Hembra' && a.status !== 'vendido' && a.status !== 'muerto').length;
-    const pregnantAnimals = animals.filter(a => a.esta_preñada).length;
+    const activeAnimals = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto').length;
+    const femaleAnimals = animals.filter((a: any) => a.sex === 'Hembra' && a.status !== 'vendido' && a.status !== 'muerto').length;
+    const pregnantAnimals = animals.filter((a: any) => a.esta_preñada).length;
     
     context += `GANADO:\n`;
     context += `- Total de animales: ${totalAnimals}\n`;
@@ -157,7 +157,7 @@ async function getCabanaContext(supabase: any): Promise<string> {
   }
 
   if (corrales && corrales.length > 0) {
-    const totalHectares = corrales.reduce((sum, c) => sum + (c.hectareas || 0), 0);
+    const totalHectares = corrales.reduce((sum: number, c: any) => sum + (c.hectareas || 0), 0);
     context += `\nCORRALES:\n`;
     context += `- Número de corrales: ${corrales.length}\n`;
     context += `- Total hectáreas: ${totalHectares.toFixed(1)}\n`;
@@ -165,7 +165,7 @@ async function getCabanaContext(supabase: any): Promise<string> {
 
   if (alerts && alerts.length > 0) {
     context += `\nALERTAS PENDIENTES:\n`;
-    alerts.forEach(alert => {
+    alerts.forEach((alert: any) => {
       context += `- ${alert.alert_type}`;
       if (alert.days_overdue > 0) context += ` (${alert.days_overdue} días de retraso)`;
       context += '\n';
