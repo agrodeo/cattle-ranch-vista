@@ -654,7 +654,7 @@ const Animals = () => {
   const totalAnimals = animals.length;
   const activeAnimals = animals.filter(animal => {
     const status = normalizeAnimalStatus(animal.status);
-    return status === "activo";
+    return status === "active";
   }).length;
   const femaleAnimals = animals.filter(animal => animal.sex === "Hembra").length;
   const maleAnimals = animals.filter(animal => animal.sex === "Macho").length;
@@ -665,11 +665,11 @@ const Animals = () => {
     
     let variant: "default" | "secondary" | "destructive" | "outline" = "default";
     
-    if (normalizedStatus === "activo") {
+    if (normalizedStatus === "active") {
       variant = "default";
-    } else if (normalizedStatus === "vendido") {
+    } else if (normalizedStatus === "sold") {
       variant = "secondary";
-    } else if (normalizedStatus === "muerto") {
+    } else if (normalizedStatus === "dead") {
       variant = "destructive";
     } else {
       variant = "outline";
