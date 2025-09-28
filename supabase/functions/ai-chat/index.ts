@@ -13,16 +13,15 @@ serve(async (req) => {
 
   try {
     const { messages, includeContext = false } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     
     console.log("AI Chat function called with messages:", messages?.length || 0);
     console.log("Include context:", includeContext);
-    console.log("LOVABLE_API_KEY configured:", !!LOVABLE_API_KEY);
-    console.log("LOVABLE_API_KEY preview:", LOVABLE_API_KEY ? `${LOVABLE_API_KEY.slice(0, 10)}...` : 'null');
+    console.log("OPENAI_API_KEY configured:", !!OPENAI_API_KEY);
     
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not configured");
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
     // Initialize Supabase client for context gathering
@@ -82,17 +81,17 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
       }
     }
 
-    console.log("Calling Lovable AI with system prompt length:", systemPrompt.length);
+    console.log("Calling OpenAI with system prompt length:", systemPrompt.length);
     console.log("Total messages to send:", messages.length + 1);
     
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
@@ -101,12 +100,12 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
       }),
     });
     
-    console.log("Lovable AI response status:", response.status);
+    console.log("OpenAI response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "AI gateway error" }), {
+      console.error("OpenAI API error:", response.status, errorText);
+      return new Response(JSON.stringify({ error: "OpenAI API error" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
