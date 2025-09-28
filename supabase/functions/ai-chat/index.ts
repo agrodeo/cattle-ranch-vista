@@ -15,6 +15,10 @@ serve(async (req) => {
     const { messages, includeContext = false } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
+    console.log("AI Chat function called with messages:", messages?.length || 0);
+    console.log("Include context:", includeContext);
+    console.log("LOVABLE_API_KEY configured:", !!LOVABLE_API_KEY);
+    
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
       throw new Error("LOVABLE_API_KEY is not configured");
@@ -77,6 +81,9 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
       }
     }
 
+    console.log("Calling Lovable AI with system prompt length:", systemPrompt.length);
+    console.log("Total messages to send:", messages.length + 1);
+    
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -92,6 +99,8 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
         stream: true,
       }),
     });
+    
+    console.log("Lovable AI response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
