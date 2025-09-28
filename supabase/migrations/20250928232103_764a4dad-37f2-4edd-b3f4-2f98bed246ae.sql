@@ -1,0 +1,2 @@
+-- Check if LOVABLE_API_KEY secret exists and create/update the config
+-- This is just to verify the function configuration
