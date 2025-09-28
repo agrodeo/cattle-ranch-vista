@@ -18,6 +18,7 @@ serve(async (req) => {
     console.log("AI Chat function called with messages:", messages?.length || 0);
     console.log("Include context:", includeContext);
     console.log("LOVABLE_API_KEY configured:", !!LOVABLE_API_KEY);
+    console.log("LOVABLE_API_KEY preview:", LOVABLE_API_KEY ? `${LOVABLE_API_KEY.slice(0, 10)}...` : 'null');
     
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
