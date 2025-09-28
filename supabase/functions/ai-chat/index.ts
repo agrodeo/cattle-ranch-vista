@@ -114,7 +114,13 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
     if (!response.ok) {
       const errorText = await response.text();
       console.error("OpenAI API error:", response.status, errorText);
-      return new Response(JSON.stringify({ error: "OpenAI API error" }), {
+      console.error("OpenAI API key configured:", !!OPENAI_API_KEY);
+      console.error("Request URL:", "https://api.openai.com/v1/chat/completions");
+      return new Response(JSON.stringify({ 
+        error: "OpenAI API error", 
+        details: errorText,
+        status: response.status 
+      }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
