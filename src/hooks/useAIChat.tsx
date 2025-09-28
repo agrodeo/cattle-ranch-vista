@@ -40,13 +40,29 @@ export function useAIChat() {
 
     try {
       // Prepare messages for AI
-      let aiMessages = messages.concat(userMessage).map(msg => ({
-        role: msg.role,
-        content: msg.image ? [
-          { type: 'text', text: msg.content },
-          { type: 'image_url', image_url: { url: msg.image } }
-        ] : msg.content
-      }));
+      let aiMessages = messages.concat(userMessage).map(msg => {
+        if (msg.image) {
+          // Handle image messages for OpenAI vision
+          return {
+            role: msg.role,
+            content: [
+              { type: "text", text: msg.content },
+              { 
+                type: "image_url", 
+                image_url: { 
+                  url: msg.image,
+                  detail: "high"
+                } 
+              }
+            ]
+          };
+        } else {
+          return {
+            role: msg.role,
+            content: msg.content
+          };
+        }
+      });
 
       // Convert image to base64 if provided
       if (image) {
@@ -54,8 +70,14 @@ export function useAIChat() {
         const lastMessage = aiMessages[aiMessages.length - 1];
         if (typeof lastMessage.content === 'string') {
           lastMessage.content = [
-            { type: 'text', text: lastMessage.content },
-            { type: 'image_url', image_url: { url: base64 } }
+            { type: "text", text: lastMessage.content },
+            { 
+              type: "image_url", 
+              image_url: { 
+                url: base64,
+                detail: "high"
+              } 
+            }
           ];
         }
       }

@@ -14,10 +14,12 @@ interface AIChatDialogProps {
 }
 
 const quickActions = [
-  "¿Cómo está mi ganado hoy?",
-  "¿Qué vacunas necesito aplicar?",
-  "Muéstrame un resumen financiero",
-  "¿Hay alertas reproductivas?",
+  "¿Cómo están mis mortalidades?",
+  "¿Cuáles son mis próximas vacunaciones?",
+  "Muéstrame el estado reproductivo de mis hembras",
+  "¿Cómo está el rendimiento de mis corrales?",
+  "Analiza esta imagen de mi ganado",
+  "¿Qué mejoras puedo hacer en mi manejo?",
 ];
 
 export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
@@ -76,7 +78,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                   <h3 className="text-lg font-medium mb-2">¡Hola! Soy tu asistente ganadero</h3>
                   <p className="text-muted-foreground mb-4">
                     Puedo ayudarte con información sobre tu cabaña, analizar imágenes de animales, 
-                    y responder preguntas sobre ganadería.
+                    instalaciones y documentos, y responder preguntas sobre ganadería.
                   </p>
                   
                   {/* Quick Actions */}
@@ -136,7 +138,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Escribe tu pregunta o sube una imagen..."
+                  placeholder="Escribe tu pregunta, sube una imagen para análisis..."
                   disabled={isLoading}
                 />
                 

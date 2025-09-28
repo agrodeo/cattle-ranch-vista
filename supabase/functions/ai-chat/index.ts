@@ -65,6 +65,14 @@ serve(async (req) => {
 - Manejo de corrales y pasturas
 - Aspectos financieros y económicos de la ganadería
 - Registros y trazabilidad
+- Análisis de imágenes relacionadas con ganadería (animales, instalaciones, documentos)
+
+Puedes analizar imágenes que los usuarios suban para identificar:
+- Animales y sus características
+- Estado de salud o condición corporal
+- Instalaciones ganaderas
+- Documentos o registros
+- Pasturas y alimentación
 
 Responde de manera clara, práctica y siempre considerando las mejores prácticas en ganadería. Usa un tono profesional pero amigable.`;
 
@@ -91,12 +99,13 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o-mini", // This model supports vision
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
         ],
         stream: true,
+        max_tokens: 1000,
       }),
     });
     
