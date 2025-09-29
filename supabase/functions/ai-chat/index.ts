@@ -188,7 +188,7 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
     });
 
     // Get animal statistics
-    const animalsResponse = await fetch(`${supabaseUrl}/rest/v1/animals?select=sex,status,esta_preñada,birth_date&cabaña_id=eq.${cabanaId}`, {
+    const animalsResponse = await fetch(`${supabaseUrl}/rest/v1/animals?select=sex,status,esta_preñada,birth_date,fecha_muerte&cabaña_id=eq.${cabanaId}`, {
       headers: {
         'Authorization': authHeader,
         'apikey': supabaseKey,
@@ -205,20 +205,32 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       }
     });
 
+    // Get mortality data specifically
+    const mortalityResponse = await fetch(`${supabaseUrl}/rest/v1/animals?select=id,id_tag,name,sex,birth_date,fecha_muerte,status&cabaña_id=eq.${cabanaId}&status=eq.muerto`, {
+      headers: {
+        'Authorization': authHeader,
+        'apikey': supabaseKey,
+        'Content-Type': 'application/json'
+      }
+    });
+
     console.log('Data fetch results:', {
       cabaña: cabanaResponse.status,
       animals: animalsResponse.status, 
-      corrales: corralesResponse.status
+      corrales: corralesResponse.status,
+      mortality: mortalityResponse.status
     });
     
     const cabana = cabanaResponse.ok ? (await cabanaResponse.json())[0] : null;
     const animals = animalsResponse.ok ? await animalsResponse.json() : [];
     const corrales = corralesResponse.ok ? await corralesResponse.json() : [];
+    const deadAnimals = mortalityResponse.ok ? await mortalityResponse.json() : [];
     
     console.log('Parsed data:', {
       cabana: !!cabana,
       animalsCount: animals.length,
-      corralesCount: corrales.length
+      corralesCount: corrales.length,
+      deadAnimalsCount: deadAnimals.length
     });
 
     let context = '';
@@ -247,6 +259,35 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       context += `\nCORRALES:\n`;
       context += `- Número de corrales: ${corrales.length}\n`;
       context += `- Total hectáreas: ${totalHectares.toFixed(1)}\n`;
+    }
+
+    // Add mortality context
+    if (deadAnimals && deadAnimals.length > 0) {
+      const totalDeaths = deadAnimals.length;
+      const recentDeaths = deadAnimals.filter((a: any) => {
+        if (!a.fecha_muerte) return false;
+        const deathDate = new Date(a.fecha_muerte);
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        return deathDate >= sixMonthsAgo;
+      }).length;
+      
+      const totalRecords = animals.length + deadAnimals.length;
+      const mortalityRate = totalRecords > 0 ? ((totalDeaths / totalRecords) * 100).toFixed(1) : '0.0';
+      
+      context += `\nMORTALIDADES:\n`;
+      context += `- Total de muertes registradas: ${totalDeaths}\n`;
+      context += `- Muertes en últimos 6 meses: ${recentDeaths}\n`;
+      context += `- Tasa de mortalidad histórica: ${mortalityRate}%\n`;
+      
+      // Add causes if available (this would need to be expanded based on your data structure)
+      const withDeathDate = deadAnimals.filter((a: any) => a.fecha_muerte).length;
+      if (withDeathDate > 0) {
+        context += `- Animales con fecha de muerte registrada: ${withDeathDate}\n`;
+      }
+    } else {
+      context += `\nMORTALIDADES:\n`;
+      context += `- No se han registrado mortalidades en el sistema\n`;
     }
 
     return context;
