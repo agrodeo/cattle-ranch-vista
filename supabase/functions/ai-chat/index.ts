@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,15 +23,6 @@ serve(async (req) => {
       throw new Error("OPENAI_API_KEY is not configured");
     }
 
-    // Initialize Supabase client for context gathering
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        headers: { Authorization: req.headers.get('Authorization')! },
-      }
-    );
-
     // Get current user and their cabaña (only required for context)
     let user = null;
     let shouldIncludeContext = includeContext;
@@ -41,19 +31,28 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
-        // For this older client, we'll try to get profile data directly
-        // instead of using auth API which isn't available
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .maybeSingle();
-          
-        console.log('Auth check:', { hasAuthHeader: true, hasProfile: !!profile, error: !!error });
-        if (profile && !error) {
-          user = { id: profile.user_id, name: profile.full_name };
-          console.log('Authenticated user found:', profile.user_id);
+        // Use direct API call instead of Supabase client to avoid browser API issues
+        const token = authHeader.replace('Bearer ', '');
+        const profileResponse = await fetch(`${Deno.env.get('SUPABASE_URL')}/rest/v1/profiles?select=user_id,full_name`, {
+          headers: {
+            'Authorization': authHeader,
+            'apikey': Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Prefer': 'return=representation'
+          }
+        });
+        
+        if (profileResponse.ok) {
+          const profiles = await profileResponse.json();
+          if (profiles && profiles.length > 0) {
+            user = { id: profiles[0].user_id, name: profiles[0].full_name };
+            console.log('Authenticated user found:', profiles[0].user_id);
+          } else {
+            console.log('No profile found');
+          }
         } else {
-          console.log('No profile found:', error?.message || 'No profile data');
+          console.log('Profile fetch failed:', profileResponse.status);
         }
       } catch (error) {
         console.log('Auth error (non-critical):', error);
@@ -90,7 +89,7 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
     // Add cabaña context if requested and user is authenticated
     if (shouldIncludeContext && user) {
       try {
-        const cabanaContext = await getCabanaContext(supabase);
+        const cabanaContext = await getCabanaContext(authHeader);
         if (cabanaContext) {
           systemPrompt += `\n\nCONTEXTO DE LA CABAÑA DEL USUARIO:\n${cabanaContext}`;
         }
@@ -149,77 +148,90 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
   }
 });
 
-async function getCabanaContext(supabase: any): Promise<string> {
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('cabaña_id')
-    .maybeSingle();
+async function getCabanaContext(authHeader: string | null): Promise<string> {
+  if (!authHeader) return '';
 
-  if (!profile?.cabaña_id) return '';
-
-  // Get basic cabaña info
-  const { data: cabana } = await supabase
-    .from('cabañas')
-    .select('name, location')
-    .eq('id', profile.cabaña_id)
-    .single();
-
-  // Get animal statistics
-  const { data: animals } = await supabase
-    .from('animals')
-    .select('sex, status, esta_preñada, birth_date')
-    .eq('cabaña_id', profile.cabaña_id);
-
-  // Get recent alerts
-  const { data: alerts } = await supabase
-    .from('reproductive_alerts')
-    .select('alert_type, days_overdue')
-    .eq('cabaña_id', profile.cabaña_id)
-    .eq('status', 'pending')
-    .limit(5);
-
-  // Get corrales
-  const { data: corrales } = await supabase
-    .from('corrales')
-    .select('name, hectareas')
-    .eq('cabaña_id', profile.cabaña_id);
-
-  let context = '';
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
   
-  if (cabana) {
-    context += `Cabaña: ${cabana.name}`;
-    if (cabana.location) context += ` - Ubicación: ${cabana.location}`;
-    context += '\n';
-  }
-
-  if (animals && animals.length > 0) {
-    const totalAnimals = animals.length;
-    const activeAnimals = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto').length;
-    const femaleAnimals = animals.filter((a: any) => a.sex === 'Hembra' && a.status !== 'vendido' && a.status !== 'muerto').length;
-    const pregnantAnimals = animals.filter((a: any) => a.esta_preñada).length;
-    
-    context += `GANADO:\n`;
-    context += `- Total de animales: ${totalAnimals}\n`;
-    context += `- Animales activos: ${activeAnimals}\n`;
-    context += `- Hembras activas: ${femaleAnimals}\n`;
-    context += `- Hembras preñadas: ${pregnantAnimals}\n`;
-  }
-
-  if (corrales && corrales.length > 0) {
-    const totalHectares = corrales.reduce((sum: number, c: any) => sum + (c.hectareas || 0), 0);
-    context += `\nCORRALES:\n`;
-    context += `- Número de corrales: ${corrales.length}\n`;
-    context += `- Total hectáreas: ${totalHectares.toFixed(1)}\n`;
-  }
-
-  if (alerts && alerts.length > 0) {
-    context += `\nALERTAS PENDIENTES:\n`;
-    alerts.forEach((alert: any) => {
-      context += `- ${alert.alert_type}`;
-      if (alert.days_overdue > 0) context += ` (${alert.days_overdue} días de retraso)`;
-      context += '\n';
+  try {
+    // Get profile to find cabaña_id
+    const profileResponse = await fetch(`${supabaseUrl}/rest/v1/profiles?select=cabaña_id`, {
+      headers: {
+        'Authorization': authHeader,
+        'apikey': supabaseKey,
+        'Content-Type': 'application/json'
+      }
     });
-  }
+    
+    if (!profileResponse.ok) return '';
+    const profiles = await profileResponse.json();
+    if (!profiles || profiles.length === 0 || !profiles[0].cabaña_id) return '';
+    
+    const cabanaId = profiles[0].cabaña_id;
+    
+    // Get basic cabaña info
+    const cabanaResponse = await fetch(`${supabaseUrl}/rest/v1/cabañas?select=name,location&id=eq.${cabanaId}`, {
+      headers: {
+        'Authorization': authHeader,
+        'apikey': supabaseKey,
+        'Content-Type': 'application/json'
+      }
+    });
 
-  return context;
+    // Get animal statistics
+    const animalsResponse = await fetch(`${supabaseUrl}/rest/v1/animals?select=sex,status,esta_preñada,birth_date&cabaña_id=eq.${cabanaId}`, {
+      headers: {
+        'Authorization': authHeader,
+        'apikey': supabaseKey,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Get corrales
+    const corralesResponse = await fetch(`${supabaseUrl}/rest/v1/corrales?select=name,hectareas&cabaña_id=eq.${cabanaId}`, {
+      headers: {
+        'Authorization': authHeader,
+        'apikey': supabaseKey,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    const cabana = cabanaResponse.ok ? (await cabanaResponse.json())[0] : null;
+    const animals = animalsResponse.ok ? await animalsResponse.json() : [];
+    const corrales = corralesResponse.ok ? await corralesResponse.json() : [];
+
+    let context = '';
+    
+    if (cabana) {
+      context += `Cabaña: ${cabana.name}`;
+      if (cabana.location) context += ` - Ubicación: ${cabana.location}`;
+      context += '\n';
+    }
+
+    if (animals && animals.length > 0) {
+      const totalAnimals = animals.length;
+      const activeAnimals = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto').length;
+      const femaleAnimals = animals.filter((a: any) => a.sex === 'Hembra' && a.status !== 'vendido' && a.status !== 'muerto').length;
+      const pregnantAnimals = animals.filter((a: any) => a.esta_preñada).length;
+      
+      context += `GANADO:\n`;
+      context += `- Total de animales: ${totalAnimals}\n`;
+      context += `- Animales activos: ${activeAnimals}\n`;
+      context += `- Hembras activas: ${femaleAnimals}\n`;
+      context += `- Hembras preñadas: ${pregnantAnimals}\n`;
+    }
+
+    if (corrales && corrales.length > 0) {
+      const totalHectares = corrales.reduce((sum: number, c: any) => sum + (c.hectareas || 0), 0);
+      context += `\nCORRALES:\n`;
+      context += `- Número de corrales: ${corrales.length}\n`;
+      context += `- Total hectáreas: ${totalHectares.toFixed(1)}\n`;
+    }
+
+    return context;
+  } catch (error) {
+    console.log('Error fetching cabaña context:', error);
+    return '';
+  }
 }
