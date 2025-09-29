@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { Truck, Eye, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
@@ -48,8 +49,10 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
     category: 'all',
     age_from: '',
     age_to: '',
-    current_corral_ids: [] as string[]
+    source_corral_id: 'all' as string
   });
+
+  const [selectedAnimalIds, setSelectedAnimalIds] = useState<string[]>([]);
 
   const [targetCorralId, setTargetCorralId] = useState('');
 
@@ -93,15 +96,17 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
             category: filters.category === 'all' ? undefined : filters.category,
             age_from: filters.age_from ? Number(filters.age_from) : undefined,
             age_to: filters.age_to ? Number(filters.age_to) : undefined,
-            current_corral_ids: filters.current_corral_ids.length > 0 ? filters.current_corral_ids : undefined
+            current_corral_ids: filters.source_corral_id === 'all' ? undefined : [filters.source_corral_id]
           },
           dryRun: true
         }
       });
 
       if (error) throw error;
-      
+
       setPreview(data.preview);
+      // Initialize all animals as selected
+      setSelectedAnimalIds(data.preview.animals_found.map((a: any) => a.id));
       setStep(2);
     } catch (error) {
       console.error('Error generating preview:', error);
@@ -116,21 +121,22 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('bulk-move-animals', {
-        body: {
-          cabanaId,
-          to_corral_id: targetCorralId,
-          filters: {
-            ...filters,
-            sex: filters.sex === 'all' ? undefined : filters.sex,
-            category: filters.category === 'all' ? undefined : filters.category,
-            age_from: filters.age_from ? Number(filters.age_from) : undefined,
-            age_to: filters.age_to ? Number(filters.age_to) : undefined,
-            current_corral_ids: filters.current_corral_ids.length > 0 ? filters.current_corral_ids : undefined
-          },
-          dryRun: false
-        }
-      });
+        const { data, error } = await supabase.functions.invoke('bulk-move-animals', {
+          body: {
+            cabanaId,
+            to_corral_id: targetCorralId,
+            filters: {
+              ...filters,
+              sex: filters.sex === 'all' ? undefined : filters.sex,
+              category: filters.category === 'all' ? undefined : filters.category,
+              age_from: filters.age_from ? Number(filters.age_from) : undefined,
+              age_to: filters.age_to ? Number(filters.age_to) : undefined,
+              current_corral_ids: filters.source_corral_id === 'all' ? undefined : [filters.source_corral_id]
+            },
+            specific_animal_ids: selectedAnimalIds.length > 0 ? selectedAnimalIds : undefined,
+            dryRun: false
+          }
+        });
 
       if (error) throw error;
       
@@ -152,9 +158,10 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
       category: 'all',
       age_from: '',
       age_to: '',
-      current_corral_ids: []
+      source_corral_id: 'all'
     });
     setTargetCorralId('');
+    setSelectedAnimalIds([]);
   };
 
   return (
@@ -174,6 +181,26 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
                 <CardTitle>Filtros de Selección</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Prominent Source Corral Filter */}
+                <div>
+                  <Label className="text-base font-semibold">Corral de Origen</Label>
+                  <Select value={filters.source_corral_id} onValueChange={(value) => 
+                    setFilters(prev => ({ ...prev, source_corral_id: value }))
+                  }>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Seleccionar corral..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los corrales</SelectItem>
+                      {corrals.map(corral => (
+                        <SelectItem key={corral.id} value={corral.id}>
+                          {corral.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
                     <Label>Sexo</Label>
@@ -324,23 +351,52 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
 
             <Card>
               <CardHeader>
-                <CardTitle>Animales a Mover</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Animales a Mover</CardTitle>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedAnimalIds(preview.animals_found.map(a => a.id))}
+                    >
+                      Seleccionar Todos
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedAnimalIds([])}
+                    >
+                      Deseleccionar Todos
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {preview.animals_found.slice(0, 20).map((animal, i) => (
-                    <div key={i} className="flex items-center justify-between p-2 border rounded">
-                      <div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {preview.animals_found.map((animal, i) => (
+                    <div key={i} className="flex items-center space-x-3 p-2 border rounded hover:bg-muted/50">
+                      <Checkbox
+                        checked={selectedAnimalIds.includes(animal.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedAnimalIds(prev => [...prev, animal.id]);
+                          } else {
+                            setSelectedAnimalIds(prev => prev.filter(id => id !== animal.id));
+                          }
+                        }}
+                      />
+                      <div className="flex-1">
                         <span className="font-medium">{animal.tag || animal.name}</span>
                         <span className="text-sm text-muted-foreground ml-2">({animal.sex})</span>
                       </div>
+                      <Badge variant="secondary">
+                        {corrals.find(c => c.id === animal.current_corral)?.name || 'Sin corral'}
+                      </Badge>
                     </div>
                   ))}
-                  {preview.animals_found.length > 20 && (
-                    <p className="text-sm text-muted-foreground text-center">
-                      ... y {preview.animals_found.length - 20} animales más
-                    </p>
-                  )}
+                </div>
+                <div className="mt-3 text-sm text-muted-foreground">
+                  {selectedAnimalIds.length} de {preview.animals_found.length} animales seleccionados
                 </div>
               </CardContent>
             </Card>
@@ -351,10 +407,10 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
               </Button>
               <Button 
                 onClick={executeMove} 
-                disabled={loading || preview.conflicts.length > 0}
+                disabled={loading || preview.conflicts.length > 0 || selectedAnimalIds.length === 0}
                 className="flex-1"
               >
-                {loading ? "Ejecutando..." : "Confirmar Movimiento"}
+                {loading ? "Ejecutando..." : `Mover ${selectedAnimalIds.length} Animal(es)`}
               </Button>
             </div>
           </div>

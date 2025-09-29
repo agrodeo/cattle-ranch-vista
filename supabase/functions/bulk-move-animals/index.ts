@@ -21,54 +21,71 @@ serve(async (req) => {
       cabanaId,
       to_corral_id,
       filters = {},
+      specific_animal_ids = null,
       dryRun = true,
       density_per_hectare = 1.5
     } = await req.json();
 
-    console.log(`Bulk move animals for cabana ${cabanaId}, dryRun: ${dryRun}`);
+    console.log(`Bulk move animals for cabana ${cabanaId}, dryRun: ${dryRun}, specific_ids: ${specific_animal_ids?.length || 0}`);
 
-    // Build query based on filters
-    let query = supabaseClient
-      .from('animals')
-      .select('id, id_tag, name, sex, birth_date, corral_id, status')
-      .eq('cabaña_id', cabanaId)
-      .not('status', 'in', '("vendido","muerto")'); // Exclude sold/dead animals
+    let filteredAnimals = [];
 
-    if (filters.sex) {
-      query = query.eq('sex', filters.sex);
+    if (specific_animal_ids && specific_animal_ids.length > 0) {
+      // Use specific animal IDs if provided
+      const { data: animals, error: animalsError } = await supabaseClient
+        .from('animals')
+        .select('id, id_tag, name, sex, birth_date, corral_id, status')
+        .eq('cabaña_id', cabanaId)
+        .in('id', specific_animal_ids)
+        .not('status', 'in', '("vendido","muerto")');
+      
+      if (animalsError) throw animalsError;
+      filteredAnimals = animals || [];
+    } else {
+      // Build query based on filters
+      let query = supabaseClient
+        .from('animals')
+        .select('id, id_tag, name, sex, birth_date, corral_id, status')
+        .eq('cabaña_id', cabanaId)
+        .not('status', 'in', '("vendido","muerto")'); // Exclude sold/dead animals
+
+      if (filters.sex) {
+        query = query.eq('sex', filters.sex);
+      }
+
+      if (filters.current_corral_ids?.length > 0) {
+        query = query.in('corral_id', filters.current_corral_ids);
+      }
+
+      const { data: animals, error: animalsError } = await query;
+      if (animalsError) throw animalsError;
+
+      // Filter by age if specified
+      filteredAnimals = animals || [];
+      if (filters.age_from || filters.age_to) {
+        const currentDate = new Date();
+        filteredAnimals = filteredAnimals.filter(animal => {
+          if (!animal.birth_date) return false;
+          
+          const ageMonths = calculateAgeMonths(animal.birth_date, currentDate);
+          
+          if (filters.age_from && ageMonths < filters.age_from) return false;
+          if (filters.age_to && ageMonths > filters.age_to) return false;
+          
+          return true;
+        });
+      }
+
+      // Filter by category if specified
+      if (filters.category) {
+        filteredAnimals = filteredAnimals.filter(animal => {
+          if (!animal.birth_date) return false;
+          const category = categorizeAnimal(animal.birth_date, animal.sex);
+          return category === filters.category;
+        });
+      }
     }
 
-    if (filters.current_corral_ids?.length > 0) {
-      query = query.in('corral_id', filters.current_corral_ids);
-    }
-
-    const { data: animals, error: animalsError } = await query;
-    if (animalsError) throw animalsError;
-
-    // Filter by age if specified
-    let filteredAnimals = animals || [];
-    if (filters.age_from || filters.age_to) {
-      const currentDate = new Date();
-      filteredAnimals = filteredAnimals.filter(animal => {
-        if (!animal.birth_date) return false;
-        
-        const ageMonths = calculateAgeMonths(animal.birth_date, currentDate);
-        
-        if (filters.age_from && ageMonths < filters.age_from) return false;
-        if (filters.age_to && ageMonths > filters.age_to) return false;
-        
-        return true;
-      });
-    }
-
-    // Filter by category if specified
-    if (filters.category) {
-      filteredAnimals = filteredAnimals.filter(animal => {
-        if (!animal.birth_date) return false;
-        const category = categorizeAnimal(animal.birth_date, animal.sex);
-        return category === filters.category;
-      });
-    }
 
     // Get target corral info
     const { data: targetCorral, error: corralError } = await supabaseClient

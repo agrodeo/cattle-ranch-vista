@@ -3,7 +3,7 @@ import { ArrowLeft, Home, Move, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
-import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
+import { AnimalMoveTypeSelector } from "@/components/corrales/AnimalMoveTypeSelector";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface CorralCreationFlowProps {
@@ -88,7 +88,7 @@ export function CorralCreationFlow({ onClose }: CorralCreationFlowProps) {
         onSuccess={handleSuccess}
       />
       
-      <BulkMoveDialog
+      <AnimalMoveTypeSelector
         isOpen={selectedAction === "move"}
         onClose={handleDialogClose}
         cabanaId={currentUser?.cabañaId || ""}
