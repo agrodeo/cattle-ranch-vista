@@ -178,7 +178,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
             animal_id: pregnancy.animal_id,
             cabaña_id: cabanaData,
             fecha_inicio: pregnancy.fecha_inicio,
-            origen: 'detectada',
+            origen: 'TACTO',
             estado: 'perdida',
             estado_final: 'fallida',
             fecha_finalizacion: format(lossDate, 'yyyy-MM-dd'),
