@@ -82,27 +82,24 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
       const { data: cabanaData } = await supabase.rpc('get_current_user_cabana_id');
       if (!cabanaData) return;
 
-      const { data, error } = await supabase
-        .from('preñeces')
-        .select(`
-          id,
-          animal_id,
-          fecha_inicio,
-          animals!inner(id_tag, name)
-        `)
+      // Get animals marked as pregnant from animals table
+      const { data: animalData, error: animalError } = await supabase
+        .from('animals')
+        .select('id, id_tag, name, fecha_ultima_preñez')
         .eq('cabaña_id', cabanaData)
-        .eq('estado_final', 'activa')
-        .order('fecha_inicio', { ascending: false });
+        .eq('esta_preñada', true)
+        .eq('status', 'activo')
+        .order('fecha_ultima_preñez', { ascending: false });
 
-      if (error) throw error;
+      if (animalError) throw animalError;
 
-      const formattedData = data?.map(p => ({
-        id: p.id,
-        animal_id: p.animal_id,
-        animal_tag: p.animals.id_tag,
-        animal_name: p.animals.name || '',
-        fecha_inicio: p.fecha_inicio
-      })) || [];
+      const formattedData = (animalData || []).map((a: any) => ({
+        id: `animal_${a.id}`, // Use a prefix to distinguish from pregnancy IDs
+        animal_id: a.id,
+        animal_tag: a.id_tag || '',
+        animal_name: a.name || '',
+        fecha_inicio: a.fecha_ultima_preñez || new Date().toISOString().split('T')[0]
+      }));
 
       setPregnantAnimals(formattedData);
     } catch (error) {
@@ -164,27 +161,56 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
     setLoading(true);
     try {
       const pregnancy = pregnantAnimals.find(p => p.id === selectedPregnancy);
-      if (!pregnancy) throw new Error("Preñez no encontrada");
+      if (!pregnancy) throw new Error("Animal preñado no encontrado");
 
       const startDate = new Date(pregnancy.fecha_inicio);
       const gestationalDays = Math.floor((lossDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      // Update pregnancy record
-      const { error: updateError } = await supabase
-        .from('preñeces')
-        .update({
-          estado_final: 'fallida',
-          fecha_finalizacion: format(lossDate, 'yyyy-MM-dd'),
-          fecha_perdida: format(lossDate, 'yyyy-MM-dd'),
-          tipo_perdida: lossType,
-          causa_perdida: lossReason,
-          dias_gestacion_perdida: gestationalDays,
-          observaciones_perdida: observations,
-          motivo_finalizacion: `${LOSS_TYPES.find(t => t.value === lossType)?.label}: ${lossReason}`
-        })
-        .eq('id', selectedPregnancy);
+      // If this is from animals table (prefixed with "animal_"), create a pregnancy record first
+      if (selectedPregnancy.startsWith('animal_')) {
+        // Get cabaña_id first
+        const { data: cabanaData } = await supabase.rpc('get_current_user_cabana_id');
+        
+        // Create pregnancy record for the loss
+        const { data: newPregnancy, error: pregnancyCreateError } = await supabase
+          .from('preñeces')
+          .insert({
+            animal_id: pregnancy.animal_id,
+            cabaña_id: cabanaData,
+            fecha_inicio: pregnancy.fecha_inicio,
+            origen: 'detectada',
+            estado: 'perdida',
+            estado_final: 'fallida',
+            fecha_finalizacion: format(lossDate, 'yyyy-MM-dd'),
+            fecha_perdida: format(lossDate, 'yyyy-MM-dd'),
+            tipo_perdida: lossType,
+            causa_perdida: lossReason,
+            dias_gestacion_perdida: gestationalDays,
+            observaciones_perdida: observations,
+            motivo_finalizacion: `${LOSS_TYPES.find(t => t.value === lossType)?.label}: ${lossReason}`
+          })
+          .select('id')
+          .single();
 
-      if (updateError) throw updateError;
+        if (pregnancyCreateError) throw pregnancyCreateError;
+      } else {
+        // Update existing pregnancy record
+        const { error: updateError } = await supabase
+          .from('preñeces')
+          .update({
+            estado_final: 'fallida',
+            fecha_finalizacion: format(lossDate, 'yyyy-MM-dd'),
+            fecha_perdida: format(lossDate, 'yyyy-MM-dd'),
+            tipo_perdida: lossType,
+            causa_perdida: lossReason,
+            dias_gestacion_perdida: gestationalDays,
+            observaciones_perdida: observations,
+            motivo_finalizacion: `${LOSS_TYPES.find(t => t.value === lossType)?.label}: ${lossReason}`
+          })
+          .eq('id', selectedPregnancy);
+
+        if (updateError) throw updateError;
+      }
 
       // Update animal status
       const { error: animalError } = await supabase
