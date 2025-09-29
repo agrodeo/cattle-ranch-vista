@@ -716,7 +716,7 @@ const Animals = () => {
           </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <div className="hidden lg:flex flex-col sm:flex-row gap-2 sm:gap-4">
           <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
             <DialogTrigger asChild>
               <ReadOnlyProtectedAction>
