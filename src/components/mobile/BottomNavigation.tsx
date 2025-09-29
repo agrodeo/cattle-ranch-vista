@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Users, Home, Plus, Clock, BarChart3 } from "lucide-react";
+import { Users, Home, Plus, BarChart3, Fence, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -14,6 +14,12 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
 
   const tabs = [
     {
+      key: 'home',
+      label: t('home'),
+      path: '/',
+      icon: Home,
+    },
+    {
       key: 'animals',
       label: t('animals'),
       path: '/animals',
@@ -23,7 +29,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       key: 'corrales',
       label: t('corrals'),
       path: '/corrales',
-      icon: Home,
+      icon: Fence,
     },
     {
       key: 'add',
@@ -33,21 +39,21 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       isAction: true,
     },
     {
-      key: 'activities',
-      label: t('activities'),
-      path: '/activities',
-      icon: Clock,
-    },
-    {
       key: 'reports',
-      label: t('reports'),
+      label: 'Rebaño',
       path: '/reports',
-      icon: BarChart3,
+      icon: PieChart,
     },
   ];
 
   const isActive = (path: string) => {
+    if (path === '/' && (location.pathname === '/' || location.pathname === '/dashboard')) {
+      return true;
+    }
     if (path === '/animals' && (location.pathname === '/animals' || location.pathname.startsWith('/animales/'))) {
+      return true;
+    }
+    if (path === '/reports' && (location.pathname === '/reports' || location.pathname === '/activities')) {
       return true;
     }
     return location.pathname === path;
