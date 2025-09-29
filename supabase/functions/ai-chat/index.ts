@@ -1,5 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
+// Lista blanca de modelos permitidos para controlar costos
+const ALLOWED = new Set([
+  "gpt-4o-mini",          // modelo económico por defecto
+  "gpt-4.1-mini"          // modelo alternativo económico
+  // agregar otros modelos aprobados según necesidad
+]);
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -11,12 +18,23 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, includeContext = true } = await req.json();
+    const { messages, includeContext = true, model: clientModel } = await req.json();
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    
+    // Validar y seleccionar modelo
+    const requestedModel = clientModel ?? "gpt-4o-mini";
+    const selectedModel = ALLOWED.has(requestedModel) ? requestedModel : "gpt-4o-mini";
     
     console.log("AI Chat function called with messages:", messages?.length || 0);
     console.log("Include context:", includeContext);
+    console.log("Requested model:", requestedModel);
+    console.log("Selected model:", selectedModel);
     console.log("OPENAI_API_KEY configured:", !!OPENAI_API_KEY);
+    
+    // Log si se rechazó un modelo no permitido
+    if (!ALLOWED.has(requestedModel)) {
+      console.log(`Modelo no permitido solicitado: ${requestedModel}, usando por defecto: ${selectedModel}`);
+    }
     
     if (!OPENAI_API_KEY) {
       console.error("OPENAI_API_KEY is not configured");
@@ -111,7 +129,7 @@ Analiza los datos de la cabaña y responde de forma específica a cada pregunta.
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: selectedModel,
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
