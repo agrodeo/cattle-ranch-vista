@@ -11,16 +11,16 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, includeContext = false } = await req.json();
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const { messages, includeContext = true } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     console.log("AI Chat function called with messages:", messages?.length || 0);
     console.log("Include context:", includeContext);
-    console.log("OPENAI_API_KEY configured:", !!OPENAI_API_KEY);
+    console.log("LOVABLE_API_KEY configured:", !!LOVABLE_API_KEY);
     
-    if (!OPENAI_API_KEY) {
-      console.error("OPENAI_API_KEY is not configured");
-      throw new Error("OPENAI_API_KEY is not configured");
+    if (!LOVABLE_API_KEY) {
+      console.error("LOVABLE_API_KEY is not configured");
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     // Get current user and their cabaña (only required for context)
@@ -69,24 +69,17 @@ serve(async (req) => {
       shouldIncludeContext = false;
     }
 
-    let systemPrompt = `Eres un asistente experto en ganadería y manejo de haciendas. Tienes conocimiento profundo sobre:
-- Manejo de ganado bovino
-- Programas de vacunación y salud animal
-- Reproducción y mejoramiento genético
-- Nutrición y alimentación
-- Manejo de corrales y pasturas
-- Aspectos financieros y económicos de la ganadería
-- Registros y trazabilidad
-- Análisis de imágenes relacionadas con ganadería (animales, instalaciones, documentos)
+    let systemPrompt = `Eres un asistente experto en ganadería especializado en analizar datos de cabañas bovinas. Tu función es responder de forma CONCISA y ESPECÍFICA usando ÚNICAMENTE los datos reales de la cabaña del usuario.
 
-Puedes analizar imágenes que los usuarios suban para identificar:
-- Animales y sus características
-- Estado de salud o condición corporal
-- Instalaciones ganaderas
-- Documentos o registros
-- Pasturas y alimentación
+REGLAS IMPORTANTES:
+- Respuestas CORTAS (máximo 3-4 líneas)
+- Usa SOLO los datos específicos de la cabaña proporcionados
+- NO des consejos genéricos
+- Analiza y responde basándote en los números reales
+- Si no tienes datos suficientes, di "necesito más información sobre [tema específico]"
+- Sé directo y conversacional, como en un chat
 
-Responde de manera clara, práctica y siempre considerando las mejores prácticas en ganadería. Usa un tono profesional pero amigable.`;
+Analiza los datos de la cabaña y responde de forma específica a cada pregunta.`;
 
     // Add cabaña context if requested and user is authenticated
     if (shouldIncludeContext && user) {
@@ -95,9 +88,10 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
         const cabanaContext = await getCabanaContext(authHeader);
         if (cabanaContext) {
           console.log('Cabaña context retrieved:', cabanaContext.substring(0, 100) + '...');
-          systemPrompt += `\n\nCONTEXTO DE LA CABAÑA DEL USUARIO:\n${cabanaContext}`;
+          systemPrompt += `\n\nDATOS ACTUALES DE LA CABAÑA:\n${cabanaContext}\n\nIMPORTANTE: Usa ÚNICAMENTE estos datos para responder. Analiza los números específicos y responde de forma concisa basándote solo en esta información.`;
         } else {
           console.log('No cabaña context retrieved');
+          systemPrompt += `\n\nNo hay datos disponibles de la cabaña. Indica que necesitas acceso a los datos para poder ayudar.`;
         }
       } catch (error) {
         console.log('Error getting cabaña context:', error);
@@ -107,35 +101,35 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
       console.log('Not including context. shouldIncludeContext:', shouldIncludeContext, 'user exists:', !!user);
     }
 
-    console.log("Calling OpenAI with system prompt length:", systemPrompt.length);
+    console.log("Calling Lovable AI with system prompt length:", systemPrompt.length);
     console.log("Total messages to send:", messages.length + 1);
     
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini", // This model supports vision
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
         ],
         stream: true,
-        max_tokens: 1000,
+        max_tokens: 300, // Limitar tokens para respuestas más cortas
       }),
     });
     
-    console.log("OpenAI response status:", response.status);
+    console.log("Lovable AI response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("OpenAI API error:", response.status, errorText);
-      console.error("OpenAI API key configured:", !!OPENAI_API_KEY);
-      console.error("Request URL:", "https://api.openai.com/v1/chat/completions");
+      console.error("Lovable AI error:", response.status, errorText);
+      console.error("Lovable API key configured:", !!LOVABLE_API_KEY);
+      console.error("Request URL:", "https://ai.gateway.lovable.dev/v1/chat/completions");
       return new Response(JSON.stringify({ 
-        error: "OpenAI API error", 
+        error: "Lovable AI error", 
         details: errorText,
         status: response.status 
       }), {
