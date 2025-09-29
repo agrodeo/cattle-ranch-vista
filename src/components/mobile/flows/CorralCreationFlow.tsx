@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface CorralCreationFlowProps {
   onClose: () => void;
@@ -13,6 +14,7 @@ type CorralAction = "create" | "move";
 
 export function CorralCreationFlow({ onClose }: CorralCreationFlowProps) {
   const [selectedAction, setSelectedAction] = useState<CorralAction | null>(null);
+  const { currentUser } = useSupabaseAuth();
 
   const corralActions = [
     {
@@ -89,7 +91,7 @@ export function CorralCreationFlow({ onClose }: CorralCreationFlowProps) {
       <BulkMoveDialog
         isOpen={selectedAction === "move"}
         onClose={handleDialogClose}
-        cabanaId=""
+        cabanaId={currentUser?.cabañaId || ""}
       />
     </>
   );

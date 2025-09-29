@@ -44,8 +44,8 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
   const [preview, setPreview] = useState<MovePreview | null>(null);
 
   const [filters, setFilters] = useState({
-    sex: '',
-    category: '',
+    sex: 'all',
+    category: 'all',
     age_from: '',
     age_to: '',
     current_corral_ids: [] as string[]
@@ -89,6 +89,8 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
           to_corral_id: targetCorralId,
           filters: {
             ...filters,
+            sex: filters.sex === 'all' ? undefined : filters.sex,
+            category: filters.category === 'all' ? undefined : filters.category,
             age_from: filters.age_from ? Number(filters.age_from) : undefined,
             age_to: filters.age_to ? Number(filters.age_to) : undefined,
             current_corral_ids: filters.current_corral_ids.length > 0 ? filters.current_corral_ids : undefined
@@ -120,6 +122,8 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
           to_corral_id: targetCorralId,
           filters: {
             ...filters,
+            sex: filters.sex === 'all' ? undefined : filters.sex,
+            category: filters.category === 'all' ? undefined : filters.category,
             age_from: filters.age_from ? Number(filters.age_from) : undefined,
             age_to: filters.age_to ? Number(filters.age_to) : undefined,
             current_corral_ids: filters.current_corral_ids.length > 0 ? filters.current_corral_ids : undefined
@@ -144,8 +148,8 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
     setStep(1);
     setPreview(null);
     setFilters({
-      sex: '',
-      category: '',
+      sex: 'all',
+      category: 'all',
       age_from: '',
       age_to: '',
       current_corral_ids: []
@@ -180,7 +184,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
                         <SelectValue placeholder="Todos" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todos</SelectItem>
+                        <SelectItem value="all">Todos</SelectItem>
                         <SelectItem value="Macho">Machos</SelectItem>
                         <SelectItem value="Hembra">Hembras</SelectItem>
                       </SelectContent>
@@ -196,7 +200,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Todas</SelectItem>
+                        <SelectItem value="all">Todas</SelectItem>
                         <SelectItem value="Ternero">Ternero</SelectItem>
                         <SelectItem value="Ternera">Ternera</SelectItem>
                         <SelectItem value="Torete">Torete</SelectItem>
