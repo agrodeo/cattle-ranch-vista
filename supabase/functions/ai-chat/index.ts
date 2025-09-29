@@ -45,14 +45,16 @@ serve(async (req) => {
         
         if (profileResponse.ok) {
           const profiles = await profileResponse.json();
+          console.log('Profile response:', profiles);
           if (profiles && profiles.length > 0) {
             user = { id: profiles[0].user_id, name: profiles[0].full_name };
             console.log('Authenticated user found:', profiles[0].user_id);
           } else {
-            console.log('No profile found');
+            console.log('No profile found in response');
           }
         } else {
-          console.log('Profile fetch failed:', profileResponse.status);
+          const errorText = await profileResponse.text();
+          console.log('Profile fetch failed:', profileResponse.status, errorText);
         }
       } catch (error) {
         console.log('Auth error (non-critical):', error);
@@ -89,14 +91,20 @@ Responde de manera clara, práctica y siempre considerando las mejores práctica
     // Add cabaña context if requested and user is authenticated
     if (shouldIncludeContext && user) {
       try {
+        console.log('Attempting to get cabaña context for user:', user.id);
         const cabanaContext = await getCabanaContext(authHeader);
         if (cabanaContext) {
+          console.log('Cabaña context retrieved:', cabanaContext.substring(0, 100) + '...');
           systemPrompt += `\n\nCONTEXTO DE LA CABAÑA DEL USUARIO:\n${cabanaContext}`;
+        } else {
+          console.log('No cabaña context retrieved');
         }
       } catch (error) {
         console.log('Error getting cabaña context:', error);
         // Continue without context rather than failing
       }
+    } else {
+      console.log('Not including context. shouldIncludeContext:', shouldIncludeContext, 'user exists:', !!user);
     }
 
     console.log("Calling OpenAI with system prompt length:", systemPrompt.length);
@@ -196,10 +204,22 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
         'Content-Type': 'application/json'
       }
     });
+
+    console.log('Data fetch results:', {
+      cabaña: cabanaResponse.status,
+      animals: animalsResponse.status, 
+      corrales: corralesResponse.status
+    });
     
     const cabana = cabanaResponse.ok ? (await cabanaResponse.json())[0] : null;
     const animals = animalsResponse.ok ? await animalsResponse.json() : [];
     const corrales = corralesResponse.ok ? await corralesResponse.json() : [];
+    
+    console.log('Parsed data:', {
+      cabana: !!cabana,
+      animalsCount: animals.length,
+      corralesCount: corrales.length
+    });
 
     let context = '';
     
