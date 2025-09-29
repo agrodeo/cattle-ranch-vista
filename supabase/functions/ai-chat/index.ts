@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,15 +40,22 @@ serve(async (req) => {
     let shouldIncludeContext = includeContext;
     
     // Only try to get user if auth header is present
-    if (req.headers.get('Authorization')) {
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
         const { data: userData, error: authError } = await supabase.auth.getUser();
+        console.log('Auth check:', { hasAuthHeader: true, authError: !!authError, hasUser: !!userData?.user });
         if (!authError && userData.user) {
           user = userData.user;
+          console.log('Authenticated user found:', userData.user.id);
+        } else {
+          console.log('Auth error or no user:', authError);
         }
       } catch (error) {
         console.log('Auth error (non-critical):', error);
       }
+    } else {
+      console.log('No authorization header found');
     }
     
     // If context is requested but no user found, proceed without context instead of failing
