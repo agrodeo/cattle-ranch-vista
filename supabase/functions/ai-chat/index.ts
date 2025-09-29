@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,9 +29,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
+        headers: { Authorization: req.headers.get('Authorization')! },
       }
     );
 
@@ -43,13 +41,13 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
-        const { data: userData, error: authError } = await supabase.auth.getUser();
-        console.log('Auth check:', { hasAuthHeader: true, authError: !!authError, hasUser: !!userData?.user });
-        if (!authError && userData.user) {
-          user = userData.user;
-          console.log('Authenticated user found:', userData.user.id);
+        const userData = await supabase.auth.user();
+        console.log('Auth check:', { hasAuthHeader: true, hasUser: !!userData });
+        if (userData) {
+          user = userData;
+          console.log('Authenticated user found:', userData.id);
         } else {
-          console.log('Auth error or no user:', authError);
+          console.log('No user found');
         }
       } catch (error) {
         console.log('Auth error (non-critical):', error);
