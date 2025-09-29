@@ -26,12 +26,6 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       icon: Users,
     },
     {
-      key: 'corrales',
-      label: t('corrals'),
-      path: '/corrales',
-      icon: Fence,
-    },
-    {
       key: 'add',
       label: 'Cargar',
       path: '',
@@ -39,8 +33,14 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       isAction: true,
     },
     {
+      key: 'corrales',
+      label: t('corrals'),
+      path: '/corrales',
+      icon: Fence,
+    },
+    {
       key: 'reports',
-      label: 'Rebaño',
+      label: t('reports'),
       path: '/reports',
       icon: PieChart,
     },
