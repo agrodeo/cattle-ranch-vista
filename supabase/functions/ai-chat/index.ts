@@ -41,13 +41,19 @@ serve(async (req) => {
     const authHeader = req.headers.get('Authorization');
     if (authHeader && authHeader.startsWith('Bearer ')) {
       try {
-        const userData = await supabase.auth.user();
-        console.log('Auth check:', { hasAuthHeader: true, hasUser: !!userData });
-        if (userData) {
-          user = userData;
-          console.log('Authenticated user found:', userData.id);
+        // For this older client, we'll try to get profile data directly
+        // instead of using auth API which isn't available
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .maybeSingle();
+          
+        console.log('Auth check:', { hasAuthHeader: true, hasProfile: !!profile, error: !!error });
+        if (profile && !error) {
+          user = { id: profile.user_id, name: profile.full_name };
+          console.log('Authenticated user found:', profile.user_id);
         } else {
-          console.log('No user found');
+          console.log('No profile found:', error?.message || 'No profile data');
         }
       } catch (error) {
         console.log('Auth error (non-critical):', error);
@@ -147,7 +153,7 @@ async function getCabanaContext(supabase: any): Promise<string> {
   const { data: profile } = await supabase
     .from('profiles')
     .select('cabaña_id')
-    .single();
+    .maybeSingle();
 
   if (!profile?.cabaña_id) return '';
 
