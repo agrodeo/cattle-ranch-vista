@@ -14,12 +14,7 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
     const { cabanaId, plan, options = {} } = await req.json();
@@ -27,11 +22,18 @@ serve(async (req) => {
 
     console.log(`Committing corral distribution plan for cabana ${cabanaId}`);
 
-    // Get user ID from auth
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
+    // Get user ID from auth header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('No authorization header');
+    }
+    
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabaseClient.auth.api.getUser(token);
+    if (userError || !userData) {
       throw new Error('User not authenticated');
     }
+    const user = userData;
 
     const results = {
       moves_created: 0,

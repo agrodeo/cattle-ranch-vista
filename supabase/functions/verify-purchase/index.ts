@@ -14,19 +14,18 @@ serve(async (req) => {
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-      { auth: { persistSession: false } }
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw userError;
+    const { data: userData, error: userError } = await supabaseClient.auth.api.getUser(token);
+    if (userError || !userData) throw userError;
 
     const { platform, receiptData } = await req.json();
-    console.log(`Verifying ${platform} purchase for user ${userData.user.id}`);
+    console.log(`Verifying ${platform} purchase for user ${userData.id}`);
 
     let verificationResult = false;
     let planId = '';
@@ -50,7 +49,7 @@ serve(async (req) => {
       const { data: profile } = await supabaseClient
         .from('profiles')
         .select('cabana_id')
-        .eq('user_id', userData.user.id)
+        .eq('user_id', userData.id)
         .single();
 
       if (profile?.cabana_id) {

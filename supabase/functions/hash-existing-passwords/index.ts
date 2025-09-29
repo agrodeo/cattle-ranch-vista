@@ -22,20 +22,20 @@ serve(async (req) => {
 
     const { requesterId } = await req.json()
 
-    // Verify that the requester is an admin
-    const { data: requesterRole, error: roleError } = await supabaseAdmin
-      .rpc('get_user_role', { _user_id: requesterId })
+  // Verify that the requester is an admin
+  const { data: requesterRole, error: roleError } = await supabaseAdmin
+    .rpc('get_user_role', { _user_id: requesterId })
 
-    if (roleError || requesterRole !== 'admin') {
-      console.error('Authorization error:', roleError)
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - admin access required' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
+  if (roleError || (Array.isArray(requesterRole) ? requesterRole[0] : requesterRole) !== 'admin') {
+    console.error('Authorization error:', roleError)
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized - admin access required' }),
+      { 
+        status: 403, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
+  }
 
     // Get all plain text passwords that need to be hashed
     const { data: passwords, error: fetchError } = await supabaseAdmin

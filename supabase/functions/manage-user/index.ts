@@ -37,7 +37,7 @@ serve(async (req) => {
     const { data: requesterRole, error: roleError } = await supabaseAdmin
       .rpc('get_user_role', { _user_id: requesterId })
 
-    if (roleError || requesterRole !== 'admin') {
+    if (roleError || (Array.isArray(requesterRole) ? requesterRole[0] : requesterRole) !== 'admin') {
       console.error('Authorization error:', roleError)
       return new Response(
         JSON.stringify({ error: 'Unauthorized - admin access required' }),
@@ -64,10 +64,14 @@ serve(async (req) => {
         const saltRounds = 12
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds.toString())
 
-        // Update password in auth system
-        const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-          password: newPassword
-        })
+        // Update password directly in database using service role
+        const { error: authError } = await supabaseAdmin
+          .from('auth.users')
+          .update({ 
+            encrypted_password: hashedPassword,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId);
 
         if (authError) {
           console.error('Auth password update error:', authError)
@@ -122,8 +126,11 @@ serve(async (req) => {
           _details: { deleted_by: requesterId }
         })
 
-        // Delete user from auth system (this will cascade to other tables via foreign keys)
-        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+        // Delete user from auth system using direct SQL
+        const { error: deleteError } = await supabaseAdmin
+          .from('auth.users')
+          .delete()
+          .eq('id', userId);
 
         if (deleteError) {
           console.error('User deletion error:', deleteError)

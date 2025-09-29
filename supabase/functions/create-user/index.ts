@@ -37,7 +37,7 @@ serve(async (req) => {
     const { data: requesterRole, error: roleError } = await supabaseAdmin
       .rpc('get_user_role', { _user_id: requesterId })
 
-    if (roleError || requesterRole !== 'admin') {
+    if (roleError || (Array.isArray(requesterRole) ? requesterRole[0] : requesterRole) !== 'admin') {
       console.error('Authorization error:', roleError)
       return new Response(
         JSON.stringify({ error: 'Unauthorized - admin access required' }),
@@ -52,27 +52,36 @@ serve(async (req) => {
     const saltRounds = 12
     const hashedPassword = await bcrypt.hash(password, saltRounds.toString())
 
-    // Create user with admin privileges
-    const { data: userData, error: createError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true, // Skip email confirmation
-      user_metadata: {
-        full_name: fullName
-      }
-    })
+    // Create user with admin privileges using direct SQL insert
+    // First create auth user
+    const userId = crypto.randomUUID();
+    
+    // Insert directly into auth.users using service role
+    const { error: createError } = await supabaseAdmin
+      .from('auth.users')
+      .insert({
+        id: userId,
+        email,
+        encrypted_password: hashedPassword,
+        email_confirmed_at: new Date().toISOString(),
+        raw_user_meta_data: { full_name: fullName },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
 
     if (createError) {
       console.error('User creation error:', createError)
       throw createError
     }
 
-    if (userData.user) {
+    const userData = { id: userId, email, user_metadata: { full_name: fullName } };
+
+    if (userData) {
       // Create user role
       const { error: roleInsertError } = await supabaseAdmin
         .from('user_roles')
         .insert({
-          user_id: userData.user.id,
+          user_id: userData.id,
           role,
           created_by: requesterId
         })
@@ -80,7 +89,7 @@ serve(async (req) => {
       if (roleInsertError) {
         console.error('Role insertion error:', roleInsertError)
         // If role creation fails, cleanup the user
-        await supabaseAdmin.auth.admin.deleteUser(userData.user.id)
+        await supabaseAdmin.from('auth.users').delete().eq('id', userData.id)
         throw roleInsertError
       }
 
@@ -88,7 +97,7 @@ serve(async (req) => {
       const { error: passwordError } = await supabaseAdmin
         .from('user_passwords')
         .insert({
-          user_id: userData.user.id,
+          user_id: userData.id,
           password_text: hashedPassword, // Store hashed password
           created_by: requesterId
         })
@@ -102,13 +111,13 @@ serve(async (req) => {
       await supabaseAdmin.rpc('log_security_event', {
         _action: 'user_created',
         _table_name: 'users',
-        _record_id: userData.user.id,
+        _record_id: userData.id,
         _details: { email, role, created_by: requesterId }
       })
     }
 
     return new Response(
-      JSON.stringify({ success: true, user: userData.user }),
+      JSON.stringify({ success: true, user: userData }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
