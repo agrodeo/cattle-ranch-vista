@@ -12,15 +12,15 @@ serve(async (req) => {
 
   try {
     const { messages, includeContext = true } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     
     console.log("AI Chat function called with messages:", messages?.length || 0);
     console.log("Include context:", includeContext);
-    console.log("LOVABLE_API_KEY configured:", !!LOVABLE_API_KEY);
+    console.log("OPENAI_API_KEY configured:", !!OPENAI_API_KEY);
     
-    if (!LOVABLE_API_KEY) {
-      console.error("LOVABLE_API_KEY is not configured");
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not configured");
+      throw new Error("OPENAI_API_KEY is not configured");
     }
 
     // Get current user and their cabaña (only required for context)
@@ -101,17 +101,17 @@ Analiza los datos de la cabaña y responde de forma específica a cada pregunta.
       console.log('Not including context. shouldIncludeContext:', shouldIncludeContext, 'user exists:', !!user);
     }
 
-    console.log("Calling Lovable AI with system prompt length:", systemPrompt.length);
+    console.log("Calling OpenAI with system prompt length:", systemPrompt.length);
     console.log("Total messages to send:", messages.length + 1);
     
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
           ...messages,
@@ -121,15 +121,15 @@ Analiza los datos de la cabaña y responde de forma específica a cada pregunta.
       }),
     });
     
-    console.log("Lovable AI response status:", response.status);
+    console.log("OpenAI response status:", response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI error:", response.status, errorText);
-      console.error("Lovable API key configured:", !!LOVABLE_API_KEY);
-      console.error("Request URL:", "https://ai.gateway.lovable.dev/v1/chat/completions");
+      console.error("OpenAI error:", response.status, errorText);
+      console.error("OpenAI API key configured:", !!OPENAI_API_KEY);
+      console.error("Request URL:", "https://api.openai.com/v1/chat/completions");
       return new Response(JSON.stringify({ 
-        error: "Lovable AI error", 
+        error: "OpenAI error", 
         details: errorText,
         status: response.status 
       }), {
