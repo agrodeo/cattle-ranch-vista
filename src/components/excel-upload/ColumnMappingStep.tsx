@@ -419,12 +419,12 @@ export const ColumnMappingStep = ({
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between pt-4">
-          <Button variant="outline" onClick={onBack}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between pt-4 w-full">
+          <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
-          <Button onClick={handleNext}>
+          <Button onClick={handleNext} className="w-full sm:w-auto text-sm px-3">
             Siguiente: Previsualizar
             <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
