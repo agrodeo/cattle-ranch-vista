@@ -37,6 +37,8 @@ export const ColumnMappingStep = ({
   const [sexMappingOpen, setSexMappingOpen] = useState(false);
   const [sexMappings, setSexMappings] = useState<SexMapping>(getDefaultSexMappings());
   const [unrecognizedSexValues, setUnrecognizedSexValues] = useState<string[]>([]);
+  const [validationErrors, setValidationErrors] = useState<{animal: AnimalFieldMapping, errors: string[]}[]>([]);
+  const [showValidation, setShowValidation] = useState(false);
 
   if (rawData.length === 0) return null;
 
@@ -217,10 +219,26 @@ export const ColumnMappingStep = ({
       }
     }
 
+    // Validate data and check for errors
+    const mappedData = validateAndMapData();
+    const animalsWithErrors = mappedData.filter(animal => animal._errors && animal._errors.length > 0);
+    
+    if (animalsWithErrors.length > 0) {
+      setValidationErrors(animalsWithErrors.map(animal => ({
+        animal,
+        errors: animal._errors || []
+      })));
+      setShowValidation(true);
+      toast({
+        title: "Errores de validación encontrados",
+        description: `Se encontraron ${animalsWithErrors.length} animales con errores. Revise los errores abajo.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     onMappingChange(currentMapping);
     onDefaultValuesChange(currentDefaults);
-    
-    const mappedData = validateAndMapData();
     onNext(mappedData);
   };
 
@@ -417,7 +435,61 @@ export const ColumnMappingStep = ({
               ))}
           </div>
         </div>
-
+        
+        {/* Validation Errors Display */}
+        {showValidation && validationErrors.length > 0 && (
+          <div className="w-full">
+            <Alert className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                <strong>Se encontraron {validationErrors.length} animales con errores:</strong>
+              </AlertDescription>
+            </Alert>
+            <div className="max-h-[200px] overflow-y-auto space-y-2 border rounded-md p-3" style={{ touchAction: 'pan-y' }}>
+              {validationErrors.map(({ animal, errors }) => (
+                <Card key={animal._originalIndex} className="p-3">
+                  <div className="space-y-2">
+                    <div className="font-medium text-sm">
+                      Fila {animal._originalIndex}: {animal.identificacion || 'Sin identificación'}
+                    </div>
+                    <div className="space-y-1">
+                      {errors.map((error, errorIndex) => (
+                        <div key={errorIndex} className="text-xs text-destructive flex items-start gap-2">
+                          <span className="text-destructive">•</span>
+                          <span>{error}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowValidation(false)}
+              >
+                Ocultar errores
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => {
+                  setShowValidation(false);
+                  // Continue with errors - will be handled in preview step
+                  const mappedData = validateAndMapData();
+                  onMappingChange(currentMapping);
+                  onDefaultValuesChange(currentDefaults);
+                  onNext(mappedData);
+                }}
+              >
+                Continuar con errores
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {/* Navigation */}
         <div className="flex flex-col sm:flex-row gap-3 sm:justify-between pt-4 w-full">
           <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
