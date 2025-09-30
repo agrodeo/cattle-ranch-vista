@@ -381,18 +381,23 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
 
         {/* Step 2: Column Mapping */}
         {currentStep === 'mapping' && (
-          <ColumnMappingStep
-            rawData={rawData}
-            columnMapping={columnMapping}
-            defaultValues={defaultValues}
-            onMappingChange={setColumnMapping}
-            onDefaultValuesChange={setDefaultValues}
-            onNext={(mappedData) => {
+          <div 
+            className="overflow-y-auto max-h-[calc(100vh-200px)]"
+            style={{ touchAction: 'pan-y' }}
+          >
+            <ColumnMappingStep
+              rawData={rawData}
+              columnMapping={columnMapping}
+              defaultValues={defaultValues}
+              onMappingChange={setColumnMapping}
+              onDefaultValuesChange={setDefaultValues}
+              onNext={(mappedData) => {
               setMappedAnimals(mappedData);
               setCurrentStep('preview');
             }}
             onBack={() => setCurrentStep('upload')}
           />
+          </div>
         )}
 
         {/* Step 3: Preview and Edit */}
