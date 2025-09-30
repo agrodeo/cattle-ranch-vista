@@ -15,7 +15,7 @@ export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps)
       className="fixed inset-0 z-50 bg-background lg:hidden"
       onTouchMove={(e) => e.stopPropagation()}
       onWheel={(e) => e.stopPropagation()}
-      style={{ touchAction: 'none' }}
+      style={{ touchAction: 'auto' }}
     >
       {/* Header */}
       <div className="flex items-center p-4 border-b border-border">

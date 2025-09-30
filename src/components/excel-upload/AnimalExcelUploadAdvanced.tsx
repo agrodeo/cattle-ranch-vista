@@ -297,7 +297,10 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
   // Mobile mode renders without dialog wrapper
   if (isMobileMode) {
     return (
-      <div className="space-y-4 w-full max-w-full overflow-x-hidden">
+      <div 
+        className="space-y-4 w-full max-w-full overflow-x-hidden"
+        style={{ touchAction: 'pan-y' }}
+      >
         {/* Progress indicator */}
         <div className="flex items-center justify-center space-x-2 text-xs text-muted-foreground overflow-x-hidden max-w-full px-2">
           <div className="flex items-center space-x-1">
