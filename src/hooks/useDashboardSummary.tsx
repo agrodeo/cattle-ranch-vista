@@ -166,8 +166,8 @@ export const useDashboardSummary = (): DashboardSummary => {
 
       // Calculate date ranges
       const today = new Date();
-      const sevenDaysAgo = new Date(today);
-      sevenDaysAgo.setDate(today.getDate() - 7);
+      const thirtyDaysAgo = new Date(today);
+      thirtyDaysAgo.setDate(today.getDate() - 30);
       const sevenDaysFromNow = new Date(today);
       sevenDaysFromNow.setDate(today.getDate() + 7);
 
@@ -201,7 +201,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         .from('eventos')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
-        .gte('fecha', sevenDaysAgo.toISOString().split('T')[0]);
+        .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0]);
 
       if (activitiesError) {
         console.error('Error counting activities:', activitiesError);
@@ -219,12 +219,12 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw servicesError;
       }
 
-      // Get recent activities (last 7 days) - using eventos table
+      // Get recent activities (last 30 days) - using eventos table
       const { data: recentData, error: recentError } = await supabase
         .from('eventos')
         .select('id, tipo, fecha, notas')
         .eq('cabaña_id', cabanaId)
-        .gte('fecha', sevenDaysAgo.toISOString().split('T')[0])
+        .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0])
         .order('fecha', { ascending: false })
         .limit(5);
 
