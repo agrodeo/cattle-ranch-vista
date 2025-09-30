@@ -402,17 +402,22 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
 
         {/* Step 3: Preview and Edit */}
         {currentStep === 'preview' && (
-          <PreviewAndEditStep
-            animals={mappedAnimals}
-            userCabañaId={userCabañaId}
-            onEdit={setMappedAnimals}
-            onNext={(animals) => {
-              setMappedAnimals(animals);
-              setCurrentStep('consanguinity');
-            }}
-            onBack={() => setCurrentStep('mapping')}
-            onComplete={handleComplete}
-          />
+          <div 
+            className="overflow-y-auto max-h-[calc(100vh-200px)]"
+            style={{ touchAction: 'pan-y' }}
+          >
+            <PreviewAndEditStep
+              animals={mappedAnimals}
+              userCabañaId={userCabañaId}
+              onEdit={setMappedAnimals}
+              onNext={(animals) => {
+                setMappedAnimals(animals);
+                setCurrentStep('consanguinity');
+              }}
+              onBack={() => setCurrentStep('mapping')}
+              onComplete={handleComplete}
+            />
+          </div>
         )}
 
         {/* Step 4: Consanguinity Analysis */}
