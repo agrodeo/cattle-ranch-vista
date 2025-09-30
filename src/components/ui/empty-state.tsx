@@ -16,17 +16,17 @@ interface EmptyStateProps {
 export function EmptyState({ icon, title, description, action, className }: EmptyStateProps) {
   return (
     <div className={cn(
-      "rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm",
+      "rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm",
       className
     )}>
       {icon && (
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center text-slate-400">
+        <div className="mx-auto mb-3 flex h-8 w-8 items-center justify-center text-slate-400">
           {icon}
         </div>
       )}
-      <h3 className="text-lg font-medium text-slate-900 mb-2">{title}</h3>
+      <h3 className="text-base font-medium text-slate-900 mb-1">{title}</h3>
       {description && (
-        <p className="text-slate-600 mb-4 max-w-sm mx-auto">{description}</p>
+        <p className="text-sm text-slate-600 mb-3 max-w-sm mx-auto">{description}</p>
       )}
       {action && (
         <Button 

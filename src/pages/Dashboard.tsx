@@ -153,7 +153,7 @@ const Dashboard = () => {
             >
               {recentActivities.length === 0 ? (
                 <EmptyState
-                  icon={<Activity className="h-12 w-12" />}
+                  icon={<Activity className="h-6 w-6" />}
                   title="No hay actividades recientes"
                   description="Cuando registres actividades aparecerán aquí"
                   action={!warnings.noCabana ? {
