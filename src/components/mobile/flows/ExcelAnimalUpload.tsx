@@ -11,7 +11,12 @@ interface ExcelAnimalUploadProps {
 
 export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps) {
   return (
-    <div className="fixed inset-0 z-50 bg-background lg:hidden">
+    <div 
+      className="fixed inset-0 z-50 bg-background lg:hidden"
+      onTouchMove={(e) => e.stopPropagation()}
+      onWheel={(e) => e.stopPropagation()}
+      style={{ touchAction: 'none' }}
+    >
       {/* Header */}
       <div className="flex items-center p-4 border-b border-border">
         <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
@@ -21,7 +26,10 @@ export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps)
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-2 overflow-y-auto overflow-x-hidden pb-20">
+      <div 
+        className="flex-1 p-2 overflow-y-auto overflow-x-hidden pb-20"
+        style={{ touchAction: 'pan-y' }}
+      >
         <Card className="mx-0">
           <CardHeader className="px-3 py-4">
             <div className="flex items-center gap-3">
