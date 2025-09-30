@@ -657,20 +657,21 @@ export const PreviewAndEditStep = ({
         </div>
 
         {/* Navigation and actions */}
-        <div className="flex justify-between items-center pt-4">
-          <Button variant="outline" onClick={onBack}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-between items-stretch sm:items-center pt-4">
+          <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
           
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => onNext(animals)}>
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={() => onNext(animals)} className="w-full sm:w-auto text-sm px-3">
               Siguiente: Análisis
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
             <Button 
               onClick={handleBulkUpload}
               disabled={validAnimals.length === 0 || isUploading}
+              className="w-full sm:w-auto"
             >
               {isUploading ? (
                 <>
