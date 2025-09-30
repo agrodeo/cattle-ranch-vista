@@ -340,7 +340,7 @@ export const ColumnMappingStep = ({
         {/* Column mapping */}
         <div className="w-full">
           <h4 className="font-medium mb-3">Mapeo de Columnas</h4>
-          <div className="space-y-3 w-full">
+          <div className="max-h-[300px] overflow-y-auto space-y-3 w-full border rounded-md p-3" style={{ touchAction: 'pan-y' }}>
             {excelColumns.map(excelCol => (
               <div key={excelCol} className="space-y-2 w-full">
                 <Label className="text-sm font-medium block break-words">
