@@ -67,7 +67,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
     max_bulls_per_corral: 1,
     max_age_months_with_mother: 8,
     density_per_hectare: 1.5,
-    calf_space_factor: 0.6
+    calf_space_factor: 0.6,
+    objectives: ['consanguinity'] as string[],
+    targetWeights: {
+      birth: 0,
+      weaning: 0,
+      final: 0
+    }
   });
 
   const generateOptimization = async () => {
@@ -201,66 +207,192 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <Label>Toros por Corral (máx)</Label>
-                    <Input
-                      type="number"
-                      value={config.max_bulls_per_corral}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        max_bulls_per_corral: Number(e.target.value)
-                      }))}
-                    />
+                {/* Objetivos de Optimización */}
+                <div>
+                  <Label className="text-base font-semibold mb-3 block">Objetivos de Optimización</Label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                      <input
+                        type="checkbox"
+                        checked={config.objectives.includes('consanguinity')}
+                        onChange={(e) => {
+                          const objectives = e.target.checked
+                            ? [...config.objectives, 'consanguinity']
+                            : config.objectives.filter(o => o !== 'consanguinity');
+                          setConfig(prev => ({ ...prev, objectives }));
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">Reducir Consanguinidad</div>
+                        <div className="text-sm text-muted-foreground">Evitar cruces entre animales emparentados</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                      <input
+                        type="checkbox"
+                        checked={config.objectives.includes('reproduction')}
+                        onChange={(e) => {
+                          const objectives = e.target.checked
+                            ? [...config.objectives, 'reproduction']
+                            : config.objectives.filter(o => o !== 'reproduction');
+                          setConfig(prev => ({ ...prev, objectives }));
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">Optimizar Reproducción</div>
+                        <div className="text-sm text-muted-foreground">Maximizar fertilidad y tasa de preñez</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                      <input
+                        type="checkbox"
+                        checked={config.objectives.includes('production')}
+                        onChange={(e) => {
+                          const objectives = e.target.checked
+                            ? [...config.objectives, 'production']
+                            : config.objectives.filter(o => o !== 'production');
+                          setConfig(prev => ({ ...prev, objectives }));
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">Optimizar Producción</div>
+                        <div className="text-sm text-muted-foreground">Maximizar ganancia de peso y producción</div>
+                      </div>
+                    </label>
+                    
+                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                      <input
+                        type="checkbox"
+                        checked={config.objectives.includes('benchmarks')}
+                        onChange={(e) => {
+                          const objectives = e.target.checked
+                            ? [...config.objectives, 'benchmarks']
+                            : config.objectives.filter(o => o !== 'benchmarks');
+                          setConfig(prev => ({ ...prev, objectives }));
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">Seguir Benchmarks de Raza</div>
+                        <div className="text-sm text-muted-foreground">Distribuir según estándares de la raza</div>
+                      </div>
+                    </label>
                   </div>
-                  <div>
-                    <Label>Edad máx. ternero con madre (meses)</Label>
-                    <Input
-                      type="number"
-                      value={config.max_age_months_with_mother}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        max_age_months_with_mother: Number(e.target.value)
-                      }))}
-                    />
+                </div>
+
+                {/* Parámetros de Peso (opcional) */}
+                {(config.objectives.includes('production') || config.objectives.includes('benchmarks')) && (
+                  <div className="p-4 bg-blue-50 rounded-lg space-y-3">
+                    <Label className="font-semibold">Objetivos de Peso (opcional)</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <Label className="text-sm">Peso al Nacer (kg)</Label>
+                        <Input
+                          type="number"
+                          placeholder="ej: 35"
+                          value={config.targetWeights.birth || ''}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            targetWeights: { ...prev.targetWeights, birth: Number(e.target.value) }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Peso al Destete (kg)</Label>
+                        <Input
+                          type="number"
+                          placeholder="ej: 180"
+                          value={config.targetWeights.weaning || ''}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            targetWeights: { ...prev.targetWeights, weaning: Number(e.target.value) }
+                          }))}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm">Peso Final (kg)</Label>
+                        <Input
+                          type="number"
+                          placeholder="ej: 450"
+                          value={config.targetWeights.final || ''}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            targetWeights: { ...prev.targetWeights, final: Number(e.target.value) }
+                          }))}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <Label>Densidad por Hectárea</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={config.density_per_hectare}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        density_per_hectare: Number(e.target.value)
-                      }))}
-                    />
-                  </div>
-                  <div>
-                    <Label>Factor espacio ternero (0-1)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="1"
-                      value={config.calf_space_factor}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        calf_space_factor: Number(e.target.value)
-                      }))}
-                    />
+                )}
+
+                {/* Parámetros Técnicos */}
+                <div>
+                  <Label className="text-base font-semibold mb-3 block">Parámetros Técnicos</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                      <Label>Toros por Corral (máx)</Label>
+                      <Input
+                        type="number"
+                        value={config.max_bulls_per_corral}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          max_bulls_per_corral: Number(e.target.value)
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Edad máx. ternero con madre (meses)</Label>
+                      <Input
+                        type="number"
+                        value={config.max_age_months_with_mother}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          max_age_months_with_mother: Number(e.target.value)
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Densidad por Hectárea</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={config.density_per_hectare}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          density_per_hectare: Number(e.target.value)
+                        }))}
+                      />
+                    </div>
+                    <div>
+                      <Label>Factor espacio ternero (0-1)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="1"
+                        value={config.calf_space_factor}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          calf_space_factor: Number(e.target.value)
+                        }))}
+                      />
+                    </div>
                   </div>
                 </div>
                 
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <h4 className="font-medium text-blue-900 mb-2">Objetivo de la Optimización</h4>
-                  <p className="text-sm text-blue-700">
-                    Esta herramienta analizará todos los animales (adultos y terneros) considerando que:
-                    • Solo analiza consanguinidad entre animales adultos (≥18 meses)
-                    • Los terneros deben permanecer con sus madres hasta la edad configurada
-                    • Los movimientos incluyen automáticamente terneros con sus madres
-                    • Los terneros ocupan menos espacio según el factor configurado
-                  </p>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <h4 className="font-medium text-green-900 mb-2">💡 Cómo funciona</h4>
+                  <ul className="text-sm text-green-700 space-y-1">
+                    <li>• Selecciona uno o más objetivos de optimización</li>
+                    <li>• La IA analizará tu rodeo y generará movimientos específicos</li>
+                    <li>• Los terneros se mueven automáticamente con sus madres</li>
+                    <li>• Puedes ajustar parámetros técnicos según tus necesidades</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -269,9 +401,15 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               <Button onClick={onClose} variant="outline">
                 Cancelar
               </Button>
-              <Button onClick={generateOptimization} disabled={loading}>
+              <Button 
+                onClick={generateOptimization} 
+                disabled={loading || config.objectives.length === 0}
+              >
                 {loading ? "Analizando..." : "Generar Optimización"}
               </Button>
+              {config.objectives.length === 0 && (
+                <p className="text-sm text-red-600">Selecciona al menos un objetivo</p>
+              )}
             </div>
           </div>
         )}

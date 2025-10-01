@@ -91,13 +91,16 @@ serve(async (req) => {
 
     const {
       cabanaId,
-      objectives = ['consanguinity'], // Por defecto solo consanguinidad
+      objectives = ['consanguinity'],
       targetWeights = {},
       max_bulls_per_corral = 1,
       max_age_months_with_mother = 8,
       density_per_hectare = 1.5,
       calf_space_factor = 0.6
     } = requestBody;
+    
+    console.log('Optimization objectives:', objectives);
+    console.log('Target weights:', targetWeights);
 
     if (!cabanaId) {
       console.error('Missing cabanaId');
@@ -237,9 +240,10 @@ async function generateAIOptimization(
     targetWeights
   );
 
-  console.log('Llamando a OpenAI API...');
+  console.log('Llamando a OpenAI API con structured output...');
   
   try {
+    // Use tool calling for structured output
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -251,15 +255,46 @@ async function generateAIOptimization(
         messages: [
           {
             role: 'system',
-            content: 'Eres un experto en manejo ganadero especializado en optimización de corrales. Respondes en español con recomendaciones prácticas y accionables.'
+            content: 'Eres un experto en manejo ganadero especializado en optimización de corrales. Analizas situaciones y generas movimientos específicos y accionables para redistribuir animales.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
+        tools: [
+          {
+            type: 'function',
+            function: {
+              name: 'suggest_animal_moves',
+              description: 'Genera movimientos específicos de animales entre corrales',
+              parameters: {
+                type: 'object',
+                properties: {
+                  moves: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        animal_id: { type: 'string', description: 'ID del animal a mover' },
+                        animal_name: { type: 'string', description: 'Nombre o tag del animal' },
+                        from_corral_id: { type: 'string', description: 'ID del corral origen' },
+                        to_corral_id: { type: 'string', description: 'ID del corral destino' },
+                        reason: { type: 'string', description: 'Razón del movimiento' },
+                        priority: { type: 'string', enum: ['high', 'medium', 'low'] }
+                      },
+                      required: ['animal_id', 'animal_name', 'from_corral_id', 'to_corral_id', 'reason', 'priority']
+                    }
+                  },
+                  summary: { type: 'string', description: 'Resumen de la estrategia' }
+                },
+                required: ['moves', 'summary']
+              }
+            }
+          }
+        ],
+        tool_choice: { type: 'function', function: { name: 'suggest_animal_moves' } },
         temperature: 0.7,
-        max_tokens: 2000,
       }),
     });
 
@@ -270,34 +305,81 @@ async function generateAIOptimization(
     }
 
     const data = await response.json();
-    const aiRecommendation = data.choices[0].message.content;
+    console.log('Respuesta OpenAI:', JSON.stringify(data, null, 2));
+    
+    const toolCall = data.choices[0].message.tool_calls?.[0];
+    if (!toolCall) {
+      throw new Error('No se recibió structured output de OpenAI');
+    }
 
-    console.log('Recomendación recibida de ChatGPT');
+    const structuredMoves = JSON.parse(toolCall.function.arguments);
+    console.log('Movimientos estructurados:', structuredMoves.moves.length);
 
-    // Parsear la recomendación y estructurarla
-    return {
-      corral_plan: corralsSummary.map(corral => ({
+    // Build corral plan with moves
+    const corralPlanMap = new Map();
+    corralsSummary.forEach(corral => {
+      corralPlanMap.set(corral.id, {
         corral_id: corral.id,
         corral_name: corral.name,
         current_animals: corral.animals,
         total_capacity: corral.hectareas ? Math.round(corral.hectareas * 1.5) : 20,
+        adult_count: analyzedAnimals.filter(a => a.corral_id === corral.id && a.age_months >= 18).length,
+        calf_count: analyzedAnimals.filter(a => a.corral_id === corral.id && a.age_months < 18).length,
         current_risks: consanguinityRisks.filter(risk => 
           analyzedAnimals.find(a => 
             (a.id === risk.animal1_id || a.id === risk.animal2_id) && a.corral_id === corral.id
           )
         ),
         moves_suggested: [],
-        ai_suggestion: aiRecommendation.substring(0, 200) + '...',
+        risk_reduction_score: 0,
         capacity_ok: true,
-      })),
+        suggestion: ''
+      });
+    });
+
+    // Map moves to corrals
+    structuredMoves.moves.forEach((move: any) => {
+      const fromCorral = corralPlanMap.get(move.from_corral_id);
+      if (fromCorral) {
+        fromCorral.moves_suggested.push({
+          animal_id: move.animal_id,
+          animal_name: move.animal_name,
+          from_corral: move.from_corral_id,
+          to_corral: move.to_corral_id,
+          reason: move.reason,
+          type: 'consanguinity'
+        });
+      }
+    });
+
+    // Calculate risk reduction
+    const movesCount = structuredMoves.moves.length;
+    const risksResolved = Math.min(movesCount, consanguinityRisks.length);
+    const risksAfter = Math.max(0, consanguinityRisks.length - risksResolved);
+    const reductionPct = consanguinityRisks.length > 0 
+      ? Math.round((risksResolved / consanguinityRisks.length) * 100)
+      : 0;
+
+    // Update risk reduction scores
+    corralPlanMap.forEach(corral => {
+      if (corral.moves_suggested.length > 0 && corral.current_risks.length > 0) {
+        corral.risk_reduction_score = Math.min(100, (corral.moves_suggested.length / corral.current_risks.length) * 100);
+      }
+      corral.suggestion = corral.moves_suggested.length > 0
+        ? `Se sugieren ${corral.moves_suggested.length} movimientos para mejorar la distribución`
+        : 'Sin cambios necesarios en este corral';
+    });
+
+    return {
+      corral_plan: Array.from(corralPlanMap.values()),
       summary: {
         total_risks_before: consanguinityRisks.length,
-        total_risks_after: 0,
-        risk_reduction_percentage: 0,
-        total_moves_suggested: 0,
+        total_risks_after: risksAfter,
+        risk_reduction_percentage: reductionPct,
+        total_moves_suggested: movesCount,
         calves_moved_with_mothers: 0,
       },
-      ai_analysis: aiRecommendation,
+      ai_analysis: structuredMoves.summary,
       objectives: objectives,
       warnings: consanguinityRisks.length > 0 ? 
         [`Se detectaron ${consanguinityRisks.length} riesgos de consanguinidad`] : []
@@ -392,48 +474,75 @@ function buildOptimizationPrompt(
   objectives: string[],
   targetWeights: any
 ): string {
-  let prompt = `# Análisis de Distribución de Corrales
+  // Build animals summary with corral info
+  const animalsSummary = animals.map(a => ({
+    id: a.id,
+    name: a.name || a.id_tag,
+    sex: a.sex === 'M' ? 'Macho' : 'Hembra',
+    age: a.age_months,
+    corral: a.corral_id,
+    father: a.father_id,
+    mother: a.mother_id
+  }));
+
+  const corralsInfo = corrals.map(c => {
+    const corralAnimals = animalsSummary.filter(a => a.corral === c.id);
+    return `${c.name} (ID: ${c.id}): ${corralAnimals.length} animales, ${c.hectareas || 0} ha`;
+  }).join('\n');
+
+  let prompt = `# Optimización de Corrales - Genera Movimientos Específicos
 
 ## Situación Actual
-- Total de animales: ${animals.length}
-- Corrales disponibles: ${corrals.length}
-- Riesgos de consanguinidad detectados: ${risks.length}
+- Total animales: ${animals.length}
+- Corrales: ${corrals.length}
+- Riesgos consanguinidad: ${risks.length}
 
-## Distribución por Corral
-${corrals.map(c => `- ${c.name}: ${c.animals} animales, ${c.hectareas || 0} hectáreas`).join('\n')}
+## Corrales Disponibles
+${corralsInfo}
 
-## Objetivos de Optimización
+## Objetivos
 ${objectives.map(obj => {
     switch(obj) {
-      case 'consanguinity':
-        return '✓ Reducir riesgos de consanguinidad';
-      case 'weight_birth':
-        return `✓ Optimizar peso al nacer (objetivo: ${targetWeights.birth || 'no especificado'} kg)`;
-      case 'weight_weaning':
-        return `✓ Optimizar peso al destete (objetivo: ${targetWeights.weaning || 'no especificado'} kg)`;
-      case 'weight_final':
-        return `✓ Optimizar peso final (objetivo: ${targetWeights.final || 'no especificado'} kg)`;
-      case 'reproduction':
-        return '✓ Mejorar eficiencia reproductiva';
-      default:
-        return `✓ ${obj}`;
+      case 'consanguinity': return '✓ CRÍTICO: Reducir consanguinidad';
+      case 'reproduction': return '✓ Mejorar eficiencia reproductiva';
+      case 'production': return '✓ Optimizar producción/peso';
+      case 'benchmarks': return '✓ Seguir benchmarks de raza';
+      default: return `✓ ${obj}`;
     }
   }).join('\n')}
 
-${risks.length > 0 ? `
-## Riesgos Detectados
-${risks.slice(0, 10).map(r => `- ${r.description} (${r.severity})`).join('\n')}
-${risks.length > 10 ? `... y ${risks.length - 10} riesgos más` : ''}
+${targetWeights.birth || targetWeights.weaning || targetWeights.final ? `
+## Objetivos de Peso
+${targetWeights.birth ? `- Peso al nacer: ${targetWeights.birth} kg` : ''}
+${targetWeights.weaning ? `- Peso al destete: ${targetWeights.weaning} kg` : ''}
+${targetWeights.final ? `- Peso final: ${targetWeights.final} kg` : ''}
 ` : ''}
 
-## Instrucciones
-Proporciona recomendaciones específicas para:
-1. Movimientos de animales sugeridos (especifica qué animales mover y a qué corrales)
-2. Estrategia para alcanzar los objetivos mencionados
-3. Consideraciones sobre capacidad y bienestar animal
-4. Métricas a monitorear después de implementar los cambios
+${risks.length > 0 ? `
+## Riesgos Críticos Detectados (Top 20)
+${risks.slice(0, 20).map(r => 
+  `- ${r.description} | Corral actual: ${animalsSummary.find(a => a.id === r.animal1_id)?.corral || 'desconocido'}`
+).join('\n')}
+${risks.length > 20 ? `\n... y ${risks.length - 20} riesgos más` : ''}
+` : ''}
 
-Sé específico y práctico. Enfócate en acciones concretas que el productor pueda tomar.`;
+## INSTRUCCIONES CRÍTICAS
+Genera entre 5-15 movimientos ESPECÍFICOS y EJECUTABLES:
+
+1. Para CADA movimiento, especifica:
+   - animal_id: ID exacto del animal (del listado arriba)
+   - animal_name: Nombre/tag del animal
+   - from_corral_id: ID del corral origen
+   - to_corral_id: ID del corral destino (diferente al origen)
+   - reason: Razón concreta (ej: "Separar hermanos completos para evitar endogamia")
+   - priority: high/medium/low
+
+2. PRIORIZA movimientos que resuelvan los riesgos detectados
+3. Asegura que los corrales destino tengan capacidad
+4. Considera mantener grupos sociales estables
+5. NO muevas más del 30% de animales de un corral
+
+IMPORTANTE: Usa los IDs exactos de corrales que te proporcioné arriba.`;
 
   return prompt;
 }
