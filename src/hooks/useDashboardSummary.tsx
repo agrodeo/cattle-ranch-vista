@@ -19,6 +19,20 @@ interface RecentActivity {
   description: string;
   animal_name?: string;
   animal_id?: string;
+  user?: string;
+  animalCount?: number;
+  details?: {
+    vacuna?: string;
+    lote?: string;
+    dosis?: string;
+    via?: string;
+    toro_nombre?: string;
+    raza_toro?: string;
+    positivos?: number;
+    negativos?: number;
+    peso_promedio?: number;
+    notas?: string;
+  };
 }
 
 interface UpcomingActivity {
@@ -219,11 +233,22 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw servicesError;
       }
 
-      // Get recent activities (last 30 days) - using eventos table
+      // Get recent activities (last 30 days) with detailed information
       console.log('🔍 Fetching recent activities from:', thirtyDaysAgo.toISOString().split('T')[0]);
       const { data: recentData, error: recentError } = await supabase
         .from('eventos')
-        .select('id, tipo, fecha, notas')
+        .select(`
+          id, 
+          tipo, 
+          fecha, 
+          notas,
+          payload,
+          creado_por,
+          profiles!eventos_creado_por_fkey(full_name),
+          vacunaciones(vacuna, lote, dosis, via, animales_ids),
+          ia(toro_nombre, raza_toro, animales_ids),
+          tactos(resultados)
+        `)
         .eq('cabaña_id', cabanaId)
         .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0])
         .order('fecha', { ascending: false })
@@ -315,13 +340,78 @@ export const useDashboardSummary = (): DashboardSummary => {
         servicesTotal: servicesCount || 0,
       });
 
-      // Update recent activities
-      setRecentActivities(recentData?.map(activity => ({
-        id: activity.id,
-        type: activity.tipo || 'General',
-        date: activity.fecha || '',
-        description: activity.notas || activity.tipo || '',
-      })) || []);
+      // Update recent activities with detailed information
+      const enrichedActivities = (recentData || []).map(activity => {
+        const details: any = {};
+        let animalCount = 0;
+
+        // Extract vaccination details
+        if (activity.vacunaciones && activity.vacunaciones.length > 0) {
+          const vac = activity.vacunaciones[0];
+          details.vacuna = vac.vacuna;
+          details.lote = vac.lote;
+          details.dosis = vac.dosis;
+          details.via = vac.via;
+          animalCount = vac.animales_ids?.length || 0;
+        }
+
+        // Extract AI details
+        if (activity.ia && activity.ia.length > 0) {
+          const ia = activity.ia[0];
+          details.toro_nombre = ia.toro_nombre;
+          details.raza_toro = ia.raza_toro;
+          animalCount = ia.animales_ids?.length || 0;
+        }
+
+        // Extract tacto details
+        if (activity.tactos && activity.tactos.length > 0) {
+          const tacto = activity.tactos[0];
+          if (tacto.resultados && Array.isArray(tacto.resultados)) {
+            const positivos = tacto.resultados.filter((r: any) => r.resultado === 'preñada').length;
+            const negativos = tacto.resultados.filter((r: any) => r.resultado === 'vacia').length;
+            details.positivos = positivos;
+            details.negativos = negativos;
+            animalCount = tacto.resultados.length;
+          }
+        }
+
+        // Extract payload details for weighing and other activities
+        if (activity.payload && typeof activity.payload === 'object') {
+          const payload = activity.payload as any;
+          if (activity.tipo.toLowerCase().includes('pesa') && payload.pesajes) {
+            const pesajes = payload.pesajes;
+            if (Array.isArray(pesajes) && pesajes.length > 0) {
+              const totalPeso = pesajes.reduce((sum: number, p: any) => sum + (p.peso_kg || 0), 0);
+              details.peso_promedio = Math.round(totalPeso / pesajes.length);
+              animalCount = pesajes.length;
+            }
+          }
+        }
+
+        // Add notes if available
+        if (activity.notas) {
+          details.notas = activity.notas;
+        }
+
+        // Get user name
+        let userName = undefined;
+        if (activity.profiles && typeof activity.profiles === 'object' && !Array.isArray(activity.profiles)) {
+          const profile = activity.profiles as any;
+          userName = profile.full_name;
+        }
+
+        return {
+          id: activity.id,
+          type: activity.tipo || 'General',
+          date: activity.fecha || '',
+          description: activity.notas || activity.tipo || '',
+          user: userName,
+          animalCount,
+          details: Object.keys(details).length > 0 ? details : undefined,
+        };
+      });
+
+      setRecentActivities(enrichedActivities);
 
       // Update upcoming activities
       setUpcoming({

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { SubscriptionPlansModal } from "@/components/subscription/SubscriptionPlansModal";
 import { PlanLimitAlert } from "@/components/dashboard/PlanLimitAlert";
 import { NoCabanaAlert } from "@/components/dashboard/NoCabanaAlert";
+import { RecentActivityItem } from "@/components/dashboard/RecentActivityItem";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
 import { useNavigate } from "react-router-dom";
 
@@ -164,28 +165,7 @@ const Dashboard = () => {
               ) : (
                 <div className="space-y-3">
                   {recentActivities.map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">
-                          {activity.type}
-                        </p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {new Date(activity.date).toLocaleDateString('es-ES', { 
-                            day: 'numeric', 
-                            month: 'short' 
-                          })}
-                          {activity.animal_name && ` • ${activity.animal_name}`}
-                        </p>
-                        {activity.description && activity.description !== activity.type && (
-                          <p className="text-xs text-slate-400 mt-1 truncate">
-                            {activity.description}
-                          </p>
-                        )}
-                      </div>
-                      <BadgePill variant="neutral" className="ml-2">
-                        {activity.type}
-                      </BadgePill>
-                    </div>
+                    <RecentActivityItem key={activity.id} activity={activity} />
                   ))}
                 </div>
               )}
