@@ -36,6 +36,8 @@ import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
 import { DeleteCorralDialog } from "@/components/corrales/DeleteCorralDialog";
 import { CorralOptimizationWizard } from "@/components/corrales/CorralOptimizationWizard";
 import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
+import { CorralSuggestionsCard } from "@/components/corrales/CorralSuggestionsCard";
+import { AICorralAssistant } from "@/components/corrales/AICorralAssistant";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -343,6 +345,22 @@ export default function Corrales() {
                 />
               ))}
             </div>
+
+            {/* Optimization Suggestions - Prominently displayed */}
+            <CorralSuggestionsCard
+              totalRisks={totalRisks}
+              onOptimize={() => setShowCorralOptimization(true)}
+              loading={loading}
+            />
+
+            {/* AI Assistant Section */}
+            {currentUser?.cabañaId && (
+              <AICorralAssistant
+                corralesData={corrales}
+                currentRisks={totalRisks}
+                cabanaId={currentUser.cabañaId}
+              />
+            )}
 
             {/* Sticky Action Bar for Mobile */}
             <StickyActionBar>
