@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Users, Home, Plus, BarChart3, Fence, PieChart } from "lucide-react";
+import { Beef, Home, Plus, BarChart3, Fence, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -23,7 +23,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       key: 'animals',
       label: t('animals'),
       path: '/animals',
-      icon: Users,
+      icon: Beef,
     },
     {
       key: 'add',
