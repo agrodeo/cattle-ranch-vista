@@ -1,8 +1,30 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Beef, Home, Plus, BarChart3, Fence, PieChart } from "lucide-react";
+import { Home, Plus, BarChart3, Fence, PieChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
+// Custom Cow Icon Component
+const CowIcon = ({ className }: { className?: string }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M3 12c0-1.657 4.03-3 9-3s9 1.343 9 3" />
+    <path d="M3 12v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6" />
+    <path d="M12 21V9" />
+    <circle cx="8" cy="7" r="1.5" />
+    <circle cx="16" cy="7" r="1.5" />
+    <path d="M5 7c0-2.21 3.13-4 7-4s7 1.79 7 4" />
+    <path d="M3 12c0 1.657 4.03 3 9 3s9-1.343 9-3" />
+  </svg>
+);
 
 interface BottomNavigationProps {
   onAddClick: () => void;
@@ -23,7 +45,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       key: 'animals',
       label: t('animals'),
       path: '/animals',
-      icon: Beef,
+      icon: CowIcon,
     },
     {
       key: 'add',
