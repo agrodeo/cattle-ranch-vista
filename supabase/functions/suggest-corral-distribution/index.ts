@@ -78,12 +78,12 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY no configurada');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY no configurada');
     }
 
     const requestBody = await req.json();
@@ -166,13 +166,13 @@ serve(async (req) => {
 
     console.log(`Found ${animals.length} total animals and ${corrals.length} corrals`);
 
-    // Usar ChatGPT para generar recomendaciones inteligentes
+    // Usar Lovable AI para generar recomendaciones inteligentes
     const optimizationPlan = await generateAIOptimization(
       animals,
       corrals,
       objectives,
       targetWeights,
-      OPENAI_API_KEY
+      LOVABLE_API_KEY
     );
 
     return new Response(JSON.stringify(optimizationPlan), {
@@ -237,17 +237,17 @@ async function generateAIOptimization(
     targetWeights
   );
 
-  console.log('Llamando a OpenAI API...');
+  console.log('Llamando a Lovable AI...');
   
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
@@ -258,21 +258,20 @@ async function generateAIOptimization(
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
+        stream: false,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Lovable AI error:', response.status, errorText);
+      throw new Error(`Lovable AI error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiRecommendation = data.choices[0].message.content;
 
-    console.log('Recomendación recibida de ChatGPT');
+    console.log('Recomendación recibida de Lovable AI');
 
     // Parsear la recomendación y estructurarla
     return {
