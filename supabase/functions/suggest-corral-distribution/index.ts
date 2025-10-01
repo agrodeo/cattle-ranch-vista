@@ -169,12 +169,53 @@ serve(async (req) => {
 
     console.log(`Found ${animals.length} total animals and ${corrals.length} corrals`);
 
+    // Get custom benchmarks for this cabaña if objectives include benchmarks
+    let customBenchmarks = null;
+    let herdSettings = null;
+    
+    if (objectives.includes('benchmarks')) {
+      console.log('Fetching custom benchmarks and herd settings...');
+      
+      const benchmarksResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/custom_benchmarks?cabaña_id=eq.${cabanaId}&select=*`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        }
+      );
+      
+      if (benchmarksResponse.ok) {
+        customBenchmarks = await benchmarksResponse.json();
+        console.log(`Found ${customBenchmarks?.length || 0} custom benchmarks`);
+      }
+
+      const settingsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/herd_settings?cabaña_id=eq.${cabanaId}&select=*&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        }
+      );
+      
+      if (settingsResponse.ok) {
+        const settings = await settingsResponse.json();
+        herdSettings = settings[0] || null;
+        console.log('Herd settings:', herdSettings ? 'found' : 'not found');
+      }
+    }
+
     // Usar ChatGPT para generar recomendaciones inteligentes
     const optimizationPlan = await generateAIOptimization(
       animals,
       corrals,
       objectives,
       targetWeights,
+      customBenchmarks,
+      herdSettings,
       OPENAI_API_KEY
     );
 
@@ -196,6 +237,8 @@ async function generateAIOptimization(
   corrals: any[],
   objectives: string[],
   targetWeights: any,
+  customBenchmarks: any,
+  herdSettings: any,
   apiKey: string
 ): Promise<any> {
   console.log('Generando optimización con ChatGPT...');
@@ -237,7 +280,9 @@ async function generateAIOptimization(
     corralsSummary,
     consanguinityRisks,
     objectives,
-    targetWeights
+    targetWeights,
+    customBenchmarks,
+    herdSettings
   );
 
   console.log('Llamando a OpenAI API con structured output...');
@@ -472,7 +517,9 @@ function buildOptimizationPrompt(
   corrals: any[],
   risks: any[],
   objectives: string[],
-  targetWeights: any
+  targetWeights: any,
+  customBenchmarks: any,
+  herdSettings: any
 ): string {
   // Build animals summary with corral info
   const animalsSummary = animals.map(a => ({
@@ -506,10 +553,28 @@ ${objectives.map(obj => {
       case 'consanguinity': return '✓ CRÍTICO: Reducir consanguinidad';
       case 'reproduction': return '✓ Mejorar eficiencia reproductiva';
       case 'production': return '✓ Optimizar producción/peso';
-      case 'benchmarks': return '✓ Seguir benchmarks de raza';
+      case 'benchmarks': return '✓ Seguir estándares de la cabaña';
       default: return `✓ ${obj}`;
     }
   }).join('\n')}
+
+${customBenchmarks && customBenchmarks.length > 0 ? `
+## Estándares de la Cabaña
+Usa estos estándares específicos configurados por el usuario:
+${customBenchmarks.map((b: any) => `- ${b.breed || 'Todas las razas'} (${b.age_range}): 
+  * Peso al nacer: ${b.birth_weight_kg || 'N/A'} kg
+  * Peso al destete: ${b.weaning_weight_kg || 'N/A'} kg
+  * Peso final: ${b.final_weight_kg || 'N/A'} kg
+  * Ganancia diaria: ${b.adg_kg_day || 'N/A'} kg/día`).join('\n')}
+` : ''}
+
+${herdSettings ? `
+## Configuración del Rodeo
+- País: ${herdSettings.country || 'N/A'}
+- Región: ${herdSettings.region || 'N/A'}
+- Raza principal: ${herdSettings.primary_breed || 'N/A'}
+- Sistema productivo: ${herdSettings.production_system || 'N/A'}
+` : ''}
 
 ${targetWeights.birth || targetWeights.weaning || targetWeights.final ? `
 ## Objetivos de Peso

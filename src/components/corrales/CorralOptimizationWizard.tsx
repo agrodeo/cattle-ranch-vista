@@ -278,8 +278,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         className="w-4 h-4"
                       />
                       <div className="flex-1">
-                        <div className="font-medium">Seguir Benchmarks de Raza</div>
-                        <div className="text-sm text-muted-foreground">Distribuir según estándares de la raza</div>
+                        <div className="font-medium">Seguir Estándares de la Cabaña</div>
+                        <div className="text-sm text-muted-foreground">Usar los estándares configurados en tu cabaña</div>
                       </div>
                     </label>
                   </div>
