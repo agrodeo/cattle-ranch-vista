@@ -185,12 +185,12 @@ export const useDashboardSummary = (): DashboardSummary => {
       const sevenDaysFromNow = new Date(today);
       sevenDaysFromNow.setDate(today.getDate() + 7);
 
-      // Count active animals - using lowercase 'activo' to match database values
+      // Count active animals - exclude only sold/dead (match subscription logic)
       const { count: animalsCount, error: animalsError } = await supabase
         .from('animals')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
-        .eq('status', 'activo');
+        .not('status', 'in', '("vendido","muerto")');
 
       if (animalsError) {
         console.error('Error counting animals:', animalsError);
