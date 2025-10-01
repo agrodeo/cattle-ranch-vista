@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,6 +61,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<CorralOptimizationPlan | null>(null);
+  const [hasCustomBenchmarks, setHasCustomBenchmarks] = useState(false);
+  const [checkingBenchmarks, setCheckingBenchmarks] = useState(true);
 
   // Step 1: Configuration
   const [config, setConfig] = useState({
@@ -75,6 +77,32 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       final: 0
     }
   });
+
+  // Check if custom benchmarks exist
+  useEffect(() => {
+    const checkBenchmarks = async () => {
+      if (!isOpen || !cabanaId) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('custom_benchmarks')
+          .select('id')
+          .eq('cabaña_id', cabanaId)
+          .limit(1);
+        
+        setHasCustomBenchmarks(!error && data && data.length > 0);
+      } catch (error) {
+        console.error('Error checking benchmarks:', error);
+      } finally {
+        setCheckingBenchmarks(false);
+      }
+    };
+
+    if (isOpen) {
+      setCheckingBenchmarks(true);
+      checkBenchmarks();
+    }
+  }, [isOpen, cabanaId]);
 
   const generateOptimization = async () => {
     setLoading(true);
@@ -276,10 +304,24 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           setConfig(prev => ({ ...prev, objectives }));
                         }}
                         className="w-4 h-4"
+                        disabled={checkingBenchmarks}
                       />
                       <div className="flex-1">
                         <div className="font-medium">Seguir Estándares de la Cabaña</div>
-                        <div className="text-sm text-muted-foreground">Usar los estándares configurados en tu cabaña</div>
+                        <div className="text-sm text-muted-foreground">
+                          {checkingBenchmarks ? (
+                            "Verificando estándares configurados..."
+                          ) : hasCustomBenchmarks ? (
+                            "Usar los estándares personalizados configurados en tu cabaña"
+                          ) : (
+                            <>
+                              Se usarán estándares por defecto. 
+                              <a href="/settings?tab=benchmarks" className="ml-1 underline text-primary" onClick={onClose}>
+                                Configura estándares personalizados aquí
+                              </a>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </label>
                   </div>
@@ -403,9 +445,9 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               </Button>
               <Button 
                 onClick={generateOptimization} 
-                disabled={loading || config.objectives.length === 0}
+                disabled={loading || config.objectives.length === 0 || checkingBenchmarks}
               >
-                {loading ? "Analizando..." : "Generar Optimización"}
+                {loading ? "Analizando..." : checkingBenchmarks ? "Verificando..." : "Generar Optimización"}
               </Button>
               {config.objectives.length === 0 && (
                 <p className="text-sm text-red-600">Selecciona al menos un objetivo</p>

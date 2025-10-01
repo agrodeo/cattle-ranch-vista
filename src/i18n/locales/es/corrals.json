@@ -31,5 +31,12 @@
     "partial": "Parcial",
     "full": "Completo",
     "overfull": "Sobrecargado"
+  },
+  "optimization": {
+    "followStandards": "Seguir Estándares de la Cabaña",
+    "checkingStandards": "Verificando estándares configurados...",
+    "usingCustomStandards": "Usar los estándares personalizados configurados en tu cabaña",
+    "usingDefaultStandards": "Se usarán estándares por defecto.",
+    "configureCustom": "Configura estándares personalizados aquí"
   }
 }

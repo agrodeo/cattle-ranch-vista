@@ -172,6 +172,7 @@ serve(async (req) => {
     // Get custom benchmarks for this cabaña if objectives include benchmarks
     let customBenchmarks = null;
     let herdSettings = null;
+    let usingDefaultBenchmarks = false;
     
     if (objectives.includes('benchmarks')) {
       console.log('Fetching custom benchmarks and herd settings...');
@@ -189,6 +190,24 @@ serve(async (req) => {
       if (benchmarksResponse.ok) {
         customBenchmarks = await benchmarksResponse.json();
         console.log(`Found ${customBenchmarks?.length || 0} custom benchmarks`);
+        
+        // If no custom benchmarks, use default values
+        if (!customBenchmarks || customBenchmarks.length === 0) {
+          usingDefaultBenchmarks = true;
+          customBenchmarks = [{
+            breed: null,
+            birth_weight_excellent: 35,
+            birth_weight_good: 30,
+            birth_weight_poor: 28,
+            weaning_weight_excellent: 200,
+            weaning_weight_good: 180,
+            weaning_weight_poor: 160,
+            daily_gain_excellent: 0.8,
+            daily_gain_good: 0.7,
+            daily_gain_poor: 0.6,
+          }];
+          console.log('Using default benchmarks');
+        }
       }
 
       const settingsResponse = await fetch(
@@ -208,7 +227,7 @@ serve(async (req) => {
       }
     }
 
-    // Usar ChatGPT para generar recomendaciones inteligentes
+    // Usar AI para generar recomendaciones inteligentes
     const optimizationPlan = await generateAIOptimization(
       animals,
       corrals,
@@ -216,6 +235,7 @@ serve(async (req) => {
       targetWeights,
       customBenchmarks,
       herdSettings,
+      usingDefaultBenchmarks,
       OPENAI_API_KEY
     );
 
@@ -239,6 +259,7 @@ async function generateAIOptimization(
   targetWeights: any,
   customBenchmarks: any,
   herdSettings: any,
+  usingDefaultBenchmarks: boolean,
   apiKey: string
 ): Promise<any> {
   console.log('Generando optimización con ChatGPT...');
@@ -519,7 +540,8 @@ function buildOptimizationPrompt(
   objectives: string[],
   targetWeights: any,
   customBenchmarks: any,
-  herdSettings: any
+  herdSettings: any,
+  usingDefaultBenchmarks: boolean
 ): string {
   // Build animals summary with corral info
   const animalsSummary = animals.map(a => ({
@@ -559,13 +581,12 @@ ${objectives.map(obj => {
   }).join('\n')}
 
 ${customBenchmarks && customBenchmarks.length > 0 ? `
-## Estándares de la Cabaña
-Usa estos estándares específicos configurados por el usuario:
-${customBenchmarks.map((b: any) => `- ${b.breed || 'Todas las razas'} (${b.age_range}): 
-  * Peso al nacer: ${b.birth_weight_kg || 'N/A'} kg
-  * Peso al destete: ${b.weaning_weight_kg || 'N/A'} kg
-  * Peso final: ${b.final_weight_kg || 'N/A'} kg
-  * Ganancia diaria: ${b.adg_kg_day || 'N/A'} kg/día`).join('\n')}
+## Estándares de la Cabaña ${usingDefaultBenchmarks ? '(Por Defecto - Recomendamos configurar estándares personalizados)' : '(Personalizados)'}
+${usingDefaultBenchmarks ? 'NOTA: Estos son valores por defecto del sistema. El usuario debería configurar estándares personalizados en Configuración > Benchmarks para obtener mejores recomendaciones.' : 'Usa estos estándares específicos configurados por el usuario:'}
+${customBenchmarks.map((b: any) => `- ${b.breed || 'Todas las razas'}: 
+  * Peso al nacer: Excelente ${b.birth_weight_excellent}kg / Bueno ${b.birth_weight_good}kg / Mínimo ${b.birth_weight_poor}kg
+  * Peso al destete: Excelente ${b.weaning_weight_excellent}kg / Bueno ${b.weaning_weight_good}kg / Mínimo ${b.weaning_weight_poor}kg
+  * Ganancia diaria: Excelente ${b.daily_gain_excellent}kg/día / Buena ${b.daily_gain_good}kg/día / Mínima ${b.daily_gain_poor}kg/día`).join('\n')}
 ` : ''}
 
 ${herdSettings ? `

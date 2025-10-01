@@ -27,5 +27,12 @@
     "partial": "Partial",
     "full": "Full",
     "overfull": "Overfull"
+  },
+  "optimization": {
+    "followStandards": "Follow Ranch Standards",
+    "checkingStandards": "Checking configured standards...",
+    "usingCustomStandards": "Use custom standards configured for your ranch",
+    "usingDefaultStandards": "Default standards will be used.",
+    "configureCustom": "Configure custom standards here"
   }
 }

@@ -27,5 +27,12 @@
     "partial": "Parcial",
     "full": "Cheio",
     "overfull": "Superlotado"
+  },
+  "optimization": {
+    "followStandards": "Seguir Padrões da Fazenda",
+    "checkingStandards": "Verificando padrões configurados...",
+    "usingCustomStandards": "Usar os padrões personalizados configurados na sua fazenda",
+    "usingDefaultStandards": "Padrões padrão serão usados.",
+    "configureCustom": "Configure padrões personalizados aqui"
   }
 }
