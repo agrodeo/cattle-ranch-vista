@@ -244,7 +244,6 @@ export const useDashboardSummary = (): DashboardSummary => {
           notas,
           payload,
           creado_por,
-          profiles!eventos_creado_por_fkey(full_name),
           vacunaciones(vacuna, lote, dosis, via, animales_ids),
           ia(toro_nombre, raza_toro, animales_ids),
           tactos(resultados)
@@ -393,23 +392,35 @@ export const useDashboardSummary = (): DashboardSummary => {
           details.notas = activity.notas;
         }
 
-        // Get user name
-        let userName = undefined;
-        if (activity.profiles && typeof activity.profiles === 'object' && !Array.isArray(activity.profiles)) {
-          const profile = activity.profiles as any;
-          userName = profile.full_name;
-        }
-
         return {
           id: activity.id,
           type: activity.tipo || 'General',
           date: activity.fecha || '',
           description: activity.notas || activity.tipo || '',
-          user: userName,
+          user: undefined, // Will be populated below
+          user_id: activity.creado_por,
           animalCount,
           details: Object.keys(details).length > 0 ? details : undefined,
         };
       });
+
+      // Fetch user names for all activities at once
+      const userIds = [...new Set(enrichedActivities.map(a => a.user_id).filter(Boolean))];
+      if (userIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', userIds);
+        
+        if (profilesData) {
+          const profileMap = new Map(profilesData.map(p => [p.user_id, p.full_name]));
+          enrichedActivities.forEach(activity => {
+            if (activity.user_id) {
+              activity.user = profileMap.get(activity.user_id);
+            }
+          });
+        }
+      }
 
       setRecentActivities(enrichedActivities);
 
