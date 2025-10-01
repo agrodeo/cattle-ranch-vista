@@ -94,6 +94,14 @@ serve(async (req) => {
       calf_space_factor = 0.6
     } = requestBody;
 
+    if (!cabanaId) {
+      console.error('Missing cabanaId');
+      return new Response(JSON.stringify({ error: 'cabanaId es requerido' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log(`Analyzing corral distribution for cabana ${cabanaId}`);
 
     // Get animals
@@ -105,7 +113,10 @@ serve(async (req) => {
     
     if (animalsError) {
       console.error('Error fetching animals:', animalsError);
-      throw animalsError;
+      return new Response(JSON.stringify({ error: 'Error al obtener animales: ' + animalsError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get corrals
@@ -116,7 +127,20 @@ serve(async (req) => {
     
     if (corralsError) {
       console.error('Error fetching corrals:', corralsError);
-      throw corralsError;
+      return new Response(JSON.stringify({ error: 'Error al obtener corrales: ' + corralsError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!corrals || corrals.length === 0) {
+      console.log('No corrals found');
+      return new Response(JSON.stringify({ 
+        error: 'No hay corrales configurados. Crea al menos un corral primero.' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log(`Found ${(animals || []).length} total animals and ${(corrals || []).length} corrals`);

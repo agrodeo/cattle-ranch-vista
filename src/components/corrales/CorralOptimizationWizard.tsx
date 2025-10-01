@@ -73,6 +73,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
   const generateOptimization = async () => {
     setLoading(true);
     try {
+      console.log('Invoking suggest-corral-distribution with cabanaId:', cabanaId);
+      
       const { data, error } = await supabase.functions.invoke('suggest-corral-distribution', {
         body: {
           cabanaId,
@@ -80,14 +82,26 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         }
       });
 
-      if (error) throw error;
+      console.log('Function response:', { data, error });
+
+      if (error) {
+        console.error('Function error:', error);
+        throw error;
+      }
+
+      if (data?.error) {
+        console.error('Data error:', data.error);
+        toast.error(data.error);
+        return;
+      }
       
       setPlan(data);
       setStep(2);
       toast.success("Optimización generada exitosamente");
     } catch (error) {
       console.error('Error generating optimization:', error);
-      toast.error("Error al generar la optimización");
+      const errorMessage = error?.message || "Error al generar la optimización";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
