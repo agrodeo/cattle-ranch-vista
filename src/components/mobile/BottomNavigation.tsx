@@ -16,13 +16,28 @@ const CowIcon = ({ className }: { className?: string }) => (
     strokeLinejoin="round"
     className={className}
   >
-    <path d="M3 12c0-1.657 4.03-3 9-3s9 1.343 9 3" />
-    <path d="M3 12v6c0 1.657 4.03 3 9 3s9-1.343 9-3v-6" />
-    <path d="M12 21V9" />
-    <circle cx="8" cy="7" r="1.5" />
-    <circle cx="16" cy="7" r="1.5" />
-    <path d="M5 7c0-2.21 3.13-4 7-4s7 1.79 7 4" />
-    <path d="M3 12c0 1.657 4.03 3 9 3s9-1.343 9-3" />
+    {/* Head */}
+    <ellipse cx="12" cy="8" rx="4" ry="3" />
+    {/* Ears */}
+    <path d="M8 7.5 L7 6" />
+    <path d="M16 7.5 L17 6" />
+    {/* Eyes */}
+    <circle cx="10.5" cy="8" r="0.5" fill="currentColor" />
+    <circle cx="13.5" cy="8" r="0.5" fill="currentColor" />
+    {/* Snout */}
+    <ellipse cx="12" cy="9.5" rx="1.5" ry="1" />
+    {/* Body */}
+    <ellipse cx="12" cy="15" rx="5" ry="4" />
+    {/* Legs */}
+    <line x1="9" y1="19" x2="9" y2="22" />
+    <line x1="11" y1="19" x2="11" y2="22" />
+    <line x1="13" y1="19" x2="13" y2="22" />
+    <line x1="15" y1="19" x2="15" y2="22" />
+    {/* Tail */}
+    <path d="M17 14 Q18 13 19 14" />
+    {/* Spots */}
+    <circle cx="10" cy="14" r="0.8" fill="currentColor" />
+    <circle cx="14" cy="15.5" r="0.8" fill="currentColor" />
   </svg>
 );
 
