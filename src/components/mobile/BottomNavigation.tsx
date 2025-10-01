@@ -1,45 +1,9 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Home, Plus, BarChart3, Fence, PieChart } from "lucide-react";
+import { Home, Plus, BarChart3, Fence, PieChart, Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
-// Custom Cow Icon Component
-const CowIcon = ({ className }: { className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
-    {/* Head */}
-    <ellipse cx="12" cy="8" rx="4" ry="3" />
-    {/* Ears */}
-    <path d="M8 7.5 L7 6" />
-    <path d="M16 7.5 L17 6" />
-    {/* Eyes */}
-    <circle cx="10.5" cy="8" r="0.5" fill="currentColor" />
-    <circle cx="13.5" cy="8" r="0.5" fill="currentColor" />
-    {/* Snout */}
-    <ellipse cx="12" cy="9.5" rx="1.5" ry="1" />
-    {/* Body */}
-    <ellipse cx="12" cy="15" rx="5" ry="4" />
-    {/* Legs */}
-    <line x1="9" y1="19" x2="9" y2="22" />
-    <line x1="11" y1="19" x2="11" y2="22" />
-    <line x1="13" y1="19" x2="13" y2="22" />
-    <line x1="15" y1="19" x2="15" y2="22" />
-    {/* Tail */}
-    <path d="M17 14 Q18 13 19 14" />
-    {/* Spots */}
-    <circle cx="10" cy="14" r="0.8" fill="currentColor" />
-    <circle cx="14" cy="15.5" r="0.8" fill="currentColor" />
-  </svg>
-);
+import { cowHead } from "@lucide/lab";
 
 interface BottomNavigationProps {
   onAddClick: () => void;
@@ -60,7 +24,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       key: 'animals',
       label: t('animals'),
       path: '/animals',
-      icon: CowIcon,
+      icon: (props: any) => <Icon iconNode={cowHead} {...props} />,
     },
     {
       key: 'add',
