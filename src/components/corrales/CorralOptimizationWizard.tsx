@@ -307,7 +307,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[95vw] p-4 sm:p-6">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[90vw] p-3 sm:p-4 md:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 flex-wrap min-w-0">
             <Shuffle className="h-5 w-5 flex-shrink-0" />
@@ -651,9 +651,9 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                 <div>
                   <Label className="mb-2 block">Filtrar por Corral</Label>
-                   <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
+                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                      {allCorrals.map(corral => (
-                       <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent min-w-0 overflow-hidden">
+                       <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent min-w-0 overflow-hidden w-full">
                          <input
                            type="checkbox"
                            checked={selectedCorralIds.has(corral.id)}
@@ -668,7 +668,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                            }}
                            className="flex-shrink-0 w-4 h-4"
                          />
-                         <span className="text-sm truncate min-w-0">{corral.name}</span>
+                         <span className="text-xs sm:text-sm truncate min-w-0 w-0 flex-1">{corral.name}</span>
                        </label>
                      ))}
                    </div>
@@ -711,7 +711,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           : 0;
                         
                         return (
-                           <label key={animal.id} className="flex items-start gap-2 p-2 hover:bg-accent rounded cursor-pointer min-w-0 overflow-hidden">
+                           <label key={animal.id} className="flex items-start gap-2 p-2 hover:bg-accent rounded cursor-pointer min-w-0 overflow-hidden w-full">
                              <input
                                type="checkbox"
                                checked={selectedAnimalIds.has(animal.id)}
@@ -726,12 +726,12 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                }}
                                className="mt-1 flex-shrink-0 w-4 h-4"
                              />
-                             <div className="flex-1 text-sm min-w-0 overflow-hidden">
-                               <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-w-0">
-                                 <span className="font-medium break-words min-w-0">{animal.id_tag || animal.name}</span>
-                                <span className="text-muted-foreground whitespace-nowrap">
-                                  {animal.sex === 'Hembra' ? '♀' : '♂'} {ageMonths}m
-                                </span>
+                             <div className="w-0 flex-1 text-sm min-w-0 overflow-hidden">
+                                <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-w-0">
+                                  <span className="font-medium truncate min-w-0 text-xs sm:text-sm">{animal.id_tag || animal.name}</span>
+                                 <span className="text-muted-foreground whitespace-nowrap text-xs sm:text-sm flex-shrink-0">
+                                   {animal.sex === 'Hembra' ? '♀' : '♂'} {ageMonths}m
+                                 </span>
                                 {animal.esta_preñada && (
                                   <Badge variant="secondary" className="text-xs whitespace-nowrap">PREÑADA</Badge>
                                  )}
@@ -795,11 +795,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                   {plan.summary.total_moves_suggested} movimientos sugeridos
                 </p>
               </div>
-              <div className="flex gap-2 flex-wrap min-w-0">
+              <div className="flex gap-1 sm:gap-2 flex-wrap min-w-0">
                 {plan.warnings.map((warning, i) => (
-                  <Badge key={i} variant="outline" className="bg-yellow-50 text-xs max-w-full">
+                  <Badge key={i} variant="outline" className="bg-yellow-50 text-xs max-w-[200px] sm:max-w-none">
                     <AlertTriangle className="h-3 w-3 mr-1 flex-shrink-0" />
-                    <span className="break-words min-w-0 overflow-hidden">{warning}</span>
+                    <span className="truncate min-w-0">{warning}</span>
                   </Badge>
                 ))}
               </div>
@@ -814,7 +814,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 min-w-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 min-w-0">
                   <div className="text-center p-2 sm:p-3 bg-red-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-red-600">{plan.summary.total_risks_before}</div>
                     <div className="text-xs sm:text-sm text-red-600 break-words">Riesgos Actuales</div>
@@ -844,18 +844,18 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               <CardHeader>
                 <CardTitle>Plan Detallado por Corral</CardTitle>
               </CardHeader>
-              <CardContent className="px-2 sm:px-6">
+              <CardContent className="px-2 sm:px-4 md:px-6">
                 <div className="space-y-3 min-w-0">
                   <TooltipProvider>
                     {plan.corral_plan.map((corral, i) => (
-                      <div key={i} className="p-2 sm:p-3 md:p-4 border rounded-lg bg-card overflow-hidden min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3 min-w-0">
-                          <div className="min-w-0 flex-1 overflow-hidden">
+                      <div key={i} className="p-2 sm:p-3 border rounded-lg bg-card overflow-hidden min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2 sm:mb-3 min-w-0">
+                          <div className="min-w-0 w-0 flex-1 overflow-hidden">
                             <span className="font-medium break-words min-w-0">{corral.corral_name}</span>
-                            <div className="text-xs sm:text-sm text-muted-foreground break-words min-w-0 overflow-hidden">
-                              <span className="block sm:inline">{corral.current_animals} animales ({corral.adult_count} adultos, {corral.calf_count} terneros)</span>
+                            <div className="text-xs sm:text-sm text-muted-foreground min-w-0 overflow-hidden">
+                              <span className="block sm:inline truncate">{corral.current_animals} animales ({corral.adult_count} adultos, {corral.calf_count} terneros)</span>
                               <span className="hidden sm:inline"> • </span>
-                              <span className="block sm:inline">{corral.current_risks.length} riesgos • {corral.moves_suggested.length} movimientos</span>
+                              <span className="block sm:inline truncate">{corral.current_risks.length} riesgos • {corral.moves_suggested.length} movimientos</span>
                             </div>
                           </div>
                           <div className="flex gap-1 sm:gap-2 flex-wrap min-w-0 flex-shrink-0">
@@ -883,7 +883,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             <div className="space-y-1 min-w-0">
                               {corral.current_risks.slice(0, 3).map((risk, j) => (
                                 <div key={j} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs sm:text-sm p-2 bg-red-50 rounded overflow-hidden min-w-0">
-                                  <span className="break-words min-w-0 flex-1 overflow-hidden">{risk.description}</span>
+                                  <span className="line-clamp-2 min-w-0 w-0 flex-1 overflow-hidden text-xs sm:text-sm">{risk.description}</span>
                                   <div className="flex-shrink-0 mt-1 sm:mt-0">{getSeverityBadge(risk.severity)}</div>
                                 </div>
                               ))}
@@ -917,14 +917,14 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                       onChange={() => toggleMoveSelection(moveId)}
                                       className="w-4 h-4 flex-shrink-0 mt-0.5"
                                     />
-                                    <div className="flex-1 min-w-0 overflow-hidden">
+                                    <div className="w-0 flex-1 min-w-0 overflow-hidden">
                                       <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-w-0">
-                                        <span className="font-medium break-words min-w-0">{move.animal_name}</span>
+                                        <span className="font-medium truncate min-w-0 text-xs sm:text-sm">{move.animal_name}</span>
                                         {move.type === 'mother_calf' && (
                                           <span className="text-purple-600 text-xs whitespace-nowrap flex-shrink-0">👶 Ternero</span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-muted-foreground mt-1 break-words overflow-hidden min-w-0">
+                                      <div className="text-xs text-muted-foreground mt-1 line-clamp-2 overflow-hidden min-w-0">
                                         {move.reason}
                                       </div>
                                     </div>
@@ -935,7 +935,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           </div>
                         )}
 
-                        <div className="text-xs text-blue-600 mt-2 break-words overflow-hidden min-w-0">
+                        <div className="text-xs text-blue-600 mt-2 line-clamp-2 overflow-hidden min-w-0">
                           💡 {corral.suggestion}
                         </div>
                       </div>
