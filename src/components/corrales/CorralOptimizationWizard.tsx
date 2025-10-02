@@ -307,11 +307,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[95vw]">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[95vw] p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 flex-wrap">
+          <DialogTitle className="flex items-center gap-2 flex-wrap min-w-0">
             <Shuffle className="h-5 w-5 flex-shrink-0" />
-            <span className="break-words">Optimización de Corrales - Paso {step} de 4</span>
+            <span className="break-words min-w-0">Optimización de Corrales - Paso {step} de 4</span>
           </DialogTitle>
           <Button
             variant="ghost"
@@ -651,27 +651,27 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                 <div>
                   <Label className="mb-2 block">Filtrar por Corral</Label>
-                  <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
-                    {allCorrals.map(corral => (
-                      <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent min-w-0">
-                        <input
-                          type="checkbox"
-                          checked={selectedCorralIds.has(corral.id)}
-                          onChange={(e) => {
-                            const newSet = new Set(selectedCorralIds);
-                            if (e.target.checked) {
-                              newSet.add(corral.id);
-                            } else {
-                              newSet.delete(corral.id);
-                            }
-                            setSelectedCorralIds(newSet);
-                          }}
-                          className="flex-shrink-0"
-                        />
-                        <span className="text-sm truncate">{corral.name}</span>
-                      </label>
-                    ))}
-                  </div>
+                   <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2">
+                     {allCorrals.map(corral => (
+                       <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent min-w-0 overflow-hidden">
+                         <input
+                           type="checkbox"
+                           checked={selectedCorralIds.has(corral.id)}
+                           onChange={(e) => {
+                             const newSet = new Set(selectedCorralIds);
+                             if (e.target.checked) {
+                               newSet.add(corral.id);
+                             } else {
+                               newSet.delete(corral.id);
+                             }
+                             setSelectedCorralIds(newSet);
+                           }}
+                           className="flex-shrink-0 w-4 h-4"
+                         />
+                         <span className="text-sm truncate min-w-0">{corral.name}</span>
+                       </label>
+                     ))}
+                   </div>
                 </div>
 
                 <div>
@@ -711,35 +711,35 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           : 0;
                         
                         return (
-                          <label key={animal.id} className="flex items-start gap-2 p-2 hover:bg-accent rounded cursor-pointer min-w-0">
-                            <input
-                              type="checkbox"
-                              checked={selectedAnimalIds.has(animal.id)}
-                              onChange={(e) => {
-                                const newSet = new Set(selectedAnimalIds);
-                                if (e.target.checked) {
-                                  newSet.add(animal.id);
-                                } else {
-                                  newSet.delete(animal.id);
-                                }
-                                setSelectedAnimalIds(newSet);
-                              }}
-                              className="mt-1 flex-shrink-0"
-                            />
-                            <div className="flex-1 text-sm min-w-0 overflow-hidden">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className="font-medium break-words">{animal.id_tag || animal.name}</span>
+                           <label key={animal.id} className="flex items-start gap-2 p-2 hover:bg-accent rounded cursor-pointer min-w-0 overflow-hidden">
+                             <input
+                               type="checkbox"
+                               checked={selectedAnimalIds.has(animal.id)}
+                               onChange={(e) => {
+                                 const newSet = new Set(selectedAnimalIds);
+                                 if (e.target.checked) {
+                                   newSet.add(animal.id);
+                                 } else {
+                                   newSet.delete(animal.id);
+                                 }
+                                 setSelectedAnimalIds(newSet);
+                               }}
+                               className="mt-1 flex-shrink-0 w-4 h-4"
+                             />
+                             <div className="flex-1 text-sm min-w-0 overflow-hidden">
+                               <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-w-0">
+                                 <span className="font-medium break-words min-w-0">{animal.id_tag || animal.name}</span>
                                 <span className="text-muted-foreground whitespace-nowrap">
                                   {animal.sex === 'Hembra' ? '♀' : '♂'} {ageMonths}m
                                 </span>
                                 {animal.esta_preñada && (
                                   <Badge variant="secondary" className="text-xs whitespace-nowrap">PREÑADA</Badge>
-                                )}
-                                {corral && (
-                                  <span className="text-xs text-muted-foreground truncate">• {corral.name}</span>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
+                                 )}
+                                 {corral && (
+                                   <span className="text-xs text-muted-foreground truncate min-w-0">• {corral.name}</span>
+                                 )}
+                               </div>
+                               <div className="flex items-center gap-1 sm:gap-2 text-xs text-muted-foreground mt-1 flex-wrap min-w-0">
                                 {animal.peso_actual_kg && (
                                   <span className="whitespace-nowrap">💪 {Math.round(animal.peso_actual_kg)}kg</span>
                                 )}
@@ -788,18 +788,18 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
         {step === 3 && plan && (
           <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <div>
-                <h3 className="text-lg font-semibold">Plan de Optimización</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
+              <div className="min-w-0">
+                <h3 className="text-lg font-semibold break-words">Plan de Optimización</h3>
                 <p className="text-sm text-muted-foreground">
                   {plan.summary.total_moves_suggested} movimientos sugeridos
                 </p>
               </div>
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-2 flex-wrap min-w-0">
                 {plan.warnings.map((warning, i) => (
-                  <Badge key={i} variant="outline" className="bg-yellow-50 text-xs">
+                  <Badge key={i} variant="outline" className="bg-yellow-50 text-xs max-w-full">
                     <AlertTriangle className="h-3 w-3 mr-1 flex-shrink-0" />
-                    <span className="break-words">{warning}</span>
+                    <span className="break-words min-w-0 overflow-hidden">{warning}</span>
                   </Badge>
                 ))}
               </div>
@@ -814,26 +814,26 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4">
-                  <div className="text-center p-2 sm:p-3 bg-red-50 rounded-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4 min-w-0">
+                  <div className="text-center p-2 sm:p-3 bg-red-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-red-600">{plan.summary.total_risks_before}</div>
-                    <div className="text-xs sm:text-sm text-red-600">Riesgos Actuales</div>
+                    <div className="text-xs sm:text-sm text-red-600 break-words">Riesgos Actuales</div>
                   </div>
-                  <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg">
+                  <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-green-600">{plan.summary.total_risks_after}</div>
-                    <div className="text-xs sm:text-sm text-green-600">Riesgos Después</div>
+                    <div className="text-xs sm:text-sm text-green-600 break-words">Riesgos Después</div>
                   </div>
-                  <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg">
+                  <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-blue-600">{plan.summary.risk_reduction_percentage}%</div>
-                    <div className="text-xs sm:text-sm text-blue-600">Reducción</div>
+                    <div className="text-xs sm:text-sm text-blue-600 break-words">Reducción</div>
                   </div>
-                  <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg">
+                  <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-orange-600">{plan.summary.total_moves_suggested}</div>
-                    <div className="text-xs sm:text-sm text-orange-600">Movimientos</div>
+                    <div className="text-xs sm:text-sm text-orange-600 break-words">Movimientos</div>
                   </div>
-                  <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg">
+                  <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-purple-600">{plan.summary.calves_moved_with_mothers}</div>
-                    <div className="text-xs sm:text-sm text-purple-600">Terneros c/Madre</div>
+                    <div className="text-xs sm:text-sm text-purple-600 break-words">Terneros c/Madre</div>
                   </div>
                 </div>
               </CardContent>
@@ -844,21 +844,21 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               <CardHeader>
                 <CardTitle>Plan Detallado por Corral</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
+              <CardContent className="px-2 sm:px-6">
+                <div className="space-y-3 min-w-0">
                   <TooltipProvider>
                     {plan.corral_plan.map((corral, i) => (
-                      <div key={i} className="p-3 sm:p-4 border rounded-lg bg-card overflow-hidden">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3">
-                          <div className="min-w-0 flex-1">
-                            <span className="font-medium break-words">{corral.corral_name}</span>
-                            <div className="text-xs sm:text-sm text-muted-foreground break-words">
+                      <div key={i} className="p-2 sm:p-3 md:p-4 border rounded-lg bg-card overflow-hidden min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3 min-w-0">
+                          <div className="min-w-0 flex-1 overflow-hidden">
+                            <span className="font-medium break-words min-w-0">{corral.corral_name}</span>
+                            <div className="text-xs sm:text-sm text-muted-foreground break-words min-w-0 overflow-hidden">
                               <span className="block sm:inline">{corral.current_animals} animales ({corral.adult_count} adultos, {corral.calf_count} terneros)</span>
                               <span className="hidden sm:inline"> • </span>
                               <span className="block sm:inline">{corral.current_risks.length} riesgos • {corral.moves_suggested.length} movimientos</span>
                             </div>
                           </div>
-                          <div className="flex gap-2 flex-wrap">
+                          <div className="flex gap-1 sm:gap-2 flex-wrap min-w-0 flex-shrink-0">
                             {corral.risk_reduction_score > 0 && (
                               <Badge variant="outline" className="bg-green-50 text-green-700 text-xs whitespace-nowrap">
                                 -{corral.risk_reduction_score.toFixed(0)}% riesgo
@@ -878,13 +878,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                         {/* Current Risks */}
                         {corral.current_risks.length > 0 && (
-                          <div className="mb-3">
+                          <div className="mb-3 min-w-0 overflow-hidden">
                             <h5 className="text-sm font-medium mb-2">Riesgos Detectados:</h5>
-                            <div className="space-y-1">
+                            <div className="space-y-1 min-w-0">
                               {corral.current_risks.slice(0, 3).map((risk, j) => (
-                                <div key={j} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs sm:text-sm p-2 bg-red-50 rounded overflow-hidden">
-                                  <span className="break-words min-w-0 flex-1">{risk.description}</span>
-                                  <div className="flex-shrink-0">{getSeverityBadge(risk.severity)}</div>
+                                <div key={j} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs sm:text-sm p-2 bg-red-50 rounded overflow-hidden min-w-0">
+                                  <span className="break-words min-w-0 flex-1 overflow-hidden">{risk.description}</span>
+                                  <div className="flex-shrink-0 mt-1 sm:mt-0">{getSeverityBadge(risk.severity)}</div>
                                 </div>
                               ))}
                               {corral.current_risks.length > 3 && (
@@ -898,16 +898,16 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                          {/* Suggested Moves */}
                         {corral.moves_suggested.length > 0 && (
-                          <div className="mb-3">
+                          <div className="mb-3 min-w-0 overflow-hidden">
                             <h5 className="text-sm font-medium mb-2">Movimientos Sugeridos:</h5>
-                            <div className="space-y-1">
+                            <div className="space-y-1 min-w-0">
                               {corral.moves_suggested.map((move, j) => {
                                 const moveId = `${move.animal_id}-${move.from_corral}-${move.to_corral}`;
                                 const isSelected = selectedMoves.has(moveId);
                                 return (
                                   <label 
                                     key={j} 
-                                    className={`flex items-center gap-2 text-sm p-2 rounded cursor-pointer ${
+                                    className={`flex items-start gap-2 text-sm p-2 rounded cursor-pointer overflow-hidden min-w-0 ${
                                       move.type === 'mother_calf' ? 'bg-purple-50' : 'bg-blue-50'
                                     } ${!isSelected ? 'opacity-50' : ''}`}
                                   >
@@ -915,16 +915,16 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() => toggleMoveSelection(moveId)}
-                                      className="w-4 h-4 flex-shrink-0"
+                                      className="w-4 h-4 flex-shrink-0 mt-0.5"
                                     />
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-medium">{move.animal_name}</span>
+                                    <div className="flex-1 min-w-0 overflow-hidden">
+                                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap min-w-0">
+                                        <span className="font-medium break-words min-w-0">{move.animal_name}</span>
                                         {move.type === 'mother_calf' && (
-                                          <span className="text-purple-600 text-xs">👶 Ternero</span>
+                                          <span className="text-purple-600 text-xs whitespace-nowrap flex-shrink-0">👶 Ternero</span>
                                         )}
                                       </div>
-                                      <div className="text-xs text-muted-foreground mt-1 break-words">
+                                      <div className="text-xs text-muted-foreground mt-1 break-words overflow-hidden min-w-0">
                                         {move.reason}
                                       </div>
                                     </div>
@@ -935,7 +935,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           </div>
                         )}
 
-                        <div className="text-xs text-blue-600 mt-2">
+                        <div className="text-xs text-blue-600 mt-2 break-words overflow-hidden min-w-0">
                           💡 {corral.suggestion}
                         </div>
                       </div>
