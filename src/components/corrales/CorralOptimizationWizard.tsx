@@ -157,11 +157,14 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
         for (const move of moves) {
           try {
-            // Update animal corral
+            // Determine if animal_id is a UUID or id_tag
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(move.animal_id);
+            
+            // Update animal corral using appropriate field
             const { error: updateError } = await supabase
               .from('animals')
               .update({ corral_id: move.to_corral })
-              .eq('id', move.animal_id);
+              .eq(isUUID ? 'id' : 'id_tag', move.animal_id);
 
             if (updateError) {
               errors.push(`Error moviendo ${move.animal_name}: ${updateError.message}`);
