@@ -63,6 +63,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
   const [plan, setPlan] = useState<CorralOptimizationPlan | null>(null);
   const [hasCustomBenchmarks, setHasCustomBenchmarks] = useState(false);
   const [checkingBenchmarks, setCheckingBenchmarks] = useState(true);
+  const [showExplanation, setShowExplanation] = useState(false);
 
   // Step 1: Configuration
   const [config, setConfig] = useState({
@@ -77,6 +78,14 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       final: 0
     }
   });
+
+  // Step 1.5: Animal selection
+  const [allAnimals, setAllAnimals] = useState<any[]>([]);
+  const [allCorrals, setAllCorrals] = useState<any[]>([]);
+  const [selectedAnimalIds, setSelectedAnimalIds] = useState<Set<string>>(new Set());
+  const [selectedCorralIds, setSelectedCorralIds] = useState<Set<string>>(new Set());
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMoves, setSelectedMoves] = useState<Set<string>>(new Set());
 
   // Check if custom benchmarks exist
   useEffect(() => {
@@ -104,6 +113,28 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
     }
   }, [isOpen, cabanaId]);
 
+  const loadAnimalsAndCorrals = async () => {
+    try {
+      const [animalsRes, corralsRes] = await Promise.all([
+        supabase
+          .from('animals')
+          .select('id, id_tag, name, sex, birth_date, corral_id, status')
+          .eq('cabaña_id', cabanaId)
+          .not('status', 'in', '("vendido","muerto")'),
+        supabase
+          .from('corrales')
+          .select('*')
+          .eq('cabaña_id', cabanaId)
+      ]);
+
+      if (animalsRes.data) setAllAnimals(animalsRes.data);
+      if (corralsRes.data) setAllCorrals(corralsRes.data);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      toast.error("Error al cargar datos");
+    }
+  };
+
   const generateOptimization = async () => {
     setLoading(true);
     try {
@@ -129,8 +160,17 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         return;
       }
       
+      // Select all moves by default
+      const allMoveIds = new Set<string>();
+      data.corral_plan.forEach((corral: any) => {
+        corral.moves_suggested.forEach((move: any) => {
+          allMoveIds.add(`${move.animal_id}-${move.from_corral}-${move.to_corral}`);
+        });
+      });
+      setSelectedMoves(allMoveIds);
+      
       setPlan(data);
-      setStep(2);
+      setStep(3);
       toast.success("Optimización generada exitosamente");
     } catch (error) {
       console.error('Error generating optimization:', error);
@@ -146,16 +186,19 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
     setLoading(true);
     try {
-      // Apply moves by updating animals directly
-      const moves = plan.corral_plan.flatMap(corral => 
-        corral.moves_suggested.filter(move => move.from_corral !== move.to_corral)
+      // Apply only selected moves
+      const allMoves = plan.corral_plan.flatMap(corral => 
+        corral.moves_suggested.filter(move => 
+          move.from_corral !== move.to_corral &&
+          selectedMoves.has(`${move.animal_id}-${move.from_corral}-${move.to_corral}`)
+        )
       );
 
-      if (moves.length > 0) {
+      if (allMoves.length > 0) {
         let successfulMoves = 0;
         const errors: string[] = [];
 
-        for (const move of moves) {
+        for (const move of allMoves) {
           try {
             // Determine if animal_id is a UUID or id_tag
             const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(move.animal_id);
@@ -189,7 +232,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         toast.info("No hay movimientos para aplicar");
       }
 
-      setStep(3);
+      setStep(4);
     } catch (error) {
       console.error('Error applying suggestions:', error);
       toast.error("Error al aplicar las sugerencias");
@@ -216,6 +259,36 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
   const resetWizard = () => {
     setStep(1);
     setPlan(null);
+    setSelectedMoves(new Set());
+    setSelectedAnimalIds(new Set());
+    setSelectedCorralIds(new Set());
+  };
+
+  const toggleMoveSelection = (moveId: string) => {
+    setSelectedMoves(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(moveId)) {
+        newSet.delete(moveId);
+      } else {
+        newSet.add(moveId);
+      }
+      return newSet;
+    });
+  };
+
+  const selectAllMoves = () => {
+    if (!plan) return;
+    const allMoveIds = new Set<string>();
+    plan.corral_plan.forEach(corral => {
+      corral.moves_suggested.forEach(move => {
+        allMoveIds.add(`${move.animal_id}-${move.from_corral}-${move.to_corral}`);
+      });
+    });
+    setSelectedMoves(allMoveIds);
+  };
+
+  const deselectAllMoves = () => {
+    setSelectedMoves(new Set());
   };
 
   return (
@@ -224,9 +297,70 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shuffle className="h-5 w-5" />
-            Optimización de Corrales - Paso {step} de 3
+            Optimización de Corrales - Paso {step} de 4
           </DialogTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowExplanation(!showExplanation)}
+            className="mt-2"
+          >
+            <HelpCircle className="h-4 w-4 mr-2" />
+            {showExplanation ? "Ocultar" : "¿Cómo funciona?"}
+          </Button>
         </DialogHeader>
+
+        {showExplanation && (
+          <Card className="mb-4 bg-blue-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <HelpCircle className="h-4 w-4" />
+                Cómo funciona la Optimización de Corrales
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div>
+                <h4 className="font-semibold mb-1">🧬 Detección de Consanguinidad</h4>
+                <p className="text-muted-foreground">
+                  El sistema analiza las relaciones familiares entre animales (padre-hijo, hermanos, medio-hermanos) 
+                  que están en el mismo corral y tienen edad reproductiva (≥15 meses). 
+                  Detecta parejas macho-hembra emparentadas que podrían cruzarse.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">🤖 Análisis con IA</h4>
+                <p className="text-muted-foreground">
+                  Usando GPT-4, el sistema:
+                  <ul className="list-disc ml-5 mt-1">
+                    <li>Evalúa la distribución actual de animales</li>
+                    <li>Identifica conflictos y riesgos por corral</li>
+                    <li>Genera movimientos específicos para separar animales emparentados</li>
+                    <li>Considera capacidad, edades, y objetivos seleccionados</li>
+                  </ul>
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">📊 Objetivos Personalizables</h4>
+                <p className="text-muted-foreground">
+                  Puedes elegir optimizar para:
+                  <ul className="list-disc ml-5 mt-1">
+                    <li><strong>Consanguinidad:</strong> Reduce cruces entre parientes</li>
+                    <li><strong>Reproducción:</strong> Maximiza fertilidad y preñez</li>
+                    <li><strong>Producción:</strong> Optimiza ganancia de peso</li>
+                    <li><strong>Estándares:</strong> Sigue benchmarks de tu cabaña</li>
+                  </ul>
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">✅ Control Total</h4>
+                <p className="text-muted-foreground">
+                  Puedes revisar cada movimiento sugerido, seleccionar cuáles aplicar, 
+                  y descartar los que no quieras. El sistema te muestra el impacto esperado antes de aplicar cambios.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {step === 1 && (
           <div className="space-y-6">
@@ -447,10 +581,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 Cancelar
               </Button>
               <Button 
-                onClick={generateOptimization} 
-                disabled={loading || config.objectives.length === 0 || checkingBenchmarks}
+                onClick={() => {
+                  loadAnimalsAndCorrals();
+                  setStep(2);
+                }} 
+                disabled={config.objectives.length === 0 || checkingBenchmarks}
               >
-                {loading ? "Analizando..." : checkingBenchmarks ? "Verificando..." : "Generar Optimización"}
+                {checkingBenchmarks ? "Verificando..." : "Siguiente: Seleccionar Animales"}
               </Button>
               {config.objectives.length === 0 && (
                 <p className="text-sm text-red-600">Selecciona al menos un objetivo</p>
@@ -459,7 +596,123 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
           </div>
         )}
 
-        {step === 2 && plan && (
+        {step === 2 && (
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Seleccionar Animales para Análisis (Opcional)</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Si no seleccionas ningún animal, se analizarán todos los animales activos.
+                  Puedes filtrar por corral o seleccionar individualmente.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Buscar Animal</Label>
+                  <Input
+                    placeholder="Nombre o tag..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">Filtrar por Corral</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {allCorrals.map(corral => (
+                      <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent">
+                        <input
+                          type="checkbox"
+                          checked={selectedCorralIds.has(corral.id)}
+                          onChange={(e) => {
+                            const newSet = new Set(selectedCorralIds);
+                            if (e.target.checked) {
+                              newSet.add(corral.id);
+                            } else {
+                              newSet.delete(corral.id);
+                            }
+                            setSelectedCorralIds(newSet);
+                          }}
+                        />
+                        <span className="text-sm">{corral.name}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <Label>Animales ({
+                      allAnimals.filter(a => 
+                        (!searchTerm || a.id_tag?.includes(searchTerm) || a.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                        (selectedCorralIds.size === 0 || selectedCorralIds.has(a.corral_id))
+                      ).length
+                    })</Label>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => {
+                        const filtered = allAnimals.filter(a => 
+                          (!searchTerm || a.id_tag?.includes(searchTerm) || a.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                          (selectedCorralIds.size === 0 || selectedCorralIds.has(a.corral_id))
+                        );
+                        setSelectedAnimalIds(new Set(filtered.map(a => a.id)));
+                      }}>
+                        Seleccionar Visibles
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setSelectedAnimalIds(new Set())}>
+                        Limpiar
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="max-h-64 overflow-y-auto border rounded p-2 space-y-1">
+                    {allAnimals
+                      .filter(a => 
+                        (!searchTerm || a.id_tag?.includes(searchTerm) || a.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                        (selectedCorralIds.size === 0 || selectedCorralIds.has(a.corral_id))
+                      )
+                      .map(animal => {
+                        const corral = allCorrals.find(c => c.id === animal.corral_id);
+                        return (
+                          <label key={animal.id} className="flex items-center gap-2 p-2 hover:bg-accent rounded cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedAnimalIds.has(animal.id)}
+                              onChange={(e) => {
+                                const newSet = new Set(selectedAnimalIds);
+                                if (e.target.checked) {
+                                  newSet.add(animal.id);
+                                } else {
+                                  newSet.delete(animal.id);
+                                }
+                                setSelectedAnimalIds(newSet);
+                              }}
+                            />
+                            <span className="text-sm flex-1">
+                              {animal.id_tag || animal.name} • {animal.sex} • {corral?.name || 'Sin corral'}
+                            </span>
+                          </label>
+                        );
+                      })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex gap-2">
+              <Button onClick={resetWizard} variant="outline">
+                Volver
+              </Button>
+              <Button 
+                onClick={generateOptimization} 
+                disabled={loading}
+                className="flex-1"
+              >
+                {loading ? "Analizando..." : "Generar Optimización"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && plan && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
@@ -568,22 +821,37 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           </div>
                         )}
 
-                        {/* Suggested Moves */}
+                         {/* Suggested Moves */}
                         {corral.moves_suggested.length > 0 && (
                           <div className="mb-3">
                             <h5 className="text-sm font-medium mb-2">Movimientos Sugeridos:</h5>
                             <div className="space-y-1">
-                              {corral.moves_suggested.map((move, j) => (
-                                <div key={j} className={`text-sm p-2 rounded ${
-                                  move.type === 'mother_calf' ? 'bg-purple-50' : 'bg-blue-50'
-                                }`}>
-                                  <span className="font-medium">{move.animal_name}</span>
-                                  <span className="text-muted-foreground"> • {move.reason}</span>
-                                  {move.type === 'mother_calf' && (
-                                    <span className="text-purple-600 text-xs ml-2">👶 Ternero</span>
-                                  )}
-                                </div>
-                              ))}
+                              {corral.moves_suggested.map((move, j) => {
+                                const moveId = `${move.animal_id}-${move.from_corral}-${move.to_corral}`;
+                                const isSelected = selectedMoves.has(moveId);
+                                return (
+                                  <label 
+                                    key={j} 
+                                    className={`flex items-center gap-2 text-sm p-2 rounded cursor-pointer ${
+                                      move.type === 'mother_calf' ? 'bg-purple-50' : 'bg-blue-50'
+                                    } ${!isSelected ? 'opacity-50' : ''}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleMoveSelection(moveId)}
+                                      className="w-4 h-4"
+                                    />
+                                    <div className="flex-1">
+                                      <span className="font-medium">{move.animal_name}</span>
+                                      <span className="text-muted-foreground"> • {move.reason}</span>
+                                      {move.type === 'mother_calf' && (
+                                        <span className="text-purple-600 text-xs ml-2">👶 Ternero</span>
+                                      )}
+                                    </div>
+                                  </label>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -598,29 +866,46 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               </CardContent>
             </Card>
 
-            <div className="flex gap-2">
-              <Button onClick={resetWizard} variant="outline">
-                Volver
-              </Button>
-              <Button
-                onClick={applySuggestions}
-                disabled={loading || plan.summary.total_moves_suggested === 0}
-                className="flex-1"
-              >
-                {loading ? "Aplicando..." : "Aplicar Sugerencias"}
-              </Button>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2 justify-end">
+                <Button size="sm" variant="outline" onClick={selectAllMoves}>
+                  Seleccionar Todos
+                </Button>
+                <Button size="sm" variant="outline" onClick={deselectAllMoves}>
+                  Deseleccionar Todos
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={resetWizard} variant="outline">
+                  Volver
+                </Button>
+                <Button
+                  onClick={applySuggestions}
+                  disabled={loading || selectedMoves.size === 0}
+                  className="flex-1"
+                >
+                  {loading ? "Aplicando..." : `Aplicar ${selectedMoves.size} Movimientos Seleccionados`}
+                </Button>
+              </div>
             </div>
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="text-center space-y-4">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
             <h3 className="text-xl font-semibold">Optimización Aplicada</h3>
             <p className="text-muted-foreground">
-              Los movimientos sugeridos han sido aplicados para reducir los riesgos de consanguinidad.
+              Los movimientos seleccionados han sido aplicados exitosamente.
             </p>
-            <Button onClick={onClose}>Cerrar</Button>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={onClose} variant="outline">
+                Cerrar
+              </Button>
+              <Button onClick={resetWizard}>
+                Nueva Optimización
+              </Button>
+            </div>
           </div>
         )}
       </DialogContent>
