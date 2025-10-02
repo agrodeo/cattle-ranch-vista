@@ -5,6 +5,7 @@ import { BottomNavigation } from "./BottomNavigation";
 import { AddOverlay } from "./AddOverlay";
 import { SupportFooter } from "@/components/SupportFooter";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import { Menu } from "lucide-react";
 import { AIChatButton } from "@/components/ai-chat/AIChatButton";
 
@@ -39,7 +40,10 @@ export function MobileLayout() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* AppSidebar needed for mobile offcanvas */}
+      <AppSidebar />
+      
+      <div className="flex-1 flex flex-col min-w-0 w-full">
         {/* Mobile header with hamburger menu */}
         <header className="bg-background border-b border-border p-4 sticky top-0 z-30">
           <SidebarTrigger className="text-ink-600 hover:text-ink-900 h-10 w-10 p-2">
