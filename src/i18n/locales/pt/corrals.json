@@ -33,6 +33,18 @@
     "checkingStandards": "Verificando padrões configurados...",
     "usingCustomStandards": "Usar os padrões personalizados configurados na sua fazenda",
     "usingDefaultStandards": "Padrões padrão serão usados.",
-    "configureCustom": "Configure padrões personalizados aqui"
+    "configureCustom": "Configure padrões personalizados aqui",
+    "productiveData": "Dados Produtivos",
+    "reproductiveData": "Dados Reprodutivos",
+    "weight": "Peso",
+    "dailyGain": "Ganho Diário",
+    "pregnancyRate": "Taxa de Prenhez",
+    "calvingRate": "Taxa de Parição",
+    "performance": "Desempenho",
+    "excellent": "Excelente",
+    "good": "Bom",
+    "regular": "Regular",
+    "low": "Baixo",
+    "pregnant": "PRENHA"
   }
 }

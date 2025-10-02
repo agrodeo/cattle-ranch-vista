@@ -79,9 +79,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
     }
   });
 
-  // Step 1.5: Animal selection
+  // Step 1.5: Animal selection with productive/reproductive data
   const [allAnimals, setAllAnimals] = useState<any[]>([]);
   const [allCorrals, setAllCorrals] = useState<any[]>([]);
+  const [reproMetrics, setReproMetrics] = useState<Map<string, any>>(new Map());
   const [selectedAnimalIds, setSelectedAnimalIds] = useState<Set<string>>(new Set());
   const [selectedCorralIds, setSelectedCorralIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState("");
@@ -118,7 +119,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       const [animalsRes, corralsRes] = await Promise.all([
         supabase
           .from('animals')
-          .select('id, id_tag, name, sex, birth_date, corral_id, status')
+          .select('id, id_tag, name, sex, birth_date, corral_id, status, peso_actual_kg, ganancia_diaria_kg, fecha_ultimo_pesaje, esta_preñada')
           .eq('cabaña_id', cabanaId)
           .not('status', 'in', '("vendido","muerto")'),
         supabase
@@ -129,6 +130,18 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
       if (animalsRes.data) setAllAnimals(animalsRes.data);
       if (corralsRes.data) setAllCorrals(corralsRes.data);
+      
+      // Load reproductive metrics if reproduction objective is selected
+      if (config.objectives.includes('reproduction') || config.objectives.includes('production')) {
+        const { data: metrics } = await supabase.rpc('calculate_reproductive_kpis', {
+          _cabana_id: cabanaId
+        });
+        
+        if (metrics) {
+          const metricsMap = new Map(metrics.map((m: any) => [m.animal_id, m]));
+          setReproMetrics(metricsMap);
+        }
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error("Error al cargar datos");
@@ -328,34 +341,49 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </p>
               </div>
               <div>
+                <h4 className="font-semibold mb-1">📊 Datos Productivos y Reproductivos</h4>
+                <p className="text-muted-foreground">
+                  El sistema recopila métricas clave de cada animal:
+                  <ul className="list-disc ml-5 mt-1">
+                    <li>Peso actual, ganancia diaria promedio (GDP), historial de pesajes</li>
+                    <li>Tasas de preñez y parición (% de éxito reproductivo)</li>
+                    <li>Nivel de rendimiento (Excelente, Bueno, Regular, Bajo)</li>
+                    <li>Métricas agregadas por corral para análisis comparativo</li>
+                  </ul>
+                </p>
+              </div>
+              <div>
                 <h4 className="font-semibold mb-1">🤖 Análisis con IA</h4>
                 <p className="text-muted-foreground">
                   Usando GPT-4, el sistema:
                   <ul className="list-disc ml-5 mt-1">
-                    <li>Evalúa la distribución actual de animales</li>
-                    <li>Identifica conflictos y riesgos por corral</li>
-                    <li>Genera movimientos específicos para separar animales emparentados</li>
-                    <li>Considera capacidad, edades, y objetivos seleccionados</li>
+                    <li>Evalúa la distribución actual de animales con datos productivos</li>
+                    <li>Identifica conflictos de consanguinidad y bajo rendimiento</li>
+                    <li>Genera movimientos específicos con razones basadas en datos reales</li>
+                    <li>Considera capacidad, edades, objetivos y métricas de performance</li>
+                    <li>Prioriza animales de alto rendimiento para agrupación estratégica</li>
                   </ul>
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">📊 Objetivos Personalizables</h4>
+                <h4 className="font-semibold mb-1">🎯 Objetivos Personalizables</h4>
                 <p className="text-muted-foreground">
                   Puedes elegir optimizar para:
                   <ul className="list-disc ml-5 mt-1">
                     <li><strong>Consanguinidad:</strong> Reduce cruces entre parientes</li>
-                    <li><strong>Reproducción:</strong> Maximiza fertilidad y preñez</li>
-                    <li><strong>Producción:</strong> Optimiza ganancia de peso</li>
-                    <li><strong>Estándares:</strong> Sigue benchmarks de tu cabaña</li>
+                    <li><strong>Reproducción:</strong> Agrupa hembras &gt;70% preñez/parición, aísla bajo rendimiento</li>
+                    <li><strong>Producción:</strong> Agrupa animales con GDP &gt;0.7kg/d, separa bajo rendimiento</li>
+                    <li><strong>Estándares:</strong> Sigue benchmarks específicos de tu cabaña</li>
                   </ul>
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">✅ Control Total</h4>
+                <h4 className="font-semibold mb-1">✅ Control Total con Datos</h4>
                 <p className="text-muted-foreground">
-                  Puedes revisar cada movimiento sugerido, seleccionar cuáles aplicar, 
-                  y descartar los que no quieras. El sistema te muestra el impacto esperado antes de aplicar cambios.
+                  Puedes ver métricas de cada animal (peso, GDP, % preñez, % parición), 
+                  revisar cada movimiento con razones basadas en datos reales, 
+                  seleccionar cuáles aplicar y descartar los que no quieras. 
+                  El sistema muestra el impacto esperado antes de aplicar cambios.
                 </p>
               </div>
             </CardContent>
@@ -671,6 +699,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       )
                       .map(animal => {
                         const corral = allCorrals.find(c => c.id === animal.corral_id);
+                        const metric = reproMetrics.get(animal.id);
+                        const ageMonths = animal.birth_date 
+                          ? Math.floor((new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
+                          : 0;
+                        
                         return (
                           <label key={animal.id} className="flex items-center gap-2 p-2 hover:bg-accent rounded cursor-pointer">
                             <input
@@ -686,9 +719,43 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                 setSelectedAnimalIds(newSet);
                               }}
                             />
-                            <span className="text-sm flex-1">
-                              {animal.id_tag || animal.name} • {animal.sex} • {corral?.name || 'Sin corral'}
-                            </span>
+                            <div className="flex-1 text-sm">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">{animal.id_tag || animal.name}</span>
+                                <span className="text-muted-foreground">
+                                  {animal.sex === 'Hembra' ? '♀' : '♂'} {ageMonths}m
+                                </span>
+                                {animal.esta_preñada && (
+                                  <Badge variant="secondary" className="text-xs">PREÑADA</Badge>
+                                )}
+                                {corral && (
+                                  <span className="text-xs text-muted-foreground">• {corral.name}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                                {animal.peso_actual_kg && (
+                                  <span>💪 {Math.round(animal.peso_actual_kg)}kg</span>
+                                )}
+                                {animal.ganancia_diaria_kg && (
+                                  <span>📈 +{animal.ganancia_diaria_kg.toFixed(2)}kg/d</span>
+                                )}
+                                {metric && (
+                                  <>
+                                    {metric.individual_pregnancy_rate > 0 && (
+                                      <span>🤰 {Math.round(metric.individual_pregnancy_rate)}%</span>
+                                    )}
+                                    {metric.individual_calving_rate > 0 && (
+                                      <span>🐄 {Math.round(metric.individual_calving_rate)}%</span>
+                                    )}
+                                    {metric.performance_level && metric.performance_level !== 'Sin servicios' && (
+                                      <Badge variant="outline" className="text-xs">
+                                        {metric.performance_level}
+                                      </Badge>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </label>
                         );
                       })}
@@ -783,7 +850,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                               {corral.current_risks.length} riesgos • {corral.moves_suggested.length} movimientos
                             </div>
                           </div>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 flex-wrap justify-end">
                             {corral.risk_reduction_score > 0 && (
                               <Badge variant="outline" className="bg-green-50 text-green-700">
                                 -{corral.risk_reduction_score.toFixed(0)}% riesgo
@@ -840,14 +907,18 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                       type="checkbox"
                                       checked={isSelected}
                                       onChange={() => toggleMoveSelection(moveId)}
-                                      className="w-4 h-4"
+                                      className="w-4 h-4 flex-shrink-0"
                                     />
-                                    <div className="flex-1">
-                                      <span className="font-medium">{move.animal_name}</span>
-                                      <span className="text-muted-foreground"> • {move.reason}</span>
-                                      {move.type === 'mother_calf' && (
-                                        <span className="text-purple-600 text-xs ml-2">👶 Ternero</span>
-                                      )}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-medium">{move.animal_name}</span>
+                                        {move.type === 'mother_calf' && (
+                                          <span className="text-purple-600 text-xs">👶 Ternero</span>
+                                        )}
+                                      </div>
+                                      <div className="text-xs text-muted-foreground mt-1 break-words">
+                                        {move.reason}
+                                      </div>
                                     </div>
                                   </label>
                                 );

@@ -33,6 +33,18 @@
     "checkingStandards": "Checking configured standards...",
     "usingCustomStandards": "Use custom standards configured for your ranch",
     "usingDefaultStandards": "Default standards will be used.",
-    "configureCustom": "Configure custom standards here"
+    "configureCustom": "Configure custom standards here",
+    "productiveData": "Productive Data",
+    "reproductiveData": "Reproductive Data",
+    "weight": "Weight",
+    "dailyGain": "Daily Gain",
+    "pregnancyRate": "Pregnancy Rate",
+    "calvingRate": "Calving Rate",
+    "performance": "Performance",
+    "excellent": "Excellent",
+    "good": "Good",
+    "regular": "Regular",
+    "low": "Low",
+    "pregnant": "PREGNANT"
   }
 }

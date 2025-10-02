@@ -37,6 +37,18 @@
     "checkingStandards": "Verificando estándares configurados...",
     "usingCustomStandards": "Usar los estándares personalizados configurados en tu cabaña",
     "usingDefaultStandards": "Se usarán estándares por defecto.",
-    "configureCustom": "Configura estándares personalizados aquí"
+    "configureCustom": "Configura estándares personalizados aquí",
+    "productiveData": "Datos Productivos",
+    "reproductiveData": "Datos Reproductivos",
+    "weight": "Peso",
+    "dailyGain": "Ganancia Diaria",
+    "pregnancyRate": "Tasa de Preñez",
+    "calvingRate": "Tasa de Parición",
+    "performance": "Rendimiento",
+    "excellent": "Excelente",
+    "good": "Bueno",
+    "regular": "Regular",
+    "low": "Bajo",
+    "pregnant": "PREÑADA"
   }
 }

@@ -21,6 +21,17 @@ interface Animal {
   age_months?: number;
   is_calf?: boolean;
   is_reproductive_age?: boolean;
+  // Productive data
+  peso_actual_kg?: number;
+  ganancia_diaria_kg?: number;
+  fecha_ultimo_pesaje?: string;
+  peso_nacimiento?: number;
+  peso_destete?: number;
+  peso_final?: number;
+  // Reproductive data
+  esta_preñada?: boolean;
+  fecha_ultima_preñez?: string;
+  fecha_probable_parto?: string;
 }
 
 interface Corral {
@@ -113,9 +124,9 @@ serve(async (req) => {
     console.log(`Analyzing corral distribution for cabana ${cabanaId}`);
     console.log(`Objectives:`, objectives);
 
-    // Get animals using fetch
+    // Get animals with productive and reproductive data using fetch
     const animalsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/animals?cabaña_id=eq.${cabanaId}&status=not.in.(vendido,muerto)&select=*`,
+      `${SUPABASE_URL}/rest/v1/animals?cabaña_id=eq.${cabanaId}&status=not.in.(vendido,muerto)&select=id,id_tag,name,sex,birth_date,status,breed,father_id,mother_id,corral_id,cabaña_id,peso_actual_kg,ganancia_diaria_kg,fecha_ultimo_pesaje,peso_nacimiento,peso_destete,peso_final,esta_preñada,fecha_ultima_preñez,fecha_probable_parto`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY!,
@@ -134,6 +145,29 @@ serve(async (req) => {
     }
 
     const animals = await animalsResponse.json();
+    
+    // Get reproductive metrics for females
+    let reproductiveMetrics: any[] = [];
+    if (objectives.includes('reproduction') || objectives.includes('production')) {
+      console.log('Fetching reproductive metrics...');
+      const metricsResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/calculate_reproductive_kpis`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ _cabana_id: cabanaId }),
+        }
+      );
+      
+      if (metricsResponse.ok) {
+        reproductiveMetrics = await metricsResponse.json();
+        console.log(`Found ${reproductiveMetrics.length} reproductive metrics`);
+      }
+    }
 
     // Get corrals using fetch
     const corralsResponse = await fetch(
@@ -236,6 +270,7 @@ serve(async (req) => {
       customBenchmarks,
       herdSettings,
       usingDefaultBenchmarks,
+      reproductiveMetrics,
       OPENAI_API_KEY
     );
 
@@ -260,6 +295,7 @@ async function generateAIOptimization(
   customBenchmarks: any,
   herdSettings: any,
   usingDefaultBenchmarks: boolean,
+  reproductiveMetrics: any[],
   apiKey: string
 ): Promise<any> {
   console.log('Generando optimización con ChatGPT...');
@@ -270,6 +306,9 @@ async function generateAIOptimization(
     const birthDate = animal.birth_date ? new Date(animal.birth_date) : null;
     const ageMonths = birthDate ? 
       Math.floor((currentDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44)) : 0;
+    
+    // Find reproductive metrics for this animal
+    const repMetric = reproductiveMetrics.find(m => m.animal_id === animal.id);
     
     return {
       id: animal.id,
@@ -282,15 +321,41 @@ async function generateAIOptimization(
       mother_id: animal.mother_id,
       peso_actual: animal.peso_actual_kg,
       peso_nacimiento: animal.peso_nacimiento,
+      peso_destete: animal.peso_destete,
+      ganancia_diaria: animal.ganancia_diaria_kg,
+      esta_preñada: animal.esta_preñada,
+      fecha_ultimo_pesaje: animal.fecha_ultimo_pesaje,
+      // Reproductive performance
+      pregnancy_rate: repMetric?.individual_pregnancy_rate,
+      calving_rate: repMetric?.individual_calving_rate,
+      performance_level: repMetric?.performance_level,
+      total_offspring: repMetric?.total_offspring,
     };
   });
 
-  const corralsSummary = corrals.map(c => ({
-    id: c.id,
-    name: c.name,
-    hectareas: c.hectareas,
-    animals: analyzedAnimals.filter(a => a.corral_id === c.id).length,
-  }));
+  const corralsSummary = corrals.map(c => {
+    const corralAnimals = analyzedAnimals.filter(a => a.corral_id === c.id);
+    const females = corralAnimals.filter(a => a.sex === 'Hembra' || a.sex === 'F');
+    const pregnantFemales = females.filter(a => a.esta_preñada);
+    const avgWeight = corralAnimals
+      .filter(a => a.peso_actual)
+      .reduce((sum, a) => sum + (a.peso_actual || 0), 0) / (corralAnimals.filter(a => a.peso_actual).length || 1);
+    const avgGain = corralAnimals
+      .filter(a => a.ganancia_diaria)
+      .reduce((sum, a) => sum + (a.ganancia_diaria || 0), 0) / (corralAnimals.filter(a => a.ganancia_diaria).length || 1);
+    
+    return {
+      id: c.id,
+      name: c.name,
+      hectareas: c.hectareas,
+      animals: corralAnimals.length,
+      avg_weight: Math.round(avgWeight * 10) / 10,
+      avg_daily_gain: Math.round(avgGain * 100) / 100,
+      pregnancy_rate: females.length > 0 ? Math.round((pregnantFemales.length / females.length) * 100) : 0,
+      pregnant_count: pregnantFemales.length,
+      female_count: females.length,
+    };
+  });
 
   // Detectar riesgos de consanguinidad
   const consanguinityRisks = detectConsanguinityRisks(analyzedAnimals);
@@ -303,7 +368,8 @@ async function generateAIOptimization(
     objectives,
     targetWeights,
     customBenchmarks,
-    herdSettings
+    herdSettings,
+    usingDefaultBenchmarks
   );
 
   console.log('Llamando a OpenAI API con structured output...');
@@ -543,20 +609,54 @@ function buildOptimizationPrompt(
   herdSettings: any,
   usingDefaultBenchmarks: boolean
 ): string {
-  // Build animals summary with corral info
-  const animalsSummary = animals.map(a => ({
-    id: a.id,
-    name: a.name || a.id_tag,
-    sex: a.sex === 'M' ? 'Macho' : 'Hembra',
-    age: a.age_months,
-    corral: a.corral_id,
-    father: a.father_id,
-    mother: a.mother_id
-  }));
+  // Build animals summary with detailed productive/reproductive data
+  const animalsSummary = animals.map(a => {
+    const parts = [
+      `${a.name || a.id_tag}`,
+      a.sex === 'M' || a.sex === 'Macho' ? '♂' : '♀',
+      `${a.age_months}m`,
+    ];
+    
+    // Add productive data
+    if (a.peso_actual) parts.push(`${Math.round(a.peso_actual)}kg`);
+    if (a.ganancia_diaria) parts.push(`+${a.ganancia_diaria.toFixed(2)}kg/d`);
+    
+    // Add reproductive data for females
+    if (a.sex === 'Hembra' || a.sex === 'F') {
+      if (a.esta_preñada) parts.push('PREÑADA');
+      if (a.pregnancy_rate) parts.push(`Preñez:${Math.round(a.pregnancy_rate)}%`);
+      if (a.calving_rate) parts.push(`Parición:${Math.round(a.calving_rate)}%`);
+      if (a.performance_level && a.performance_level !== 'Sin servicios') {
+        parts.push(`Rend:${a.performance_level}`);
+      }
+    }
+    
+    return {
+      id: a.id,
+      display: parts.join(' | '),
+      corral: a.corral_id,
+      father: a.father_id,
+      mother: a.mother_id,
+      peso_actual: a.peso_actual,
+      ganancia_diaria: a.ganancia_diaria,
+      pregnancy_rate: a.pregnancy_rate,
+      calving_rate: a.calving_rate,
+      performance_level: a.performance_level,
+    };
+  });
 
   const corralsInfo = corrals.map(c => {
     const corralAnimals = animalsSummary.filter(a => a.corral === c.id);
-    return `${c.name} (ID: ${c.id}): ${corralAnimals.length} animales, ${c.hectareas || 0} ha`;
+    const parts = [
+      `${c.name} (ID: ${c.id})`,
+      `${corralAnimals.length} animales`,
+      `${c.hectareas || 0} ha`,
+    ];
+    if (c.avg_weight > 0) parts.push(`Peso prom: ${c.avg_weight}kg`);
+    if (c.avg_daily_gain > 0) parts.push(`GDP prom: ${c.avg_daily_gain}kg/d`);
+    if (c.pregnancy_rate > 0) parts.push(`Preñez: ${c.pregnancy_rate}%`);
+    
+    return parts.join(' | ');
   }).join('\n');
 
   let prompt = `# Optimización de Corrales - Genera Movimientos Específicos
@@ -566,15 +666,19 @@ function buildOptimizationPrompt(
 - Corrales: ${corrals.length}
 - Riesgos consanguinidad: ${risks.length}
 
-## Corrales Disponibles
+## Corrales Disponibles (con métricas productivas y reproductivas)
 ${corralsInfo}
+
+## Animales Detallados (primeros 50 con métricas productivas/reproductivas)
+${animalsSummary.slice(0, 50).map(a => `- ${a.display} | Corral: ${corrals.find(c => c.id === a.corral)?.name || 'Sin corral'}`).join('\n')}
+${animals.length > 50 ? `\n... y ${animals.length - 50} animales más` : ''}
 
 ## Objetivos
 ${objectives.map(obj => {
     switch(obj) {
       case 'consanguinity': return '✓ CRÍTICO: Reducir consanguinidad';
-      case 'reproduction': return '✓ Mejorar eficiencia reproductiva';
-      case 'production': return '✓ Optimizar producción/peso';
+      case 'reproduction': return '✓ Mejorar eficiencia reproductiva - Agrupar hembras de alto rendimiento (>70% preñez/parición), separar animales de bajo rendimiento';
+      case 'production': return '✓ Optimizar producción/peso - Agrupar animales con mejor GDP (>0.7kg/d), separar animales de bajo rendimiento';
       case 'benchmarks': return '✓ Seguir estándares de la cabaña';
       default: return `✓ ${obj}`;
     }
@@ -620,15 +724,20 @@ Genera entre 5-15 movimientos ESPECÍFICOS y EJECUTABLES:
    - animal_name: Nombre/tag del animal
    - from_corral_id: ID del corral origen
    - to_corral_id: ID del corral destino (diferente al origen)
-   - reason: Razón concreta (ej: "Separar hermanos completos para evitar endogamia")
+   - reason: Razón concreta con datos específicos (ej: "Separar hermanos completos - Preñez 85%, Parición 90% | Agrupar alta productividad - GDP 0.85kg/d")
    - priority: high/medium/low
 
-2. PRIORIZA movimientos que resuelvan los riesgos detectados
-3. Asegura que los corrales destino tengan capacidad
-4. Considera mantener grupos sociales estables
-5. NO muevas más del 30% de animales de un corral
+2. PRIORIZA basándote en los objetivos seleccionados:
+   - Consanguinidad: Separar parientes en edad reproductiva
+   - Reproducción: Agrupar hembras de alta performance (>70% preñez/parición), aislar bajo rendimiento (<40%)
+   - Producción: Agrupar animales con mejor GDP (>0.7kg/d), separar bajo rendimiento (<0.5kg/d)
+   
+3. INCLUYE métricas en las razones: "Hembra Excelente: Preñez 90%, 3 partos, +0.8kg/d, 450kg"
+4. Asegura que los corrales destino tengan capacidad
+5. Considera mantener grupos sociales estables
+6. NO muevas más del 30% de animales de un corral
 
-IMPORTANTE: Usa los IDs exactos de corrales que te proporcioné arriba.`;
+IMPORTANTE: Usa los IDs exactos de corrales que te proporcioné arriba. Incluye datos concretos en cada razón.`;
 
   return prompt;
 }
