@@ -10,25 +10,250 @@ export interface ChatMessage {
   image?: string;
 }
 
+export interface Conversation {
+  id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export function useAIChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationTitle, setConversationTitle] = useState<string>('Nueva conversación');
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Load conversations list
+  const loadConversations = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('ai_chat_conversations')
+        .select('*')
+        .order('updated_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+      setConversations(data || []);
+    } catch (error) {
+      console.error('Error loading conversations:', error);
+    }
+  }, []);
+
+  // Load a specific conversation
+  const loadConversation = useCallback(async (convId: string) => {
+    try {
+      setIsLoading(true);
+
+      // Load conversation details
+      const { data: conv, error: convError } = await supabase
+        .from('ai_chat_conversations')
+        .select('*')
+        .eq('id', convId)
+        .single();
+
+      if (convError) throw convError;
+
+      // Load messages
+      const { data: msgs, error: msgsError } = await supabase
+        .from('ai_chat_messages')
+        .select('*')
+        .eq('conversation_id', convId)
+        .order('timestamp', { ascending: true });
+
+      if (msgsError) throw msgsError;
+
+      // Convert to ChatMessage format
+      const chatMessages: ChatMessage[] = (msgs || []).map(msg => ({
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: new Date(msg.timestamp),
+        image: msg.image_url || undefined
+      }));
+
+      setConversationId(convId);
+      setConversationTitle(conv.title);
+      setMessages(chatMessages);
+    } catch (error) {
+      console.error('Error loading conversation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo cargar la conversación',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Create new conversation
+  const createNewConversation = useCallback(async (firstMessage: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      // Get user's cabaña - using 'cabana_id' column name
+      const { data: userCabana } = await supabase
+        .rpc('get_user_cabana_info', { user_uuid: user.id })
+        .single();
+
+      if (!userCabana?.cabana_id) throw new Error('No cabaña found');
+      const cabanaId = userCabana.cabana_id;
+
+      // Generate title from first message (max 50 chars)
+      const title = firstMessage.slice(0, 50) + (firstMessage.length > 50 ? '...' : '');
+
+      const { data, error } = await supabase
+        .from('ai_chat_conversations')
+        .insert({
+          user_id: user.id,
+          'cabaña_id': cabanaId,
+          title
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setConversationId(data.id);
+      setConversationTitle(data.title);
+      await loadConversations();
+      
+      return data.id;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      throw error;
+    }
+  }, [loadConversations]);
+
+  // Save a message to database
+  const saveMessage = useCallback(async (message: ChatMessage, convId: string) => {
+    try {
+      setIsSaving(true);
+
+      const { error } = await supabase
+        .from('ai_chat_messages')
+        .insert({
+          conversation_id: convId,
+          role: message.role,
+          content: message.content,
+          image_url: message.image || null,
+          timestamp: message.timestamp.toISOString()
+        });
+
+      if (error) throw error;
+
+      // Update conversation's updated_at
+      await supabase
+        .from('ai_chat_conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', convId);
+
+      await loadConversations();
+    } catch (error) {
+      console.error('Error saving message:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [loadConversations]);
+
+  // Upload image to storage
+  const uploadImage = useCallback(async (file: File): Promise<string | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('ai-chat-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('ai-chat-images')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  }, []);
+
+  // Delete a conversation
+  const deleteConversation = useCallback(async (convId: string) => {
+    try {
+      const { error } = await supabase
+        .from('ai_chat_conversations')
+        .delete()
+        .eq('id', convId);
+
+      if (error) throw error;
+
+      if (conversationId === convId) {
+        setConversationId(null);
+        setConversationTitle('Nueva conversación');
+        setMessages([]);
+      }
+
+      await loadConversations();
+      
+      toast({
+        title: 'Conversación eliminada',
+        description: 'La conversación se eliminó correctamente'
+      });
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      toast({
+        title: 'Error',
+        description: 'No se pudo eliminar la conversación',
+        variant: 'destructive'
+      });
+    }
+  }, [conversationId, loadConversations]);
 
   const sendMessage = useCallback(async (
     content: string, 
     image?: File,
     includeContext: boolean = true
   ) => {
+    // Create new conversation if this is the first message
+    let currentConvId = conversationId;
+    if (!currentConvId && messages.length === 0) {
+      currentConvId = await createNewConversation(content);
+    }
+
+    // Upload image if provided
+    let imageUrl: string | undefined;
+    if (image) {
+      const uploadedUrl = await uploadImage(image);
+      imageUrl = uploadedUrl || URL.createObjectURL(image);
+    }
+
     const userMessage: ChatMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
       content,
       timestamp: new Date(),
-      image: image ? URL.createObjectURL(image) : undefined,
+      image: imageUrl,
     };
 
     setMessages(prev => [...prev, userMessage]);
+    
+    // Save user message to database
+    if (currentConvId) {
+      await saveMessage(userMessage, currentConvId);
+    }
+
     setIsLoading(true);
 
     // Cancel any ongoing request
@@ -170,24 +395,36 @@ export function useAIChat() {
           }
         }
       }
+
+      // Save assistant message to database
+      if (currentConvId) {
+        await saveMessage(assistantMessage, currentConvId);
+      }
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error('AI chat error:', error);
-        setMessages(prev => [...prev, {
+        const errorMessage: ChatMessage = {
           id: `error-${Date.now()}`,
           role: 'assistant',
           content: 'Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
           timestamp: new Date(),
-        }]);
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        
+        if (currentConvId) {
+          await saveMessage(errorMessage, currentConvId);
+        }
       }
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
-  }, [messages]);
+  }, [messages, conversationId, createNewConversation, saveMessage, uploadImage]);
 
   const clearMessages = useCallback(() => {
     setMessages([]);
+    setConversationId(null);
+    setConversationTitle('Nueva conversación');
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -198,6 +435,13 @@ export function useAIChat() {
     isLoading,
     sendMessage,
     clearMessages,
+    conversationId,
+    conversationTitle,
+    conversations,
+    loadConversations,
+    loadConversation,
+    deleteConversation,
+    isSaving
   };
 }
 

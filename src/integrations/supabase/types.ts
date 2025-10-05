@@ -49,6 +49,79 @@ export type Database = {
           },
         ]
       }
+      ai_chat_conversations: {
+        Row: {
+          cabaña_id: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cabaña_id: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cabaña_id?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_chat_conversations_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_chat_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          role: Database["public"]["Enums"]["chat_message_role"]
+          timestamp: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          role: Database["public"]["Enums"]["chat_message_role"]
+          timestamp?: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          role?: Database["public"]["Enums"]["chat_message_role"]
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       animal_documents: {
         Row: {
           animal_id: string
@@ -3370,6 +3443,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "employee" | "read_only"
+      chat_message_role: "user" | "assistant"
       subscription_plan:
         | "free"
         | "personal"
@@ -3505,6 +3579,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "employee", "read_only"],
+      chat_message_role: ["user", "assistant"],
       subscription_plan: [
         "free",
         "personal",
