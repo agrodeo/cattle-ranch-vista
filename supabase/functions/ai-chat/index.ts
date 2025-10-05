@@ -212,118 +212,284 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
     
     const cabanaId = profiles[0].cabaña_id;
     
-    // Get basic cabaña info
-    const cabanaResponse = await fetch(`${supabaseUrl}/rest/v1/cabañas?select=name,location&id=eq.${cabanaId}`, {
-      headers: {
-        'Authorization': authHeader,
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json'
-      }
-    });
+    // Fetch ALL data in parallel
+    const [
+      cabanaRes,
+      animalsRes,
+      corralesRes,
+      pregnanciesRes,
+      eventsRes,
+      iaRes,
+      vaccinesRes,
+      financesRes,
+      tactoRes
+    ] = await Promise.all([
+      // Basic cabaña info
+      fetch(`${supabaseUrl}/rest/v1/cabañas?select=*&id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All animals with full details
+      fetch(`${supabaseUrl}/rest/v1/animals?select=*&cabaña_id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All corrales
+      fetch(`${supabaseUrl}/rest/v1/corrales?select=*&cabaña_id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All pregnancies
+      fetch(`${supabaseUrl}/rest/v1/preñeces?select=*&cabaña_id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All events
+      fetch(`${supabaseUrl}/rest/v1/eventos?select=*&cabaña_id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All IA records
+      fetch(`${supabaseUrl}/rest/v1/ia?select=*`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All animal vaccines
+      fetch(`${supabaseUrl}/rest/v1/animal_vaccines?select=*&cabaña_id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All finances
+      fetch(`${supabaseUrl}/rest/v1/finances?select=*&cabaña_id=eq.${cabanaId}`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      }),
+      // All tactos
+      fetch(`${supabaseUrl}/rest/v1/tactos?select=*`, {
+        headers: { 'Authorization': authHeader, 'apikey': supabaseKey, 'Content-Type': 'application/json' }
+      })
+    ]);
 
-    // Get animal statistics
-    const animalsResponse = await fetch(`${supabaseUrl}/rest/v1/animals?select=sex,status,esta_preñada,birth_date,fecha_muerte&cabaña_id=eq.${cabanaId}`, {
-      headers: {
-        'Authorization': authHeader,
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    // Get corrales
-    const corralesResponse = await fetch(`${supabaseUrl}/rest/v1/corrales?select=name,hectareas&cabaña_id=eq.${cabanaId}`, {
-      headers: {
-        'Authorization': authHeader,
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    // Get mortality data specifically
-    const mortalityResponse = await fetch(`${supabaseUrl}/rest/v1/animals?select=id,id_tag,name,sex,birth_date,fecha_muerte,status&cabaña_id=eq.${cabanaId}&status=eq.muerto`, {
-      headers: {
-        'Authorization': authHeader,
-        'apikey': supabaseKey,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    console.log('Data fetch results:', {
-      cabaña: cabanaResponse.status,
-      animals: animalsResponse.status, 
-      corrales: corralesResponse.status,
-      mortality: mortalityResponse.status
-    });
-    
-    const cabana = cabanaResponse.ok ? (await cabanaResponse.json())[0] : null;
-    const animals = animalsResponse.ok ? await animalsResponse.json() : [];
-    const corrales = corralesResponse.ok ? await corralesResponse.json() : [];
-    const deadAnimals = mortalityResponse.ok ? await mortalityResponse.json() : [];
-    
-    console.log('Parsed data:', {
-      cabana: !!cabana,
-      animalsCount: animals.length,
-      corralesCount: corrales.length,
-      deadAnimalsCount: deadAnimals.length
-    });
+    const cabana = cabanaRes.ok ? (await cabanaRes.json())[0] : null;
+    const animals = animalsRes.ok ? await animalsRes.json() : [];
+    const corrales = corralesRes.ok ? await corralesRes.json() : [];
+    const pregnancies = pregnanciesRes.ok ? await pregnanciesRes.json() : [];
+    const events = eventsRes.ok ? await eventsRes.json() : [];
+    const iaRecords = iaRes.ok ? await iaRes.json() : [];
+    const vaccines = vaccinesRes.ok ? await vaccinesRes.json() : [];
+    const finances = financesRes.ok ? await financesRes.json() : [];
+    const tactos = tactoRes.ok ? await tactoRes.json() : [];
 
     let context = '';
     
+    // === CABAÑA INFO ===
     if (cabana) {
-      context += `Cabaña: ${cabana.name}`;
-      if (cabana.location) context += ` - Ubicación: ${cabana.location}`;
+      context += `=== INFORMACIÓN DE LA CABAÑA ===\n`;
+      context += `Nombre: ${cabana.name}\n`;
+      if (cabana.location) context += `Ubicación: ${cabana.location}\n`;
+      if (cabana.country_code) context += `País: ${cabana.country_code}\n`;
+      if (cabana.province_code) context += `Provincia: ${cabana.province_code}\n`;
       context += '\n';
     }
 
+    // === ANIMALES COMPLETOS ===
     if (animals && animals.length > 0) {
-      const totalAnimals = animals.length;
-      const activeAnimals = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto').length;
-      const femaleAnimals = animals.filter((a: any) => a.sex === 'Hembra' && a.status !== 'vendido' && a.status !== 'muerto').length;
-      const pregnantAnimals = animals.filter((a: any) => a.esta_preñada).length;
+      context += `=== INVENTARIO COMPLETO DE ANIMALES (${animals.length} registros) ===\n`;
       
-      context += `GANADO:\n`;
-      context += `- Total de animales: ${totalAnimals}\n`;
-      context += `- Animales activos: ${activeAnimals}\n`;
-      context += `- Hembras activas: ${femaleAnimals}\n`;
-      context += `- Hembras preñadas: ${pregnantAnimals}\n`;
-    }
-
-    if (corrales && corrales.length > 0) {
-      const totalHectares = corrales.reduce((sum: number, c: any) => sum + (c.hectareas || 0), 0);
-      context += `\nCORRALES:\n`;
-      context += `- Número de corrales: ${corrales.length}\n`;
-      context += `- Total hectáreas: ${totalHectares.toFixed(1)}\n`;
-    }
-
-    // Add mortality context
-    if (deadAnimals && deadAnimals.length > 0) {
-      const totalDeaths = deadAnimals.length;
-      const recentDeaths = deadAnimals.filter((a: any) => {
-        if (!a.fecha_muerte) return false;
-        const deathDate = new Date(a.fecha_muerte);
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        return deathDate >= sixMonthsAgo;
-      }).length;
+      // Statistics
+      const active = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto');
+      const sold = animals.filter((a: any) => a.status === 'vendido');
+      const dead = animals.filter((a: any) => a.status === 'muerto');
+      const females = active.filter((a: any) => a.sex === 'Hembra');
+      const males = active.filter((a: any) => a.sex === 'Macho');
+      const pregnant = animals.filter((a: any) => a.esta_preñada);
       
-      const totalRecords = animals.length + deadAnimals.length;
-      const mortalityRate = totalRecords > 0 ? ((totalDeaths / totalRecords) * 100).toFixed(1) : '0.0';
+      context += `\nESTADÍSTICAS GENERALES:\n`;
+      context += `- Activos: ${active.length} (${females.length} hembras, ${males.length} machos)\n`;
+      context += `- Vendidos: ${sold.length}\n`;
+      context += `- Muertos: ${dead.length}\n`;
+      context += `- Hembras preñadas: ${pregnant.length}\n`;
       
-      context += `\nMORTALIDADES:\n`;
-      context += `- Total de muertes registradas: ${totalDeaths}\n`;
-      context += `- Muertes en últimos 6 meses: ${recentDeaths}\n`;
-      context += `- Tasa de mortalidad histórica: ${mortalityRate}%\n`;
+      // Age categories
+      const now = new Date();
+      const calves = active.filter((a: any) => {
+        if (!a.birth_date) return false;
+        const months = (now.getTime() - new Date(a.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30);
+        return months < 8;
+      });
+      const yearlings = active.filter((a: any) => {
+        if (!a.birth_date) return false;
+        const months = (now.getTime() - new Date(a.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30);
+        return months >= 8 && months < 24;
+      });
+      const adults = active.filter((a: any) => {
+        if (!a.birth_date) return false;
+        const months = (now.getTime() - new Date(a.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30);
+        return months >= 24;
+      });
       
-      // Add causes if available (this would need to be expanded based on your data structure)
-      const withDeathDate = deadAnimals.filter((a: any) => a.fecha_muerte).length;
-      if (withDeathDate > 0) {
-        context += `- Animales con fecha de muerte registrada: ${withDeathDate}\n`;
+      context += `\nCATEGORÍAS POR EDAD:\n`;
+      context += `- Terneros (0-8 meses): ${calves.length}\n`;
+      context += `- Recría (8-24 meses): ${yearlings.length}\n`;
+      context += `- Adultos (>24 meses): ${adults.length}\n`;
+      
+      // Detailed animal list (limit to key info to avoid token overflow)
+      context += `\nDETALLE DE ANIMALES ACTIVOS:\n`;
+      active.slice(0, 50).forEach((a: any) => {
+        const age = a.birth_date ? Math.floor((now.getTime() - new Date(a.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30)) : 'N/A';
+        context += `- ${a.id_tag}${a.name ? ` (${a.name})` : ''}: ${a.sex}, ${age} meses`;
+        if (a.breed) context += `, ${a.breed}`;
+        if (a.esta_preñada) context += `, PREÑADA`;
+        if (a.peso_actual_kg) context += `, ${a.peso_actual_kg}kg`;
+        if (a.corral_id) {
+          const corral = corrales.find((c: any) => c.id === a.corral_id);
+          if (corral) context += `, corral: ${corral.name}`;
+        }
+        context += `\n`;
+      });
+      if (active.length > 50) {
+        context += `... y ${active.length - 50} animales más\n`;
       }
-    } else {
-      context += `\nMORTALIDADES:\n`;
-      context += `- No se han registrado mortalidades en el sistema\n`;
+      
+      // Mortality details
+      if (dead.length > 0) {
+        context += `\nMORTALIDADES DETALLADAS (${dead.length}):\n`;
+        dead.forEach((a: any) => {
+          context += `- ${a.id_tag}${a.name ? ` (${a.name})` : ''}: ${a.sex}`;
+          if (a.fecha_muerte) context += `, murió: ${a.fecha_muerte}`;
+          if (a.causa_muerte) context += `, causa: ${a.causa_muerte}`;
+          context += `\n`;
+        });
+      }
+      context += '\n';
     }
 
+    // === CORRALES ===
+    if (corrales && corrales.length > 0) {
+      context += `=== CORRALES (${corrales.length}) ===\n`;
+      corrales.forEach((c: any) => {
+        const animalsInCorral = animals.filter((a: any) => a.corral_id === c.id && a.status !== 'vendido' && a.status !== 'muerto');
+        context += `- ${c.name}: ${c.hectareas || 0} ha, ${animalsInCorral.length} animales\n`;
+      });
+      context += '\n';
+    }
+
+    // === PREÑECES ===
+    if (pregnancies && pregnancies.length > 0) {
+      context += `=== HISTORIAL DE PREÑECES (${pregnancies.length}) ===\n`;
+      const active = pregnancies.filter((p: any) => p.estado_final === 'activa');
+      const successful = pregnancies.filter((p: any) => p.estado_final === 'exitosa');
+      const failed = pregnancies.filter((p: any) => p.estado_final === 'fallida');
+      
+      context += `- Activas: ${active.length}\n`;
+      context += `- Exitosas: ${successful.length}\n`;
+      context += `- Fallidas: ${failed.length}\n`;
+      
+      if (active.length > 0) {
+        context += `\nPREÑECES ACTIVAS:\n`;
+        active.forEach((p: any) => {
+          const animal = animals.find((a: any) => a.id === p.animal_id);
+          context += `- Animal ${animal?.id_tag || p.animal_id}`;
+          if (p.fecha_inicio) context += `, inicio: ${p.fecha_inicio}`;
+          if (p.fecha_estimada_parto) context += `, parto estimado: ${p.fecha_estimada_parto}`;
+          if (p.origen) context += `, origen: ${p.origen}`;
+          context += `\n`;
+        });
+      }
+      context += '\n';
+    }
+
+    // === EVENTOS ===
+    if (events && events.length > 0) {
+      context += `=== EVENTOS REGISTRADOS (${events.length}) ===\n`;
+      const byType: any = {};
+      events.forEach((e: any) => {
+        byType[e.tipo] = (byType[e.tipo] || 0) + 1;
+      });
+      Object.entries(byType).forEach(([tipo, count]) => {
+        context += `- ${tipo}: ${count}\n`;
+      });
+      
+      // Recent events
+      const recent = events
+        .filter((e: any) => e.fecha)
+        .sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime())
+        .slice(0, 20);
+      
+      if (recent.length > 0) {
+        context += `\nÚLTIMOS 20 EVENTOS:\n`;
+        recent.forEach((e: any) => {
+          context += `- ${e.fecha}: ${e.tipo}`;
+          if (e.notas) context += ` - ${e.notas}`;
+          context += `\n`;
+        });
+      }
+      context += '\n';
+    }
+
+    // === INSEMINACIONES ===
+    if (iaRecords && iaRecords.length > 0) {
+      context += `=== INSEMINACIONES ARTIFICIALES (${iaRecords.length}) ===\n`;
+      iaRecords.slice(0, 20).forEach((ia: any) => {
+        const event = events.find((e: any) => e.id === ia.evento_id);
+        context += `- Evento: ${event?.fecha || 'N/A'}`;
+        if (ia.animales_ids) context += `, ${ia.animales_ids.length} hembras`;
+        if (ia.toro_id) {
+          const bull = animals.find((a: any) => a.id === ia.toro_id);
+          context += `, toro: ${bull?.id_tag || ia.toro_id}`;
+        }
+        context += `\n`;
+      });
+      context += '\n';
+    }
+
+    // === VACUNACIONES ===
+    if (vaccines && vaccines.length > 0) {
+      context += `=== VACUNACIONES (${vaccines.length} registros) ===\n`;
+      const byVaccine: any = {};
+      vaccines.forEach((v: any) => {
+        byVaccine[v.vaccine_code] = (byVaccine[v.vaccine_code] || 0) + 1;
+      });
+      Object.entries(byVaccine).forEach(([vaccine, count]) => {
+        context += `- ${vaccine}: ${count} aplicaciones\n`;
+      });
+      
+      // Recent vaccinations
+      const recent = vaccines
+        .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 15);
+      context += `\nÚLTIMAS 15 VACUNACIONES:\n`;
+      recent.forEach((v: any) => {
+        const animal = animals.find((a: any) => a.id === v.animal_id);
+        context += `- ${v.date}: ${animal?.id_tag || v.animal_id}, ${v.vaccine_code}\n`;
+      });
+      context += '\n';
+    }
+
+    // === FINANZAS ===
+    if (finances && finances.length > 0) {
+      context += `=== MOVIMIENTOS FINANCIEROS (${finances.length}) ===\n`;
+      const income = finances.filter((f: any) => f.type === 'ingreso');
+      const expense = finances.filter((f: any) => f.type === 'egreso');
+      const totalIncome = income.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+      const totalExpense = expense.reduce((sum: number, f: any) => sum + (f.amount || 0), 0);
+      
+      context += `- Ingresos: ${income.length} movimientos, total: $${totalIncome.toFixed(2)}\n`;
+      context += `- Egresos: ${expense.length} movimientos, total: $${totalExpense.toFixed(2)}\n`;
+      context += `- Balance: $${(totalIncome - totalExpense).toFixed(2)}\n`;
+      context += '\n';
+    }
+
+    // === TACTOS ===
+    if (tactos && tactos.length > 0) {
+      context += `=== TACTOS REALIZADOS (${tactos.length}) ===\n`;
+      tactos.slice(0, 10).forEach((t: any) => {
+        const event = events.find((e: any) => e.id === t.evento_id);
+        context += `- Fecha: ${event?.fecha || 'N/A'}`;
+        if (t.resultados) {
+          const results = Array.isArray(t.resultados) ? t.resultados : [];
+          const pregnant = results.filter((r: any) => r.resultado === 'preñada').length;
+          const empty = results.filter((r: any) => r.resultado === 'vacia').length;
+          context += `, ${results.length} hembras (${pregnant} preñadas, ${empty} vacías)`;
+        }
+        context += `\n`;
+      });
+      context += '\n';
+    }
+
+    console.log('Generated comprehensive context length:', context.length);
     return context;
   } catch (error) {
     console.log('Error fetching cabaña context:', error);
