@@ -377,8 +377,32 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       context += `- Exitosas: ${successful.length}\n`;
       context += `- Fallidas: ${failed.length}\n`;
       
+      // Detailed pregnancy history by animal
+      context += `\nHISTORIAL DETALLADO POR ANIMAL:\n`;
+      const femaleAnimals = animals.filter((a: any) => a.sex === 'Hembra' && a.status !== 'vendido' && a.status !== 'muerto');
+      
+      femaleAnimals.forEach((animal: any) => {
+        const animalPregnancies = pregnancies.filter((p: any) => p.animal_id === animal.id);
+        if (animalPregnancies.length > 0) {
+          const animalSuccessful = animalPregnancies.filter((p: any) => p.estado_final === 'exitosa').length;
+          const animalFailed = animalPregnancies.filter((p: any) => p.estado_final === 'fallida').length;
+          const animalActive = animalPregnancies.filter((p: any) => p.estado_final === 'activa').length;
+          
+          context += `- ${animal.id_tag}: ${animalPregnancies.length} preñeces (${animalSuccessful} exitosas, ${animalFailed} fallidas, ${animalActive} activas)\n`;
+          
+          // Detail each pregnancy
+          animalPregnancies.forEach((p: any) => {
+            context += `  • ${p.fecha_inicio}: ${p.estado_final}`;
+            if (p.origen) context += `, origen: ${p.origen}`;
+            if (p.fecha_estimada_parto) context += `, parto est: ${p.fecha_estimada_parto}`;
+            if (p.motivo_finalizacion) context += `, motivo: ${p.motivo_finalizacion}`;
+            context += `\n`;
+          });
+        }
+      });
+      
       if (active.length > 0) {
-        context += `\nPREÑECES ACTIVAS:\n`;
+        context += `\nPREÑECES ACTIVAS ACTUALES:\n`;
         active.forEach((p: any) => {
           const animal = animals.find((a: any) => a.id === p.animal_id);
           context += `- Animal ${animal?.id_tag || p.animal_id}`;
