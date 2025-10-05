@@ -157,7 +157,7 @@ Output style:
           ...messages,
         ],
         stream: true,
-        max_tokens: 300, // Limitar tokens para respuestas más cortas
+        max_tokens: 2000, // Permitir respuestas más extensas con todo el contexto
       }),
     });
     
