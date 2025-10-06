@@ -175,10 +175,23 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
             <div className="space-y-2">
               {weights.map((weight) => (
                 <div key={weight.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">
-                      {format(new Date(weight.fecha), 'dd/MM/yyyy', { locale: es })}
-                    </p>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">
+                        {format(new Date(weight.fecha), 'dd/MM/yyyy', { locale: es })}
+                      </p>
+                      {weight.tipo_pesaje && (
+                        <Badge variant={
+                          weight.tipo_pesaje === 'nacimiento' ? 'default' :
+                          weight.tipo_pesaje === 'destete' ? 'secondary' :
+                          weight.tipo_pesaje === 'final' ? 'destructive' : 'outline'
+                        } className="text-xs">
+                          {weight.tipo_pesaje === 'nacimiento' ? 'Nacimiento' :
+                           weight.tipo_pesaje === 'destete' ? 'Destete' :
+                           weight.tipo_pesaje === 'final' ? 'Final' : 'Control'}
+                        </Badge>
+                      )}
+                    </div>
                     {weight.edad_dias && (
                       <p className="text-sm text-muted-foreground">
                         {weight.edad_dias} días de edad
@@ -191,6 +204,11 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
                       <Badge variant="secondary" className="text-xs">
                         +{weight.ganancia_diaria.toFixed(3)} kg/día
                       </Badge>
+                    )}
+                    {weight.dias_desde_ultimo && (
+                      <p className="text-xs text-muted-foreground">
+                        {weight.dias_desde_ultimo} días desde anterior
+                      </p>
                     )}
                   </div>
                 </div>

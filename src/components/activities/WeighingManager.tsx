@@ -1,17 +1,47 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Scale, TrendingUp, Plus } from "lucide-react";
+import { Scale, TrendingUp, Plus, Target } from "lucide-react";
 import { useActivities } from "@/hooks/useActivities";
+import { useHerdWeightSummary } from "@/hooks/useHerdWeightSummary";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { NewWeighingDialog } from "./NewWeighingDialog";
 import { BulkWeighingUpload } from "./BulkWeighingUpload";
 import { WeighingMethodSelector } from "./WeighingMethodSelector";
 
 export function WeighingManager() {
   const { stats } = useActivities();
+  const { user } = useSupabaseAuth();
+  const [cabanaId, setCabanaId] = useState<string | null>(null);
   const [showMethodSelector, setShowMethodSelector] = useState(false);
   const [showWeighingDialog, setShowWeighingDialog] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+
+  // Fetch cabana ID
+  useEffect(() => {
+    const fetchCabana = async () => {
+      if (!user?.id) return;
+      
+      const { data } = await supabase
+        .from('profiles')
+        .select('cabana_id: "cabaña_id"')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (data?.cabana_id) {
+        setCabanaId(data.cabana_id as string);
+      }
+    };
+    
+    fetchCabana();
+  }, [user]);
+
+  const { summary, isLoading: summaryLoading } = useHerdWeightSummary(
+    cabanaId || '',
+    new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), // Last 90 days
+    new Date()
+  );
 
   const handleSelectManual = () => {
     setShowMethodSelector(false);
@@ -25,14 +55,16 @@ export function WeighingManager() {
   
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Peso Promedio</CardTitle>
             <Scale className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0 kg</div>
+            <div className="text-2xl font-bold">
+              {summaryLoading ? '...' : `${summary?.peso_promedio?.toFixed(1) || 0} kg`}
+            </div>
             <p className="text-xs text-muted-foreground">
               Del rodeo actual
             </p>
@@ -41,13 +73,15 @@ export function WeighingManager() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ganancia Diaria</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Ganancia Diaria Promedio</CardTitle>
+            <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">0 kg</div>
+            <div className="text-2xl font-bold text-green-600">
+              {summaryLoading ? '...' : `${summary?.ganancia_diaria_promedio?.toFixed(3) || 0} kg/día`}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Promedio últimos 30 días
+              Últimos 90 días
             </p>
           </CardContent>
         </Card>
@@ -55,12 +89,29 @@ export function WeighingManager() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Animales Pesados</CardTitle>
+            <Target className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {summaryLoading ? '...' : summary?.animales_pesados || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Últimos 90 días
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Pesajes</CardTitle>
             <div className="h-4 w-4 rounded-full bg-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.weighings}</div>
+            <div className="text-2xl font-bold">
+              {summaryLoading ? '...' : summary?.total_weighings || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
-              Este mes
+              Últimos 90 días
             </p>
           </CardContent>
         </Card>

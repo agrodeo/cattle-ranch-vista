@@ -212,17 +212,8 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
 
       if (error) throw error;
 
-      // Update animal weights
-      for (const row of validData) {
-        await supabase
-          .from("animals")
-          .update({
-            peso_actual_kg: row.peso_kg,
-            fecha_ultimo_pesaje: eventDate.toISOString().split('T')[0]
-          })
-          .eq('id', row.animalId);
-      }
-
+      // Animals will be updated automatically by trigger
+      
       toast({
         title: "Pesajes cargados exitosamente",
         description: `Se registraron ${validData.length} pesajes`,

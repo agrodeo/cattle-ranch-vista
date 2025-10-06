@@ -7,6 +7,9 @@ export interface WeightRecord {
   peso: number;
   ganancia_diaria?: number;
   edad_dias?: number;
+  tipo_pesaje?: 'nacimiento' | 'destete' | 'final' | 'control';
+  peso_anterior?: number;
+  dias_desde_ultimo?: number;
 }
 
 export function useAnimalWeights(animalId: string) {
@@ -18,42 +21,22 @@ export function useAnimalWeights(animalId: string) {
     
     setIsLoading(true);
     try {
-      // Fetch weighing events for this animal
-      const { data: eventos, error: eventosError } = await supabase
-        .from('eventos')
-        .select(`
-          id,
-          fecha,
-          pesajes (
-            mediciones
-          )
-        `)
-        .eq('tipo', 'pesaje')
-        .contains('animales_ids', [animalId])
-        .order('fecha', { ascending: false });
+      // Fetch from new animal_weight_history table
+      const { data, error } = await supabase
+        .rpc('get_animal_weight_history', { _animal_id: animalId });
 
-      if (eventosError) throw eventosError;
+      if (error) throw error;
 
-      const weightRecords: WeightRecord[] = [];
-      
-      eventos?.forEach(evento => {
-        if (evento.pesajes?.[0]?.mediciones) {
-          const mediciones = evento.pesajes[0].mediciones as any;
-          // Find this animal's weight in the measurements
-          if (Array.isArray(mediciones)) {
-            const animalMeasurement = mediciones.find((m: any) => m.animal_id === animalId);
-            if (animalMeasurement?.peso) {
-              weightRecords.push({
-                id: evento.id,
-                fecha: evento.fecha,
-                peso: animalMeasurement.peso,
-                ganancia_diaria: animalMeasurement.ganancia_diaria,
-                edad_dias: animalMeasurement.edad_dias
-              });
-            }
-          }
-        }
-      });
+      const weightRecords: WeightRecord[] = data?.map((record: any) => ({
+        id: record.id,
+        fecha: record.fecha,
+        peso: record.peso_kg,
+        ganancia_diaria: record.ganancia_diaria,
+        edad_dias: record.edad_dias,
+        tipo_pesaje: record.tipo_pesaje,
+        peso_anterior: record.peso_anterior,
+        dias_desde_ultimo: record.dias_desde_ultimo
+      })) || [];
 
       setWeights(weightRecords);
     } catch (error) {

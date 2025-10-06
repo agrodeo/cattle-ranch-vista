@@ -218,6 +218,72 @@ export type Database = {
           },
         ]
       }
+      animal_weight_history: {
+        Row: {
+          animal_id: string
+          cabaña_id: string
+          created_at: string | null
+          dias_desde_ultimo_pesaje: number | null
+          edad_dias: number | null
+          evento_id: string | null
+          fecha: string
+          ganancia_diaria: number | null
+          id: string
+          notas: string | null
+          peso_anterior: number | null
+          peso_kg: number
+          tipo_pesaje: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          animal_id: string
+          cabaña_id: string
+          created_at?: string | null
+          dias_desde_ultimo_pesaje?: number | null
+          edad_dias?: number | null
+          evento_id?: string | null
+          fecha: string
+          ganancia_diaria?: number | null
+          id?: string
+          notas?: string | null
+          peso_anterior?: number | null
+          peso_kg: number
+          tipo_pesaje?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string | null
+          dias_desde_ultimo_pesaje?: number | null
+          edad_dias?: number | null
+          evento_id?: string | null
+          fecha?: string
+          ganancia_diaria?: number | null
+          id?: string
+          notas?: string | null
+          peso_anterior?: number | null
+          peso_kg?: number
+          tipo_pesaje?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animal_weight_history_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "animal_weight_history_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       animals: {
         Row: {
           birth_date: string | null
@@ -2740,6 +2806,14 @@ export type Database = {
         Args: { _corral_id: string; _year?: number }
         Returns: Json
       }
+      calculate_daily_gain: {
+        Args: {
+          current_weight: number
+          days_between: number
+          previous_weight: number
+        }
+        Returns: number
+      }
       calculate_individual_kpis: {
         Args: { _animal_id: string; _year?: number }
         Returns: Json
@@ -2808,6 +2882,14 @@ export type Database = {
       check_reproductive_alerts: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      classify_weighing_type: {
+        Args: {
+          animal_birth_date: string
+          animal_status: string
+          weighing_date: string
+        }
+        Returns: string
       }
       compile_rules_for_ranch: {
         Args: { _cabana_id: string }
@@ -2931,6 +3013,20 @@ export type Database = {
           vaccine_type: string
         }[]
       }
+      get_animal_weight_history: {
+        Args: { _animal_id: string }
+        Returns: {
+          dias_desde_ultimo: number
+          edad_dias: number
+          fecha: string
+          ganancia_diaria: number
+          id: string
+          notas: string
+          peso_anterior: number
+          peso_kg: number
+          tipo_pesaje: string
+        }[]
+      }
       get_current_entitlements: {
         Args: { cabana_uuid: string }
         Returns: Json
@@ -2976,6 +3072,18 @@ export type Database = {
           balance: number
           egresos: number
           ingresos: number
+        }[]
+      }
+      get_herd_weight_summary: {
+        Args: { _cabana_id: string; _date_from?: string; _date_to?: string }
+        Returns: {
+          animales_pesados: number
+          ganancia_diaria_promedio: number
+          low_performers: Json
+          peso_promedio: number
+          por_categoria: Json
+          top_performers: Json
+          total_weighings: number
         }[]
       }
       get_mortality_reports: {
@@ -3190,6 +3298,10 @@ export type Database = {
       migrate_existing_reproductive_data: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      migrate_historical_weighings: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       prepare_user_migration: {
         Args: Record<PropertyKey, never>
