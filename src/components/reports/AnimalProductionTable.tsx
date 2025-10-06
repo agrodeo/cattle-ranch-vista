@@ -153,12 +153,15 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
         </CardHeader>
         <CardContent>
           {animals.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <div className="text-lg font-medium mb-2">Sin datos de producción</div>
-              <div className="text-sm">
-                No se encontraron animales con datos de peso en el período seleccionado
+            <div className="text-center py-12">
+              <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
+              <div className="text-lg font-medium mb-2">Aún no hay pesajes registrados</div>
+              <div className="text-sm text-muted-foreground mb-6">
+                Registra pesajes en la sección de Actividades para ver los datos de producción y ganancia diaria
               </div>
+              <Button variant="outline" onClick={() => window.location.href = '/actividades'}>
+                Ir a Actividades
+              </Button>
             </div>
           ) : (
             <div className="overflow-x-auto">
