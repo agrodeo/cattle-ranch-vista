@@ -233,8 +233,8 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw servicesError;
       }
 
-      // Get recent activities (last 30 days) with detailed information
-      console.log('🔍 Fetching recent activities from:', thirtyDaysAgo.toISOString().split('T')[0]);
+      // Get recent activities (últimas 5 actividades sin importar fecha)
+      console.log('🔍 Fetching recent activities');
       const { data: recentData, error: recentError } = await supabase
         .from('eventos')
         .select(`
@@ -249,7 +249,6 @@ export const useDashboardSummary = (): DashboardSummary => {
           tactos(resultados)
         `)
         .eq('cabaña_id', cabanaId)
-        .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0])
         .order('fecha', { ascending: false })
         .limit(5);
       
