@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatDateForDB } from "@/lib/dateFormatters";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductionAnimal {
   animal_id: string;
@@ -52,6 +53,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchProductionData();
@@ -162,6 +164,92 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
               <Button variant="outline" onClick={() => window.location.href = '/actividades'}>
                 Ir a Actividades
               </Button>
+            </div>
+          ) : isMobile ? (
+            <div className="space-y-3">
+              {animals.map((animal) => (
+                <Card 
+                  key={animal.animal_id}
+                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => handleViewAnimal(animal.animal_id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-base truncate">
+                          {animal.name || animal.tag}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {animal.tag} • {animal.category}
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="ml-2 flex-shrink-0">
+                        {animal.corral_name || 'Sin corral'}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Último Peso</div>
+                        <div className="font-medium">{formatWeight(animal.last_weight_kg)}</div>
+                        {animal.last_weight_date && (
+                          <div className="text-xs text-muted-foreground">
+                            {format(new Date(animal.last_weight_date), "dd/MM/yy", { locale: es })}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Pesadas</div>
+                        <div className="font-medium">{animal.weighs_count}</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">ADG 90d</div>
+                        <Badge variant={getAdgBadgeColor(animal.adg_recent_90d)} className="text-xs">
+                          {formatAdg(animal.adg_recent_90d)}
+                        </Badge>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">ADG Temp.</div>
+                        <Badge variant={getAdgBadgeColor(animal.adg_season)} className="text-xs">
+                          {formatAdg(animal.adg_season)}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 pt-3 border-t">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Nacer</div>
+                        <div className="text-sm font-medium">{formatWeight(animal.weight_birth)}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Destete</div>
+                        <div className="text-sm font-medium">{formatWeight(animal.weight_weaning)}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">18m</div>
+                        <div className="text-sm font-medium">{formatWeight(animal.weight_yearling)}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">Final</div>
+                        <div className="text-sm font-medium">{formatWeight(animal.weight_final)}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">Percentil:</span>
+                        <Badge variant={getPercentileBadgeColor(animal.adg_percentile)} className="text-xs">
+                          P{animal.adg_percentile}
+                        </Badge>
+                      </div>
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           ) : (
             <div className="overflow-x-auto">
