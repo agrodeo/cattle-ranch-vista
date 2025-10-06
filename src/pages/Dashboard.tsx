@@ -64,9 +64,12 @@ const Dashboard = () => {
       trend: { value: "+8%", direction: "up" as const }
     },
     {
-      title: "Servicios",
-      value: counts.servicesTotal,
+      title: "Preñez Actual",
+      value: `${counts.pregnancyPercentage}%`,
+      subtitle: `${counts.pregnantFemales}/${counts.reproductiveFemales} hembras`,
       icon: TrendingUp,
+      colored: true,
+      percentage: counts.pregnancyPercentage,
     },
   ];
 

@@ -10,6 +10,9 @@ interface DashboardCounts {
   corrals: number;
   activitiesLast7d: number;
   servicesTotal: number;
+  pregnancyPercentage: number;
+  reproductiveFemales: number;
+  pregnantFemales: number;
 }
 
 interface RecentActivity {
@@ -90,6 +93,9 @@ export const useDashboardSummary = (): DashboardSummary => {
     corrals: 0,
     activitiesLast7d: 0,
     servicesTotal: 0,
+    pregnancyPercentage: 0,
+    reproductiveFemales: 0,
+    pregnantFemales: 0,
   });
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [upcoming, setUpcoming] = useState<{ activitiesNext7d: UpcomingActivity[] }>({
@@ -233,6 +239,37 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw servicesError;
       }
 
+      // Count reproductive females (≥15 months, active)
+      const { data: reproductiveFemalesData, error: reproFemalesError } = await supabase
+        .from('animals')
+        .select('id, birth_date, esta_preñada')
+        .eq('cabaña_id', cabanaId)
+        .eq('sex', 'Hembra')
+        .not('status', 'in', '("vendido","muerto")');
+
+      let reproductiveFemalesCount = 0;
+      let pregnantFemalesCount = 0;
+
+      if (!reproFemalesError && reproductiveFemalesData) {
+        const today = new Date();
+        reproductiveFemalesData.forEach((animal: any) => {
+          if (animal.birth_date) {
+            const birthDate = new Date(animal.birth_date);
+            const ageMonths = (today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+            if (ageMonths >= 15) {
+              reproductiveFemalesCount++;
+              if (animal.esta_preñada) {
+                pregnantFemalesCount++;
+              }
+            }
+          }
+        });
+      }
+
+      const pregnancyPercentage = reproductiveFemalesCount > 0 
+        ? Math.round((pregnantFemalesCount / reproductiveFemalesCount) * 100)
+        : 0;
+
       // Get recent activities (últimas 5 actividades sin importar fecha)
       console.log('🔍 Fetching recent activities');
       const { data: recentData, error: recentError } = await supabase
@@ -336,6 +373,9 @@ export const useDashboardSummary = (): DashboardSummary => {
         corrals: corralsCount || 0,
         activitiesLast7d: activitiesCount || 0,
         servicesTotal: servicesCount || 0,
+        pregnancyPercentage,
+        reproductiveFemales: reproductiveFemalesCount,
+        pregnantFemales: pregnantFemalesCount,
       });
 
       // Update recent activities with detailed information
