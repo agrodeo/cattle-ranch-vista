@@ -2784,7 +2784,7 @@ export type Database = {
         Args: { _cabana_id: string }
         Returns: undefined
       }
-      backfill_animal_weights: {
+      backfill_animal_weights_v2: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
