@@ -206,7 +206,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
 
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div>
-                        <div className="text-xs text-muted-foreground mb-1">ADG 90d</div>
+                        <div className="text-xs text-muted-foreground mb-1">ADG N-D</div>
                         <Badge variant={getAdgBadgeColor(animal.adg_recent_90d)} className="text-xs">
                           {formatAdg(animal.adg_recent_90d)}
                         </Badge>
@@ -268,9 +268,9 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                     </TableHead>
                     <TableHead className="text-center">
                       <Tooltip>
-                        <TooltipTrigger>ADG 90d</TooltipTrigger>
+                        <TooltipTrigger>ADG N-D</TooltipTrigger>
                         <TooltipContent>
-                          <p>Ganancia diaria promedio últimos 90 días</p>
+                          <p>Ganancia diaria promedio desde nacimiento hasta destete</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
