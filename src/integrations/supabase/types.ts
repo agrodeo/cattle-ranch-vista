@@ -2784,6 +2784,10 @@ export type Database = {
         Args: { _cabana_id: string }
         Returns: undefined
       }
+      backfill_animal_weights: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       calculate_age_months: {
         Args: { birth_date: string }
         Returns: number
