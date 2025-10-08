@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
+import { categorizeAnimal } from "@/lib/animalCategories";
 
 interface NewGeneralActivityDialogProps {
   open?: boolean;
@@ -33,6 +34,7 @@ interface Animal {
   birth_date?: string;
   corral_id?: string;
   corral?: { name: string };
+  is_castrated?: boolean;
 }
 
 const activityTypes = [
@@ -163,6 +165,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           birth_date,
           status,
           corral_id,
+          is_castrated,
           corral:corrales(name)
         `)
         .not('status', 'ilike', 'vendido')
@@ -197,24 +200,6 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
     }
   };
 
-  const getAgeCategory = (birthDate: string | null, sex: string) => {
-    if (!birthDate) return "Sin clasificar";
-    
-    const today = new Date();
-    const birth = new Date(birthDate);
-    const monthsDiff = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
-    
-    if (sex === "Macho") {
-      if (monthsDiff < 12) return "Ternero";
-      if (monthsDiff < 24) return "Novillo";
-      return "Toro";
-    } else {
-      if (monthsDiff < 12) return "Ternera";
-      if (monthsDiff < 24) return "Vaquillona";
-      return "Vaca";
-    }
-  };
-
   const filteredAnimals = animals.filter(animal => {
     const matchesSearch = searchTerm === "" || 
       animal.id_tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -222,7 +207,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
     
     const matchesSex = filterSex === "all" || animal.sex === filterSex;
     
-    const category = getAgeCategory(animal.birth_date, animal.sex);
+    const category = categorizeAnimal(animal, animal.is_castrated || false);
     const matchesCategory = filterCategory === "all" || category === filterCategory;
     
     const matchesCorral = filterCorral === "all" || animal.corral_id === filterCorral;
