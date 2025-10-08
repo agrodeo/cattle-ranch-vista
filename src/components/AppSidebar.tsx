@@ -80,7 +80,8 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible={isMobile ? "offcanvas" : "icon"} 
-      className="border-r border-ink-200 bg-white w-64"
+      className="border-r border-ink-200 bg-white"
+      style={{ width: isCollapsed ? '64px' : '256px' }}
     >
       <SidebarContent className="bg-white">
         <SidebarGroup>
@@ -105,7 +106,7 @@ export function AppSidebar() {
                         to={item.url}
                         className={cn(
                           "flex items-center rounded-lg text-sm font-medium transition-all duration-200 relative min-h-[44px]",
-                          isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-3 py-3 sm:py-2.5",
+                          isCollapsed ? "justify-center w-full mx-1" : "gap-3 px-3 py-3 sm:py-2.5",
                           isActive 
                             ? isCollapsed 
                               ? "bg-brand-50 text-brand-900"
