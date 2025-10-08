@@ -1,21 +1,11 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, Syringe, Scale, Activity, ExternalLink } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { format } from "date-fns";
 import { Link } from "react-router-dom";
+import { useAnimalActivities } from "@/hooks/useAnimalActivities";
 
-interface AnimalActivity {
-  id: string;
-  date: string;
-  type: string;
-  description: string;
-  result?: string;
-  notes?: string;
-}
 
 interface AnimalActivitiesHistoryProps {
   animalId: string;
@@ -23,52 +13,7 @@ interface AnimalActivitiesHistoryProps {
 }
 
 export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActivitiesHistoryProps) {
-  const [activities, setActivities] = useState<AnimalActivity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { currentUser } = useSupabaseAuth();
-
-  useEffect(() => {
-    fetchActivities();
-  }, [animalId]);
-
-  const fetchActivities = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Fetch AI records
-      const { data: aiData } = await supabase
-        .from("artificial_inseminations")
-        .select("*")
-        .eq("female_id", animalId)
-        .order("insemination_date", { ascending: false });
-
-      const activities: AnimalActivity[] = [];
-
-      // Add AI activities
-      if (aiData) {
-        aiData.forEach(record => {
-          activities.push({
-            id: record.id,
-            date: record.insemination_date,
-            type: "insemination",
-            description: `Inseminación Artificial - ${record.bull_name}`,
-            result: record.is_pregnant === null ? "Pendiente" : 
-                   record.is_pregnant ? "Preñada" : "No preñada",
-            notes: record.notes || undefined
-          });
-        });
-      }
-
-      // Sort all activities by date
-      activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-      
-      setActivities(activities);
-    } catch (error) {
-      console.error("Error fetching animal activities:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { activities, isLoading } = useAnimalActivities(animalId);
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -83,11 +28,11 @@ export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActiviti
     }
   };
 
-  const getActivityBadge = (type: string, result?: string) => {
-    if (type === "insemination" && result) {
-      if (result === "Pendiente") return <Badge variant="secondary">Pendiente</Badge>;
-      if (result === "Preñada") return <Badge className="bg-green-500">Preñada</Badge>;
-      if (result === "No preñada") return <Badge variant="destructive">No preñada</Badge>;
+  const getActivityBadge = (type: string, details: Record<string, string>) => {
+    if (type === "insemination" && details.estado) {
+      if (details.estado === "Pendiente") return <Badge variant="secondary">Pendiente</Badge>;
+      if (details.estado === "Preñada") return <Badge className="bg-green-500">Preñada</Badge>;
+      if (details.estado === "No preñada") return <Badge variant="destructive">No preñada</Badge>;
     }
     return null;
   };
@@ -116,11 +61,12 @@ export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActiviti
         {activities.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Activity className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <p className="mb-2">No hay actividades registradas para este animal</p>
-            <Link to="/activities">
-              <Button variant="outline" className="flex items-center gap-2">
-                <ExternalLink className="h-4 w-4" />
-                Registrar primera actividad
+            <p className="mb-4">No hay actividades registradas para este animal</p>
+            <Link to="/activities" className="w-full sm:w-auto">
+              <Button variant="outline" className="w-full sm:w-auto text-xs sm:text-sm">
+                <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <span className="hidden sm:inline">Registrar primera actividad</span>
+                <span className="sm:hidden">Registrar</span>
               </Button>
             </Link>
           </div>
@@ -145,7 +91,7 @@ export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActiviti
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {getActivityBadge(activity.type, activity.result)}
+                  {getActivityBadge(activity.type, activity.details)}
                 </div>
               </div>
             ))}
