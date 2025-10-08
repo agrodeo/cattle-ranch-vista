@@ -121,7 +121,7 @@ export function useAnimalActivities(animalId: string) {
         });
       }
 
-      // Fetch general events - check both animales_ids in payload and in specific tables
+      // Fetch general events - fetch all and filter in code
       const { data: eventData } = await supabase
         .from("eventos")
         .select(`
