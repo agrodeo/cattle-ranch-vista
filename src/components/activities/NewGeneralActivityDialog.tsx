@@ -9,7 +9,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, Search } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -112,6 +112,13 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   
+  // Filters
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterSex, setFilterSex] = useState<string>("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterCorral, setFilterCorral] = useState<string>("all");
+  const [corrales, setCorrales] = useState<Array<{ id: string; name: string }>>([]);
+  
   // Activity-specific fields
   const [activityData, setActivityData] = useState<Record<string, any>>({});
   
@@ -127,6 +134,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
   useEffect(() => {
     if (open) {
       loadAnimals();
+      loadCorrales();
       if (preselectedType) {
         setSelectedType(preselectedType);
       }
@@ -174,6 +182,53 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
       setLoadingAnimals(false);
     }
   };
+
+  const loadCorrales = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .order('name');
+
+      if (error) throw error;
+      setCorrales(data || []);
+    } catch (error) {
+      console.error('Error loading corrales:', error);
+    }
+  };
+
+  const getAgeCategory = (birthDate: string | null, sex: string) => {
+    if (!birthDate) return "Sin clasificar";
+    
+    const today = new Date();
+    const birth = new Date(birthDate);
+    const monthsDiff = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
+    
+    if (sex === "Macho") {
+      if (monthsDiff < 12) return "Ternero";
+      if (monthsDiff < 24) return "Novillo";
+      return "Toro";
+    } else {
+      if (monthsDiff < 12) return "Ternera";
+      if (monthsDiff < 24) return "Vaquillona";
+      return "Vaca";
+    }
+  };
+
+  const filteredAnimals = animals.filter(animal => {
+    const matchesSearch = searchTerm === "" || 
+      animal.id_tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (animal.name && animal.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesSex = filterSex === "all" || animal.sex === filterSex;
+    
+    const category = getAgeCategory(animal.birth_date, animal.sex);
+    const matchesCategory = filterCategory === "all" || category === filterCategory;
+    
+    const matchesCorral = filterCorral === "all" || animal.corral_id === filterCorral;
+    
+    return matchesSearch && matchesSex && matchesCategory && matchesCorral;
+  });
 
   const handleAnimalSelection = (animalId: string, checked: boolean) => {
     if (checked) {
@@ -501,15 +556,86 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <Label className="text-sm font-medium">
-                Animales ({animals.length} disponibles)
+                Animales ({filteredAnimals.length} de {animals.length})
               </Label>
               <div className="flex gap-2 w-full sm:w-auto">
-                <Button type="button" variant="outline" size="sm" onClick={selectAllAnimals} className="flex-1 sm:flex-initial">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSelectedAnimals(filteredAnimals.map(a => a.id))} 
+                  className="flex-1 sm:flex-initial"
+                >
                   Todos
                 </Button>
                 <Button type="button" variant="outline" size="sm" onClick={clearSelection} className="flex-1 sm:flex-initial">
                   Limpiar
                 </Button>
+              </div>
+            </div>
+
+            {/* Filters */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-2">
+                <Label className="text-xs">Buscar</Label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Nombre o ID..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-8 h-9"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs">Sexo</Label>
+                <Select value={filterSex} onValueChange={setFilterSex}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="Macho">Machos</SelectItem>
+                    <SelectItem value="Hembra">Hembras</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs">Categoría</Label>
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="Ternero">Terneros</SelectItem>
+                    <SelectItem value="Ternera">Terneras</SelectItem>
+                    <SelectItem value="Novillo">Novillos</SelectItem>
+                    <SelectItem value="Vaquillona">Vaquillonas</SelectItem>
+                    <SelectItem value="Toro">Toros</SelectItem>
+                    <SelectItem value="Vaca">Vacas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs">Corral</Label>
+                <Select value={filterCorral} onValueChange={setFilterCorral}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {corrales.map(corral => (
+                      <SelectItem key={corral.id} value={corral.id}>
+                        {corral.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -528,29 +654,37 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {animals.map((animal) => (
-                      <TableRow key={animal.id}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedAnimals.includes(animal.id)}
-                            onCheckedChange={(checked) => 
-                              handleAnimalSelection(animal.id, checked as boolean)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
-                            <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="hidden sm:table-cell text-sm">{animal.sex}</TableCell>
-                        <TableCell className="hidden md:table-cell text-sm">{animal.breed}</TableCell>
-                        <TableCell className="hidden lg:table-cell text-sm">
-                          {animal.corral?.name || "Sin corral"}
+                    {filteredAnimals.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          No se encontraron animales con los filtros seleccionados
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      filteredAnimals.map((animal) => (
+                        <TableRow key={animal.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedAnimals.includes(animal.id)}
+                              onCheckedChange={(checked) => 
+                                handleAnimalSelection(animal.id, checked as boolean)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                              <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm">{animal.sex}</TableCell>
+                          <TableCell className="hidden md:table-cell text-sm">{animal.breed}</TableCell>
+                          <TableCell className="hidden lg:table-cell text-sm">
+                            {animal.corral?.name || "Sin corral"}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               )}
