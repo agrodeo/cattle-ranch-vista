@@ -52,6 +52,8 @@ interface AnimalProductionTableProps {
 export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -117,6 +119,51 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const handleViewAnimal = (animalId: string) => {
     navigate(`/animales/${animalId}`);
   };
+
+  const handleSort = (column: keyof ProductionAnimal) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedAnimals = [...animals].sort((a, b) => {
+    if (!sortColumn) return 0;
+    
+    const aValue = a[sortColumn];
+    const bValue = b[sortColumn];
+    
+    if (aValue === null || aValue === undefined) return 1;
+    if (bValue === null || bValue === undefined) return -1;
+    
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+    
+    return 0;
+  });
+
+  const SortableHeader = ({ column, children }: { column: keyof ProductionAnimal; children: React.ReactNode }) => (
+    <TableHead 
+      className="cursor-pointer hover:bg-accent/50 select-none"
+      onClick={() => handleSort(column)}
+    >
+      <div className="flex items-center gap-1">
+        {children}
+        {sortColumn === column && (
+          <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </div>
+    </TableHead>
+  );
 
   if (loading) {
     return (
@@ -256,75 +303,155 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Animal</TableHead>
-                    <TableHead>Corral</TableHead>
-                    <TableHead>
+                    <SortableHeader column="tag">Animal</SortableHeader>
+                    <SortableHeader column="corral_name">Corral</SortableHeader>
+                    <SortableHeader column="last_weight_kg">
                       <Tooltip>
                         <TooltipTrigger>Último Peso</TooltipTrigger>
                         <TooltipContent>
                           <p>Peso actual y fecha del último pesaje</p>
                         </TooltipContent>
                       </Tooltip>
-                    </TableHead>
-                    <TableHead className="text-center">
+                    </SortableHeader>
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('adg_recent_90d')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>ADG N-D</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            ADG N-D
+                            {sortColumn === 'adg_recent_90d' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Ganancia diaria promedio desde nacimiento hasta destete</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center">
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('adg_season')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>ADG Temp.</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            ADG Temp.
+                            {sortColumn === 'adg_season' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Ganancia diaria promedio temporada</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center">
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('weighs_count')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>Pesadas</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            Pesadas
+                            {sortColumn === 'weighs_count' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Cantidad de pesadas registradas</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center hidden lg:table-cell">
+                    <TableHead 
+                      className="text-center hidden lg:table-cell cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('weight_birth')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>Nacer</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            Nacer
+                            {sortColumn === 'weight_birth' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Peso al nacimiento</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center hidden lg:table-cell">
+                    <TableHead 
+                      className="text-center hidden lg:table-cell cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('weight_weaning')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>Destete</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            Destete
+                            {sortColumn === 'weight_weaning' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Peso al destete</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center hidden xl:table-cell">
+                    <TableHead 
+                      className="text-center hidden xl:table-cell cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('weight_yearling')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>18m</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            18m
+                            {sortColumn === 'weight_yearling' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Peso a los 18 meses</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center hidden xl:table-cell">
+                    <TableHead 
+                      className="text-center hidden xl:table-cell cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('weight_final')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>Final</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            Final
+                            {sortColumn === 'weight_final' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Peso final</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="text-center">
+                    <TableHead 
+                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
+                      onClick={() => handleSort('adg_percentile')}
+                    >
                       <Tooltip>
-                        <TooltipTrigger>%tile</TooltipTrigger>
+                        <TooltipTrigger>
+                          <div className="flex items-center gap-1 justify-center">
+                            %tile
+                            {sortColumn === 'adg_percentile' && (
+                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                        </TooltipTrigger>
                         <TooltipContent>
                           <p>Percentil ADG vs. animales de la misma categoría</p>
                         </TooltipContent>
@@ -334,7 +461,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {animals.map((animal) => (
+                  {sortedAnimals.map((animal) => (
                     <TableRow key={animal.animal_id}>
                       <TableCell>
                         <div>
