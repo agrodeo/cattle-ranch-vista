@@ -13,7 +13,12 @@ import {
   Syringe, 
   MapPin, 
   User,
-  ExternalLink
+  ExternalLink,
+  Baby,
+  Flame,
+  Scissors,
+  CircleSlash,
+  Pill
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -50,7 +55,15 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
       'tacto': 'Tacto',
       'movimiento': 'Movimiento',
       'insemination': 'Inseminación',
-      'reproductive': 'Reproductivo'
+      'reproductive': 'Reproductivo',
+      'destete': 'Destete',
+      'marcacion': 'Marcación',
+      'castracion': 'Castración',
+      'descorne': 'Descorne',
+      'tratamiento': 'Tratamiento',
+      'apareamiento': 'Apareamiento',
+      'parto': 'Parto',
+      'general': 'Manejo'
     };
     return types[tipo] || tipo;
   };
@@ -67,6 +80,20 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
         return Heart;
       case "movimiento":
         return MapPin;
+      case "destete":
+        return Baby;
+      case "marcacion":
+        return Flame;
+      case "castracion":
+        return Scissors;
+      case "descorne":
+        return CircleSlash;
+      case "tratamiento":
+        return Pill;
+      case "apareamiento":
+        return Heart;
+      case "parto":
+        return Baby;
       default:
         return Activity;
     }
@@ -84,6 +111,20 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
         return "bg-pink-500";
       case "movimiento":
         return "bg-yellow-500";
+      case "destete":
+        return "bg-blue-600";
+      case "marcacion":
+        return "bg-orange-500";
+      case "castracion":
+        return "bg-red-500";
+      case "descorne":
+        return "bg-amber-600";
+      case "tratamiento":
+        return "bg-emerald-500";
+      case "apareamiento":
+        return "bg-pink-600";
+      case "parto":
+        return "bg-purple-600";
       default:
         return "bg-gray-500";
     }
@@ -133,6 +174,13 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
                   <SelectItem value="movimiento">Movimientos</SelectItem>
                   <SelectItem value="insemination">Inseminaciones</SelectItem>
                   <SelectItem value="reproductive">Reproductivos</SelectItem>
+                  <SelectItem value="destete">Destete</SelectItem>
+                  <SelectItem value="marcacion">Marcación</SelectItem>
+                  <SelectItem value="castracion">Castración</SelectItem>
+                  <SelectItem value="descorne">Descorne</SelectItem>
+                  <SelectItem value="tratamiento">Tratamiento</SelectItem>
+                  <SelectItem value="apareamiento">Apareamiento</SelectItem>
+                  <SelectItem value="parto">Parto</SelectItem>
                 </SelectContent>
               </Select>
             </div>

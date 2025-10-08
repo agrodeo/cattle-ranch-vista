@@ -121,7 +121,7 @@ export function useAnimalActivities(animalId: string) {
         });
       }
 
-      // Fetch general events
+      // Fetch general events - check both animales_ids in payload and in specific tables
       const { data: eventData } = await supabase
         .from("eventos")
         .select(`
@@ -130,30 +130,64 @@ export function useAnimalActivities(animalId: string) {
           vacunaciones(*),
           tactos(*)
         `)
-        .contains("payload", { animal_ids: [animalId] })
+        .or(`payload->>animales_ids.cs.{${animalId}},cabaña_id.eq.${currentUser?.cabañaId}`)
         .order("fecha", { ascending: false });
 
       if (eventData) {
         eventData.forEach(event => {
           const details: Record<string, string> = {};
+          let shouldInclude = false;
           
-          if (event.tipo === "PESAJE" && event.pesajes && event.pesajes.length > 0) {
-            const mediciones = event.pesajes[0].mediciones as any;
-            if (mediciones) {
-              Object.entries(mediciones).forEach(([key, value]) => {
-                details[key] = String(value);
-              });
+          // Check if animal is in the event
+          if (event.payload) {
+            const payload = event.payload as any;
+            
+            // Check animales_ids array
+            if (payload.animales_ids && Array.isArray(payload.animales_ids)) {
+              shouldInclude = payload.animales_ids.includes(animalId);
+            }
+            
+            // Process event details based on type
+            if (shouldInclude && event.tipo === "GENERAL") {
+              // General management activities
+              if (payload.tipo_actividad) {
+                details['Tipo de Actividad'] = getManagementActivityLabel(payload.tipo_actividad);
+              }
+              if (payload.responsable) {
+                details['Responsable'] = payload.responsable;
+              }
+              if (payload.detalles) {
+                Object.entries(payload.detalles).forEach(([key, value]) => {
+                  details[formatDetailKey(key)] = String(value);
+                });
+              }
+            } else if (event.tipo === "PESAJE" && event.pesajes && event.pesajes.length > 0) {
+              const pesaje = event.pesajes[0];
+              if (pesaje.mediciones) {
+                const mediciones = Array.isArray(pesaje.mediciones) ? pesaje.mediciones : [pesaje.mediciones];
+                const medicion = mediciones.find((m: any) => m.animal_id === animalId);
+                if (medicion && typeof medicion === 'object') {
+                  shouldInclude = true;
+                  const pesoKg = (medicion as any).peso_kg;
+                  if (pesoKg) {
+                    details['Peso'] = `${pesoKg} kg`;
+                  }
+                }
+              }
             }
           }
 
-          allActivities.push({
-            id: event.id,
-            date: event.fecha,
-            type: event.tipo.toLowerCase(),
-            description: getEventDescription(event.tipo),
-            details,
-            notes: event.notas || undefined
-          });
+          if (shouldInclude) {
+            allActivities.push({
+              id: event.id,
+              date: event.fecha,
+              type: event.tipo === "GENERAL" ? (event.payload as any)?.tipo_actividad || 'general' : event.tipo.toLowerCase(),
+              description: getEventDescription(event.tipo, (event.payload as any)?.tipo_actividad),
+              details,
+              responsable: (event.payload as any)?.responsable,
+              notes: event.notas || undefined
+            });
+          }
         });
       }
 
@@ -168,12 +202,64 @@ export function useAnimalActivities(animalId: string) {
     }
   };
 
-  const getEventDescription = (tipo: string): string => {
+  const getManagementActivityLabel = (tipo: string): string => {
+    const labels: { [key: string]: string } = {
+      "destete": "Destete",
+      "marcacion": "Marcación",
+      "castracion": "Castración",
+      "descorne": "Descorne",
+      "tratamiento": "Tratamiento",
+      "apareamiento": "Apareamiento Natural",
+      "parto": "Parto"
+    };
+    return labels[tipo] || tipo.charAt(0).toUpperCase() + tipo.slice(1);
+  };
+
+  const formatDetailKey = (key: string): string => {
+    const keyMap: { [key: string]: string } = {
+      "peso_destete": "Peso al Destete",
+      "edad_destete": "Edad al Destete",
+      "metodo": "Método",
+      "ubicacion_marca": "Ubicación Marca",
+      "tipo_hierro": "Tipo de Hierro",
+      "numero_marca": "Número de Marca",
+      "metodo_castracion": "Método",
+      "anestesia": "Anestesia",
+      "antibiotico": "Antibiótico",
+      "metodo_descorne": "Método",
+      "edad_animal": "Edad",
+      "cicatrizante": "Cicatrizante",
+      "medicamento": "Medicamento",
+      "dosis": "Dosis",
+      "via_administracion": "Vía",
+      "diagnostico": "Diagnóstico",
+      "temperatura": "Temperatura",
+      "frecuencia_cardiaca": "Frec. Cardíaca",
+      "estado_general": "Estado",
+      "hallazgos": "Hallazgos",
+      "toro_id": "ID Toro",
+      "toro_nombre": "Toro",
+      "metodo_monta": "Método Monta",
+      "tipo_parto": "Tipo Parto",
+      "dificultad": "Dificultad",
+      "peso_cria": "Peso Cría",
+      "sexo_cria": "Sexo Cría",
+      "vitalidad": "Vitalidad"
+    };
+    return keyMap[key] || key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+  };
+
+  const getEventDescription = (tipo: string, tipoActividad?: string): string => {
+    if (tipo === "GENERAL" && tipoActividad) {
+      return getManagementActivityLabel(tipoActividad);
+    }
+    
     const descriptions: { [key: string]: string } = {
       "PESAJE": "Pesaje",
       "VACUNACION": "Vacunación",
       "TACTO": "Detección de Preñez",
-      "IA": "Inseminación Artificial"
+      "IA": "Inseminación Artificial",
+      "GENERAL": "Actividad de Manejo"
     };
     return descriptions[tipo] || tipo;
   };
