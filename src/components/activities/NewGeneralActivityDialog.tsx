@@ -428,7 +428,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
@@ -499,15 +499,15 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
           {/* Animal Selection */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <Label className="text-sm font-medium">
                 Animales ({animals.length} disponibles)
               </Label>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar Todos
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button type="button" variant="outline" size="sm" onClick={selectAllAnimals} className="flex-1 sm:flex-initial">
+                  Todos
                 </Button>
-                <Button type="button" variant="outline" size="sm" onClick={clearSelection}>
+                <Button type="button" variant="outline" size="sm" onClick={clearSelection} className="flex-1 sm:flex-initial">
                   Limpiar
                 </Button>
               </div>
@@ -522,9 +522,9 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     <TableRow>
                       <TableHead className="w-12"></TableHead>
                       <TableHead>Animal</TableHead>
-                      <TableHead>Sexo</TableHead>
-                      <TableHead>Raza</TableHead>
-                      <TableHead>Corral</TableHead>
+                      <TableHead className="hidden sm:table-cell">Sexo</TableHead>
+                      <TableHead className="hidden md:table-cell">Raza</TableHead>
+                      <TableHead className="hidden lg:table-cell">Corral</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -540,13 +540,13 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{animal.name || "Sin nombre"}</div>
-                            <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                            <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                            <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                           </div>
                         </TableCell>
-                        <TableCell>{animal.sex}</TableCell>
-                        <TableCell>{animal.breed}</TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell text-sm">{animal.sex}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm">{animal.breed}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm">
                           {animal.corral?.name || "Sin corral"}
                         </TableCell>
                       </TableRow>
@@ -577,16 +577,17 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={isLoading}
+              className="w-full sm:w-auto"
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
               {isLoading ? "Guardando..." : "Registrar Actividad"}
             </Button>
           </div>
