@@ -107,7 +107,9 @@ export function AppSidebar() {
                           "flex items-center rounded-lg text-sm font-medium transition-all duration-200 relative min-h-[44px]",
                           isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-3 py-3 sm:py-2.5",
                           isActive 
-                            ? "bg-brand-50 text-brand-900 border-l-3 border-brand-500" 
+                            ? isCollapsed 
+                              ? "bg-brand-50 text-brand-900"
+                              : "bg-brand-50 text-brand-900 border-l-3 border-brand-500"
                             : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
                         )}
                       >
