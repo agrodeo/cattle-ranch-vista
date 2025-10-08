@@ -105,9 +105,10 @@ export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActiviti
           {animalName && <span className="text-muted-foreground">- {animalName}</span>}
         </CardTitle>
         <Link to="/activities">
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <ExternalLink className="h-4 w-4" />
-            Gestionar Actividades
+          <Button variant="outline" size="sm" className="flex items-center gap-2 text-xs sm:text-sm">
+            <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">Gestionar Actividades</span>
+            <span className="sm:hidden">Gestionar</span>
           </Button>
         </Link>
       </CardHeader>

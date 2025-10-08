@@ -130,7 +130,6 @@ export function useAnimalActivities(animalId: string) {
           vacunaciones(*),
           tactos(*)
         `)
-        .or(`payload->>animales_ids.cs.{${animalId}},cabaña_id.eq.${currentUser?.cabañaId}`)
         .order("fecha", { ascending: false });
 
       if (eventData) {

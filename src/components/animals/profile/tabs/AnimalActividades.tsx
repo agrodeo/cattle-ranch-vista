@@ -141,10 +141,11 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
           </p>
         </div>
         
-        <Link to="/activities">
-          <Button className="flex items-center gap-2">
+        <Link to="/activities" className="w-full sm:w-auto">
+          <Button className="flex items-center gap-2 w-full sm:w-auto">
             <Plus className="h-4 w-4" />
-            Agregar Actividad
+            <span className="hidden sm:inline">Agregar Actividad</span>
+            <span className="sm:hidden">Agregar</span>
             <ExternalLink className="h-4 w-4" />
           </Button>
         </Link>
