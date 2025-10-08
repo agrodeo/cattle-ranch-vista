@@ -32,6 +32,7 @@ import { MarkDeathDialog } from "@/components/mortality/MarkDeathDialog";
 import { Animal } from "@/types/animal";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 import { normalizeAnimalStatus, getDisplayStatus } from "@/lib/statusUtils";
+import { categorizeAnimal } from "@/lib/animalCategories";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatDate } from "@/lib/format";
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
@@ -122,21 +123,9 @@ const breedRequiresRegistration = (breed: string): boolean => {
   return Object.keys(REGISTRATION_OPTIONS).includes(breed);
 };
 
-// Age classification function
-const getAgeCategory = (birthDate: string | null, sex: string) => {
-  if (!birthDate) return "Sin clasificar";
-  
-  const today = new Date();
-  const birth = new Date(birthDate);
-  const monthsDiff = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
-  
-  if (monthsDiff < 12) {
-    return sex === "Macho" ? "Ternero" : "Ternera";
-  } else if (monthsDiff < 24) {
-    return sex === "Macho" ? "Novillo" : "Vaquillona";
-  } else {
-    return sex === "Macho" ? "Toro" : "Vaca adulta";
-  }
+// Age classification function (now using categorizeAnimal from lib)
+const getAgeCategory = (animal: Animal) => {
+  return categorizeAnimal(animal, animal.is_castrated || false);
 };
 
 const Animals = () => {
@@ -287,7 +276,7 @@ const Animals = () => {
       console.log("🐄 Animals page - Fetching animals for cabaña:", userCabaña);
       const { data, error } = await supabase
         .from("animals")
-        .select("*")
+        .select("*, is_castrated")
         .eq("cabaña_id", userCabaña)
         .order("birth_date", { ascending: false, nullsFirst: false });
 
@@ -633,7 +622,7 @@ const Animals = () => {
 
     const matchesCategory = 
       categoryFilter === "all" || 
-      getAgeCategory(animal.birth_date, animal.sex) === categoryFilter;
+      getAgeCategory(animal) === categoryFilter;
 
     const matchesBreed = 
       breedFilter === "all" || 
@@ -1186,11 +1175,11 @@ const Animals = () => {
                              {getAnimalDisplayName(animal)}
                            </TableCell>
                           <TableCell>{animal.id_tag}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {getAgeCategory(animal.birth_date, animal.sex)}
-                            </Badge>
-                          </TableCell>
+                           <TableCell>
+                             <Badge variant="outline">
+                               {getAgeCategory(animal)}
+                             </Badge>
+                           </TableCell>
                           <TableCell>{animal.breed}</TableCell>
                           <TableCell>
                             {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
@@ -1358,9 +1347,9 @@ const Animals = () => {
                                 >
                                   {getAnimalDisplayName(animal)}
                                 </h3>
-                                <Badge variant="outline" className="shrink-0">
-                                  {getAgeCategory(animal.birth_date, animal.sex)}
-                                </Badge>
+                                 <Badge variant="outline" className="shrink-0">
+                                   {getAgeCategory(animal)}
+                                 </Badge>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span className="truncate">{animal.breed}</span>
