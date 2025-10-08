@@ -309,6 +309,7 @@ export type Database = {
           ganancia_diaria_kg: number | null
           id: string
           id_tag: string | null
+          is_castrated: boolean | null
           mocho: string | null
           mother_breed: string | null
           mother_id: string | null
@@ -359,6 +360,7 @@ export type Database = {
           ganancia_diaria_kg?: number | null
           id?: string
           id_tag?: string | null
+          is_castrated?: boolean | null
           mocho?: string | null
           mother_breed?: string | null
           mother_id?: string | null
@@ -409,6 +411,7 @@ export type Database = {
           ganancia_diaria_kg?: number | null
           id?: string
           id_tag?: string | null
+          is_castrated?: boolean | null
           mocho?: string | null
           mother_breed?: string | null
           mother_id?: string | null

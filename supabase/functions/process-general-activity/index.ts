@@ -93,7 +93,7 @@ async function processCastration(supabase: any, animalIds: string[]) {
     // Get animal info
     const { data: animal, error: fetchError } = await supabase
       .from('animals')
-      .select('sex, birth_date')
+      .select('sex, birth_date, is_castrated')
       .eq('id', animalId)
       .single()
     
@@ -102,24 +102,30 @@ async function processCastration(supabase: any, animalIds: string[]) {
       continue
     }
 
-    // Only process if male
-    if (animal.sex === 'Macho') {
-      console.log(`Converting bull/male ${animalId} to steer (novillo)`)
+    // Only process if male and not already castrated
+    if (animal.sex === 'Macho' && !animal.is_castrated) {
+      console.log(`Castrating male ${animalId} - marking as castrated (novillo)`)
       
-      // Update animal - remove reproductive capabilities
+      // Update animal - mark as castrated and remove reproductive data
       const { error: updateError } = await supabase
         .from('animals')
         .update({
-          // Removed any breeding indicators
+          is_castrated: true,
+          // Remove any breeding indicators
           toro_servicio_id: null,
           fecha_servicio: null,
-          // Note: We don't change sex, but a castrated male is called "novillo" in category
         })
         .eq('id', animalId)
       
       if (updateError) {
         console.error(`Error updating animal ${animalId}:`, updateError)
+      } else {
+        console.log(`Successfully castrated animal ${animalId}`)
       }
+    } else if (animal.sex !== 'Macho') {
+      console.log(`Animal ${animalId} is not male, skipping castration`)
+    } else if (animal.is_castrated) {
+      console.log(`Animal ${animalId} is already castrated`)
     }
   }
 }
