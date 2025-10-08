@@ -122,7 +122,7 @@ export default function AnimalProfile() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="space-y-6">
         <Card>
           <CardContent className="p-6">
             <div className="space-y-4">
@@ -150,7 +150,7 @@ export default function AnimalProfile() {
 
   if (error || !animal) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="space-y-4">
         <Card>
           <CardContent className="p-6 text-center">
             <h1 className="text-2xl font-bold text-muted-foreground mb-2">
@@ -176,7 +176,7 @@ export default function AnimalProfile() {
       </div>
 
       {/* Main Content */}
-      <div className="container mx-auto px-4 py-6">
+      <div className="py-4">
         <AnimalProfileTabs 
           animal={animal} 
           onAnimalUpdate={handleAnimalUpdate}
