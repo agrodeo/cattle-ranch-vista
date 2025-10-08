@@ -84,20 +84,26 @@ export function AppSidebar() {
       style={{ width: isCollapsed ? '64px' : '256px' }}
     >
       <SidebarContent className="bg-white">
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(
-            "py-4 border-b border-ink-100",
-            isCollapsed ? "px-2" : "px-3"
+        {/* Header/Logo Section */}
+        <div className={cn(
+          "py-4 border-b border-ink-100",
+          isCollapsed ? "px-2" : "px-3"
+        )}>
+          <div className={cn(
+            "flex items-center",
+            isCollapsed ? "justify-center" : "gap-3"
           )}>
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient flex-shrink-0">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              {(!isCollapsed || isMobile) && (
-                <span className="text-xl font-bold text-ink-900">Agrodeo</span>
-              )}
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient flex-shrink-0">
+              <span className="text-white font-bold text-sm">A</span>
             </div>
-          </SidebarGroupLabel>
+            {(!isCollapsed || isMobile) && (
+              <span className="text-xl font-bold text-ink-900">Agrodeo</span>
+            )}
+          </div>
+        </div>
+
+        {/* Menu Items Section */}
+        <SidebarGroup>
           <SidebarGroupContent className={cn("py-4", isCollapsed ? "px-2" : "px-3")}>
             <SidebarMenu className="space-y-1">
               {menuItems.map((item) => {
@@ -109,7 +115,7 @@ export function AppSidebar() {
                         to={item.url}
                         className={cn(
                           "flex items-center rounded-lg text-sm font-medium transition-all duration-200 relative min-h-[44px]",
-                          isCollapsed ? "justify-center w-full mx-1" : "gap-3 px-3 py-3 sm:py-2.5",
+                          isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5",
                           isActive 
                             ? isCollapsed 
                               ? "bg-brand-50 text-brand-900"
