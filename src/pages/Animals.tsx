@@ -690,7 +690,7 @@ const Animals = () => {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 relative">
+    <div className="space-y-6 relative">
       {/* Pull to refresh indicator for mobile */}
       {isMobile && isPulling && (
         <div 
@@ -709,8 +709,8 @@ const Animals = () => {
         </div>
       )}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1 sm:space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold">{t('animals:title')}</h1>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">{t('animals:title')}</h1>
           <p className="text-muted-foreground">
             Gestiona y monitorea tu inventario ganadero
           </p>
