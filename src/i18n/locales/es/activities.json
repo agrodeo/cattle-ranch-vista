@@ -98,24 +98,68 @@
   "typeSelector": {
     "title": "Seleccionar Tipo de Actividad",
     "general": {
-      "title": "Actividad General",
-      "description": "Destete, marcación, tratamientos y otras actividades de manejo"
+      "title": "Actividades de Manejo",
+      "description": "Gestión diaria del ganado"
     },
     "insemination": {
       "title": "Inseminación Artificial",
-      "description": "Registro de inseminaciones y servicios reproductivos"
+      "description": "Registrar servicio de IA"
     },
     "vaccination": {
       "title": "Vacunación",
-      "description": "Aplicación de vacunas y control sanitario del rodeo"
+      "description": "Control sanitario"
     },
     "weighing": {
       "title": "Pesaje",
-      "description": "Registro de pesos y control productivo de animales"
+      "description": "Control productivo"
     },
     "pregnancy": {
-      "title": "Diagnóstico de Preñez",
-      "description": "Tactos, ecografías y confirmación de gestaciones"
+      "title": "Control de Preñez",
+      "description": "Tactos y diagnósticos"
     }
+  },
+  "managementTypes": {
+    "title": "Tipo de Actividad de Manejo",
+    "back": "Volver",
+    "destete": {
+      "title": "Destete",
+      "description": "Separación de crías de sus madres"
+    },
+    "marcacion": {
+      "title": "Marcación",
+      "description": "Identificación con hierro candente"
+    },
+    "castracion": {
+      "title": "Castración",
+      "description": "Procedimiento quirúrgico"
+    },
+    "descorne": {
+      "title": "Descorne",
+      "description": "Remoción de cuernos"
+    },
+    "traslado": {
+      "title": "Traslado",
+      "description": "Movimiento entre corrales"
+    },
+    "tratamiento": {
+      "title": "Tratamiento",
+      "description": "Administración de medicamentos"
+    },
+    "revision": {
+      "title": "Revisión",
+      "description": "Control general de salud"
+    },
+    "apareamiento": {
+      "title": "Apareamiento Natural",
+      "description": "Servicio con toro"
+    },
+    "parto": {
+      "title": "Parto",
+      "description": "Registro de nacimientos"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Guardar"
   }
 }

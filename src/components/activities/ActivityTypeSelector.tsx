@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Activity, 
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { ManagementTypeSelector } from './ManagementTypeSelector';
 
 interface ActivityType {
   id: string;
@@ -36,6 +38,7 @@ export function ActivityTypeSelector({
   onSelectType 
 }: ActivityTypeSelectorProps) {
   const { t } = useTranslation('activities');
+  const [showManagementTypes, setShowManagementTypes] = useState(false);
 
   const activityTypes: ActivityType[] = [
     {
@@ -76,9 +79,34 @@ export function ActivityTypeSelector({
   ];
 
   const handleSelectType = (typeId: string) => {
-    onSelectType(typeId);
+    if (typeId === 'general') {
+      setShowManagementTypes(true);
+    } else {
+      onSelectType(typeId);
+      onOpenChange(false);
+    }
+  };
+
+  const handleManagementTypeSelect = (managementType: string) => {
+    onSelectType(managementType);
+    setShowManagementTypes(false);
     onOpenChange(false);
   };
+
+  const handleBackFromManagement = () => {
+    setShowManagementTypes(false);
+  };
+
+  if (showManagementTypes) {
+    return (
+      <ManagementTypeSelector
+        open={open}
+        onOpenChange={onOpenChange}
+        onSelectType={handleManagementTypeSelect}
+        onBack={handleBackFromManagement}
+      />
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
