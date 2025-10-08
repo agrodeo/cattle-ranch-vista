@@ -4,9 +4,7 @@ import {
   Flame,
   Scissors,
   CircleSlash,
-  ArrowRight,
   Pill,
-  Stethoscope,
   Heart,
   ArrowLeft
 } from 'lucide-react';
@@ -62,19 +60,9 @@ export function ManagementTypeSelector({
       color: 'bg-amber-50 hover:bg-amber-100 border-amber-200'
     },
     {
-      id: 'traslado',
-      icon: ArrowRight,
-      color: 'bg-indigo-50 hover:bg-indigo-100 border-indigo-200'
-    },
-    {
       id: 'tratamiento',
       icon: Pill,
       color: 'bg-emerald-50 hover:bg-emerald-100 border-emerald-200'
-    },
-    {
-      id: 'revision',
-      icon: Stethoscope,
-      color: 'bg-cyan-50 hover:bg-cyan-100 border-cyan-200'
     },
     {
       id: 'apareamiento',
