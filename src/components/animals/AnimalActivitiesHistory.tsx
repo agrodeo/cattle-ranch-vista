@@ -43,17 +43,16 @@ export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActiviti
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <Activity className="h-5 w-5" />
-          Historial de Actividades
-          {animalName && <span className="text-muted-foreground">- {animalName}</span>}
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="truncate">Historial de Actividades</span>
+          {animalName && <span className="text-muted-foreground hidden sm:inline">- {animalName}</span>}
         </CardTitle>
-        <Link to="/activities">
-          <Button variant="outline" size="sm" className="flex items-center gap-2 text-xs sm:text-sm">
-            <ExternalLink className="h-3 w-3 sm:h-4 sm:w-4" />
-            <span className="hidden sm:inline">Gestionar Actividades</span>
-            <span className="sm:hidden">Gestionar</span>
+        <Link to="/activities" className="shrink-0">
+          <Button variant="outline" size="sm" className="w-full sm:w-auto h-8 text-xs">
+            <ExternalLink className="h-3 w-3 mr-1" />
+            Gestionar
           </Button>
         </Link>
       </CardHeader>
