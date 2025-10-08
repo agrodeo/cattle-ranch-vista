@@ -84,7 +84,7 @@ export function AppSidebar() {
     >
       <SidebarContent className="bg-white">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 sm:px-6 py-4 sm:py-8 border-b border-ink-100">
+          <SidebarGroupLabel className="px-3 py-4 sm:py-8 border-b border-ink-100">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient">
                 <span className="text-white font-bold text-sm">A</span>
@@ -94,7 +94,7 @@ export function AppSidebar() {
               )}
             </div>
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-2 sm:px-3 py-4">
+          <SidebarGroupContent className="px-3 py-4">
             <SidebarMenu className="space-y-1">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.url;
