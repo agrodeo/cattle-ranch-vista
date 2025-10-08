@@ -166,23 +166,21 @@ export default function AnimalProfile() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0">
-      <div className="min-h-screen bg-muted/30">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-40 bg-background border-b shadow-sm -mx-3 sm:-mx-4 lg:-mx-6 px-3 sm:px-4 lg:px-6">
-          <AnimalProfileHeader 
-            animal={animal} 
-            onAnimalUpdate={handleAnimalUpdate}
-          />
-        </div>
+    <div className="min-h-screen bg-muted/30">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-40 bg-background border-b shadow-sm">
+        <AnimalProfileHeader 
+          animal={animal} 
+          onAnimalUpdate={handleAnimalUpdate}
+        />
+      </div>
 
-        {/* Main Content */}
-        <div className="py-4">
-          <AnimalProfileTabs 
-            animal={animal} 
-            onAnimalUpdate={handleAnimalUpdate}
-          />
-        </div>
+      {/* Main Content */}
+      <div className="px-4 py-4 max-w-7xl mx-auto">
+        <AnimalProfileTabs 
+          animal={animal} 
+          onAnimalUpdate={handleAnimalUpdate}
+        />
       </div>
     </div>
   );

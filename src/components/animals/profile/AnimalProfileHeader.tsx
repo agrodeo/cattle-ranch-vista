@@ -121,8 +121,8 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
   };
 
   return (
-    <Card className="rounded-none border-x-0 border-t-0">
-      <CardContent className="p-4">
+    <div className="w-full">
+      <div className="max-w-7xl mx-auto px-4 py-4">
         <div className="space-y-4">
           {/* Back Button and Title */}
           <div className="flex items-center gap-4">
@@ -133,15 +133,16 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Volver a Animales
+              <span className="hidden sm:inline">Volver a Animales</span>
+              <span className="sm:hidden">Volver</span>
             </Button>
           </div>
           
           {/* Title and ID */}
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">{getDisplayName()}</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold break-words">{getDisplayName()}</h1>
             {animal.id_tag && animal.name && (
-              <Badge variant="outline">ID: {animal.id_tag}</Badge>
+              <Badge variant="outline" className="self-start sm:self-auto">ID: {animal.id_tag}</Badge>
             )}
           </div>
 
@@ -174,8 +175,13 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
               <Badge className="bg-orange-500 text-white">
                 Preñada
                 {animal.fecha_probable_parto && (
-                  <span className="ml-1">
+                  <span className="ml-1 hidden sm:inline">
                     • FPP: {format(new Date(animal.fecha_probable_parto), 'dd/MM/yy')}
+                  </span>
+                )}
+                {animal.fecha_probable_parto && (
+                  <span className="ml-1 sm:hidden block text-xs">
+                    {format(new Date(animal.fecha_probable_parto), 'dd/MM/yy')}
                   </span>
                 )}
               </Badge>
@@ -206,22 +212,24 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
 
           {/* Status Message for Inactive Animals */}
           {isInactive && (
-            <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-              {animal.status === 'muerto' && <Skull className="h-4 w-4 text-red-500" />}
-              {animal.status === 'vendido' && <Truck className="h-4 w-4 text-blue-500" />}
-              <span className="text-sm text-muted-foreground">
-                {animal.status === 'muerto' && 'Animal fallecido - Solo lectura'}
-                {animal.status === 'vendido' && 'Animal vendido - Solo lectura'}
-              </span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-muted rounded-lg">
+              <div className="flex items-center gap-2">
+                {animal.status === 'muerto' && <Skull className="h-4 w-4 text-red-500 shrink-0" />}
+                {animal.status === 'vendido' && <Truck className="h-4 w-4 text-blue-500 shrink-0" />}
+                <span className="text-sm text-muted-foreground">
+                  {animal.status === 'muerto' && 'Animal fallecido - Solo lectura'}
+                  {animal.status === 'vendido' && 'Animal vendido - Solo lectura'}
+                </span>
+              </div>
               {animal.fecha_muerte && (
-                <span className="text-xs text-muted-foreground ml-auto">
+                <span className="text-xs text-muted-foreground sm:ml-auto">
                   {format(new Date(animal.fecha_muerte), 'dd/MM/yyyy', { locale: es })}
                 </span>
               )}
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
