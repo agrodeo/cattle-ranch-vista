@@ -32,7 +32,7 @@ export default function AnimalProfile() {
       // First, get the animal basic data
       const { data, error } = await supabase
         .from('animals')
-        .select('*')
+        .select('*, is_castrated')
         .eq('id', id)
         .single();
 

@@ -15,6 +15,7 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { calculateAge } from "@/lib/utils";
+import { categorizeAnimal } from "@/lib/animalCategories";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
   const navigate = useNavigate();
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const isInactive = animal.status === 'vendido' || animal.status === 'muerto';
+  const category = categorizeAnimal(animal, animal.is_castrated || false);
   
   const getDisplayName = () => {
     return animal.name || animal.id_tag || `Animal ${animal.id.slice(0, 8)}`;
@@ -152,6 +154,10 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
             <Badge variant="outline">
               {animal.breed}
               {animal.registration_level && ` • ${animal.registration_level}`}
+            </Badge>
+
+            <Badge variant="outline" className="bg-primary/10">
+              {category}
             </Badge>
 
             {age && (

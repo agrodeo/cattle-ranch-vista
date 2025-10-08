@@ -34,4 +34,5 @@ export interface Animal {
   peso_actual_kg?: number;
   fecha_ultimo_pesaje?: string;
   ganancia_diaria_kg?: number;
+  is_castrated?: boolean;
 }
