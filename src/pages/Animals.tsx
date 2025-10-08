@@ -712,7 +712,7 @@ const Animals = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-2">
           <h1 className="hidden sm:block text-3xl font-bold">{t('animals:title')}</h1>
-          <p className="text-muted-foreground">
+          <p className="hidden sm:block text-muted-foreground">
             Gestiona y monitorea tu inventario ganadero
           </p>
         </div>
