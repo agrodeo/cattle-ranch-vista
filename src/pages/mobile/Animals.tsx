@@ -115,18 +115,7 @@ export function MobileAnimals() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <MobilePageHeader 
-        title={t('animals:title', 'Animales')}
-        subtitle={`${filteredAnimals.length} ${filteredAnimals.length === 1 ? 'animal' : 'animales'}`}
-        action={
-          selectedAnimals.size > 0 ? (
-            <Badge variant="secondary" className="text-xs">
-              {selectedAnimals.size} seleccionados
-            </Badge>
-          ) : undefined
-        }
-      />
+    <div className="min-h-screen bg-background pt-4">
 
       {/* Search and Filters */}
       <div className="p-4 space-y-3 border-b border-border">
