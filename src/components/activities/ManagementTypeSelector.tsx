@@ -83,14 +83,14 @@ export function ManagementTypeSelector({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {t('managementTypes.title')}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
           {managementTypes.map((type) => {
             const IconComponent = type.icon;
             return (
@@ -99,16 +99,16 @@ export function ManagementTypeSelector({
                 className={`cursor-pointer transition-all duration-200 ${type.color}`}
                 onClick={() => handleSelectType(type.id)}
               >
-                <CardContent className="p-4">
+                <CardContent className="p-3">
                   <div className="flex flex-col items-center text-center gap-2">
-                    <div className="p-3 rounded-lg bg-white/80">
-                      <IconComponent className="h-6 w-6" />
+                    <div className="p-2 rounded-lg bg-white/80">
+                      <IconComponent className="h-5 w-5" />
                     </div>
                     <div>
-                      <h3 className="font-medium text-slate-900 mb-1">
+                      <h3 className="font-medium text-slate-900 text-xs sm:text-sm">
                         {t(`managementTypes.${type.id}.title`)}
                       </h3>
-                      <p className="text-xs text-slate-600 leading-relaxed">
+                      <p className="text-xs text-slate-600 leading-tight hidden sm:block">
                         {t(`managementTypes.${type.id}.description`)}
                       </p>
                     </div>
