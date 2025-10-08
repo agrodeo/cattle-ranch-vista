@@ -10,13 +10,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { TrendingUp, ExternalLink, Info } from "lucide-react";
+import { TrendingUp, ExternalLink, Info, ArrowUpDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { ReportFilters } from "./ReportsFilters";
@@ -214,7 +221,48 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
             </div>
           ) : isMobile ? (
             <div className="space-y-3">
-              {animals.map((animal) => (
+              <div className="flex items-center gap-2 mb-4">
+                <ArrowUpDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <Select
+                  value={sortColumn || ""}
+                  onValueChange={(value) => {
+                    if (value) {
+                      handleSort(value as keyof ProductionAnimal);
+                    }
+                  }}
+                >
+                  <SelectTrigger className="h-9">
+                    <SelectValue placeholder="Ordenar por..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="tag">Animal (Caravana)</SelectItem>
+                    <SelectItem value="name">Animal (Nombre)</SelectItem>
+                    <SelectItem value="category">Categoría</SelectItem>
+                    <SelectItem value="corral_name">Corral</SelectItem>
+                    <SelectItem value="last_weight_kg">Último Peso</SelectItem>
+                    <SelectItem value="last_weight_date">Fecha Pesaje</SelectItem>
+                    <SelectItem value="adg_recent_90d">ADG N-D</SelectItem>
+                    <SelectItem value="adg_season">ADG Temporada</SelectItem>
+                    <SelectItem value="weighs_count">Cantidad Pesadas</SelectItem>
+                    <SelectItem value="weight_birth">Peso Nacer</SelectItem>
+                    <SelectItem value="weight_weaning">Peso Destete</SelectItem>
+                    <SelectItem value="weight_yearling">Peso 18m</SelectItem>
+                    <SelectItem value="weight_final">Peso Final</SelectItem>
+                    <SelectItem value="adg_percentile">Percentil</SelectItem>
+                  </SelectContent>
+                </Select>
+                {sortColumn && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                    className="h-9 px-3"
+                  >
+                    {sortDirection === 'asc' ? '↑' : '↓'}
+                  </Button>
+                )}
+              </div>
+              {sortedAnimals.map((animal) => (
                 <Card 
                   key={animal.animal_id}
                   className="cursor-pointer hover:bg-accent/50 transition-colors"
