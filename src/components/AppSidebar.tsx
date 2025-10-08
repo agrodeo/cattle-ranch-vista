@@ -105,7 +105,7 @@ export function AppSidebar() {
                         to={item.url}
                         className={cn(
                           "flex items-center rounded-lg text-sm font-medium transition-all duration-200 relative min-h-[44px]",
-                          isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-3 py-3 sm:py-2.5",
+                          isCollapsed ? "justify-center px-3 py-3" : "gap-3 px-3 py-3 sm:py-2.5",
                           isActive 
                             ? "bg-brand-50 text-brand-900 border-l-3 border-brand-500" 
                             : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
