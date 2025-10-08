@@ -175,6 +175,18 @@ export function useActivities() {
 
       if (error) throw error;
 
+      // Process general activities with their specific logic
+      if (tipo === 'GENERAL' && event) {
+        try {
+          await supabase.functions.invoke('process-general-activity', {
+            body: { evento_id: event.id }
+          });
+        } catch (processError) {
+          console.error('Error processing general activity:', processError);
+          // Don't throw - activity was created, just processing failed
+        }
+      }
+
       // Refresh stats after creating event
       fetchStats();
       
