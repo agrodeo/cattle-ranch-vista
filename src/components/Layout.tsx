@@ -20,7 +20,7 @@ const Layout = () => {
             <AppSidebar />
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
               <Header />
-              <main className="flex-1 overflow-auto">
+              <main className="flex-1 overflow-auto pt-6">
                 <Outlet />
               </main>
             </div>
