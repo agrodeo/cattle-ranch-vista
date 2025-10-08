@@ -61,7 +61,8 @@ const Finances = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0">
+      <div className="space-y-6">
       <PageHeader
         title={t('finance:title', 'Finanzas')}
         subtitle={t('finance:subtitle', 'Gestión de movimientos financieros')}
@@ -97,6 +98,7 @@ const Finances = () => {
           </TabsContent>
         </Tabs>
       </SectionCard>
+      </div>
     </div>
   );
 };

@@ -690,7 +690,8 @@ const Animals = () => {
   }
 
   return (
-    <div className="space-y-6 relative">
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0">
+      <div className="space-y-6 relative">
       {/* Pull to refresh indicator for mobile */}
       {isMobile && isPulling && (
         <div 
@@ -1506,6 +1507,7 @@ const Animals = () => {
         animalId={animalToMarkDead}
         onSuccess={handleDeathSuccess}
       />
+      </div>
     </div>
   );
 };
