@@ -85,9 +85,12 @@ export function AppSidebar() {
     >
       <SidebarContent className="bg-white">
         <SidebarGroup>
-          <SidebarGroupLabel className="px-3 py-4 sm:py-8 border-b border-ink-100">
+          <SidebarGroupLabel className={cn(
+            "py-4 border-b border-ink-100",
+            isCollapsed ? "px-2" : "px-3"
+          )}>
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient flex-shrink-0">
                 <span className="text-white font-bold text-sm">A</span>
               </div>
               {(!isCollapsed || isMobile) && (
@@ -95,7 +98,7 @@ export function AppSidebar() {
               )}
             </div>
           </SidebarGroupLabel>
-          <SidebarGroupContent className="px-3 py-4">
+          <SidebarGroupContent className={cn("py-4", isCollapsed ? "px-2" : "px-3")}>
             <SidebarMenu className="space-y-1">
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.url;
