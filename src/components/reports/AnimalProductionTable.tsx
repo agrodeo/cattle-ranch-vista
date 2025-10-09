@@ -194,20 +194,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
 
   return (
     <TooltipProvider>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Producción por Animal
-            </CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Info className="h-4 w-4" />
-              {animals.length} animales con datos de peso
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <div>
           {animals.length === 0 ? (
             <div className="text-center py-12">
               <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
@@ -454,8 +441,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
               </Table>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </div>
     </TooltipProvider>
   );
 }
