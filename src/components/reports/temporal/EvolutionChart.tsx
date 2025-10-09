@@ -113,8 +113,9 @@ export function EvolutionChart({
                 stroke={line.color}
                 name={line.name}
                 strokeWidth={line.strokeWidth || 2}
-                dot={{ r: 4 }}
+                dot={{ r: 4, fill: line.color }}
                 activeDot={{ r: 6 }}
+                connectNulls={false}
               />
             ))}
 
