@@ -262,25 +262,46 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       <Card>
         <CardHeader>
           <CardTitle>Comparación por Período</CardTitle>
+          <CardDescription>
+            Pesos promedio por {groupBy === 'year' ? 'año' : groupBy === 'semester' ? 'semestre' : groupBy === 'quarter' ? 'trimestre' : 'mes'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={400}>
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="periodo" />
-              <YAxis label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft' }} />
-              <Tooltip />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis 
+                dataKey="periodo" 
+                className="text-sm"
+                tick={{ fill: 'hsl(var(--foreground))' }}
+              />
+              <YAxis 
+                label={{ 
+                  value: 'Peso (kg)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { fill: 'hsl(var(--foreground))' }
+                }}
+                tick={{ fill: 'hsl(var(--foreground))' }}
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '6px'
+                }}
+              />
               <Legend />
               {weightType === 'all' ? (
                 <>
-                  <Bar dataKey="nacimiento" fill="hsl(var(--chart-1))" name="Nacimiento" />
-                  <Bar dataKey="destete" fill="hsl(var(--chart-2))" name="Destete" />
-                  <Bar dataKey="final" fill="hsl(var(--chart-3))" name="Final" />
+                  <Bar dataKey="nacimiento" fill="hsl(var(--chart-1))" name="Nacimiento" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="destete" fill="hsl(var(--chart-2))" name="Destete" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="final" fill="hsl(var(--chart-3))" name="Final" radius={[4, 4, 0, 0]} />
                 </>
               ) : weightType === 'destete' ? (
-                <Bar dataKey="destete" fill="hsl(var(--chart-2))" name="Destete" />
+                <Bar dataKey="destete" fill="hsl(var(--chart-2))" name="Destete" radius={[4, 4, 0, 0]} />
               ) : (
-                <Bar dataKey="final" fill="hsl(var(--chart-3))" name="Final" />
+                <Bar dataKey="final" fill="hsl(var(--chart-3))" name="Final" radius={[4, 4, 0, 0]} />
               )}
             </BarChart>
           </ResponsiveContainer>
