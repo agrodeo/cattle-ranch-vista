@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, ScatterChart, Scatter } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { Scale, TrendingUp, Target, Award } from "lucide-react";
+import { Scale, TrendingUp, Target, Award, ChevronDown, ChevronUp } from "lucide-react";
 import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
 import { AnimalProductionTable } from "./AnimalProductionTable";
@@ -32,6 +33,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [animalTableExpanded, setAnimalTableExpanded] = useState(true);
   useEffect(() => {
     if (currentUser?.cabañaId) {
       fetchProductionStats();
@@ -228,7 +230,27 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
   return (
     <div className="space-y-6">
-      <AnimalProductionTable filters={globalFilters || {}} />
+      {/* Animal Production Table - Collapsible */}
+      <Card>
+        <CardHeader 
+          className="cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => setAnimalTableExpanded(!animalTableExpanded)}
+        >
+          <CardTitle className="flex items-center justify-between">
+            <span>Producción por Animal</span>
+            {animalTableExpanded ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </CardTitle>
+        </CardHeader>
+        {animalTableExpanded && (
+          <CardContent className="pt-0">
+            <AnimalProductionTable filters={globalFilters || {}} />
+          </CardContent>
+        )}
+      </Card>
       
       {/* Original Analytics */}
       <div className="grid gap-6">
