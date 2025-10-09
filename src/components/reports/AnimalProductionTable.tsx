@@ -54,10 +54,9 @@ interface ProductionAnimal {
 
 interface AnimalProductionTableProps {
   filters: ReportFilters;
-  showCard?: boolean;
 }
 
-export function AnimalProductionTable({ filters, showCard = true }: AnimalProductionTableProps) {
+export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
@@ -103,15 +102,15 @@ export function AnimalProductionTable({ filters, showCard = true }: AnimalProduc
   };
 
   const getAdgBadgeColor = (adg: number) => {
-    if (adg >= 0.8) return "default"; // Green
-    if (adg >= 0.6) return "secondary"; // Yellow
-    return "destructive"; // Red
+    if (adg >= 0.8) return "default";
+    if (adg >= 0.6) return "secondary";
+    return "destructive";
   };
 
   const getPercentileBadgeColor = (percentile: number) => {
-    if (percentile >= 80) return "default"; // Green
-    if (percentile >= 50) return "secondary"; // Yellow
-    return "destructive"; // Red
+    if (percentile >= 80) return "default";
+    if (percentile >= 50) return "secondary";
+    return "destructive";
   };
 
   const formatWeight = (weight: number | null) => {
@@ -193,20 +192,23 @@ export function AnimalProductionTable({ filters, showCard = true }: AnimalProduc
     );
   }
 
-  const tableContent = (
-    <>
-      {animals.length === 0 ? (
-        <div className="text-center py-12">
-          <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
-          <div className="text-lg font-medium mb-2">Aún no hay pesajes registrados</div>
-          <div className="text-sm text-muted-foreground mb-6">
-            Registra pesajes en la sección de Actividades para ver los datos de producción y ganancia diaria
+  return (
+    <TooltipProvider>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Producción por Animal
+            </CardTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Info className="h-4 w-4" />
+              {animals.length} animales con datos de peso
+            </div>
           </div>
-          <Button variant="outline" onClick={() => window.location.href = '/actividades'}>
-            Ir a Actividades
-          </Button>
-        </div>
-      ) : isMobile ? (
+        </CardHeader>
+        <CardContent>
+          {animals.length === 0 ? (
             <div className="text-center py-12">
               <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
               <div className="text-lg font-medium mb-2">Aún no hay pesajes registrados</div>
@@ -297,284 +299,138 @@ export function AnimalProductionTable({ filters, showCard = true }: AnimalProduc
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <div className="text-xs text-muted-foreground mb-1">ADG N-D</div>
-                        <Badge variant={getAdgBadgeColor(animal.adg_recent_90d)} className="text-xs">
-                          {formatAdg(animal.adg_recent_90d)}
-                        </Badge>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">ADG Temp.</div>
-                        <Badge variant={getAdgBadgeColor(animal.adg_season)} className="text-xs">
+                        <div className="text-xs text-muted-foreground mb-1">ADG Temporada</div>
+                        <Badge variant={getAdgBadgeColor(animal.adg_season)}>
                           {formatAdg(animal.adg_season)}
                         </Badge>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-2 pt-3 border-t">
                       <div>
-                        <div className="text-xs text-muted-foreground mb-1">Nacer</div>
-                        <div className="text-sm font-medium">{formatWeight(animal.weight_birth)}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Destete</div>
-                        <div className="text-sm font-medium">{formatWeight(animal.weight_weaning)}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">18m</div>
-                        <div className="text-sm font-medium">{formatWeight(animal.weight_yearling)}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Final</div>
-                        <div className="text-sm font-medium">{formatWeight(animal.weight_final)}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Percentil:</span>
-                        <Badge variant={getPercentileBadgeColor(animal.adg_percentile)} className="text-xs">
+                        <div className="text-xs text-muted-foreground mb-1">Percentil</div>
+                        <Badge variant={getPercentileBadgeColor(animal.adg_percentile)}>
                           P{animal.adg_percentile}
                         </Badge>
                       </div>
-                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="rounded-md border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <SortableHeader column="tag">Animal</SortableHeader>
+                    <SortableHeader column="name">Nombre</SortableHeader>
+                    <SortableHeader column="category">Categoría</SortableHeader>
                     <SortableHeader column="corral_name">Corral</SortableHeader>
-                    <SortableHeader column="last_weight_kg">
+                    <TableHead className="text-center">
                       <Tooltip>
-                        <TooltipTrigger>Último Peso</TooltipTrigger>
+                        <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
+                          <div onClick={() => handleSort('last_weight_kg')} className="cursor-pointer">
+                            Último Peso
+                            {sortColumn === 'last_weight_kg' && (
+                              <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                            )}
+                          </div>
+                          <Info className="h-3 w-3" />
+                        </TooltipTrigger>
                         <TooltipContent>
-                          <p>Peso actual y fecha del último pesaje</p>
+                          <p>Peso más reciente registrado</p>
                         </TooltipContent>
                       </Tooltip>
-                    </SortableHeader>
-                    <TableHead 
-                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('adg_recent_90d')}
-                    >
+                    </TableHead>
+                    <SortableHeader column="last_weight_date">Fecha</SortableHeader>
+                    <TableHead className="text-center">
                       <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
+                        <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
+                          <div onClick={() => handleSort('adg_recent_90d')} className="cursor-pointer">
                             ADG N-D
                             {sortColumn === 'adg_recent_90d' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                              <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
                           </div>
+                          <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Ganancia diaria promedio desde nacimiento hasta destete</p>
+                          <p>Ganancia Diaria Promedio Nacimiento-Destete</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead 
-                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('adg_season')}
-                    >
+                    <TableHead className="text-center">
                       <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            ADG Temp.
+                        <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
+                          <div onClick={() => handleSort('adg_season')} className="cursor-pointer">
+                            ADG Temporada
                             {sortColumn === 'adg_season' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                              <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
                           </div>
+                          <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Ganancia diaria promedio temporada</p>
+                          <p>Ganancia Diaria Promedio de la Temporada Completa</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead 
-                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('weighs_count')}
-                    >
+                    <SortableHeader column="weighs_count">Pesadas</SortableHeader>
+                    <SortableHeader column="weight_birth">P. Nacer</SortableHeader>
+                    <SortableHeader column="weight_weaning">P. Destete</SortableHeader>
+                    <SortableHeader column="weight_yearling">P. 18m</SortableHeader>
+                    <SortableHeader column="weight_final">P. Final</SortableHeader>
+                    <TableHead className="text-center">
                       <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            Pesadas
-                            {sortColumn === 'weighs_count' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Cantidad de pesadas registradas</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead 
-                      className="text-center hidden lg:table-cell cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('weight_birth')}
-                    >
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            Nacer
-                            {sortColumn === 'weight_birth' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Peso al nacimiento</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead 
-                      className="text-center hidden lg:table-cell cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('weight_weaning')}
-                    >
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            Destete
-                            {sortColumn === 'weight_weaning' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Peso al destete</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead 
-                      className="text-center hidden xl:table-cell cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('weight_yearling')}
-                    >
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            18m
-                            {sortColumn === 'weight_yearling' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Peso a los 18 meses</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead 
-                      className="text-center hidden xl:table-cell cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('weight_final')}
-                    >
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            Final
-                            {sortColumn === 'weight_final' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
-                            )}
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Peso final</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TableHead>
-                    <TableHead 
-                      className="text-center cursor-pointer hover:bg-accent/50 select-none"
-                      onClick={() => handleSort('adg_percentile')}
-                    >
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <div className="flex items-center gap-1 justify-center">
-                            %tile
+                        <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
+                          <div onClick={() => handleSort('adg_percentile')} className="cursor-pointer">
+                            Percentil
                             {sortColumn === 'adg_percentile' && (
-                              <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+                              <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
                           </div>
+                          <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Percentil ADG vs. animales de la misma categoría</p>
+                          <p>Percentil de ADG comparado con su categoría</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead className="w-16"></TableHead>
+                    <TableHead>Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {sortedAnimals.map((animal) => (
                     <TableRow key={animal.animal_id}>
+                      <TableCell className="font-medium">{animal.tag}</TableCell>
+                      <TableCell>{animal.name || '-'}</TableCell>
                       <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {animal.name || animal.tag}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {animal.tag} • {animal.category}
-                          </div>
-                        </div>
+                        <Badge variant="outline">{animal.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {animal.corral_name || 'Sin corral'}
-                        </Badge>
+                        <Badge variant="secondary">{animal.corral_name || 'Sin corral'}</Badge>
                       </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">
-                            {formatWeight(animal.last_weight_kg)}
-                          </div>
-                          {animal.last_weight_date && (
-                            <div className="text-xs text-muted-foreground">
-                              {format(new Date(animal.last_weight_date), "dd/MM/yy", { locale: es })}
-                            </div>
-                          )}
-                        </div>
+                      <TableCell className="text-center font-medium">
+                        {formatWeight(animal.last_weight_kg)}
+                      </TableCell>
+                      <TableCell className="text-center text-sm text-muted-foreground">
+                        {animal.last_weight_date ? format(new Date(animal.last_weight_date), "dd/MM/yy", { locale: es }) : '-'}
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge 
-                          variant={getAdgBadgeColor(animal.adg_recent_90d)}
-                          className="text-xs"
-                        >
+                        <Badge variant={getAdgBadgeColor(animal.adg_recent_90d)}>
                           {formatAdg(animal.adg_recent_90d)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-center">
-                        <Badge 
-                          variant={getAdgBadgeColor(animal.adg_season)}
-                          className="text-xs"
-                        >
+                        <Badge variant={getAdgBadgeColor(animal.adg_season)}>
                           {formatAdg(animal.adg_season)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-center font-medium">
-                        {animal.weighs_count}
-                      </TableCell>
-                      <TableCell className="text-center hidden lg:table-cell">
-                        <span className="text-sm">
-                          {formatWeight(animal.weight_birth)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center hidden lg:table-cell">
-                        <span className="text-sm">
-                          {formatWeight(animal.weight_weaning)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center hidden xl:table-cell">
-                        <span className="text-sm">
-                          {formatWeight(animal.weight_yearling)}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-center hidden xl:table-cell">
-                        <span className="text-sm">
-                          {formatWeight(animal.weight_final)}
-                        </span>
-                      </TableCell>
+                      <TableCell className="text-center">{animal.weighs_count}</TableCell>
+                      <TableCell className="text-center">{formatWeight(animal.weight_birth)}</TableCell>
+                      <TableCell className="text-center">{formatWeight(animal.weight_weaning)}</TableCell>
+                      <TableCell className="text-center">{formatWeight(animal.weight_yearling)}</TableCell>
+                      <TableCell className="text-center">{formatWeight(animal.weight_final)}</TableCell>
                       <TableCell className="text-center">
                         <Badge 
                           variant={getPercentileBadgeColor(animal.adg_percentile)}
@@ -598,30 +454,6 @@ export function AnimalProductionTable({ filters, showCard = true }: AnimalProduc
               </Table>
             </div>
           )}
-        </>
-  );
-
-  if (!showCard) {
-    return <TooltipProvider>{tableContent}</TooltipProvider>;
-  }
-
-  return (
-    <TooltipProvider>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Producción por Animal
-            </CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Info className="h-4 w-4" />
-              {animals.length} animales con datos de peso
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {tableContent}
         </CardContent>
       </Card>
     </TooltipProvider>

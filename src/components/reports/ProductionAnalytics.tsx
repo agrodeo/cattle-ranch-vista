@@ -247,7 +247,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
         </CardHeader>
         {animalTableExpanded && (
           <CardContent className="pt-0">
-            <AnimalProductionTable filters={globalFilters || {}} showCard={false} />
+            <AnimalProductionTable filters={globalFilters || {}} />
           </CardContent>
         )}
       </Card>
