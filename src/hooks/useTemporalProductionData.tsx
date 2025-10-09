@@ -28,6 +28,7 @@ export function useTemporalProductionData({
   filters = {}
 }: UseTemporalProductionDataProps) {
   const [data, setData] = useState<TemporalDataPoint[]>([]);
+  const [uniqueAnimalsCount, setUniqueAnimalsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -46,6 +47,7 @@ export function useTemporalProductionData({
       setLoading(true);
       setError(null);
 
+      // Fetch temporal analysis data
       const { data: result, error: rpcError } = await supabase.rpc(
         'get_temporal_production_analysis',
         {
@@ -60,6 +62,37 @@ export function useTemporalProductionData({
 
       if (rpcError) throw rpcError;
 
+      // Count unique animals with the same filters
+      let query = supabase
+        .from('animal_weight_history')
+        .select('animal_id', { count: 'exact', head: false })
+        .eq('cabaña_id', cabanaId);
+
+      if (dateFrom) query = query.gte('fecha', dateFrom);
+      if (dateTo) query = query.lte('fecha', dateTo);
+      
+      if (weightType !== 'all') {
+        query = query.eq('tipo_pesaje', weightType);
+      }
+
+      if (filters.corral_ids && filters.corral_ids.length > 0) {
+        const { data: corralAnimals } = await supabase
+          .from('animals')
+          .select('id')
+          .in('corral_id', filters.corral_ids);
+        
+        if (corralAnimals) {
+          query = query.in('animal_id', corralAnimals.map(a => a.id));
+        }
+      }
+
+      const { data: uniqueAnimals, error: countError } = await query;
+
+      if (countError) throw countError;
+
+      // Count unique animal_ids
+      const uniqueIds = new Set(uniqueAnimals?.map(a => a.animal_id) || []);
+      setUniqueAnimalsCount(uniqueIds.size);
       setData(result || []);
     } catch (err) {
       console.error('Error fetching temporal data:', err);
@@ -109,18 +142,13 @@ export function useTemporalProductionData({
     return improvements.reduce((sum, m) => sum + m, 0) / improvements.length;
   }, [data]);
 
-  // Total animals analyzed
-  const totalAnimals = useMemo(() => {
-    return data.reduce((sum, d) => sum + d.cantidad_animales, 0);
-  }, [data]);
-
   return {
     data,
     loading,
     error,
     metrics,
     averageAnnualImprovement,
-    totalAnimals,
+    totalAnimals: uniqueAnimalsCount,
     refetch: fetchTemporalData
   };
 }
