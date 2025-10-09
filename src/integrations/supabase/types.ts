@@ -3139,6 +3139,30 @@ export type Database = {
           trial_days_remaining: number
         }[]
       }
+      get_temporal_production_analysis: {
+        Args: {
+          _cabana_id: string
+          _date_from?: string
+          _date_to?: string
+          _filters?: Json
+          _group_by?: string
+          _tipo_pesaje?: string
+        }
+        Returns: {
+          adg_promedio: number
+          cantidad_animales: number
+          cantidad_pesajes: number
+          mejora_vs_anterior: number
+          percentil_25: number
+          percentil_75: number
+          periodo: string
+          periodo_orden: number
+          peso_destete_promedio: number
+          peso_final_promedio: number
+          peso_nacimiento_promedio: number
+          year: number
+        }[]
+      }
       get_user_cabana_info: {
         Args: { user_uuid: string }
         Returns: {

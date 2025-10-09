@@ -15,12 +15,15 @@ import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
 import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
 import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
+import { TemporalEvolutionAnalytics } from "@/components/reports/TemporalEvolutionAnalytics";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Reports = () => {
   const isMobile = useIsMobile();
+  const { currentUser } = useSupabaseAuth();
   
   // Default filter values - convert to ISO date strings for database compatibility
   const defaultFilters: ReportFilters = {
@@ -64,6 +67,7 @@ const Reports = () => {
     { id: "herd", label: "Rebaño", shortLabel: "Ganado" },
     { id: "reproductive", label: "Reproducción", shortLabel: "Reprod." },
     { id: "production", label: "Producción", shortLabel: "Prod." },
+    { id: "evolution", label: "Evolución", shortLabel: "Evol." },
     { id: "mortality", label: "Mortalidad", shortLabel: "Mort." },
     { id: "vaccines", label: "Vacunas", shortLabel: "Vac." },
     { id: "financial", label: "Finanzas", shortLabel: "Fin." }
@@ -82,6 +86,8 @@ const Reports = () => {
         return <ReproductiveAnalytics filters={stableAppliedFilters} />;
       case "production":
         return <ProductionAnalytics filters={stableAppliedFilters} />;
+      case "evolution":
+        return <TemporalEvolutionAnalytics cabanaId={currentUser?.cabañaId || null} filters={stableAppliedFilters} />;
       case "mortality":
         return <MortalityReports filters={stableAppliedFilters} />;
       case "vaccines":
@@ -175,9 +181,9 @@ const Reports = () => {
           subtitle="Reportes detallados por categoría"
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-6 h-10">
+            <TabsList className="grid w-full grid-cols-7 h-10">
               {tabs.map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id} className="text-sm px-3 py-2">
+                <TabsTrigger key={tab.id} value={tab.id} className="text-sm px-2 py-2">
                   {tab.label}
                 </TabsTrigger>
               ))}
