@@ -6,12 +6,16 @@
 export interface TemporalDataPoint {
   periodo: string;
   year: number;
+  periodo_orden: number;
   peso_nacimiento_promedio: number | null;
   peso_destete_promedio: number | null;
   peso_final_promedio: number | null;
   adg_promedio: number | null;
   cantidad_animales: number;
+  cantidad_pesajes: number;
   mejora_vs_anterior: number | null;
+  percentil_25: number | null;
+  percentil_75: number | null;
 }
 
 export interface TrendAnalysis {

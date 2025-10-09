@@ -1,0 +1,88 @@
+{
+  "reports": {
+    "title": "Reports & Analytics",
+    "subtitle": "Complete analysis of your livestock operation performance",
+    "tabs": {
+      "herd": "Herd",
+      "reproductive": "Reproduction",
+      "production": "Production",
+      "evolution": "Evolution",
+      "mortality": "Mortality",
+      "vaccines": "Vaccines",
+      "financial": "Finance"
+    },
+    "evolution": {
+      "title": "Temporal Evolution Analysis",
+      "subtitle": "Analyze your herd improvement over time",
+      "groupBy": "Group by",
+      "weightType": "Weight type",
+      "periods": {
+        "year": "Year",
+        "semester": "Semester",
+        "quarter": "Quarter",
+        "month": "Month"
+      },
+      "weights": {
+        "birth": "Birth",
+        "weaning": "Weaning",
+        "final": "Final",
+        "all": "All"
+      },
+      "kpis": {
+        "averageImprovement": "Average Improvement",
+        "trend": "Trend",
+        "bestPeriod": "Best Period",
+        "acceleration": "Acceleration"
+      },
+      "trends": {
+        "ascending": "Rising",
+        "descending": "Falling",
+        "stable": "Stable"
+      },
+      "insights": {
+        "positiveTitle": "Positive Trend",
+        "positiveDesc": "The herd shows consistent improvement with an average increase of {{change}}% per period.",
+        "negativeTitle": "Alert: Decreasing Trend",
+        "negativeDesc": "A performance decrease of {{change}}% per period detected. Review management and genetics.",
+        "stableTitle": "Stable Performance",
+        "stableDesc": "The herd maintains constant performance. Consider new strategies for improvement.",
+        "acceleratingTitle": "Accelerating Improvement",
+        "acceleratingDesc": "The improvement rate is increasing ({{value}}% additional). Excellent genetic progress.",
+        "deceleratingTitle": "Deceleration",
+        "deceleratingDesc": "Improvement is decelerating ({{value}}% less). Evaluate selection strategies."
+      },
+      "charts": {
+        "evolution": "Weight Evolution",
+        "comparison": "Period Comparison",
+        "detailedData": "Detailed Data"
+      },
+      "table": {
+        "period": "Period",
+        "year": "Year",
+        "birthWeight": "Birth",
+        "weaningWeight": "Weaning",
+        "finalWeight": "Final",
+        "animals": "Animals",
+        "improvement": "Improvement"
+      },
+      "performance": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "average": "Average",
+        "poor": "Poor",
+        "unknown": "No data"
+      },
+      "export": {
+        "button": "Export",
+        "excel": "Export to Excel",
+        "csv": "Export to CSV",
+        "success": "Export successful",
+        "successDesc": "Data exported successfully",
+        "error": "Export error",
+        "errorDesc": "Could not export data"
+      },
+      "noData": "Not enough data to show temporal analysis. Make sure you have weighings recorded in different periods.",
+      "animalsAnalyzed": "{{count}} animals analyzed"
+    }
+  }
+}

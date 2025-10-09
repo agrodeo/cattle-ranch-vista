@@ -9,10 +9,14 @@ import {
   Award, Zap, Info, BarChart3, LineChart 
 } from 'lucide-react';
 import { useTemporalProductionData, type GroupByPeriod, type WeightType } from '@/hooks/useTemporalProductionData';
-import { LineChart as RechartsLine, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { formatNumber, formatPercentage, formatWeight } from '@/lib/format';
 import { useLanguage } from '@/hooks/useLanguage';
+import { TrendIndicator } from './temporal/TrendIndicator';
+import { PerformanceBadge, getPerformanceLevel } from './temporal/PerformanceBadge';
+import { EvolutionChart } from './temporal/EvolutionChart';
+import { ExportButton } from './temporal/ExportButton';
 
 interface TemporalEvolutionAnalyticsProps {
   cabanaId: string | null;
@@ -103,13 +107,18 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       {/* Controls */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Análisis de Evolución Temporal
-          </CardTitle>
-          <CardDescription>
-            Analiza la mejora de tu cabaña a lo largo del tiempo
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Análisis de Evolución Temporal
+              </CardTitle>
+              <CardDescription>
+                Analiza la mejora de tu cabaña a lo largo del tiempo
+              </CardDescription>
+            </div>
+            <ExportButton data={data} filename="analisis-temporal" />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
@@ -155,7 +164,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatPercentage(averageAnnualImprovement, lang)}
+              <TrendIndicator value={averageAnnualImprovement} showIcon={false} />
             </div>
             <p className="text-xs text-muted-foreground mt-1">por período</p>
           </CardContent>
@@ -207,8 +216,8 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
             </div>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${metrics.acceleration > 0 ? 'text-green-600' : metrics.acceleration < 0 ? 'text-red-600' : ''}`}>
-              {metrics.acceleration > 0 ? '+' : ''}{formatPercentage(metrics.acceleration, lang)}
+            <div className="flex items-center gap-2">
+              <TrendIndicator value={metrics.acceleration} />
             </div>
             <p className="text-xs text-muted-foreground mt-1">vs histórico</p>
           </CardContent>
@@ -229,39 +238,25 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
         </div>
       )}
 
-      {/* Line Chart - Evolution */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LineChart className="h-5 w-5" />
-            Evolución de Pesos
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={400}>
-            <RechartsLine data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="periodo" />
-              <YAxis label={{ value: 'Peso (kg)', angle: -90, position: 'insideLeft' }} />
-              <Tooltip />
-              <Legend />
-              {weightType === 'all' && (
-                <>
-                  <Line type="monotone" dataKey="nacimiento" stroke="hsl(var(--chart-1))" name="Nacimiento" strokeWidth={2} />
-                  <Line type="monotone" dataKey="destete" stroke="hsl(var(--chart-2))" name="Destete" strokeWidth={2} />
-                  <Line type="monotone" dataKey="final" stroke="hsl(var(--chart-3))" name="Final" strokeWidth={2} />
-                </>
-              )}
-              {weightType === 'destete' && (
-                <Line type="monotone" dataKey="destete" stroke="hsl(var(--chart-2))" name="Destete" strokeWidth={2} />
-              )}
-              {weightType === 'final' && (
-                <Line type="monotone" dataKey="final" stroke="hsl(var(--chart-3))" name="Final" strokeWidth={2} />
-              )}
-            </RechartsLine>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {/* Evolution Chart - Using new reusable component */}
+      <EvolutionChart
+        data={chartData}
+        title="Evolución de Pesos"
+        description="Tendencia de pesos a lo largo del tiempo"
+        yAxisLabel="Peso (kg)"
+        showTrendLine={true}
+        lines={
+          weightType === 'all'
+            ? [
+                { dataKey: 'nacimiento', name: 'Nacimiento', color: 'hsl(var(--chart-1))' },
+                { dataKey: 'destete', name: 'Destete', color: 'hsl(var(--chart-2))' },
+                { dataKey: 'final', name: 'Final', color: 'hsl(var(--chart-3))' }
+              ]
+            : weightType === 'destete'
+            ? [{ dataKey: 'destete', name: 'Destete', color: 'hsl(var(--chart-2))' }]
+            : [{ dataKey: 'final', name: 'Final', color: 'hsl(var(--chart-3))' }]
+        }
+      />
 
       {/* Bar Chart - Comparison */}
       <Card>
@@ -327,9 +322,10 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
                     <TableCell className="text-right">{row.cantidad_animales}</TableCell>
                     <TableCell className="text-right">
                       {row.mejora_vs_anterior !== null ? (
-                        <Badge variant={row.mejora_vs_anterior > 0 ? 'default' : 'secondary'}>
-                          {row.mejora_vs_anterior > 0 ? '+' : ''}{formatPercentage(row.mejora_vs_anterior, lang)}
-                        </Badge>
+                        <PerformanceBadge 
+                          level={getPerformanceLevel(row.mejora_vs_anterior)} 
+                          value={row.mejora_vs_anterior}
+                        />
                       ) : (
                         '-'
                       )}

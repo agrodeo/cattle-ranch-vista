@@ -1,0 +1,88 @@
+{
+  "reports": {
+    "title": "Relatórios e Análises",
+    "subtitle": "Análise completa do desempenho da sua operação pecuária",
+    "tabs": {
+      "herd": "Rebanho",
+      "reproductive": "Reprodução",
+      "production": "Produção",
+      "evolution": "Evolução",
+      "mortality": "Mortalidade",
+      "vaccines": "Vacinas",
+      "financial": "Finanças"
+    },
+    "evolution": {
+      "title": "Análise de Evolução Temporal",
+      "subtitle": "Analise a melhoria do seu rebanho ao longo do tempo",
+      "groupBy": "Agrupar por",
+      "weightType": "Tipo de peso",
+      "periods": {
+        "year": "Ano",
+        "semester": "Semestre",
+        "quarter": "Trimestre",
+        "month": "Mês"
+      },
+      "weights": {
+        "birth": "Nascimento",
+        "weaning": "Desmame",
+        "final": "Final",
+        "all": "Todos"
+      },
+      "kpis": {
+        "averageImprovement": "Melhoria Média",
+        "trend": "Tendência",
+        "bestPeriod": "Melhor Período",
+        "acceleration": "Aceleração"
+      },
+      "trends": {
+        "ascending": "Subindo",
+        "descending": "Caindo",
+        "stable": "Estável"
+      },
+      "insights": {
+        "positiveTitle": "Tendência Positiva",
+        "positiveDesc": "O rebanho mostra melhoria consistente com um aumento médio de {{change}}% por período.",
+        "negativeTitle": "Alerta: Tendência Decrescente",
+        "negativeDesc": "Detectada diminuição no desempenho de {{change}}% por período. Revisar manejo e genética.",
+        "stableTitle": "Desempenho Estável",
+        "stableDesc": "O rebanho mantém desempenho constante. Considerar novas estratégias para melhorar.",
+        "acceleratingTitle": "Aceleração na Melhoria",
+        "acceleratingDesc": "A taxa de melhoria está aumentando ({{value}}% adicional). Excelente progresso genético.",
+        "deceleratingTitle": "Desaceleração",
+        "deceleratingDesc": "A melhoria está desacelerando ({{value}}% menos). Avaliar estratégias de seleção."
+      },
+      "charts": {
+        "evolution": "Evolução de Pesos",
+        "comparison": "Comparação por Período",
+        "detailedData": "Dados Detalhados"
+      },
+      "table": {
+        "period": "Período",
+        "year": "Ano",
+        "birthWeight": "Nascimento",
+        "weaningWeight": "Desmame",
+        "finalWeight": "Final",
+        "animals": "Animais",
+        "improvement": "Melhoria"
+      },
+      "performance": {
+        "excellent": "Excelente",
+        "good": "Bom",
+        "average": "Regular",
+        "poor": "Baixo",
+        "unknown": "Sem dados"
+      },
+      "export": {
+        "button": "Exportar",
+        "excel": "Exportar para Excel",
+        "csv": "Exportar para CSV",
+        "success": "Exportação bem-sucedida",
+        "successDesc": "Os dados foram exportados com sucesso",
+        "error": "Erro ao exportar",
+        "errorDesc": "Não foi possível exportar os dados"
+      },
+      "noData": "Dados insuficientes para mostrar a análise temporal. Certifique-se de ter pesagens registradas em diferentes períodos.",
+      "animalsAnalyzed": "{{count}} animais analisados"
+    }
+  }
+}

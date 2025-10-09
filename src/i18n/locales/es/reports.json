@@ -1,0 +1,88 @@
+{
+  "reports": {
+    "title": "Reportes y Análisis",
+    "subtitle": "Análisis completo del desempeño de su operación ganadera",
+    "tabs": {
+      "herd": "Rebaño",
+      "reproductive": "Reproducción",
+      "production": "Producción",
+      "evolution": "Evolución",
+      "mortality": "Mortalidad",
+      "vaccines": "Vacunas",
+      "financial": "Finanzas"
+    },
+    "evolution": {
+      "title": "Análisis de Evolución Temporal",
+      "subtitle": "Analiza la mejora de tu cabaña a lo largo del tiempo",
+      "groupBy": "Agrupar por",
+      "weightType": "Tipo de peso",
+      "periods": {
+        "year": "Año",
+        "semester": "Semestre",
+        "quarter": "Trimestre",
+        "month": "Mes"
+      },
+      "weights": {
+        "birth": "Nacimiento",
+        "weaning": "Destete",
+        "final": "Final",
+        "all": "Todos"
+      },
+      "kpis": {
+        "averageImprovement": "Mejora Promedio",
+        "trend": "Tendencia",
+        "bestPeriod": "Mejor Período",
+        "acceleration": "Aceleración"
+      },
+      "trends": {
+        "ascending": "Subiendo",
+        "descending": "Bajando",
+        "stable": "Estable"
+      },
+      "insights": {
+        "positiveTitle": "Tendencia Positiva",
+        "positiveDesc": "La cabaña muestra una mejora consistente con un incremento promedio de {{change}}% por período.",
+        "negativeTitle": "Alerta: Tendencia Decreciente",
+        "negativeDesc": "Se detecta una disminución en el rendimiento de {{change}}% por período. Revisar manejo y genética.",
+        "stableTitle": "Rendimiento Estable",
+        "stableDesc": "La cabaña mantiene un rendimiento constante. Considerar nuevas estrategias para mejorar.",
+        "acceleratingTitle": "Aceleración en Mejora",
+        "acceleratingDesc": "La tasa de mejora está aumentando ({{value}}% adicional). Excelente progreso genético.",
+        "deceleratingTitle": "Desaceleración",
+        "deceleratingDesc": "La mejora se está desacelerando ({{value}}% menos). Evaluar estrategias de selección."
+      },
+      "charts": {
+        "evolution": "Evolución de Pesos",
+        "comparison": "Comparación por Período",
+        "detailedData": "Datos Detallados"
+      },
+      "table": {
+        "period": "Período",
+        "year": "Año",
+        "birthWeight": "Nacimiento",
+        "weaningWeight": "Destete",
+        "finalWeight": "Final",
+        "animals": "Animales",
+        "improvement": "Mejora"
+      },
+      "performance": {
+        "excellent": "Excelente",
+        "good": "Bueno",
+        "average": "Regular",
+        "poor": "Bajo",
+        "unknown": "Sin datos"
+      },
+      "export": {
+        "button": "Exportar",
+        "excel": "Exportar a Excel",
+        "csv": "Exportar a CSV",
+        "success": "Exportación exitosa",
+        "successDesc": "Los datos se han exportado correctamente",
+        "error": "Error al exportar",
+        "errorDesc": "No se pudo exportar los datos"
+      },
+      "noData": "No hay datos suficientes para mostrar el análisis temporal. Asegúrate de tener pesajes registrados en diferentes períodos.",
+      "animalsAnalyzed": "{{count}} animales analizados"
+    }
+  }
+}
