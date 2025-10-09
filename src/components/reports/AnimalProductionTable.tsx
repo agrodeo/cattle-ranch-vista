@@ -54,9 +54,10 @@ interface ProductionAnimal {
 
 interface AnimalProductionTableProps {
   filters: ReportFilters;
+  showCard?: boolean;
 }
 
-export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
+export function AnimalProductionTable({ filters, showCard = true }: AnimalProductionTableProps) {
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
@@ -192,23 +193,20 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
     );
   }
 
-  return (
-    <TooltipProvider>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Producción por Animal
-            </CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Info className="h-4 w-4" />
-              {animals.length} animales con datos de peso
-            </div>
+  const tableContent = (
+    <>
+      {animals.length === 0 ? (
+        <div className="text-center py-12">
+          <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
+          <div className="text-lg font-medium mb-2">Aún no hay pesajes registrados</div>
+          <div className="text-sm text-muted-foreground mb-6">
+            Registra pesajes en la sección de Actividades para ver los datos de producción y ganancia diaria
           </div>
-        </CardHeader>
-        <CardContent>
-          {animals.length === 0 ? (
+          <Button variant="outline" onClick={() => window.location.href = '/actividades'}>
+            Ir a Actividades
+          </Button>
+        </div>
+      ) : isMobile ? (
             <div className="text-center py-12">
               <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
               <div className="text-lg font-medium mb-2">Aún no hay pesajes registrados</div>
@@ -600,6 +598,30 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
               </Table>
             </div>
           )}
+        </>
+  );
+
+  if (!showCard) {
+    return <TooltipProvider>{tableContent}</TooltipProvider>;
+  }
+
+  return (
+    <TooltipProvider>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Producción por Animal
+            </CardTitle>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Info className="h-4 w-4" />
+              {animals.length} animales con datos de peso
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {tableContent}
         </CardContent>
       </Card>
     </TooltipProvider>
