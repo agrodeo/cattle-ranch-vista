@@ -8,7 +8,6 @@ import { Scale, TrendingUp, Target, Award } from "lucide-react";
 import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
 import { AnimalProductionTable } from "./AnimalProductionTable";
-import { CorralProductionKPIs } from "./CorralProductionKPIs";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -229,7 +228,6 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
   return (
     <div className="space-y-6">
-      <CorralProductionKPIs filters={globalFilters} />
       <AnimalProductionTable filters={globalFilters || {}} />
       
       {/* Original Analytics */}
