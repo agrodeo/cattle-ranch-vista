@@ -90,7 +90,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{animal.esta_preñada ? '1' : '0'}</div>
+            <div className="text-2xl font-bold">
+              {stateLoading ? '...' : pregnancyHistory.length}
+            </div>
             <p className="text-xs text-muted-foreground">
               {animal.esta_preñada ? 'Preñada actualmente' : 'Sin preñez actual'}
             </p>
