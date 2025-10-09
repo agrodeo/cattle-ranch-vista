@@ -33,7 +33,7 @@ const Reports = () => {
   };
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState("herd");
+  const [activeTab, setActiveTab] = useState("reproductive");
   
   // Collapsible filters state
   const [filtersExpanded, setFiltersExpanded] = useState(false);
@@ -64,7 +64,6 @@ const Reports = () => {
 
   // Tab configuration for mobile chips
   const tabs = [
-    { id: "herd", label: "Rebaño", shortLabel: "Ganado" },
     { id: "reproductive", label: "Reproducción", shortLabel: "Reprod." },
     { id: "production", label: "Producción", shortLabel: "Prod." },
     { id: "evolution", label: "Evolución", shortLabel: "Evol." },
@@ -80,8 +79,6 @@ const Reports = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "herd":
-        return <HerdOverview filters={stableAppliedFilters} />;
       case "reproductive":
         return <ReproductiveAnalytics filters={stableAppliedFilters} />;
       case "production":
@@ -95,7 +92,7 @@ const Reports = () => {
       case "financial":
         return <FinancialAnalytics filters={stableAppliedFilters} />;
       default:
-        return <HerdOverview filters={stableAppliedFilters} />;
+        return <ReproductiveAnalytics filters={stableAppliedFilters} />;
     }
   };
 
@@ -181,7 +178,7 @@ const Reports = () => {
           subtitle="Reportes detallados por categoría"
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-7 h-10">
+            <TabsList className="grid w-full grid-cols-6 h-10">
               {tabs.map((tab) => (
                 <TabsTrigger key={tab.id} value={tab.id} className="text-sm px-2 py-2">
                   {tab.label}
