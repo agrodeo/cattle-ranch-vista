@@ -98,11 +98,11 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         breed: formData.breed,
         birth_date: formData.birth_date || null,
         peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
-        father_id: formData.father_id || null,
-        mother_id: formData.mother_id || null,
-        corral_id: formData.corral_id || null,
-        color: formData.color || null,
-        mocho: formData.mocho || null,
+        father_id: (formData.father_id && formData.father_id !== 'none') ? formData.father_id : null,
+        mother_id: (formData.mother_id && formData.mother_id !== 'none') ? formData.mother_id : null,
+        corral_id: (formData.corral_id && formData.corral_id !== 'none') ? formData.corral_id : null,
+        color: (formData.color && formData.color !== 'none') ? formData.color : null,
+        mocho: (formData.mocho && formData.mocho !== 'none') ? formData.mocho : null,
         is_castrated: formData.is_castrated,
         observaciones: formData.observaciones || null,
         status: "activo"
@@ -221,6 +221,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                   <SelectValue placeholder="Seleccionar color" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Sin especificar</SelectItem>
                   <SelectItem value="Negro">Negro</SelectItem>
                   <SelectItem value="Colorado">Colorado</SelectItem>
                   <SelectItem value="Bayo">Bayo</SelectItem>
@@ -238,6 +239,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                   <SelectValue placeholder="Seleccionar" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="none">Sin especificar</SelectItem>
                   <SelectItem value="Mocho">Mocho (sin cuernos)</SelectItem>
                   <SelectItem value="Astado">Astado (con cuernos)</SelectItem>
                 </SelectContent>
@@ -269,7 +271,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                   <SelectValue placeholder="Seleccionar padre" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin padre</SelectItem>
+                  <SelectItem value="none">Sin padre</SelectItem>
                   {fatherOptions.map(animal => (
                     <SelectItem key={animal.id} value={animal.id}>
                       {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
@@ -286,7 +288,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                   <SelectValue placeholder="Seleccionar madre" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin madre</SelectItem>
+                  <SelectItem value="none">Sin madre</SelectItem>
                   {motherOptions.map(animal => (
                     <SelectItem key={animal.id} value={animal.id}>
                       {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
@@ -310,7 +312,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                   <SelectValue placeholder="Seleccionar corral" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sin corral</SelectItem>
+                  <SelectItem value="none">Sin corral</SelectItem>
                   {corrales.map(corral => (
                     <SelectItem key={corral.id} value={corral.id}>
                       {corral.name}
