@@ -19,10 +19,10 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   const { t } = useTranslation(['animals', 'common', 'forms']);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    identificacion: "",
-    sexo: "",
-    raza: "",
-    fecha_nacimiento: "",
+    id_tag: "",
+    sex: "",
+    breed: "",
+    birth_date: "",
     peso_nacimiento: "",
     observaciones: "",
   });
@@ -32,22 +32,32 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   };
 
   const handleSubmit = async () => {
-    if (!formData.identificacion || !formData.sexo || !formData.raza) {
+    if (!formData.id_tag || !formData.sex || !formData.breed) {
       toast.error("Campos requeridos: Identificación, Sexo y Raza");
       return;
     }
 
     setLoading(true);
     try {
+      // Get current user's cabaña_id using RPC function
+      const { data: cabanaData, error: cabanaError } = await supabase.rpc(
+        'get_current_user_cabana_id'
+      );
+
+      if (cabanaError || !cabanaData) {
+        throw new Error("No se pudo obtener la cabaña del usuario");
+      }
+
       const { error } = await supabase
         .from("animals")
         .insert([{
-          identificacion: formData.identificacion,
-          sexo: formData.sexo,
-          raza: formData.raza,
-          fecha_nacimiento: formData.fecha_nacimiento || null,
+          id_tag: formData.id_tag,
+          sex: formData.sex,
+          breed: formData.breed,
+          birth_date: formData.birth_date || null,
           peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
           observaciones: formData.observaciones || null,
+          status: "activo"
         }]);
 
       if (error) throw error;
@@ -86,18 +96,18 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="identificacion">Identificación *</Label>
+              <Label htmlFor="id_tag">Identificación *</Label>
               <Input
-                id="identificacion"
-                value={formData.identificacion}
-                onChange={(e) => handleInputChange("identificacion", e.target.value)}
+                id="id_tag"
+                value={formData.id_tag}
+                onChange={(e) => handleInputChange("id_tag", e.target.value)}
                 placeholder="Ej: A001"
               />
             </div>
 
             <div>
-              <Label htmlFor="sexo">Sexo *</Label>
-              <Select value={formData.sexo} onValueChange={(value) => handleInputChange("sexo", value)}>
+              <Label htmlFor="sex">Sexo *</Label>
+              <Select value={formData.sex} onValueChange={(value) => handleInputChange("sex", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar sexo" />
                 </SelectTrigger>
@@ -109,8 +119,8 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="raza">Raza *</Label>
-              <Select value={formData.raza} onValueChange={(value) => handleInputChange("raza", value)}>
+              <Label htmlFor="breed">Raza *</Label>
+              <Select value={formData.breed} onValueChange={(value) => handleInputChange("breed", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccionar raza" />
                 </SelectTrigger>
@@ -127,12 +137,12 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="fecha_nacimiento">Fecha de Nacimiento</Label>
+              <Label htmlFor="birth_date">Fecha de Nacimiento</Label>
               <Input
-                id="fecha_nacimiento"
+                id="birth_date"
                 type="date"
-                value={formData.fecha_nacimiento}
-                onChange={(e) => handleInputChange("fecha_nacimiento", e.target.value)}
+                value={formData.birth_date}
+                onChange={(e) => handleInputChange("birth_date", e.target.value)}
               />
             </div>
 
