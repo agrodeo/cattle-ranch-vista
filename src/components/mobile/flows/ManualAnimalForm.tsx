@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { Switch } from "@/components/ui/switch";
 
 interface ManualAnimalFormProps {
   onBack: () => void;
@@ -18,16 +19,58 @@ interface ManualAnimalFormProps {
 export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   const { t } = useTranslation(['animals', 'common', 'forms']);
   const [loading, setLoading] = useState(false);
+  const [animals, setAnimals] = useState<any[]>([]);
+  const [corrales, setCorrales] = useState<any[]>([]);
+  
   const [formData, setFormData] = useState({
     id_tag: "",
+    name: "",
     sex: "",
     breed: "",
     birth_date: "",
     peso_nacimiento: "",
+    father_id: "",
+    mother_id: "",
+    corral_id: "",
+    color: "",
+    mocho: "",
+    is_castrated: false,
     observaciones: "",
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  useEffect(() => {
+    loadAnimalsAndCorrales();
+  }, []);
+
+  const loadAnimalsAndCorrales = async () => {
+    try {
+      const { data: cabanaId } = await supabase.rpc('get_current_user_cabana_id');
+      
+      if (!cabanaId) return;
+
+      // Load animals for parents selection - using filter instead of eq
+      const { data: animalsData } = await supabase
+        .from('animals')
+        .select('id, id_tag, name, sex')
+        .filter('cabaña_id', 'eq', cabanaId)
+        .in('status', ['activo'])
+        .order('id_tag');
+      
+      // Load corrales - using filter instead of eq
+      const { data: corralesData } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .filter('cabaña_id', 'eq', cabanaId)
+        .order('name');
+      
+      setAnimals(animalsData || []);
+      setCorrales(corralesData || []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -50,10 +93,17 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
       const animalData: any = {
         id_tag: formData.id_tag,
+        name: formData.name || null,
         sex: formData.sex,
         breed: formData.breed,
         birth_date: formData.birth_date || null,
         peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
+        father_id: formData.father_id || null,
+        mother_id: formData.mother_id || null,
+        corral_id: formData.corral_id || null,
+        color: formData.color || null,
+        mocho: formData.mocho || null,
+        is_castrated: formData.is_castrated,
         observaciones: formData.observaciones || null,
         status: "activo"
       };
@@ -76,6 +126,9 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
       setLoading(false);
     }
   };
+
+  const fatherOptions = animals.filter(a => a.sex === 'Macho');
+  const motherOptions = animals.filter(a => a.sex === 'Hembra');
 
   return (
     <div className="fixed inset-0 z-50 bg-background lg:hidden">
@@ -107,6 +160,16 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                 value={formData.id_tag}
                 onChange={(e) => handleInputChange("id_tag", e.target.value)}
                 placeholder="Ej: A001"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="name">Nombre</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+                placeholder="Nombre del animal"
               />
             </div>
 
@@ -149,6 +212,112 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                 value={formData.birth_date}
                 onChange={(e) => handleInputChange("birth_date", e.target.value)}
               />
+            </div>
+
+            <div>
+              <Label htmlFor="color">Color</Label>
+              <Select value={formData.color} onValueChange={(value) => handleInputChange("color", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar color" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Negro">Negro</SelectItem>
+                  <SelectItem value="Colorado">Colorado</SelectItem>
+                  <SelectItem value="Bayo">Bayo</SelectItem>
+                  <SelectItem value="Blanco">Blanco</SelectItem>
+                  <SelectItem value="Overo">Overo</SelectItem>
+                  <SelectItem value="Gateado">Gateado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="mocho">Tipo de Cuernos</Label>
+              <Select value={formData.mocho} onValueChange={(value) => handleInputChange("mocho", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Mocho">Mocho (sin cuernos)</SelectItem>
+                  <SelectItem value="Astado">Astado (con cuernos)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.sex === 'Macho' && (
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is_castrated">Castrado</Label>
+                <Switch
+                  id="is_castrated"
+                  checked={formData.is_castrated}
+                  onCheckedChange={(checked) => handleInputChange("is_castrated", checked)}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Genealogía</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="father_id">Padre</Label>
+              <Select value={formData.father_id} onValueChange={(value) => handleInputChange("father_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar padre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin padre</SelectItem>
+                  {fatherOptions.map(animal => (
+                    <SelectItem key={animal.id} value={animal.id}>
+                      {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="mother_id">Madre</Label>
+              <Select value={formData.mother_id} onValueChange={(value) => handleInputChange("mother_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar madre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin madre</SelectItem>
+                  {motherOptions.map(animal => (
+                    <SelectItem key={animal.id} value={animal.id}>
+                      {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Ubicación y Pesos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="corral_id">Corral</Label>
+              <Select value={formData.corral_id} onValueChange={(value) => handleInputChange("corral_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar corral" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Sin corral</SelectItem>
+                  {corrales.map(corral => (
+                    <SelectItem key={corral.id} value={corral.id}>
+                      {corral.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
