@@ -296,7 +296,8 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
           <CardDescription>{totalAnimals} animales analizados</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden md:block rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -336,6 +337,47 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {data.map((row, i) => (
+              <Card key={i}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">{row.periodo}</CardTitle>
+                  <CardDescription>{row.cantidad_animales} animales</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {row.peso_nacimiento_promedio && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Nacimiento:</span>
+                      <span className="font-medium">{formatWeight(row.peso_nacimiento_promedio, lang)}</span>
+                    </div>
+                  )}
+                  {row.peso_destete_promedio && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Destete:</span>
+                      <span className="font-medium">{formatWeight(row.peso_destete_promedio, lang)}</span>
+                    </div>
+                  )}
+                  {row.peso_final_promedio && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Final:</span>
+                      <span className="font-medium">{formatWeight(row.peso_final_promedio, lang)}</span>
+                    </div>
+                  )}
+                  {row.mejora_vs_anterior !== null && (
+                    <div className="flex justify-between items-center pt-2 border-t">
+                      <span className="text-sm text-muted-foreground">Mejora:</span>
+                      <PerformanceBadge 
+                        level={getPerformanceLevel(row.mejora_vs_anterior)} 
+                        value={row.mejora_vs_anterior}
+                      />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </CardContent>
       </Card>
