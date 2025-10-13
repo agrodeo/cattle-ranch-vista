@@ -48,17 +48,22 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         throw new Error("No se pudo obtener la cabaña del usuario");
       }
 
+      const animalData: any = {
+        id_tag: formData.id_tag,
+        sex: formData.sex,
+        breed: formData.breed,
+        birth_date: formData.birth_date || null,
+        peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
+        observaciones: formData.observaciones || null,
+        status: "activo"
+      };
+
+      // Add cabaña_id using bracket notation to avoid TypeScript issues with ñ
+      animalData["cabaña_id"] = cabanaData;
+
       const { error } = await supabase
         .from("animals")
-        .insert([{
-          id_tag: formData.id_tag,
-          sex: formData.sex,
-          breed: formData.breed,
-          birth_date: formData.birth_date || null,
-          peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
-          observaciones: formData.observaciones || null,
-          status: "activo"
-        }]);
+        .insert([animalData]);
 
       if (error) throw error;
 
