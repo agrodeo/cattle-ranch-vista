@@ -93,12 +93,12 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
   const trendColor = metrics.trend.direction === 'ascending' ? 'text-green-600' : 
                       metrics.trend.direction === 'descending' ? 'text-red-600' : 'text-gray-600';
 
-  // Prepare chart data - filter out null values for each weight type
+  // Prepare chart data - convert to numbers and keep values for visualization
   const chartData = data.map(d => ({
     periodo: d.periodo,
-    nacimiento: d.peso_nacimiento_promedio !== null ? Number(d.peso_nacimiento_promedio) : null,
-    destete: d.peso_destete_promedio !== null ? Number(d.peso_destete_promedio) : null,
-    final: d.peso_final_promedio !== null ? Number(d.peso_final_promedio) : null,
+    nacimiento: d.peso_nacimiento_promedio ? Number(d.peso_nacimiento_promedio) : undefined,
+    destete: d.peso_destete_promedio ? Number(d.peso_destete_promedio) : undefined,
+    final: d.peso_final_promedio ? Number(d.peso_final_promedio) : undefined,
     animales: d.cantidad_animales
   }));
 
