@@ -275,14 +275,14 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
               <Legend />
               {weightType === 'all' ? (
                 <>
-                  <Bar dataKey="nacimiento" fill="hsl(var(--chart-1))" name="Nacimiento" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="destete" fill="hsl(var(--chart-2))" name="Destete" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="final" fill="hsl(var(--chart-3))" name="Final" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="nacimiento" fill="hsl(0 0% 10%)" name="Nacimiento" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="destete" fill="hsl(0 0% 30%)" name="Destete" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="final" fill="hsl(0 0% 50%)" name="Final" radius={[4, 4, 0, 0]} />
                 </>
               ) : weightType === 'destete' ? (
-                <Bar dataKey="destete" fill="hsl(var(--chart-2))" name="Destete" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="destete" fill="hsl(0 0% 10%)" name="Destete" radius={[4, 4, 0, 0]} />
               ) : (
-                <Bar dataKey="final" fill="hsl(var(--chart-3))" name="Final" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="final" fill="hsl(0 0% 10%)" name="Final" radius={[4, 4, 0, 0]} />
               )}
             </BarChart>
           </ResponsiveContainer>
