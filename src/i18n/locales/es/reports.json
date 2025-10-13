@@ -22,11 +22,23 @@
         "quarter": "Trimestre",
         "month": "Mes"
       },
+      "weightTypes": {
+        "birth": "Nacimiento",
+        "weaning": "Destete",
+        "final": "Final",
+        "all": "Todos"
+      },
       "weights": {
         "birth": "Nacimiento",
         "weaning": "Destete",
         "final": "Final",
         "all": "Todos"
+      },
+      "suggestAll": "Intenta seleccionar 'Todos' para ver otros tipos de peso disponibles",
+      "chart": {
+        "title": "Evolución de Pesos",
+        "subtitle": "Tendencia de pesos a lo largo del tiempo",
+        "yAxis": "Peso (kg)"
       },
       "kpis": {
         "averageImprovement": "Mejora Promedio",

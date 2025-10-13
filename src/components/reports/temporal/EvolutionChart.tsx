@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
-import { LineChart as LineChartIcon } from 'lucide-react';
+import { LineChart as LineChartIcon, AlertCircle } from 'lucide-react';
 
 interface DataPoint {
   periodo: string;
@@ -42,6 +42,15 @@ export function EvolutionChart({
   showTrendLine = false,
   height = 400
 }: EvolutionChartProps) {
+  // Filter lines that have at least one valid data point
+  const validLines = useMemo(() => {
+    return lines.filter(line => 
+      data.some(d => d[line.dataKey] != null && !isNaN(Number(d[line.dataKey])))
+    );
+  }, [data, lines]);
+
+  const hasData = validLines.length > 0;
+
   // Calculate trend line if needed
   const trendLineData = useMemo(() => {
     if (!showTrendLine || data.length < 2 || lines.length === 0) return null;
@@ -78,62 +87,71 @@ export function EvolutionChart({
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={height}>
-          <LineChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis 
-              dataKey="periodo" 
-              stroke="hsl(var(--muted-foreground))"
-              style={{ fontSize: '12px' }}
-            />
-            <YAxis 
-              stroke="hsl(var(--muted-foreground))"
-              style={{ fontSize: '12px' }}
-              label={{ 
-                value: yAxisLabel, 
-                angle: -90, 
-                position: 'insideLeft',
-                style: { textAnchor: 'middle' }
-              }}
-            />
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: 'hsl(var(--popover))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: '6px'
-              }}
-            />
-            <Legend />
-            
-            {lines.map((line) => (
-              <Line
-                key={line.dataKey}
-                type="monotone"
-                dataKey={line.dataKey}
-                stroke={line.color}
-                name={line.name}
-                strokeWidth={line.strokeWidth || 2}
-                dot={{ r: 4, fill: line.color }}
-                activeDot={{ r: 6 }}
-                connectNulls={true}
-              />
-            ))}
-
-            {showTrendLine && trendLineData && (
-              <Line
-                type="monotone"
-                data={trendLineData}
-                dataKey="y"
+        {!hasData ? (
+          <div className="flex flex-col items-center justify-center h-full space-y-2" style={{ height }}>
+            <AlertCircle className="h-12 w-12 text-muted-foreground" />
+            <p className="text-muted-foreground text-center">
+              No hay datos disponibles para el período seleccionado
+            </p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={height}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis 
+                dataKey="periodo" 
                 stroke="hsl(var(--muted-foreground))"
-                strokeDasharray="5 5"
-                strokeWidth={1.5}
-                dot={false}
-                name="Tendencia"
-                legendType="line"
+                style={{ fontSize: '12px' }}
               />
-            )}
-          </LineChart>
-        </ResponsiveContainer>
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))"
+                style={{ fontSize: '12px' }}
+                label={{ 
+                  value: yAxisLabel, 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle' }
+                }}
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '6px'
+                }}
+              />
+              <Legend />
+              
+              {validLines.map((line) => (
+                <Line
+                  key={line.dataKey}
+                  type="monotone"
+                  dataKey={line.dataKey}
+                  stroke={line.color}
+                  name={line.name}
+                  strokeWidth={line.strokeWidth || 2}
+                  dot={{ r: 4, fill: line.color }}
+                  activeDot={{ r: 6 }}
+                  connectNulls={true}
+                />
+              ))}
+
+              {showTrendLine && trendLineData && (
+                <Line
+                  type="monotone"
+                  data={trendLineData}
+                  dataKey="y"
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="5 5"
+                  strokeWidth={1.5}
+                  dot={false}
+                  name="Tendencia"
+                  legendType="line"
+                />
+              )}
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

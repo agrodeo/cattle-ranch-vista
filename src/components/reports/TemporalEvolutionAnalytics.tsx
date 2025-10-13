@@ -6,7 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { 
   TrendingUp, TrendingDown, Minus, Calendar, Target, 
-  Award, Zap, Info, BarChart3, LineChart 
+  Award, Zap, Info, BarChart3, LineChart as LineChartIcon 
 } from 'lucide-react';
 import { useTemporalProductionData, type GroupByPeriod, type WeightType } from '@/hooks/useTemporalProductionData';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ScatterChart, Scatter } from 'recharts';
@@ -17,6 +17,7 @@ import { TrendIndicator } from './temporal/TrendIndicator';
 import { PerformanceBadge, getPerformanceLevel } from './temporal/PerformanceBadge';
 import { EvolutionChart } from './temporal/EvolutionChart';
 import { ExportButton } from './temporal/ExportButton';
+import { useTranslation } from 'react-i18next';
 
 interface TemporalEvolutionAnalyticsProps {
   cabanaId: string | null;
@@ -31,6 +32,7 @@ interface TemporalEvolutionAnalyticsProps {
 
 export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalEvolutionAnalyticsProps) {
   const { lang } = useLanguage();
+  const { t } = useTranslation();
   const [groupBy, setGroupBy] = useState<GroupByPeriod>('year');
   const [weightType, setWeightType] = useState<WeightType>('destete');
 
@@ -93,14 +95,22 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
   const trendColor = metrics.trend.direction === 'ascending' ? 'text-green-600' : 
                       metrics.trend.direction === 'descending' ? 'text-red-600' : 'text-gray-600';
 
-  // Prepare chart data - convert to numbers and keep values for visualization
+  // Prepare chart data - use null for missing values (better for Recharts)
   const chartData = data.map(d => ({
     periodo: d.periodo,
-    nacimiento: d.peso_nacimiento_promedio ? Number(d.peso_nacimiento_promedio) : undefined,
-    destete: d.peso_destete_promedio ? Number(d.peso_destete_promedio) : undefined,
-    final: d.peso_final_promedio ? Number(d.peso_final_promedio) : undefined,
+    nacimiento: d.peso_nacimiento_promedio != null ? Number(d.peso_nacimiento_promedio) : null,
+    destete: d.peso_destete_promedio != null ? Number(d.peso_destete_promedio) : null,
+    final: d.peso_final_promedio != null ? Number(d.peso_final_promedio) : null,
     animales: d.cantidad_animales
   }));
+
+  // Validate if there's data for the selected weight type
+  const hasDataForSelectedType = chartData.some(d => {
+    if (weightType === 'destete') return d.destete !== null;
+    if (weightType === 'final') return d.final !== null;
+    // For 'all' or any other value, check if any weight type has data
+    return d.nacimiento !== null || d.destete !== null || d.final !== null;
+  });
 
   return (
     <div className="space-y-6">
@@ -239,24 +249,49 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       )}
 
       {/* Evolution Chart - Using new reusable component */}
-      <EvolutionChart
-        data={chartData}
-        title="Evolución de Pesos"
-        description="Tendencia de pesos a lo largo del tiempo"
-        yAxisLabel="Peso (kg)"
-        showTrendLine={true}
-        lines={
-          weightType === 'all'
-            ? [
-                { dataKey: 'nacimiento', name: 'Nacimiento', color: 'hsl(var(--chart-1))' },
-                { dataKey: 'destete', name: 'Destete', color: 'hsl(var(--chart-2))' },
-                { dataKey: 'final', name: 'Final', color: 'hsl(var(--chart-3))' }
-              ]
-            : weightType === 'destete'
-            ? [{ dataKey: 'destete', name: 'Destete', color: 'hsl(var(--chart-2))' }]
-            : [{ dataKey: 'final', name: 'Final', color: 'hsl(var(--chart-3))' }]
-        }
-      />
+      {!hasDataForSelectedType ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <LineChartIcon className="h-5 w-5" />
+              {t('reports.evolution.charts.evolution')}
+            </CardTitle>
+            <CardDescription>{t('reports.evolution.subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-center justify-center h-[400px] text-center space-y-2">
+              <p className="text-muted-foreground">
+                {t('reports.evolution.noData')}
+              </p>
+              {weightType !== 'all' && (
+                <p className="text-sm text-muted-foreground">
+                  {t('reports.evolution.suggestAll')}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <EvolutionChart
+          data={chartData}
+          title={t('reports.evolution.charts.evolution')}
+          description={t('reports.evolution.subtitle')}
+          lines={
+            weightType === 'destete' 
+              ? [{ dataKey: 'destete', name: t('reports.evolution.weights.weaning'), color: 'hsl(var(--chart-2))', strokeWidth: 2 }]
+              : weightType === 'final'
+              ? [{ dataKey: 'final', name: t('reports.evolution.weights.final'), color: 'hsl(var(--chart-3))', strokeWidth: 2 }]
+              : [
+                  { dataKey: 'nacimiento', name: t('reports.evolution.weights.birth'), color: 'hsl(var(--chart-1))', strokeWidth: 2 },
+                  { dataKey: 'destete', name: t('reports.evolution.weights.weaning'), color: 'hsl(var(--chart-2))', strokeWidth: 2 },
+                  { dataKey: 'final', name: t('reports.evolution.weights.final'), color: 'hsl(var(--chart-3))', strokeWidth: 2 }
+                ]
+          }
+          yAxisLabel={t('reports.evolution.chart.yAxis')}
+          showTrendLine={true}
+          height={400}
+        />
+      )}
 
       {/* Bar Chart - Comparison */}
       <Card>
