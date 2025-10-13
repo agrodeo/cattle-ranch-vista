@@ -131,9 +131,13 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   const motherOptions = animals.filter(a => a.sex === 'Hembra');
 
   return (
-    <div className="fixed inset-0 z-50 bg-background lg:hidden">
+    <div 
+      className="fixed inset-0 z-50 bg-background lg:hidden flex flex-col"
+      onTouchMove={(e) => e.stopPropagation()}
+      style={{ touchAction: 'auto' }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
@@ -147,7 +151,10 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-4 space-y-6 overflow-y-auto pb-20">
+      <div 
+        className="flex-1 p-4 space-y-6 overflow-y-auto pb-20"
+        style={{ touchAction: 'pan-y' }}
+      >
         <Card>
           <CardHeader>
             <CardTitle>Información Básica</CardTitle>
