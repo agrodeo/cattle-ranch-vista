@@ -307,10 +307,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-[90vw] p-3 sm:p-4 md:p-6">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-4xl lg:max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden w-full p-3 sm:p-4 md:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 flex-wrap min-w-0">
-            <Shuffle className="h-5 w-5 flex-shrink-0" />
+          <DialogTitle className="flex items-center gap-2 flex-wrap min-w-0 text-sm sm:text-base">
+            <Shuffle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
             <span className="break-words min-w-0">Optimización de Corrales - Paso {step} de 4</span>
           </DialogTitle>
           <Button
@@ -401,11 +401,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Objetivos de Optimización */}
-                <div>
-                  <Label className="text-base font-semibold mb-3 block">Objetivos de Optimización</Label>
+                 {/* Objetivos de Optimización */}
+                <div className="min-w-0 overflow-hidden">
+                  <Label className="text-sm sm:text-base font-semibold mb-3 block">Objetivos de Optimización</Label>
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                    <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
                         type="checkbox"
                         checked={config.objectives.includes('consanguinity')}
@@ -415,15 +415,15 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             : config.objectives.filter(o => o !== 'consanguinity');
                           setConfig(prev => ({ ...prev, objectives }));
                         }}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <div className="font-medium">Reducir Consanguinidad</div>
-                        <div className="text-sm text-muted-foreground">Evitar cruces entre animales emparentados</div>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium text-sm sm:text-base">Reducir Consanguinidad</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">Evitar cruces entre animales emparentados</div>
                       </div>
                     </label>
                     
-                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                    <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
                         type="checkbox"
                         checked={config.objectives.includes('reproduction')}
@@ -433,15 +433,15 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             : config.objectives.filter(o => o !== 'reproduction');
                           setConfig(prev => ({ ...prev, objectives }));
                         }}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <div className="font-medium">Optimizar Reproducción</div>
-                        <div className="text-sm text-muted-foreground">Maximizar fertilidad y tasa de preñez</div>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium text-sm sm:text-base">Optimizar Reproducción</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">Maximizar fertilidad y tasa de preñez</div>
                       </div>
                     </label>
                     
-                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                    <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
                         type="checkbox"
                         checked={config.objectives.includes('production')}
@@ -451,15 +451,15 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             : config.objectives.filter(o => o !== 'production');
                           setConfig(prev => ({ ...prev, objectives }));
                         }}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                       />
-                      <div className="flex-1">
-                        <div className="font-medium">Optimizar Producción</div>
-                        <div className="text-sm text-muted-foreground">Maximizar ganancia de peso y producción</div>
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium text-sm sm:text-base">Optimizar Producción</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">Maximizar ganancia de peso y producción</div>
                       </div>
                     </label>
                     
-                    <label className="flex items-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-accent">
+                    <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
                         type="checkbox"
                         checked={config.objectives.includes('benchmarks')}
@@ -469,12 +469,12 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             : config.objectives.filter(o => o !== 'benchmarks');
                           setConfig(prev => ({ ...prev, objectives }));
                         }}
-                        className="w-4 h-4"
+                        className="w-4 h-4 flex-shrink-0"
                         disabled={checkingBenchmarks}
                       />
-                      <div className="flex-1">
-                        <div className="font-medium">Seguir Estándares de la Cabaña</div>
-                        <div className="text-sm text-muted-foreground">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium text-sm sm:text-base">Seguir Estándares de la Cabaña</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">
                           {checkingBenchmarks ? (
                             "Verificando estándares configurados..."
                           ) : hasCustomBenchmarks ? (
@@ -484,7 +484,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                               Se usarán estándares por defecto. 
                               <Link 
                                 to="/settings?tab=benchmarks" 
-                                className="ml-1 underline text-primary hover:text-primary/80" 
+                                className="ml-1 underline text-primary hover:text-primary/80 break-words" 
                                 onClick={onClose}
                               >
                                 Configura estándares personalizados aquí
@@ -499,11 +499,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                 {/* Parámetros de Peso (opcional) */}
                 {(config.objectives.includes('production') || config.objectives.includes('benchmarks')) && (
-                  <div className="p-4 bg-blue-50 rounded-lg space-y-3">
-                    <Label className="font-semibold">Objetivos de Peso (opcional)</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div>
-                        <Label className="text-sm">Peso al Nacer (kg)</Label>
+                  <div className="p-3 sm:p-4 bg-blue-50 rounded-lg space-y-3 min-w-0 overflow-hidden">
+                    <Label className="text-sm sm:text-base font-semibold">Objetivos de Peso (opcional)</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 min-w-0">
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm">Peso al Nacer (kg)</Label>
                         <Input
                           type="number"
                           placeholder="ej: 35"
@@ -512,10 +512,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             ...prev,
                             targetWeights: { ...prev.targetWeights, birth: Number(e.target.value) }
                           }))}
+                          className="w-full"
                         />
                       </div>
-                      <div>
-                        <Label className="text-sm">Peso al Destete (kg)</Label>
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm">Peso al Destete (kg)</Label>
                         <Input
                           type="number"
                           placeholder="ej: 180"
@@ -524,10 +525,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             ...prev,
                             targetWeights: { ...prev.targetWeights, weaning: Number(e.target.value) }
                           }))}
+                          className="w-full"
                         />
                       </div>
-                      <div>
-                        <Label className="text-sm">Peso Final (kg)</Label>
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm">Peso Final (kg)</Label>
                         <Input
                           type="number"
                           placeholder="ej: 450"
@@ -536,6 +538,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             ...prev,
                             targetWeights: { ...prev.targetWeights, final: Number(e.target.value) }
                           }))}
+                          className="w-full"
                         />
                       </div>
                     </div>
@@ -543,11 +546,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 )}
 
                 {/* Parámetros Técnicos */}
-                <div>
-                  <Label className="text-base font-semibold mb-3 block">Parámetros Técnicos</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-xs sm:text-sm">Toros por Corral (máx)</Label>
+                <div className="min-w-0 overflow-hidden">
+                  <Label className="text-sm sm:text-base font-semibold mb-3 block">Parámetros Técnicos</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
+                    <div className="min-w-0">
+                      <Label className="text-xs sm:text-sm break-words">Toros por Corral (máx)</Label>
                       <Input
                         type="number"
                         value={config.max_bulls_per_corral}
@@ -555,10 +558,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           ...prev,
                           max_bulls_per_corral: Number(e.target.value)
                         }))}
+                        className="w-full"
                       />
                     </div>
-                    <div>
-                      <Label className="text-xs sm:text-sm">Edad máx. ternero con madre (meses)</Label>
+                    <div className="min-w-0">
+                      <Label className="text-xs sm:text-sm break-words">Edad máx. ternero con madre (meses)</Label>
                       <Input
                         type="number"
                         value={config.max_age_months_with_mother}
@@ -566,10 +570,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           ...prev,
                           max_age_months_with_mother: Number(e.target.value)
                         }))}
+                        className="w-full"
                       />
                     </div>
-                    <div>
-                      <Label className="text-xs sm:text-sm">Densidad por Hectárea</Label>
+                    <div className="min-w-0">
+                      <Label className="text-xs sm:text-sm break-words">Densidad por Hectárea</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -578,10 +583,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           ...prev,
                           density_per_hectare: Number(e.target.value)
                         }))}
+                        className="w-full"
                       />
                     </div>
-                    <div>
-                      <Label className="text-xs sm:text-sm">Factor espacio ternero (0-1)</Label>
+                    <div className="min-w-0">
+                      <Label className="text-xs sm:text-sm break-words">Factor espacio ternero (0-1)</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -592,14 +598,15 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                           ...prev,
                           calf_space_factor: Number(e.target.value)
                         }))}
+                        className="w-full"
                       />
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <h4 className="font-medium text-green-900 mb-2">💡 Cómo funciona</h4>
-                  <ul className="text-sm text-green-700 space-y-1">
+                <div className="p-3 sm:p-4 bg-green-50 rounded-lg min-w-0 overflow-hidden">
+                  <h4 className="font-medium text-green-900 mb-2 text-sm sm:text-base">💡 Cómo funciona</h4>
+                  <ul className="text-xs sm:text-sm text-green-700 space-y-1 break-words">
                     <li>• Selecciona uno o más objetivos de optimización</li>
                     <li>• La IA analizará tu rodeo y generará movimientos específicos</li>
                     <li>• Los terneros se mueven automáticamente con sus madres</li>
@@ -609,7 +616,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               </CardContent>
             </Card>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
               <Button onClick={onClose} variant="outline">
                 Cancelar
               </Button>
@@ -630,28 +637,29 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         )}
 
         {step === 2 && (
-          <div className="space-y-4">
-            <Card>
+          <div className="space-y-4 min-w-0 overflow-hidden">
+            <Card className="min-w-0 overflow-hidden">
               <CardHeader>
-                <CardTitle>Seleccionar Animales para Análisis (Opcional)</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
+                <CardTitle className="text-sm sm:text-base break-words">Seleccionar Animales para Análisis (Opcional)</CardTitle>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
                   Si no seleccionas ningún animal, se analizarán todos los animales activos.
                   Puedes filtrar por corral o seleccionar individualmente.
                 </p>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label>Buscar Animal</Label>
+              <CardContent className="space-y-4 min-w-0 overflow-hidden">
+                <div className="min-w-0">
+                  <Label className="text-xs sm:text-sm">Buscar Animal</Label>
                   <Input
                     placeholder="Nombre o tag..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full"
                   />
                 </div>
 
-                <div>
-                  <Label className="mb-2 block">Filtrar por Corral</Label>
-                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="min-w-0 overflow-hidden">
+                  <Label className="mb-2 block text-xs sm:text-sm">Filtrar por Corral</Label>
+                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 min-w-0">
                      {allCorrals.map(corral => (
                        <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent min-w-0 overflow-hidden w-full">
                          <input
@@ -682,22 +690,22 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         (selectedCorralIds.size === 0 || selectedCorralIds.has(a.corral_id))
                       ).length
                     })</Label>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-1 sm:gap-2 flex-wrap">
                       <Button size="sm" variant="outline" onClick={() => {
                         const filtered = allAnimals.filter(a => 
                           (!searchTerm || a.id_tag?.includes(searchTerm) || a.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
                           (selectedCorralIds.size === 0 || selectedCorralIds.has(a.corral_id))
                         );
                         setSelectedAnimalIds(new Set(filtered.map(a => a.id)));
-                      }}>
+                      }} className="text-xs sm:text-sm">
                         Seleccionar Visibles
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setSelectedAnimalIds(new Set())}>
+                      <Button size="sm" variant="outline" onClick={() => setSelectedAnimalIds(new Set())} className="text-xs sm:text-sm">
                         Limpiar
                       </Button>
                     </div>
                   </div>
-                  <div className="max-h-64 overflow-y-auto border rounded p-2 space-y-1">
+                  <div className="max-h-64 overflow-y-auto border rounded p-2 space-y-1 min-w-0">
                     {allAnimals
                       .filter(a => 
                         (!searchTerm || a.id_tag?.includes(searchTerm) || a.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
@@ -771,8 +779,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               </CardContent>
             </Card>
 
-            <div className="flex gap-2">
-              <Button onClick={resetWizard} variant="outline">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+              <Button onClick={resetWizard} variant="outline" className="flex-1 sm:flex-initial">
                 Volver
               </Button>
               <Button 
@@ -945,25 +953,25 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               </CardContent>
             </Card>
 
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2 justify-end">
-                <Button size="sm" variant="outline" onClick={selectAllMoves}>
+            <div className="flex flex-col gap-2 min-w-0 overflow-hidden">
+              <div className="flex gap-1 sm:gap-2 justify-end flex-wrap">
+                <Button size="sm" variant="outline" onClick={selectAllMoves} className="text-xs sm:text-sm">
                   Seleccionar Todos
                 </Button>
-                <Button size="sm" variant="outline" onClick={deselectAllMoves}>
+                <Button size="sm" variant="outline" onClick={deselectAllMoves} className="text-xs sm:text-sm">
                   Deseleccionar Todos
                 </Button>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={resetWizard} variant="outline">
+              <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                <Button onClick={resetWizard} variant="outline" className="flex-1 sm:flex-initial">
                   Volver
                 </Button>
                 <Button
                   onClick={applySuggestions}
                   disabled={loading || selectedMoves.size === 0}
-                  className="flex-1"
+                  className="flex-1 min-w-0 text-xs sm:text-sm"
                 >
-                  {loading ? "Aplicando..." : `Aplicar ${selectedMoves.size} Movimientos Seleccionados`}
+                  <span className="truncate">{loading ? "Aplicando..." : `Aplicar ${selectedMoves.size} Movimientos`}</span>
                 </Button>
               </div>
             </div>
@@ -971,17 +979,17 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         )}
 
         {step === 4 && (
-          <div className="text-center space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
-            <h3 className="text-xl font-semibold">Optimización Aplicada</h3>
-            <p className="text-muted-foreground">
+          <div className="text-center space-y-4 min-w-0 overflow-hidden px-2">
+            <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-green-600 mx-auto" />
+            <h3 className="text-lg sm:text-xl font-semibold break-words">Optimización Aplicada</h3>
+            <p className="text-sm sm:text-base text-muted-foreground break-words">
               Los movimientos seleccionados han sido aplicados exitosamente.
             </p>
-            <div className="flex gap-2 justify-center">
-              <Button onClick={onClose} variant="outline">
+            <div className="flex gap-2 justify-center flex-wrap sm:flex-nowrap">
+              <Button onClick={onClose} variant="outline" className="flex-1 sm:flex-initial">
                 Cerrar
               </Button>
-              <Button onClick={resetWizard}>
+              <Button onClick={resetWizard} className="flex-1 sm:flex-initial">
                 Nueva Optimización
               </Button>
             </div>
