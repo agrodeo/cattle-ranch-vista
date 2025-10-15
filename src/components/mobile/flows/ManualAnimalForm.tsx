@@ -29,12 +29,18 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
     breed: "",
     birth_date: "",
     peso_nacimiento: "",
+    peso_destete: "",
+    peso_final: "",
+    peso_actual_kg: "",
     father_id: "",
     mother_id: "",
     corral_id: "",
     color: "",
     mocho: "",
     is_castrated: false,
+    condicion_corporal: "",
+    circunferencia_escrotal: "",
+    fecha_destete: "",
     observaciones: "",
   });
 
@@ -98,12 +104,18 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         breed: formData.breed,
         birth_date: formData.birth_date || null,
         peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
+        peso_destete: formData.peso_destete ? parseFloat(formData.peso_destete) : null,
+        peso_final: formData.peso_final ? parseFloat(formData.peso_final) : null,
+        peso_actual_kg: formData.peso_actual_kg ? parseFloat(formData.peso_actual_kg) : null,
+        fecha_destete: formData.fecha_destete || null,
         father_id: (formData.father_id && formData.father_id !== 'none') ? formData.father_id : null,
         mother_id: (formData.mother_id && formData.mother_id !== 'none') ? formData.mother_id : null,
         corral_id: (formData.corral_id && formData.corral_id !== 'none') ? formData.corral_id : null,
         color: (formData.color && formData.color !== 'none') ? formData.color : null,
         mocho: (formData.mocho && formData.mocho !== 'none') ? formData.mocho : null,
         is_castrated: formData.is_castrated,
+        condicion_corporal: (formData.condicion_corporal && formData.condicion_corporal !== 'none') ? formData.condicion_corporal : null,
+        circunferencia_escrotal: formData.circunferencia_escrotal ? parseFloat(formData.circunferencia_escrotal) : null,
         observaciones: formData.observaciones || null,
         status: "activo"
       };
@@ -340,6 +352,84 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                 placeholder="Ej: 35.5"
               />
             </div>
+
+            <div>
+              <Label htmlFor="fecha_destete">Fecha de Destete</Label>
+              <Input
+                id="fecha_destete"
+                type="date"
+                value={formData.fecha_destete}
+                onChange={(e) => handleInputChange("fecha_destete", e.target.value)}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="peso_destete">Peso al Destete (kg)</Label>
+              <Input
+                id="peso_destete"
+                type="number"
+                step="0.1"
+                value={formData.peso_destete}
+                onChange={(e) => handleInputChange("peso_destete", e.target.value)}
+                placeholder="Ej: 180.5"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="peso_final">Peso Final (kg)</Label>
+              <Input
+                id="peso_final"
+                type="number"
+                step="0.1"
+                value={formData.peso_final}
+                onChange={(e) => handleInputChange("peso_final", e.target.value)}
+                placeholder="Ej: 450.0"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="peso_actual_kg">Peso Actual (kg)</Label>
+              <Input
+                id="peso_actual_kg"
+                type="number"
+                step="0.1"
+                value={formData.peso_actual_kg}
+                onChange={(e) => handleInputChange("peso_actual_kg", e.target.value)}
+                placeholder="Ej: 320.5"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="condicion_corporal">Condición Corporal</Label>
+              <Select value={formData.condicion_corporal} onValueChange={(value) => handleInputChange("condicion_corporal", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Seleccionar condición" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Sin especificar</SelectItem>
+                  <SelectItem value="1">1 - Muy flaco</SelectItem>
+                  <SelectItem value="2">2 - Flaco</SelectItem>
+                  <SelectItem value="3">3 - Moderado</SelectItem>
+                  <SelectItem value="4">4 - Bueno</SelectItem>
+                  <SelectItem value="5">5 - Gordo</SelectItem>
+                  <SelectItem value="6">6 - Muy gordo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {formData.sex === 'Macho' && (
+              <div>
+                <Label htmlFor="circunferencia_escrotal">Circunferencia Escrotal (cm)</Label>
+                <Input
+                  id="circunferencia_escrotal"
+                  type="number"
+                  step="0.1"
+                  value={formData.circunferencia_escrotal}
+                  onChange={(e) => handleInputChange("circunferencia_escrotal", e.target.value)}
+                  placeholder="Ej: 34.5"
+                />
+              </div>
+            )}
 
             <div>
               <Label htmlFor="observaciones">Observaciones</Label>
