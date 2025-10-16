@@ -16,7 +16,11 @@ export function getAgeInMonths(birthDate: string | null | undefined): number {
   
   const birth = new Date(birthDate);
   const now = new Date();
-  const diffTime = Math.abs(now.getTime() - birth.getTime());
+  
+  // If birth date is in the future, return 0
+  if (birth > now) return 0;
+  
+  const diffTime = now.getTime() - birth.getTime();
   const diffMonths = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 30.44));
   
   return diffMonths;
