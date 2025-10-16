@@ -3,7 +3,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { 
   Syringe, 
@@ -11,17 +10,15 @@ import {
   AlertTriangle, 
   CheckCircle, 
   Clock,
-  Shield,
-  XCircle,
-  ArrowLeft
+  Shield
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
-import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
-import { useVaccinationLogic } from "@/hooks/useVaccinationLogic";
+import { useVaccinationCompliance, AnimalVaccinationCompliance } from "@/hooks/useVaccinationCompliance";
 import { VaccinationStatusCard } from "@/components/vaccination/VaccinationStatusCard";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface AnimalVacunasProps {
   animal: Animal;
@@ -31,13 +28,10 @@ interface AnimalVacunasProps {
 // Removed mock data - using real data only
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
-  const { alerts, loading: alertsLoading } = useVaccinationAlerts(animal.id);
-  const { calculateAnimalCompliance } = useVaccinationLogic();
+  const { getAnimalCompliance, loading: complianceLoading } = useVaccinationCompliance();
   const [vaccinations, setVaccinations] = useState<any[]>([]);
-  const [locationAlerts, setLocationAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [compliance, setCompliance] = useState<any>(null);
-  const [complianceLoading, setComplianceLoading] = useState(true);
+  const [compliance, setCompliance] = useState<AnimalVaccinationCompliance | null>(null);
 
   const fetchVaccinations = async () => {
     try {
@@ -86,11 +80,6 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
 
       setVaccinations(allVaccinations);
 
-      // Get location-aware due vaccines using RPC
-      const { data: dueVaccines } = await supabase.rpc('compute_due_vaccines_for_animal', {
-        _animal_id: animal.id
-      });
-      setLocationAlerts((dueVaccines as any)?.due_vaccines || []);
 
     } catch (error) {
       console.error("Error fetching vaccinations:", error);
@@ -105,14 +94,9 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   }, [animal.id]);
 
   const loadCompliance = async () => {
-    try {
-      setComplianceLoading(true);
-      const animalCompliance = await calculateAnimalCompliance(animal.id);
-      setCompliance(animalCompliance);
-    } catch (error) {
-      console.error('Error loading compliance:', error);
-    } finally {
-      setComplianceLoading(false);
+    const result = await getAnimalCompliance(animal.id);
+    if (result) {
+      setCompliance(result);
     }
   };
 
@@ -171,24 +155,161 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     }
   };
 
-  // Only use the new requirements-based system
-  const hasConfiguredRequirements = compliance && compliance.totalRequired > 0;
+  const hasConfiguredRequirements = compliance && compliance.vaccines && compliance.vaccines.length > 0;
+
+  if (complianceLoading) {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* New Requirements-Based Vaccination Status */}
-      <VaccinationStatusCard 
-        compliance={compliance || {
-          animalId: animal.id,
-          totalRequired: 0,
-          completed: 0,
-          percentage: 0,
-          missing: [],
-          overdue: [],
-          upcoming: []
-        }} 
-        loading={complianceLoading} 
-      />
+      {/* Requirements-Based Vaccination Status */}
+      {hasConfiguredRequirements && compliance && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Estado de Vacunación
+            </CardTitle>
+            <CardDescription>
+              Resumen del cumplimiento de requisitos configurados
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-1">
+                <div className="text-2xl font-bold">
+                  {compliance.vaccines.filter(v => v.status === 'complete').length}
+                </div>
+                <div className="text-xs text-muted-foreground">Completas</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {compliance.vaccines.filter(v => v.status === 'incomplete').length}
+                </div>
+                <div className="text-xs text-muted-foreground">Incompletas</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-red-600">
+                  {compliance.vaccines.filter(v => v.status === 'overdue').length}
+                </div>
+                <div className="text-xs text-muted-foreground">Vencidas</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-gray-600">
+                  {compliance.vaccines.filter(v => v.status === 'not_started').length}
+                </div>
+                <div className="text-xs text-muted-foreground">Sin Iniciar</div>
+              </div>
+            </div>
+
+            {/* Vaccines Table */}
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vacuna</TableHead>
+                    <TableHead className="text-center">Dosis</TableHead>
+                    <TableHead>Última Aplicación</TableHead>
+                    <TableHead>Próxima Dosis</TableHead>
+                    <TableHead>Estado</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {compliance.vaccines.map((vaccine) => (
+                    <TableRow key={vaccine.requirement_id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {vaccine.vaccine_name}
+                          {vaccine.is_mandatory && (
+                            <Badge variant="secondary" className="text-xs">
+                              Obligatoria
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {vaccine.vaccine_type}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="text-sm">
+                          {vaccine.doses_given} / {vaccine.doses_required}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {vaccine.last_vaccination_date ? (
+                          <div className="text-sm">
+                            {format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {vaccine.next_due_date ? (
+                          <div className="text-sm">
+                            {format(new Date(vaccine.next_due_date), 'dd/MM/yyyy', { locale: es })}
+                            {vaccine.is_overdue && (
+                              <div className="text-xs text-red-600">
+                                ({vaccine.days_overdue} días de atraso)
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {vaccine.status === 'complete' && (
+                          <Badge variant="default" className="flex items-center gap-1 w-fit">
+                            <CheckCircle className="h-3 w-3" />
+                            Completa
+                          </Badge>
+                        )}
+                        {vaccine.status === 'incomplete' && (
+                          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                            <Clock className="h-3 w-3" />
+                            Incompleta
+                          </Badge>
+                        )}
+                        {vaccine.status === 'overdue' && (
+                          <Badge variant="destructive" className="flex items-center gap-1 w-fit">
+                            <AlertTriangle className="h-3 w-3" />
+                            Vencida
+                          </Badge>
+                        )}
+                        {vaccine.status === 'due_soon' && (
+                          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
+                            <Clock className="h-3 w-3" />
+                            Próxima
+                          </Badge>
+                        )}
+                        {vaccine.status === 'not_started' && (
+                          <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                            Sin Iniciar
+                          </Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Encourage users to configure their own vaccination requirements */}
       {!hasConfiguredRequirements && (
@@ -300,98 +421,6 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         </CardContent>
       </Card>
 
-      {/* Próximas Vacunas */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            Próximas Vacunas
-          </CardTitle>
-          <CardDescription>
-            Vacunas programadas y vencidas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {loading ? (
-              <div className="text-center py-4 text-muted-foreground">
-                Cargando alertas...
-              </div>
-            ) : !hasConfiguredRequirements ? (
-              <div className="text-center py-4 text-muted-foreground">
-                No hay alertas de vacunación. Configure sus requisitos en Configuración.
-              </div>
-            ) : (
-              <div className="text-center py-4 text-muted-foreground">
-                No hay próximas vacunas según sus requisitos configurados.
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Historial de Vacunaciones */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Syringe className="h-4 w-4" />
-                Historial de Vacunaciones
-              </CardTitle>
-              <CardDescription>
-                Registro completo de vacunas aplicadas
-              </CardDescription>
-            </div>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Agregar Vacuna
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Vacuna</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Lote</TableHead>
-                <TableHead>Dosis</TableHead>
-                <TableHead>Vía</TableHead>
-                <TableHead>Próxima</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {vaccinations.map((vaccination) => (
-                <TableRow key={vaccination.id}>
-                  <TableCell className="font-medium">{vaccination.vacuna}</TableCell>
-                  <TableCell>
-                    {vaccination.fecha 
-                      ? format(new Date(vaccination.fecha), "d 'de' MMMM 'de' yyyy", { locale: es })
-                      : 'No registrada'
-                    }
-                  </TableCell>
-                  <TableCell>{vaccination.lote || '-'}</TableCell>
-                  <TableCell>{vaccination.dosis || '-'}</TableCell>
-                  <TableCell>{vaccination.via || '-'}</TableCell>
-                  <TableCell>
-                    {vaccination.proximaDosis ? getStatusBadge(vaccination.proximaDosis) : '-'}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {vaccinations.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    <div className="text-muted-foreground">
-                      No hay registros de vacunación para este animal
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 }
