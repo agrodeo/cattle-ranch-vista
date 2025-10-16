@@ -53,72 +53,6 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
     }
   };
 
-  const renderQuickActions = () => {
-    if (isInactive) return null;
-
-    return (
-      <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={animal.sex !== 'Hembra' || age && age < 15}
-          className="text-xs"
-        >
-          <Heart className="h-3 w-3 mr-1" />
-          Inseminar
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={animal.sex !== 'Hembra' || age && age < 15}
-          className="text-xs"
-        >
-          <Baby className="h-3 w-3 mr-1" />
-          Tacto
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs"
-        >
-          <Scale className="h-3 w-3 mr-1" />
-          Pesar
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs"
-        >
-          <Syringe className="h-3 w-3 mr-1" />
-          Vacunar
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs"
-        >
-          <MapPin className="h-3 w-3 mr-1" />
-          Mover
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="text-xs"
-        >
-          <DollarSign className="h-3 w-3 mr-1" />
-          Vender
-        </Button>
-        <Button
-          size="sm"
-          variant="destructive"
-          className="text-xs"
-        >
-          <Skull className="h-3 w-3 mr-1" />
-          Fallecer
-        </Button>
-      </div>
-    );
-  };
 
   return (
     <div className="w-full">
@@ -212,9 +146,6 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
               </Badge>
             )}
           </div>
-
-          {/* Quick Actions */}
-          {renderQuickActions()}
 
           {/* Status Message for Inactive Animals */}
           {isInactive && (
