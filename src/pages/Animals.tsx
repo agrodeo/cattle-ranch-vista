@@ -620,9 +620,22 @@ const Animals = () => {
       animal.id_tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
       animal.breed?.toLowerCase().includes(searchTerm.toLowerCase());
 
+    const animalCategory = getAgeCategory(animal);
     const matchesCategory = 
       categoryFilter === "all" || 
-      getAgeCategory(animal) === categoryFilter;
+      animalCategory === categoryFilter;
+    
+    // Debug when filtering by category
+    if (categoryFilter !== "all" && categoryFilter === "Ternero") {
+      console.log('🐮 Ternero Filter Debug:', {
+        id: animal.id_tag,
+        sex: animal.sex,
+        birthDate: animal.birth_date,
+        isCastrated: animal.is_castrated,
+        calculatedCategory: animalCategory,
+        matches: matchesCategory
+      });
+    }
 
     const matchesBreed = 
       breedFilter === "all" || 
