@@ -169,9 +169,12 @@ export type Database = {
           created_by: string
           date: string
           dose: string | null
+          dose_number: number | null
           id: string
+          is_complete: boolean | null
           lot: string | null
           next_due: string | null
+          requirement_id: string | null
           route: string | null
           vaccine_code: string
         }
@@ -182,9 +185,12 @@ export type Database = {
           created_by: string
           date: string
           dose?: string | null
+          dose_number?: number | null
           id?: string
+          is_complete?: boolean | null
           lot?: string | null
           next_due?: string | null
+          requirement_id?: string | null
           route?: string | null
           vaccine_code: string
         }
@@ -195,9 +201,12 @@ export type Database = {
           created_by?: string
           date?: string
           dose?: string | null
+          dose_number?: number | null
           id?: string
+          is_complete?: boolean | null
           lot?: string | null
           next_due?: string | null
+          requirement_id?: string | null
           route?: string | null
           vaccine_code?: string
         }
@@ -207,6 +216,13 @@ export type Database = {
             columns: ["animal_id"]
             isOneToOne: false
             referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "animal_vaccines_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "cabaña_vaccination_requirements"
             referencedColumns: ["id"]
           },
           {
@@ -2775,7 +2791,25 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vaccination_history_unified: {
+        Row: {
+          animal_id: string | null
+          cabaña_id: string | null
+          created_at: string | null
+          dose_number: number | null
+          dosis: string | null
+          fecha: string | null
+          id: string | null
+          is_complete: boolean | null
+          lote: string | null
+          proxima_dosis: string | null
+          requirement_id: string | null
+          source_table: string | null
+          vacuna: string | null
+          via: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       activate_subscription: {
@@ -3084,6 +3118,10 @@ export type Database = {
           ingresos: number
         }[]
       }
+      get_herd_vaccination_stats: {
+        Args: { _cabana_id: string }
+        Returns: Json
+      }
       get_herd_weight_summary: {
         Args: { _cabana_id: string; _date_from?: string; _date_to?: string }
         Returns: {
@@ -3191,6 +3229,10 @@ export type Database = {
           vaccine_name: string
           vaccine_type: string
         }[]
+      }
+      get_vaccination_compliance: {
+        Args: { _animal_id: string; _cabana_id: string }
+        Returns: Json
       }
       has_role: {
         Args: {
