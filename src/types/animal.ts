@@ -2,6 +2,7 @@ export interface Animal {
   id: string;
   name?: string;
   id_tag: string; // Required - never null in our system
+  caravana_electronica?: string; // Optional - electronic tag/RFID identifier
   sex: string; // Required - never null in our system  
   breed: string; // Required - never null in our system
   birth_date: string | null;

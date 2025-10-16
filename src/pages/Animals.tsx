@@ -151,6 +151,7 @@ const Animals = () => {
   const [formData, setFormData] = useState({
     name: "",
     id_tag: "",
+    caravana_electronica: "",
     sex: "",
     breed: "",
     birth_date: "",
@@ -514,6 +515,7 @@ const Animals = () => {
     setFormData({
       name: animal.name || "",
       id_tag: animal.id_tag,
+      caravana_electronica: animal.caravana_electronica || "",
       sex: animal.sex,
       breed: animal.breed,
       birth_date: animal.birth_date || "",
@@ -579,6 +581,7 @@ const Animals = () => {
     setFormData({
       name: "",
       id_tag: "",
+      caravana_electronica: "",
       sex: "",
       breed: "",
       birth_date: "",
@@ -750,6 +753,15 @@ const Animals = () => {
                       onChange={(e) => setFormData({...formData, id_tag: e.target.value})}
                       placeholder="Número de identificación"
                       required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="caravana_electronica">Caravana Electrónica (opcional)</Label>
+                    <Input
+                      id="caravana_electronica"
+                      value={formData.caravana_electronica}
+                      onChange={(e) => setFormData({...formData, caravana_electronica: e.target.value})}
+                      placeholder="Número de caravana electrónica/RFID"
                     />
                   </div>
                   <div className="space-y-2">

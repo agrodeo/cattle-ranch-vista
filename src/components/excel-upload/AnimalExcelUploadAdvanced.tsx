@@ -22,6 +22,7 @@ export interface AnimalFieldMapping {
   fecha_nacimiento: string;
   
   // Optional fields
+  caravana_electronica?: string; // NEW: Electronic tag support
   nombre?: string;
   peso_nacer?: number;
   peso_final?: number;
@@ -79,6 +80,7 @@ interface AnimalExcelUploadAdvancedProps {
 
 export const SUPPORTED_FIELDS = {
   identificacion: { label: "Identificación", required: true, type: "text" },
+  caravana_electronica: { label: "Caravana Electrónica", required: false, type: "text" },
   nombre: { label: "Nombre", required: false, type: "text" },
   sexo: { label: "Sexo", required: true, type: "select", options: ["Macho", "Hembra"] },
   raza: { label: "Raza", required: true, type: "select", options: ["Angus", "Hereford", "Shorthorn", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Braford", "Brangus", "Santa Gertrudis", "Senepol", "Bonsmara", "Holando Argentino", "Jersey", "Criollo", "Wagyu", "Corriente", "Otro"] },
@@ -217,6 +219,12 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
         'identificación': 'identificacion',
         'id': 'identificacion',
         'tag': 'identificacion',
+        'caravana_electronica': 'caravana_electronica',
+        'caravana electronica': 'caravana_electronica',
+        'caravana': 'caravana_electronica',
+        'electronic_tag': 'caravana_electronica',
+        'rfid': 'caravana_electronica',
+        'chip': 'caravana_electronica',
         'nombre': 'nombre',
         'name': 'nombre',
         'sexo': 'sexo',

@@ -14,7 +14,8 @@ import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 
 interface WeighingRow {
-  id_tag: string;
+  id_tag?: string;
+  caravana_electronica?: string; // NEW: Support for electronic tag
   peso_kg: number;
   fecha?: string;
   notas?: string;
@@ -114,7 +115,8 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
             const jsonData = XLSX.utils.sheet_to_json(worksheet);
             
             const weighings = jsonData.map((row: any) => ({
-              id_tag: row.id_tag || row.identificacion || row.caravana || '',
+              id_tag: row.id_tag || row.identificacion || row.caravana || row.tag || '',
+              caravana_electronica: row.caravana_electronica || row.electronic_tag || row.rfid || row.chip || '',
               peso_kg: parseFloat(row.peso_kg || row.peso || row.weight || '0'),
               fecha: row.fecha || row.date || '',
               notas: row.notas || row.observaciones || row.notes || ''
@@ -134,7 +136,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     // Get all animals from the current cabaña
     const { data: animals, error } = await supabase
       .from("animals")
-      .select("id, id_tag, name")
+      .select("id, id_tag, caravana_electronica, name")
       .not('status', 'ilike', 'vendido')
       .not('status', 'ilike', 'muerto');
 
@@ -143,15 +145,20 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
       throw error;
     }
 
-    const animalMap = new Map(animals?.map(a => [a.id_tag, a]) || []);
+    // Create maps for both id_tag and electronic tag lookups
+    const animalByIdTag = new Map(animals?.map(a => [a.id_tag, a]) || []);
+    const animalByElectronicTag = new Map(
+      animals?.filter(a => a.caravana_electronica).map(a => [a.caravana_electronica!, a]) || []
+    );
 
     return weighings.map((weighing, index) => {
       const errors: string[] = [];
       let isValid = true;
 
-      // Validate required fields
-      if (!weighing.id_tag || weighing.id_tag.trim() === '') {
-        errors.push('ID/Caravana es requerido');
+      // Validate that at least one identifier is provided
+      if ((!weighing.id_tag || weighing.id_tag.trim() === '') && 
+          (!weighing.caravana_electronica || weighing.caravana_electronica.trim() === '')) {
+        errors.push('Se requiere ID/Caravana o Caravana Electrónica');
         isValid = false;
       }
 
@@ -160,10 +167,17 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
         isValid = false;
       }
 
-      // Check if animal exists
-      const animal = animalMap.get(weighing.id_tag);
+      // Find animal by either id_tag or electronic tag
+      let animal = null;
+      if (weighing.id_tag) {
+        animal = animalByIdTag.get(weighing.id_tag);
+      }
+      if (!animal && weighing.caravana_electronica) {
+        animal = animalByElectronicTag.get(weighing.caravana_electronica);
+      }
+
       if (!animal) {
-        errors.push('Animal no encontrado en la cabaña');
+        errors.push('Animal no encontrado en el sistema');
         isValid = false;
       }
 
@@ -172,7 +186,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
         isValid,
         errors,
         animalId: animal?.id,
-        animalName: animal?.name
+        animalName: animal?.name || animal?.id_tag
       };
     });
   };

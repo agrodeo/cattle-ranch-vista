@@ -289,6 +289,7 @@ export type Database = {
           birth_date: string | null
           breed: string | null
           cabaña_id: string | null
+          caravana_electronica: string | null
           circunferencia_escrotal: number | null
           color: string | null
           condicion_corporal: string | null
@@ -340,6 +341,7 @@ export type Database = {
           birth_date?: string | null
           breed?: string | null
           cabaña_id?: string | null
+          caravana_electronica?: string | null
           circunferencia_escrotal?: number | null
           color?: string | null
           condicion_corporal?: string | null
@@ -391,6 +393,7 @@ export type Database = {
           birth_date?: string | null
           breed?: string | null
           cabaña_id?: string | null
+          caravana_electronica?: string | null
           circunferencia_escrotal?: number | null
           color?: string | null
           condicion_corporal?: string | null
