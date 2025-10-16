@@ -81,6 +81,19 @@ export function MobileAnimals() {
     const animalCategory = getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false);
     const matchesCategory = categoryFilter === "all" || animalCategory === categoryFilter;
     
+    // Debug logging
+    if (categoryFilter !== "all") {
+      console.log('🔍 Category Filter Debug:', {
+        categoryFilter,
+        animalId: animal.id_tag,
+        birthDate: animal.birth_date,
+        sex: animal.sex,
+        isCastrated: animal.is_castrated,
+        calculatedCategory: animalCategory,
+        matches: matchesCategory
+      });
+    }
+    
     return matchesSearch && matchesStatus && matchesBreed && matchesCategory;
   });
 
