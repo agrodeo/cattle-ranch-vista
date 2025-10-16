@@ -1105,13 +1105,13 @@ const Animals = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas las categorías</SelectItem>
-                    <SelectItem value="Ternero">Terneros</SelectItem>
-                    <SelectItem value="Ternera">Terneras</SelectItem>
-                    <SelectItem value="Novillo">Novillos</SelectItem>
-                    <SelectItem value="Vaquillona">Vaquillonas</SelectItem>
-                    <SelectItem value="Toro">Toros</SelectItem>
-                    <SelectItem value="Vaca">Vacas adultas</SelectItem>
-                    <SelectItem value="Torito">Toritos</SelectItem>
+                    <SelectItem value="Ternero">Terneros (machos &lt;8m)</SelectItem>
+                    <SelectItem value="Ternera">Terneras (hembras &lt;8m)</SelectItem>
+                    <SelectItem value="Torito">Toritos (machos 8-24m)</SelectItem>
+                    <SelectItem value="Vaquillona">Vaquillonas (hembras 8-24m)</SelectItem>
+                    <SelectItem value="Novillo">Novillos (castrados)</SelectItem>
+                    <SelectItem value="Toro">Toros (machos adultos)</SelectItem>
+                    <SelectItem value="Vaca">Vacas (hembras adultas)</SelectItem>
                   </SelectContent>
                 </Select>
 

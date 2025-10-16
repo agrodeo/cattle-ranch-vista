@@ -157,9 +157,16 @@ export function MobileAnimals() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas las categorías</SelectItem>
-              {uniqueCategories.map(category => (
+              {uniqueCategories.sort().map(category => (
                 <SelectItem key={category} value={category}>
-                  {category}
+                  {category === 'Ternero' && 'Terneros (machos <8m)'}
+                  {category === 'Ternera' && 'Terneras (hembras <8m)'}
+                  {category === 'Torito' && 'Toritos (machos 8-24m)'}
+                  {category === 'Vaquillona' && 'Vaquillonas (hembras 8-24m)'}
+                  {category === 'Novillo' && 'Novillos (castrados)'}
+                  {category === 'Toro' && 'Toros (adultos)'}
+                  {category === 'Vaca' && 'Vacas (adultas)'}
+                  {!['Ternero', 'Ternera', 'Torito', 'Vaquillona', 'Novillo', 'Toro', 'Vaca'].includes(category) && category}
                 </SelectItem>
               ))}
             </SelectContent>
