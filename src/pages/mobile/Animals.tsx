@@ -13,6 +13,7 @@ import { Search, Filter, Users, Plus } from "lucide-react";
 import { Animal } from "@/types/animal";
 import { getDisplayStatus } from "@/lib/statusUtils";
 import { formatDate } from "@/lib/format";
+import { categorizeAnimal } from "@/lib/animalCategories";
 
 export function MobileAnimals() {
   const { t } = useTranslation(['animals', 'common']);
@@ -77,31 +78,24 @@ export function MobileAnimals() {
                          (animal.name && animal.name.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === "all" || animal.status === statusFilter;
     const matchesBreed = breedFilter === "all" || animal.breed === breedFilter;
-    const animalCategory = getAgeCategory(animal.birth_date, animal.sex);
+    const animalCategory = getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false);
     const matchesCategory = categoryFilter === "all" || animalCategory === categoryFilter;
     
     return matchesSearch && matchesStatus && matchesBreed && matchesCategory;
   });
 
-  const getAgeCategory = (birthDate: string | null, sex: string) => {
-    if (!birthDate) return "Sin clasificar";
+  const getAgeCategory = (birthDate: string | null, sex: string, isCastrated: boolean = false) => {
+    if (!birthDate || !sex) return "Desconocido";
     
-    const today = new Date();
-    const birth = new Date(birthDate);
-    const monthsDiff = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
-    
-    if (monthsDiff < 12) {
-      return sex === "Macho" ? "Ternero" : "Ternera";
-    } else if (monthsDiff < 24) {
-      return sex === "Macho" ? "Novillo" : "Vaquillona";
-    } else {
-      return sex === "Macho" ? "Toro" : "Vaca adulta";
-    }
+    return categorizeAnimal(
+      { birth_date: birthDate, sex },
+      isCastrated
+    );
   };
 
   const uniqueBreeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
   const uniqueStatuses = [...new Set(animals.map(a => a.status).filter(Boolean))];
-  const uniqueCategories = [...new Set(animals.map(a => getAgeCategory(a.birth_date, a.sex)))];
+  const uniqueCategories = [...new Set(animals.map(a => getAgeCategory(a.birth_date, a.sex, a.is_castrated || false)))];
 
   if (loading) {
     return (
@@ -232,7 +226,7 @@ export function MobileAnimals() {
                           {animal.sex}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
-                          {getAgeCategory(animal.birth_date, animal.sex)}
+                          {getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false)}
                         </span>
                       </div>
                     </div>
