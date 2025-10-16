@@ -33,7 +33,6 @@ interface AnimalProfileTabsProps {
 
 const tabs = [
   { id: 'resumen', label: 'Resumen', icon: BarChart3 },
-  { id: 'actividades', label: 'Actividades', icon: Activity },
   { id: 'reproduccion', label: 'Reproducción', icon: Heart },
   { id: 'vacunas', label: 'Vacunas', icon: Syringe },
   { id: 'produccion', label: 'Producción', icon: Scale },
@@ -51,8 +50,6 @@ export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsP
     switch (activeTab) {
       case 'resumen':
         return <AnimalResumen animal={animal} onAnimalUpdate={onAnimalUpdate} />;
-      case 'actividades':
-        return <AnimalActividades animal={animal} onAnimalUpdate={onAnimalUpdate} />;
       case 'reproduccion':
         return <AnimalReproduccion animal={animal} onAnimalUpdate={onAnimalUpdate} />;
       case 'vacunas':
@@ -103,7 +100,7 @@ export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsP
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-9 mb-4">
+      <TabsList className="grid w-full grid-cols-8 mb-4">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (

@@ -187,6 +187,12 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
               </Badge>
             )}
 
+            {animal.caravana_electronica && (
+              <Badge variant="outline" className="bg-blue-50">
+                RFID: {animal.caravana_electronica}
+              </Badge>
+            )}
+
             {animal.corral && (
               <Badge variant="outline">
                 <MapPin className="h-3 w-3 mr-1" />
