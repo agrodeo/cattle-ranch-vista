@@ -24,6 +24,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   
   const [formData, setFormData] = useState({
     id_tag: "",
+    caravana_electronica: "",
     name: "",
     sex: "",
     breed: "",
@@ -99,6 +100,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
       const animalData: any = {
         id_tag: formData.id_tag,
+        caravana_electronica: formData.caravana_electronica || null,
         name: formData.name || null,
         sex: formData.sex,
         breed: formData.breed,
@@ -179,6 +181,16 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
                 value={formData.id_tag}
                 onChange={(e) => handleInputChange("id_tag", e.target.value)}
                 placeholder="Ej: A001"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="caravana_electronica">Caravana Electrónica</Label>
+              <Input
+                id="caravana_electronica"
+                value={formData.caravana_electronica}
+                onChange={(e) => handleInputChange("caravana_electronica", e.target.value)}
+                placeholder="Ej: RFID123456"
               />
             </div>
 
