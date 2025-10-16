@@ -40,7 +40,7 @@ export function categorizeAnimal(animal: Animal, isCastrated: boolean = false): 
   if (sex === 'Hembra') {
     if (ageMonths < 8) return 'Ternera';
     if (ageMonths < 24) return 'Vaquillona';
-    return 'Vaca';
+    return 'Vaca';  // Note: Desktop filter uses "Vaca adulta", we keep "Vaca" here for consistency
   }
   
   // Male categories (affected by castration)

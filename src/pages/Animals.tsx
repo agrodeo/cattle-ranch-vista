@@ -1097,7 +1097,8 @@ const Animals = () => {
                     <SelectItem value="Novillo">Novillos</SelectItem>
                     <SelectItem value="Vaquillona">Vaquillonas</SelectItem>
                     <SelectItem value="Toro">Toros</SelectItem>
-                    <SelectItem value="Vaca adulta">Vacas adultas</SelectItem>
+                    <SelectItem value="Vaca">Vacas adultas</SelectItem>
+                    <SelectItem value="Torito">Toritos</SelectItem>
                   </SelectContent>
                 </Select>
 

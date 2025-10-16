@@ -83,14 +83,15 @@ export function MobileAnimals() {
     
     return matchesSearch && matchesStatus && matchesBreed && matchesCategory;
   });
-
+  
   // Debug: Log categories being generated
   console.log('📊 All Categories Generated:', {
     total: animals.length,
-    categories: animals.map(a => ({
+    sample: animals.slice(0, 5).map(a => ({
       id: a.id_tag,
       birthDate: a.birth_date,
       sex: a.sex,
+      isCastrated: a.is_castrated,
       category: getAgeCategory(a.birth_date, a.sex, a.is_castrated || false)
     }))
   });
