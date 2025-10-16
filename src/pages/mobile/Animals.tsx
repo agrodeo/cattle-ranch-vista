@@ -81,20 +81,27 @@ export function MobileAnimals() {
     const animalCategory = getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false);
     const matchesCategory = categoryFilter === "all" || animalCategory === categoryFilter;
     
-    // Debug logging
-    if (categoryFilter !== "all") {
-      console.log('🔍 Category Filter Debug:', {
-        categoryFilter,
-        animalId: animal.id_tag,
-        birthDate: animal.birth_date,
-        sex: animal.sex,
-        isCastrated: animal.is_castrated,
-        calculatedCategory: animalCategory,
-        matches: matchesCategory
-      });
-    }
-    
     return matchesSearch && matchesStatus && matchesBreed && matchesCategory;
+  });
+
+  // Debug: Log categories being generated
+  console.log('📊 All Categories Generated:', {
+    total: animals.length,
+    categories: animals.map(a => ({
+      id: a.id_tag,
+      birthDate: a.birth_date,
+      sex: a.sex,
+      category: getAgeCategory(a.birth_date, a.sex, a.is_castrated || false)
+    }))
+  });
+  
+  console.log('🔍 Current Filter State:', {
+    categoryFilter,
+    statusFilter,
+    breedFilter,
+    searchTerm,
+    totalAnimals: animals.length,
+    filteredCount: filteredAnimals.length
   });
 
   const getAgeCategory = (birthDate: string | null, sex: string, isCastrated: boolean = false) => {
@@ -109,6 +116,8 @@ export function MobileAnimals() {
   const uniqueBreeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
   const uniqueStatuses = [...new Set(animals.map(a => a.status).filter(Boolean))];
   const uniqueCategories = [...new Set(animals.map(a => getAgeCategory(a.birth_date, a.sex, a.is_castrated || false)))];
+  
+  console.log('📋 Unique Categories Found:', uniqueCategories);
 
   if (loading) {
     return (
