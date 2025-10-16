@@ -22,6 +22,7 @@ export function MobileAnimals() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [breedFilter, setBreedFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedAnimals, setSelectedAnimals] = useState<Set<string>>(new Set());
   const [userCabaña, setUserCabaña] = useState<string>("");
 
@@ -76,8 +77,10 @@ export function MobileAnimals() {
                          (animal.name && animal.name.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === "all" || animal.status === statusFilter;
     const matchesBreed = breedFilter === "all" || animal.breed === breedFilter;
+    const animalCategory = getAgeCategory(animal.birth_date, animal.sex);
+    const matchesCategory = categoryFilter === "all" || animalCategory === categoryFilter;
     
-    return matchesSearch && matchesStatus && matchesBreed;
+    return matchesSearch && matchesStatus && matchesBreed && matchesCategory;
   });
 
   const getAgeCategory = (birthDate: string | null, sex: string) => {
@@ -98,6 +101,7 @@ export function MobileAnimals() {
 
   const uniqueBreeds = [...new Set(animals.map(a => a.breed).filter(Boolean))];
   const uniqueStatuses = [...new Set(animals.map(a => a.status).filter(Boolean))];
+  const uniqueCategories = [...new Set(animals.map(a => getAgeCategory(a.birth_date, a.sex)))];
 
   if (loading) {
     return (
@@ -129,9 +133,23 @@ export function MobileAnimals() {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <SelectTrigger className="flex-1 min-w-[140px]">
+              <SelectValue placeholder="Categoría" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas las categorías</SelectItem>
+              {uniqueCategories.map(category => (
+                <SelectItem key={category} value={category}>
+                  {category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="flex-1">
+            <SelectTrigger className="flex-1 min-w-[120px]">
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
@@ -145,7 +163,7 @@ export function MobileAnimals() {
           </Select>
 
           <Select value={breedFilter} onValueChange={setBreedFilter}>
-            <SelectTrigger className="flex-1">
+            <SelectTrigger className="flex-1 min-w-[120px]">
               <SelectValue placeholder="Raza" />
             </SelectTrigger>
             <SelectContent>
