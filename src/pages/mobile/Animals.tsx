@@ -245,42 +245,50 @@ export function MobileAnimals() {
                   setSelectedAnimals(newSelected);
                 }}
               >
-                <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base font-medium truncate">
-                        {animal.name ? `${animal.name} – ${animal.id_tag}` : animal.id_tag}
+                <CardHeader className="pb-3">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-base font-medium leading-tight flex-1 min-w-0">
+                        {animal.name ? (
+                          <div className="truncate">{animal.name}</div>
+                        ) : null}
+                        <div className="text-sm font-normal text-muted-foreground truncate">
+                          {animal.id_tag}
+                        </div>
                       </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant={animal.sex === "Macho" ? "default" : "secondary"} className="text-xs">
-                          {animal.sex}
-                        </Badge>
-                        <span className="text-sm text-muted-foreground">
-                          {getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false)}
-                        </span>
-                      </div>
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        {animal.status}
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {animal.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <div>
-                      {animal.breed && <span className="mr-4">{animal.breed}</span>}
-                      {animal.birth_date && (
-                        <span>Nac: {formatDate(animal.birth_date)}</span>
-                      )}
-                    </div>
-                    <div className="flex gap-2">
+                    
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant={animal.sex === "Macho" ? "default" : "secondary"} className="text-xs">
+                        {animal.sex}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false)}
+                      </span>
                       {animal.esta_preñada && (
                         <Badge variant="secondary" className="text-xs bg-pink-100 text-pink-700">
                           Preñada
                         </Badge>
                       )}
-                      {/* Add vaccination status pill here */}
                     </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="pt-0 pb-3">
+                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                    {animal.breed && (
+                      <div className="truncate">
+                        <span className="font-medium">Raza:</span> {animal.breed}
+                      </div>
+                    )}
+                    {animal.birth_date && (
+                      <div className="truncate">
+                        <span className="font-medium">Nacimiento:</span> {formatDate(animal.birth_date)}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
