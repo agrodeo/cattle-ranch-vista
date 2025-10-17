@@ -309,15 +309,15 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
   const renderAncestorNode = (node: AnimalNode | null, label: string, generation: number = 1, isLast: boolean = false) => {
     if (!node) {
       return (
-        <div className="flex items-start space-x-3 py-2">
-          <div className="flex flex-col items-center">
-            <div className="w-8 h-8 bg-muted rounded-full flex items-center justify-center">
-              <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
+        <div className="flex items-start space-x-2 sm:space-x-3 py-2">
+          <div className="flex flex-col items-center shrink-0">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-muted rounded-full flex items-center justify-center">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-muted-foreground rounded-full"></div>
             </div>
             {!isLast && <div className="w-px h-8 bg-border mt-1"></div>}
           </div>
-          <div className="flex-1 pt-1">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex-1 pt-1 min-w-0">
+            <div className="text-xs sm:text-sm text-muted-foreground truncate">
               {label}: <span className="italic">No disponible en BD</span>
             </div>
           </div>
@@ -333,9 +333,9 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
 
     return (
       <div className="space-y-2">
-        <div className="flex items-start space-x-3 py-2">
-          <div className="flex flex-col items-center">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+        <div className="flex items-start space-x-2 sm:space-x-3 py-2">
+          <div className="flex flex-col items-center shrink-0">
+            <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 ${
               node.sex === 'Macho' ? 'bg-blue-100 border-blue-300' : 'bg-pink-100 border-pink-300'
             }`}>
               <span className="text-xs font-bold">
@@ -345,26 +345,26 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
             {!isLast && <div className="w-px h-8 bg-border mt-1"></div>}
           </div>
           
-          <div className="flex-1 pt-1">
-            <div className="bg-card border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs text-muted-foreground">{generationPrefix}</span>
-                  <div className="font-semibold text-sm group-hover:text-primary transition-colors">
+          <div className="flex-1 pt-1 min-w-0 overflow-hidden">
+            <div className="bg-card border rounded-lg p-2 sm:p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+              <div className="flex flex-col gap-2 mb-2">
+                <div className="flex items-start gap-2 min-w-0">
+                  <span className="text-xs text-muted-foreground shrink-0">{generationPrefix}</span>
+                  <div className="font-semibold text-xs sm:text-sm group-hover:text-primary transition-colors truncate flex-1 min-w-0">
                     {label}: {displayName}
                   </div>
-                  <Badge variant={node.sex === 'Macho' ? 'default' : 'secondary'} className="text-xs">
+                  <Badge variant={node.sex === 'Macho' ? 'default' : 'secondary'} className="text-xs shrink-0">
                     {node.sex}
                   </Badge>
                 </div>
                 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   {hasAncestors && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleNode(node.id)}
-                      className="h-6 w-6 p-0"
+                      className="h-6 w-6 p-0 shrink-0"
                     >
                       {isExpanded ? (
                         <ChevronDown className="h-3 w-3" />
@@ -412,12 +412,12 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
               
               {/* Quick info tooltip overlay */}
               <div className="text-xs text-muted-foreground space-y-1">
-                <div className="flex items-center space-x-4">
-                  <span>Raza: {tooltipInfo.raza}</span>
-                  <span>Año: {tooltipInfo.añoNacimiento}</span>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span className="truncate">Raza: {tooltipInfo.raza}</span>
+                  <span className="shrink-0">Año: {tooltipInfo.añoNacimiento}</span>
                 </div>
                 {node.birth_date && (
-                  <div>Nacimiento: {new Date(node.birth_date).toLocaleDateString('es-AR')}</div>
+                  <div className="truncate">Nacimiento: {new Date(node.birth_date).toLocaleDateString('es-AR')}</div>
                 )}
                 {node.generation !== undefined && node.generation > 0 && (
                   <div>Generación: {node.generation}</div>
@@ -429,8 +429,8 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
 
         {/* Render ancestors if expanded */}
         {hasAncestors && isExpanded && (
-          <div className="ml-11 space-y-1 border-l-2 border-muted pl-4">
-            <div className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">
+          <div className="ml-8 sm:ml-11 space-y-1 border-l-2 border-muted pl-3 sm:pl-4 overflow-hidden">
+            <div className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide truncate">
               Ancestros de {displayName}
             </div>
             {node.mother && renderAncestorNode(node.mother, "Madre", generation + 1, !node.father)}
@@ -455,9 +455,9 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-lg flex items-center space-x-2">
-          <TreePine className="h-5 w-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h4 className="font-semibold text-base sm:text-lg flex items-center space-x-2">
+          <TreePine className="h-4 w-4 sm:h-5 sm:w-5" />
           <span>Árbol Genealógico</span>
         </h4>
         {!expandedTree && (
@@ -465,7 +465,8 @@ const GenealogyTree = ({ animalId, animalName, animalIdTag }: GenealogyTreeProps
             variant="outline" 
             onClick={expandFullTree}
             disabled={loading}
-            className="text-sm"
+            size="sm"
+            className="text-xs sm:text-sm w-full sm:w-auto"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>

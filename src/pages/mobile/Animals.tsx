@@ -299,56 +299,51 @@ export function MobileAnimals() {
                     </CardContent>
 
                     <CollapsibleContent>
-                      <div className="border-t border-border px-4 pb-4 pt-3 space-y-4 overflow-hidden">
+                      <div className="border-t border-border space-y-4 overflow-hidden">
                         {/* Información Básica */}
-                        <div className="space-y-2">
+                        <div className="px-4 pt-3 space-y-2">
                           <h4 className="font-semibold text-sm">Información Básica</h4>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <span className="text-muted-foreground">ID:</span>
+                          <div className="grid grid-cols-2 gap-3 text-xs">
+                            <div className="min-w-0">
+                              <span className="text-muted-foreground block">ID:</span>
                               <div className="font-medium truncate">{animal.id_tag}</div>
                             </div>
                             {animal.name && (
-                              <div>
-                                <span className="text-muted-foreground">Nombre:</span>
+                              <div className="min-w-0">
+                                <span className="text-muted-foreground block">Nombre:</span>
                                 <div className="font-medium truncate">{animal.name}</div>
                               </div>
                             )}
                             {animal.breed && (
-                              <div>
-                                <span className="text-muted-foreground">Raza:</span>
+                              <div className="min-w-0">
+                                <span className="text-muted-foreground block">Raza:</span>
                                 <div className="font-medium truncate">{animal.breed}</div>
                               </div>
                             )}
                             {animal.birth_date && (
-                              <div>
-                                <span className="text-muted-foreground">F. Nac.:</span>
-                                <div className="font-medium">{formatDate(animal.birth_date)}</div>
+                              <div className="min-w-0">
+                                <span className="text-muted-foreground block">F. Nac.:</span>
+                                <div className="font-medium truncate">{formatDate(animal.birth_date)}</div>
                               </div>
                             )}
-                            <div>
-                              <span className="text-muted-foreground">Sexo:</span>
-                              <div className="font-medium">{animal.sex}</div>
+                            <div className="min-w-0">
+                              <span className="text-muted-foreground block">Sexo:</span>
+                              <div className="font-medium truncate">{animal.sex}</div>
                             </div>
-                            <div>
-                              <span className="text-muted-foreground">Estado:</span>
-                              <div className="font-medium">{animal.status}</div>
+                            <div className="min-w-0">
+                              <span className="text-muted-foreground block">Estado:</span>
+                              <div className="font-medium truncate">{animal.status}</div>
                             </div>
                           </div>
                         </div>
 
-                        {/* Árbol Genealógico - con overflow-x-auto para scroll horizontal */}
-                        <div className="space-y-2 -mx-4 px-4">
-                          <h4 className="font-semibold text-sm">Árbol Genealógico</h4>
-                          <div className="overflow-x-auto -mx-4 px-4">
-                            <div className="min-w-full">
-                              <GenealogyTree
-                                animalId={animal.id}
-                                animalName={animal.name}
-                                animalIdTag={animal.id_tag}
-                              />
-                            </div>
-                          </div>
+                        {/* Árbol Genealógico */}
+                        <div className="px-4 pb-4 space-y-2 overflow-hidden">
+                          <GenealogyTree
+                            animalId={animal.id}
+                            animalName={animal.name}
+                            animalIdTag={animal.id_tag}
+                          />
                         </div>
                       </div>
                     </CollapsibleContent>
