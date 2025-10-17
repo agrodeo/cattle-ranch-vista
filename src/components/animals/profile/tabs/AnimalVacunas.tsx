@@ -395,23 +395,13 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
       {/* Historial de Vacunaciones Aplicadas */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Syringe className="h-4 w-4" />
-                Historial de Vacunaciones
-              </CardTitle>
-              <CardDescription>
-                Todas las vacunas aplicadas a este animal
-              </CardDescription>
-            </div>
-            <Button asChild>
-              <Link to="/actividades">
-                <Plus className="h-4 w-4 mr-2" />
-                Registrar Vacuna
-              </Link>
-            </Button>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Syringe className="h-4 w-4" />
+            Historial de Vacunaciones
+          </CardTitle>
+          <CardDescription>
+            Todas las vacunas aplicadas a este animal
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -426,11 +416,6 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               <p className="text-muted-foreground">
                 No hay registros de vacunación para este animal
               </p>
-              <Button asChild className="mt-4">
-                <Link to="/actividades">
-                  Registrar primera vacuna
-                </Link>
-              </Button>
             </div>
           ) : (
             <Table>
