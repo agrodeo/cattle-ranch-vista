@@ -1253,95 +1253,109 @@ const Animals = () => {
                         {/* Expandable Animal Details */}
                         {expandedRows.has(animal.id) && (
                           <TableRow>
-                            <TableCell colSpan={8} className="p-0">
-                               <div className="p-6 bg-muted/20 border-t space-y-6">
+                            <TableCell colSpan={8} className="p-0 bg-muted/20">
+                               <div className="p-4 md:p-6 space-y-6">
+                                 {/* Top Section: Info + Genealogy */}
                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                    {/* Basic Info Recap */}
-                                   <div className="space-y-3">
-                                     <h4 className="font-semibold text-lg">Información Básica</h4>
-                                     <div className="grid grid-cols-2 gap-3 text-sm">
-                                       <div>
-                                         <span className="font-medium">Sexo:</span> {animal.sex}
+                                   <Card>
+                                     <CardHeader className="pb-3">
+                                       <CardTitle className="text-base">Información Básica</CardTitle>
+                                     </CardHeader>
+                                     <CardContent>
+                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Sexo</span>
+                                           <span className="font-medium">{animal.sex}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Raza</span>
+                                           <span className="font-medium">{animal.breed}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Fecha de Nacimiento</span>
+                                           <span className="font-medium">{animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Cuernos</span>
+                                           <span className="font-medium">{animal.mocho || "N/A"}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Peso al Nacer</span>
+                                           <span className="font-medium">{animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Estado</span>
+                                           <span className="font-medium">{animal.status}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Color</span>
+                                           <span className="font-medium">{animal.color || "N/A"}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Condición Corporal</span>
+                                           <span className="font-medium">{animal.condicion_corporal || "N/A"}</span>
+                                         </div>
+                                         <div className="flex flex-col">
+                                           <span className="text-muted-foreground text-xs">Registro</span>
+                                           <span className="font-medium">{animal.registration_level || "N/A"}</span>
+                                         </div>
                                        </div>
-                                       <div>
-                                         <span className="font-medium">Raza:</span> {animal.breed}
-                                       </div>
-                                       <div>
-                                         <span className="font-medium">Fecha de Nacimiento:</span> {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
-                                       </div>
-                                       <div>
-                                         <span className="font-medium">Estado de Cuernos:</span> {animal.mocho || "N/A"}
-                                       </div>
-                                       <div>
-                                         <span className="font-medium">Peso al Nacer:</span> {animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}
-                                       </div>
-                                       <div>
-                                         <span className="font-medium">Estado Actual:</span> {animal.status}
-                                       </div>
-                                        <div>
-                                          <span className="font-medium">Color:</span> {animal.color || "N/A"}
-                                        </div>
-                                        <div>
-                                          <span className="font-medium">Condición Corporal:</span> {animal.condicion_corporal || "N/A"}
-                                        </div>
-                                        <div>
-                                          <span className="font-medium">Registro:</span> {animal.registration_level || "N/A"}
-                                        </div>
-                                     </div>
-                                     {animal.observaciones && (
-                                       <div className="mt-4">
-                                         <span className="font-medium">Observaciones:</span>
-                                         <p className="text-sm text-muted-foreground mt-1">{animal.observaciones}</p>
-                                       </div>
-                                     )}
-                                   </div>
+                                       {animal.observaciones && (
+                                         <div className="mt-4 pt-4 border-t">
+                                           <span className="text-xs text-muted-foreground">Observaciones</span>
+                                           <p className="text-sm mt-1">{animal.observaciones}</p>
+                                         </div>
+                                       )}
+                                     </CardContent>
+                                   </Card>
                                    
-                                    {/* Enhanced Genealogy Tree */}
-                                    <div className="space-y-3">
-                                      <GenealogyTree 
-                                        animalId={animal.id}
-                                        animalName={animal.name}
-                                        animalIdTag={animal.id_tag}
-                                      />
-                                    </div>
-                                  </div>
+                                   {/* Genealogy Tree */}
+                                   <div className="min-w-0">
+                                     <GenealogyTree 
+                                       animalId={animal.id}
+                                       animalName={animal.name}
+                                       animalIdTag={animal.id_tag}
+                                     />
+                                   </div>
+                                 </div>
 
-                                  {/* Registration System for Braford and Brangus */}
-                                  {(animal.breed === 'Braford' || animal.breed === 'Brangus') && (
-                                    <div className="space-y-3">
-                                      <BrafordRegistrationDisplay
-                                        breed={animal.breed}
-                                        currentLevel={animal.registration_level as RegistrationLevel}
-                                        overrideLevel={animal.registration_level_override as RegistrationLevel}
-                                        overrideReason={animal.registration_override_reason}
-                                        readonly
-                                      />
-                                    </div>
-                                  )}
-                                  
-                                  {/* Activities History for all animals */}
-                                  <div className="space-y-4">
-                                    <AnimalActivitiesHistory 
-                                      animalId={animal.id}
-                                      animalName={animal.name || animal.id_tag}
-                                    />
-                                  </div>
-                                  
-                                  {/* Reproductive Performance Section - Only for females */}
-                                  {animal.sex === "Hembra" && (
-                                    <div className="space-y-4">
-                                      <ReproductivePerformance 
-                                        animalId={animal.id}
-                                        animalSex={animal.sex}
-                                      />
-                                      <ReproductiveEventsTable
-                                        animalId={animal.id}
-                                        animalSex={animal.sex}
-                                        cabaña_id={animal.cabaña_id}
-                                      />
-                                    </div>
-                                  )}
-                                </div>
+                                 {/* Registration System for Braford and Brangus */}
+                                 {(animal.breed === 'Braford' || animal.breed === 'Brangus') && (
+                                   <div>
+                                     <BrafordRegistrationDisplay
+                                       breed={animal.breed}
+                                       currentLevel={animal.registration_level as RegistrationLevel}
+                                       overrideLevel={animal.registration_level_override as RegistrationLevel}
+                                       overrideReason={animal.registration_override_reason}
+                                       readonly
+                                     />
+                                   </div>
+                                 )}
+                                 
+                                 {/* Activities History for all animals */}
+                                 <div>
+                                   <AnimalActivitiesHistory 
+                                     animalId={animal.id}
+                                     animalName={animal.name || animal.id_tag}
+                                   />
+                                 </div>
+                                 
+                                 {/* Reproductive Performance Section - Only for females */}
+                                 {animal.sex === "Hembra" && (
+                                   <div className="space-y-6">
+                                     <ReproductivePerformance 
+                                       animalId={animal.id}
+                                       animalSex={animal.sex}
+                                     />
+                                     <ReproductiveEventsTable
+                                       animalId={animal.id}
+                                       animalSex={animal.sex}
+                                       cabaña_id={animal.cabaña_id}
+                                     />
+                                   </div>
+                                 )}
+                               </div>
                             </TableCell>
                           </TableRow>
                         )}
