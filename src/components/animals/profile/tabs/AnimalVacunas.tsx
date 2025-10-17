@@ -100,6 +100,14 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     }
   };
 
+  // Refresh data when component mounts or animal changes
+  useEffect(() => {
+    const refreshData = async () => {
+      await Promise.all([fetchVaccinations(), loadCompliance()]);
+    };
+    refreshData();
+  }, [animal.id]);
+
   const calculateStatus = (proximaDosis: string | null) => {
     if (!proximaDosis) return { status: 'unique', days: 0 };
     
@@ -343,7 +351,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         </Card>
       )}
 
-      {/* Historial de Vacunaciones */}
+      {/* Historial de Vacunaciones Aplicadas */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -353,42 +361,49 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                 Historial de Vacunaciones
               </CardTitle>
               <CardDescription>
-                Registro completo de vacunas aplicadas
+                Todas las vacunas aplicadas a este animal
               </CardDescription>
             </div>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Agregar Vacuna
+            <Button asChild>
+              <Link to="/actividades">
+                <Plus className="h-4 w-4 mr-2" />
+                Registrar Vacuna
+              </Link>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Vacuna</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Lote</TableHead>
-                <TableHead>Dosis/Vía</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Responsable</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
+          {loading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : vaccinations.length === 0 ? (
+            <div className="text-center py-8">
+              <Syringe className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <p className="text-muted-foreground">
+                No hay registros de vacunación para este animal
+              </p>
+              <Button asChild className="mt-4">
+                <Link to="/actividades">
+                  Registrar primera vacuna
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4">
-                    Cargando historial...
-                  </TableCell>
+                  <TableHead>Vacuna</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Lote</TableHead>
+                  <TableHead>Dosis/Vía</TableHead>
+                  <TableHead>Próxima Dosis</TableHead>
                 </TableRow>
-              ) : vaccinations.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
-                    No hay registros de vacunación
-                  </TableCell>
-                </TableRow>
-              ) : (
-                vaccinations.map((vaccination) => (
+              </TableHeader>
+              <TableBody>
+                {vaccinations.map((vaccination) => (
                   <TableRow key={vaccination.id}>
                     <TableCell className="font-medium">
                       {vaccination.vacuna}
@@ -408,16 +423,25 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {getStatusBadge(vaccination.proxima_dosis)}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      Sistema
+                      {vaccination.proximaDosis ? (
+                        <div>
+                          <div className="text-sm">
+                            {format(new Date(vaccination.proximaDosis), 'dd/MM/yyyy', { locale: es })}
+                          </div>
+                          {getStatusBadge(vaccination.proximaDosis)}
+                        </div>
+                      ) : (
+                        <Badge variant="outline" className="flex items-center gap-1 w-fit">
+                          <CheckCircle className="h-3 w-3" />
+                          Única dosis
+                        </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
