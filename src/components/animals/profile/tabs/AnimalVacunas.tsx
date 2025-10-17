@@ -185,138 +185,179 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     <div className="space-y-6">
       {/* Requirements-Based Vaccination Status */}
       {hasConfiguredRequirements && compliance && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Estado de Vacunación
-            </CardTitle>
-            <CardDescription>
-              Resumen del cumplimiento de requisitos configurados
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <div className="text-2xl font-bold">
+        <div className="space-y-4">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card className="border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30">
+              <CardContent className="pt-4">
+                <div className="text-2xl font-bold text-green-700 dark:text-green-400">
                   {compliance.vaccines.filter(v => v.status === 'complete').length}
                 </div>
-                <div className="text-xs text-muted-foreground">Completas</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-xs text-green-600 dark:text-green-500 flex items-center gap-1 mt-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Completas
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30">
+              <CardContent className="pt-4">
+                <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
                   {compliance.vaccines.filter(v => v.status === 'incomplete').length}
                 </div>
-                <div className="text-xs text-muted-foreground">Incompletas</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-red-600">
+                <div className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1 mt-1">
+                  <Clock className="h-3 w-3" />
+                  Incompletas
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30">
+              <CardContent className="pt-4">
+                <div className="text-2xl font-bold text-red-700 dark:text-red-400">
                   {compliance.vaccines.filter(v => v.status === 'overdue').length}
                 </div>
-                <div className="text-xs text-muted-foreground">Vencidas</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-bold text-gray-600">
+                <div className="text-xs text-red-600 dark:text-red-500 flex items-center gap-1 mt-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  Vencidas
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
+              <CardContent className="pt-4">
+                <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">
                   {compliance.vaccines.filter(v => v.status === 'not_started').length}
                 </div>
-                <div className="text-xs text-muted-foreground">Sin Iniciar</div>
-              </div>
-            </div>
+                <div className="text-xs text-gray-600 dark:text-gray-500 flex items-center gap-1 mt-1">
+                  <Syringe className="h-3 w-3" />
+                  Sin Iniciar
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-            {/* Vaccines Table */}
-            <div className="border rounded-lg">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Vacuna</TableHead>
-                    <TableHead className="text-center">Dosis</TableHead>
-                    <TableHead>Última Aplicación</TableHead>
-                    <TableHead>Próxima Dosis</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {compliance.vaccines.map((vaccine) => (
-                    <TableRow key={vaccine.requirement_id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {vaccine.vaccine_name}
-                          {vaccine.is_mandatory && (
-                            <Badge variant="secondary" className="text-xs">
-                              Obligatoria
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {vaccine.vaccine_type}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="text-sm">
-                          {vaccine.doses_given} / {vaccine.doses_required}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {vaccine.last_vaccination_date ? (
-                          <div className="text-sm">
-                            {format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}
+          {/* Vaccines requiring attention */}
+          {compliance.vaccines.filter(v => v.status === 'overdue' || v.status === 'not_started' || v.status === 'incomplete').length > 0 && (
+            <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2 text-amber-900 dark:text-amber-100">
+                  <AlertTriangle className="h-5 w-5" />
+                  Vacunas Pendientes
+                </CardTitle>
+                <CardDescription>
+                  Estas vacunas requieren atención
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {compliance.vaccines
+                    .filter(v => v.status === 'overdue' || v.status === 'not_started' || v.status === 'incomplete')
+                    .map((vaccine) => (
+                      <div key={vaccine.requirement_id} className="flex items-start justify-between p-3 bg-background rounded-lg border">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-medium">{vaccine.vaccine_name}</span>
+                            {vaccine.is_mandatory && (
+                              <Badge variant="destructive" className="text-xs">
+                                Obligatoria
+                              </Badge>
+                            )}
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {vaccine.next_due_date ? (
-                          <div className="text-sm">
-                            {format(new Date(vaccine.next_due_date), 'dd/MM/yyyy', { locale: es })}
-                            {vaccine.is_overdue && (
-                              <div className="text-xs text-red-600">
-                                ({vaccine.days_overdue} días de atraso)
+                          <div className="text-xs text-muted-foreground mb-2">
+                            {vaccine.vaccine_type}
+                          </div>
+                          <div className="flex flex-wrap gap-3 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Dosis: </span>
+                              <span className="font-medium">{vaccine.doses_given} / {vaccine.doses_required}</span>
+                            </div>
+                            {vaccine.last_vaccination_date && (
+                              <div>
+                                <span className="text-muted-foreground">Última: </span>
+                                <span>{format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}</span>
+                              </div>
+                            )}
+                            {vaccine.next_due_date && (
+                              <div>
+                                <span className="text-muted-foreground">Próxima: </span>
+                                <span>{format(new Date(vaccine.next_due_date), 'dd/MM/yyyy', { locale: es })}</span>
                               </div>
                             )}
                           </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {vaccine.status === 'complete' && (
-                          <Badge variant="default" className="flex items-center gap-1 w-fit">
-                            <CheckCircle className="h-3 w-3" />
-                            Completa
-                          </Badge>
-                        )}
-                        {vaccine.status === 'incomplete' && (
-                          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
-                            <Clock className="h-3 w-3" />
-                            Incompleta
-                          </Badge>
-                        )}
-                        {vaccine.status === 'overdue' && (
-                          <Badge variant="destructive" className="flex items-center gap-1 w-fit">
-                            <AlertTriangle className="h-3 w-3" />
-                            Vencida
-                          </Badge>
-                        )}
-                        {vaccine.status === 'due_soon' && (
-                          <Badge variant="secondary" className="flex items-center gap-1 w-fit">
-                            <Clock className="h-3 w-3" />
-                            Próxima
-                          </Badge>
-                        )}
-                        {vaccine.status === 'not_started' && (
-                          <Badge variant="outline" className="flex items-center gap-1 w-fit">
-                            Sin Iniciar
-                          </Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+                        </div>
+                        <div>
+                          {vaccine.status === 'overdue' && (
+                            <Badge variant="destructive" className="flex items-center gap-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              Vencida {vaccine.days_overdue}d
+                            </Badge>
+                          )}
+                          {vaccine.status === 'incomplete' && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              Incompleta
+                            </Badge>
+                          )}
+                          {vaccine.status === 'not_started' && (
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Syringe className="h-3 w-3" />
+                              Sin Iniciar
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Complete vaccines */}
+          {compliance.vaccines.filter(v => v.status === 'complete' || v.status === 'due_soon').length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Vacunas al Día
+                </CardTitle>
+                <CardDescription>
+                  Esquema de vacunación completo
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {compliance.vaccines
+                    .filter(v => v.status === 'complete' || v.status === 'due_soon')
+                    .map((vaccine) => (
+                      <div key={vaccine.requirement_id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{vaccine.vaccine_name}</span>
+                            <span className="text-xs text-muted-foreground">({vaccine.vaccine_type})</span>
+                          </div>
+                          <div className="flex gap-3 text-sm mt-1">
+                            <span className="text-muted-foreground">
+                              {vaccine.doses_given} / {vaccine.doses_required} dosis
+                            </span>
+                            {vaccine.last_vaccination_date && (
+                              <span className="text-muted-foreground">
+                                • Última: {format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Completa
+                        </Badge>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
 
       {/* Encourage users to configure their own vaccination requirements */}
