@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Search, Filter, Users, Plus } from "lucide-react";
+import { Search, Filter, Users, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import { Animal } from "@/types/animal";
 import { getDisplayStatus } from "@/lib/statusUtils";
 import { formatDate } from "@/lib/format";
 import { categorizeAnimal } from "@/lib/animalCategories";
+import GenealogyTree from "@/components/GenealogyTree";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export function MobileAnimals() {
   const { t } = useTranslation(['animals', 'common']);
@@ -25,6 +27,7 @@ export function MobileAnimals() {
   const [breedFilter, setBreedFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [selectedAnimals, setSelectedAnimals] = useState<Set<string>>(new Set());
+  const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
   const [userCabaña, setUserCabaña] = useState<string>("");
 
   useEffect(() => {
@@ -229,70 +232,130 @@ export function MobileAnimals() {
           />
         ) : (
           <div className="space-y-3">
-            {filteredAnimals.map((animal) => (
-              <Card 
-                key={animal.id} 
-                className={`cursor-pointer transition-colors ${
-                  selectedAnimals.has(animal.id) ? 'ring-2 ring-primary' : ''
-                }`}
-                onClick={() => {
-                  const newSelected = new Set(selectedAnimals);
-                  if (newSelected.has(animal.id)) {
-                    newSelected.delete(animal.id);
-                  } else {
-                    newSelected.add(animal.id);
-                  }
-                  setSelectedAnimals(newSelected);
-                }}
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-base font-medium leading-tight flex-1 min-w-0">
-                        {animal.name ? (
-                          <div className="truncate">{animal.name}</div>
-                        ) : null}
-                        <div className="text-sm font-normal text-muted-foreground truncate">
-                          {animal.id_tag}
+            {filteredAnimals.map((animal) => {
+              const isExpanded = expandedAnimal === animal.id;
+              
+              return (
+                <Collapsible
+                  key={animal.id}
+                  open={isExpanded}
+                  onOpenChange={(open) => setExpandedAnimal(open ? animal.id : null)}
+                >
+                  <Card className="overflow-hidden">
+                    <CollapsibleTrigger asChild>
+                      <CardHeader className="pb-3 cursor-pointer hover:bg-muted/50 transition-colors">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <CardTitle className="text-base font-medium leading-tight flex-1 min-w-0">
+                              {animal.name ? (
+                                <div className="truncate">{animal.name}</div>
+                              ) : null}
+                              <div className="text-sm font-normal text-muted-foreground truncate">
+                                {animal.id_tag}
+                              </div>
+                            </CardTitle>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <Badge variant="outline" className="text-xs">
+                                {animal.status}
+                              </Badge>
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant={animal.sex === "Macho" ? "default" : "secondary"} className="text-xs">
+                              {animal.sex}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">
+                              {getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false)}
+                            </span>
+                            {animal.esta_preñada && (
+                              <Badge variant="secondary" className="text-xs bg-pink-100 text-pink-700">
+                                Preñada
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                      </CardTitle>
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        {animal.status}
-                      </Badge>
-                    </div>
+                      </CardHeader>
+                    </CollapsibleTrigger>
                     
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant={animal.sex === "Macho" ? "default" : "secondary"} className="text-xs">
-                        {animal.sex}
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false)}
-                      </span>
-                      {animal.esta_preñada && (
-                        <Badge variant="secondary" className="text-xs bg-pink-100 text-pink-700">
-                          Preñada
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="pt-0 pb-3">
-                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
-                    {animal.breed && (
-                      <div className="truncate">
-                        <span className="font-medium">Raza:</span> {animal.breed}
+                    <CardContent className="pt-0 pb-3">
+                      <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                        {animal.breed && (
+                          <div className="truncate">
+                            <span className="font-medium">Raza:</span> {animal.breed}
+                          </div>
+                        )}
+                        {animal.birth_date && (
+                          <div className="truncate">
+                            <span className="font-medium">Nacimiento:</span> {formatDate(animal.birth_date)}
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {animal.birth_date && (
-                      <div className="truncate">
-                        <span className="font-medium">Nacimiento:</span> {formatDate(animal.birth_date)}
+                    </CardContent>
+
+                    <CollapsibleContent>
+                      <div className="border-t border-border px-4 pb-4 pt-3 space-y-4 overflow-hidden">
+                        {/* Información Básica */}
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-sm">Información Básica</h4>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">ID:</span>
+                              <div className="font-medium truncate">{animal.id_tag}</div>
+                            </div>
+                            {animal.name && (
+                              <div>
+                                <span className="text-muted-foreground">Nombre:</span>
+                                <div className="font-medium truncate">{animal.name}</div>
+                              </div>
+                            )}
+                            {animal.breed && (
+                              <div>
+                                <span className="text-muted-foreground">Raza:</span>
+                                <div className="font-medium truncate">{animal.breed}</div>
+                              </div>
+                            )}
+                            {animal.birth_date && (
+                              <div>
+                                <span className="text-muted-foreground">F. Nac.:</span>
+                                <div className="font-medium">{formatDate(animal.birth_date)}</div>
+                              </div>
+                            )}
+                            <div>
+                              <span className="text-muted-foreground">Sexo:</span>
+                              <div className="font-medium">{animal.sex}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Estado:</span>
+                              <div className="font-medium">{animal.status}</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Árbol Genealógico - con overflow-x-auto para scroll horizontal */}
+                        <div className="space-y-2 -mx-4 px-4">
+                          <h4 className="font-semibold text-sm">Árbol Genealógico</h4>
+                          <div className="overflow-x-auto -mx-4 px-4">
+                            <div className="min-w-full">
+                              <GenealogyTree
+                                animalId={animal.id}
+                                animalName={animal.name}
+                                animalIdTag={animal.id_tag}
+                              />
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </CollapsibleContent>
+                  </Card>
+                </Collapsible>
+              );
+            })}
           </div>
         )}
       </div>
