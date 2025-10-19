@@ -286,8 +286,27 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="w-full h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto lg:max-w-5xl overflow-y-auto p-0 lg:p-6 lg:rounded-lg">
+        {/* Mobile Header */}
+        <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <FileSpreadsheet className="h-5 w-5 text-brand-600" />
+            <h2 className="font-semibold text-lg">Carga Masiva de Pesajes</h2>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => onOpenChange(false)}
+            className="h-8 w-8 p-0"
+          >
+            ✕
+          </Button>
+        </div>
+
+        {/* Content wrapper */}
+        <div className="p-4 lg:p-0">
+        {/* Desktop Header */}
+        <DialogHeader className="hidden lg:block">
           <DialogTitle>Carga Masiva de Pesajes</DialogTitle>
           <DialogDescription>
             Importa múltiples pesajes desde un archivo Excel o CSV
@@ -298,17 +317,17 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-base lg:text-lg">
                   <FileSpreadsheet className="h-5 w-5" />
                   Seleccionar Archivo
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm">
                   Sube un archivo Excel (.xlsx, .xls) o CSV con los datos de pesaje
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                  <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 lg:p-8 text-center">
+                  <Upload className="h-10 w-10 lg:h-12 lg:w-12 mx-auto mb-4 text-muted-foreground" />
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
                       Arrastra tu archivo aquí o haz clic para seleccionar
@@ -324,6 +343,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
                       variant="outline"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={loading}
+                      className="h-12 lg:h-10 w-full lg:w-auto"
                     >
                       {loading ? "Procesando..." : "Seleccionar Archivo"}
                     </Button>
@@ -331,7 +351,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <Button variant="link" onClick={downloadTemplate} className="p-0">
+                  <Button variant="link" onClick={downloadTemplate} className="p-0 h-auto text-sm">
                     <Download className="h-4 w-4 mr-2" />
                     Descargar Plantilla
                   </Button>
@@ -340,8 +360,8 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>Columnas requeridas:</strong>
-                    <ul className="mt-2 space-y-1 text-sm">
+                    <strong className="text-sm">Columnas requeridas:</strong>
+                    <ul className="mt-2 space-y-1 text-xs lg:text-sm">
                       <li>• <strong>id_tag</strong> o <strong>identificacion</strong>: Identificación del animal</li>
                       <li>• <strong>peso_kg</strong> o <strong>peso</strong>: Peso en kilogramos</li>
                       <li>• <strong>notas</strong> (opcional): Observaciones</li>
@@ -354,32 +374,32 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
         )}
 
         {currentStep === 2 && (
-          <div className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-4 lg:space-y-6">
+            <div className="grid gap-3 grid-cols-3 lg:gap-4">
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-green-600">Válidos</CardTitle>
+                <CardHeader className="pb-2 px-3 pt-3 lg:px-6 lg:pt-6">
+                  <CardTitle className="text-xs lg:text-sm font-medium text-green-600">Válidos</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{validData.length}</div>
+                <CardContent className="px-3 pb-3 lg:px-6 lg:pb-6">
+                  <div className="text-xl lg:text-2xl font-bold">{validData.length}</div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-red-600">Con Errores</CardTitle>
+                <CardHeader className="pb-2 px-3 pt-3 lg:px-6 lg:pt-6">
+                  <CardTitle className="text-xs lg:text-sm font-medium text-red-600">Con Errores</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{invalidData.length}</div>
+                <CardContent className="px-3 pb-3 lg:px-6 lg:pb-6">
+                  <div className="text-xl lg:text-2xl font-bold">{invalidData.length}</div>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Total</CardTitle>
+                <CardHeader className="pb-2 px-3 pt-3 lg:px-6 lg:pt-6">
+                  <CardTitle className="text-xs lg:text-sm font-medium">Total</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{weighingData.length}</div>
+                <CardContent className="px-3 pb-3 lg:px-6 lg:pb-6">
+                  <div className="text-xl lg:text-2xl font-bold">{weighingData.length}</div>
                 </CardContent>
               </Card>
             </div>
@@ -387,9 +407,9 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
             {invalidData.length > 0 && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="flex items-center justify-between">
-                  <span>Se encontraron {invalidData.length} registros con errores</span>
-                  <Button variant="outline" size="sm" onClick={downloadErrorReport}>
+                <AlertDescription className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2">
+                  <span className="text-sm">Se encontraron {invalidData.length} registros con errores</span>
+                  <Button variant="outline" size="sm" onClick={downloadErrorReport} className="w-full lg:w-auto">
                     <Download className="h-4 w-4 mr-2" />
                     Descargar Errores
                   </Button>
@@ -397,7 +417,46 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
               </Alert>
             )}
 
-            <div className="border rounded-lg">
+            {/* Mobile: Card List */}
+            <div className="lg:hidden space-y-3 max-h-96 overflow-y-auto">
+              {weighingData.slice(0, 50).map((row, index) => (
+                <div key={index} className={`border rounded-lg p-3 ${!row.isValid ? 'bg-red-50 border-red-200' : ''}`}>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      {row.isValid ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <X className="h-4 w-4 text-red-600" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="font-medium text-sm">{row.id_tag}</div>
+                      <div className="text-xs text-muted-foreground">{row.animalName || 'No encontrado'}</div>
+                      <div className="text-sm font-semibold">{row.peso_kg} kg</div>
+                      {row.notas && (
+                        <div className="text-xs text-muted-foreground">{row.notas}</div>
+                      )}
+                      {!row.isValid && (
+                        <div className="space-y-0.5 mt-2">
+                          {row.errors.map((error, i) => (
+                            <div key={i} className="text-xs text-red-600 flex items-start gap-1">
+                              <span>•</span>
+                              <span>{error}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {row.isValid && (
+                        <div className="text-xs text-green-600 font-medium">✓ Válido</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Table */}
+            <div className="hidden lg:block border rounded-lg">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -446,17 +505,33 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
               )}
             </div>
 
-            <div className="flex justify-between">
-              <Button variant="outline" onClick={() => setCurrentStep(1)}>
+            {weighingData.length > 50 && (
+              <div className="lg:hidden p-3 text-center text-xs text-muted-foreground bg-muted rounded-lg">
+                Mostrando primeros 50 registros de {weighingData.length} total
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="sticky bottom-0 left-0 right-0 bg-background border-t lg:border-0 p-4 lg:p-0 lg:static flex flex-col lg:flex-row gap-2 lg:justify-between -mx-4 lg:mx-0">
+              <Button 
+                variant="outline" 
+                onClick={() => setCurrentStep(1)}
+                className="h-12 lg:h-10 w-full lg:w-auto order-2 lg:order-1"
+              >
                 Volver
               </Button>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={resetForm}>
+              <div className="flex flex-col lg:flex-row gap-2 order-1 lg:order-2">
+                <Button 
+                  variant="outline" 
+                  onClick={resetForm}
+                  className="h-12 lg:h-10 w-full lg:w-auto"
+                >
                   Cancelar
                 </Button>
                 <Button 
                   onClick={handleUpload}
                   disabled={uploading || validData.length === 0}
+                  className="h-12 lg:h-10 w-full lg:w-auto"
                 >
                   {uploading ? "Cargando..." : `Cargar ${validData.length} Pesajes`}
                 </Button>
@@ -464,6 +539,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   );
