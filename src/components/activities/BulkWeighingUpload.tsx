@@ -286,16 +286,13 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-5xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto p-0 lg:p-6 lg:rounded-lg">
-        <div className="flex flex-col h-full">
-          <DialogHeader className="p-4 lg:p-0 pb-4 border-b lg:border-0">
-            <DialogTitle>Carga Masiva de Pesajes</DialogTitle>
-            <DialogDescription>
-              Importa múltiples pesajes desde un archivo Excel o CSV
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="flex-1 overflow-y-auto p-4 lg:p-0">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Carga Masiva de Pesajes</DialogTitle>
+          <DialogDescription>
+            Importa múltiples pesajes desde un archivo Excel o CSV
+          </DialogDescription>
+        </DialogHeader>
 
         {currentStep === 1 && (
           <div className="space-y-6">
@@ -467,8 +464,6 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
             </div>
           </div>
         )}
-          </div>
-        </div>
       </DialogContent>
     </Dialog>
   );

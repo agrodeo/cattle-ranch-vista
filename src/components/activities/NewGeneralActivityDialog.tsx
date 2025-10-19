@@ -468,17 +468,15 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full max-w-4xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto p-0 lg:p-6 lg:rounded-lg">
-        <div className="flex flex-col h-full">
-          <DialogHeader className="p-4 lg:p-0 pb-4 border-b lg:border-0">
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="h-5 w-5" />
-              Nueva Actividad General
-            </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="w-[95vw] sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            Nueva Actividad General
+          </DialogTitle>
+        </DialogHeader>
         
-          <div className="flex-1 overflow-y-auto p-4 lg:p-0">
-            <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="activity-type">Tipo de Actividad *</Label>
@@ -698,32 +696,21 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
             />
           </div>
 
-            </form>
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => handleOpenChange(false)}
+              disabled={isLoading}
+              className="w-full sm:w-auto"
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+              {isLoading ? "Guardando..." : "Registrar Actividad"}
+            </Button>
           </div>
-
-          {/* Fixed Bottom Actions */}
-          <div className="sticky bottom-0 left-0 right-0 bg-background border-t p-4 lg:static lg:border-0 lg:pt-6 lg:pb-0">
-            <div className="flex flex-col gap-3 lg:flex-row lg:justify-end lg:gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                disabled={isLoading}
-                className="h-12 lg:h-10 w-full lg:w-auto"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
-                className="h-12 lg:h-10 w-full lg:w-auto"
-                onClick={handleSubmit}
-              >
-                {isLoading ? "Guardando..." : "Registrar Actividad"}
-              </Button>
-            </div>
-          </div>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -578,24 +578,16 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
             </div>
           )}
 
-          {/* Fixed Bottom Actions */}
-          <div className="sticky bottom-0 left-0 right-0 bg-background border-t p-4 lg:static lg:border-0 lg:pt-6 lg:pb-0">
-            <div className="flex flex-col gap-3 lg:flex-row lg:justify-end lg:gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => handleOpenChange(false)}
-                className="h-12 lg:h-10 w-full lg:w-auto"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleSubmit} 
-                disabled={loading || (tactoRecords.length === 0)}
-                className="h-12 lg:h-10 w-full lg:w-auto"
-              >
-                {loading ? "Guardando..." : "Registrar Detecciones"}
-              </Button>
-            </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSubmit} 
+              disabled={loading || (tactoRecords.length === 0)}
+            >
+              {loading ? "Guardando..." : "Registrar Detecciones"}
+            </Button>
           </div>
         </div>
         </div>

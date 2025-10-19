@@ -23,8 +23,7 @@ export function WeighingMethodSelector({
 }: WeighingMethodSelectorProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-md h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto p-4 lg:p-6 lg:rounded-lg">
-        <div className="flex flex-col h-full">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Seleccionar método de registro</DialogTitle>
         </DialogHeader>
@@ -79,15 +78,10 @@ export function WeighingMethodSelector({
           </Card>
         </div>
 
-          <div className="flex justify-end mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="h-12 lg:h-10 w-full lg:w-auto"
-            >
-              Cancelar
-            </Button>
-          </div>
+        <div className="flex justify-end">
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
