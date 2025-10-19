@@ -429,7 +429,39 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
               </div>
             </div>
 
-            <div className="border rounded-lg max-h-60 overflow-y-auto">
+            {/* Mobile: Card List */}
+            <div className="lg:hidden space-y-2 max-h-60 overflow-y-auto">
+              {filteredAnimals.map((animal) => (
+                <div key={animal.id} className="flex items-start gap-3 p-3 border rounded-lg">
+                  <Checkbox
+                    checked={selectedAnimals.includes(animal.id)}
+                    onCheckedChange={(checked) => 
+                      handleAnimalSelection(animal.id, checked as boolean)
+                    }
+                    className="mt-1"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{animal.name || "Sin nombre"}</div>
+                    <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                    {animal.corral && (
+                      <div className="text-xs text-muted-foreground">Corral: {animal.corral.name}</div>
+                    )}
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {animal.birth_date ? 
+                        `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
+                        : "No registrada"
+                      } • {animal.breed || "No especificada"}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {animal.esta_preñada ? 'Preñada' : 'No preñada'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Table */}
+            <div className="hidden lg:block border rounded-lg max-h-60 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>

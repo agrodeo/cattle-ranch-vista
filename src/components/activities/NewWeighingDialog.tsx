@@ -244,7 +244,51 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
               </div>
             </div>
 
-            <div className="border rounded-lg max-h-60 overflow-y-auto">
+            {/* Mobile: Card List */}
+            <div className="lg:hidden space-y-3 max-h-60 overflow-y-auto">
+              {animals.map((animal) => {
+                const record = weighingRecords.find(r => r.animalId === animal.id);
+                const isSelected = selectedAnimals.includes(animal.id);
+                return (
+                  <div key={animal.id} className="border rounded-lg p-3 space-y-2">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => 
+                          handleAnimalSelection(animal.id, checked as boolean)
+                        }
+                        className="mt-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm truncate">{animal.name || "Sin nombre"}</div>
+                        <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {animal.sex || "No esp."} • {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
+                        </div>
+                      </div>
+                    </div>
+                    {isSelected && (
+                      <div className="flex items-center gap-2 pl-9">
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          inputMode="decimal"
+                          value={record?.weight || ""}
+                          onChange={(e) => updateWeight(animal.id, e.target.value)}
+                          placeholder="Peso en kg"
+                          className="text-base h-12 flex-1"
+                        />
+                        <Scale className="h-5 w-5 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop: Table */}
+            <div className="hidden lg:block border rounded-lg max-h-60 overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -270,12 +314,12 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{animal.name || "Sin nombre"}</div>
-                            <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                            <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                            <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                           </div>
                         </TableCell>
-                        <TableCell>{animal.sex || "No especificado"}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-sm">{animal.sex || "No especificado"}</TableCell>
+                        <TableCell className="text-sm">
                           {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
                         </TableCell>
                         <TableCell>

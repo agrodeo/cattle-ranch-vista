@@ -307,9 +307,9 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
                     <TableHead>Animal</TableHead>
-                    <TableHead>Sexo</TableHead>
-                    <TableHead>Raza</TableHead>
-                    <TableHead>Corral</TableHead>
+                    <TableHead className="hidden sm:table-cell">Sexo</TableHead>
+                    <TableHead className="hidden md:table-cell">Raza</TableHead>
+                    <TableHead className="hidden lg:table-cell">Corral</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -325,13 +325,16 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{animal.name || "Sin nombre"}</div>
-                          <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                          <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                          <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
+                          <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
+                            {animal.sex || "No esp."} • {animal.breed || "No esp."}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>{animal.sex || "No especificado"}</TableCell>
-                      <TableCell>{animal.breed || "No especificada"}</TableCell>
-                      <TableCell>{animal.corral_id || "Sin asignar"}</TableCell>
+                      <TableCell className="hidden sm:table-cell text-sm">{animal.sex || "No especificado"}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || "No especificada"}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">{animal.corral_id || "Sin asignar"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

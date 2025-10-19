@@ -661,9 +661,9 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
                     <TableHead>Animal</TableHead>
-                    <TableHead>Edad</TableHead>
-                    <TableHead>Raza</TableHead>
-                    <TableHead>Estado</TableHead>
+                    <TableHead className="hidden sm:table-cell">Edad</TableHead>
+                    <TableHead className="hidden md:table-cell">Raza</TableHead>
+                    <TableHead className="hidden lg:table-cell">Estado</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -679,18 +679,24 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{animal.name || "Sin nombre"}</div>
-                          <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                          <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                          <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
+                          <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
+                            {animal.birth_date ? 
+                              `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
+                              : "No registrada"
+                            } • {animal.breed || "No especificada"}
+                          </div>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="hidden sm:table-cell text-sm">
                         {animal.birth_date ? 
                           `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
                           : "No registrada"
                         }
                       </TableCell>
-                      <TableCell>{animal.breed || "No especificada"}</TableCell>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || "No especificada"}</TableCell>
+                      <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-2">
                           <Heart className={`h-3 w-3 ${animal.esta_preñada ? 'text-red-500' : 'text-gray-400'}`} />
                           <span className="text-sm">
