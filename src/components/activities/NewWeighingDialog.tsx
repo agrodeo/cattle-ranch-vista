@@ -8,12 +8,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Calendar as CalendarIcon, Scale } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WeighingRecord {
   animalId: string;
@@ -39,6 +41,7 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
 
   const { toast } = useToast();
   const { getEligibleAnimals, createEvent } = useActivities();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (externalOpen !== undefined) {
@@ -246,62 +249,118 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
               </div>
             </div>
 
-            <div className="border rounded-lg max-h-60 overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>Animal</TableHead>
-                    <TableHead>Sexo</TableHead>
-                    <TableHead>Peso Actual</TableHead>
-                    <TableHead>Nuevo Peso (kg)</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {animals.map((animal) => {
-                    const record = weighingRecords.find(r => r.animalId === animal.id);
-                    return (
-                      <TableRow key={animal.id}>
-                        <TableCell>
+            {/* Mobile: Card List */}
+            {isMobile ? (
+              <div className="space-y-3">
+                {animals.map((animal) => {
+                  const record = weighingRecords.find(r => r.animalId === animal.id);
+                  const isSelected = selectedAnimals.includes(animal.id);
+                  
+                  return (
+                    <Card key={animal.id} className={`p-4 ${isSelected ? 'border-emerald-500 bg-emerald-50/50' : ''}`}>
+                      <div className="space-y-3">
+                        <div className="flex items-start gap-3">
                           <Checkbox
-                            checked={selectedAnimals.includes(animal.id)}
+                            checked={isSelected}
                             onCheckedChange={(checked) => 
                               handleAnimalSelection(animal.id, checked as boolean)
                             }
+                            className="mt-1"
                           />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">{animal.name || "Sin nombre"}</div>
                             <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {animal.sex} • Peso actual: {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
+                            </div>
                           </div>
-                        </TableCell>
-                        <TableCell>{animal.sex || "No especificado"}</TableCell>
-                        <TableCell>
-                          {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
-                        </TableCell>
-                        <TableCell>
-                          {selectedAnimals.includes(animal.id) && (
+                        </div>
+                        
+                        {isSelected && (
+                          <div className="space-y-2 pl-9">
+                            <Label htmlFor={`weight-${animal.id}`} className="text-sm">
+                              Nuevo Peso (kg) *
+                            </Label>
                             <div className="flex items-center gap-2">
                               <Input
+                                id={`weight-${animal.id}`}
                                 type="number"
+                                inputMode="decimal"
                                 step="0.1"
                                 min="0"
                                 value={record?.weight || ""}
                                 onChange={(e) => updateWeight(animal.id, e.target.value)}
-                                placeholder="Peso en kg"
-                                className="w-32"
+                                placeholder="0.0"
+                                className="h-12 text-base"
                               />
-                              <Scale className="h-4 w-4 text-muted-foreground" />
+                              <Scale className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                             </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Desktop: Table */
+              <div className="border rounded-lg max-h-60 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12"></TableHead>
+                      <TableHead>Animal</TableHead>
+                      <TableHead>Sexo</TableHead>
+                      <TableHead>Peso Actual</TableHead>
+                      <TableHead>Nuevo Peso (kg)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {animals.map((animal) => {
+                      const record = weighingRecords.find(r => r.animalId === animal.id);
+                      return (
+                        <TableRow key={animal.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedAnimals.includes(animal.id)}
+                              onCheckedChange={(checked) => 
+                                handleAnimalSelection(animal.id, checked as boolean)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                              <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{animal.sex || "No especificado"}</TableCell>
+                          <TableCell>
+                            {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
+                          </TableCell>
+                          <TableCell>
+                            {selectedAnimals.includes(animal.id) && (
+                              <div className="flex items-center gap-2">
+                                <Input
+                                  type="number"
+                                  step="0.1"
+                                  min="0"
+                                  value={record?.weight || ""}
+                                  onChange={(e) => updateWeight(animal.id, e.target.value)}
+                                  placeholder="Peso en kg"
+                                  className="w-32"
+                                />
+                                <Scale className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
 
             {selectedAnimals.length > 0 && (
               <div className="text-sm text-muted-foreground">
