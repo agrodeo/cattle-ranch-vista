@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 
-export type SyncStatus = 'pending' | 'failed' | 'synced';
+export type SyncStatus = 'pending' | 'failed' | 'failed_permanent' | 'synced';
 
 export interface IdMap { 
   tempId: string; 

@@ -22,8 +22,13 @@ export async function enqueue(event: Omit<OutboxEvent,'id'|'createdAt'|'retries'
   return ev.id;
 }
 
+const MAX_RETRIES = 3;
+
 export async function flushOutbox() {
-  const pending = await db.outbox.where('status').equals('pending').toArray();
+  const pending = await db.outbox
+    .where('status').equals('pending')
+    .filter(event => (event.retries || 0) < MAX_RETRIES)
+    .toArray();
   if (!pending.length) return { sent: 0, mapped: 0 };
 
   const payload = pending.map(p => ({
@@ -48,10 +53,11 @@ export async function flushOutbox() {
       if (result?.success) {
         await db.outbox.update(p.id, { status: 'synced' });
       } else {
+        const newRetries = p.retries + 1;
         await db.outbox.update(p.id, { 
-          status: 'failed', 
+          status: newRetries >= MAX_RETRIES ? 'failed_permanent' : 'failed', 
           reason: result?.error || 'sync_error',
-          retries: p.retries + 1
+          retries: newRetries
         });
       }
     }
@@ -60,10 +66,11 @@ export async function flushOutbox() {
   } catch (e: any) {
     // Marcar como fallido
     for (const p of pending) {
+      const newRetries = p.retries + 1;
       await db.outbox.update(p.id, { 
-        status: 'failed', 
+        status: newRetries >= MAX_RETRIES ? 'failed_permanent' : 'failed', 
         reason: e?.message || 'sync_error',
-        retries: p.retries + 1
+        retries: newRetries
       });
     }
     throw e;

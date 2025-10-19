@@ -33,7 +33,7 @@ export function PlanLimitAlert({
         <div className="space-y-3">
           <p className={isError ? 'text-red-700' : 'text-amber-700'}>
             {isError 
-              ? `Has superado el límite de ${maxCount} animales del plan ${planName}. Actualmente tienes ${currentCount} animales registrados.`
+              ? `Has alcanzado el límite de ${maxCount} animales del plan ${planName}. Actualmente tienes ${currentCount} animales registrados.`
               : `Estás cerca del límite de ${maxCount} animales del plan ${planName}. Tienes ${currentCount} de ${maxCount} animales registrados.`
             }
           </p>
