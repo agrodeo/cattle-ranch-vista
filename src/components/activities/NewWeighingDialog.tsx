@@ -173,26 +173,28 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Registrar Pesaje</DialogTitle>
-          <DialogDescription>
-            Registre el peso de los animales
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="w-full max-w-4xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto p-0 lg:p-6 lg:rounded-lg">
+        <div className="flex flex-col h-full">
+          <DialogHeader className="p-4 lg:p-0 pb-4 border-b lg:border-0">
+            <DialogTitle>Registrar Pesaje</DialogTitle>
+            <DialogDescription>
+              Registre el peso de los animales
+            </DialogDescription>
+          </DialogHeader>
         
-        {animals.length === 0 && !loading && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-2">
-              No hay animales elegibles para pesaje.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Verifica que tengas animales activos en tu cabaña.
-            </p>
-          </div>
-        )}
+          <div className="flex-1 overflow-y-auto p-4 lg:p-0">
+            {animals.length === 0 && !loading && (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground mb-2">
+                  No hay animales elegibles para pesaje.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Verifica que tengas animales activos en tu cabaña.
+                </p>
+              </div>
+            )}
 
-        <div className="space-y-6">
+            <div className="space-y-6">
           {/* Weighing Details */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -308,16 +310,27 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
             )}
           </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={loading || selectedAnimals.length === 0}
-            >
-              {loading ? "Guardando..." : "Registrar Pesaje"}
-            </Button>
+            </div>
+          </div>
+
+          {/* Fixed Bottom Actions */}
+          <div className="sticky bottom-0 left-0 right-0 bg-background border-t p-4 lg:static lg:border-0 lg:pt-6 lg:pb-0">
+            <div className="flex flex-col gap-3 lg:flex-row lg:justify-end lg:gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => handleOpenChange(false)}
+                className="h-12 lg:h-10 w-full lg:w-auto"
+              >
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleSubmit} 
+                disabled={loading || selectedAnimals.length === 0}
+                className="h-12 lg:h-10 w-full lg:w-auto"
+              >
+                {loading ? "Guardando..." : "Registrar Pesaje"}
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
