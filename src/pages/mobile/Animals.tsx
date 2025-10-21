@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { EmptyState } from "@/components/ui/empty-state";
 import { Search, Filter, Users, Plus, ChevronDown, ChevronRight } from "lucide-react";
 import { Animal } from "@/types/animal";
-import { getDisplayStatus } from "@/lib/statusUtils";
+import { getDisplayStatus, normalizeAnimalStatus } from "@/lib/statusUtils";
 import { formatDate } from "@/lib/format";
 import { categorizeAnimal } from "@/lib/animalCategories";
 import GenealogyTree from "@/components/GenealogyTree";
@@ -79,7 +79,8 @@ export function MobileAnimals() {
   const filteredAnimals = animals.filter(animal => {
     const matchesSearch = animal.id_tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          (animal.name && animal.name.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === "all" || animal.status === statusFilter;
+    const normalizedStatus = normalizeAnimalStatus(animal.status);
+    const matchesStatus = statusFilter === "all" || normalizedStatus === statusFilter;
     const matchesBreed = breedFilter === "all" || animal.breed === breedFilter;
     const animalCategory = getAgeCategory(animal.birth_date, animal.sex, animal.is_castrated || false);
     const matchesCategory = categoryFilter === "all" || animalCategory === categoryFilter;
@@ -181,11 +182,9 @@ export function MobileAnimals() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos los estados</SelectItem>
-              {uniqueStatuses.map(status => (
-                <SelectItem key={status} value={status}>
-                  {status}
-                </SelectItem>
-              ))}
+              <SelectItem value="active">Activos</SelectItem>
+              <SelectItem value="sold">Vendidos</SelectItem>
+              <SelectItem value="dead">Muertos</SelectItem>
             </SelectContent>
           </Select>
 

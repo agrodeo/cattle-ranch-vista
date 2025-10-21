@@ -1145,9 +1145,9 @@ const Animals = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="activo">Activos</SelectItem>
-                    <SelectItem value="vendido">Vendidos</SelectItem>
-                    <SelectItem value="muerto">Muertos</SelectItem>
+                    <SelectItem value="active">Activos</SelectItem>
+                    <SelectItem value="sold">Vendidos</SelectItem>
+                    <SelectItem value="dead">Muertos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
