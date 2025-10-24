@@ -49,19 +49,16 @@ const Dashboard = () => {
       title: "Total Animales",
       value: counts.animalsActive,
       icon: Users,
-      trend: { value: "+5%", direction: "up" as const }
     },
     {
       title: "Act. 30d",
       value: counts.activitiesLast7d,
       icon: Activity,
-      trend: { value: "+12%", direction: "up" as const }
     },
     {
-      title: "Ingresos mes",
-      value: "$125k",
+      title: "Corrales",
+      value: counts.corrals,
       icon: DollarSign,
-      trend: { value: "+8%", direction: "up" as const }
     },
     {
       title: "Preñez Actual",
@@ -128,7 +125,6 @@ const Dashboard = () => {
                   title={stat.title}
                   value={stat.value}
                   icon={stat.icon}
-                  trend={stat.trend}
                 />
               ))}
             </div>
