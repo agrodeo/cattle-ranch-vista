@@ -121,24 +121,24 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="text-center">
+      <CardHeader className="text-center px-4 sm:px-6">
         <div className="flex justify-center mb-4">
           <div className="p-3 rounded-full bg-primary/10">
             <Syringe className="h-8 w-8 text-primary" />
           </div>
         </div>
-        <CardTitle className="text-2xl">Configurar Vacunas Requeridas</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl sm:text-2xl">Configurar Vacunas Requeridas</CardTitle>
+        <CardDescription className="text-sm">
           Selecciona las vacunas que serán obligatorias en tu cabaña. Puedes modificar esto más tarde en configuración.
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 px-4 sm:px-6">
         <div className="space-y-4">
           {defaultVaccineTemplates.map((vaccine, index) => (
             <div
               key={index}
-              className={`border rounded-lg p-4 transition-colors cursor-pointer ${
+              className={`border rounded-lg p-3 sm:p-4 transition-colors cursor-pointer ${
                 selectedVaccines.has(index) 
                   ? 'border-primary bg-primary/5' 
                   : 'border-border hover:border-primary/50'
@@ -146,19 +146,19 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
               onClick={() => handleVaccineToggle(index)}
             >
               <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-3 flex-1">
+                <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0">
                   <Checkbox
                     checked={selectedVaccines.has(index)}
                     onChange={() => {}} // Handled by parent div click
-                    className="mt-1"
+                    className="mt-1 flex-shrink-0"
                   />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-medium text-sm">{vaccine.vaccine_name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2 mb-2 flex-wrap">
+                      <h3 className="font-medium text-sm break-words">{vaccine.vaccine_name}</h3>
                       {vaccine.is_mandatory && (
-                        <Badge variant="destructive" className="text-xs">Obligatoria</Badge>
+                        <Badge variant="destructive" className="text-xs whitespace-nowrap flex-shrink-0">Obligatoria</Badge>
                       )}
-                      <Badge variant="outline" className="text-xs">{vaccine.vaccine_type}</Badge>
+                      <Badge variant="outline" className="text-xs whitespace-nowrap flex-shrink-0">{vaccine.vaccine_type}</Badge>
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">
                       {vaccine.description}
@@ -207,26 +207,26 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
           </div>
         </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button
             variant="outline"
             onClick={onSkip}
-            className="flex-1"
+            className="w-full sm:flex-1"
           >
             <SkipForward className="h-4 w-4 mr-2" />
-            Omitir por ahora
+            Omitir
           </Button>
           <Button
             onClick={handleSetupVaccines}
             disabled={isLoading}
-            className="flex-1"
+            className="w-full sm:flex-1"
           >
             {isLoading ? (
               "Configurando..."
             ) : (
               <>
-                Configurar Vacunas
-                <ChevronRight className="h-4 w-4 ml-2" />
+                <span className="truncate">Configurar Vacunas</span>
+                <ChevronRight className="h-4 w-4 ml-2 flex-shrink-0" />
               </>
             )}
           </Button>
