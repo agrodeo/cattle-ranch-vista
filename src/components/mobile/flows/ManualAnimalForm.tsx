@@ -100,7 +100,6 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
       const animalData: any = {
         id_tag: formData.id_tag,
-        caravana_electronica: formData.caravana_electronica || null,
         name: formData.name || null,
         sex: formData.sex,
         breed: formData.breed,
@@ -119,7 +118,8 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         condicion_corporal: (formData.condicion_corporal && formData.condicion_corporal !== 'none') ? formData.condicion_corporal : null,
         circunferencia_escrotal: formData.circunferencia_escrotal ? parseFloat(formData.circunferencia_escrotal) : null,
         observaciones: formData.observaciones || null,
-        status: "activo"
+        status: "activo",
+        ...(formData.caravana_electronica && { caravana_electronica: formData.caravana_electronica })
       };
 
       // Add cabaña_id using bracket notation to avoid TypeScript issues with ñ
