@@ -2165,7 +2165,7 @@ export type Database = {
           created_at: string | null
           details: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           record_id: string | null
           table_name: string
           user_agent: string | null
@@ -2176,7 +2176,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           table_name: string
           user_agent?: string | null
@@ -2187,7 +2187,7 @@ export type Database = {
           created_at?: string | null
           details?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           record_id?: string | null
           table_name?: string
           user_agent?: string | null
@@ -2824,14 +2824,8 @@ export type Database = {
         Args: { _cabana_id: string }
         Returns: undefined
       }
-      backfill_animal_weights_v2: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      calculate_age_months: {
-        Args: { birth_date: string }
-        Returns: number
-      }
+      backfill_animal_weights_v2: { Args: never; Returns: undefined }
+      calculate_age_months: { Args: { birth_date: string }; Returns: number }
       calculate_ai_success_rate: {
         Args: {
           filter_bull_name?: string
@@ -2903,14 +2897,8 @@ export type Database = {
           total_reproductive_years: number
         }[]
       }
-      can_add_animals: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
-      can_modify_data: {
-        Args: { user_uuid: string }
-        Returns: boolean
-      }
+      can_add_animals: { Args: { user_uuid: string }; Returns: boolean }
+      can_modify_data: { Args: { user_uuid: string }; Returns: boolean }
       categorize_animal: {
         Args: { birth_date: string; reference_date?: string; sex: string }
         Returns: string
@@ -2919,14 +2907,10 @@ export type Database = {
         Args: { animal_father_id: string; animal_mother_id: string }
         Returns: number
       }
-      check_overdue_pregnancies: {
-        Args: Record<PropertyKey, never> | { _cabana_id: string }
-        Returns: undefined
-      }
-      check_reproductive_alerts: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      check_overdue_pregnancies:
+        | { Args: never; Returns: undefined }
+        | { Args: { _cabana_id: string }; Returns: number }
+      check_reproductive_alerts: { Args: never; Returns: undefined }
       classify_weighing_type: {
         Args: {
           animal_birth_date: string
@@ -3071,18 +3055,9 @@ export type Database = {
           tipo_pesaje: string
         }[]
       }
-      get_current_entitlements: {
-        Args: { cabana_uuid: string }
-        Returns: Json
-      }
-      get_current_user_cabana: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_current_user_cabana_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_entitlements: { Args: { cabana_uuid: string }; Returns: Json }
+      get_current_user_cabana: { Args: never; Returns: string }
+      get_current_user_cabana_id: { Args: never; Returns: string }
       get_enhanced_reproductive_metrics: {
         Args: { _cabana_id: string; _filters?: Json }
         Returns: {
@@ -3152,16 +3127,13 @@ export type Database = {
           notas: string
         }[]
       }
-      get_plan_limits: {
-        Args: { plan_code: string }
-        Returns: Json
-      }
+      get_plan_limits: { Args: { plan_code: string }; Returns: Json }
       get_service_pregnancy_stats: {
         Args: { _service_id: string }
         Returns: Json
       }
       get_sistema_credenciales: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           sistema_nombre: string
@@ -3241,10 +3213,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      hash_password: {
-        Args: { _password: string }
-        Returns: string
-      }
+      hash_password: { Args: { _password: string }; Returns: string }
       is_valid_password_reset_token: {
         Args: { _token: string }
         Returns: boolean
@@ -3305,17 +3274,25 @@ export type Database = {
           updated_at: string
         }[]
       }
-      list_finance_reports: {
-        Args:
-          | { _from_date?: string; _to_date?: string; _user_id: string }
-          | { _user_id: string }
-        Returns: {
-          amount: number
-          category_name: string
-          date: string
-          type: string
-        }[]
-      }
+      list_finance_reports:
+        | {
+            Args: { _user_id: string }
+            Returns: {
+              amount: number
+              category_name: string
+              date: string
+              type: string
+            }[]
+          }
+        | {
+            Args: { _from_date?: string; _to_date?: string; _user_id: string }
+            Returns: {
+              amount: number
+              category_name: string
+              date: string
+              type: string
+            }[]
+          }
       log_security_event: {
         Args: {
           _action: string
@@ -3325,16 +3302,19 @@ export type Database = {
         }
         Returns: undefined
       }
-      manage_death_causes: {
-        Args:
-          | {
+      manage_death_causes:
+        | {
+            Args: {
               _action: string
               _activo?: boolean
               _id?: string
               _nombre?: string
               _orden?: number
             }
-          | {
+            Returns: Json
+          }
+        | {
+            Args: {
               _action: string
               _activo?: boolean
               _id?: string
@@ -3342,18 +3322,21 @@ export type Database = {
               _orden?: number
               _user_id: string
             }
-        Returns: Json
-      }
-      marcar_defuncion: {
-        Args:
-          | {
+            Returns: Json
+          }
+      marcar_defuncion:
+        | {
+            Args: {
               _animal_id: string
               _causa_id?: string
               _causa_texto?: string
               _fecha_defuncion: string
               _notas?: string
             }
-          | {
+            Returns: Json
+          }
+        | {
+            Args: {
               _animal_id: string
               _causa_id?: string
               _causa_texto?: string
@@ -3361,8 +3344,8 @@ export type Database = {
               _notas?: string
               _user_id: string
             }
-        Returns: Json
-      }
+            Returns: Json
+          }
       mark_pregnancy_failed: {
         Args: { _pregnancy_id: string; _reason?: string }
         Returns: boolean
@@ -3371,18 +3354,9 @@ export type Database = {
         Args: { _cabana_id: string }
         Returns: number
       }
-      migrate_existing_reproductive_data: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      migrate_historical_weighings: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      prepare_user_migration: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      migrate_existing_reproductive_data: { Args: never; Returns: undefined }
+      migrate_historical_weighings: { Args: never; Returns: string }
+      prepare_user_migration: { Args: never; Returns: undefined }
       process_calving_event: {
         Args: {
           _cabana_id: string
@@ -3394,9 +3368,9 @@ export type Database = {
         }
         Returns: string
       }
-      process_pregnancy_detection: {
-        Args:
-          | {
+      process_pregnancy_detection:
+        | {
+            Args: {
               _animal_id: string
               _cabana_id: string
               _evento_id: string
@@ -3404,15 +3378,18 @@ export type Database = {
               _observaciones?: string
               _resultado: string
             }
-          | {
+            Returns: string
+          }
+        | {
+            Args: {
               _animal_id: string
               _cabana_id: string
               _fecha_tacto: string
               _observaciones?: string
               _resultado: string
             }
-        Returns: string
-      }
+            Returns: string
+          }
       record_vaccination: {
         Args: {
           _animal_id: string
@@ -3435,24 +3412,27 @@ export type Database = {
         }
         Returns: string
       }
-      register_reproductive_activity: {
-        Args:
-          | {
+      register_reproductive_activity:
+        | {
+            Args: {
               _animal_id: string
               _cabana_id: string
               _detalle?: Json
               _fecha_actividad: string
               _tipo_actividad: string
             }
-          | {
+            Returns: string
+          }
+        | {
+            Args: {
               _animal_id: string
               _detalle?: Json
               _fecha_actividad: string
               _resultado?: string
               _tipo_actividad: string
             }
-        Returns: string
-      }
+            Returns: string
+          }
       register_service_activity: {
         Args: {
           _animal_id: string
