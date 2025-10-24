@@ -152,50 +152,76 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
   };
 
   const calculateVaccinationStats = (animals: any[], history: any[]): VaccinationStats => {
-    // Simplified calculation for demonstration
+    // Calculate real stats from actual data
     const totalAnimals = animals.length;
-    const upToDateCount = Math.floor(totalAnimals * 0.8); // 80% up to date
-    const pendingCount = Math.floor(totalAnimals * 0.15);
-    const overdueCount = totalAnimals - upToDateCount - pendingCount;
+
+    // Group history by vaccine
+    const vaccineGroups = new Map<string, any[]>();
+    history.forEach(record => {
+      const vaccineKey = record.vaccine_name || record.vaccine_code || 'Sin nombre';
+      if (!vaccineGroups.has(vaccineKey)) {
+        vaccineGroups.set(vaccineKey, []);
+      }
+      vaccineGroups.get(vaccineKey)!.push(record);
+    });
+
+    // Calculate coverage by vaccine based on actual data
+    const coverageByVaccine = Array.from(vaccineGroups.entries()).map(([vaccine, records]) => {
+      const uniqueAnimals = new Set(records.map(r => r.animal_id)).size;
+      return {
+        vaccine,
+        coverage: totalAnimals > 0 ? (uniqueAnimals / totalAnimals) * 100 : 0,
+        eligible: totalAnimals,
+        upToDate: uniqueAnimals
+      };
+    });
+
+    // Calculate total animals vaccinated
+    const allVaccinatedAnimals = new Set(history.map(h => h.animal_id));
+    const upToDateCount = allVaccinatedAnimals.size;
 
     const kpis: VaccinationKPI = {
       generalCoverage: totalAnimals > 0 ? (upToDateCount / totalAnimals) * 100 : 0,
       upToDateAnimals: upToDateCount,
       totalEligible: totalAnimals,
       dosesApplied: history.length,
-      pendingCount,
-      overdueCount
+      pendingCount: 0,
+      overdueCount: 0
     };
 
-    // Sample data for charts
-    const coverageByVaccine = [
-      { vaccine: 'Aftosa', coverage: 85, eligible: totalAnimals, upToDate: Math.floor(totalAnimals * 0.85) },
-      { vaccine: 'Brucelosis', coverage: 90, eligible: totalAnimals, upToDate: Math.floor(totalAnimals * 0.9) },
-      { vaccine: 'Carbunco', coverage: 75, eligible: totalAnimals, upToDate: Math.floor(totalAnimals * 0.75) }
-    ];
-
-    const coverageByCategory = [
-      { category: 'Terneros', coverage: 88, eligible: Math.floor(totalAnimals * 0.3), upToDate: Math.floor(totalAnimals * 0.3 * 0.88) },
-      { category: 'Vaquillonas', coverage: 92, eligible: Math.floor(totalAnimals * 0.25), upToDate: Math.floor(totalAnimals * 0.25 * 0.92) },
-      { category: 'Vacas', coverage: 85, eligible: Math.floor(totalAnimals * 0.35), upToDate: Math.floor(totalAnimals * 0.35 * 0.85) },
-      { category: 'Toros', coverage: 80, eligible: Math.floor(totalAnimals * 0.1), upToDate: Math.floor(totalAnimals * 0.1 * 0.8) }
-    ];
-
+    // Calculate monthly trends from real data
     const monthlyTrends = Array.from({ length: 12 }, (_, i) => {
       const date = subMonths(new Date(), 11 - i);
       const month = format(date, 'MMM yyyy', { locale: es });
+      const monthStart = format(date, 'yyyy-MM-01');
+      const monthEnd = format(new Date(date.getFullYear(), date.getMonth() + 1, 0), 'yyyy-MM-dd');
       
-      return {
-        month,
-        Aftosa: Math.floor(Math.random() * 20) + 5,
-        Brucelosis: Math.floor(Math.random() * 15) + 3,
-        Carbunco: Math.floor(Math.random() * 10) + 2
-      };
+      const monthRecords = history.filter(h => {
+        const recordDate = h.date;
+        return recordDate >= monthStart && recordDate <= monthEnd;
+      });
+
+      const trend: any = { month };
+      
+      // Group by vaccine for this month
+      vaccineGroups.forEach((_, vaccine) => {
+        trend[vaccine] = monthRecords.filter(r => 
+          (r.vaccine_name || r.vaccine_code) === vaccine
+        ).length;
+      });
+      
+      return trend;
     });
+
+    // Calculate coverage by category (only if we have animals)
+    const coverageByCategory = totalAnimals > 0 ? [
+      { category: 'Con Vacunas', coverage: kpis.generalCoverage, eligible: totalAnimals, upToDate: upToDateCount },
+      { category: 'Sin Vacunas', coverage: 100 - kpis.generalCoverage, eligible: totalAnimals, upToDate: totalAnimals - upToDateCount }
+    ] : [];
 
     return {
       kpis,
-      coverageByVaccine,
+      coverageByVaccine: coverageByVaccine.length > 0 ? coverageByVaccine : [],
       coverageByCategory,
       monthlyTrends,
       pendingOverdue: [],
