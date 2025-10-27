@@ -124,28 +124,28 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between p-6">
-            <div className="flex items-center gap-4">
+          <Button variant="ghost" className="w-full justify-between p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
               <div className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-pink-500" />
-                <span className="text-lg font-semibold">Hembras Reproductivas Detalladas</span>
+                <Heart className="h-5 w-5 text-pink-500 shrink-0" />
+                <span className="text-base md:text-lg font-semibold">Detalle Hembras Reproductivas</span>
               </div>
-              <div className="flex items-center gap-6">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
-                  <Baby className="h-4 w-4 text-blue-500" />
-                  <span className="text-sm text-muted-foreground">
+                  <Baby className="h-4 w-4 text-blue-500 shrink-0" />
+                  <span className="text-muted-foreground whitespace-nowrap">
                     {totalFemales} Total • {pregnantCount} Preñadas ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-success" />
-                  <span className="text-sm text-muted-foreground">
+                  <TrendingUp className="h-4 w-4 text-success shrink-0" />
+                  <span className="text-muted-foreground whitespace-nowrap">
                     {avgPregnancyRate.toFixed(1)}% Promedio
                   </span>
                 </div>
                 {totalAlerts > 0 && (
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4 text-destructive" />
+                    <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
                     <Badge variant="destructive" className="h-5 text-xs">
                       {totalAlerts} Alertas
                     </Badge>
@@ -153,7 +153,7 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                 )}
               </div>
             </div>
-            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            {isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
           </Button>
         </CollapsibleTrigger>
 
