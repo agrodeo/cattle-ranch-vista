@@ -576,42 +576,6 @@ export default function Corrales() {
 
                           {/* Details Sections */}
                           <div className="space-y-3">
-                            {/* Vaccination Details */}
-                            {corralKPI && (
-                              <div className="bg-muted/30 rounded-lg">
-                                <div className="p-3 border-b border-muted/50">
-                                  <div className="flex items-center gap-2">
-                                    <Syringe className="h-4 w-4 text-primary" />
-                                    <span className="font-medium">Detalles de Vacunación</span>
-                                  </div>
-                                </div>
-                                <div className="p-3 space-y-2 text-sm">
-                                  <div className="space-y-2">
-                                    <div className="flex items-center justify-between">
-                                      <span>Aftosa</span>
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-20 bg-muted rounded-full h-1.5">
-                                          <div className="w-3/5 bg-emerald-500 h-1.5 rounded-full"></div>
-                                        </div>
-                                        <span className="text-xs">12 de 20</span>
-                                      </div>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground block">12 de 20 animales vacunados</span>
-                                    
-                                    <div className="flex items-center justify-between">
-                                      <span>Brucelosis</span>
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-20 bg-muted rounded-full h-1.5">
-                                          <div className="w-1/4 bg-amber-500 h-1.5 rounded-full"></div>
-                                        </div>
-                                        <span className="text-xs">3 de 12</span>
-                                      </div>
-                                    </div>
-                                    <span className="text-xs text-muted-foreground block">3 de 12 animales vacunados</span>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
 
                             {/* Pregnancy Rate Details */}
                             {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
