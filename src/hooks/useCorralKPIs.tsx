@@ -29,18 +29,24 @@ export function useCorralKPIs() {
   const [loading, setLoading] = useState(true);
 
   const fetchKPIs = async () => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
+      console.log('🔄 Fetching corral KPIs for user:', currentUser.id);
       
       const { data, error } = await supabase.rpc('rpc_corral_complete_kpis', {
         _user_id: currentUser.id
       });
 
+      console.log('📊 Corral KPIs response:', { data, error });
+
       if (error) throw error;
 
-      setKpis((data || []).map((item: any) => ({
+      const processedData = (data || []).map((item: any) => ({
         ...item,
         // Convert bigint values to numbers for React compatibility
         animal_count: Number(item.animal_count),
@@ -49,9 +55,12 @@ export function useCorralKPIs() {
         vaccination_alerts: Number(item.vaccination_alerts),
         recent_weighings_count: Number(item.recent_weighings_count),
         vaccination_status: item.vaccination_status as 'excellent' | 'good' | 'warning' | 'critical' | 'unknown'
-      })));
+      }));
+
+      console.log('✅ Processed corral KPIs:', processedData);
+      setKpis(processedData);
     } catch (error) {
-      console.error('Error fetching corral KPIs:', error);
+      console.error('❌ Error fetching corral KPIs:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -64,6 +73,7 @@ export function useCorralKPIs() {
 
   useEffect(() => {
     fetchKPIs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser?.id]);
 
   const getVaccinationStatusColor = (status: string) => {
