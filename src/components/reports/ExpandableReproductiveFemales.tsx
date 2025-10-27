@@ -128,7 +128,7 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
               <div className="flex items-center gap-2">
                 <Heart className="h-5 w-5 text-pink-500 shrink-0" />
-                <span className="text-base md:text-lg font-semibold">Detalle Hembras Reproductivas</span>
+                <span className="text-sm sm:text-base md:text-lg font-semibold">Detalle Hembras Reproductivas</span>
               </div>
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
