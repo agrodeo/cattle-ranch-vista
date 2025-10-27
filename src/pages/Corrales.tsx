@@ -576,6 +576,36 @@ export default function Corrales() {
 
                           {/* Details Sections */}
                           <div className="space-y-3">
+                            {/* Vaccination Details */}
+                            {corralKPI && (
+                              <div className="bg-muted/30 rounded-lg">
+                                <div className="p-3 border-b border-muted/50">
+                                  <div className="flex items-center gap-2">
+                                    <Syringe className="h-4 w-4 text-primary" />
+                                    <span className="font-medium">Detalles de Vacunación</span>
+                                  </div>
+                                </div>
+                                <div className="p-3 space-y-2 text-sm">
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span>Cobertura General</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-20 bg-muted rounded-full h-1.5">
+                                          <div 
+                                            className="bg-emerald-500 h-1.5 rounded-full" 
+                                            style={{ width: `${corralKPI.vaccination_percentage}%` }}
+                                          ></div>
+                                        </div>
+                                        <span className="text-xs">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
+                                      </div>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground block">
+                                      {corralKPI.vaccination_percentage.toFixed(0)}% de los animales tienen vacunas al día
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
 
                             {/* Pregnancy Rate Details */}
                             {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
