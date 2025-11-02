@@ -13,11 +13,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
+import { VaccineCodeSelector } from "./VaccineCodeSelector";
 import { toast } from "sonner";
 
 const requirementSchema = z.object({
   vaccine_name: z.string().min(1, "El nombre de la vacuna es requerido"),
   vaccine_type: z.string().min(1, "El tipo de vacuna es requerido"),
+  vaccine_code: z.string().min(1, "El código de la vacuna es requerido"),
   description: z.string().optional(),
   is_mandatory: z.boolean(),
   sex_restriction: z.string().optional(),
@@ -41,6 +43,7 @@ export const VaccinationRequirementsManager = () => {
     defaultValues: {
       vaccine_name: "",
       vaccine_type: "",
+      vaccine_code: "",
       description: "",
       is_mandatory: false,
       sex_restriction: "ninguno",
@@ -58,15 +61,16 @@ export const VaccinationRequirementsManager = () => {
       const formattedData = {
         vaccine_name: data.vaccine_name,
         vaccine_type: data.vaccine_type,
+        vaccine_code: data.vaccine_code,
         description: data.description,
         is_mandatory: data.is_mandatory,
         sex_restriction: data.sex_restriction === "ninguno" ? null : data.sex_restriction,
         min_age_months: data.min_age_months,
         max_age_months: data.max_age_months,
-          frequency_months: data.frequency_months,
-          doses_required: data.doses_required,
-          interval_between_doses_days: data.interval_between_doses_days,
-          country: data.country,
+        frequency_months: data.frequency_months,
+        doses_required: data.doses_required,
+        interval_between_doses_days: data.interval_between_doses_days,
+        country: data.country,
       };
 
       if (editingRequirement) {
@@ -87,6 +91,7 @@ export const VaccinationRequirementsManager = () => {
     form.reset({
       vaccine_name: requirement.vaccine_name,
       vaccine_type: requirement.vaccine_type,
+      vaccine_code: requirement.vaccine_code,
       description: requirement.description || "",
       is_mandatory: requirement.is_mandatory,
       sex_restriction: requirement.sex_restriction || "ninguno",
@@ -164,6 +169,23 @@ export const VaccinationRequirementsManager = () => {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="vaccine_code"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Código de Vacuna</FormLabel>
+                      <FormControl>
+                        <VaccineCodeSelector
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

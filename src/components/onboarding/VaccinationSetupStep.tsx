@@ -10,6 +10,7 @@ import { toast } from "sonner";
 interface VaccineTemplate {
   vaccine_name: string;
   vaccine_type: string;
+  vaccine_code: string;
   description: string;
   is_mandatory: boolean;
   sex_restriction?: string;
@@ -25,6 +26,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
   {
     vaccine_name: "Aftosa",
     vaccine_type: "Viral",
+    vaccine_code: "fmd",
     description: "Vacuna obligatoria contra fiebre aftosa",
     is_mandatory: true,
     min_age_months: 3,
@@ -35,6 +37,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
   {
     vaccine_name: "Brucelosis",
     vaccine_type: "Bacteriana",
+    vaccine_code: "brucelosis",
     description: "Vacuna obligatoria contra brucelosis en hembras",
     is_mandatory: true,
     sex_restriction: "Hembra",
@@ -46,6 +49,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
   {
     vaccine_name: "Carbunco",
     vaccine_type: "Bacteriana",
+    vaccine_code: "carbunclo",
     description: "Vacuna contra carbunco sintomático",
     is_mandatory: false,
     min_age_months: 6,
@@ -56,6 +60,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
   {
     vaccine_name: "Mancha/Gangrena",
     vaccine_type: "Bacteriana",
+    vaccine_code: "clostridiosis",
     description: "Vacuna contra enfermedades clostridiales",
     is_mandatory: false,
     min_age_months: 2,
@@ -66,6 +71,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
   {
     vaccine_name: "IBR/DVB",
     vaccine_type: "Viral",
+    vaccine_code: "ibr_bvd",
     description: "Vacuna contra rinotraqueitis y diarrea viral bovina",
     is_mandatory: false,
     min_age_months: 6,

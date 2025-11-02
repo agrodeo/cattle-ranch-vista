@@ -6,6 +6,7 @@ export interface VaccinationRequirement {
   id: string;
   vaccine_name: string;
   vaccine_type: string;
+  vaccine_code: string;
   description?: string;
   is_mandatory: boolean;
   sex_restriction?: string | null;
@@ -111,9 +112,10 @@ export function useVaccinationRequirements() {
       const { error } = await supabase
         .from('cabaña_vaccination_requirements')
         .insert({
-          'cabaña_id': cabanaId,
+          cabaña_id: cabanaId,
           vaccine_name: requirementData.vaccine_name,
           vaccine_type: requirementData.vaccine_type,
+          vaccine_code: requirementData.vaccine_code,
           description: requirementData.description || null,
           is_mandatory: requirementData.is_mandatory,
           sex_restriction: requirementData.sex_restriction || null,
