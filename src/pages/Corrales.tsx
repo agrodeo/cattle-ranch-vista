@@ -48,7 +48,6 @@ import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 import { cn } from "@/lib/utils";
-import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 
 interface Corral {
   id: string;
@@ -74,7 +73,6 @@ export default function Corrales() {
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
-  const { requirements: vaccinationRequirements } = useVaccinationRequirements();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -587,41 +585,30 @@ export default function Corrales() {
                                     <span className="font-medium">Detalles de Vacunación</span>
                                   </div>
                                 </div>
-                                <div className="p-3 space-y-3 text-sm">
-                                  {/* Overall coverage */}
-                                  <div className="space-y-2 pb-2 border-b border-muted/50">
+                                <div className="p-3 space-y-2 text-sm">
+                                  <div className="space-y-2">
                                     <div className="flex items-center justify-between">
-                                      <span className="font-medium">Cobertura General</span>
-                                      <span className="text-xs font-semibold">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
-                                    </div>
-                                    <div className="w-full bg-muted rounded-full h-1.5">
-                                      <div 
-                                        className="bg-emerald-500 h-1.5 rounded-full transition-all" 
-                                        style={{ width: `${corralKPI.vaccination_percentage}%` }}
-                                      ></div>
-                                    </div>
-                                  </div>
-
-                                  {/* Individual vaccines */}
-                                  {vaccinationRequirements.length > 0 ? (
-                                    <div className="space-y-2">
-                                      {vaccinationRequirements.map((req) => (
-                                        <div key={req.id} className="space-y-1">
-                                          <div className="flex items-center justify-between">
-                                            <span className="text-xs">{req.vaccine_name}</span>
-                                            <span className="text-xs text-muted-foreground">
-                                              {req.is_mandatory && <span className="text-amber-600 mr-1">●</span>}
-                                              Configurada
-                                            </span>
-                                          </div>
+                                      <span>Aftosa</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-20 bg-muted rounded-full h-1.5">
+                                          <div className="w-3/5 bg-emerald-500 h-1.5 rounded-full"></div>
                                         </div>
-                                      ))}
+                                        <span className="text-xs">12 de 20</span>
+                                      </div>
                                     </div>
-                                  ) : (
-                                    <p className="text-xs text-muted-foreground">
-                                      No hay vacunas configuradas. Ve a Configuración para agregar requisitos de vacunación.
-                                    </p>
-                                  )}
+                                    <span className="text-xs text-muted-foreground block">12 de 20 animales vacunados</span>
+                                    
+                                    <div className="flex items-center justify-between">
+                                      <span>Brucelosis</span>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-20 bg-muted rounded-full h-1.5">
+                                          <div className="w-1/4 bg-amber-500 h-1.5 rounded-full"></div>
+                                        </div>
+                                        <span className="text-xs">3 de 12</span>
+                                      </div>
+                                    </div>
+                                    <span className="text-xs text-muted-foreground block">3 de 12 animales vacunados</span>
+                                  </div>
                                 </div>
                               </div>
                             )}

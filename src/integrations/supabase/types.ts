@@ -828,7 +828,6 @@ export type Database = {
           min_age_months: number | null
           sex_restriction: string | null
           updated_at: string
-          vaccine_code: string
           vaccine_name: string
           vaccine_type: string
         }
@@ -847,7 +846,6 @@ export type Database = {
           min_age_months?: number | null
           sex_restriction?: string | null
           updated_at?: string
-          vaccine_code: string
           vaccine_name: string
           vaccine_type: string
         }
@@ -866,18 +864,10 @@ export type Database = {
           min_age_months?: number | null
           sex_restriction?: string | null
           updated_at?: string
-          vaccine_code?: string
           vaccine_name?: string
           vaccine_type?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "cabaña_vaccination_requirements_vaccine_code_fkey"
-            columns: ["vaccine_code"]
-            isOneToOne: false
-            referencedRelation: "vaccines"
-            referencedColumns: ["code"]
-          },
           {
             foreignKeyName: "fk_cabaña_vaccination_requirements_cabaña"
             columns: ["cabaña_id"]
@@ -2850,10 +2840,6 @@ export type Database = {
           total_pregnancies: number
         }[]
       }
-      calculate_animal_vaccination_coverage: {
-        Args: { _animal_id: string }
-        Returns: Json
-      }
       calculate_corral_kpis: {
         Args: { _corral_id: string; _year?: number }
         Returns: Json
@@ -3464,15 +3450,19 @@ export type Database = {
           animal_count: number
           avg_daily_gain: number
           avg_weight: number
+          consanguinity_risk_count: number
           corral_id: string
           corral_name: string
-          financial_balance: number
-          health_alerts: number
-          health_percentage: number
-          reproductive_alerts: number
-          reproductive_percentage: number
+          female_count: number
+          hectareas: number
+          highest_severity: string
+          last_weighing_date: string
+          male_count: number
+          pregnancy_rate: number
+          recent_weighings_count: number
           vaccination_alerts: number
           vaccination_percentage: number
+          vaccination_status: string
         }[]
       }
       rpc_report_corrals_last_season: {
