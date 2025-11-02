@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 export interface VaccinationRequirement {
   id: string;
+  vaccine_code: string;
   vaccine_name: string;
   vaccine_type: string;
   description?: string;
@@ -20,13 +21,17 @@ export interface VaccinationRequirement {
 
 export interface VaccinationStatus {
   requirement_id: string;
+  vaccine_code: string;
   vaccine_name: string;
   vaccine_type: string;
   is_mandatory: boolean;
-  status: string;
+  status: 'completa' | 'pendiente' | 'vencida' | 'no_aplicada';
+  doses_given: number;
+  doses_required: number;
   last_vaccination_date?: string;
   next_due_date?: string;
   days_overdue?: number;
+  compliance_percentage: number;
 }
 
 const getCurrentCabanaId = async (): Promise<string> => {
@@ -88,7 +93,7 @@ export function useVaccinationRequirements() {
       }
       
       console.log(`✅ [VaccinationRequirements] Loaded ${data?.length || 0} requirements for cabaña ${cabanaId}`);
-      setRequirements(data || []);
+      setRequirements((data || []) as VaccinationRequirement[]);
     } catch (error) {
       console.error('💥 Error fetching vaccination requirements:', error);
       if (error.message.includes('Usuario no autenticado')) {
@@ -112,6 +117,7 @@ export function useVaccinationRequirements() {
         .from('cabaña_vaccination_requirements')
         .insert({
           'cabaña_id': cabanaId,
+          vaccine_code: requirementData.vaccine_code,
           vaccine_name: requirementData.vaccine_name,
           vaccine_type: requirementData.vaccine_type,
           description: requirementData.description || null,
@@ -120,6 +126,8 @@ export function useVaccinationRequirements() {
           min_age_months: requirementData.min_age_months || null,
           max_age_months: requirementData.max_age_months || null,
           frequency_months: requirementData.frequency_months || null,
+          doses_required: requirementData.doses_required || 1,
+          interval_between_doses_days: requirementData.interval_between_doses_days || null,
           country: requirementData.country,
           is_active: true
         });
@@ -194,14 +202,15 @@ export function useAnimalVaccinationStatus(animalId?: string) {
     
     setLoading(true);
     try {
+      const cabanaId = await getCurrentCabanaId();
       const { data, error } = await supabase
-        .rpc('get_animal_vaccination_status', {
+        .rpc('calculate_vaccination_status' as any, {
           _animal_id: id,
-          _cabaña_id: await getCurrentCabanaId()
+          _cabana_id: cabanaId
         });
 
       if (error) throw error;
-      setStatus(data || []);
+      setStatus((data || []) as VaccinationStatus[]);
     } catch (error) {
       console.error('Error fetching vaccination status:', error);
       toast.error('Error al obtener el estado de vacunación');

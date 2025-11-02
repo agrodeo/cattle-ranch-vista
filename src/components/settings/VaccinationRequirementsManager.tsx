@@ -16,6 +16,7 @@ import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { toast } from "sonner";
 
 const requirementSchema = z.object({
+  vaccine_code: z.string().min(1, "El código de la vacuna es requerido"),
   vaccine_name: z.string().min(1, "El nombre de la vacuna es requerido"),
   vaccine_type: z.string().min(1, "El tipo de vacuna es requerido"),
   description: z.string().optional(),
@@ -39,6 +40,7 @@ export const VaccinationRequirementsManager = () => {
   const form = useForm<RequirementFormData>({
     resolver: zodResolver(requirementSchema),
     defaultValues: {
+      vaccine_code: "",
       vaccine_name: "",
       vaccine_type: "",
       description: "",
@@ -56,6 +58,7 @@ export const VaccinationRequirementsManager = () => {
   const onSubmit = async (data: RequirementFormData) => {
     try {
       const formattedData = {
+        vaccine_code: data.vaccine_code,
         vaccine_name: data.vaccine_name,
         vaccine_type: data.vaccine_type,
         description: data.description,
@@ -63,10 +66,10 @@ export const VaccinationRequirementsManager = () => {
         sex_restriction: data.sex_restriction === "ninguno" ? null : data.sex_restriction,
         min_age_months: data.min_age_months,
         max_age_months: data.max_age_months,
-          frequency_months: data.frequency_months,
-          doses_required: data.doses_required,
-          interval_between_doses_days: data.interval_between_doses_days,
-          country: data.country,
+        frequency_months: data.frequency_months,
+        doses_required: data.doses_required,
+        interval_between_doses_days: data.interval_between_doses_days,
+        country: data.country,
       };
 
       if (editingRequirement) {
@@ -85,6 +88,7 @@ export const VaccinationRequirementsManager = () => {
   const handleEdit = (requirement: any) => {
     setEditingRequirement(requirement);
     form.reset({
+      vaccine_code: requirement.vaccine_code || "",
       vaccine_name: requirement.vaccine_name,
       vaccine_type: requirement.vaccine_type,
       description: requirement.description || "",
@@ -139,6 +143,19 @@ export const VaccinationRequirementsManager = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
+                    name="vaccine_code"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Código de Vacuna</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="Ej: AFTOSA" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
                     name="vaccine_name"
                     render={({ field }) => (
                       <FormItem>
@@ -150,20 +167,31 @@ export const VaccinationRequirementsManager = () => {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="vaccine_type"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tipo de Vacuna</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Ej: Viral" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="vaccine_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Vacuna</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Seleccione el tipo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Viral">Viral</SelectItem>
+                          <SelectItem value="Bacterial">Bacteriana</SelectItem>
+                          <SelectItem value="Parasitic">Parasitaria</SelectItem>
+                          <SelectItem value="Other">Otra</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

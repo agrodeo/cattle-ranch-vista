@@ -8,6 +8,7 @@ import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { toast } from "sonner";
 
 interface VaccineTemplate {
+  vaccine_code: string;
   vaccine_name: string;
   vaccine_type: string;
   description: string;
@@ -23,6 +24,7 @@ interface VaccineTemplate {
 
 const defaultVaccineTemplates: VaccineTemplate[] = [
   {
+    vaccine_code: "AFTOSA",
     vaccine_name: "Aftosa",
     vaccine_type: "Viral",
     description: "Vacuna obligatoria contra fiebre aftosa",
@@ -33,6 +35,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     country: "Argentina"
   },
   {
+    vaccine_code: "BRUCELOSIS",
     vaccine_name: "Brucelosis",
     vaccine_type: "Bacteriana",
     description: "Vacuna obligatoria contra brucelosis en hembras",
@@ -44,6 +47,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     country: "Argentina"
   },
   {
+    vaccine_code: "CARBUNCO",
     vaccine_name: "Carbunco",
     vaccine_type: "Bacteriana",
     description: "Vacuna contra carbunco sintomático",
@@ -54,6 +58,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     country: "Argentina"
   },
   {
+    vaccine_code: "MANCHA_GANGRENA",
     vaccine_name: "Mancha/Gangrena",
     vaccine_type: "Bacteriana",
     description: "Vacuna contra enfermedades clostridiales",
@@ -64,6 +69,7 @@ const defaultVaccineTemplates: VaccineTemplate[] = [
     country: "Argentina"
   },
   {
+    vaccine_code: "IBR_DVB",
     vaccine_name: "IBR/DVB",
     vaccine_type: "Viral",
     description: "Vacuna contra rinotraqueitis y diarrea viral bovina",

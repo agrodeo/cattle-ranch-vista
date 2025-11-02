@@ -6,16 +6,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Link } from "react-router-dom";
 import { 
   Syringe, 
-  Plus, 
   AlertTriangle, 
   CheckCircle, 
   Clock,
   Shield
 } from "lucide-react";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { useVaccinationCompliance, AnimalVaccinationCompliance } from "@/hooks/useVaccinationCompliance";
-import { VaccinationStatusCard } from "@/components/vaccination/VaccinationStatusCard";
+import { useAnimalVaccinationStatus } from "@/hooks/useVaccinationRequirements";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,10 +26,9 @@ interface AnimalVacunasProps {
 // Removed mock data - using real data only
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
-  const { getAnimalCompliance, loading: complianceLoading } = useVaccinationCompliance();
+  const { status: vaccinationStatus, loading: statusLoading } = useAnimalVaccinationStatus(animal.id);
   const [vaccinations, setVaccinations] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [compliance, setCompliance] = useState<AnimalVaccinationCompliance | null>(null);
 
   const fetchVaccinations = async () => {
     try {
@@ -90,39 +87,23 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
 
   useEffect(() => {
     fetchVaccinations();
-    loadCompliance();
   }, [animal.id]);
 
-  const loadCompliance = async () => {
-    const result = await getAnimalCompliance(animal.id);
-    if (result) {
-      setCompliance(result);
-    }
-  };
-
-  // Refresh data when component mounts or animal changes
-  useEffect(() => {
-    const refreshData = async () => {
-      await Promise.all([fetchVaccinations(), loadCompliance()]);
-    };
-    refreshData();
-  }, [animal.id]);
-
-  const calculateStatus = (proximaDosis: string | null) => {
-    if (!proximaDosis) return { status: 'unique', days: 0 };
+  const calculateStatus = (nextDue: string | null) => {
+    if (!nextDue) return { status: 'unique', days: 0 };
     
     const today = new Date();
-    const nextDate = new Date(proximaDosis);
-    const days = differenceInDays(nextDate, today);
+    const nextDate = new Date(nextDue);
+    const daysDiff = Math.floor((nextDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
-    if (days < 0) return { status: 'overdue', days: Math.abs(days) };
-    if (days <= 7) return { status: 'due', days };
-    if (days <= 30) return { status: 'upcoming', days };
-    return { status: 'current', days };
+    if (daysDiff < 0) return { status: 'overdue', days: Math.abs(daysDiff) };
+    if (daysDiff <= 7) return { status: 'due', days: daysDiff };
+    if (daysDiff <= 30) return { status: 'upcoming', days: daysDiff };
+    return { status: 'current', days: daysDiff };
   };
 
-  const getStatusBadge = (proximaDosis: string | null) => {
-    const { status, days } = calculateStatus(proximaDosis);
+  const getStatusBadge = (nextDue: string | null) => {
+    const { status, days } = calculateStatus(nextDue);
     
     switch (status) {
       case 'overdue':
@@ -163,9 +144,9 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
     }
   };
 
-  const hasConfiguredRequirements = compliance && compliance.vaccines && compliance.vaccines.length > 0;
+  const hasConfiguredRequirements = vaccinationStatus && vaccinationStatus.length > 0;
 
-  if (complianceLoading) {
+  if (statusLoading) {
     return (
       <div className="space-y-6">
         <Card>
@@ -184,14 +165,14 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   return (
     <div className="space-y-6">
       {/* Requirements-Based Vaccination Status */}
-      {hasConfiguredRequirements && compliance && (
+      {hasConfiguredRequirements && (
         <div className="space-y-4">
           {/* Summary Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Card className="border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/30">
               <CardContent className="pt-4">
                 <div className="text-2xl font-bold text-green-700 dark:text-green-400">
-                  {compliance.vaccines.filter(v => v.status === 'complete').length}
+                  {vaccinationStatus.filter(v => v.status === 'completa').length}
                 </div>
                 <div className="text-xs text-green-600 dark:text-green-500 flex items-center gap-1 mt-1">
                   <CheckCircle className="h-3 w-3" />
@@ -203,11 +184,11 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
             <Card className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/30">
               <CardContent className="pt-4">
                 <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">
-                  {compliance.vaccines.filter(v => v.status === 'incomplete').length}
+                  {vaccinationStatus.filter(v => v.status === 'pendiente').length}
                 </div>
                 <div className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1 mt-1">
                   <Clock className="h-3 w-3" />
-                  Incompletas
+                  Pendientes
                 </div>
               </CardContent>
             </Card>
@@ -215,7 +196,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
             <Card className="border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30">
               <CardContent className="pt-4">
                 <div className="text-2xl font-bold text-red-700 dark:text-red-400">
-                  {compliance.vaccines.filter(v => v.status === 'overdue').length}
+                  {vaccinationStatus.filter(v => v.status === 'vencida').length}
                 </div>
                 <div className="text-xs text-red-600 dark:text-red-500 flex items-center gap-1 mt-1">
                   <AlertTriangle className="h-3 w-3" />
@@ -227,18 +208,18 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
             <Card className="border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
               <CardContent className="pt-4">
                 <div className="text-2xl font-bold text-gray-700 dark:text-gray-400">
-                  {compliance.vaccines.filter(v => v.status === 'not_started').length}
+                  {vaccinationStatus.filter(v => v.status === 'no_aplicada').length}
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-500 flex items-center gap-1 mt-1">
                   <Syringe className="h-3 w-3" />
-                  Sin Iniciar
+                  Sin Aplicar
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Vaccines requiring attention */}
-          {compliance.vaccines.filter(v => v.status === 'overdue' || v.status === 'not_started' || v.status === 'incomplete').length > 0 && (
+          {vaccinationStatus.filter(v => v.status === 'vencida' || v.status === 'no_aplicada' || v.status === 'pendiente').length > 0 && (
             <Card className="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2 text-amber-900 dark:text-amber-100">
@@ -251,8 +232,8 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {compliance.vaccines
-                    .filter(v => v.status === 'overdue' || v.status === 'not_started' || v.status === 'incomplete')
+                  {vaccinationStatus
+                    .filter(v => v.status === 'vencida' || v.status === 'no_aplicada' || v.status === 'pendiente')
                     .map((vaccine) => (
                       <div key={vaccine.requirement_id} className="flex items-start justify-between p-3 bg-background rounded-lg border">
                         <div className="flex-1">
@@ -287,22 +268,22 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                           </div>
                         </div>
                         <div>
-                          {vaccine.status === 'overdue' && (
+                          {vaccine.status === 'vencida' && vaccine.days_overdue && (
                             <Badge variant="destructive" className="flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3" />
                               Vencida {vaccine.days_overdue}d
                             </Badge>
                           )}
-                          {vaccine.status === 'incomplete' && (
+                          {vaccine.status === 'pendiente' && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              Incompleta
+                              Pendiente
                             </Badge>
                           )}
-                          {vaccine.status === 'not_started' && (
+                          {vaccine.status === 'no_aplicada' && (
                             <Badge variant="outline" className="flex items-center gap-1">
                               <Syringe className="h-3 w-3" />
-                              Sin Iniciar
+                              Sin Aplicar
                             </Badge>
                           )}
                         </div>
@@ -314,7 +295,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
           )}
 
           {/* Complete vaccines */}
-          {compliance.vaccines.filter(v => v.status === 'complete' || v.status === 'due_soon').length > 0 && (
+          {vaccinationStatus.filter(v => v.status === 'completa').length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -327,8 +308,8 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {compliance.vaccines
-                    .filter(v => v.status === 'complete' || v.status === 'due_soon')
+                  {vaccinationStatus
+                    .filter(v => v.status === 'completa')
                     .map((vaccine) => (
                       <div key={vaccine.requirement_id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-900">
                         <div className="flex-1">
@@ -338,7 +319,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                           </div>
                           <div className="flex gap-3 text-sm mt-1">
                             <span className="text-muted-foreground">
-                              {vaccine.doses_given} / {vaccine.doses_required} dosis
+                              {vaccine.doses_given} / {vaccine.doses_required} dosis ({vaccine.compliance_percentage}%)
                             </span>
                             {vaccine.last_vaccination_date && (
                               <span className="text-muted-foreground">

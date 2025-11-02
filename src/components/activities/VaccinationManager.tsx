@@ -3,56 +3,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Syringe, Plus, Calendar, AlertTriangle, CheckCircle, Shield, Info } from "lucide-react";
+import { Syringe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AnimalSelector } from "./AnimalSelector";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
-
-interface VaccineOption {
-  code: string;
-  name: string;
-  mandatory?: boolean;
-  category?: string;
-  description?: string;
-}
+import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 
 export function VaccinationManager() {
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
+  const { requirements, loading: loadingRequirements } = useVaccinationRequirements();
   
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
-  const [availableVaccines, setAvailableVaccines] = useState<VaccineOption[]>([]);
-  const [selectedVaccine, setSelectedVaccine] = useState<string>("");
+  const [selectedRequirementId, setSelectedRequirementId] = useState<string>("");
   const [date, setDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   const [lot, setLot] = useState<string>("");
   const [dose, setDose] = useState<string>("");
   const [route, setRoute] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    loadVaccines();
-  }, []);
-
-  const loadVaccines = async () => {
-    try {
-      const { data: vaccines } = await supabase.from('vaccines').select('*');
-      const processedVaccines = (vaccines || []).map((v: any) => ({
-        code: v.code,
-        name: v.name,
-        mandatory: false // Simplified for now
-      }));
-      setAvailableVaccines(processedVaccines);
-    } catch (error) {
-      console.error("Error loading vaccines:", error);
-    }
-  };
 
   const vaccinationEligibilityFilter = (animal: any): boolean => {
     // Exclude sold and dead animals, allow active and null status
@@ -71,7 +43,7 @@ export function VaccinationManager() {
   };
 
   const handleSubmit = async () => {
-    if (!selectedVaccine || selectedAnimals.length === 0) {
+    if (!selectedRequirementId || selectedAnimals.length === 0) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -83,15 +55,16 @@ export function VaccinationManager() {
     try {
       setSubmitting(true);
       const promises = selectedAnimals.map(async animalId => {
-        const { error } = await supabase.rpc('record_vaccination', {
+        const { data, error } = await supabase.rpc('record_animal_vaccination' as any, {
           _animal_id: animalId,
-          _vaccine_code: selectedVaccine,
+          _requirement_id: selectedRequirementId,
           _date: date,
-          _lot: lot,
-          _dose: dose,
-          _route: route
+          _lot: lot || null,
+          _dose: dose || null,
+          _route: route || null
         });
         if (error) throw error;
+        return data;
       });
       await Promise.all(promises);
       
@@ -101,15 +74,16 @@ export function VaccinationManager() {
       });
       
       setSelectedAnimals([]);
-      setSelectedVaccine("");
+      setSelectedRequirementId("");
       setLot("");
       setDose("");
       setRoute("");
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Error recording vaccination:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo registrar la vacunación"
+        description: error.message || "No se pudo registrar la vacunación"
       });
     } finally {
       setSubmitting(false);
@@ -147,23 +121,34 @@ export function VaccinationManager() {
             </div>
             <div>
               <Label htmlFor="vaccine">Vacuna</Label>
-              <Select value={selectedVaccine} onValueChange={setSelectedVaccine}>
+              <Select value={selectedRequirementId} onValueChange={setSelectedRequirementId} disabled={loadingRequirements}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccione una vacuna" />
+                  <SelectValue placeholder={loadingRequirements ? "Cargando vacunas..." : "Seleccione una vacuna"} />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableVaccines.map(vaccine => (
-                    <SelectItem key={vaccine.code} value={vaccine.code}>
-                      <div className="flex items-center gap-2">
-                        <span>{vaccine.name}</span>
-                        {vaccine.mandatory && (
-                          <Badge variant="destructive" className="text-xs">
-                            Obligatoria
-                          </Badge>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {requirements.length === 0 ? (
+                    <div className="p-2 text-sm text-muted-foreground">
+                      No hay vacunas configuradas. Configure las vacunas en Configuración.
+                    </div>
+                  ) : (
+                    requirements.map(req => (
+                      <SelectItem key={req.id} value={req.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{req.vaccine_name}</span>
+                          {req.is_mandatory && (
+                            <Badge variant="destructive" className="text-xs">
+                              Obligatoria
+                            </Badge>
+                          )}
+                          {req.doses_required && req.doses_required > 1 && (
+                            <Badge variant="outline" className="text-xs">
+                              {req.doses_required} dosis
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -222,7 +207,7 @@ export function VaccinationManager() {
           <Button 
             onClick={handleSubmit} 
             className="w-full" 
-            disabled={submitting || !selectedVaccine || selectedAnimals.length === 0}
+            disabled={submitting || !selectedRequirementId || selectedAnimals.length === 0 || requirements.length === 0}
           >
             {submitting ? "Registrando..." : "Registrar Vacunación"}
           </Button>
