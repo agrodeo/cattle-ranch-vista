@@ -2858,6 +2858,21 @@ export type Database = {
         Args: { _corral_id: string; _year?: number }
         Returns: Json
       }
+      calculate_corral_vaccination_metrics: {
+        Args: { _corral_id: string }
+        Returns: {
+          animals_fully_compliant: number
+          animals_non_compliant: number
+          animals_partially_compliant: number
+          animals_with_overdue: number
+          mandatory_compliance_percentage: number
+          overall_compliance_percentage: number
+          total_animals: number
+          total_requirements: number
+          total_vaccinations_given: number
+          total_vaccinations_needed: number
+        }[]
+      }
       calculate_daily_gain: {
         Args: {
           current_weight: number
@@ -2909,6 +2924,22 @@ export type Database = {
           live_calves: number
           pregnancy_percentage: number
           total_reproductive_years: number
+        }[]
+      }
+      calculate_vaccination_status: {
+        Args: { _animal_id: string; _cabana_id: string }
+        Returns: {
+          compliance_percentage: number
+          days_overdue: number
+          doses_given: number
+          doses_required: number
+          is_mandatory: boolean
+          last_vaccination_date: string
+          next_due_date: string
+          requirement_id: string
+          status: string
+          vaccine_code: string
+          vaccine_name: string
         }[]
       }
       can_add_animals: { Args: { user_uuid: string }; Returns: boolean }
@@ -3404,6 +3435,18 @@ export type Database = {
             }
             Returns: string
           }
+      record_animal_vaccination: {
+        Args: {
+          _animal_id: string
+          _created_by?: string
+          _date: string
+          _dose?: string
+          _lot?: string
+          _requirement_id: string
+          _route?: string
+        }
+        Returns: string
+      }
       record_vaccination: {
         Args: {
           _animal_id: string
