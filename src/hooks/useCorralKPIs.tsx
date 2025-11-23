@@ -14,6 +14,8 @@ export interface CorralKPI {
   highest_severity: string | null;
   vaccination_percentage: number;
   vaccination_alerts: number;
+  total_vaccinations_given: number;
+  total_vaccinations_needed: number;
   avg_daily_gain: number;
   recent_weighings_count: number;
   last_weighing_date: string | null;
@@ -47,6 +49,8 @@ export function useCorralKPIs() {
         male_count: Number(item.male_count),
         female_count: Number(item.female_count),
         vaccination_alerts: Number(item.vaccination_alerts),
+        total_vaccinations_given: Number(item.total_vaccinations_given || 0),
+        total_vaccinations_needed: Number(item.total_vaccinations_needed || 0),
         recent_weighings_count: Number(item.recent_weighings_count),
         vaccination_status: item.vaccination_status as 'excellent' | 'good' | 'warning' | 'critical' | 'unknown'
       })));

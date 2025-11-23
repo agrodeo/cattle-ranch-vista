@@ -616,6 +616,10 @@ export default function Corrales() {
                                 </div>
                                 <div className="p-3 space-y-2 text-sm">
                                   <div className="flex items-center justify-between">
+                                    <span>Vacunas Aplicadas</span>
+                                    <span className="font-medium">{corralKPI.total_vaccinations_given || 0} de {corralKPI.total_vaccinations_needed || 0}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
                                     <span>Cumplimiento General</span>
                                     <div className="flex items-center gap-2">
                                       <div className="w-20 bg-muted rounded-full h-1.5">
@@ -632,9 +636,6 @@ export default function Corrales() {
                                       <span className="text-xs">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
                                     </div>
                                   </div>
-                                  <span className="text-xs text-muted-foreground block">
-                                    {corralKPI.vaccination_percentage.toFixed(1)}% de cumplimiento de vacunación
-                                  </span>
                                   {corralKPI.vaccination_alerts > 0 && (
                                     <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500 mt-2">
                                       <AlertTriangle className="h-3 w-3" />
