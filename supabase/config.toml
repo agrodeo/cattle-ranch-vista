@@ -62,16 +62,16 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.create-user]
-verify_jwt = false
+verify_jwt = true
 
 [functions.hash-existing-passwords]
-verify_jwt = false
+verify_jwt = true
 
 [functions.manage-user]
-verify_jwt = false
+verify_jwt = true
 
 [functions.migrate-employee-passwords]
-verify_jwt = false
+verify_jwt = true
 
 [functions.mp-webhook]
 verify_jwt = false
