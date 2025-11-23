@@ -225,13 +225,6 @@ export type Database = {
             referencedRelation: "cabaña_vaccination_requirements"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "animal_vaccines_vaccine_code_fkey"
-            columns: ["vaccine_code"]
-            isOneToOne: false
-            referencedRelation: "vaccines"
-            referencedColumns: ["code"]
-          },
         ]
       }
       animal_weight_history: {
@@ -871,13 +864,6 @@ export type Database = {
           vaccine_type?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "cabaña_vaccination_requirements_vaccine_code_fkey"
-            columns: ["vaccine_code"]
-            isOneToOne: false
-            referencedRelation: "vaccines"
-            referencedColumns: ["code"]
-          },
           {
             foreignKeyName: "fk_cabaña_vaccination_requirements_cabaña"
             columns: ["cabaña_id"]
@@ -2403,344 +2389,63 @@ export type Database = {
           },
         ]
       }
-      vaccination_schemes: {
+      vaccination_alerts: {
         Row: {
-          breed: string | null
-          country: string
-          created_at: string
-          description: string | null
-          frequency_days: number | null
-          id: string
-          is_active: boolean
-          is_mandatory: boolean
-          max_age_months: number | null
-          min_age_months: number | null
-          name: string
-          notes: string | null
-          region: string | null
-          season_restriction: string | null
-          sex_restriction: string | null
-          updated_at: string
-          vaccine_type: string
-        }
-        Insert: {
-          breed?: string | null
-          country: string
-          created_at?: string
-          description?: string | null
-          frequency_days?: number | null
-          id?: string
-          is_active?: boolean
-          is_mandatory?: boolean
-          max_age_months?: number | null
-          min_age_months?: number | null
-          name: string
-          notes?: string | null
-          region?: string | null
-          season_restriction?: string | null
-          sex_restriction?: string | null
-          updated_at?: string
-          vaccine_type: string
-        }
-        Update: {
-          breed?: string | null
-          country?: string
-          created_at?: string
-          description?: string | null
-          frequency_days?: number | null
-          id?: string
-          is_active?: boolean
-          is_mandatory?: boolean
-          max_age_months?: number | null
-          min_age_months?: number | null
-          name?: string
-          notes?: string | null
-          region?: string | null
-          season_restriction?: string | null
-          sex_restriction?: string | null
-          updated_at?: string
-          vaccine_type?: string
-        }
-        Relationships: []
-      }
-      vaccine_aliases: {
-        Row: {
-          alias: string
-          created_at: string
-          id: string
-          vaccine_code: string
-        }
-        Insert: {
-          alias: string
-          created_at?: string
-          id?: string
-          vaccine_code: string
-        }
-        Update: {
-          alias?: string
-          created_at?: string
-          id?: string
-          vaccine_code?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vaccine_aliases_vaccine_code_fkey"
-            columns: ["vaccine_code"]
-            isOneToOne: false
-            referencedRelation: "vaccines"
-            referencedColumns: ["code"]
-          },
-        ]
-      }
-      vaccine_campaigns: {
-        Row: {
-          created_at: string
-          id: string
-          jurisdiction_code: string
-          label: string
-          vaccine_code: string
-          window_end: string
-          window_start: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          jurisdiction_code: string
-          label: string
-          vaccine_code: string
-          window_end: string
-          window_start: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          jurisdiction_code?: string
-          label?: string
-          vaccine_code?: string
-          window_end?: string
-          window_start?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vaccine_campaigns_jurisdiction_code_fkey"
-            columns: ["jurisdiction_code"]
-            isOneToOne: false
-            referencedRelation: "jurisdictions"
-            referencedColumns: ["code"]
-          },
-          {
-            foreignKeyName: "vaccine_campaigns_vaccine_code_fkey"
-            columns: ["vaccine_code"]
-            isOneToOne: false
-            referencedRelation: "vaccines"
-            referencedColumns: ["code"]
-          },
-        ]
-      }
-      vaccine_rules: {
-        Row: {
-          active: boolean
-          booster_interval_days: number | null
-          category: string
-          coverage_window_days: number | null
-          created_at: string
-          id: string
-          jurisdiction_code: string
-          mandatory: boolean
-          max_age_days: number | null
-          min_age_days: number
-          notes: string | null
-          one_time: boolean
-          pregnancy_ok: boolean
-          sex: string
-          source_url: string | null
-          updated_at: string
-          vaccine_code: string
-          version: number
-        }
-        Insert: {
-          active?: boolean
-          booster_interval_days?: number | null
-          category?: string
-          coverage_window_days?: number | null
-          created_at?: string
-          id?: string
-          jurisdiction_code: string
-          mandatory?: boolean
-          max_age_days?: number | null
-          min_age_days?: number
-          notes?: string | null
-          one_time?: boolean
-          pregnancy_ok?: boolean
-          sex?: string
-          source_url?: string | null
-          updated_at?: string
-          vaccine_code: string
-          version?: number
-        }
-        Update: {
-          active?: boolean
-          booster_interval_days?: number | null
-          category?: string
-          coverage_window_days?: number | null
-          created_at?: string
-          id?: string
-          jurisdiction_code?: string
-          mandatory?: boolean
-          max_age_days?: number | null
-          min_age_days?: number
-          notes?: string | null
-          one_time?: boolean
-          pregnancy_ok?: boolean
-          sex?: string
-          source_url?: string | null
-          updated_at?: string
-          vaccine_code?: string
-          version?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vaccine_rules_jurisdiction_code_fkey"
-            columns: ["jurisdiction_code"]
-            isOneToOne: false
-            referencedRelation: "jurisdictions"
-            referencedColumns: ["code"]
-          },
-          {
-            foreignKeyName: "vaccine_rules_vaccine_code_fkey"
-            columns: ["vaccine_code"]
-            isOneToOne: false
-            referencedRelation: "vaccines"
-            referencedColumns: ["code"]
-          },
-        ]
-      }
-      vaccines: {
-        Row: {
-          active: boolean
-          code: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          species: string
-        }
-        Insert: {
-          active?: boolean
-          code: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          species?: string
-        }
-        Update: {
-          active?: boolean
-          code?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          species?: string
-        }
-        Relationships: []
-      }
-      vacunaciones: {
-        Row: {
-          animales_ids: string[]
-          created_at: string
-          dosis: string | null
-          evento_id: string | null
-          id: string
-          lote: string | null
-          proxima_dosis: string | null
-          updated_at: string
-          vacuna: string
-          via: string | null
-        }
-        Insert: {
-          animales_ids: string[]
-          created_at?: string
-          dosis?: string | null
-          evento_id?: string | null
-          id?: string
-          lote?: string | null
-          proxima_dosis?: string | null
-          updated_at?: string
-          vacuna: string
-          via?: string | null
-        }
-        Update: {
-          animales_ids?: string[]
-          created_at?: string
-          dosis?: string | null
-          evento_id?: string | null
-          id?: string
-          lote?: string | null
-          proxima_dosis?: string | null
-          updated_at?: string
-          vacuna?: string
-          via?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "vacunaciones_evento_id_fkey"
-            columns: ["evento_id"]
-            isOneToOne: false
-            referencedRelation: "eventos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      vacunas_historial: {
-        Row: {
+          alert_date: string
+          alert_type: string
           animal_id: string
           cabaña_id: string
-          created_at: string
-          dose_number: number | null
-          dosis: string | null
-          evento_id: string | null
-          fecha: string
+          created_at: string | null
+          days_overdue: number | null
           id: string
-          lote: string | null
-          proxima_dosis: string | null
-          vacuna: string
-          via: string | null
+          requirement_id: string
+          resolved_at: string | null
+          updated_at: string | null
         }
         Insert: {
+          alert_date?: string
+          alert_type: string
           animal_id: string
           cabaña_id: string
-          created_at?: string
-          dose_number?: number | null
-          dosis?: string | null
-          evento_id?: string | null
-          fecha: string
+          created_at?: string | null
+          days_overdue?: number | null
           id?: string
-          lote?: string | null
-          proxima_dosis?: string | null
-          vacuna: string
-          via?: string | null
+          requirement_id: string
+          resolved_at?: string | null
+          updated_at?: string | null
         }
         Update: {
+          alert_date?: string
+          alert_type?: string
           animal_id?: string
           cabaña_id?: string
-          created_at?: string
-          dose_number?: number | null
-          dosis?: string | null
-          evento_id?: string | null
-          fecha?: string
+          created_at?: string | null
+          days_overdue?: number | null
           id?: string
-          lote?: string | null
-          proxima_dosis?: string | null
-          vacuna?: string
-          via?: string | null
+          requirement_id?: string
+          resolved_at?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "vacunas_historial_evento_id_fkey"
-            columns: ["evento_id"]
+            foreignKeyName: "vaccination_alerts_animal_id_fkey"
+            columns: ["animal_id"]
             isOneToOne: false
-            referencedRelation: "eventos"
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vaccination_alerts_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vaccination_alerts_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "cabaña_vaccination_requirements"
             referencedColumns: ["id"]
           },
         ]
@@ -2801,25 +2506,7 @@ export type Database = {
       }
     }
     Views: {
-      vaccination_history_unified: {
-        Row: {
-          animal_id: string | null
-          cabaña_id: string | null
-          created_at: string | null
-          dose_number: number | null
-          dosis: string | null
-          fecha: string | null
-          id: string | null
-          is_complete: boolean | null
-          lote: string | null
-          proxima_dosis: string | null
-          requirement_id: string | null
-          source_table: string | null
-          vacuna: string | null
-          via: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       activate_subscription: {
@@ -2964,28 +2651,6 @@ export type Database = {
         }
         Returns: string
       }
-      compile_rules_for_ranch: {
-        Args: { _cabana_id: string }
-        Returns: {
-          booster_interval_days: number
-          campaign_windows: Json
-          category: string
-          coverage_window_days: number
-          mandatory: boolean
-          max_age_days: number
-          min_age_days: number
-          notes: string
-          one_time: boolean
-          pregnancy_ok: boolean
-          sex: string
-          vaccine_code: string
-          vaccine_name: string
-        }[]
-      }
-      compute_due_vaccines_for_animal: {
-        Args: { _animal_id: string }
-        Returns: Json
-      }
       create_animal_sale: {
         Args: {
           _amount: number
@@ -3071,19 +2736,6 @@ export type Database = {
           total_pregnancies: number
           total_services: number
           total_successful_births: number
-        }[]
-      }
-      get_animal_vaccination_status: {
-        Args: { _animal_id: string; _cabaña_id: string }
-        Returns: {
-          days_overdue: number
-          is_mandatory: boolean
-          last_vaccination_date: string
-          next_due_date: string
-          requirement_id: string
-          status: string
-          vaccine_name: string
-          vaccine_type: string
         }[]
       }
       get_animal_weight_history: {
