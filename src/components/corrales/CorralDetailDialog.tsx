@@ -74,13 +74,13 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const currentCorralKPI = kpis.find(kpi => kpi.corral_id === corralId);
 
   useEffect(() => {
-    if (open && corralId && currentUser && !loading) {
+    if (open && corralId && currentUser) {
       console.log('📋 [CorralDetail] Opening with corralId:', corralId);
       console.log('📋 [CorralDetail] Available requirements:', requirements);
       console.log('📋 [CorralDetail] Requirements count:', requirements.length);
       fetchCorralData();
     }
-  }, [open, corralId, currentUser, requirements, loading]);
+  }, [open, corralId, currentUser, requirements]);
 
   // Subscribe to vaccination changes in real-time
   useEffect(() => {
