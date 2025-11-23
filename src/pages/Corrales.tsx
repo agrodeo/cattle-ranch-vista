@@ -442,7 +442,7 @@ export default function Corrales() {
                             <div className="flex items-center gap-3">
                               {/* Quick metrics */}
                               <div className="hidden sm:flex items-center gap-2">
-                                {corralKPI?.vaccination_percentage !== undefined && (
+                                {corralKPI?.vaccination_percentage !== undefined && corralKPI.vaccination_percentage > 0 && (
                                   <Badge 
                                     variant={
                                       corralKPI.vaccination_status === 'excellent' ? 'default' : 
