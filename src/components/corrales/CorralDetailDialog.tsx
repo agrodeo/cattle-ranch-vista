@@ -110,10 +110,17 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
       // Calculate vaccination details for all configured vaccines
       if (animalsData && animalsData.length > 0) {
+        // Initialize vacDetails with ALL configured vaccines first
         const vacDetails: Record<string, { vaccinated: number; total: number }> = {};
+        requirements.forEach(req => {
+          vacDetails[req.vaccine_code] = { 
+            vaccinated: 0, 
+            total: animalsData.length 
+          };
+        });
         
+        // Then update vaccinated counts based on actual vaccination records
         for (const animal of animalsData) {
-          // Get vaccination status for this animal
           const { data: statusData } = await supabase
             .rpc('calculate_vaccination_status' as any, {
               _animal_id: animal.id,
@@ -122,11 +129,11 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
           if (statusData) {
             for (const status of statusData) {
-              if (!vacDetails[status.vaccine_code]) {
-                vacDetails[status.vaccine_code] = { vaccinated: 0, total: animalsData.length };
-              }
-              if (status.status === 'completa' || status.compliance_percentage > 0) {
-                vacDetails[status.vaccine_code].vaccinated += 1;
+              // Only update if this vaccine is in our configured requirements
+              if (vacDetails[status.vaccine_code]) {
+                if (status.status === 'completa' || status.compliance_percentage > 0) {
+                  vacDetails[status.vaccine_code].vaccinated += 1;
+                }
               }
             }
           }
