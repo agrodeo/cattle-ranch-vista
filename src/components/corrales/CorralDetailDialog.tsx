@@ -18,6 +18,7 @@ import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 import { useToast } from "@/hooks/use-toast";
 import { AnimalAssignmentDialog } from "./AnimalAssignmentDialog";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
+import { useCorralVaccinationMetrics } from "@/hooks/useCorralVaccinationMetrics";
 import { 
   analyzeCorralConsanguinity, 
   RelationshipRisk, 
@@ -51,6 +52,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const { currentUser } = useSupabaseAuth();
   const { kpis } = useCorralKPIs();
   const { requirements } = useVaccinationRequirements();
+  const { metrics: vaccinationMetrics, loading: loadingVaccinationMetrics, fetchMetrics: refetchVaccinationMetrics } = useCorralVaccinationMetrics(corralId || undefined);
   const [loading, setLoading] = useState(true);
   const [corral, setCorral] = useState<any>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -90,8 +92,11 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
         },
         (payload) => {
           console.log('🔔 [CorralDetail] New vaccination recorded:', payload);
-          // Refresh corral data when a vaccination is recorded
+          // Refresh corral data and vaccination metrics when a vaccination is recorded
           fetchCorralData();
+          if (corralId) {
+            refetchVaccinationMetrics(corralId);
+          }
         }
       )
       .subscribe();
@@ -315,64 +320,65 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
             </div>
           )}
 
-          {/* Vaccination Details - All configured vaccines */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Syringe className="h-5 w-5" />
-                Detalle de Vacunación
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {requirements.length > 0 ? (
-                <div className="space-y-3">
-                  {requirements.map((req) => {
-                    const detail = vaccinationDetails[req.vaccine_code] || { vaccinated: 0, total: animals.length };
-                    const percentage = detail.total > 0 ? Math.round((detail.vaccinated / detail.total) * 100) : 0;
-                    
-                    return (
-                      <div key={req.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{req.vaccine_name}</span>
-                            {req.is_mandatory && (
-                              <Badge variant="secondary" className="text-xs">Obligatoria</Badge>
-                            )}
-                          </div>
-                          {req.description && (
-                            <p className="text-xs text-muted-foreground mt-1">{req.description}</p>
-                          )}
-                          {req.sex_restriction && req.sex_restriction !== 'Ambos' && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Aplica a: {req.sex_restriction}
-                            </p>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="text-right">
-                            <p className="text-sm font-semibold">
-                              {detail.vaccinated} / {detail.total}
-                            </p>
-                            <p className="text-xs text-muted-foreground">animales</p>
-                          </div>
-                          <Badge 
-                            variant={percentage >= 80 ? "default" : percentage >= 50 ? "secondary" : "destructive"}
-                            className="min-w-[60px] justify-center"
-                          >
-                            {percentage}%
-                          </Badge>
-                        </div>
+          {/* Vaccination Metrics Summary */}
+          {vaccinationMetrics && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Syringe className="h-5 w-5" />
+                  Métricas de Vacunación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-3 bg-muted/30 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {vaccinationMetrics.overall_compliance_percentage.toFixed(0)}%
                       </div>
-                    );
-                  })}
+                      <div className="text-xs text-muted-foreground">Cumplimiento General</div>
+                    </div>
+                    <div className="p-3 bg-muted/30 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {vaccinationMetrics.mandatory_compliance_percentage.toFixed(0)}%
+                      </div>
+                      <div className="text-xs text-muted-foreground">Vacunas Obligatorias</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded">
+                      <div className="font-semibold text-green-700 dark:text-green-400">
+                        {vaccinationMetrics.animals_fully_compliant}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Completos</div>
+                    </div>
+                    <div className="p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded">
+                      <div className="font-semibold text-yellow-700 dark:text-yellow-400">
+                        {vaccinationMetrics.animals_partially_compliant}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Parciales</div>
+                    </div>
+                    <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded">
+                      <div className="font-semibold text-red-700 dark:text-red-400">
+                        {vaccinationMetrics.animals_non_compliant}
+                      </div>
+                      <div className="text-xs text-muted-foreground">Incompletos</div>
+                    </div>
+                  </div>
+
+                  {vaccinationMetrics.animals_with_overdue > 0 && (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm text-red-700 dark:text-red-400">
+                        {vaccinationMetrics.animals_with_overdue} animal(es) con vacunas vencidas
+                      </span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No hay vacunas configuradas. Configura las vacunas en Configuración.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Consanguinity Alerts */}
           {filteredRisks.length > 0 && (
