@@ -72,6 +72,36 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     }
   }, [open, corralId, currentUser, requirements, loading]);
 
+  // Subscribe to vaccination changes in real-time
+  useEffect(() => {
+    if (!open || !corralId || !userCabañaId) return;
+
+    console.log('🔔 [CorralDetail] Subscribing to vaccination updates for cabaña:', userCabañaId);
+    
+    const channel = supabase
+      .channel('corral-vaccination-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'animal_vaccines',
+          filter: `cabaña_id=eq.${userCabañaId}`
+        },
+        (payload) => {
+          console.log('🔔 [CorralDetail] New vaccination recorded:', payload);
+          // Refresh corral data when a vaccination is recorded
+          fetchCorralData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔕 [CorralDetail] Unsubscribing from vaccination updates');
+      supabase.removeChannel(channel);
+    };
+  }, [open, corralId, userCabañaId]);
+
   const fetchCorralData = async () => {
     if (!corralId) return;
     
