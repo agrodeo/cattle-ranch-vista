@@ -605,6 +605,45 @@ export default function Corrales() {
 
                           {/* Details Sections */}
                           <div className="space-y-3">
+                            {/* Vaccination Details */}
+                            {corralKPI?.vaccination_percentage !== undefined && (
+                              <div className="bg-muted/30 rounded-lg">
+                                <div className="p-3 border-b border-muted/50">
+                                  <div className="flex items-center gap-2">
+                                    <Syringe className="h-4 w-4 text-primary" />
+                                    <span className="font-medium">Detalles de Vacunación</span>
+                                  </div>
+                                </div>
+                                <div className="p-3 space-y-2 text-sm">
+                                  <div className="flex items-center justify-between">
+                                    <span>Cumplimiento General</span>
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-20 bg-muted rounded-full h-1.5">
+                                        <div 
+                                          className={`h-1.5 rounded-full ${
+                                            corralKPI.vaccination_percentage >= 80 ? 'bg-emerald-500' :
+                                            corralKPI.vaccination_percentage >= 60 ? 'bg-blue-500' :
+                                            corralKPI.vaccination_percentage >= 40 ? 'bg-amber-500' :
+                                            'bg-destructive'
+                                          }`}
+                                          style={{ width: `${corralKPI.vaccination_percentage}%` }}
+                                        ></div>
+                                      </div>
+                                      <span className="text-xs">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
+                                    </div>
+                                  </div>
+                                  <span className="text-xs text-muted-foreground block">
+                                    {corralKPI.vaccination_percentage.toFixed(1)}% de cumplimiento de vacunación
+                                  </span>
+                                  {corralKPI.vaccination_alerts > 0 && (
+                                    <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500 mt-2">
+                                      <AlertTriangle className="h-3 w-3" />
+                                      <span>{corralKPI.vaccination_alerts} {corralKPI.vaccination_alerts === 1 ? 'animal requiere' : 'animales requieren'} atención</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
                             {/* Pregnancy Rate Details */}
                             {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
