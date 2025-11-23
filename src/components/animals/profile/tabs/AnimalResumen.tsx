@@ -10,11 +10,10 @@ import {
   Baby, 
   AlertTriangle, 
   Calendar,
-  CheckCircle,
-  XCircle
+  CheckCircle
 } from "lucide-react";
 import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHistory";
-import { useVaccinationAlerts } from "@/hooks/useVaccinationAlerts";
+import { useAnimalVaccinations } from "@/hooks/useAnimalVaccinations";
 import { calculateAge } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -28,7 +27,7 @@ interface AnimalResumenProps {
 
 export function AnimalResumen({ animal }: AnimalResumenProps) {
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
-  const { alerts: vaccinationAlerts, loading: vaccinationLoading } = useVaccinationAlerts(animal.id);
+  const { status: vaccinationStatus, loading: vaccinationLoading } = useAnimalVaccinations(animal.id);
   const [reproductiveData, setReproductiveData] = useState<{
     pregnancyPercentage: number;
     calvingPercentage: number;
@@ -73,46 +72,27 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
     fetchReproductiveData();
   }, [animal.id, animal.sex]);
 
-  const getVaccinationStatus = () => {
-    if (vaccinationLoading) return { status: 'Cargando...', color: 'text-muted-foreground', nextDate: null };
+  const getVaccinationSummary = () => {
+    if (vaccinationLoading) return { text: 'Cargando...', color: 'text-muted-foreground' };
     
-    if (!vaccinationAlerts || vaccinationAlerts.length === 0) {
-      return { status: 'Sin esquema', color: 'text-muted-foreground', nextDate: null };
+    if (!vaccinationStatus || vaccinationStatus.length === 0) {
+      return { text: 'Sin esquema', color: 'text-muted-foreground' };
     }
 
-    const overdueAlerts = vaccinationAlerts.filter(alert => alert.status === 'overdue');
-    const missingAlerts = vaccinationAlerts.filter(alert => alert.status === 'missing');
-    const dueSoonAlerts = vaccinationAlerts.filter(alert => alert.status === 'due_soon');
+    const overdue = vaccinationStatus.filter(v => v.status === 'vencida').length;
+    const pending = vaccinationStatus.filter(v => v.status === 'pendiente').length;
+    const complete = vaccinationStatus.filter(v => v.status === 'completa').length;
 
-    if (overdueAlerts.length > 0) {
-      return { 
-        status: `${overdueAlerts.length} vencida${overdueAlerts.length > 1 ? 's' : ''}`, 
-        color: 'text-destructive',
-        nextDate: null
-      };
+    if (overdue > 0) {
+      return { text: `${overdue} vencida${overdue > 1 ? 's' : ''}`, color: 'text-destructive' };
     }
-
-    if (missingAlerts.length > 0) {
-      return { 
-        status: `${missingAlerts.length} faltante${missingAlerts.length > 1 ? 's' : ''}`, 
-        color: 'text-warning',
-        nextDate: null
-      };
+    if (pending > 0) {
+      return { text: `${pending} pendiente${pending > 1 ? 's' : ''}`, color: 'text-warning' };
     }
-
-    if (dueSoonAlerts.length > 0) {
-      const nextAlert = dueSoonAlerts[0];
-      return { 
-        status: 'Próximas', 
-        color: 'text-warning',
-        nextDate: nextAlert.next_due_date
-      };
-    }
-
-    return { status: 'Al día', color: 'text-success', nextDate: null };
+    return { text: 'Al día', color: 'text-success' };
   };
 
-  const vaccinationStatus = getVaccinationStatus();
+  const vaccinationSummary = getVaccinationSummary();
 
   return (
     <div className="space-y-6">
@@ -167,20 +147,12 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
             <Syringe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${vaccinationStatus.color}`}>
-              {vaccinationStatus.status}
+            <div className={`text-2xl font-bold ${vaccinationSummary.color}`}>
+              {vaccinationSummary.text}
             </div>
-            {vaccinationStatus.nextDate && (
-              <p className="text-xs text-muted-foreground">
-                Próxima: {format(new Date(vaccinationStatus.nextDate), 'dd/MM/yyyy', { locale: es })}
-              </p>
-            )}
-            {!vaccinationStatus.nextDate && vaccinationStatus.status !== 'Cargando...' && (
-              <p className="text-xs text-muted-foreground">
-                {vaccinationStatus.status === 'Sin esquema' ? 'No hay vacunas configuradas' : 
-                 vaccinationStatus.status === 'Al día' ? 'Todas las vacunas al día' : 'Revisar calendario'}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              {vaccinationStatus.length} vacunas configuradas
+            </p>
           </CardContent>
         </Card>
 
@@ -246,61 +218,15 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
       <AnimalActivitiesHistory animalId={animal.id} animalName={animal.name || animal.id_tag} />
 
       {/* Alertas */}
-      <div className="space-y-3">
-        <h3 className="text-lg font-medium flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4" />
-          Alertas y Avisos
-        </h3>
-
-        {/* Alertas de vacunación */}
-        {vaccinationAlerts && vaccinationAlerts.length > 0 && (
-          <>
-            {vaccinationAlerts
-              .filter(alert => alert.status === 'overdue' || alert.status === 'missing' || alert.status === 'due_soon')
-              .map((alert, index) => (
-                <Alert key={index} variant={alert.status === 'overdue' ? 'destructive' : 'default'}>
-                  {alert.status === 'overdue' ? <XCircle className="h-4 w-4" /> : 
-                   alert.status === 'missing' ? <AlertTriangle className="h-4 w-4" /> :
-                   <Calendar className="h-4 w-4" />}
-                  <AlertDescription>
-                    <strong>
-                      {alert.status === 'overdue' ? 'Vacuna vencida:' :
-                       alert.status === 'missing' ? 'Vacuna faltante:' :
-                       'Vacuna próxima:'}
-                    </strong> {alert.vaccine_name}
-                    {alert.status === 'overdue' && alert.days_since_last && 
-                      ` - Vencida hace ${alert.days_since_last} días`}
-                    {alert.status === 'due_soon' && alert.days_until_due && 
-                      ` - Vence en ${alert.days_until_due} días`}
-                    {alert.description && `. ${alert.description}`}
-                  </AlertDescription>
-                </Alert>
-              ))
-            }
-          </>
-        )}
-
-        {/* Si no hay alertas de vacunación, mostrar mensaje informativo */}
-        {(!vaccinationAlerts || vaccinationAlerts.length === 0) && !vaccinationLoading && (
-          <Alert>
-            <Syringe className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Sin esquema de vacunación:</strong> No hay vacunas configuradas para este animal. 
-              Considere configurar un plan de vacunación apropiado.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {age && age < 12 && (
-          <Alert>
-            <Calendar className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Animal joven:</strong> Menor a 12 meses. 
-              Seguimiento especial requerido.
-            </AlertDescription>
-          </Alert>
-        )}
-      </div>
+      {age && age < 12 && (
+        <Alert>
+          <Calendar className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Animal joven:</strong> Menor a 12 meses. 
+            Seguimiento especial requerido.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

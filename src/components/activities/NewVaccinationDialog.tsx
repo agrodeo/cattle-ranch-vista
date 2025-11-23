@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +11,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { VaccineSelector } from "./VaccineSelector";
-import { useVaccinationLogic } from "@/hooks/useVaccinationLogic";
 
 interface VaccinationDialogProps {
   open?: boolean;
@@ -35,12 +34,10 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
   const [lote, setLote] = useState("");
   const [dosis, setDosis] = useState("");
   const [via, setVia] = useState("");
-  const [proximaDosis, setProximaDosis] = useState<Date | undefined>();
   const [notas, setNotas] = useState("");
 
   const { toast } = useToast();
-  const { getEligibleAnimals, createEvent } = useActivities();
-  const { recordVaccination, getNextDoseInfo, requirements } = useVaccinationLogic();
+  const { getEligibleAnimals } = useActivities();
 
   useEffect(() => {
     if (externalOpen !== undefined) {
@@ -109,49 +106,34 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
 
       setLoading(true);
 
-      // Check if this is a requirement-based vaccine or custom
-      const requirement = requirements.find(r => r.id === vacuna);
-      
-      if (requirement) {
-        // Use the new vaccination logic for requirement-based vaccines
-        await recordVaccination(
-          selectedAnimals,
-          vacuna,
-          fecha.toISOString().split('T')[0],
-          lote.trim() || undefined,
-          dosis.trim() || undefined,
-          via.trim() || undefined
-        );
-      } else {
-        // Fallback to old system for custom vaccines
-        const event = await createEvent('VACUNACION', fecha, notas);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
 
-        const { error } = await supabase
-          .from("vacunaciones")
-          .insert({
-            evento_id: event.id,
-            vacuna: vacuna.trim(),
-            lote: lote.trim() || null,
-            dosis: dosis.trim() || null,
-            via: via.trim() || null,
-            proxima_dosis: proximaDosis ? proximaDosis.toISOString().split('T')[0] : null,
-            animales_ids: selectedAnimals,
-          });
+      // Record vaccination for each selected animal using the new system
+      const vaccinationPromises = selectedAnimals.map(animalId =>
+        supabase.rpc('record_animal_vaccination', {
+          _animal_id: animalId,
+          _requirement_id: vacuna, // Can be requirement ID or custom vaccine name
+          _date: fecha.toISOString().split('T')[0],
+          _lot: lote.trim() || null,
+          _dose: dosis.trim() || null,
+          _route: via.trim() || null,
+          _created_by: user.id
+        })
+      );
 
-        if (error) throw error;
+      await Promise.all(vaccinationPromises);
 
-        toast({
-          title: "Vacunación registrada",
-          description: `Se vacunaron ${selectedAnimals.length} animales`,
-        });
-      }
+      toast({
+        title: "Vacunación registrada",
+        description: `Se vacunaron ${selectedAnimals.length} animales`,
+      });
 
       // Reset form
       setVacuna("");
       setLote("");
       setDosis("");
       setVia("");
-      setProximaDosis(undefined);
       setNotas("");
       setSelectedAnimals([]);
       setOpen(false);
@@ -250,27 +232,6 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                 onChange={(e) => setVia(e.target.value)}
                 placeholder="Intramuscular, subcutánea, etc."
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Próxima Dosis</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {proximaDosis ? format(proximaDosis, "PPP", { locale: es }) : "Seleccionar fecha"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={proximaDosis}
-                    onSelect={setProximaDosis}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
             </div>
           </div>
 
