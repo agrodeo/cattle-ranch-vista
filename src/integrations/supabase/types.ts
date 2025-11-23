@@ -2627,6 +2627,7 @@ export type Database = {
           status: string
           vaccine_code: string
           vaccine_name: string
+          vaccine_type: string
         }[]
       }
       can_add_animals: { Args: { user_uuid: string }; Returns: boolean }
@@ -3087,18 +3088,30 @@ export type Database = {
             }
             Returns: string
           }
-      record_animal_vaccination: {
-        Args: {
-          _animal_id: string
-          _created_by?: string
-          _date: string
-          _dose?: string
-          _lot?: string
-          _requirement_id: string
-          _route?: string
-        }
-        Returns: string
-      }
+      record_animal_vaccination:
+        | {
+            Args: {
+              _animal_id: string
+              _date: string
+              _dose?: string
+              _lot?: string
+              _requirement_id: string
+              _route?: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              _animal_id: string
+              _created_by?: string
+              _date: string
+              _dose?: string
+              _lot?: string
+              _requirement_id: string
+              _route?: string
+            }
+            Returns: string
+          }
       record_vaccination: {
         Args: {
           _animal_id: string
