@@ -186,6 +186,35 @@ export default function Corrales() {
     fetchCorrales();
   }, [currentUser]);
 
+  // Subscribe to vaccination changes in real-time to update KPIs
+  useEffect(() => {
+    if (!currentUser?.cabañaId) return;
+
+    console.log('🔔 [Corrales] Subscribing to vaccination updates');
+    
+    const channel = supabase
+      .channel('corrales-vaccination-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'animal_vaccines'
+        },
+        (payload) => {
+          console.log('🔔 [Corrales] Vaccination update received, refreshing KPIs');
+          // Refresh corrales data to update metrics
+          fetchCorrales();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('🔕 [Corrales] Unsubscribing from vaccination updates');
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser?.cabañaId]);
+
   const handleCreateSuccess = () => {
     fetchCorrales();
     setCreateDialogOpen(false);

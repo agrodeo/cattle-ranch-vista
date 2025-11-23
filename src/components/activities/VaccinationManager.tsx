@@ -69,8 +69,8 @@ export function VaccinationManager() {
       await Promise.all(promises);
       
       toast({
-        title: "Vacunación registrada",
-        description: `Se registró la vacunación para ${selectedAnimals.length} animales`
+        title: "✅ Vacunación registrada",
+        description: `Se registró la vacunación para ${selectedAnimals.length} animales. Las métricas se actualizarán automáticamente.`
       });
       
       setSelectedAnimals([]);
