@@ -11,7 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { AlertTriangle, Users, MapPin, Calendar, Filter, Move, Info, Syringe } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { AlertTriangle, Users, MapPin, Calendar, Filter, Move, Info, Syringe, ChevronDown, ChevronRight } from "lucide-react";
 import { CorralHealthCard } from "./CorralHealthCard";
 import { CorralProductionCard } from "./CorralProductionCard";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
@@ -61,6 +62,13 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [userCabañaId, setUserCabañaId] = useState<string>('');
   const [vaccinationDetails, setVaccinationDetails] = useState<Record<string, { vaccinated: number; total: number }>>({});
+  const [vaccinationAlertsExpanded, setVaccinationAlertsExpanded] = useState(false);
+  const [animalsWithAlerts, setAnimalsWithAlerts] = useState<Array<{
+    animal_id: string;
+    animal_name: string;
+    animal_tag: string;
+    alerts: Array<{ vaccine_name: string; status: string }>;
+  }>>([]);
   
   // Get current corral KPIs
   const currentCorralKPI = kpis.find(kpi => kpi.corral_id === corralId);
@@ -185,6 +193,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
         console.log('✅ [fetchCorralData] Final vacDetails:', vacDetails);
         setVaccinationDetails(vacDetails);
 
+        // Fetch animals with vaccination alerts
+        await fetchAnimalsWithAlerts(animalsData, currentUser.cabañaId);
+
         // Perform comprehensive consanguinity analysis
         const risks = await analyzeCorralConsanguinity(
           animalsData as ConsanguinityAnimal[], 
@@ -194,6 +205,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       } else {
         setRelationshipRisks([]);
         setVaccinationDetails({});
+        setAnimalsWithAlerts([]);
       }
 
     } catch (error) {
@@ -205,6 +217,53 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAnimalsWithAlerts = async (animalsData: Animal[], cabañaId: string) => {
+    try {
+      const alertsData: Array<{
+        animal_id: string;
+        animal_name: string;
+        animal_tag: string;
+        alerts: Array<{ vaccine_name: string; status: string }>;
+      }> = [];
+
+      for (const animal of animalsData) {
+        const { data: statusData } = await supabase
+          .rpc('calculate_vaccination_status' as any, {
+            _animal_id: animal.id,
+            _cabana_id: cabañaId
+          });
+
+        if (statusData) {
+          const animalAlerts = statusData
+            .filter((status: any) => 
+              status.status === 'vencida' || 
+              status.status === 'pendiente' ||
+              status.compliance_percentage < 100
+            )
+            .map((status: any) => ({
+              vaccine_name: status.vaccine_name,
+              status: status.status === 'vencida' ? 'Vencida' : 
+                      status.status === 'pendiente' ? 'Pendiente' : 
+                      `${status.compliance_percentage.toFixed(0)}% completada`
+            }));
+
+          if (animalAlerts.length > 0) {
+            alertsData.push({
+              animal_id: animal.id,
+              animal_name: animal.name || animal.id_tag || 'Sin nombre',
+              animal_tag: animal.id_tag || 'Sin caravana',
+              alerts: animalAlerts
+            });
+          }
+        }
+      }
+
+      setAnimalsWithAlerts(alertsData);
+    } catch (error) {
+      console.error("Error fetching animals with alerts:", error);
     }
   };
 
@@ -368,12 +427,53 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                   </div>
 
                   {vaccinationMetrics.animals_with_overdue > 0 && (
-                    <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg">
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
-                      <span className="text-sm text-red-700 dark:text-red-400">
-                        {vaccinationMetrics.animals_with_overdue} animal(es) con vacunas vencidas
-                      </span>
-                    </div>
+                    <Collapsible 
+                      open={vaccinationAlertsExpanded} 
+                      onOpenChange={setVaccinationAlertsExpanded}
+                    >
+                      <CollapsibleTrigger asChild>
+                        <button className="w-full flex items-center justify-between gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-red-600" />
+                            <span className="text-sm text-red-700 dark:text-red-400">
+                              {vaccinationMetrics.animals_with_overdue} animal(es) con vacunas vencidas
+                            </span>
+                          </div>
+                          {vaccinationAlertsExpanded ? (
+                            <ChevronDown className="h-4 w-4 text-red-600" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4 text-red-600" />
+                          )}
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-2 space-y-2">
+                        {animalsWithAlerts.map((animalAlert) => (
+                          <div 
+                            key={animalAlert.animal_id}
+                            className="p-3 bg-background border border-red-200 dark:border-red-900 rounded-lg"
+                          >
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <p className="font-medium text-sm">{animalAlert.animal_name}</p>
+                                <p className="text-xs text-muted-foreground">{animalAlert.animal_tag}</p>
+                              </div>
+                              <Badge variant="destructive" className="text-xs">
+                                {animalAlert.alerts.length} alerta(s)
+                              </Badge>
+                            </div>
+                            <div className="space-y-1">
+                              {animalAlert.alerts.map((alert, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-xs">
+                                  <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                  <span className="font-medium">{alert.vaccine_name}:</span>
+                                  <span className="text-muted-foreground">{alert.status}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
                   )}
                 </div>
               </CardContent>
