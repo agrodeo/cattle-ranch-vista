@@ -65,9 +65,11 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
   useEffect(() => {
     if (open && corralId && currentUser) {
+      console.log('📋 [CorralDetail] Opening with corralId:', corralId);
+      console.log('📋 [CorralDetail] Available requirements:', requirements);
       fetchCorralData();
     }
-  }, [open, corralId, currentUser]);
+  }, [open, corralId, currentUser, requirements]);
 
   const fetchCorralData = async () => {
     if (!corralId) return;
@@ -268,15 +270,15 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
           )}
 
           {/* Vaccination Details - All configured vaccines */}
-          {requirements.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Syringe className="h-5 w-5" />
-                  Detalle de Vacunación
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Syringe className="h-5 w-5" />
+                Detalle de Vacunación
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {requirements.length > 0 ? (
                 <div className="space-y-3">
                   {requirements.map((req) => {
                     const detail = vaccinationDetails[req.vaccine_code] || { vaccinated: 0, total: animals.length };
@@ -317,15 +319,14 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                       </div>
                     );
                   })}
-                  {requirements.length === 0 && (
-                    <p className="text-center text-muted-foreground py-4">
-                      No hay vacunas configuradas. Configura las vacunas en Configuración.
-                    </p>
-                  )}
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <p className="text-center text-muted-foreground py-4">
+                  No hay vacunas configuradas. Configura las vacunas en Configuración.
+                </p>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Consanguinity Alerts */}
           {filteredRisks.length > 0 && (
