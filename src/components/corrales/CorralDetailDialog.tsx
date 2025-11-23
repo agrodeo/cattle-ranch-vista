@@ -64,16 +64,19 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const currentCorralKPI = kpis.find(kpi => kpi.corral_id === corralId);
 
   useEffect(() => {
-    if (open && corralId && currentUser) {
+    if (open && corralId && currentUser && !loading) {
       console.log('📋 [CorralDetail] Opening with corralId:', corralId);
       console.log('📋 [CorralDetail] Available requirements:', requirements);
+      console.log('📋 [CorralDetail] Requirements count:', requirements.length);
       fetchCorralData();
     }
-  }, [open, corralId, currentUser, requirements]);
+  }, [open, corralId, currentUser, requirements, loading]);
 
   const fetchCorralData = async () => {
     if (!corralId) return;
-
+    
+    console.log('🔄 [fetchCorralData] Starting fetch with requirements:', requirements.length);
+    
     try {
       setLoading(true);
 
@@ -112,12 +115,17 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       if (animalsData && animalsData.length > 0) {
         // Initialize vacDetails with ALL configured vaccines first
         const vacDetails: Record<string, { vaccinated: number; total: number }> = {};
+        
+        console.log('💉 [fetchCorralData] Initializing with requirements:', requirements);
         requirements.forEach(req => {
+          console.log('  - Adding vaccine:', req.vaccine_name, 'code:', req.vaccine_code);
           vacDetails[req.vaccine_code] = { 
             vaccinated: 0, 
             total: animalsData.length 
           };
         });
+        
+        console.log('📊 [fetchCorralData] VacDetails after init:', vacDetails);
         
         // Then update vaccinated counts based on actual vaccination records
         for (const animal of animalsData) {
@@ -139,6 +147,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
           }
         }
         
+        console.log('✅ [fetchCorralData] Final vacDetails:', vacDetails);
         setVaccinationDetails(vacDetails);
 
         // Perform comprehensive consanguinity analysis
