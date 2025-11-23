@@ -11,12 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { AlertTriangle, Users, MapPin, Calendar, Filter, Move, Info } from "lucide-react";
+import { AlertTriangle, Users, MapPin, Calendar, Filter, Move, Info, Syringe } from "lucide-react";
 import { CorralHealthCard } from "./CorralHealthCard";
 import { CorralProductionCard } from "./CorralProductionCard";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 import { useToast } from "@/hooks/use-toast";
 import { AnimalAssignmentDialog } from "./AnimalAssignmentDialog";
+import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { 
   analyzeCorralConsanguinity, 
   RelationshipRisk, 
@@ -49,6 +50,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
   const { kpis } = useCorralKPIs();
+  const { requirements } = useVaccinationRequirements();
   const [loading, setLoading] = useState(true);
   const [corral, setCorral] = useState<any>(null);
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -56,6 +58,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   const [severityFilter, setSeverityFilter] = useState<'all' | 'severe' | 'medium' | 'low'>('all');
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [userCabañaId, setUserCabañaId] = useState<string>('');
+  const [vaccinationDetails, setVaccinationDetails] = useState<Record<string, { vaccinated: number; total: number }>>({});
   
   // Get current corral KPIs
   const currentCorralKPI = kpis.find(kpi => kpi.corral_id === corralId);
@@ -103,8 +106,33 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       setCorral(corralData);
       setAnimals(animalsData || []);
 
-      // Perform comprehensive consanguinity analysis
+      // Calculate vaccination details for all configured vaccines
       if (animalsData && animalsData.length > 0) {
+        const vacDetails: Record<string, { vaccinated: number; total: number }> = {};
+        
+        for (const animal of animalsData) {
+          // Get vaccination status for this animal
+          const { data: statusData } = await supabase
+            .rpc('calculate_vaccination_status' as any, {
+              _animal_id: animal.id,
+              _cabana_id: currentUser.cabañaId
+            });
+
+          if (statusData) {
+            for (const status of statusData) {
+              if (!vacDetails[status.vaccine_code]) {
+                vacDetails[status.vaccine_code] = { vaccinated: 0, total: animalsData.length };
+              }
+              if (status.status === 'completa' || status.compliance_percentage > 0) {
+                vacDetails[status.vaccine_code].vaccinated += 1;
+              }
+            }
+          }
+        }
+        
+        setVaccinationDetails(vacDetails);
+
+        // Perform comprehensive consanguinity analysis
         const risks = await analyzeCorralConsanguinity(
           animalsData as ConsanguinityAnimal[], 
           currentUser.cabañaId
@@ -112,6 +140,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
         setRelationshipRisks(risks);
       } else {
         setRelationshipRisks([]);
+        setVaccinationDetails({});
       }
 
     } catch (error) {
@@ -236,6 +265,66 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
               <CorralHealthCard corral={currentCorralKPI} />
               <CorralProductionCard corral={currentCorralKPI} />
             </div>
+          )}
+
+          {/* Vaccination Details - All configured vaccines */}
+          {requirements.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Syringe className="h-5 w-5" />
+                  Detalle de Vacunación
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {requirements.map((req) => {
+                    const detail = vaccinationDetails[req.vaccine_code] || { vaccinated: 0, total: animals.length };
+                    const percentage = detail.total > 0 ? Math.round((detail.vaccinated / detail.total) * 100) : 0;
+                    
+                    return (
+                      <div key={req.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{req.vaccine_name}</span>
+                            {req.is_mandatory && (
+                              <Badge variant="secondary" className="text-xs">Obligatoria</Badge>
+                            )}
+                          </div>
+                          {req.description && (
+                            <p className="text-xs text-muted-foreground mt-1">{req.description}</p>
+                          )}
+                          {req.sex_restriction && req.sex_restriction !== 'Ambos' && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Aplica a: {req.sex_restriction}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="text-sm font-semibold">
+                              {detail.vaccinated} / {detail.total}
+                            </p>
+                            <p className="text-xs text-muted-foreground">animales</p>
+                          </div>
+                          <Badge 
+                            variant={percentage >= 80 ? "default" : percentage >= 50 ? "secondary" : "destructive"}
+                            className="min-w-[60px] justify-center"
+                          >
+                            {percentage}%
+                          </Badge>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {requirements.length === 0 && (
+                    <p className="text-center text-muted-foreground py-4">
+                      No hay vacunas configuradas. Configura las vacunas en Configuración.
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {/* Consanguinity Alerts */}
