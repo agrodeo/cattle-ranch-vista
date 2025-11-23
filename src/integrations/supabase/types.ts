@@ -3182,6 +3182,8 @@ export type Database = {
           male_count: number
           pregnancy_rate: number
           recent_weighings_count: number
+          total_vaccinations_given: number
+          total_vaccinations_needed: number
           vaccination_alerts: number
           vaccination_percentage: number
           vaccination_status: string
