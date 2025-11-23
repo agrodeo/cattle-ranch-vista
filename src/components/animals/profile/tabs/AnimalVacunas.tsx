@@ -330,7 +330,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
             </div>
-          ) : vaccinations.length === 0 ? (
+          ) : history.length === 0 ? (
             <div className="text-center py-8">
               <Syringe className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-muted-foreground">
@@ -349,32 +349,32 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {vaccinations.map((vaccination) => (
+                {history.map((vaccination) => (
                   <TableRow key={vaccination.id}>
                     <TableCell className="font-medium">
-                      {vaccination.vacuna}
+                      {vaccination.vaccine_name}
                     </TableCell>
                     <TableCell>
-                      {format(new Date(vaccination.fecha), 'dd/MM/yyyy', { locale: es })}
+                      {format(new Date(vaccination.date), 'dd/MM/yyyy', { locale: es })}
                     </TableCell>
                     <TableCell>
                       <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                        {vaccination.lote || 'N/A'}
+                        {vaccination.lot || 'N/A'}
                       </code>
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div>{vaccination.dosis || 'N/A'}</div>
-                        <div className="text-muted-foreground">{vaccination.via || 'N/A'}</div>
+                        <div>{vaccination.dose || 'N/A'}</div>
+                        <div className="text-muted-foreground">{vaccination.route || 'N/A'}</div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {vaccination.proximaDosis ? (
+                      {vaccination.next_due ? (
                         <div>
                           <div className="text-sm">
-                            {format(new Date(vaccination.proximaDosis), 'dd/MM/yyyy', { locale: es })}
+                            {format(new Date(vaccination.next_due), 'dd/MM/yyyy', { locale: es })}
                           </div>
-                          {getStatusBadge(vaccination.proximaDosis)}
+                          {getStatusBadge(vaccination.next_due)}
                         </div>
                       ) : (
                         <Badge variant="outline" className="flex items-center gap-1 w-fit">

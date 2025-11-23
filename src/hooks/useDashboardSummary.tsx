@@ -383,15 +383,8 @@ export const useDashboardSummary = (): DashboardSummary => {
         const details: any = {};
         let animalCount = 0;
 
-        // Extract vaccination details
-        if (activity.vacunaciones && activity.vacunaciones.length > 0) {
-          const vac = activity.vacunaciones[0];
-          details.vacuna = vac.vacuna;
-          details.lote = vac.lote;
-          details.dosis = vac.dosis;
-          details.via = vac.via;
-          animalCount = vac.animales_ids?.length || 0;
-        }
+        // Vaccination details no longer from old vacunaciones table
+        // Now handled through animal_vaccines table with activities
 
         // Extract AI details
         if (activity.ia && activity.ia.length > 0) {

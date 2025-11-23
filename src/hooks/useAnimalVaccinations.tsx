@@ -42,19 +42,15 @@ export function useAnimalVaccinations(animalId: string | null) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('cabana_id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!profile?.cabana_id) throw new Error('No cabaña found');
+      // Use RPC to get cabana_id
+      const { data: cabanaId } = await supabase.rpc('get_current_user_cabana_id');
+      if (!cabanaId) throw new Error('No cabaña found');
 
       // Get vaccination status
       const { data: statusData, error: statusError } = await supabase
         .rpc('calculate_vaccination_status', {
           _animal_id: animalId,
-          _cabana_id: profile.cabana_id
+          _cabana_id: cabanaId
         });
 
       if (statusError) throw statusError;
