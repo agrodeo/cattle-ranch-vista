@@ -1,49 +1,19 @@
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Shield } from "lucide-react";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Shield, Settings } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 
 export function VaccinationDashboard() {
-  const { user } = useSupabaseAuth();
-  const [loading, setLoading] = useState(true);
-  const [herdSettings, setHerdSettings] = useState<any>(null);
-
-  useEffect(() => {
-    loadVaccinationData();
-  }, [user]);
-
-  const loadVaccinationData = async () => {
-    if (!user) return;
-    
-    try {
-      setLoading(true);
-      
-      // Use RPC to get cabana_id
-      const { data: cabanaId } = await supabase.rpc('get_current_user_cabana_id');
-      if (!cabanaId) return;
-      
-      const { data: settings } = await supabase
-        .from('cabañas')
-        .select('country_code, province_code')
-        .eq('id', cabanaId)
-        .single();
-      
-      setHerdSettings(settings);
-    } catch (error) {
-      console.error("Error loading vaccination data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { requirements, loading } = useVaccinationRequirements();
 
   if (loading) {
     return (
       <div className="space-y-6">
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Cargando datos de vacunación...</p>
+          <p className="mt-2 text-muted-foreground">Cargando configuración de vacunación...</p>
         </div>
       </div>
     );
@@ -51,22 +21,68 @@ export function VaccinationDashboard() {
 
   return (
     <div className="space-y-6">
-      <Alert>
-        <Shield className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Panel de Vacunación:</strong> Sistema configurado para {herdSettings?.country_code || 'Argentina'}
-          {herdSettings?.province_code && ` - ${herdSettings.province_code}`}
-        </AlertDescription>
-      </Alert>
+      {requirements.length === 0 ? (
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <div>
+              <strong>Sistema de Vacunación:</strong> No hay vacunas configuradas aún.
+              Configure los requisitos de vacunación para comenzar el seguimiento.
+            </div>
+            <Button asChild size="sm">
+              <Link to="/settings?tab=vaccines">
+                <Settings className="h-4 w-4 mr-2" />
+                Configurar
+              </Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : (
+        <Alert>
+          <Shield className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Sistema de Vacunación Activo:</strong> {requirements.length} vacuna(s) configurada(s).
+            Las métricas de cumplimiento se calculan automáticamente.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card>
         <CardHeader>
-          <CardTitle>Vacunación del Rodeo</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Vacunas Configuradas
+            <Button asChild size="sm" variant="outline">
+              <Link to="/settings?tab=vaccines">
+                <Settings className="h-4 w-4 mr-2" />
+                Gestionar
+              </Link>
+            </Button>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Configure los requisitos de vacunación en la sección de Configuración para ver métricas detalladas.
-          </p>
+          {requirements.length > 0 ? (
+            <div className="space-y-3">
+              {requirements.map(req => (
+                <div key={req.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                  <div>
+                    <div className="font-medium">{req.vaccine_name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {req.vaccine_type}
+                      {req.is_mandatory && " • Obligatoria"}
+                      {req.sex_restriction && ` • ${req.sex_restriction}`}
+                    </div>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {req.doses_required} dosis • Cada {req.frequency_months} meses
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-center py-8">
+              Configure los requisitos de vacunación en Configuración para comenzar el seguimiento del rodeo.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>
