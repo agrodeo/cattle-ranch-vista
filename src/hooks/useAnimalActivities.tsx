@@ -48,49 +48,41 @@ export function useAnimalActivities(animalId: string) {
         });
       }
 
-      // Fetch vaccination records (both old and new tables)
+      // Fetch vaccination records from animal_vaccines
       const { data: vaccinationData } = await supabase
         .from("animal_vaccines")
-        .select("*, vaccines(name)")
+        .select("*")
         .eq("animal_id", animalId)
         .order("date", { ascending: false });
 
       if (vaccinationData) {
+        // Get requirement names
+        const requirementIds = [...new Set(vaccinationData.map(v => v.requirement_id).filter(Boolean))];
+        let requirementMap = new Map<string, string>();
+        
+        if (requirementIds.length > 0) {
+          const { data: requirements } = await supabase
+            .from('cabaña_vaccination_requirements')
+            .select('id, vaccine_name')
+            .in('id', requirementIds);
+          
+          if (requirements) {
+            requirementMap = new Map(requirements.map(r => [r.id, r.vaccine_name]));
+          }
+        }
+
         vaccinationData.forEach(record => {
+          const vaccineName = (record.requirement_id && requirementMap.get(record.requirement_id)) || record.vaccine_code;
           allActivities.push({
             id: record.id,
             date: record.date,
             type: "vaccination",
-            description: `Vacunación - ${record.vaccines?.name || record.vaccine_code}`,
+            description: `Vacunación - ${vaccineName}`,
             details: {
-              vacuna: record.vaccines?.name || record.vaccine_code,
+              vacuna: vaccineName,
               lote: record.lot || "N/A",
               dosis: record.dose || "N/A",
               via: record.route || "N/A"
-            }
-          });
-        });
-      }
-
-      // Fetch old vaccination records for backward compatibility
-      const { data: oldVaccinationData } = await supabase
-        .from("vacunas_historial")
-        .select("*")
-        .eq("animal_id", animalId)
-        .order("fecha", { ascending: false });
-
-      if (oldVaccinationData) {
-        oldVaccinationData.forEach(record => {
-          allActivities.push({
-            id: record.id,
-            date: record.fecha,
-            type: "vaccination",
-            description: `Vacunación - ${record.vacuna}`,
-            details: {
-              vacuna: record.vacuna,
-              lote: record.lote || "N/A",
-              dosis: record.dosis || "N/A",
-              via: record.via || "N/A"
             }
           });
         });

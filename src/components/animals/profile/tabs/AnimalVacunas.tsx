@@ -14,8 +14,7 @@ import {
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useAnimalVaccinationStatus } from "@/hooks/useVaccinationRequirements";
-import { supabase } from "@/integrations/supabase/client";
-import { useState, useEffect } from "react";
+import { useAnimalVaccinations } from "@/hooks/useAnimalVaccinations";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface AnimalVacunasProps {
@@ -27,67 +26,7 @@ interface AnimalVacunasProps {
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
   const { status: vaccinationStatus, loading: statusLoading } = useAnimalVaccinationStatus(animal.id);
-  const [vaccinations, setVaccinations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchVaccinations = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch from new animal_vaccines table
-      const { data: newVaccinations, error: newError } = await supabase
-        .from('animal_vaccines')
-        .select(`
-          *,
-          vaccines(name)
-        `)
-        .eq('animal_id', animal.id)
-        .order('date', { ascending: false });
-
-      // Also fetch from old table for compatibility
-      const { data: oldVaccinations, error: oldError } = await supabase
-        .from('vacunas_historial')
-        .select('*')
-        .eq('animal_id', animal.id)
-        .order('fecha', { ascending: false });
-
-      // Merge and normalize data
-      const allVaccinations = [
-        ...(newVaccinations || []).map(v => ({
-          id: v.id,
-          vacuna: v.vaccines?.name || v.vaccine_code,
-          fecha: v.date,
-          lote: v.lot,
-          dosis: v.dose,
-          via: v.route,
-          proximaDosis: v.next_due,
-          source: 'new'
-        })),
-        ...(oldVaccinations || []).map(v => ({
-          id: v.id,
-          vacuna: v.vacuna,
-          fecha: v.fecha,
-          lote: v.lote,
-          dosis: v.dosis,
-          via: v.via,
-          proximaDosis: v.proxima_dosis,
-          source: 'old'
-        }))
-      ].sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-
-      setVaccinations(allVaccinations);
-
-
-    } catch (error) {
-      console.error("Error fetching vaccinations:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchVaccinations();
-  }, [animal.id]);
+  const { history, loading } = useAnimalVaccinations(animal.id);
 
   const calculateStatus = (nextDue: string | null) => {
     if (!nextDue) return { status: 'unique', days: 0 };
