@@ -432,7 +432,10 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                       onOpenChange={setVaccinationAlertsExpanded}
                     >
                       <CollapsibleTrigger asChild>
-                        <button className="w-full flex items-center justify-between gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors">
+                        <button 
+                          type="button"
+                          className="w-full flex items-center justify-between gap-2 p-3 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors"
+                        >
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-red-600" />
                             <span className="text-sm text-red-700 dark:text-red-400">
