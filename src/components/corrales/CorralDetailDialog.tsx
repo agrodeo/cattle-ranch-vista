@@ -335,7 +335,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] overflow-y-auto p-3 sm:p-6">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <MapPin className="h-5 w-5" />
@@ -343,9 +343,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Corral Info */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <Card>
               <CardContent className="p-4 text-center">
                 <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
@@ -389,8 +389,8 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div className="p-3 bg-muted/30 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">
                         {vaccinationMetrics.overall_compliance_percentage.toFixed(0)}%
@@ -405,7 +405,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="grid grid-cols-3 gap-2 text-center text-sm sm:text-base">
                     <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded">
                       <div className="font-semibold text-green-700 dark:text-green-400">
                         {vaccinationMetrics.animals_fully_compliant}
@@ -453,23 +453,25 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                         {animalsWithAlerts.map((animalAlert) => (
                           <div 
                             key={animalAlert.animal_id}
-                            className="p-3 bg-background border border-red-200 dark:border-red-900 rounded-lg"
+                            className="p-2 sm:p-3 bg-background border border-red-200 dark:border-red-900 rounded-lg"
                           >
-                            <div className="flex items-start justify-between mb-2">
-                              <div>
-                                <p className="font-medium text-sm">{animalAlert.animal_name}</p>
-                                <p className="text-xs text-muted-foreground">{animalAlert.animal_tag}</p>
+                            <div className="flex flex-col sm:flex-row items-start justify-between gap-2 mb-2">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-xs sm:text-sm truncate">{animalAlert.animal_name}</p>
+                                <p className="text-xs text-muted-foreground truncate">{animalAlert.animal_tag}</p>
                               </div>
-                              <Badge variant="destructive" className="text-xs">
+                              <Badge variant="destructive" className="text-xs flex-shrink-0">
                                 {animalAlert.alerts.length} alerta(s)
                               </Badge>
                             </div>
                             <div className="space-y-1">
                               {animalAlert.alerts.map((alert, idx) => (
-                                <div key={idx} className="flex items-center gap-2 text-xs">
-                                  <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                                  <span className="font-medium">{alert.vaccine_name}:</span>
-                                  <span className="text-muted-foreground">{alert.status}</span>
+                                <div key={idx} className="flex items-start gap-2 text-xs">
+                                  <div className="h-1.5 w-1.5 rounded-full bg-red-500 mt-1 flex-shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <span className="font-medium">{alert.vaccine_name}:</span>{' '}
+                                    <span className="text-muted-foreground">{alert.status}</span>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -487,15 +489,15 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
           {filteredRisks.length > 0 && (
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <CardTitle className="flex items-center space-x-2">
                     <AlertTriangle className="h-5 w-5 text-destructive" />
-                    <span>Alertas de Consanguinidad Detectadas</span>
+                    <span className="text-sm sm:text-base">Alertas de Consanguinidad</span>
                   </CardTitle>
-                  <div className="flex items-center space-x-2">
-                    <Filter className="h-4 w-4" />
+                  <div className="flex items-center space-x-2 w-full sm:w-auto">
+                    <Filter className="h-4 w-4 flex-shrink-0" />
                     <Select value={severityFilter} onValueChange={(value: any) => setSeverityFilter(value)}>
-                      <SelectTrigger className="w-[140px]">
+                      <SelectTrigger className="w-full sm:w-[140px]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -517,23 +519,23 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                     const explanation = getRelationshipExplanation(risk);
                     
                     return (
-                      <div key={index} className="p-6 border rounded-lg bg-muted/30 shadow-sm space-y-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start space-x-4 flex-1">
-                            <span className="text-3xl">{display.emoji}</span>
-                            <div className="space-y-3 flex-1">
-                              <div className="flex items-center space-x-3">
-                                <p className="font-semibold text-lg">
-                                  ⚠️ Riesgo de consanguinidad detectado
+                      <div key={index} className="p-3 sm:p-6 border rounded-lg bg-muted/30 shadow-sm space-y-3 sm:space-y-4">
+                        <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
+                          <div className="flex items-start space-x-2 sm:space-x-4 flex-1 w-full">
+                            <span className="text-2xl sm:text-3xl flex-shrink-0">{display.emoji}</span>
+                            <div className="space-y-2 sm:space-y-3 flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                                <p className="font-semibold text-sm sm:text-lg break-words">
+                                  ⚠️ Riesgo de consanguinidad
                                 </p>
                                 <Popover>
                                   <PopoverTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0">
                                       <Info className="h-4 w-4 text-muted-foreground" />
                                     </Button>
                                   </PopoverTrigger>
-                                  <PopoverContent className="w-80 p-4">
-                                    <div className="space-y-3">
+                                  <PopoverContent className="w-[90vw] max-w-[320px] p-3 sm:p-4">
+                                    <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                                       <div>
                                         <h4 className="font-semibold text-sm mb-1">¿Qué es la consanguinidad?</h4>
                                         <p className="text-xs text-muted-foreground">{explanation.what}</p>
@@ -573,14 +575,14 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                   </button>
                                 </p>
                                 
-                                <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground mt-3">
-                                  <div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs text-muted-foreground mt-3">
+                                  <div className="break-words">
                                     <p className="font-medium">{animal1Name}</p>
                                     <p>Edad: {calculateAge(risk.animal1.birth_date)}</p>
                                     <p>Estado: {(risk.animal1 as any).status || 'Sin especificar'}</p>
                                   </div>
-                                  <div>
-                                    <p className="font-medium">{animal2Name}</p>
+                                <div className="break-words">
+                                  <p className="font-medium">{animal2Name}</p>
                                     <p>Edad: {calculateAge(risk.animal2.birth_date)}</p>
                                     <p>Estado: {(risk.animal2 as any).status || 'Sin especificar'}</p>
                                   </div>
@@ -599,10 +601,10 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                             </div>
                           </div>
                           
-                          <div className="flex items-center space-x-2 ml-4">
+                          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto sm:ml-4">
                             <Badge 
                               variant={risk.severity === 'severe' ? 'destructive' : risk.severity === 'medium' ? 'secondary' : 'outline'} 
-                              className={`${risk.severity === 'severe' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : display.color} font-medium`}
+                              className={`${risk.severity === 'severe' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : display.color} font-medium text-xs`}
                             >
                               {display.label}
                             </Badge>
@@ -610,7 +612,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                               size="sm" 
                               variant="outline"
                               onClick={() => handleMoveAnimal(risk.animal1.id, risk.animal2.id)}
-                              className="hover:bg-muted"
+                              className="hover:bg-muted text-xs"
                             >
                               <Move className="h-3 w-3 mr-1" />
                               Mover
@@ -633,15 +635,15 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
           {/* Animals List */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Animales en el Corral</CardTitle>
-              <Button onClick={() => setAssignmentDialogOpen(true)}>
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <CardTitle className="text-base sm:text-lg">Animales en el Corral</CardTitle>
+              <Button onClick={() => setAssignmentDialogOpen(true)} size="sm" className="w-full sm:w-auto">
                 Asignar Animales
               </Button>
             </CardHeader>
             <CardContent>
               {animals.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-8 text-sm">
                   No hay animales asignados a este corral
                 </p>
               ) : (
@@ -658,17 +660,17 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                       }) : null;
 
                     return (
-                      <div key={animal.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center space-x-2">
+                      <div key={animal.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 border rounded-lg gap-3">
+                        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+                          <div className="flex items-start sm:items-center gap-2 flex-1 min-w-0">
                             {highestSeverity && (
-                              <span className="text-lg">
+                              <span className="text-base sm:text-lg flex-shrink-0">
                                 {getSeverityDisplay(highestSeverity.severity).emoji}
                               </span>
                             )}
-                            <div>
-                              <p className="font-medium">{animal.name || animal.id_tag || animal.id}</p>
-                              <p className="text-sm text-muted-foreground">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-sm truncate">{animal.name || animal.id_tag || animal.id}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground break-words">
                                 {animal.breed} • {animal.sex}
                                 {involvedRisks.length > 0 && (
                                   <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
@@ -679,8 +681,8 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm font-medium">{calculateAge(animal.birth_date)}</p>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-xs sm:text-sm font-medium">{calculateAge(animal.birth_date)}</p>
                           <p className="text-xs text-muted-foreground">
                             {animal.id_tag && `#${animal.id_tag}`}
                           </p>
