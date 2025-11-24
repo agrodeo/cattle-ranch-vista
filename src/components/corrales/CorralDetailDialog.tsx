@@ -80,7 +80,8 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
       console.log('📋 [CorralDetail] Requirements count:', requirements.length);
       fetchCorralData();
     }
-  }, [open, corralId, currentUser, requirements]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, corralId, currentUser?.id]);
 
   // Subscribe to vaccination changes in real-time
   useEffect(() => {
@@ -170,14 +171,19 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
         
         console.log('📊 [fetchCorralData] VacDetails after init:', vacDetails);
         
-        // Then update vaccinated counts based on actual vaccination records
-        for (const animal of animalsData) {
-          const { data: statusData } = await supabase
+        // Then update vaccinated counts based on actual vaccination records (parallel)
+        const vaccinationStatusPromises = animalsData.map(animal =>
+          supabase
             .rpc('calculate_vaccination_status' as any, {
               _animal_id: animal.id,
               _cabana_id: currentUser.cabañaId
-            });
+            })
+            .then(({ data }) => ({ animalId: animal.id, data }))
+        );
 
+        const vaccinationStatuses = await Promise.all(vaccinationStatusPromises);
+
+        for (const { data: statusData } of vaccinationStatuses) {
           if (statusData) {
             for (const status of statusData) {
               // Only update if this vaccine is in our configured requirements
@@ -222,6 +228,18 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
 
   const fetchAnimalsWithAlerts = async (animalsData: Animal[], cabañaId: string) => {
     try {
+      // Fetch all vaccination statuses in parallel
+      const statusPromises = animalsData.map(animal =>
+        supabase
+          .rpc('calculate_vaccination_status' as any, {
+            _animal_id: animal.id,
+            _cabana_id: cabañaId
+          })
+          .then(({ data }) => ({ animal, data }))
+      );
+
+      const results = await Promise.all(statusPromises);
+
       const alertsData: Array<{
         animal_id: string;
         animal_name: string;
@@ -229,13 +247,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
         alerts: Array<{ vaccine_name: string; status: string }>;
       }> = [];
 
-      for (const animal of animalsData) {
-        const { data: statusData } = await supabase
-          .rpc('calculate_vaccination_status' as any, {
-            _animal_id: animal.id,
-            _cabana_id: cabañaId
-          });
-
+      for (const { animal, data: statusData } of results) {
         if (statusData) {
           const animalAlerts = statusData
             .filter((status: any) => 
