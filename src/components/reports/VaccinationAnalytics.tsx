@@ -26,10 +26,10 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) {
+    if (user && currentUser?.cabañaId) {
       fetchVaccinationStats();
     }
-  }, [user, globalFilters]);
+  }, [user, currentUser?.cabañaId, globalFilters]);
 
   const fetchVaccinationStats = async () => {
     if (!user || !currentUser?.cabañaId) return;
