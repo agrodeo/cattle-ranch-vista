@@ -23,7 +23,14 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
     animal_tag: string;
     issues: Array<{ vaccine_name: string; status: string; days_overdue?: number }>;
   }>>([]);
+  const [animalsCompliant, setAnimalsCompliant] = useState<Array<{
+    animal_id: string;
+    animal_name: string;
+    animal_tag: string;
+    vaccines: Array<{ vaccine_name: string; last_date: string; next_due?: string }>;
+  }>>([]);
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
+  const [expandedCompliantAnimal, setExpandedCompliantAnimal] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && currentUser?.cabañaId) {
@@ -37,12 +44,6 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
     try {
       setLoading(true);
       
-      // Fetch vaccination history
-      const { data: history } = await supabase
-        .from('animal_vaccines')
-        .select('*, animals(name, id_tag)')
-        .eq('cabaña_id', currentUser.cabañaId);
-
       // Fetch active animals
       const { data: animals } = await supabase
         .from('animals')
@@ -53,64 +54,107 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         .neq('status', 'Vendido')
         .neq('status', 'Muerto');
 
-      // Calculate vaccination status for each animal
-      const issuesData: typeof animalsWithIssues = [];
-      let totalOverdue = 0;
-      let totalPending = 0;
-      let totalCompliant = 0;
+      if (!animals || animals.length === 0) {
+        setStats({
+          totalVaccinations: 0,
+          totalAnimals: 0,
+          animalsWithIssues: 0,
+          animalsCompliant: 0,
+          totalOverdueVaccines: 0,
+          totalPendingVaccines: 0
+        });
+        setAnimalsWithIssues([]);
+        setAnimalsCompliant([]);
+        setLoading(false);
+        return;
+      }
 
-      if (animals) {
-        for (const animal of animals) {
-          const { data: statusData } = await supabase
-            .rpc('calculate_vaccination_status' as any, {
-              _animal_id: animal.id,
-              _cabana_id: currentUser.cabañaId
+      // Fetch vaccination history only for active animals
+      const activeAnimalIds = animals.map(a => a.id);
+      const { data: history } = await supabase
+        .from('animal_vaccines')
+        .select('*')
+        .eq('cabaña_id', currentUser.cabañaId)
+        .in('animal_id', activeAnimalIds);
+
+      // Calculate vaccination status for all animals in parallel
+      const statusPromises = animals.map(animal =>
+        supabase
+          .rpc('calculate_vaccination_status' as any, {
+            _animal_id: animal.id,
+            _cabana_id: currentUser.cabañaId
+          })
+          .then(result => ({ animal, statusData: result.data }))
+      );
+
+      const results = await Promise.all(statusPromises);
+
+      // Process results
+      const issuesData: typeof animalsWithIssues = [];
+      const compliantData: typeof animalsCompliant = [];
+      let totalOverdueVaccines = 0;
+      let totalPendingVaccines = 0;
+
+      results.forEach(({ animal, statusData }) => {
+        if (statusData && statusData.length > 0) {
+          const issues = statusData
+            .filter((status: any) => 
+              status.status === 'vencida' || 
+              status.status === 'pendiente' ||
+              status.compliance_percentage < 100
+            )
+            .map((status: any) => ({
+              vaccine_name: status.vaccine_name,
+              status: status.status === 'vencida' ? 'Vencida' : 
+                      status.status === 'pendiente' ? 'Pendiente' : 
+                      `${status.compliance_percentage.toFixed(0)}% completada`,
+              days_overdue: status.days_overdue
+            }));
+
+          const completeVaccines = statusData
+            .filter((status: any) => 
+              status.status === 'al_dia' || status.compliance_percentage === 100
+            )
+            .map((status: any) => ({
+              vaccine_name: status.vaccine_name,
+              last_date: status.last_vaccination_date,
+              next_due: status.next_due_date
+            }));
+
+          if (issues.length > 0) {
+            issuesData.push({
+              animal_id: animal.id,
+              animal_name: animal.name || animal.id_tag || 'Sin nombre',
+              animal_tag: animal.id_tag || 'Sin caravana',
+              issues
             });
 
-          if (statusData) {
-            const animalIssues = statusData
-              .filter((status: any) => 
-                status.status === 'vencida' || 
-                status.status === 'pendiente' ||
-                status.compliance_percentage < 100
-              )
-              .map((status: any) => ({
-                vaccine_name: status.vaccine_name,
-                status: status.status === 'vencida' ? 'Vencida' : 
-                        status.status === 'pendiente' ? 'Pendiente' : 
-                        `${status.compliance_percentage.toFixed(0)}% completada`,
-                days_overdue: status.days_overdue
-              }));
-
-            if (animalIssues.length > 0) {
-              issuesData.push({
-                animal_id: animal.id,
-                animal_name: animal.name || animal.id_tag || 'Sin nombre',
-                animal_tag: animal.id_tag || 'Sin caravana',
-                issues: animalIssues
-              });
-
-              // Count issues by type
-              animalIssues.forEach((issue: any) => {
-                if (issue.status === 'Vencida') totalOverdue++;
-                else if (issue.status === 'Pendiente') totalPending++;
-              });
-            } else {
-              totalCompliant++;
-            }
+            // Count vaccines by issue type
+            issues.forEach((issue: any) => {
+              if (issue.status === 'Vencida') totalOverdueVaccines++;
+              else if (issue.status === 'Pendiente') totalPendingVaccines++;
+            });
+          } else if (completeVaccines.length > 0) {
+            compliantData.push({
+              animal_id: animal.id,
+              animal_name: animal.name || animal.id_tag || 'Sin nombre',
+              animal_tag: animal.id_tag || 'Sin caravana',
+              vaccines: completeVaccines
+            });
           }
         }
-      }
+      });
 
       setStats({
         totalVaccinations: history?.length || 0,
-        totalAnimals: animals?.length || 0,
-        totalOverdue,
-        totalPending,
-        totalCompliant,
-        history: history || []
+        totalAnimals: animals.length,
+        animalsWithIssues: issuesData.length,
+        animalsCompliant: compliantData.length,
+        totalOverdueVaccines,
+        totalPendingVaccines
       });
       setAnimalsWithIssues(issuesData);
+      setAnimalsCompliant(compliantData);
     } catch (error) {
       console.error("Error fetching vaccination stats:", error);
     } finally {
@@ -140,7 +184,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Analítica de Vacunación:</strong> Total de vacunaciones registradas: {stats?.totalVaccinations || 0}
+          <strong>Analítica de Vacunación:</strong> Total de {stats?.totalVaccinations || 0} vacunaciones registradas en {stats?.totalAnimals || 0} animales activos
         </AlertDescription>
       </Alert>
 
@@ -153,7 +197,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                 <p className="text-sm text-muted-foreground">Total Animales</p>
                 <p className="text-2xl font-bold">{stats?.totalAnimals || 0}</p>
               </div>
-              <Shield className="h-8 w-8 text-blue-500" />
+              <Shield className="h-8 w-8 text-primary" />
             </div>
           </CardContent>
         </Card>
@@ -162,8 +206,11 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Completos</p>
-                <p className="text-2xl font-bold text-green-600">{stats?.totalCompliant || 0}</p>
+                <p className="text-sm text-muted-foreground">Animales al Día</p>
+                <p className="text-2xl font-bold text-green-600">{stats?.animalsCompliant || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% del total
+                </p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
@@ -174,8 +221,11 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Pendientes</p>
-                <p className="text-2xl font-bold text-amber-600">{stats?.totalPending || 0}</p>
+                <p className="text-sm text-muted-foreground">Con Vacunas Pendientes</p>
+                <p className="text-2xl font-bold text-amber-600">{stats?.totalPendingVaccines || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats?.animalsWithIssues || 0} animales afectados
+                </p>
               </div>
               <Clock className="h-8 w-8 text-amber-500" />
             </div>
@@ -186,14 +236,88 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Vencidas</p>
-                <p className="text-2xl font-bold text-red-600">{stats?.totalOverdue || 0}</p>
+                <p className="text-sm text-muted-foreground">Vacunas Vencidas</p>
+                <p className="text-2xl font-bold text-red-600">{stats?.totalOverdueVaccines || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Requiere atención inmediata
+                </p>
               </div>
               <AlertTriangle className="h-8 w-8 text-red-500" />
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Animals with Complete Vaccination */}
+      {animalsCompliant.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Animales al Día ({animalsCompliant.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {animalsCompliant.map((animal) => (
+                <Collapsible
+                  key={animal.animal_id}
+                  open={expandedCompliantAnimal === animal.animal_id}
+                  onOpenChange={() => setExpandedCompliantAnimal(
+                    expandedCompliantAnimal === animal.animal_id ? null : animal.animal_id
+                  )}
+                >
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-950/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {expandedCompliantAnimal === animal.animal_id ? (
+                          <ChevronDown className="h-4 w-4 text-green-700" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-green-700" />
+                        )}
+                        <div className="text-left">
+                          <div className="font-medium text-green-900 dark:text-green-100">
+                            {animal.animal_name}
+                          </div>
+                          <div className="text-sm text-green-700 dark:text-green-300">
+                            Caravana: {animal.animal_tag}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-green-200 text-green-900">
+                        {animal.vaccines.length} {animal.vaccines.length === 1 ? 'vacuna' : 'vacunas'}
+                      </Badge>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 ml-4 p-4 bg-white dark:bg-slate-900 rounded-lg border">
+                    <div className="space-y-3">
+                      {animal.vaccines.map((vaccine, idx) => (
+                        <div key={idx} className="flex items-start justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium">{vaccine.vaccine_name}</div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              Última aplicación: {vaccine.last_date ? new Date(vaccine.last_date).toLocaleDateString('es-ES') : 'N/A'}
+                            </div>
+                            {vaccine.next_due && (
+                              <div className="text-sm text-muted-foreground">
+                                Próxima: {new Date(vaccine.next_due).toLocaleDateString('es-ES')}
+                              </div>
+                            )}
+                          </div>
+                          <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Animals with Issues */}
       {animalsWithIssues.length > 0 && (
@@ -277,13 +401,13 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         </Card>
       )}
 
-      {animalsWithIssues.length === 0 && !loading && (
+      {animalsWithIssues.length === 0 && animalsCompliant.length === 0 && !loading && stats?.totalAnimals > 0 && (
         <Card>
           <CardContent className="p-8 text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">¡Todo en orden!</h3>
+            <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Sin datos de vacunación</h3>
             <p className="text-muted-foreground">
-              Todos los animales tienen sus vacunas al día
+              No hay registros de vacunación para los animales activos
             </p>
           </CardContent>
         </Card>
