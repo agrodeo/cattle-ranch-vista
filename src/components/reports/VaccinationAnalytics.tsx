@@ -89,13 +89,6 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
       const results = await Promise.all(statusPromises);
 
-      console.log('Vaccination Analytics - Debug Info:', {
-        totalAnimals: animals.length,
-        resultsCount: results.length,
-        sampleResult: results[0],
-        vaccinationHistory: history?.length || 0
-      });
-
       // Process results
       const issuesData: typeof animalsWithIssues = [];
       const compliantData: typeof animalsCompliant = [];
@@ -104,33 +97,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
       results.forEach(({ animal, statusData }) => {
         if (statusData && statusData.length > 0) {
-          // Filter for actual problems: overdue or pending (NOT no_aplicada)
-          const issues = statusData
-            .filter((status: any) => 
-              status.status === 'vencida' || 
-              status.status === 'pendiente'
-            )
-            .map((status: any) => ({
-              vaccine_name: status.vaccine_name,
-              status: status.status === 'vencida' ? 'Vencida' : 
-                      status.status === 'pendiente' ? 'Pendiente' : 
-                      status.status === 'no_aplicada' ? 'No aplicada' :
-                      'Pendiente',
-              days_overdue: status.days_overdue
-            }));
-
-          // Filter for complete vaccines
-          const completeVaccines = statusData
-            .filter((status: any) => 
-              status.status === 'completa'
-            )
-            .map((status: any) => ({
-              vaccine_name: status.vaccine_name,
-              last_date: status.last_vaccination_date,
-              next_due: status.next_due_date
-            }));
-
-          // Check mandatory vaccines compliance
+          // Check mandatory vaccines compliance first
           const mandatoryVaccines = statusData.filter((s: any) => s.is_mandatory);
           const mandatoryComplete = mandatoryVaccines.filter((s: any) => s.status === 'completa');
           const hasOverdue = statusData.some((s: any) => s.status === 'vencida');
@@ -140,7 +107,16 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                              mandatoryComplete.length === mandatoryVaccines.length && 
                              !hasOverdue;
 
-          // Mutually exclusive categories: an animal can only be in ONE category
+          // Filter for complete vaccines
+          const completeVaccines = statusData
+            .filter((status: any) => status.status === 'completa')
+            .map((status: any) => ({
+              vaccine_name: status.vaccine_name,
+              last_date: status.last_vaccination_date,
+              next_due: status.next_due_date
+            }));
+
+          // Mutually exclusive categories
           if (isCompliant) {
             // All mandatory vaccines complete and no overdue → Al día
             compliantData.push({
@@ -149,20 +125,36 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               animal_tag: animal.id_tag || 'Sin caravana',
               vaccines: completeVaccines
             });
-          } else if (issues.length > 0) {
-            // Has overdue or pending vaccines → Requires attention
-            issuesData.push({
-              animal_id: animal.id,
-              animal_name: animal.name || animal.id_tag || 'Sin nombre',
-              animal_tag: animal.id_tag || 'Sin caravana',
-              issues
-            });
+          } else {
+            // Not compliant → Requires attention (include all issues: vencida, pendiente, no_aplicada for mandatory)
+            const issues = statusData
+              .filter((status: any) => 
+                status.status === 'vencida' || 
+                status.status === 'pendiente' ||
+                (status.status === 'no_aplicada' && status.is_mandatory)
+              )
+              .map((status: any) => ({
+                vaccine_name: status.vaccine_name,
+                status: status.status === 'vencida' ? 'Vencida' : 
+                        status.status === 'pendiente' ? 'Pendiente' : 
+                        'No aplicada',
+                days_overdue: status.days_overdue
+              }));
 
-            // Count vaccines by issue type
-            issues.forEach((issue: any) => {
-              if (issue.status === 'Vencida') totalOverdueVaccines++;
-              else if (issue.status === 'Pendiente') totalPendingVaccines++;
-            });
+            if (issues.length > 0) {
+              issuesData.push({
+                animal_id: animal.id,
+                animal_name: animal.name || animal.id_tag || 'Sin nombre',
+                animal_tag: animal.id_tag || 'Sin caravana',
+                issues
+              });
+
+              // Count vaccines by issue type
+              issues.forEach((issue: any) => {
+                if (issue.status === 'Vencida') totalOverdueVaccines++;
+                else if (issue.status === 'Pendiente') totalPendingVaccines++;
+              });
+            }
           }
         }
       });
