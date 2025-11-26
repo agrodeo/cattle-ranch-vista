@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Shield, AlertTriangle, CheckCircle, Clock, ChevronDown, ChevronRight } from "lucide-react";
+import { Shield, AlertTriangle, CheckCircle, Clock, ChevronDown, ChevronRight, AlertCircle, Info } from "lucide-react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
@@ -12,25 +12,182 @@ interface VaccinationAnalyticsProps {
   filters?: any;
 }
 
+// ============= PHASE 1 & 2: Batch Processing with Error Handling =============
+interface AnimalStatusResult {
+  animal: any;
+  statusData: any[] | null;
+  error: any;
+  category?: string;
+  reason?: string;
+  issues?: any[];
+  vaccines?: any[];
+}
+
+const BATCH_SIZE = 20;
+
+const fetchAnimalStatus = async (animal: any, cabanaId: string): Promise<AnimalStatusResult> => {
+  try {
+    const { data, error } = await supabase
+      .rpc('calculate_vaccination_status', {
+        _animal_id: animal.id,
+        _cabana_id: cabanaId
+      });
+    
+    if (error) {
+      console.warn(`⚠️ Error fetching status for ${animal.id_tag}:`, error);
+      return { animal, statusData: null, error };
+    }
+    
+    return { animal, statusData: data || [], error: null };
+  } catch (e) {
+    console.error(`❌ Exception for ${animal.id_tag}:`, e);
+    return { animal, statusData: null, error: e };
+  }
+};
+
+const processAnimalsBatch = async (animals: any[], cabanaId: string): Promise<AnimalStatusResult[]> => {
+  const results: AnimalStatusResult[] = [];
+  
+  for (let i = 0; i < animals.length; i += BATCH_SIZE) {
+    const batch = animals.slice(i, i + BATCH_SIZE);
+    console.log(`🔄 Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(animals.length / BATCH_SIZE)}`);
+    
+    const batchResults = await Promise.allSettled(
+      batch.map(animal => fetchAnimalStatus(animal, cabanaId))
+    );
+    
+    batchResults.forEach(result => {
+      if (result.status === 'fulfilled') {
+        results.push(result.value);
+      } else {
+        console.error('❌ Batch promise rejected:', result.reason);
+        results.push({ 
+          animal: null, 
+          statusData: null, 
+          error: result.reason 
+        });
+      }
+    });
+  }
+  
+  return results;
+};
+
+// ============= PHASE 3 & 4: Clear Category Classification =============
+type AnimalCategory = 'compliant' | 'overdue' | 'pending' | 'missing_mandatory' | 'no_requirements' | 'error';
+
+interface ClassificationResult {
+  category: AnimalCategory;
+  reason: string;
+  issues?: any[];
+  vaccines?: any[];
+}
+
+const classifyAnimal = (animal: any, statusData: any[] | null, error: any): ClassificationResult => {
+  // Error category
+  if (error || !statusData) {
+    return { 
+      category: 'error', 
+      reason: error ? `Error al procesar: ${error.message || 'Desconocido'}` : 'Sin datos de estado'
+    };
+  }
+  
+  // No requirements category
+  if (statusData.length === 0) {
+    return { 
+      category: 'no_requirements', 
+      reason: 'Sin requisitos de vacunación aplicables'
+    };
+  }
+  
+  const mandatoryVaccines = statusData.filter(s => s.is_mandatory);
+  const overdueVaccines = statusData.filter(s => s.status === 'vencida');
+  const pendingVaccines = statusData.filter(s => s.status === 'pendiente');
+  const completeVaccines = statusData.filter(s => s.status === 'completa');
+  
+  // Priority 1: Overdue vaccines (requires immediate attention)
+  if (overdueVaccines.length > 0) {
+    return { 
+      category: 'overdue', 
+      reason: `${overdueVaccines.length} ${overdueVaccines.length === 1 ? 'vacuna vencida' : 'vacunas vencidas'}`,
+      issues: overdueVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        status: 'Vencida',
+        days_overdue: v.days_overdue
+      }))
+    };
+  }
+  
+  // Priority 2: Pending vaccines (due soon)
+  if (pendingVaccines.length > 0) {
+    return { 
+      category: 'pending', 
+      reason: `${pendingVaccines.length} ${pendingVaccines.length === 1 ? 'vacuna pendiente' : 'vacunas pendientes'}`,
+      issues: pendingVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        status: 'Pendiente',
+        next_due: v.next_due_date
+      }))
+    };
+  }
+  
+  // Priority 3: Check if all mandatory vaccines are complete
+  if (mandatoryVaccines.length === 0) {
+    // No mandatory vaccines, but animal is up-to-date with available vaccines
+    return { 
+      category: 'compliant', 
+      reason: 'Sin vacunas obligatorias aplicables',
+      vaccines: completeVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        last_date: v.last_vaccination_date,
+        next_due: v.next_due_date
+      }))
+    };
+  }
+  
+  const mandatoryComplete = mandatoryVaccines.filter(s => s.status === 'completa');
+  
+  if (mandatoryComplete.length === mandatoryVaccines.length) {
+    // All mandatory vaccines complete
+    return { 
+      category: 'compliant', 
+      reason: `Todas las vacunas obligatorias completas (${mandatoryComplete.length}/${mandatoryVaccines.length})`,
+      vaccines: completeVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        last_date: v.last_vaccination_date,
+        next_due: v.next_due_date
+      }))
+    };
+  }
+  
+  // Priority 4: Missing mandatory vaccines
+  const mandatoryMissing = mandatoryVaccines.filter(s => s.status === 'no_aplicada');
+  return { 
+    category: 'missing_mandatory', 
+    reason: `${mandatoryMissing.length} ${mandatoryMissing.length === 1 ? 'vacuna obligatoria no aplicada' : 'vacunas obligatorias no aplicadas'}`,
+    issues: mandatoryMissing.map(v => ({
+      vaccine_name: v.vaccine_name,
+      status: 'No aplicada',
+      is_mandatory: true
+    }))
+  };
+};
+
 export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnalyticsProps) => {
   const { user, currentUser } = useSupabaseAuth();
   const { requirements } = useVaccinationRequirements();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
-  const [animalsWithIssues, setAnimalsWithIssues] = useState<Array<{
-    animal_id: string;
-    animal_name: string;
-    animal_tag: string;
-    issues: Array<{ vaccine_name: string; status: string; days_overdue?: number }>;
-  }>>([]);
-  const [animalsCompliant, setAnimalsCompliant] = useState<Array<{
-    animal_id: string;
-    animal_name: string;
-    animal_tag: string;
-    vaccines: Array<{ vaccine_name: string; last_date: string; next_due?: string }>;
-  }>>([]);
+  
+  // Separate state for each category
+  const [animalsCompliant, setAnimalsCompliant] = useState<any[]>([]);
+  const [animalsOverdue, setAnimalsOverdue] = useState<any[]>([]);
+  const [animalsPending, setAnimalsPending] = useState<any[]>([]);
+  const [animalsMissingMandatory, setAnimalsMissingMandatory] = useState<any[]>([]);
+  const [animalsNoRequirements, setAnimalsNoRequirements] = useState<any[]>([]);
+  const [animalsWithErrors, setAnimalsWithErrors] = useState<any[]>([]);
+  
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
-  const [expandedCompliantAnimal, setExpandedCompliantAnimal] = useState<string | null>(null);
 
   useEffect(() => {
     if (user && currentUser?.cabañaId) {
@@ -38,162 +195,182 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
     }
   }, [user, currentUser?.cabañaId, globalFilters]);
 
+  // ============= PHASE 5 & 6: Updated Dashboard Metrics with Comprehensive Logging =============
   const fetchVaccinationStats = async () => {
     if (!user || !currentUser?.cabañaId) return;
     
     try {
       setLoading(true);
+      console.log('🚀 Starting vaccination analytics fetch...');
       
       // Fetch active animals
-      const { data: animals } = await supabase
+      const { data: animals, error: animalsError } = await supabase
         .from('animals')
-        .select('id, name, id_tag')
+        .select('id, name, id_tag, sex, birth_date')
         .eq('cabaña_id', currentUser.cabañaId)
         .neq('status', 'vendido')
         .neq('status', 'muerto')
         .neq('status', 'Vendido')
         .neq('status', 'Muerto');
 
+      if (animalsError) {
+        console.error('❌ Error fetching animals:', animalsError);
+        throw animalsError;
+      }
+
+      console.log(`📊 Found ${animals?.length || 0} active animals`);
+
       if (!animals || animals.length === 0) {
+        console.log('ℹ️ No active animals found');
         setStats({
           totalVaccinations: 0,
           totalAnimals: 0,
-          animalsWithIssues: 0,
           animalsCompliant: 0,
+          animalsWithOverdue: 0,
+          animalsWithPending: 0,
+          animalsWithMissingMandatory: 0,
+          animalsNoRequirements: 0,
+          animalsWithErrors: 0,
           totalOverdueVaccines: 0,
           totalPendingVaccines: 0
         });
-        setAnimalsWithIssues([]);
         setAnimalsCompliant([]);
+        setAnimalsOverdue([]);
+        setAnimalsPending([]);
+        setAnimalsMissingMandatory([]);
+        setAnimalsNoRequirements([]);
+        setAnimalsWithErrors([]);
         setLoading(false);
         return;
       }
 
-      // Fetch vaccination history only for active animals
+      // Fetch vaccination history
       const activeAnimalIds = animals.map(a => a.id);
-      const { data: history } = await supabase
+      const { data: history, error: historyError } = await supabase
         .from('animal_vaccines')
         .select('*')
         .eq('cabaña_id', currentUser.cabañaId)
         .in('animal_id', activeAnimalIds);
 
-      // Calculate vaccination status for all animals in parallel
-      const statusPromises = animals.map(animal =>
-        supabase
-          .rpc('calculate_vaccination_status' as any, {
-            _animal_id: animal.id,
-            _cabana_id: currentUser.cabañaId
-          })
-          .then(result => ({ animal, statusData: result.data }))
-      );
+      if (historyError) {
+        console.error('❌ Error fetching vaccination history:', historyError);
+      }
 
-      const results = await Promise.all(statusPromises);
+      console.log(`💉 Found ${history?.length || 0} vaccination records`);
 
-      // Process results
-      const issuesData: typeof animalsWithIssues = [];
-      const compliantData: typeof animalsCompliant = [];
+      // Process animals in batches with error handling
+      const results = await processAnimalsBatch(animals, currentUser.cabañaId);
+      
+      console.log(`✅ Processed ${results.length} animals`);
+
+      // Classify all animals
+      const classified = results.map(result => {
+        const classification = classifyAnimal(result.animal, result.statusData, result.error);
+        return {
+          ...result,
+          ...classification
+        };
+      });
+
+      // Separate by category
+      const compliant: any[] = [];
+      const overdue: any[] = [];
+      const pending: any[] = [];
+      const missingMandatory: any[] = [];
+      const noRequirements: any[] = [];
+      const withErrors: any[] = [];
+
       let totalOverdueVaccines = 0;
       let totalPendingVaccines = 0;
 
-      results.forEach(({ animal, statusData }) => {
-        if (statusData && statusData.length > 0) {
-          // Check mandatory vaccines compliance first
-          const mandatoryVaccines = statusData.filter((s: any) => s.is_mandatory);
-          const mandatoryComplete = mandatoryVaccines.filter((s: any) => s.status === 'completa');
-          const hasOverdue = statusData.some((s: any) => s.status === 'vencida');
-          
-          // Animal is "al día" if ALL mandatory vaccines are complete AND no overdue vaccines
-          const isCompliant = mandatoryVaccines.length > 0 && 
-                             mandatoryComplete.length === mandatoryVaccines.length && 
-                             !hasOverdue;
+      classified.forEach(item => {
+        if (!item.animal) return;
 
-          // Filter for complete vaccines
-          const completeVaccines = statusData
-            .filter((status: any) => status.status === 'completa')
-            .map((status: any) => ({
-              vaccine_name: status.vaccine_name,
-              last_date: status.last_vaccination_date,
-              next_due: status.next_due_date
-            }));
+        const animalData = {
+          animal_id: item.animal.id,
+          animal_name: item.animal.name || item.animal.id_tag || 'Sin nombre',
+          animal_tag: item.animal.id_tag || 'Sin caravana',
+          reason: item.reason,
+          issues: item.issues || [],
+          vaccines: item.vaccines || []
+        };
 
-          // Debug first animal
-          if (animal.id_tag === '8987') {
-            console.log('DEBUG Animal 8987:', {
-              mandatoryCount: mandatoryVaccines.length,
-              mandatoryCompleteCount: mandatoryComplete.length,
-              hasOverdue,
-              isCompliant,
-              statusData
-            });
-          }
-
-          // Mutually exclusive categories
-          if (isCompliant) {
-            // All mandatory vaccines complete and no overdue → Al día
-            compliantData.push({
-              animal_id: animal.id,
-              animal_name: animal.name || animal.id_tag || 'Sin nombre',
-              animal_tag: animal.id_tag || 'Sin caravana',
-              vaccines: completeVaccines
-            });
-          } else {
-            // Not compliant → Requires attention (include all issues: vencida, pendiente, no_aplicada for mandatory)
-            const issues = statusData
-              .filter((status: any) => 
-                status.status === 'vencida' || 
-                status.status === 'pendiente' ||
-                (status.status === 'no_aplicada' && status.is_mandatory)
-              )
-              .map((status: any) => ({
-                vaccine_name: status.vaccine_name,
-                status: status.status === 'vencida' ? 'Vencida' : 
-                        status.status === 'pendiente' ? 'Pendiente' : 
-                        'No aplicada',
-                days_overdue: status.days_overdue
-              }));
-
-            // Debug first animal issues
-            if (animal.id_tag === '8987') {
-              console.log('DEBUG Animal 8987 issues:', issues);
-            }
-
-            if (issues.length > 0) {
-              issuesData.push({
-                animal_id: animal.id,
-                animal_name: animal.name || animal.id_tag || 'Sin nombre',
-                animal_tag: animal.id_tag || 'Sin caravana',
-                issues
-              });
-
-              // Count vaccines by issue type
-              issues.forEach((issue: any) => {
-                if (issue.status === 'Vencida') totalOverdueVaccines++;
-                else if (issue.status === 'Pendiente') totalPendingVaccines++;
-              });
-            }
-          }
+        switch (item.category) {
+          case 'compliant':
+            compliant.push(animalData);
+            break;
+          case 'overdue':
+            overdue.push(animalData);
+            totalOverdueVaccines += item.issues?.length || 0;
+            break;
+          case 'pending':
+            pending.push(animalData);
+            totalPendingVaccines += item.issues?.length || 0;
+            break;
+          case 'missing_mandatory':
+            missingMandatory.push(animalData);
+            break;
+          case 'no_requirements':
+            noRequirements.push(animalData);
+            break;
+          case 'error':
+            withErrors.push(animalData);
+            break;
         }
       });
 
-      console.log('Final counts:', {
-        compliantData: compliantData.length,
-        issuesData: issuesData.length,
-        totalOverdueVaccines,
-        totalPendingVaccines
+      // ============= PHASE 6: Comprehensive Logging =============
+      console.log('📊 Vaccination Analytics Summary:', {
+        totalAnimals: animals.length,
+        processedSuccessfully: classified.filter(c => c.category !== 'error').length,
+        processedWithErrors: withErrors.length,
+        categories: {
+          compliant: compliant.length,
+          overdue: overdue.length,
+          pending: pending.length,
+          missingMandatory: missingMandatory.length,
+          noRequirements: noRequirements.length,
+          errors: withErrors.length
+        },
+        vaccinations: {
+          totalRecords: history?.length || 0,
+          totalOverdue: totalOverdueVaccines,
+          totalPending: totalPendingVaccines
+        }
       });
+
+      // Validate totals
+      const categoriesTotal = compliant.length + overdue.length + pending.length + 
+                             missingMandatory.length + noRequirements.length + withErrors.length;
+      
+      if (categoriesTotal !== animals.length) {
+        console.warn(`⚠️ Category mismatch! Total categories: ${categoriesTotal}, Total animals: ${animals.length}`);
+      } else {
+        console.log('✅ Category totals validated correctly');
+      }
 
       setStats({
         totalVaccinations: history?.length || 0,
         totalAnimals: animals.length,
-        animalsWithIssues: issuesData.length,
-        animalsCompliant: compliantData.length,
+        animalsCompliant: compliant.length,
+        animalsWithOverdue: overdue.length,
+        animalsWithPending: pending.length,
+        animalsWithMissingMandatory: missingMandatory.length,
+        animalsNoRequirements: noRequirements.length,
+        animalsWithErrors: withErrors.length,
         totalOverdueVaccines,
         totalPendingVaccines
       });
-      setAnimalsWithIssues(issuesData);
-      setAnimalsCompliant(compliantData);
+      
+      setAnimalsCompliant(compliant);
+      setAnimalsOverdue(overdue);
+      setAnimalsPending(pending);
+      setAnimalsMissingMandatory(missingMandatory);
+      setAnimalsNoRequirements(noRequirements);
+      setAnimalsWithErrors(withErrors);
+      
     } catch (error) {
-      console.error("Error fetching vaccination stats:", error);
+      console.error("❌ Fatal error fetching vaccination stats:", error);
     } finally {
       setLoading(false);
     }
@@ -203,7 +380,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
@@ -216,6 +393,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
     );
   }
 
+  // ============= PHASE 7: Updated UI for All Categories =============
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <Alert>
@@ -225,69 +403,99 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         </AlertDescription>
       </Alert>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Summary Cards - 6 categories */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">Total Animales</p>
-                <p className="text-2xl font-bold">{stats?.totalAnimals || 0}</p>
+                <Shield className="h-5 w-5 text-primary" />
               </div>
-              <Shield className="h-8 w-8 text-primary" />
+              <p className="text-2xl font-bold">{stats?.totalAnimals || 0}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-green-200 dark:border-green-900">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Animales al Día</p>
-                <p className="text-2xl font-bold text-green-600">{stats?.animalsCompliant || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% del total
-                </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Al Día</p>
+                <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <p className="text-2xl font-bold text-green-600">{stats?.animalsCompliant || 0}</p>
+              <p className="text-xs text-muted-foreground">
+                {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% del total
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-red-200 dark:border-red-900">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Con Vacunas Pendientes</p>
-                <p className="text-2xl font-bold text-amber-600">{stats?.totalPendingVaccines || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stats?.animalsWithIssues || 0} animales afectados
-                </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Vencidas</p>
+                <AlertTriangle className="h-5 w-5 text-red-600" />
               </div>
-              <Clock className="h-8 w-8 text-amber-500" />
+              <p className="text-2xl font-bold text-red-600">{stats?.animalsWithOverdue || 0}</p>
+              <p className="text-xs text-muted-foreground">
+                {stats?.totalOverdueVaccines || 0} vacunas
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-amber-200 dark:border-amber-900">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Vacunas Vencidas</p>
-                <p className="text-2xl font-bold text-red-600">{stats?.totalOverdueVaccines || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Requiere atención inmediata
-                </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Pendientes</p>
+                <Clock className="h-5 w-5 text-amber-600" />
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <p className="text-2xl font-bold text-amber-600">{stats?.animalsWithPending || 0}</p>
+              <p className="text-xs text-muted-foreground">
+                {stats?.totalPendingVaccines || 0} vacunas
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-blue-200 dark:border-blue-900">
+          <CardContent className="p-6">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Falta Aplicar</p>
+                <AlertCircle className="h-5 w-5 text-blue-600" />
+              </div>
+              <p className="text-2xl font-bold text-blue-600">{stats?.animalsWithMissingMandatory || 0}</p>
+              <p className="text-xs text-muted-foreground">
+                Obligatorias no aplicadas
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardContent className="p-6">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">Sin Requisitos</p>
+                <Info className="h-5 w-5 text-slate-500" />
+              </div>
+              <p className="text-2xl font-bold text-slate-600">{stats?.animalsNoRequirements || 0}</p>
+              <p className="text-xs text-muted-foreground">
+                No aplicables
+              </p>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Animals with Complete Vaccination */}
+      {/* Animals Compliant - Green */}
       {animalsCompliant.length > 0 && (
-        <Card>
+        <Card className="border-green-200 dark:border-green-900">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
@@ -299,9 +507,9 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               {animalsCompliant.map((animal) => (
                 <Collapsible
                   key={animal.animal_id}
-                  open={expandedCompliantAnimal === animal.animal_id}
-                  onOpenChange={() => setExpandedCompliantAnimal(
-                    expandedCompliantAnimal === animal.animal_id ? null : animal.animal_id
+                  open={expandedAnimal === animal.animal_id}
+                  onOpenChange={() => setExpandedAnimal(
+                    expandedAnimal === animal.animal_id ? null : animal.animal_id
                   )}
                 >
                   <CollapsibleTrigger asChild>
@@ -310,7 +518,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                       className="w-full flex items-center justify-between p-3 bg-green-50 dark:bg-green-950/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-950/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        {expandedCompliantAnimal === animal.animal_id ? (
+                        {expandedAnimal === animal.animal_id ? (
                           <ChevronDown className="h-4 w-4 text-green-700" />
                         ) : (
                           <ChevronRight className="h-4 w-4 text-green-700" />
@@ -331,7 +539,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                   </CollapsibleTrigger>
                   <CollapsibleContent className="mt-2 ml-4 p-4 bg-white dark:bg-slate-900 rounded-lg border">
                     <div className="space-y-3">
-                      {animal.vaccines.map((vaccine, idx) => (
+                      {animal.vaccines.map((vaccine: any, idx: number) => (
                         <div key={idx} className="flex items-start justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
                           <div className="flex-1">
                             <div className="font-medium">{vaccine.vaccine_name}</div>
@@ -356,23 +564,94 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         </Card>
       )}
 
-      {/* Animals with Issues */}
-      {animalsWithIssues.length > 0 && (
-        <Card>
+      {/* Animals with Overdue Vaccines - Red */}
+      {animalsOverdue.length > 0 && (
+        <Card className="border-red-200 dark:border-red-900">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
-              Animales que Requieren Atención ({animalsWithIssues.length})
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              Animales con Vacunas Vencidas ({animalsOverdue.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {animalsWithIssues.map((animal) => (
+              {animalsOverdue.map((animal) => (
                 <Collapsible
                   key={animal.animal_id}
-                  open={expandedAnimal === animal.animal_id}
+                  open={expandedAnimal === `overdue-${animal.animal_id}`}
                   onOpenChange={() => setExpandedAnimal(
-                    expandedAnimal === animal.animal_id ? null : animal.animal_id
+                    expandedAnimal === `overdue-${animal.animal_id}` ? null : `overdue-${animal.animal_id}`
+                  )}
+                >
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-950/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {expandedAnimal === `overdue-${animal.animal_id}` ? (
+                          <ChevronDown className="h-4 w-4 text-red-700" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-red-700" />
+                        )}
+                        <div className="text-left">
+                          <div className="font-medium text-red-900 dark:text-red-100">
+                            {animal.animal_name}
+                          </div>
+                          <div className="text-sm text-red-700 dark:text-red-300">
+                            Caravana: {animal.animal_tag}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-red-200 text-red-900">
+                        {animal.issues.length} vencidas
+                      </Badge>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 ml-4 p-4 bg-white dark:bg-slate-900 rounded-lg border border-red-200">
+                    <div className="space-y-3">
+                      {animal.issues.map((issue: any, idx: number) => (
+                        <div key={idx} className="flex items-start justify-between p-2 bg-red-50 dark:bg-red-950/10 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium text-red-900 dark:text-red-100">{issue.vaccine_name}</div>
+                            <div className="text-sm text-red-600 font-medium mt-1">
+                              Estado: Vencida
+                              {issue.days_overdue && issue.days_overdue > 0 && (
+                                <span className="ml-2">
+                                  ({issue.days_overdue} {issue.days_overdue === 1 ? 'día' : 'días'} de retraso)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Animals with Pending Vaccines - Amber */}
+      {animalsPending.length > 0 && (
+        <Card className="border-amber-200 dark:border-amber-900">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-amber-600" />
+              Animales con Vacunas Pendientes ({animalsPending.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {animalsPending.map((animal) => (
+                <Collapsible
+                  key={animal.animal_id}
+                  open={expandedAnimal === `pending-${animal.animal_id}`}
+                  onOpenChange={() => setExpandedAnimal(
+                    expandedAnimal === `pending-${animal.animal_id}` ? null : `pending-${animal.animal_id}`
                   )}
                 >
                   <CollapsibleTrigger asChild>
@@ -381,7 +660,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                       className="w-full flex items-center justify-between p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-950/30 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        {expandedAnimal === animal.animal_id ? (
+                        {expandedAnimal === `pending-${animal.animal_id}` ? (
                           <ChevronDown className="h-4 w-4 text-amber-700" />
                         ) : (
                           <ChevronRight className="h-4 w-4 text-amber-700" />
@@ -396,37 +675,26 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-amber-200 text-amber-900">
-                        {animal.issues.length} {animal.issues.length === 1 ? 'vacuna' : 'vacunas'}
+                        {animal.issues.length} pendientes
                       </Badge>
                     </button>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-2 ml-4 p-4 bg-white dark:bg-slate-900 rounded-lg border">
+                  <CollapsibleContent className="mt-2 ml-4 p-4 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
                     <div className="space-y-3">
-                      {animal.issues.map((issue, idx) => (
-                        <div key={idx} className="flex items-start justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                      {animal.issues.map((issue: any, idx: number) => (
+                        <div key={idx} className="flex items-start justify-between p-2 bg-amber-50 dark:bg-amber-950/10 rounded">
                           <div className="flex-1">
-                            <div className="font-medium">{issue.vaccine_name}</div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              Estado: <span className={
-                                issue.status === 'Vencida' ? 'text-red-600 font-medium' :
-                                issue.status === 'Pendiente' ? 'text-amber-600 font-medium' :
-                                'text-blue-600 font-medium'
-                              }>
-                                {issue.status}
-                              </span>
-                              {issue.days_overdue && issue.days_overdue > 0 && (
-                                <span className="ml-2 text-red-600">
-                                  (Vencida hace {issue.days_overdue} días)
+                            <div className="font-medium text-amber-900 dark:text-amber-100">{issue.vaccine_name}</div>
+                            <div className="text-sm text-amber-600 font-medium mt-1">
+                              Estado: Pendiente
+                              {issue.next_due && (
+                                <span className="ml-2">
+                                  (Vence: {new Date(issue.next_due).toLocaleDateString('es-ES')})
                                 </span>
                               )}
                             </div>
                           </div>
-                          {issue.status === 'Vencida' && (
-                            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-                          )}
-                          {issue.status === 'Pendiente' && (
-                            <Clock className="h-5 w-5 text-amber-600 flex-shrink-0" />
-                          )}
+                          <Clock className="h-5 w-5 text-amber-600 flex-shrink-0" />
                         </div>
                       ))}
                     </div>
@@ -438,13 +706,150 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         </Card>
       )}
 
-      {animalsWithIssues.length === 0 && animalsCompliant.length === 0 && !loading && stats?.totalAnimals > 0 && (
+      {/* Animals with Missing Mandatory Vaccines - Blue */}
+      {animalsMissingMandatory.length > 0 && (
+        <Card className="border-blue-200 dark:border-blue-900">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-blue-600" />
+              Animales con Vacunas Obligatorias No Aplicadas ({animalsMissingMandatory.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {animalsMissingMandatory.map((animal) => (
+                <Collapsible
+                  key={animal.animal_id}
+                  open={expandedAnimal === `missing-${animal.animal_id}`}
+                  onOpenChange={() => setExpandedAnimal(
+                    expandedAnimal === `missing-${animal.animal_id}` ? null : `missing-${animal.animal_id}`
+                  )}
+                >
+                  <CollapsibleTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-950/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {expandedAnimal === `missing-${animal.animal_id}` ? (
+                          <ChevronDown className="h-4 w-4 text-blue-700" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-blue-700" />
+                        )}
+                        <div className="text-left">
+                          <div className="font-medium text-blue-900 dark:text-blue-100">
+                            {animal.animal_name}
+                          </div>
+                          <div className="text-sm text-blue-700 dark:text-blue-300">
+                            Caravana: {animal.animal_tag}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant="secondary" className="bg-blue-200 text-blue-900">
+                        {animal.issues.length} no aplicadas
+                      </Badge>
+                    </button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-2 ml-4 p-4 bg-white dark:bg-slate-900 rounded-lg border border-blue-200">
+                    <div className="space-y-3">
+                      {animal.issues.map((issue: any, idx: number) => (
+                        <div key={idx} className="flex items-start justify-between p-2 bg-blue-50 dark:bg-blue-950/10 rounded">
+                          <div className="flex-1">
+                            <div className="font-medium text-blue-900 dark:text-blue-100">{issue.vaccine_name}</div>
+                            <div className="text-sm text-blue-600 font-medium mt-1">
+                              Estado: No aplicada (Obligatoria)
+                            </div>
+                          </div>
+                          <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Animals with No Requirements - Gray */}
+      {animalsNoRequirements.length > 0 && (
+        <Card className="border-slate-200 dark:border-slate-700">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5 text-slate-500" />
+              Animales Sin Requisitos de Vacunación Aplicables ({animalsNoRequirements.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {animalsNoRequirements.map((animal) => (
+                <div
+                  key={animal.animal_id}
+                  className="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg"
+                >
+                  <div className="text-left">
+                    <div className="font-medium text-slate-900 dark:text-slate-100">
+                      {animal.animal_name}
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">
+                      Caravana: {animal.animal_tag}
+                    </div>
+                    <div className="text-xs text-slate-500 mt-1">
+                      {animal.reason}
+                    </div>
+                  </div>
+                  <Info className="h-5 w-5 text-slate-500 flex-shrink-0" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Animals with Errors */}
+      {animalsWithErrors.length > 0 && (
+        <Card className="border-red-300 dark:border-red-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-700" />
+              Animales con Errores al Procesar ({animalsWithErrors.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {animalsWithErrors.map((animal) => (
+                <div
+                  key={animal.animal_id}
+                  className="w-full flex items-center justify-between p-3 bg-red-50 dark:bg-red-950/10 rounded-lg"
+                >
+                  <div className="text-left">
+                    <div className="font-medium text-red-900 dark:text-red-100">
+                      {animal.animal_name}
+                    </div>
+                    <div className="text-sm text-red-700 dark:text-red-300">
+                      Caravana: {animal.animal_tag}
+                    </div>
+                    <div className="text-xs text-red-600 mt-1">
+                      {animal.reason}
+                    </div>
+                  </div>
+                  <AlertTriangle className="h-5 w-5 text-red-700 flex-shrink-0" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* No data state */}
+      {stats?.totalAnimals === 0 && (
         <Card>
-          <CardContent className="p-8 text-center">
+          <CardContent className="p-12 text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Sin datos de vacunación</h3>
             <p className="text-muted-foreground">
-              No hay registros de vacunación para los animales activos
+              No hay animales activos en el sistema
             </p>
           </CardContent>
         </Card>
