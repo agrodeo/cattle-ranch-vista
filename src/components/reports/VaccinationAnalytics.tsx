@@ -124,23 +124,17 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               next_due: status.next_due_date
             }));
 
-          // Check if animal has any overdue vaccines
-          const hasOverdueVaccines = statusData.some((status: any) => 
-            status.status === 'vencida'
-          );
-
-          // Animal is "compliant" (al día) if has complete vaccines and NO overdue vaccines
-          if (completeVaccines.length > 0 && !hasOverdueVaccines) {
+          // Mutually exclusive categories: an animal can only be in ONE category
+          if (issues.length === 0 && completeVaccines.length > 0) {
+            // NO problems and has complete vaccines → Al día
             compliantData.push({
               animal_id: animal.id,
               animal_name: animal.name || animal.id_tag || 'Sin nombre',
               animal_tag: animal.id_tag || 'Sin caravana',
               vaccines: completeVaccines
             });
-          }
-
-          // Only add to issues if there are actual problems
-          if (issues.length > 0) {
+          } else if (issues.length > 0) {
+            // Has at least one problem → Requires attention
             issuesData.push({
               animal_id: animal.id,
               animal_name: animal.name || animal.id_tag || 'Sin nombre',
