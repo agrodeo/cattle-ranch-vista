@@ -89,6 +89,13 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
       const results = await Promise.all(statusPromises);
 
+      console.log('Vaccination Analytics - Debug Info:', {
+        totalAnimals: animals.length,
+        resultsCount: results.length,
+        sampleResult: results[0],
+        vaccinationHistory: history?.length || 0
+      });
+
       // Process results
       const issuesData: typeof animalsWithIssues = [];
       const compliantData: typeof animalsCompliant = [];
