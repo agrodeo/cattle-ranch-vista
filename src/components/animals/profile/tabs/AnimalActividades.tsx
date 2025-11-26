@@ -24,7 +24,9 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useState } from "react";
 import { useAnimalActivities } from "@/hooks/useAnimalActivities";
-import { Link } from "react-router-dom";
+import { useAllActivities, UnifiedActivity } from "@/hooks/useAllActivities";
+import { Link, useNavigate } from "react-router-dom";
+import { ActivityDetailDialog } from "@/components/activities/ActivityDetailDialog";
 
 interface AnimalActividadesProps {
   animal: Animal;
@@ -35,8 +37,11 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroFecha, setFiltroFecha] = useState<string>('');
   const [busqueda, setBusqueda] = useState<string>('');
+  const [selectedBatchActivity, setSelectedBatchActivity] = useState<UnifiedActivity | null>(null);
   
   const { activities, isLoading } = useAnimalActivities(animal.id);
+  const { activities: allActivities } = useAllActivities();
+  const navigate = useNavigate();
 
   const actividadesFiltradas = activities.filter(actividad => {
     const cumpleTipo = filtroTipo === 'todos' || actividad.type === filtroTipo;
@@ -291,13 +296,44 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
                           </p>
                         )}
                         
-                        {/* Responsable */}
+                         {/* Responsable */}
                         {actividad.responsable && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <User className="h-3 w-3" />
                             {actividad.responsable}
                           </div>
                         )}
+                        
+                        {/* Batch Activity Link */}
+                        {(() => {
+                          // Find if this activity is part of a batch
+                          const batchActivity = allActivities.find(batch => 
+                            batch.animales.some(a => a.id === animal.id) &&
+                            batch.fecha === actividad.date &&
+                            batch.tipo.toLowerCase().includes(actividad.type.toLowerCase())
+                          );
+                          
+                          if (batchActivity && batchActivity.animales.length > 1) {
+                            const otherAnimalsCount = batchActivity.animales.length - 1;
+                            return (
+                              <div className="mt-2 flex items-center gap-2">
+                                <Badge variant="secondary" className="text-xs">
+                                  +{otherAnimalsCount} {otherAnimalsCount === 1 ? 'animal' : 'animales'} más
+                                </Badge>
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  className="h-auto p-0 text-xs"
+                                  onClick={() => setSelectedBatchActivity(batchActivity)}
+                                >
+                                  Ver actividad completa
+                                  <ExternalLink className="h-3 w-3 ml-1" />
+                                </Button>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -307,6 +343,13 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Batch Activity Detail Dialog */}
+      <ActivityDetailDialog
+        activity={selectedBatchActivity}
+        open={!!selectedBatchActivity}
+        onClose={() => setSelectedBatchActivity(null)}
+      />
     </div>
   );
 }
