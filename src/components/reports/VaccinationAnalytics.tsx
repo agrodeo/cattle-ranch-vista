@@ -116,6 +116,17 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               next_due: status.next_due_date
             }));
 
+          // Debug first animal
+          if (animal.id_tag === '8987') {
+            console.log('DEBUG Animal 8987:', {
+              mandatoryCount: mandatoryVaccines.length,
+              mandatoryCompleteCount: mandatoryComplete.length,
+              hasOverdue,
+              isCompliant,
+              statusData
+            });
+          }
+
           // Mutually exclusive categories
           if (isCompliant) {
             // All mandatory vaccines complete and no overdue → Al día
@@ -141,6 +152,11 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                 days_overdue: status.days_overdue
               }));
 
+            // Debug first animal issues
+            if (animal.id_tag === '8987') {
+              console.log('DEBUG Animal 8987 issues:', issues);
+            }
+
             if (issues.length > 0) {
               issuesData.push({
                 animal_id: animal.id,
@@ -157,6 +173,13 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
             }
           }
         }
+      });
+
+      console.log('Final counts:', {
+        compliantData: compliantData.length,
+        issuesData: issuesData.length,
+        totalOverdueVaccines,
+        totalPendingVaccines
       });
 
       setStats({
