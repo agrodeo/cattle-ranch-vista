@@ -223,8 +223,9 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       if (!animals || animals.length === 0) {
         console.log('ℹ️ No active animals found');
         setStats({
-          totalVaccinations: 0,
           totalAnimals: 0,
+          totalRequirements: 0,
+          mandatoryRequirements: 0,
           animalsCompliant: 0,
           animalsWithOverdue: 0,
           animalsWithPending: 0,
@@ -244,19 +245,21 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         return;
       }
 
-      // Fetch vaccination history
-      const activeAnimalIds = animals.map(a => a.id);
-      const { data: history, error: historyError } = await supabase
-        .from('animal_vaccines')
-        .select('*')
+      // Fetch vaccination requirements count for context
+      const { data: requirementsData, error: reqError } = await supabase
+        .from('cabaña_vaccination_requirements')
+        .select('id, vaccine_name, is_mandatory')
         .eq('cabaña_id', currentUser.cabañaId)
-        .in('animal_id', activeAnimalIds);
+        .eq('is_active', true);
 
-      if (historyError) {
-        console.error('❌ Error fetching vaccination history:', historyError);
+      if (reqError) {
+        console.error('❌ Error fetching requirements:', reqError);
       }
 
-      console.log(`💉 Found ${history?.length || 0} vaccination records`);
+      const totalRequirements = requirementsData?.length || 0;
+      const mandatoryRequirements = requirementsData?.filter(r => r.is_mandatory).length || 0;
+
+      console.log(`📋 Found ${totalRequirements} active requirements (${mandatoryRequirements} mandatory)`);
 
       // Process animals in batches with error handling
       const results = await processAnimalsBatch(animals, currentUser.cabañaId);
@@ -322,6 +325,8 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       // ============= PHASE 6: Comprehensive Logging =============
       console.log('📊 Vaccination Analytics Summary:', {
         totalAnimals: animals.length,
+        totalRequirements,
+        mandatoryRequirements,
         processedSuccessfully: classified.filter(c => c.category !== 'error').length,
         processedWithErrors: withErrors.length,
         categories: {
@@ -332,8 +337,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           noRequirements: noRequirements.length,
           errors: withErrors.length
         },
-        vaccinations: {
-          totalRecords: history?.length || 0,
+        vaccines: {
           totalOverdue: totalOverdueVaccines,
           totalPending: totalPendingVaccines
         }
@@ -350,8 +354,9 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       }
 
       setStats({
-        totalVaccinations: history?.length || 0,
         totalAnimals: animals.length,
+        totalRequirements,
+        mandatoryRequirements,
         animalsCompliant: compliant.length,
         animalsWithOverdue: overdue.length,
         animalsWithPending: pending.length,
@@ -399,7 +404,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Analítica de Vacunación:</strong> Total de {stats?.totalVaccinations || 0} vacunaciones registradas en {stats?.totalAnimals || 0} animales activos
+          <strong>Analítica de Vacunación:</strong> {stats?.totalAnimals || 0} animales activos • {stats?.totalRequirements || 0} requisitos configurados ({stats?.mandatoryRequirements || 0} obligatorios)
         </AlertDescription>
       </Alert>
 
