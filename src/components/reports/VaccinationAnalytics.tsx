@@ -97,12 +97,11 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
       results.forEach(({ animal, statusData }) => {
         if (statusData && statusData.length > 0) {
-          // Filter for actual problems: overdue, pending, or not applied
+          // Filter for actual problems: overdue or pending (NOT no_aplicada)
           const issues = statusData
             .filter((status: any) => 
               status.status === 'vencida' || 
-              status.status === 'pendiente' ||
-              status.status === 'no_aplicada'
+              status.status === 'pendiente'
             )
             .map((status: any) => ({
               vaccine_name: status.vaccine_name,
@@ -124,9 +123,19 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               next_due: status.next_due_date
             }));
 
+          // Check mandatory vaccines compliance
+          const mandatoryVaccines = statusData.filter((s: any) => s.is_mandatory);
+          const mandatoryComplete = mandatoryVaccines.filter((s: any) => s.status === 'completa');
+          const hasOverdue = statusData.some((s: any) => s.status === 'vencida');
+          
+          // Animal is "al día" if ALL mandatory vaccines are complete AND no overdue vaccines
+          const isCompliant = mandatoryVaccines.length > 0 && 
+                             mandatoryComplete.length === mandatoryVaccines.length && 
+                             !hasOverdue;
+
           // Mutually exclusive categories: an animal can only be in ONE category
-          if (issues.length === 0 && completeVaccines.length > 0) {
-            // NO problems and has complete vaccines → Al día
+          if (isCompliant) {
+            // All mandatory vaccines complete and no overdue → Al día
             compliantData.push({
               animal_id: animal.id,
               animal_name: animal.name || animal.id_tag || 'Sin nombre',
@@ -134,7 +143,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               vaccines: completeVaccines
             });
           } else if (issues.length > 0) {
-            // Has at least one problem → Requires attention
+            // Has overdue or pending vaccines → Requires attention
             issuesData.push({
               animal_id: animal.id,
               animal_name: animal.name || animal.id_tag || 'Sin nombre',
