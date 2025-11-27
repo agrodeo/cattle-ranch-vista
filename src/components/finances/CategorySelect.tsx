@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -39,6 +40,7 @@ export default function CategorySelect({
   placeholder = "Categoría",
   isAnimalSale = false,
 }: Props) {
+  const { t } = useTranslation(['finance', 'common']);
   const { currentUser } = useSupabaseAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
