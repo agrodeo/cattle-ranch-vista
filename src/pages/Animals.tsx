@@ -702,7 +702,7 @@ const Animals = () => {
       {/* Pull to refresh indicator for mobile */}
       {isMobile && isPulling && (
         <div 
-          className="absolute top-0 left-0 right-0 bg-primary/10 flex items-center justify-center transition-all duration-200 ease-out z-10"
+          className="absolute top-0 left-0 right-0 bg-primary/10 flex items-center justify-center transition-all duration-200 ease-out z-10 rounded-lg"
           style={{ height: `${Math.min(pullDistance, 80)}px` }}
         >
           <RefreshCw 
@@ -716,10 +716,12 @@ const Animals = () => {
           />
         </div>
       )}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative gradient-mesh py-6 px-4 rounded-2xl">
         <div className="space-y-2">
-          <h1 className="hidden sm:block text-3xl font-bold">{t('animals:title')}</h1>
-          <p className="hidden sm:block text-muted-foreground">
+          <h1 className="hidden sm:block text-4xl font-display font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            {t('animals:title')}
+          </h1>
+          <p className="hidden sm:block text-muted-foreground font-medium">
             {t('animals:subtitle')}
           </p>
         </div>
@@ -1097,10 +1099,10 @@ const Animals = () => {
       </div>
 
       {/* Filters and Search */}
-      <Card>
-        <CardHeader>
+      <Card className="overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-muted/50 to-muted/30">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <CardTitle className="text-lg">{t('animals:animalsList')}</CardTitle>
+            <CardTitle className="text-xl font-display">{t('animals:animalsList')}</CardTitle>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -1108,7 +1110,7 @@ const Animals = () => {
                   placeholder={t('animals:searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-full sm:w-80"
+                  className="pl-10 w-full sm:w-80 bg-background/50 backdrop-blur-sm"
                 />
               </div>
               
@@ -1179,37 +1181,41 @@ const Animals = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredAnimals.map((animal) => (
+                    {filteredAnimals.map((animal, index) => (
                       <>
-                        <TableRow key={animal.id} className="hover:bg-muted/50">
+                        <TableRow 
+                          key={animal.id} 
+                          className="hover:bg-muted/50 transition-all duration-200 animate-fade-in"
+                          style={{ animationDelay: `${index * 0.03}s` }}
+                        >
                           <TableCell>
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => toggleExpandedRow(animal.id)}
-                              className="p-1"
+                              className="p-1 hover:bg-primary/10 transition-colors"
                             >
                               {expandedRows.has(animal.id) ? (
-                                <ChevronDown className="h-4 w-4" />
+                                <ChevronDown className="h-4 w-4 text-primary" />
                               ) : (
                                 <ChevronRight className="h-4 w-4" />
                               )}
                             </Button>
                           </TableCell>
                            <TableCell 
-                             className="font-medium cursor-pointer hover:text-primary"
+                             className="font-medium cursor-pointer hover:text-primary transition-colors"
                              onClick={() => navigate(`/animales/${animal.id}`)}
                            >
                              {getAnimalDisplayName(animal)}
                            </TableCell>
-                           <TableCell>{animal.id_tag}</TableCell>
+                           <TableCell className="font-mono text-sm">{animal.id_tag}</TableCell>
                             <TableCell>
-                              <Badge variant="outline">
+                              <Badge variant="outline" className="font-medium">
                                 {getTranslatedCategory(getAgeCategory(animal), t)}
                               </Badge>
                             </TableCell>
-                           <TableCell>{animal.breed}</TableCell>
-                          <TableCell>
+                           <TableCell className="font-medium">{animal.breed}</TableCell>
+                          <TableCell className="text-muted-foreground">
                             {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
                           </TableCell>
                           <TableCell>{getStatusBadge(animal.status)}</TableCell>

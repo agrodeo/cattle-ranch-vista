@@ -116,10 +116,39 @@ All colors MUST be HSL.
       transform: translateY(0);
     }
   }
+  
+  /* Modern glassmorphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .glass-dark {
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Gradient backgrounds */
+  .gradient-mesh {
+    background: 
+      radial-gradient(at 40% 20%, hsla(142, 71%, 45%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(158, 79%, 55%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(142, 71%, 45%, 0.1) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(158, 79%, 55%, 0.1) 0px, transparent 50%);
+  }
 
   /* Brand gradient utilities */
   .bg-brand-gradient {
     background: var(--brand-gradient);
+  }
+  
+  .text-brand-gradient {
+    background: var(--brand-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .border-brand-gradient::after {
@@ -132,6 +161,15 @@ All colors MUST be HSL.
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
   }
+  
+  /* Modern glow effects */
+  .glow-primary {
+    box-shadow: 0 0 20px hsla(142, 71%, 45%, 0.3);
+  }
+  
+  .glow-primary-strong {
+    box-shadow: 0 0 40px hsla(142, 71%, 45%, 0.5);
+  }
 
   /* Button hover effects */
   .btn-primary {
@@ -141,6 +179,11 @@ All colors MUST be HSL.
   .btn-secondary {
     @apply border border-ink-200 bg-white text-ink-700 font-medium rounded-lg px-4 py-2 transition-all duration-200 hover:bg-ink-50 hover:-translate-y-0.5 focus:ring-2 focus:ring-brand-500 focus:ring-opacity-50 focus:outline-none;
   }
+  
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   /* Table styles */
   .table-sticky-header thead {
@@ -148,11 +191,11 @@ All colors MUST be HSL.
   }
 
   .table-row-hover {
-    @apply hover:bg-ink-50 transition-colors duration-150;
+    @apply hover:bg-muted/50 transition-all duration-150;
   }
 
   .table-zebra tbody tr:nth-child(odd) {
-    @apply bg-ink-25;
+    @apply bg-muted/20;
   }
 
   /* Status badges */
@@ -176,18 +219,25 @@ All colors MUST be HSL.
     @apply bg-orange-100 text-orange-800 border border-orange-200;
   }
 
-  /* Card shadows */
-  .card-shadow {
-    box-shadow: 0 6px 24px rgba(15,23,42,0.06);
+  /* Modern card shadows */
+  .card-modern {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 10px 15px -3px rgba(0,0,0,0.05);
+    @apply transition-all duration-300;
   }
-
-  .card-shadow:hover {
-    box-shadow: 0 10px 30px rgba(15,23,42,0.10);
+  
+  .card-modern:hover {
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 20px 25px -5px rgba(0,0,0,0.08);
+    @apply -translate-y-1;
   }
 
   /* Focus glow */
   .focus-glow:focus {
-    @apply ring-2 ring-brand-500 ring-opacity-20 outline-none;
+    @apply ring-2 ring-primary ring-opacity-20 outline-none;
+  }
+  
+  /* Smooth scroll */
+  html {
+    scroll-behavior: smooth;
   }
 }
 
