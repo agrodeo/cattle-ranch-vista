@@ -12,6 +12,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Animal {
   id: string;
@@ -32,6 +33,7 @@ interface AnimalAssignmentDialogProps {
 export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess }: AnimalAssignmentDialogProps) {
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
+  const { t } = useTranslation(['corrals', 'common']);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
@@ -63,8 +65,8 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
     } catch (error) {
       console.error("Error fetching animals:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los animales",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.assignment.loadError'),
         variant: "destructive",
       });
     }
@@ -103,8 +105,8 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: `${selectedAnimals.length} animal(es) asignado(s) al corral`,
+        title: t('common:success.title'),
+        description: t('corrals:dialogs.assignment.successMessage', { count: selectedAnimals.length }),
       });
 
       setSelectedAnimals([]);
@@ -112,8 +114,8 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
     } catch (error) {
       console.error("Error assigning animals:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron asignar los animales",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.assignment.errorMessage'),
         variant: "destructive",
       });
     } finally {
@@ -135,8 +137,8 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: `${selectedAnimals.length} animal(es) removido(s) del corral`,
+        title: t('common:success.title'),
+        description: t('corrals:dialogs.assignment.removeSuccess', { count: selectedAnimals.length }),
       });
 
       setSelectedAnimals([]);
@@ -144,8 +146,8 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
     } catch (error) {
       console.error("Error removing animals:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron remover los animales",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.assignment.removeError'),
         variant: "destructive",
       });
     } finally {
@@ -157,12 +159,12 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Asignar Animales al Corral</DialogTitle>
+          <DialogTitle>{t('corrals:dialogs.assignment.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <Input
-            placeholder="Buscar por nombre, tag o raza..."
+            placeholder={t('corrals:dialogs.assignment.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -205,7 +207,7 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
 
             {filteredAnimals.length === 0 && (
               <p className="text-center text-muted-foreground py-8">
-                No se encontraron animales
+                {t('corrals:dialogs.assignment.noAnimals')}
               </p>
             )}
           </div>
@@ -217,7 +219,7 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Cancelar
+            {t('common:actions.cancel')}
           </Button>
           {selectedAnimals.length > 0 && (
             <Button
@@ -225,14 +227,14 @@ export function AnimalAssignmentDialog({ open, onOpenChange, corralId, onSuccess
               onClick={handleRemoveFromCorral}
               disabled={loading}
             >
-              Remover del Corral ({selectedAnimals.length})
+              {t('corrals:dialogs.assignment.removeButton', { count: selectedAnimals.length })}
             </Button>
           )}
           <Button
             onClick={handleAssign}
             disabled={loading || selectedAnimals.length === 0}
           >
-            {loading ? "Asignando..." : `Asignar al Corral (${selectedAnimals.length})`}
+            {loading ? t('corrals:dialogs.assignment.assigning') : t('corrals:dialogs.assignment.assignButton', { count: selectedAnimals.length })}
           </Button>
         </DialogFooter>
       </DialogContent>

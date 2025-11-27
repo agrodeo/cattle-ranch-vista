@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface CreateCorralDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ interface CreateCorralDialogProps {
 export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorralDialogProps) {
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
+  const { t } = useTranslation(['corrals', 'common']);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -63,8 +65,8 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Corral creado correctamente",
+        title: t('common:success.title'),
+        description: t('corrals:dialogs.create.successMessage'),
       });
 
       setFormData({ name: "", hectareas: "" });
@@ -72,8 +74,8 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
     } catch (error) {
       console.error("Error creating corral:", error);
       toast({
-        title: "Error",
-        description: "No se pudo crear el corral",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.create.errorMessage'),
         variant: "destructive",
       });
     } finally {
@@ -85,13 +87,13 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-md mx-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Crear Nuevo Corral</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{t('corrals:dialogs.create.title')}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name" className="text-sm font-medium">Nombre del Corral</Label>
+              <Label htmlFor="name" className="text-sm font-medium">{t('corrals:dialogs.create.nameLabel')}</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -103,7 +105,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
             </div>
             
             <div>
-              <Label htmlFor="hectareas" className="text-sm font-medium">Hectáreas</Label>
+              <Label htmlFor="hectareas" className="text-sm font-medium">{t('corrals:dialogs.create.hectaresLabel')}</Label>
               <Input
                 id="hectareas"
                 type="number"
@@ -124,14 +126,14 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
               disabled={loading}
               className="w-full sm:w-auto"
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </Button>
             <Button 
               type="submit" 
               disabled={loading}
               className="w-full sm:w-auto"
             >
-              {loading ? "Creando..." : "Crear Corral"}
+              {loading ? t('corrals:dialogs.create.creating') : t('corrals:dialogs.create.createButton')}
             </Button>
           </DialogFooter>
         </form>
