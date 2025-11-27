@@ -1,0 +1,17 @@
+{
+  "trial": {
+    "ending": "Seu teste termina em {{days}} dias",
+    "daysRemaining": "{{days}} dias restantes",
+    "readOnlyMode": "Modo somente leitura",
+    "expired": "Seu período de teste expirou"
+  },
+  "plan": {
+    "upgradePlan": "Atualizar Plano",
+    "viewPlans": "Ver Planos",
+    "approachingLimit": "Aproximando-se do limite"
+  },
+  "animals": {
+    "count": "{{current}} de {{max}} animais",
+    "limitReached": "Você atingiu o limite de animais"
+  }
+}

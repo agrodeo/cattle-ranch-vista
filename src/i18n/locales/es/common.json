@@ -177,5 +177,45 @@
         "description": "Has creado y organizado corrales"
       }
     }
+  },
+  "sync": {
+    "syncCenter": "Centro de Sincronización",
+    "syncNow": "Sincronizar ahora",
+    "syncing": "Sincronizando...",
+    "pending": "Pendiente",
+    "failed": "Fallido",
+    "synced": "Sincronizado",
+    "retryFailed": "Reintentar fallidos",
+    "pendingEvents": "Eventos pendientes de sincronización",
+    "noInternet": "Sin conexión a internet",
+    "syncCompleted": "Sincronización completada",
+    "syncError": "Error al sincronizar",
+    "noConnectionWarning": "Estás sin conexión. Todo se guardará como pendiente y se sincronizará al reconectar.",
+    "eventsRetried": "Eventos reintentados"
+  },
+  "connectivity": {
+    "offlineBanner": "Estás sin conexión. Todo se guardará como pendiente y se sincronizará al reconectar."
+  },
+  "support": {
+    "needHelp": "¿Necesitas ayuda?",
+    "contactSupport": "Contactar soporte",
+    "close": "Cerrar",
+    "generalQuery": "Consulta general",
+    "supportEmail": "Soporte"
+  },
+  "errors": {
+    "unexpectedError": "Error inesperado",
+    "reload": "Recargar",
+    "errorProcessing": "Error al procesar",
+    "loadError": "Error al cargar",
+    "saveError": "Error al guardar"
+  },
+  "forms": {
+    "select": "Seleccionar",
+    "selectType": "Seleccionar tipo",
+    "selectDate": "Seleccionar fecha",
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "registering": "Registrando..."
   }
 }

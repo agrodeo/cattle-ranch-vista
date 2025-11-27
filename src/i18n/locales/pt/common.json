@@ -177,5 +177,45 @@
         "description": "Você criou e organizou currais"
       }
     }
+  },
+  "sync": {
+    "syncCenter": "Centro de Sincronização",
+    "syncNow": "Sincronizar agora",
+    "syncing": "Sincronizando...",
+    "pending": "Pendente",
+    "failed": "Falhou",
+    "synced": "Sincronizado",
+    "retryFailed": "Tentar novamente",
+    "pendingEvents": "Eventos pendentes de sincronização",
+    "noInternet": "Sem conexão à internet",
+    "syncCompleted": "Sincronização concluída",
+    "syncError": "Erro ao sincronizar",
+    "noConnectionWarning": "Você está offline. Tudo será salvo como pendente e sincronizado ao reconectar.",
+    "eventsRetried": "Eventos tentados novamente"
+  },
+  "connectivity": {
+    "offlineBanner": "Você está offline. Tudo será salvo como pendente e sincronizado ao reconectar."
+  },
+  "support": {
+    "needHelp": "Precisa de ajuda?",
+    "contactSupport": "Contatar suporte",
+    "close": "Fechar",
+    "generalQuery": "Consulta geral",
+    "supportEmail": "Suporte"
+  },
+  "errors": {
+    "unexpectedError": "Erro inesperado",
+    "reload": "Recarregar",
+    "errorProcessing": "Erro ao processar",
+    "loadError": "Erro ao carregar",
+    "saveError": "Erro ao salvar"
+  },
+  "forms": {
+    "select": "Selecionar",
+    "selectType": "Selecionar tipo",
+    "selectDate": "Selecionar data",
+    "loading": "Carregando...",
+    "saving": "Salvando...",
+    "registering": "Registrando..."
   }
 }

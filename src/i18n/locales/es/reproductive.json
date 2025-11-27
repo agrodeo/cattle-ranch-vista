@@ -1,0 +1,25 @@
+{
+  "alerts": {
+    "title": "Alertas Reproductivas",
+    "overdueCalving": "Parto vencido",
+    "pregnancyToResolve": "Preñez a resolver",
+    "reproductiveAlert": "Alerta reproductiva",
+    "loadingAlerts": "Cargando alertas...",
+    "noAlerts": "No hay alertas reproductivas",
+    "verify": "Verificar",
+    "resolve": "Resolver"
+  },
+  "pregnancy": {
+    "pregnant": "Preñada",
+    "empty": "Vacía",
+    "gestationDays": "{{days}} días de gestación"
+  },
+  "loss": {
+    "title": "Pérdida de Preñez",
+    "earlyAbortion": "Aborto temprano",
+    "lateAbortion": "Aborto tardío",
+    "neonatalLoss": "Pérdida neonatal",
+    "registered": "Pérdida de preñez registrada",
+    "error": "Error al registrar pérdida de preñez"
+  }
+}

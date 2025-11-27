@@ -1,0 +1,17 @@
+{
+  "trial": {
+    "ending": "Your trial ends in {{days}} days",
+    "daysRemaining": "{{days}} days remaining",
+    "readOnlyMode": "Read-only mode",
+    "expired": "Your trial period has expired"
+  },
+  "plan": {
+    "upgradePlan": "Upgrade Plan",
+    "viewPlans": "View Plans",
+    "approachingLimit": "Approaching limit"
+  },
+  "animals": {
+    "count": "{{current}} of {{max}} animals",
+    "limitReached": "You've reached the animal limit"
+  }
+}
