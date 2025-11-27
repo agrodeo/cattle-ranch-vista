@@ -466,12 +466,22 @@ export const useDashboardSummary = (): DashboardSummary => {
         })) || [],
       });
 
-      // Calculate warnings
+      // Calculate warnings - only if we have valid subscription data
       const animalRatio = (animalsCount || 0) / cabanaInfo.animal_limit;
+      const hasValidSubscription = subscriptionStatus !== null && subscriptionStatus.maxAnimals > 0;
+      
+      console.log('📊 Warning calculation:', {
+        animalsCount,
+        animalLimit: cabanaInfo.animal_limit,
+        animalRatio,
+        hasValidSubscription,
+        subscriptionStatus
+      });
+      
       setWarnings({
         noCabana: false,
-        nearAnimalLimit: animalRatio >= 0.85 && animalRatio < 1.0,
-        overAnimalLimit: animalRatio >= 1.0,
+        nearAnimalLimit: hasValidSubscription && animalRatio >= 0.85 && animalRatio < 1.0,
+        overAnimalLimit: hasValidSubscription && animalRatio >= 1.0,
         alerts: warnings,
       });
 
