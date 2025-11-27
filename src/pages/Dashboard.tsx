@@ -146,7 +146,7 @@ const Dashboard = () => {
             {/* Recent Activities */}
             <SectionCard
               title={t('dashboard:sections.recentActivities')}
-              subtitle={t('common:operations')}
+              subtitle={t('common:common.operations')}
               count={recentActivities.length}
               primaryAction={!warnings.noCabana ? {
                 label: t('dashboard:actions.viewAll'),
@@ -184,7 +184,7 @@ const Dashboard = () => {
             {warnings.alerts.length > 0 && (
               <SectionCard
                 title={t('dashboard:sections.warnings')}
-                subtitle={t('common:requiresAttention')}
+                subtitle={t('common:common.requiresAttention')}
                 count={warnings.alerts.length}
               >
                 <div className="space-y-3">
@@ -236,7 +236,7 @@ const Dashboard = () => {
 
             <SectionCard
               title={t('dashboard:sections.upcomingActivities')}
-              subtitle={t('common:scheduledNext')}
+              subtitle={t('common:common.scheduledNext')}
               count={upcoming.activitiesNext7d.length}
             >
               {upcoming.activitiesNext7d.length > 0 ? (
