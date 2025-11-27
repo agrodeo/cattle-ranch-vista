@@ -160,16 +160,16 @@ export function MobileAnimals() {
               <SelectValue placeholder="Categoría" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las categorías</SelectItem>
+              <SelectItem value="all">{t('animals:filters.allCategories')}</SelectItem>
               {uniqueCategories.sort().map(category => (
                 <SelectItem key={category} value={category}>
-                  {category === 'Ternero' && 'Terneros (machos <8m)'}
-                  {category === 'Ternera' && 'Terneras (hembras <8m)'}
-                  {category === 'Torito' && 'Toritos (machos 8-24m)'}
-                  {category === 'Vaquillona' && 'Vaquillonas (hembras 8-24m)'}
-                  {category === 'Novillo' && 'Novillos (castrados)'}
-                  {category === 'Toro' && 'Toros (adultos)'}
-                  {category === 'Vaca' && 'Vacas (adultas)'}
+                  {category === 'Ternero' && `${t('animals:categories.maleCalf')} (${t('animals:categoryDescriptions.maleCalf')})`}
+                  {category === 'Ternera' && `${t('animals:categories.femaleCalf')} (${t('animals:categoryDescriptions.femaleCalf')})`}
+                  {category === 'Torito' && `${t('animals:categories.youngBull')} (${t('animals:categoryDescriptions.youngBull')})`}
+                  {category === 'Vaquillona' && `${t('animals:categories.heifer')} (${t('animals:categoryDescriptions.heifer')})`}
+                  {category === 'Novillo' && `${t('animals:categories.steer')} (${t('animals:categoryDescriptions.steer')})`}
+                  {category === 'Toro' && `${t('animals:categories.bull')} (${t('animals:categoryDescriptions.bull')})`}
+                  {category === 'Vaca' && `${t('animals:categories.cow')} (${t('animals:categoryDescriptions.cow')})`}
                   {!['Ternero', 'Ternera', 'Torito', 'Vaquillona', 'Novillo', 'Toro', 'Vaca'].includes(category) && category}
                 </SelectItem>
               ))}
@@ -181,10 +181,10 @@ export function MobileAnimals() {
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="active">Activos</SelectItem>
-              <SelectItem value="sold">Vendidos</SelectItem>
-              <SelectItem value="dead">Muertos</SelectItem>
+              <SelectItem value="all">{t('animals:filters.allStatuses')}</SelectItem>
+              <SelectItem value="active">{t('animals:filters.active')}</SelectItem>
+              <SelectItem value="sold">{t('animals:filters.sold')}</SelectItem>
+              <SelectItem value="dead">{t('animals:filters.dead')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -193,7 +193,7 @@ export function MobileAnimals() {
               <SelectValue placeholder="Raza" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las razas</SelectItem>
+              <SelectItem value="all">{t('animals:filters.allBreeds')}</SelectItem>
               {uniqueBreeds.map(breed => (
                 <SelectItem key={breed} value={breed}>
                   {breed}
@@ -209,13 +209,13 @@ export function MobileAnimals() {
         <div className="p-4 bg-muted/50 border-b border-border">
           <div className="flex gap-2">
             <Button size="sm" variant="outline" className="flex-1">
-              Mover de Corral
+              {t('animals:bulk.moveCorral')}
             </Button>
             <Button size="sm" variant="outline" className="flex-1">
-              Aplicar Vacuna
+              {t('animals:bulk.applyVaccine')}
             </Button>
             <Button size="sm" variant="outline" className="flex-1">
-              Registrar Peso
+              {t('animals:bulk.registerWeight')}
             </Button>
           </div>
         </div>
@@ -226,8 +226,8 @@ export function MobileAnimals() {
         {filteredAnimals.length === 0 ? (
           <EmptyState
             icon={<Users className="h-12 w-12" />}
-            title="No hay animales"
-            description="No se encontraron animales con los filtros seleccionados"
+            title={t('animals:empty.noAnimals')}
+            description={t('animals:empty.noAnimalsFiltered')}
           />
         ) : (
           <div className="space-y-3">
@@ -274,7 +274,7 @@ export function MobileAnimals() {
                             </span>
                             {animal.esta_preñada && (
                               <Badge variant="secondary" className="text-xs bg-pink-100 text-pink-700">
-                                Preñada
+                                {t('animals:fields.pregnant')}
                               </Badge>
                             )}
                           </div>
@@ -286,51 +286,51 @@ export function MobileAnimals() {
                       <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                         {animal.breed && (
                           <div className="truncate">
-                            <span className="font-medium">Raza:</span> {animal.breed}
+                            <span className="font-medium">{t('animals:fields.breed')}:</span> {animal.breed}
                           </div>
                         )}
                         {animal.birth_date && (
                           <div className="truncate">
-                            <span className="font-medium">Nacimiento:</span> {formatDate(animal.birth_date)}
+                            <span className="font-medium">{t('animals:fields.birthDate')}:</span> {formatDate(animal.birth_date)}
                           </div>
                         )}
                       </div>
                     </CardContent>
 
                     <CollapsibleContent>
-                      <div className="border-t border-border space-y-4 overflow-hidden">
+                        <div className="border-t border-border space-y-4 overflow-hidden">
                         {/* Información Básica */}
                         <div className="px-4 pt-3 space-y-2">
-                          <h4 className="font-semibold text-sm">Información Básica</h4>
+                          <h4 className="font-semibold text-sm">{t('animals:details.basicInfo')}</h4>
                           <div className="grid grid-cols-2 gap-3 text-xs">
                             <div className="min-w-0">
-                              <span className="text-muted-foreground block">ID:</span>
+                              <span className="text-muted-foreground block">{t('animals:fields.id')}:</span>
                               <div className="font-medium truncate">{animal.id_tag}</div>
                             </div>
                             {animal.name && (
                               <div className="min-w-0">
-                                <span className="text-muted-foreground block">Nombre:</span>
+                                <span className="text-muted-foreground block">{t('animals:fields.name')}:</span>
                                 <div className="font-medium truncate">{animal.name}</div>
                               </div>
                             )}
                             {animal.breed && (
                               <div className="min-w-0">
-                                <span className="text-muted-foreground block">Raza:</span>
+                                <span className="text-muted-foreground block">{t('animals:fields.breed')}:</span>
                                 <div className="font-medium truncate">{animal.breed}</div>
                               </div>
                             )}
                             {animal.birth_date && (
                               <div className="min-w-0">
-                                <span className="text-muted-foreground block">F. Nac.:</span>
+                                <span className="text-muted-foreground block">{t('animals:details.birthDateShort')}</span>
                                 <div className="font-medium truncate">{formatDate(animal.birth_date)}</div>
                               </div>
                             )}
                             <div className="min-w-0">
-                              <span className="text-muted-foreground block">Sexo:</span>
+                              <span className="text-muted-foreground block">{t('animals:fields.sex')}:</span>
                               <div className="font-medium truncate">{animal.sex}</div>
                             </div>
                             <div className="min-w-0">
-                              <span className="text-muted-foreground block">Estado:</span>
+                              <span className="text-muted-foreground block">{t('animals:fields.status')}:</span>
                               <div className="font-medium truncate">{animal.status}</div>
                             </div>
                           </div>

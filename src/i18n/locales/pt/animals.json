@@ -53,7 +53,23 @@
   "filters": {
     "allCategories": "Todas as categorias",
     "allBreeds": "Todas as raças",
-    "allStatuses": "Todos os status"
+    "allStatuses": "Todos os status",
+    "active": "Ativos",
+    "sold": "Vendidos",
+    "dead": "Mortos"
+  },
+  "bulk": {
+    "moveCorral": "Mover Curral",
+    "applyVaccine": "Aplicar Vacina",
+    "registerWeight": "Registrar Peso"
+  },
+  "details": {
+    "basicInfo": "Informação Básica",
+    "birthDateShort": "D. Nasc.:"
+  },
+  "empty": {
+    "noAnimals": "Nenhum animal",
+    "noAnimalsFiltered": "Nenhum animal encontrado com os filtros selecionados"
   },
   "actions": {
     "view": "Ver",
