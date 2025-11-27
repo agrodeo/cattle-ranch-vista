@@ -4,10 +4,14 @@ import { SectionCard } from "@/components/ui/section-card";
 import { Button } from "@/components/ui/button";
 import { SubscriptionAlert } from "@/components/subscription/SubscriptionAlert";
 import { SubscriptionPlansModal } from "@/components/subscription/SubscriptionPlansModal";
-import { CreditCard } from "lucide-react";
+import { CustomerCenter } from "@/components/subscription/CustomerCenter";
+import { CreditCard, Settings } from "lucide-react";
+import { isNativeApp } from "@/lib/platformDetection";
 
 export default function Subscription() {
   const [showPlansModal, setShowPlansModal] = useState(false);
+  const [showCustomerCenter, setShowCustomerCenter] = useState(false);
+  const isNative = isNativeApp();
 
   useEffect(() => {
     document.title = "Suscripción | AgroDeo";
@@ -22,13 +26,24 @@ export default function Subscription() {
           title="Suscripción"
           subtitle="Gestiona tu plan y límites de uso"
           action={
-            <Button 
-              onClick={() => setShowPlansModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Ver Planes
-            </Button>
+            <div className="flex gap-2">
+              {isNative && (
+                <Button 
+                  onClick={() => setShowCustomerCenter(true)}
+                  variant="outline"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Centro de Suscripción
+                </Button>
+              )}
+              <Button 
+                onClick={() => setShowPlansModal(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <CreditCard className="h-4 w-4 mr-2" />
+                Ver Planes
+              </Button>
+            </div>
           }
         />
 
@@ -43,6 +58,13 @@ export default function Subscription() {
           open={showPlansModal} 
           onOpenChange={setShowPlansModal} 
         />
+
+        {isNative && (
+          <CustomerCenter 
+            open={showCustomerCenter} 
+            onOpenChange={setShowCustomerCenter} 
+          />
+        )}
       </div>
     </div>
   );

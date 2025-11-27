@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,10 @@ import { CompareSheet } from '@/components/subscription/CompareSheet';
 import { StickyFooterCTA } from '@/components/subscription/StickyFooterCTA';
 import { FAQAccordion } from '@/components/subscription/FAQAccordion';
 import { useToast } from '@/hooks/use-toast';
+import { useEntitlements } from '@/hooks/useEntitlements';
+import { revenueCatService } from '@/services/revenueCatService';
+import { detectPlatform, isNativeApp } from '@/lib/platformDetection';
+import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
 
 export type BillingCycle = 'monthly' | 'annual';
 export type Platform = 'web' | 'ios' | 'android';
@@ -69,36 +73,8 @@ const PLANS_DATA: Plan[] = [
   }
 ];
 
-// Mock platform detection
-const getPlatform = (): Platform => {
-  // TODO: Implement actual platform detection
-  return 'web';
-};
-
-// Mock purchase functions
-const createMercadoPagoPreference = async (plan: Plan, billingCycle: BillingCycle) => {
-  // TODO: Implement Mercado Pago integration
-  console.log('Creating Mercado Pago preference for:', plan.nombre, billingCycle);
-  return Promise.resolve({ preference_id: 'mock_preference_id' });
-};
-
-const initiateIOSPurchase = async (plan: Plan, billingCycle: BillingCycle) => {
-  // TODO: Implement iOS StoreKit integration
-  console.log('Initiating iOS purchase for:', plan.nombre, billingCycle);
-  return Promise.resolve({ success: true });
-};
-
-const initiateAndroidPurchase = async (plan: Plan, billingCycle: BillingCycle) => {
-  // TODO: Implement Android Play Billing integration
-  console.log('Initiating Android purchase for:', plan.nombre, billingCycle);
-  return Promise.resolve({ success: true });
-};
-
-const restoreIOSTransactions = async () => {
-  // TODO: Implement iOS transaction restoration
-  console.log('Restoring iOS transactions');
-  return Promise.resolve({ restored: true });
-};
+// Remove mock platform detection - use real one
+// Remove mock purchase functions - use real RevenueCat
 
 export default function Plans() {
   const navigate = useNavigate();
@@ -107,8 +83,30 @@ export default function Plans() {
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [compareSheetOpen, setCompareSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const platform = getPlatform();
+  
+  const { offerings, refreshCustomerInfo } = useEntitlements();
+  const { initiatePurchase, restorePurchases: restoreRevenueCat } = usePlatformPurchase();
+  
+  const platform = detectPlatform();
+  const isNative = isNativeApp();
+  
+  // Get real packages from RevenueCat if available
+  const realPackages = offerings?.current?.availablePackages || [];
+  
+  // Use real offerings if available on native, otherwise use PLANS_DATA for web
+  const displayPlans = isNative && realPackages.length > 0 
+    ? realPackages.map(pkg => {
+        const id = pkg.identifier.toLowerCase();
+        return {
+          id: pkg.identifier,
+          nombre: id.includes('lifetime') ? 'De por vida' : id.includes('year') ? 'Anual' : 'Mensual',
+          precio_mensual: pkg.product.price,
+          precio_anual: pkg.product.price,
+          bullets: [pkg.product.title, pkg.product.description],
+          badge: id.includes('year') ? 'Más popular' : undefined
+        } as Plan;
+      })
+    : PLANS_DATA;
 
   const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
@@ -132,37 +130,40 @@ export default function Plans() {
     if (!selectedPlan) return;
 
     setLoading(true);
-    // Track event
     console.log('Event: purchase_started', { plan: selectedPlan.id, billingCycle, platform });
 
     try {
-      let result;
-
-      switch (platform) {
-        case 'ios':
-          result = await initiateIOSPurchase(selectedPlan, billingCycle);
-          break;
-        case 'android':
-          result = await initiateAndroidPurchase(selectedPlan, billingCycle);
-          break;
-        case 'web':
-          result = await createMercadoPagoPreference(selectedPlan, billingCycle);
-          break;
-      }
-
-      if (result) {
-        // Track success
-        console.log('Event: purchase_succeeded', { plan: selectedPlan.id, billingCycle });
-        
-        toast({
-          title: "¡Suscripción activa!",
-          description: "Tu plan ha sido activado exitosamente.",
+      if (isNative) {
+        // Use RevenueCat for native platforms
+        const pkg = realPackages.find(p => p.identifier === selectedPlan.id);
+        if (pkg) {
+          await revenueCatService.purchasePackage(pkg);
+          await refreshCustomerInfo();
+        } else {
+          throw new Error('Package not found');
+        }
+      } else {
+        // Use web purchase flow (MercadoPago)
+        await initiatePurchase({
+          planId: selectedPlan.id as any,
+          billingCycle,
+          platform
         });
-        
-        navigate('/dashboard');
       }
-    } catch (error) {
-      // Track failure
+
+      console.log('Event: purchase_succeeded', { plan: selectedPlan.id, billingCycle });
+      
+      toast({
+        title: "¡Suscripción activa!",
+        description: "Tu plan ha sido activado exitosamente.",
+      });
+      
+      navigate('/dashboard');
+    } catch (error: any) {
+      if (error?.userCancelled) {
+        return;
+      }
+      
       console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error });
       
       toast({
@@ -176,11 +177,18 @@ export default function Plans() {
   };
 
   const handleRestorePurchases = async () => {
-    if (platform !== 'ios') return;
+    if (!isNative) return;
 
     try {
       console.log('Event: restore_purchases');
-      await restoreIOSTransactions();
+      
+      if (platform === 'ios') {
+        await revenueCatService.restorePurchases();
+        await refreshCustomerInfo();
+      } else {
+        await restoreRevenueCat();
+      }
+      
       toast({
         title: "Compras restauradas",
         description: "Se han verificado tus compras anteriores.",
@@ -207,7 +215,7 @@ export default function Plans() {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          {platform === 'ios' && (
+          {isNative && (
             <Button
               variant="ghost"
               size="sm"
@@ -243,7 +251,7 @@ export default function Plans() {
         {/* Plans Carousel */}
         <section className="mb-8">
           <PlansCarousel
-            plans={PLANS_DATA}
+            plans={displayPlans}
             billingCycle={billingCycle}
             selectedPlan={selectedPlan}
             onPlanSelect={handlePlanSelect}
