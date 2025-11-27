@@ -1,4 +1,5 @@
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ interface AnimalReproduccionProps {
 // Removed mock data - using real data only
 
 export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
+  const { t } = useTranslation(['common', 'reproductive']);
   const [showIADialog, setShowIADialog] = useState(false);
   const { offspring, loading: offspringLoading, totalCount, liveCount } = useAnimalOffspring(animal.id, animal.sex);
   const { currentState, pregnancyHistory, loading: stateLoading } = useReproductiveState(animal.id);
