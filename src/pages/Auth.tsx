@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, Building2, Mail, UserPlus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Form,
   FormControl,
@@ -36,6 +37,7 @@ interface SignUpForm {
 }
 
 const Auth = () => {
+  const { t } = useTranslation(['auth', 'common']);
   const [activeTab, setActiveTab] = useState("signin");
   const [signInLoading, setSignInLoading] = useState(false);
   const [signUpLoading, setSignUpLoading] = useState(false);
@@ -73,20 +75,20 @@ const Auth = () => {
       
       if (error) {
         toast({
-          title: "Error al iniciar sesión",
+          title: t('auth:messages.loginError'),
           description: error.message,
           variant: "destructive",
         });
       } else {
         toast({
-          title: "¡Bienvenido!",
-          description: "Has iniciado sesión exitosamente.",
+          title: t('auth:messages.loginSuccess'),
+          description: t('auth:messages.loginSuccess'),
         });
       }
     } catch (error) {
       toast({
-        title: "Error de conexión",
-        description: "No se pudo conectar con el servidor.",
+        title: t('common:errors.network'),
+        description: t('common:errors.server'),
         variant: "destructive",
       });
     } finally {
@@ -101,8 +103,8 @@ const Auth = () => {
       // Validate passwords match
       if (values.password !== values.confirmPassword) {
         toast({
-          title: "Error",
-          description: "Las contraseñas no coinciden",
+          title: t('common:errors.validation'),
+          description: t('auth:messages.passwordMismatch', 'Las contraseñas no coinciden'),
           variant: "destructive",
         });
         return;
@@ -111,16 +113,16 @@ const Auth = () => {
       // Validate Argentina province requirement
       if (values.country_code === 'AR' && !values.province_code) {
         toast({
-          title: "Error",
-          description: "Debes seleccionar una provincia para Argentina",
+          title: t('common:errors.validation'),
+          description: t('auth:messages.provinceRequired', 'Debes seleccionar una provincia para Argentina'),
           variant: "destructive",
         });
         return;
       }
 
       toast({
-        title: "Creando cuenta...",
-        description: "Por favor espera mientras procesamos tu registro.",
+        title: t('auth:messages.creatingAccount', 'Creando cuenta...'),
+        description: t('auth:messages.pleaseWait', 'Por favor espera mientras procesamos tu registro.'),
       });
 
       // Store pending company data in localStorage for deferred creation
@@ -151,10 +153,10 @@ const Auth = () => {
       if (error) throw error;
 
       toast({
-        title: "¡Cuenta creada!",
+        title: t('auth:messages.registerSuccess'),
         description: data.user?.email_confirmed_at 
-          ? "Tu cuenta ha sido creada exitosamente." 
-          : "Revisa tu email para verificar tu cuenta y completar el registro.",
+          ? t('auth:messages.accountCreated', 'Tu cuenta ha sido creada exitosamente.') 
+          : t('auth:messages.verifyEmail', 'Revisa tu email para verificar tu cuenta y completar el registro.'),
       });
 
       // Switch to sign in tab and pre-fill email
@@ -162,10 +164,10 @@ const Auth = () => {
       signInForm.setValue("email", values.email);
 
     } catch (e: any) {
-      const msg = e?.message || e?.error_description || 'Error de conexión';
+      const msg = e?.message || e?.error_description || t('common:errors.network');
       console.error('Signup error:', e);
       toast({
-        title: "Error al crear la cuenta",
+        title: t('auth:messages.registerError'),
         description: msg,
         variant: "destructive",
       });
@@ -193,7 +195,7 @@ const Auth = () => {
           </div>
           <CardTitle className="text-2xl font-bold">AgroDeo</CardTitle>
           <CardDescription className="text-sm text-muted-foreground">
-            Sistema de Gestión Integral de Ganado
+            {t('auth:appDescription', 'Sistema de Gestión Integral de Ganado')}
           </CardDescription>
         </CardHeader>
         
@@ -202,29 +204,29 @@ const Auth = () => {
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin" className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                Iniciar Sesión
+                {t('auth:login.title')}
               </TabsTrigger>
               <TabsTrigger value="register" className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4" />
-                Registrar Empresa
+                {t('auth:register.title')}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
-                Ingresa con tu email y contraseña
+                {t('auth:login.subtitle')}
               </div>
               <Form {...signInForm}>
                 <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
                   <FormField
                     control={signInForm.control}
                     name="email"
-                    rules={{ required: "Email es requerido", pattern: { value: /^\S+@\S+$/i, message: "Email inválido" } }}
+                    rules={{ required: t('common:validation.required'), pattern: { value: /^\S+@\S+$/i, message: t('common:validation.invalidEmail') } }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email</FormLabel>
+                        <FormLabel>{t('auth:login.email')}</FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="tu@email.com" {...field} />
+                          <Input type="email" placeholder={t('auth:login.emailPlaceholder', 'tu@email.com')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -233,10 +235,10 @@ const Auth = () => {
                   <FormField
                     control={signInForm.control}
                     name="password"
-                    rules={{ required: "Contraseña es requerida" }}
+                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contraseña</FormLabel>
+                        <FormLabel>{t('auth:login.password')}</FormLabel>
                         <FormControl>
                           <Input type="password" {...field} />
                         </FormControl>
@@ -246,11 +248,11 @@ const Auth = () => {
                   />
                   <Button type="submit" className="w-full" disabled={signInLoading}>
                     {signInLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Iniciar Sesión
+                    {t('auth:login.submit')}
                   </Button>
                   <div className="mt-3 text-center text-sm">
                     <Link to="/forgot-password" className="text-primary hover:underline">
-                      ¿Olvidaste tu contraseña?
+                      {t('auth:login.forgotPassword')}
                     </Link>
                   </div>
                 </form>
@@ -259,19 +261,19 @@ const Auth = () => {
 
             <TabsContent value="register" className="space-y-4 mt-6">
               <div className="text-center text-sm text-muted-foreground mb-4">
-                Crear una nueva empresa/cabaña
+                {t('auth:register.subtitle')}
               </div>
               <Form {...signUpForm}>
                 <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
                   <FormField
                     control={signUpForm.control}
                     name="companyName"
-                    rules={{ required: "Nombre de empresa es requerido" }}
+                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre de la Empresa</FormLabel>
+                        <FormLabel>{t('auth:register.companyName', 'Nombre de la Empresa')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Cabaña Los Alamos" {...field} />
+                          <Input placeholder={t('auth:register.companyPlaceholder', 'Cabaña Los Alamos')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -280,12 +282,12 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="ownerName"
-                    rules={{ required: "Nombre del propietario es requerido" }}
+                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre del Propietario</FormLabel>
+                        <FormLabel>{t('auth:register.ownerName', 'Nombre del Propietario')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Juan Pérez" {...field} />
+                          <Input placeholder={t('auth:register.ownerPlaceholder', 'Juan Pérez')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -294,15 +296,15 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="email"
-                    rules={{ required: "Email es requerido", pattern: { value: /^\S+@\S+$/i, message: "Email inválido" } }}
+                    rules={{ required: t('common:validation.required'), pattern: { value: /^\S+@\S+$/i, message: t('common:validation.invalidEmail') } }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Mail className="h-4 w-4" />
-                          Email
+                          {t('auth:register.email')}
                         </FormLabel>
                         <FormControl>
-                          <Input type="email" placeholder="admin@cabaña.com" {...field} />
+                          <Input type="email" placeholder={t('auth:register.emailPlaceholder', 'admin@cabaña.com')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -311,10 +313,10 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="country_code"
-                    rules={{ required: "País es requerido" }}
+                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>País *</FormLabel>
+                        <FormLabel>{t('auth:register.country', 'País')} *</FormLabel>
                         <Select
                           key="country"
                           disabled={!isReady}
@@ -323,10 +325,10 @@ const Auth = () => {
                         >
                           <FormControl>
                             <SelectTrigger 
-                              aria-label="País" 
+                              aria-label={t('auth:register.country', 'País')}
                               className={!isReady ? 'cursor-wait' : 'cursor-default'}
                             >
-                              <SelectValue placeholder={isReady ? 'Selecciona un país' : 'Cargando países…'} />
+                              <SelectValue placeholder={isReady ? t('auth:register.selectCountry', 'Selecciona un país') : t('common:status.loading')} />
                             </SelectTrigger>
                           </FormControl>
                           {isReady && (
@@ -348,18 +350,18 @@ const Auth = () => {
                     <FormField
                       control={signUpForm.control}
                       name="province_code"
-                      rules={{ required: isAR ? "Provincia es requerida para Argentina" : false }}
+                      rules={{ required: isAR ? t('common:validation.required') : false }}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Provincia *</FormLabel>
+                          <FormLabel>{t('auth:register.province', 'Provincia')} *</FormLabel>
                           <Select
                             key={`prov-${country}`}  // remount on toggle to avoid stale disabled state
                             onValueChange={(value) => field.onChange(value)}
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger aria-label="Provincia">
-                                <SelectValue placeholder="Selecciona provincia" />
+                              <SelectTrigger aria-label={t('auth:register.province', 'Provincia')}>
+                                <SelectValue placeholder={t('auth:register.selectProvince', 'Selecciona provincia')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -379,12 +381,12 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="password"
-                    rules={{ required: "Contraseña es requerida", minLength: { value: 6, message: "Mínimo 6 caracteres" } }}
+                    rules={{ required: t('common:validation.required'), minLength: { value: 6, message: t('common:validation.tooShort') } }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Contraseña</FormLabel>
+                        <FormLabel>{t('auth:register.password')}</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Mínimo 6 caracteres" {...field} />
+                          <Input type="password" placeholder={t('auth:register.passwordPlaceholder', 'Mínimo 6 caracteres')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -394,14 +396,14 @@ const Auth = () => {
                     control={signUpForm.control}
                     name="confirmPassword"
                     rules={{ 
-                      required: "Confirmar contraseña es requerido",
-                      validate: (value) => value === signUpForm.getValues('password') || "Las contraseñas no coinciden"
+                      required: t('common:validation.required'),
+                      validate: (value) => value === signUpForm.getValues('password') || t('auth:messages.passwordMismatch', 'Las contraseñas no coinciden')
                     }}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Confirmar Contraseña</FormLabel>
+                        <FormLabel>{t('auth:register.confirmPassword')}</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Repite tu contraseña" {...field} />
+                          <Input type="password" placeholder={t('auth:register.confirmPasswordPlaceholder', 'Repite tu contraseña')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -409,7 +411,7 @@ const Auth = () => {
                   />
                   <Button type="submit" className="w-full" disabled={signUpLoading}>
                     {signUpLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {signUpLoading ? "Creando..." : "Crear Empresa"}
+                    {signUpLoading ? t('common:status.loading') : t('auth:register.submit')}
                   </Button>
                 </form>
               </Form>
