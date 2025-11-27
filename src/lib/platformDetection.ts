@@ -1,24 +1,31 @@
+import { Capacitor } from '@capacitor/core';
+
 export type Platform = 'web' | 'ios' | 'android';
 
 export const detectPlatform = (): Platform => {
-  // Check if running in a mobile app webview
+  // Use Capacitor for accurate platform detection
+  if (Capacitor.isNativePlatform()) {
+    const platform = Capacitor.getPlatform();
+    if (platform === 'ios') return 'ios';
+    if (platform === 'android') return 'android';
+  }
+  
+  // Fallback: Check user agent for web-based detection
   const userAgent = navigator.userAgent.toLowerCase();
   
-  // iOS detection
   if (/iphone|ipad|ipod/.test(userAgent) && 'standalone' in window.navigator) {
     return 'ios';
   }
   
-  // Android detection  
-  if (/android/.test(userAgent) && window.location.hostname !== 'localhost') {
-    // Additional check for Android app wrapper
-    if ((window as any).AndroidInterface || (window as any).webkit?.messageHandlers) {
-      return 'android';
-    }
+  if (/android/.test(userAgent)) {
+    return 'android';
   }
   
-  // Default to web
   return 'web';
+};
+
+export const isNativeApp = (): boolean => {
+  return Capacitor.isNativePlatform();
 };
 
 export const getPlatformStoreName = (platform: Platform): string => {
