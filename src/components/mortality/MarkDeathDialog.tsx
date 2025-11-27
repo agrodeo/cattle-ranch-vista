@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -78,6 +79,7 @@ export function MarkDeathDialog({
   animalId,
   onSuccess,
 }: MarkDeathDialogProps) {
+  const { t } = useTranslation(['mortality', 'common']);
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [causes, setCauses] = useState<DeathCause[]>([]);
   const [loading, setLoading] = useState(false);

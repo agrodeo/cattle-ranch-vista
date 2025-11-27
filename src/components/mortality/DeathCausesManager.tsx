@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,6 +31,7 @@ interface DeathCause {
 }
 
 export function DeathCausesManager() {
+  const { t } = useTranslation(['mortality', 'common']);
   const [open, setOpen] = useState(false);
   const [causes, setCauses] = useState<DeathCause[]>([]);
   const [loading, setLoading] = useState(false);
@@ -115,20 +117,20 @@ export function DeathCausesManager() {
         <DialogTrigger asChild>
           <Button variant="outline" className="gap-2">
             <Settings className="h-4 w-4" />
-            Gestionar Causas de Muerte
+            {t('mortality:manager.title')}
           </Button>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
-              Causas de Muerte
+              {t('mortality:manager.title')}
               <Button
                 onClick={() => setCreateDialogOpen(true)}
                 size="sm"
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Nueva Causa
+                {t('common:actions.add')}
               </Button>
             </DialogTitle>
           </DialogHeader>

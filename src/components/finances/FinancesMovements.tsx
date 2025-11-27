@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,6 +30,7 @@ interface FinanceRow {
 }
 
 export function FinancesMovements() {
+  const { t } = useTranslation(['finance', 'common']);
   const { currentUser } = useSupabaseAuth();
   const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'employee';
 
