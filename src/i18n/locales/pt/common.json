@@ -86,5 +86,40 @@
     "english": "English",
     "portuguese": "Português",
     "switch": "Mudar idioma"
+  },
+  "aiChat": {
+    "title": "Assistente Pecuário",
+    "newConversation": "Nova conversa",
+    "search": "Buscar...",
+    "saving": "Salvando...",
+    "today": "Hoje",
+    "yesterday": "Ontem",
+    "thisWeek": "Esta semana",
+    "older": "Mais antigo",
+    "deleteConfirm": "Tem certeza de que deseja excluir esta conversa?",
+    "welcomeTitle": "Olá! Sou seu assistente pecuário",
+    "welcomeMessage": "Posso ajudá-lo com informações sobre seu rebanho, analisar imagens de animais, instalações e documentos, e responder perguntas sobre pecuária.",
+    "inputPlaceholder": "Digite sua pergunta, envie uma imagem para análise...",
+    "quickActions": {
+      "mortality": "Como estão minhas mortalidades?",
+      "vaccinations": "Quais são minhas próximas vacinações?",
+      "reproductive": "Mostre-me o estado reprodutivo das minhas fêmeas",
+      "corrals": "Como está o desempenho dos meus currais?",
+      "analyzeImage": "Analise esta imagem do meu gado",
+      "improvements": "Que melhorias posso fazer no meu manejo?"
+    }
+  },
+  "weighingMethod": {
+    "title": "Selecionar método de registro",
+    "manual": {
+      "title": "Carga Manual",
+      "subtitle": "Para poucos animais",
+      "description": "Selecione animais individualmente e registre seus pesos um por um"
+    },
+    "bulk": {
+      "title": "Carga em Massa",
+      "subtitle": "Para muitos animais",
+      "description": "Carregue múltiplas pesagens de um arquivo Excel ou CSV"
+    }
   }
 }

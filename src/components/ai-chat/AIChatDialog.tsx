@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Send, Image as ImageIcon, RotateCcw, Sparkles, Trash2, MessageSquare, Search, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,22 +16,23 @@ interface AIChatDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const quickActions = [
-  "¿Cómo están mis mortalidades?",
-  "¿Cuáles son mis próximas vacunaciones?",
-  "Muéstrame el estado reproductivo de mis hembras",
-  "¿Cómo está el rendimiento de mis corrales?",
-  "Analiza esta imagen de mi ganado",
-  "¿Qué mejoras puedo hacer en mi manejo?",
-];
-
 export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
+  const { t } = useTranslation('common');
   const [input, setInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+
+  const quickActions = [
+    t('aiChat.quickActions.mortality'),
+    t('aiChat.quickActions.vaccinations'),
+    t('aiChat.quickActions.reproductive'),
+    t('aiChat.quickActions.corrals'),
+    t('aiChat.quickActions.analyzeImage'),
+    t('aiChat.quickActions.improvements'),
+  ];
   
   const { 
     messages, 
@@ -81,7 +83,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   };
 
   const handleDeleteConversation = async (convId: string) => {
-    if (confirm('¿Estás seguro de que deseas eliminar esta conversación?')) {
+    if (confirm(t('aiChat.deleteConfirm'))) {
       await deleteConversation(convId);
     }
   };
@@ -128,13 +130,13 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                   variant="default"
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Nueva conversación
+                  {t('aiChat.newConversation')}
                 </Button>
                 
                 <div className="mt-3 relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar..."
+                    placeholder={t('aiChat.search')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-8"
@@ -146,7 +148,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                 <div className="p-2 space-y-4">
                   {groupedConvs.today.length > 0 && (
                     <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Hoy</div>
+                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.today')}</div>
                       {groupedConvs.today.map(conv => (
                         <div
                           key={conv.id}
@@ -175,7 +177,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
                   {groupedConvs.yesterday.length > 0 && (
                     <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Ayer</div>
+                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.yesterday')}</div>
                       {groupedConvs.yesterday.map(conv => (
                         <div
                           key={conv.id}
@@ -204,7 +206,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
                   {groupedConvs.thisWeek.length > 0 && (
                     <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Esta semana</div>
+                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.thisWeek')}</div>
                       {groupedConvs.thisWeek.map(conv => (
                         <div
                           key={conv.id}
@@ -233,7 +235,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
                   {groupedConvs.older.length > 0 && (
                     <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Más antiguo</div>
+                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.older')}</div>
                       {groupedConvs.older.map(conv => (
                         <div
                           key={conv.id}
@@ -274,7 +276,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                   {isSaving && (
                     <Badge variant="outline" className="text-xs">
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                      Guardando...
+                      {t('aiChat.saving')}
                     </Badge>
                   )}
                 </div>
@@ -293,10 +295,9 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                   {messages.length === 0 && (
                     <div className="text-center py-8">
                       <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">¡Hola! Soy tu asistente ganadero</h3>
+                      <h3 className="text-lg font-medium mb-2">{t('aiChat.welcomeTitle')}</h3>
                       <p className="text-muted-foreground mb-4">
-                        Puedo ayudarte con información sobre tu cabaña, analizar imágenes de animales, 
-                        instalaciones y documentos, y responder preguntas sobre ganadería.
+                        {t('aiChat.welcomeMessage')}
                       </p>
                       
                       {/* Quick Actions */}
@@ -356,7 +357,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                     <Input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder="Escribe tu pregunta, sube una imagen para análisis..."
+                      placeholder={t('aiChat.inputPlaceholder')}
                       disabled={isLoading}
                     />
                     
@@ -397,7 +398,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                       className="text-muted-foreground"
                     >
                       <RotateCcw className="h-4 w-4 mr-1" />
-                      Nueva conversación
+                      {t('aiChat.newConversation')}
                     </Button>
                   </div>
                 )}
