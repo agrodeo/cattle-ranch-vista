@@ -121,5 +121,43 @@
       "subtitle": "For many animals",
       "description": "Upload multiple weighings from an Excel or CSV file"
     }
+  },
+  "achievements": {
+    "herd": {
+      "starter": {
+        "name": "First Herd",
+        "description": "You've registered your first animals"
+      }
+    },
+    "activities": {
+      "tracker": {
+        "name": "Active Manager",
+        "description": "You've registered multiple activities"
+      }
+    },
+    "vaccination": {
+      "guardian": {
+        "name": "Health Guardian",
+        "description": "You've completed vaccination cycles"
+      }
+    },
+    "finance": {
+      "manager": {
+        "name": "Financial Manager",
+        "description": "You've registered financial movements"
+      }
+    },
+    "streak": {
+      "consistent": {
+        "name": "Consistent User",
+        "description": "You've used the app for consecutive days"
+      }
+    },
+    "corrals": {
+      "organizer": {
+        "name": "Space Organizer",
+        "description": "You've created and organized corrals"
+      }
+    }
   }
 }

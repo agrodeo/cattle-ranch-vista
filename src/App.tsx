@@ -20,6 +20,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Finances from "./pages/Finances";
 import Reports from "./pages/Reports";
+import Achievements from "./pages/Achievements";
 import { SettingsPage } from "./pages/Settings";
 
 import NotFound from "./pages/NotFound";
@@ -112,6 +113,13 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route index element={<SettingsPage />} />
+            </Route>
+            <Route path="/achievements" element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Achievements />} />
             </Route>
             <Route path="/plans" element={
               <ProtectedRoute>

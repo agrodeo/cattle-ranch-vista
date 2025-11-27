@@ -8,7 +8,8 @@ import {
   Settings,
   MapPin,
   UserCog,
-  Crown
+  Crown,
+  Trophy
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,11 @@ const menuItems = [
     title: "menu:reports",
     url: "/reports",
     icon: BarChart3,
+  },
+  {
+    title: "menu:achievements",
+    url: "/achievements",
+    icon: Trophy,
   },
   {
     title: "menu:subscription",
