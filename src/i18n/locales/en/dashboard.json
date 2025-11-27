@@ -1,0 +1,64 @@
+{
+  "title": "Dashboard",
+  "subtitle": "Overview of your livestock operation",
+  "kpis": {
+    "totalAnimals": "Total Animals",
+    "activitiesLast30Days": "Activities (30d)",
+    "averageWeight": "Average Weight",
+    "pregnancyRate": "Pregnancy Rate",
+    "upcomingActivities": "Upcoming Activities"
+  },
+  "sections": {
+    "recentActivities": "Recent Activities",
+    "upcomingActivities": "Upcoming Activities",
+    "warnings": "Alerts"
+  },
+  "states": {
+    "pending": "Pending"
+  },
+  "empty": {
+    "noRecentActivities": "No recent activities",
+    "noUpcomingActivities": "No upcoming activities",
+    "noWarnings": "No alerts at this time",
+    "startTracking": "Start by registering activities to see the summary here"
+  },
+  "actions": {
+    "addFirstAnimal": "Add first animal",
+    "registerActivity": "Register activity",
+    "viewAll": "View all",
+    "configureVaccines": "Configure vaccines",
+    "setupCabana": "Create my herd",
+    "viewPlans": "View available plans",
+    "configureNow": "Configure Now"
+  },
+  "planLimit": {
+    "warning": "Approaching limit",
+    "error": "Animal limit exceeded",
+    "warningMessage": "You're close to the limit of {{max}} animals on the {{plan}} plan. You have {{current}} of {{max}} animals registered.",
+    "errorMessage": "You've reached the limit of {{max}} animals on the {{plan}} plan. You currently have {{current}} animals registered.",
+    "upgradeMessage": "Upgrade your plan to register more animals"
+  },
+  "noCabana": {
+    "title": "Set up your herd",
+    "description": "To start using AgroDeo, you first need to create and configure your herd. This will allow you to register animals, activities, and manage your livestock operation."
+  },
+  "vaccination": {
+    "title": "Configure Vaccines",
+    "description": "Define required vaccines for your herd",
+    "message": "Configure vaccination requirements to track the health status of your animals."
+  },
+  "temporal": {
+    "today": "Today",
+    "last7Days": "Last 7 days",
+    "earlier": "Earlier"
+  },
+  "activity": {
+    "animals": "animals",
+    "vaccines": "Vaccines",
+    "bullName": "Bull",
+    "tactileExam": "Palpation",
+    "weighing": "Weighing",
+    "averageWeight": "Average weight",
+    "registeredBy": "Registered by"
+  }
+}

@@ -15,8 +15,10 @@ import { NoCabanaAlert } from "@/components/dashboard/NoCabanaAlert";
 import { RecentActivityItem } from "@/components/dashboard/RecentActivityItem";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Dashboard = () => {
+  const { t } = useTranslation(['dashboard']);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const navigate = useNavigate();
   const { requirements: vaccinationRequirements } = useVaccinationRequirements();
@@ -46,24 +48,24 @@ const Dashboard = () => {
 
   const stats = [
     {
-      title: "Total Animales",
+      title: t('dashboard:kpis.totalAnimals'),
       value: counts.animalsActive,
       icon: Users,
     },
     {
-      title: "Act. 30d",
+      title: t('dashboard:kpis.activitiesLast30Days'),
       value: counts.activitiesLast7d,
       icon: Activity,
     },
     {
-      title: "Corrales",
+      title: t('corrals:title'),
       value: counts.corrals,
       icon: DollarSign,
     },
     {
-      title: "Preñez Actual",
+      title: t('dashboard:kpis.pregnancyRate'),
       value: `${counts.pregnancyPercentage}%`,
-      subtitle: `${counts.pregnantFemales}/${counts.reproductiveFemales} hembras`,
+      subtitle: `${counts.pregnantFemales}/${counts.reproductiveFemales} ${t('animals:sex.female')}`,
       icon: TrendingUp,
       colored: true,
       percentage: counts.pregnancyPercentage,
@@ -100,8 +102,8 @@ const Dashboard = () => {
 
         {/* Page Header */}
         <PageHeader 
-          title="Tablero"
-          subtitle="Panel de control de tu operación ganadera"
+          title={t('dashboard:title')}
+          subtitle={t('dashboard:subtitle')}
           action={
             <Button 
               onClick={handleRegisterActivity}
@@ -109,7 +111,7 @@ const Dashboard = () => {
               disabled={warnings.noCabana}
             >
               <Plus className="h-4 w-4 mr-2" />
-              Registrar Actividad
+              {t('dashboard:actions.registerActivity')}
             </Button>
           }
         />
@@ -137,27 +139,27 @@ const Dashboard = () => {
                 disabled={warnings.noCabana}
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Registrar Actividad
+                {t('dashboard:actions.registerActivity')}
               </Button>
             </StickyActionBar>
 
             {/* Recent Activities */}
             <SectionCard
-              title="Actividades Recientes"
-              subtitle="Últimos registros de la operación"
+              title={t('dashboard:sections.recentActivities')}
+              subtitle={t('common:operations')}
               count={recentActivities.length}
               primaryAction={!warnings.noCabana ? {
-                label: "Ver Todas",
+                label: t('dashboard:actions.viewAll'),
                 onClick: () => navigate('/activities')
               } : undefined}
             >
               {recentActivities.length === 0 ? (
                 <EmptyState
                   icon={<Activity className="h-6 w-6" />}
-                  title="No hay actividades recientes"
-                  description="Cuando registres actividades aparecerán aquí"
+                  title={t('dashboard:empty.noRecentActivities')}
+                  description={t('dashboard:empty.startTracking')}
                   action={!warnings.noCabana ? {
-                    label: "Registrar Primera Actividad",
+                    label: t('dashboard:actions.registerActivity'),
                     onClick: handleRegisterActivity
                   } : undefined}
                 />
@@ -181,8 +183,8 @@ const Dashboard = () => {
             {/* Warnings Card */}
             {warnings.alerts.length > 0 && (
               <SectionCard
-                title="Alertas"
-                subtitle="Requieren tu atención"
+                title={t('dashboard:sections.warnings')}
+                subtitle={t('common:requiresAttention')}
                 count={warnings.alerts.length}
               >
                 <div className="space-y-3">
@@ -233,8 +235,8 @@ const Dashboard = () => {
             )}
 
             <SectionCard
-              title="Próximas Actividades"
-              subtitle="Programadas para los próximos días"
+              title={t('dashboard:sections.upcomingActivities')}
+              subtitle={t('common:scheduledNext')}
               count={upcoming.activitiesNext7d.length}
             >
               {upcoming.activitiesNext7d.length > 0 ? (
@@ -248,7 +250,7 @@ const Dashboard = () => {
                         <p className="text-xs text-slate-500">{activity.date}</p>
                       </div>
                       <BadgePill variant="neutral" className="ml-2">
-                        Pendiente
+                        {t('dashboard:states.pending')}
                       </BadgePill>
                     </div>
                   ))}
@@ -256,7 +258,7 @@ const Dashboard = () => {
               ) : (
                 <div className="space-y-3">
                   <p className="text-sm text-slate-600 mb-4">
-                    {warnings.noCabana ? "Configura tu cabaña primero:" : "Comienza por:"}
+                    {warnings.noCabana ? t('dashboard:noCabana.description') : t('dashboard:empty.startTracking')}
                   </p>
                   <div className="space-y-2">
                     {warnings.noCabana ? (
@@ -265,14 +267,14 @@ const Dashboard = () => {
                         onClick={handleCreateCabana}
                       >
                         <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                        <span className="text-sm font-medium text-slate-900">Configurar cabaña</span>
+                        <span className="text-sm font-medium text-slate-900">{t('dashboard:actions.setupCabana')}</span>
                       </div>
                     ) : (
                       [
-                        { label: "Agregar primer animal", action: handleAddAnimal },
-                        { label: "Registrar actividad", action: handleRegisterActivity },
-                        { label: "Crear corral", action: () => navigate('/corrales') },
-                        { label: "Configurar finanzas", action: () => navigate('/finances') }
+                        { label: t('dashboard:actions.addFirstAnimal'), action: handleAddAnimal },
+                        { label: t('dashboard:actions.registerActivity'), action: handleRegisterActivity },
+                        { label: t('corrals:actions.create'), action: () => navigate('/corrales') },
+                        { label: t('finance:title'), action: () => navigate('/finances') }
                       ].map((item, index) => (
                         <div 
                           key={index} 

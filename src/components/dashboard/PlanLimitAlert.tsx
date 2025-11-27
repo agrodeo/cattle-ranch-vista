@@ -1,6 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, AlertCircle } from "lucide-react";
 import { PrimaryButton } from "@/components/ui/primary-button";
+import { useTranslation } from "react-i18next";
 
 interface PlanLimitAlertProps {
   type: 'warning' | 'error';
@@ -17,6 +18,7 @@ export function PlanLimitAlert({
   planName, 
   onUpgrade 
 }: PlanLimitAlertProps) {
+  const { t } = useTranslation(['dashboard']);
   const isError = type === 'error';
   
   return (
@@ -27,25 +29,25 @@ export function PlanLimitAlert({
         <AlertTriangle className="h-4 w-4 text-amber-600" />
       )}
       <AlertTitle className={isError ? 'text-red-900' : 'text-amber-900'}>
-        {isError ? 'Límite de animales superado' : 'Acercándose al límite'}
+        {t(isError ? 'dashboard:planLimit.error' : 'dashboard:planLimit.warning')}
       </AlertTitle>
       <AlertDescription className="mt-2">
         <div className="space-y-3">
           <p className={isError ? 'text-red-700' : 'text-amber-700'}>
-            {isError 
-              ? `Has alcanzado el límite de ${maxCount} animales del plan ${planName}. Actualmente tienes ${currentCount} animales registrados.`
-              : `Estás cerca del límite de ${maxCount} animales del plan ${planName}. Tienes ${currentCount} de ${maxCount} animales registrados.`
-            }
+            {t(
+              isError ? 'dashboard:planLimit.errorMessage' : 'dashboard:planLimit.warningMessage',
+              { current: currentCount, max: maxCount, plan: planName }
+            )}
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <PrimaryButton 
               onClick={onUpgrade}
               className="flex-shrink-0"
             >
-              Ver planes disponibles
+              {t('dashboard:actions.viewPlans')}
             </PrimaryButton>
             <span className="text-xs text-ink-600 self-center">
-              Actualiza tu plan para registrar más animales
+              {t('dashboard:planLimit.upgradeMessage')}
             </span>
           </div>
         </div>

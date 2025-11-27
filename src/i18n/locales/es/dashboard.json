@@ -1,0 +1,64 @@
+{
+  "title": "Panel de Control",
+  "subtitle": "Resumen de tu operación ganadera",
+  "kpis": {
+    "totalAnimals": "Total de Animales",
+    "activitiesLast30Days": "Actividades (30d)",
+    "averageWeight": "Peso Promedio",
+    "pregnancyRate": "Tasa de Preñez",
+    "upcomingActivities": "Próximas Actividades"
+  },
+  "sections": {
+    "recentActivities": "Actividades Recientes",
+    "upcomingActivities": "Próximas Actividades",
+    "warnings": "Alertas"
+  },
+  "states": {
+    "pending": "Pendiente"
+  },
+  "empty": {
+    "noRecentActivities": "No hay actividades recientes",
+    "noUpcomingActivities": "No hay actividades próximas",
+    "noWarnings": "No hay alertas en este momento",
+    "startTracking": "Comienza registrando actividades para ver el resumen aquí"
+  },
+  "actions": {
+    "addFirstAnimal": "Agregar primer animal",
+    "registerActivity": "Registrar actividad",
+    "viewAll": "Ver todas",
+    "configureVaccines": "Configurar vacunas",
+    "setupCabana": "Crear mi cabaña",
+    "viewPlans": "Ver planes disponibles",
+    "configureNow": "Configurar Ahora"
+  },
+  "planLimit": {
+    "warning": "Acercándose al límite",
+    "error": "Límite de animales superado",
+    "warningMessage": "Estás cerca del límite de {{max}} animales del plan {{plan}}. Tienes {{current}} de {{max}} animales registrados.",
+    "errorMessage": "Has alcanzado el límite de {{max}} animales del plan {{plan}}. Actualmente tienes {{current}} animales registrados.",
+    "upgradeMessage": "Actualiza tu plan para registrar más animales"
+  },
+  "noCabana": {
+    "title": "Configura tu cabaña",
+    "description": "Para comenzar a usar AgroDeo, primero necesitas crear y configurar tu cabaña. Esto te permitirá registrar animales, actividades y gestionar tu operación ganadera."
+  },
+  "vaccination": {
+    "title": "Configurar Vacunas",
+    "description": "Define las vacunas requeridas para tu cabaña",
+    "message": "Configura los requisitos de vacunación para poder hacer seguimiento del estado sanitario de tus animales."
+  },
+  "temporal": {
+    "today": "Hoy",
+    "last7Days": "Últimos 7 días",
+    "earlier": "Anteriores"
+  },
+  "activity": {
+    "animals": "animales",
+    "vaccines": "Vacunas",
+    "bullName": "Toro",
+    "tactileExam": "Tacto",
+    "weighing": "Pesaje",
+    "averageWeight": "Peso promedio",
+    "registeredBy": "Registrado por"
+  }
+}

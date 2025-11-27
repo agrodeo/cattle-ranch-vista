@@ -15,6 +15,7 @@ import menuEs from './locales/es/menu.json';
 import animalsEs from './locales/es/animals.json';
 import activitiesEs from './locales/es/activities.json';
 import corralsEs from './locales/es/corrals.json';
+import dashboardEs from './locales/es/dashboard.json';
 import financeEs from './locales/es/finance.json';
 import authEs from './locales/es/auth.json';
 import errorsEs from './locales/es/errors.json';
@@ -26,6 +27,7 @@ import menuEn from './locales/en/menu.json';
 import animalsEn from './locales/en/animals.json';
 import activitiesEn from './locales/en/activities.json';
 import corralsEn from './locales/en/corrals.json';
+import dashboardEn from './locales/en/dashboard.json';
 import financeEn from './locales/en/finance.json';
 import authEn from './locales/en/auth.json';
 import errorsEn from './locales/en/errors.json';
@@ -37,6 +39,7 @@ import menuPt from './locales/pt/menu.json';
 import animalsPt from './locales/pt/animals.json';
 import activitiesPt from './locales/pt/activities.json';
 import corralsPt from './locales/pt/corrals.json';
+import dashboardPt from './locales/pt/dashboard.json';
 import financePt from './locales/pt/finance.json';
 import authPt from './locales/pt/auth.json';
 import errorsPt from './locales/pt/errors.json';
@@ -78,6 +81,7 @@ const resources = {
     animals: animalsEs,
     activities: activitiesEs,
     corrals: corralsEs,
+    dashboard: dashboardEs,
     finance: financeEs,
     auth: authEs,
     errors: errorsEs,
@@ -90,6 +94,7 @@ const resources = {
     animals: animalsEn,
     activities: activitiesEn,
     corrals: corralsEn,
+    dashboard: dashboardEn,
     finance: financeEn,
     auth: authEn,
     errors: errorsEn,
@@ -102,6 +107,7 @@ const resources = {
     animals: animalsPt,
     activities: activitiesPt,
     corrals: corralsPt,
+    dashboard: dashboardPt,
     finance: financePt,
     auth: authPt,
     errors: errorsPt,
@@ -117,7 +123,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'finance', 'auth', 'errors', 'forms', 'settings'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'finance', 'auth', 'errors', 'forms', 'settings'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],

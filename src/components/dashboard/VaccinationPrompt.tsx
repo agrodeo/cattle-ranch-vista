@@ -2,8 +2,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Syringe, Settings, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const VaccinationPrompt = () => {
+  const { t } = useTranslation(['dashboard']);
   const navigate = useNavigate();
 
   const handleSetupVaccines = () => {
@@ -18,16 +20,16 @@ export const VaccinationPrompt = () => {
             <Syringe className="h-4 w-4 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-base">Configurar Vacunas</CardTitle>
+            <CardTitle className="text-base">{t('dashboard:vaccination.title')}</CardTitle>
             <CardDescription className="text-sm">
-              Define las vacunas requeridas para tu cabaña
+              {t('dashboard:vaccination.description')}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
         <p className="text-sm text-muted-foreground mb-4">
-          Configura los requisitos de vacunación para poder hacer seguimiento del estado sanitario de tus animales.
+          {t('dashboard:vaccination.message')}
         </p>
         <div className="flex gap-2">
           <Button 
@@ -36,7 +38,7 @@ export const VaccinationPrompt = () => {
             className="flex-1"
           >
             <Settings className="h-4 w-4 mr-2" />
-            Configurar Ahora
+            {t('dashboard:actions.configureNow')}
           </Button>
           <Button 
             variant="outline" 
