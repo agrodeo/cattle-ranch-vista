@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { AlertTriangle, Users, Calendar, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { analyzeCorralConsanguinity, RelationshipRisk } from "@/lib/consanguinityAnalysis";
@@ -11,6 +12,7 @@ interface ConsanguinityDetailsModalProps {
 }
 
 export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModalProps) {
+  const { t } = useTranslation(['common', 'corrals']);
   const { currentUser } = useSupabaseAuth();
   const [risks, setRisks] = useState<RelationshipRisk[]>([]);
   const [loading, setLoading] = useState(true);

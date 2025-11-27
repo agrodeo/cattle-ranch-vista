@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,7 @@ interface MovePreview {
 }
 
 export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProps) {
+  const { t } = useTranslation(['common', 'corrals']);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: filters, 2: preview, 3: result
   const [corrals, setCorrales] = useState<any[]>([]);
@@ -74,7 +76,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
       setCorrales(data || []);
     } catch (error) {
       console.error('Error fetching corrals:', error);
-      toast.error("Error al cargar corrales");
+      toast.error(t('common:error.loadFailed'));
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -74,6 +75,7 @@ interface BreedingPlanWizardProps {
 }
 
 export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWizardProps) {
+  const { t } = useTranslation(['common', 'activities']);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<BreedingPlan | null>(null);
@@ -114,10 +116,10 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
       
       setPlan(data);
       setStep(2);
-      toast.success("Plan de IA generado exitosamente");
+      toast.success(t('common:success.created'));
     } catch (error) {
       console.error('Error generating plan:', error);
-      toast.error("Error al generar el plan de IA");
+      toast.error(t('common:error.failed'));
     } finally {
       setLoading(false);
     }
