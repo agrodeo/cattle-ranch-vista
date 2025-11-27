@@ -8,8 +8,10 @@ import { useAllActivities } from '@/hooks/useAllActivities';
 import { ActivityCard } from './ActivityCard';
 import { ActivityDetailDialog } from './ActivityDetailDialog';
 import type { UnifiedActivity } from '@/hooks/useAllActivities';
+import { useTranslation } from 'react-i18next';
 
 export function SimpleActivitiesList() {
+  const { t } = useTranslation(['activities']);
   const [showActivityCreation, setShowActivityCreation] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<UnifiedActivity | null>(null);
   const { activities, isLoading } = useAllActivities();
@@ -78,10 +80,10 @@ export function SimpleActivitiesList() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
-          Actividades
+          {t('activities:title')}
         </h1>
         <p className="text-base text-muted-foreground">
-          Registro de todas las actividades del ganado
+          {t('activities:subtitle')}
         </p>
       </div>
 
@@ -93,7 +95,7 @@ export function SimpleActivitiesList() {
           size="lg"
         >
           <Plus className="h-5 w-5 mr-2" />
-          Registrar Actividad
+          {t('activities:quickActions.register')}
         </Button>
       </div>
 
@@ -114,14 +116,14 @@ export function SimpleActivitiesList() {
           {activities.length === 0 ? (
             <EmptyState 
               icon={<Calendar className="h-16 w-16" />}
-              title="No hay actividades registradas"
-              description="Usa el botón 'Registrar Actividad' para comenzar a registrar las actividades de tu ganado"
+              title={t('activities:empty.noActivities')}
+              description={t('activities:empty.description')}
             />
           ) : (
             <div className="space-y-8">
-              {todayActivities.length > 0 && renderSection('Hoy', todayActivities, 'No hay actividades para hoy')}
-              {last7Days.length > 0 && renderSection('Últimos 7 días', last7Days, 'No hay actividades recientes')}
-              {older.length > 0 && renderSection('Anteriores', older, 'No hay actividades anteriores')}
+              {todayActivities.length > 0 && renderSection(t('activities:groupings.today'), todayActivities, t('activities:empty.today'))}
+              {last7Days.length > 0 && renderSection(t('activities:groupings.last7Days'), last7Days, t('activities:empty.recent'))}
+              {older.length > 0 && renderSection(t('activities:groupings.older'), older, t('activities:empty.older'))}
             </div>
           )}
         </>
@@ -136,7 +138,7 @@ export function SimpleActivitiesList() {
               className="w-full h-11 shadow-none"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Registrar Actividad
+              {t('activities:quickActions.register')}
             </Button>
           </div>
         </div>

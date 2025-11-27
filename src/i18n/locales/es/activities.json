@@ -1,6 +1,7 @@
 {
   "title": "Actividades",
   "description": "Gestiona todas las actividades de tu cabaña",
+  "subtitle": "Registro de todas las actividades del ganado",
   "summary": {
     "title": "Resumen de Actividades",
     "activities30d": "Actividades (30 días)",
@@ -14,6 +15,18 @@
     "weighAnimals": "Pesar Animales",
     "inseminate": "Inseminar",
     "pregnancy": "Control Gestación"
+  },
+  "groupings": {
+    "today": "Hoy",
+    "last7Days": "Últimos 7 días",
+    "older": "Anteriores"
+  },
+  "empty": {
+    "noActivities": "No hay actividades registradas",
+    "description": "Usa el botón 'Registrar Actividad' para comenzar a registrar las actividades de tu ganado",
+    "today": "No hay actividades para hoy",
+    "recent": "No hay actividades recientes",
+    "older": "No hay actividades anteriores"
   },
   "next7d": {
     "title": "Próximos 7 Días",

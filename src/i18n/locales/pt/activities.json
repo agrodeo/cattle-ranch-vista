@@ -1,6 +1,7 @@
 {
   "title": "Atividades",
   "description": "Gerencie todas as atividades da sua fazenda",
+  "subtitle": "Registro de todas as atividades do rebanho",
   "summary": {
     "title": "Resumo de Atividades",
     "activities30d": "Atividades (30 dias)",
@@ -14,6 +15,18 @@
     "weighAnimals": "Pesar Animais",
     "inseminate": "Inseminar",
     "pregnancy": "Controle de Gestação"
+  },
+  "groupings": {
+    "today": "Hoje",
+    "last7Days": "Últimos 7 dias",
+    "older": "Anteriores"
+  },
+  "empty": {
+    "noActivities": "Nenhuma atividade registrada",
+    "description": "Use o botão 'Registrar Atividade' para começar a registrar as atividades do seu rebanho",
+    "today": "Nenhuma atividade para hoje",
+    "recent": "Nenhuma atividade recente",
+    "older": "Nenhuma atividade anterior"
   },
   "next7d": {
     "title": "Próximos 7 Dias",
