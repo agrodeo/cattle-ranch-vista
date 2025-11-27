@@ -50,5 +50,66 @@
     "regular": "Regular",
     "low": "Bajo",
     "pregnant": "PREÑADA"
+  },
+  "metrics": {
+    "totalCorrals": "Total Corrales",
+    "totalAnimals": "Total Animales",
+    "avgVaccination": "% Vacunación Promedio",
+    "avgGDP": "GDP Promedio",
+    "loading": "Cargando corrales...",
+    "animals": "animales",
+    "hectares": "ha",
+    "occupied": "ocupado",
+    "freeSpaces": "espacios libres",
+    "availableCorrals": "corrales disponibles"
+  },
+  "sections": {
+    "health": "Salud",
+    "vaccination": "Vacunación",
+    "alerts": "Alertas",
+    "production": "Producción",
+    "avgWeight": "Peso promedio",
+    "reproduction": "Reproducción",
+    "pregnancyRate": "Tasa de preñez"
+  },
+  "details": {
+    "vaccinationDetails": "Detalles de Vacunación",
+    "vaccinesApplied": "Vacunas Aplicadas",
+    "generalCompliance": "Cumplimiento General",
+    "requiresAttention": "atención",
+    "animalRequires": "animal requiere",
+    "animalsRequire": "animales requieren",
+    "pregnancyDetails": "Detalles de Preñez",
+    "pregnantFemales": "Hembras Preñadas",
+    "femalesPregnant": "de las hembras están preñadas"
+  },
+  "risks": {
+    "consanguinityRisk": "Riesgo de Consanguinidad Detectado",
+    "animalPresents": "animal presenta",
+    "animalsPresent": "animales presentan",
+    "consanguinityRiskText": "riesgo de consanguinidad",
+    "riskAlerts": "Alertas de Riesgo",
+    "risksDetected": "riesgos detectados",
+    "risks": "riesgos",
+    "noRisksDetected": "No se detectaron riesgos de consanguinidad"
+  },
+  "buttons": {
+    "bulkMove": "Mover en Masa",
+    "optimize": "Optimizar Corrales",
+    "moveAnimals": "Mover Animales",
+    "newCorral": "Nuevo Corral",
+    "move": "Mover",
+    "new": "Nuevo",
+    "createFirst": "Crear Primer Corral"
+  },
+  "empty": {
+    "noCorrals": "No hay corrales",
+    "createFirst": "Crea tu primer corral para comenzar a gestionar los animales"
+  },
+  "occupancy": {
+    "label": "Ocupación"
+  },
+  "errors": {
+    "loadError": "No se pudieron cargar los corrales"
   }
 }

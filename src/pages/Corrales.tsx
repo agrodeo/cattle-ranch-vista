@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
+import { useTranslation } from "react-i18next";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ interface Corral {
 }
 
 export default function Corrales() {
+  const { t } = useTranslation(['corrals', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
@@ -174,7 +176,7 @@ export default function Corrales() {
       console.error("Error fetching corrales:", error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar los corrales",
+        description: t('corrals:errors.loadError'),
         variant: "destructive",
       });
     } finally {
@@ -255,10 +257,10 @@ export default function Corrales() {
   };
 
   const getOccupancyStatus = (percentage: number) => {
-    if (percentage >= 90) return { label: 'Sobrecargado', color: 'text-red-600' };
-    if (percentage >= 75) return { label: 'Casi lleno', color: 'text-amber-600' };
-    if (percentage >= 50) return { label: 'Medio', color: 'text-blue-600' };
-    return { label: 'Disponible', color: 'text-emerald-600' };
+    if (percentage >= 90) return { label: t('corrals:status.overfull'), color: 'text-red-600' };
+    if (percentage >= 75) return { label: t('corrals:status.full'), color: 'text-amber-600' };
+    if (percentage >= 50) return { label: t('corrals:status.partial'), color: 'text-blue-600' };
+    return { label: t('corrals:status.empty'), color: 'text-emerald-600' };
   };
 
   useEffect(() => {
@@ -282,22 +284,22 @@ export default function Corrales() {
 
   const stats = [
     {
-      title: "Total Corrales",
+      title: t('corrals:metrics.totalCorrals'),
       value: totalCorrales,
       icon: MapPin,
     },
     {
-      title: "Total Animales",
+      title: t('corrals:metrics.totalAnimals'),
       value: totalAnimals,
       icon: Users,
     },
     {
-      title: "% Vacunación Promedio",
+      title: t('corrals:metrics.avgVaccination'),
       value: `${avgVaccinationPercentage.toFixed(1)}%`,
       icon: Syringe,
     },
     {
-      title: "GDP Promedio",
+      title: t('corrals:metrics.avgGDP'),
       value: `${avgGDP.toFixed(3)} kg/día`,
       icon: Scale,
     },
@@ -309,7 +311,7 @@ export default function Corrales() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-slate-600">Cargando corrales...</p>
+            <p className="text-slate-600">{t('corrals:metrics.loading')}</p>
           </div>
         </div>
       </div>
@@ -320,8 +322,8 @@ export default function Corrales() {
     <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
       <div className="space-y-6">
         <PageHeader 
-          title="Corrales"
-          subtitle="Gestiona los corrales y asignación de animales"
+          title={t('corrals:title')}
+          subtitle={t('corrals:subtitle')}
           action={
             <div className="flex gap-2">
               <Button
@@ -330,7 +332,7 @@ export default function Corrales() {
                 className="flex items-center gap-2"
               >
                 <Truck className="h-4 w-4" />
-                Mover en Masa
+                {t('corrals:buttons.bulkMove')}
               </Button>
               <Button
                 onClick={() => setShowCorralOptimization(true)}
@@ -338,14 +340,14 @@ export default function Corrales() {
                 className="flex items-center gap-2"
               >
                 <Shuffle className="h-4 w-4" />
-                Optimizar Corrales
+                {t('corrals:buttons.optimize')}
               </Button>
               <Button 
                 variant="outline"
                 onClick={() => setMoveDialogOpen(true)}
               >
                 <Move className="h-4 w-4 mr-2" />
-                Mover Animales
+                {t('corrals:buttons.moveAnimals')}
               </Button>
               <ReadOnlyProtectedAction>
                 <Button 
@@ -353,7 +355,7 @@ export default function Corrales() {
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Nuevo Corral
+                  {t('corrals:buttons.newCorral')}
                 </Button>
               </ReadOnlyProtectedAction>
             </div>
@@ -392,7 +394,7 @@ export default function Corrales() {
                   className="flex-1 h-11"
                 >
                   <Move className="h-4 w-4 mr-1" />
-                  Mover
+                  {t('corrals:buttons.move')}
                 </Button>
                 <ReadOnlyProtectedAction>
                   <Button 
@@ -400,7 +402,7 @@ export default function Corrales() {
                     className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white"
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    Nuevo
+                    {t('corrals:buttons.new')}
                   </Button>
                 </ReadOnlyProtectedAction>
               </div>
@@ -410,18 +412,18 @@ export default function Corrales() {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground">Lista de Corrales</h2>
-                  <p className="text-sm text-muted-foreground">{corrales.length} corrales disponibles</p>
+                  <h2 className="text-xl font-semibold text-foreground">{t('corrals:corralList')}</h2>
+                  <p className="text-sm text-muted-foreground">{corrales.length} {t('corrals:metrics.availableCorrals')}</p>
                 </div>
               </div>
 
               {corrales.length === 0 ? (
                 <EmptyState
                   icon={<MapPin className="h-12 w-12" />}
-                  title="No hay corrales"
-                  description="Crea tu primer corral para comenzar a gestionar los animales"
+                  title={t('corrals:empty.noCorrals')}
+                  description={t('corrals:empty.createFirst')}
                   action={{
-                    label: "Crear Primer Corral",
+                    label: t('corrals:buttons.createFirst'),
                     onClick: () => setCreateDialogOpen(true)
                   }}
                 />
@@ -456,12 +458,12 @@ export default function Corrales() {
                                 <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
                                   <span className="flex items-center gap-1">
                                     <Users className="h-3 w-3" />
-                                    {corral.animal_count} animales
+                                    {corral.animal_count} {t('corrals:metrics.animals')}
                                   </span>
                                   <span>{corral.male_count}M / {corral.female_count}H</span>
                                   {corral.hectareas && (
                                     <span className="text-xs bg-muted px-2 py-1 rounded">
-                                      {corral.hectareas} ha
+                                      {corral.hectareas} {t('corrals:metrics.hectares')}
                                     </span>
                                   )}
                                 </div>
@@ -489,7 +491,7 @@ export default function Corrales() {
                                     variant="outline" 
                                     className={cn("text-xs", occupancyStatus.color)}
                                   >
-                                    {occupancyPercentage}% ocupado
+                                    {occupancyPercentage}% {t('corrals:metrics.occupied')}
                                   </Badge>
                                 )}
                               </div>
@@ -504,18 +506,18 @@ export default function Corrales() {
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuItem onClick={() => openDetailDialog(corral.id)}>
                                     <Eye className="h-4 w-4 mr-2" />
-                                    Ver Detalles
+                                    {t('corrals:actions.view')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => openEditDialog(corral.id)}>
                                     <Edit className="h-4 w-4 mr-2" />
-                                    Editar
+                                    {t('corrals:actions.edit')}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem 
                                     onClick={() => openDeleteDialog(corral.id, corral.name, corral.animal_count)}
                                     className="text-destructive"
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />
-                                    Eliminar
+                                    {t('corrals:actions.delete')}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
@@ -528,7 +530,7 @@ export default function Corrales() {
                           {estimatedCapacity && (
                             <div className="space-y-2 mb-4">
                               <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">Ocupación</span>
+                                <span className="text-muted-foreground">{t('corrals:occupancy.label')}</span>
                                 <span className="font-medium">
                                   {corral.animal_count} / {estimatedCapacity} ({occupancyPercentage}%)
                                 </span>
@@ -540,7 +542,7 @@ export default function Corrales() {
                                 />
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {Math.max(0, estimatedCapacity - corral.animal_count)} espacios libres
+                                {Math.max(0, estimatedCapacity - corral.animal_count)} {t('corrals:metrics.freeSpaces')}
                               </div>
                             </div>
                           )}
@@ -550,17 +552,17 @@ export default function Corrales() {
                             {/* Health */}
                             {corralKPI && (
                               <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-muted-foreground">Salud</h4>
+                                <h4 className="text-sm font-medium text-muted-foreground">{t('corrals:sections.health')}</h4>
                                 <div className="space-y-1">
                                   {corralKPI.vaccination_percentage !== undefined && (
                                     <div className="flex justify-between text-sm">
-                                      <span>Vacunación</span>
+                                      <span>{t('corrals:sections.vaccination')}</span>
                                       <span className="font-medium">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
                                     </div>
                                   )}
                                   {corralKPI.vaccination_alerts > 0 && (
                                     <div className="flex justify-between text-sm">
-                                      <span>Alertas</span>
+                                      <span>{t('corrals:sections.alerts')}</span>
                                       <span className="font-medium text-amber-600">{corralKPI.vaccination_alerts}</span>
                                     </div>
                                   )}
@@ -571,7 +573,7 @@ export default function Corrales() {
                             {/* Production */}
                             {corralKPI && (corralKPI.avg_daily_gain > 0 || corralKPI.avg_weight > 0) && (
                               <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-muted-foreground">Producción</h4>
+                                <h4 className="text-sm font-medium text-muted-foreground">{t('corrals:sections.production')}</h4>
                                 <div className="space-y-1">
                                   {corralKPI.avg_daily_gain > 0 && (
                                     <div className="flex justify-between text-sm">
@@ -581,7 +583,7 @@ export default function Corrales() {
                                   )}
                                   {corralKPI.avg_weight > 0 && (
                                     <div className="flex justify-between text-sm">
-                                      <span>Peso promedio</span>
+                                      <span>{t('corrals:sections.avgWeight')}</span>
                                       <span className="font-medium">{corralKPI.avg_weight.toFixed(0)} kg</span>
                                     </div>
                                   )}
@@ -592,10 +594,10 @@ export default function Corrales() {
                             {/* Reproductive */}
                             {corralKPI?.pregnancy_rate && corralKPI.pregnancy_rate > 0 && (
                               <div className="space-y-2">
-                                <h4 className="text-sm font-medium text-muted-foreground">Reproducción</h4>
+                                <h4 className="text-sm font-medium text-muted-foreground">{t('corrals:sections.reproduction')}</h4>
                                 <div className="space-y-1">
                                   <div className="flex justify-between text-sm">
-                                    <span>Tasa de preñez</span>
+                                    <span>{t('corrals:sections.pregnancyRate')}</span>
                                     <span className="font-medium">{corralKPI.pregnancy_rate.toFixed(0)}%</span>
                                   </div>
                                 </div>
@@ -611,16 +613,16 @@ export default function Corrales() {
                                 <div className="p-3 border-b border-muted/50">
                                   <div className="flex items-center gap-2">
                                     <Syringe className="h-4 w-4 text-primary" />
-                                    <span className="font-medium">Detalles de Vacunación</span>
+                                    <span className="font-medium">{t('corrals:details.vaccinationDetails')}</span>
                                   </div>
                                 </div>
                                 <div className="p-3 space-y-2 text-sm">
                                   <div className="flex items-center justify-between">
-                                    <span>Vacunas Aplicadas</span>
+                                    <span>{t('corrals:details.vaccinesApplied')}</span>
                                     <span className="font-medium">{corralKPI.total_vaccinations_given || 0} de {corralKPI.total_vaccinations_needed || 0}</span>
                                   </div>
                                   <div className="flex items-center justify-between">
-                                    <span>Cumplimiento General</span>
+                                    <span>{t('corrals:details.generalCompliance')}</span>
                                     <div className="flex items-center gap-2">
                                       <div className="w-20 bg-muted rounded-full h-1.5">
                                         <div 
@@ -639,7 +641,7 @@ export default function Corrales() {
                                   {corralKPI.vaccination_alerts > 0 && (
                                     <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-500 mt-2">
                                       <AlertTriangle className="h-3 w-3" />
-                                      <span>{corralKPI.vaccination_alerts} {corralKPI.vaccination_alerts === 1 ? 'animal requiere' : 'animales requieren'} atención</span>
+                                      <span>{corralKPI.vaccination_alerts} {corralKPI.vaccination_alerts === 1 ? t('corrals:details.animalRequires') : t('corrals:details.animalsRequire')} {t('corrals:details.requiresAttention')}</span>
                                     </div>
                                   )}
                                 </div>
@@ -652,12 +654,12 @@ export default function Corrales() {
                                 <div className="p-3 border-b border-muted/50">
                                   <div className="flex items-center gap-2">
                                     <TrendingUp className="h-4 w-4 text-primary" />
-                                    <span className="font-medium">Detalles de Preñez</span>
+                                    <span className="font-medium">{t('corrals:details.pregnancyDetails')}</span>
                                   </div>
                                 </div>
                                 <div className="p-3 space-y-2 text-sm">
                                   <div className="flex items-center justify-between">
-                                    <span>Hembras Preñadas</span>
+                                    <span>{t('corrals:details.pregnantFemales')}</span>
                                     <div className="flex items-center gap-2">
                                       <div className="w-20 bg-muted rounded-full h-1.5">
                                         <div 
@@ -671,7 +673,7 @@ export default function Corrales() {
                                     </div>
                                   </div>
                                   <span className="text-xs text-muted-foreground block">
-                                    {corralKPI.pregnancy_rate.toFixed(1)}% de las hembras están preñadas
+                                    {corralKPI.pregnancy_rate.toFixed(1)}% {t('corrals:details.femalesPregnant')}
                                   </span>
                                 </div>
                               </div>
@@ -684,11 +686,11 @@ export default function Corrales() {
                               <div className="flex items-center gap-2">
                                 <AlertTriangle className="h-4 w-4 text-destructive" />
                                 <span className="text-sm font-medium text-destructive">
-                                  Riesgo de Consanguinidad Detectado
+                                  {t('corrals:risks.consanguinityRisk')}
                                 </span>
                               </div>
                               <p className="text-xs text-destructive/80 mt-1">
-                                {corral.risk_count} {corral.risk_count === 1 ? 'animal presenta' : 'animales presentan'} riesgo de consanguinidad ({corral.highest_severity})
+                                {corral.risk_count} {corral.risk_count === 1 ? t('corrals:risks.animalPresents') : t('corrals:risks.animalsPresent')} {t('corrals:risks.consanguinityRiskText')} ({corral.highest_severity})
                               </p>
                             </div>
                           )}
@@ -701,7 +703,7 @@ export default function Corrales() {
                               onClick={() => openDetailDialog(corral.id)}
                             >
                               <Eye className="h-4 w-4 mr-1" />
-                              Ver Detalles
+                              {t('corrals:actions.view')}
                             </Button>
                             <Button
                               variant="outline"
@@ -709,7 +711,7 @@ export default function Corrales() {
                               onClick={() => openEditDialog(corral.id)}
                             >
                               <Edit className="h-4 w-4 mr-1" />
-                              Editar
+                              {t('corrals:actions.edit')}
                             </Button>
                             <Button
                               variant="outline"
@@ -718,7 +720,7 @@ export default function Corrales() {
                               className="text-destructive hover:text-destructive"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
-                              Eliminar
+                              {t('corrals:actions.delete')}
                             </Button>
                           </div>
                         </CardContent>
@@ -737,8 +739,8 @@ export default function Corrales() {
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
                   <div>
-                    <h3 className="font-semibold">Alertas de Riesgo</h3>
-                    <p className="text-sm text-muted-foreground">{totalRisks} riesgos detectados</p>
+                    <h3 className="font-semibold">{t('corrals:risks.riskAlerts')}</h3>
+                    <p className="text-sm text-muted-foreground">{totalRisks} {t('corrals:risks.risksDetected')}</p>
                   </div>
                 </div>
               </CardHeader>
@@ -749,13 +751,13 @@ export default function Corrales() {
                       <div key={corral.id} className="flex items-center justify-between text-sm">
                         <span>{corral.name}</span>
                         <Badge variant="destructive" className="text-xs">
-                          {corral.risk_count} riesgos
+                          {corral.risk_count} {t('corrals:risks.risks')}
                         </Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-muted-foreground">No se detectaron riesgos de consanguinidad</p>
+                  <p className="text-sm text-muted-foreground">{t('corrals:risks.noRisksDetected')}</p>
                 )}
               </CardContent>
             </Card>
