@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 const Dashboard = () => {
-  const { t } = useTranslation(['dashboard']);
+  const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance']);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const navigate = useNavigate();
   const { requirements: vaccinationRequirements } = useVaccinationRequirements();
