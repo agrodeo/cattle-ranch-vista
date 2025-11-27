@@ -188,7 +188,17 @@
     "noActivities": "Nenhuma atividade",
     "noActivitiesMessage": "Nenhuma atividade encontrada com os filtros selecionados",
     "activity": "atividade",
-    "activities": "atividades"
+    "activities": "atividades",
+    "loadAnimals": "Carregar Animais",
+    "loadAnimalsDesc": "Adicionar novos animais manualmente ou via Excel",
+    "loadActivity": "Carregar Atividade",
+    "loadActivityDesc": "Registrar saúde, reprodução, produção",
+    "loadMovements": "Carregar Movimentos",
+    "loadMovementsDesc": "Registrar receitas e despesas",
+    "corralActivity": "Atividade de Curral",
+    "corralActivityDesc": "Criar currais e mover animais",
+    "loadData": "Carregar Dados",
+    "close": "Fechar"
   },
   "common": {
     "cancel": "Cancelar",

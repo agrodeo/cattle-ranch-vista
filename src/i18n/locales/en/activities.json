@@ -186,7 +186,17 @@
     "recent": "Recent",
     "upcoming": "Upcoming",
     "noActivities": "No activities",
-    "noActivitiesMessage": "No activities found with the selected filters"
+    "noActivitiesMessage": "No activities found with the selected filters",
+    "loadAnimals": "Load Animals",
+    "loadAnimalsDesc": "Add new animals manually or via Excel",
+    "loadActivity": "Load Activity",
+    "loadActivityDesc": "Record health, reproduction, production",
+    "loadMovements": "Load Movements",
+    "loadMovementsDesc": "Record income and expenses",
+    "corralActivity": "Corral Activity",
+    "corralActivityDesc": "Create corrals and move animals",
+    "loadData": "Load Data",
+    "close": "Close"
   },
   "common": {
     "cancel": "Cancel",

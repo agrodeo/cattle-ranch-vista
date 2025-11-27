@@ -44,5 +44,45 @@
     "weekly": "Weekly",
     "monthly": "Monthly",
     "yearly": "Yearly"
+  },
+  "mobile": {
+    "loadMovements": "Load Movements",
+    "newIncome": "New Income",
+    "newExpense": "New Expense",
+    "incomeTitle": "Income",
+    "incomeDesc": "Record money inflow",
+    "expenseTitle": "Expense",
+    "expenseDesc": "Record money outflow",
+    "movementInfo": "Movement Information",
+    "description": "Description",
+    "descriptionPlaceholder": "E.g.: Steer sale",
+    "amount": "Amount",
+    "date": "Date",
+    "category": "Category",
+    "selectCategory": "Select category",
+    "observations": "Observations",
+    "observationsPlaceholder": "Additional observations...",
+    "requiredFields": "Required fields: Description, Amount and Category",
+    "saving": "Saving...",
+    "save": "Save",
+    "success": "Movement registered successfully",
+    "error": "Error registering movement",
+    "incomeCategories": {
+      "animalSales": "Animal sales",
+      "milkSales": "Milk sales",
+      "meatSales": "Meat sales",
+      "services": "Services",
+      "subsidies": "Subsidies",
+      "other": "Other income"
+    },
+    "expenseCategories": {
+      "feed": "Feed",
+      "health": "Health",
+      "reproduction": "Reproduction",
+      "maintenance": "Maintenance",
+      "services": "Services",
+      "taxes": "Taxes",
+      "other": "Other expenses"
+    }
   }
 }

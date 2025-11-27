@@ -184,5 +184,12 @@
       "transactionHistory": "Histórico de Transações",
       "noTransactions": "Nenhuma transação registrada"
     }
+  },
+  "animalCreation": {
+    "title": "Carregar Animais",
+    "manualLoad": "Carga Manual",
+    "manualLoadDesc": "Adicionar animais um por um com formulário",
+    "excelLoad": "Carga por Excel",
+    "excelLoadDesc": "Enviar arquivo Excel com múltiplos animais"
   }
 }

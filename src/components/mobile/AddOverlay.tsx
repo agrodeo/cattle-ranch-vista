@@ -31,29 +31,29 @@ export function AddOverlay({ isOpen, onClose, onSelectFlow, selectedFlow }: AddO
   const addOptions = [
     {
       id: 'animals',
-      title: 'Cargar Animales',
-      description: 'Agregar nuevos animales manual o por Excel',
+      title: t('activities:mobile.loadAnimals'),
+      description: t('activities:mobile.loadAnimalsDesc'),
       icon: Users,
       color: 'bg-blue-500',
     },
     {
       id: 'activity',
-      title: 'Cargar Actividad',
-      description: 'Registrar sanidad, reproducción, producción',
+      title: t('activities:mobile.loadActivity'),
+      description: t('activities:mobile.loadActivityDesc'),
       icon: Activity,
       color: 'bg-green-500',
     },
     {
       id: 'finance',
-      title: 'Cargar Movimientos',
-      description: 'Registrar ingresos y egresos',
+      title: t('activities:mobile.loadMovements'),
+      description: t('activities:mobile.loadMovementsDesc'),
       icon: DollarSign,
       color: 'bg-purple-500',
     },
     {
       id: 'corral',
-      title: 'Actividad de Corral',
-      description: 'Crear corrales y mover animales',
+      title: t('activities:mobile.corralActivity'),
+      description: t('activities:mobile.corralActivityDesc'),
       icon: Home,
       color: 'bg-orange-500',
     },
@@ -100,7 +100,7 @@ export function AddOverlay({ isOpen, onClose, onSelectFlow, selectedFlow }: AddO
 
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
-        <h1 className="text-xl font-semibold">Cargar Datos</h1>
+        <h1 className="text-xl font-semibold">{t('activities:mobile.loadData')}</h1>
         <Button
           variant="ghost"
           size="icon"
@@ -108,7 +108,7 @@ export function AddOverlay({ isOpen, onClose, onSelectFlow, selectedFlow }: AddO
           className="h-10 w-10"
         >
           <X className="h-5 w-5" />
-          <span className="sr-only">Cerrar</span>
+          <span className="sr-only">{t('activities:mobile.close')}</span>
         </Button>
       </div>
 
