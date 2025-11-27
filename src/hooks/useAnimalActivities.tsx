@@ -165,6 +165,19 @@ export function useAnimalActivities(animalId: string) {
                   }
                 }
               }
+            } else if (event.tipo === "TACTO" && event.tactos && event.tactos.length > 0) {
+              const tacto = event.tactos[0];
+              if (tacto.resultados) {
+                const resultados = Array.isArray(tacto.resultados) ? tacto.resultados : [tacto.resultados];
+                const resultado = resultados.find((r: any) => r.animal_id === animalId);
+                if (resultado && typeof resultado === 'object') {
+                  shouldInclude = true;
+                  const res = (resultado as any).resultado;
+                  if (res) {
+                    details['Resultado'] = res === 'preñada' ? 'Preñada' : 'Vacía';
+                  }
+                }
+              }
             }
           }
 
