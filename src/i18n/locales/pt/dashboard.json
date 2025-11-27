@@ -1,0 +1,64 @@
+{
+  "title": "Painel de Controle",
+  "subtitle": "Resumo da sua operação pecuária",
+  "kpis": {
+    "totalAnimals": "Total de Animais",
+    "activitiesLast30Days": "Atividades (30d)",
+    "averageWeight": "Peso Médio",
+    "pregnancyRate": "Taxa de Prenhez",
+    "upcomingActivities": "Próximas Atividades"
+  },
+  "sections": {
+    "recentActivities": "Atividades Recentes",
+    "upcomingActivities": "Próximas Atividades",
+    "warnings": "Alertas"
+  },
+  "states": {
+    "pending": "Pendente"
+  },
+  "empty": {
+    "noRecentActivities": "Não há atividades recentes",
+    "noUpcomingActivities": "Não há atividades próximas",
+    "noWarnings": "Não há alertas no momento",
+    "startTracking": "Comece registrando atividades para ver o resumo aqui"
+  },
+  "actions": {
+    "addFirstAnimal": "Adicionar primeiro animal",
+    "registerActivity": "Registrar atividade",
+    "viewAll": "Ver todas",
+    "configureVaccines": "Configurar vacinas",
+    "setupCabana": "Criar minha fazenda",
+    "viewPlans": "Ver planos disponíveis",
+    "configureNow": "Configurar Agora"
+  },
+  "planLimit": {
+    "warning": "Aproximando-se do limite",
+    "error": "Limite de animais excedido",
+    "warningMessage": "Você está perto do limite de {{max}} animais do plano {{plan}}. Você tem {{current}} de {{max}} animais registrados.",
+    "errorMessage": "Você atingiu o limite de {{max}} animais do plano {{plan}}. Atualmente você tem {{current}} animais registrados.",
+    "upgradeMessage": "Atualize seu plano para registrar mais animais"
+  },
+  "noCabana": {
+    "title": "Configure sua fazenda",
+    "description": "Para começar a usar o AgroDeo, primeiro você precisa criar e configurar sua fazenda. Isso permitirá que você registre animais, atividades e gerencie sua operação pecuária."
+  },
+  "vaccination": {
+    "title": "Configurar Vacinas",
+    "description": "Defina as vacinas necessárias para sua fazenda",
+    "message": "Configure os requisitos de vacinação para poder acompanhar o estado sanitário dos seus animais."
+  },
+  "temporal": {
+    "today": "Hoje",
+    "last7Days": "Últimos 7 dias",
+    "earlier": "Anteriores"
+  },
+  "activity": {
+    "animals": "animais",
+    "vaccines": "Vacinas",
+    "bullName": "Touro",
+    "tactileExam": "Palpação",
+    "weighing": "Pesagem",
+    "averageWeight": "Peso médio",
+    "registeredBy": "Registrado por"
+  }
+}
