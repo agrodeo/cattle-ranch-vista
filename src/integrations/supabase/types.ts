@@ -2306,6 +2306,45 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_category: string
+          achievement_code: string
+          cabaña_id: string
+          created_at: string
+          id: string
+          medal_tier: string
+          progress_value: number
+          shared_count: number
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_category: string
+          achievement_code: string
+          cabaña_id: string
+          created_at?: string
+          id?: string
+          medal_tier: string
+          progress_value?: number
+          shared_count?: number
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_category?: string
+          achievement_code?: string
+          cabaña_id?: string
+          created_at?: string
+          id?: string
+          medal_tier?: string
+          progress_value?: number
+          shared_count?: number
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -2912,6 +2951,10 @@ export type Database = {
         Returns: boolean
       }
       hash_password: { Args: { _password: string }; Returns: string }
+      increment_achievement_share: {
+        Args: { achievement_id: string }
+        Returns: undefined
+      }
       is_valid_password_reset_token: {
         Args: { _token: string }
         Returns: boolean

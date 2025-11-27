@@ -121,5 +121,43 @@
       "subtitle": "Para muitos animais",
       "description": "Carregue múltiplas pesagens de um arquivo Excel ou CSV"
     }
+  },
+  "achievements": {
+    "herd": {
+      "starter": {
+        "name": "Primeiro Rebanho",
+        "description": "Você registrou seus primeiros animais"
+      }
+    },
+    "activities": {
+      "tracker": {
+        "name": "Gestor Ativo",
+        "description": "Você registrou múltiplas atividades"
+      }
+    },
+    "vaccination": {
+      "guardian": {
+        "name": "Guardião da Saúde",
+        "description": "Você completou ciclos de vacinação"
+      }
+    },
+    "finance": {
+      "manager": {
+        "name": "Gestor Financeiro",
+        "description": "Você registrou movimentos financeiros"
+      }
+    },
+    "streak": {
+      "consistent": {
+        "name": "Usuário Consistente",
+        "description": "Você usou o app por dias consecutivos"
+      }
+    },
+    "corrals": {
+      "organizer": {
+        "name": "Organizador de Espaços",
+        "description": "Você criou e organizou currais"
+      }
+    }
   }
 }
