@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { setLanguage, getCurrentLanguage, type SupportedLanguage } from '@/i18n';
+import { setLanguage, type SupportedLanguage } from '@/i18n';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -11,7 +11,8 @@ export function useLanguage() {
   const { currentUser } = useSupabaseAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  const currentLang = getCurrentLanguage();
+  // Use i18n.language directly for reactive updates
+  const currentLang = (i18n.language as SupportedLanguage) || 'es';
 
   // Initialize language from user profile or cabaña on login
   useEffect(() => {

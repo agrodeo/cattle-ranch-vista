@@ -65,7 +65,10 @@
     "week": "Week",
     "month": "Month",
     "year": "Year",
-    "help": "Help & Support"
+    "help": "Help & Support",
+    "operations": "Latest operation records",
+    "requiresAttention": "Requires your attention",
+    "scheduledNext": "Scheduled for the next few days"
   },
   "validation": {
     "required": "This field is required",

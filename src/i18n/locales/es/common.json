@@ -65,7 +65,10 @@
     "week": "Semana",
     "month": "Mes",
     "year": "Año",
-    "help": "Ayuda & Soporte"
+    "help": "Ayuda & Soporte",
+    "operations": "Últimos registros de la operación",
+    "requiresAttention": "Requieren tu atención",
+    "scheduledNext": "Programadas para los próximos días"
   },
   "validation": {
     "required": "Este campo es requerido",
