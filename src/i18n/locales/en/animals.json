@@ -53,7 +53,23 @@
   "filters": {
     "allCategories": "All categories",
     "allBreeds": "All breeds",
-    "allStatuses": "All statuses"
+    "allStatuses": "All statuses",
+    "active": "Active",
+    "sold": "Sold",
+    "dead": "Deceased"
+  },
+  "bulk": {
+    "moveCorral": "Move Corral",
+    "applyVaccine": "Apply Vaccine",
+    "registerWeight": "Register Weight"
+  },
+  "details": {
+    "basicInfo": "Basic Information",
+    "birthDateShort": "B. Date:"
+  },
+  "empty": {
+    "noAnimals": "No animals",
+    "noAnimalsFiltered": "No animals found with the selected filters"
   },
   "actions": {
     "view": "View",
