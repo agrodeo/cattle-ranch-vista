@@ -20,10 +20,12 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 
 const Reports = () => {
   const isMobile = useIsMobile();
   const { currentUser } = useSupabaseAuth();
+  const { t } = useTranslation(['reports', 'common']);
   
   // Default filter values - convert to ISO date strings for database compatibility
   const defaultFilters: ReportFilters = {
@@ -43,10 +45,10 @@ const Reports = () => {
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>(defaultFilters);
 
   useEffect(() => {
-    document.title = "Reportes y Análisis | AgroDeo";
+    document.title = `${t('reports:title')} | AgroDeo`;
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Reportes y análisis: ganadería, reproducción, producción, mortalidad y finanzas");
-  }, []);
+    if (meta) meta.setAttribute("content", t('reports:pageSubtitle'));
+  }, [t]);
 
   const getActiveFiltersCount = (filters: ReportFilters) => {
     let count = 0;
@@ -64,12 +66,12 @@ const Reports = () => {
 
   // Tab configuration for mobile chips
   const tabs = [
-    { id: "reproductive", label: "Reproducción", shortLabel: "Reprod." },
-    { id: "production", label: "Producción", shortLabel: "Prod." },
-    { id: "evolution", label: "Evolución", shortLabel: "Evol." },
-    { id: "mortality", label: "Mortalidad", shortLabel: "Mort." },
-    { id: "vaccines", label: "Vacunas", shortLabel: "Vac." },
-    { id: "financial", label: "Finanzas", shortLabel: "Fin." }
+    { id: "reproductive", label: t('reports:tabs.reproduction'), shortLabel: t('reports:tabs.reproduction').substring(0, 6) + '.' },
+    { id: "production", label: t('reports:tabs.production'), shortLabel: t('reports:tabs.production').substring(0, 4) + '.' },
+    { id: "evolution", label: t('reports:tabs.evolution'), shortLabel: t('reports:tabs.evolution').substring(0, 4) + '.' },
+    { id: "mortality", label: t('reports:tabs.mortality'), shortLabel: t('reports:tabs.mortality').substring(0, 4) + '.' },
+    { id: "vaccines", label: t('reports:tabs.vaccines'), shortLabel: t('reports:tabs.vaccines').substring(0, 3) + '.' },
+    { id: "financial", label: t('reports:tabs.finance'), shortLabel: t('reports:tabs.finance').substring(0, 3) + '.' }
   ];
 
   // Memoize the formatted filters to prevent unnecessary re-renders
@@ -102,8 +104,8 @@ const Reports = () => {
         <div className="space-y-4">
           {/* Mobile Header with Filter */}
           <MobilePageHeader
-            title="Reportes"
-            subtitle="Análisis de operación ganadera"
+            title={t('reports:pageTitle')}
+            subtitle={t('reports:pageSubtitle')}
             action={
               <MobileReportsFilters
                 filters={pendingFilters}
@@ -135,8 +137,8 @@ const Reports = () => {
     <div className="mx-auto w-full max-w-screen-2xl px-6 pb-24 lg:pb-0 overflow-x-hidden">
       <div className="space-y-3">
         <PageHeader 
-          title="Reportes y Análisis"
-          subtitle="Análisis completo del desempeño de su operación ganadera"
+          title={t('reports:title')}
+          subtitle={t('reports:subtitle')}
         />
         
         {/* Desktop Global Filters */}
@@ -147,10 +149,10 @@ const Reports = () => {
           >
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
-              Filtros Globales
+              {t('reports:globalFilters')}
               {getActiveFiltersCount(pendingFilters) > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {getActiveFiltersCount(pendingFilters)} filtro{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
+                  {getActiveFiltersCount(pendingFilters)} {t('reports:filter')}{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
                 </Badge>
               )}
               <div className="ml-auto">
@@ -174,8 +176,8 @@ const Reports = () => {
         </Card>
 
         <SectionCard
-          title="Panel de Análisis"
-          subtitle="Reportes detallados por categoría"
+          title={t('reports:analysisPanel')}
+          subtitle={t('reports:detailedReports')}
         >
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="grid w-full grid-cols-6 h-10">
