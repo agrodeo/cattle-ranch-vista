@@ -1,4 +1,10 @@
 {
+  "title": "Suscripción",
+  "subtitle": "Gestiona tu plan y límites de uso",
+  "customerCenter": "Centro de Suscripción",
+  "viewPlans": "Ver Planes",
+  "status": "Estado de Suscripción",
+  "currentPlan": "Información de tu plan actual",
   "trial": {
     "ending": "Tu prueba termina en {{days}} días",
     "daysRemaining": "{{days}} días restantes",
