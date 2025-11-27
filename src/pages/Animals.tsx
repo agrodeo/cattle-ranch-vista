@@ -216,10 +216,10 @@ const Animals = () => {
       
       // If user doesn't exist in users table, show a message
       if (!data) {
-        console.log("No cabaña data found for user");
+      console.log("No cabaña data found for user");
         toast({
-          title: "Configuración requerida",
-          description: "Por favor contacte al administrador para asignar su cabaña",
+          title: t('animals:errors.configRequired'),
+          description: t('animals:errors.contactAdmin'),
           variant: "destructive",
         });
         return;
@@ -230,8 +230,8 @@ const Animals = () => {
     } catch (error) {
       console.error("Error fetching user cabaña:", error);
       toast({
-        title: "Error",
-        description: "No se pudo cargar la información del usuario",
+        title: t('common:errors.generic'),
+        description: t('animals:errors.loadUserInfo'),
         variant: "destructive",
       });
     }
@@ -288,8 +288,8 @@ const Animals = () => {
     } catch (error) {
       console.error("Error fetching animals:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los animales",
+        title: t('common:errors.generic'),
+        description: t('animals:errors.loadAnimals'),
         variant: "destructive",
       });
     } finally {
@@ -318,8 +318,8 @@ const Animals = () => {
     if (!editingAnimal && !userCabaña) {
       console.error("User cabaña validation failed:", { userCabaña, editingAnimal });
       toast({
-        title: "Error de configuración",
-        description: "No tienes una cabaña asociada. Contacta al administrador.",
+        title: t('animals:errors.configRequired'),
+        description: t('animals:errors.noCabana'),
         variant: "destructive",
       });
       return;
@@ -328,8 +328,8 @@ const Animals = () => {
     // Validate that birth date is not in the future
     if (formData.birth_date && new Date(formData.birth_date) > new Date()) {
       toast({
-        title: "Error de validación",
-        description: "La fecha de nacimiento no puede ser en el futuro",
+        title: t('common:errors.validation'),
+        description: t('animals:errors.futureBirthDate'),
         variant: "destructive",
       });
       return;
@@ -338,8 +338,8 @@ const Animals = () => {
     // Validate that mother and father are not the same
     if (formData.mother_id && formData.father_id && formData.mother_id === formData.father_id) {
       toast({
-        title: "Error de validación",
-        description: "La madre y el padre no pueden ser el mismo animal",
+        title: t('common:errors.validation'),
+        description: t('animals:errors.sameParents'),
         variant: "destructive",
       });
       return;
@@ -465,8 +465,8 @@ const Animals = () => {
         if (error) throw error;
         
         toast({
-          title: "Éxito",
-          description: "Animal actualizado correctamente",
+          title: t('common:status.success'),
+          description: t('animals:messages.updated'),
         });
       } else {
         const { error } = await supabase
@@ -476,8 +476,8 @@ const Animals = () => {
         if (error) throw error;
         
         toast({
-          title: "Éxito",
-          description: "Animal agregado correctamente",
+          title: t('common:status.success'),
+          description: t('animals:messages.created'),
         });
       }
 
@@ -498,14 +498,14 @@ const Animals = () => {
       // Handle unique constraint violation
       if (error.code === '23505' || error.message?.includes('duplicate')) {
         toast({
-          title: "Error",
-          description: "Ya existe un animal con ese ID en esta cabaña",
+          title: t('common:errors.generic'),
+          description: t('animals:errors.duplicateId'),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Error",
-          description: "No se pudo guardar el animal",
+          title: t('common:errors.generic'),
+          description: t('animals:errors.saveFailed'),
           variant: "destructive",
         });
       }
@@ -542,7 +542,7 @@ const Animals = () => {
   };
 
   const handleDelete = async (animalId: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este animal?")) return;
+    if (!confirm(t('animals:messages.confirmDelete'))) return;
 
     try {
       const { error } = await supabase
@@ -553,16 +553,16 @@ const Animals = () => {
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Animal eliminado correctamente",
+        title: t('common:status.success'),
+        description: t('animals:messages.deleted'),
       });
       
       fetchAnimals();
     } catch (error) {
       console.error("Error deleting animal:", error);
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el animal",
+        title: t('common:errors.generic'),
+        description: t('animals:errors.deleteFailed'),
         variant: "destructive",
       });
     }
