@@ -217,5 +217,8 @@
     "loading": "Loading...",
     "saving": "Saving...",
     "registering": "Registering..."
-  }
+  },
+  "user": "User",
+  "noHerd": "No herd",
+  "noRole": "No role"
 }

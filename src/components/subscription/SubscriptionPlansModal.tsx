@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,6 +102,7 @@ const plans = [
 ];
 
 export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlansModalProps) => {
+  const { t } = useTranslation('subscription');
   const [isAnnual, setIsAnnual] = useState(false);
   const { subscriptionStatus, upgradePlan } = useSubscription();
 
@@ -131,20 +133,20 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Planes de Suscripción</DialogTitle>
+          <DialogTitle className="text-2xl">{t('plansModal.title')}</DialogTitle>
           <DialogDescription>
-            Elige el plan que mejor se adapte a las necesidades de tu operation ganadera
+            {t('plansModal.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex items-center space-x-2 justify-center my-6">
-          <Label htmlFor="billing-toggle">Mensual</Label>
+          <Label htmlFor="billing-toggle">{t('plansModal.monthly')}</Label>
           <Switch
             id="billing-toggle"
             checked={isAnnual}
             onCheckedChange={setIsAnnual}
           />
-          <Label htmlFor="billing-toggle">Anual <Badge variant="secondary">-17%</Badge></Label>
+          <Label htmlFor="billing-toggle">{t('plansModal.annual')} <Badge variant="secondary">{t('plansModal.discount')}</Badge></Label>
         </div>
 
         {/* Free Plan */}
@@ -156,10 +158,10 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
               </div>
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  Gratuito
-                  {currentPlan === 'free' && <Badge>Plan Actual</Badge>}
+                  {t('plansModal.free')}
+                  {currentPlan === 'free' && <Badge>{t('plansModal.currentPlan')}</Badge>}
                 </CardTitle>
-                <CardDescription>Perfecto para empezar</CardDescription>
+                <CardDescription>{t('plansModal.freePlanDesc', 'Perfecto para empezar')}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -167,19 +169,19 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <p className="text-2xl font-bold">$0</p>
-                <p className="text-sm text-muted-foreground">30 días de prueba completa</p>
+                <p className="text-sm text-muted-foreground">{t('plansModal.freeTrial', '30 días de prueba completa')}</p>
                 <ul className="mt-4 space-y-2">
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>Hasta 50 animales</span>
+                    <span>{t('plansModal.upTo')} 50 {t('plansModal.animals')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>Usuarios ilimitados</span>
+                    <span>{t('plansModal.unlimitedUsers')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>Funcionalidades básicas</span>
+                    <span>{t('plansModal.basicFeatures', 'Funcionalidades básicas')}</span>
                   </li>
                 </ul>
               </div>
@@ -189,7 +191,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   className="w-full"
                   disabled={currentPlan === 'free'}
                 >
-                  {currentPlan === 'free' ? 'Plan Actual' : 'Downgrade'}
+                  {currentPlan === 'free' ? t('plansModal.currentPlan') : t('plansModal.downgrade', 'Downgrade')}
                 </Button>
               </div>
             </div>
@@ -206,7 +208,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
               <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-primary' : ''}`}>
                 {plan.popular && (
                   <Badge className="absolute -top-2 left-1/2 -translate-x-1/2">
-                    Más Popular
+                    {t('plansModal.mostPopular', 'Más Popular')}
                   </Badge>
                 )}
                 
@@ -217,13 +219,13 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                     </div>
                     <CardTitle className="flex items-center gap-2">
                       {plan.name}
-                      {isCurrentPlan && <Badge>Actual</Badge>}
+                      {isCurrentPlan && <Badge>{t('plansModal.currentPlan')}</Badge>}
                     </CardTitle>
                   </div>
                   <CardDescription>
                     {typeof plan.maxAnimals === 'number' 
-                      ? `Hasta ${plan.maxAnimals.toLocaleString()} animales`
-                      : `${plan.maxAnimals} animales`}
+                      ? `${t('plansModal.upTo')} ${plan.maxAnimals.toLocaleString()} ${t('plansModal.animals')}`
+                      : `${plan.maxAnimals} ${t('plansModal.animals')}`}
                   </CardDescription>
                 </CardHeader>
 
@@ -231,11 +233,11 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   <div>
                     <p className="text-3xl font-bold">{formatPrice(price)}</p>
                     <p className="text-sm text-muted-foreground">
-                      {isAnnual ? 'por año' : 'por mes'}
+                      {isAnnual ? t('plansModal.perYear') : t('plansModal.perMonth')}
                     </p>
                     {isAnnual && (
                       <p className="text-xs text-green-600">
-                        Ahorras {formatPrice((plan.monthly * 12) - plan.annual)}
+                        {t('plansModal.youSave', 'Ahorras')} {formatPrice((plan.monthly * 12) - plan.annual)}
                       </p>
                     )}
                   </div>
@@ -256,10 +258,10 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                     disabled={isCurrentPlan}
                   >
                     {isCurrentPlan 
-                      ? 'Plan Actual' 
+                      ? t('plansModal.currentPlan')
                       : plan.id === 'corporativo' 
-                        ? 'Contactar Ventas'
-                        : 'Seleccionar Plan'
+                        ? t('plansModal.contactSales', 'Contactar Ventas')
+                        : t('plansModal.selectPlan')
                     }
                   </Button>
                 </CardContent>
@@ -269,8 +271,8 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
         </div>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Todos los planes incluyen soporte técnico y actualizaciones gratuitas.</p>
-          <p>Los precios están en pesos argentinos e incluyen IVA.</p>
+          <p>{t('plansModal.allPlansInclude', 'Todos los planes incluyen soporte técnico y actualizaciones gratuitas.')}</p>
+          <p>{t('plansModal.pricesDisclaimer', 'Los precios están en pesos argentinos e incluyen IVA.')}</p>
         </div>
       </DialogContent>
     </Dialog>

@@ -217,5 +217,8 @@
     "loading": "Cargando...",
     "saving": "Guardando...",
     "registering": "Registrando..."
-  }
+  },
+  "user": "Usuario",
+  "noHerd": "Sin cabaña",
+  "noRole": "Sin rol"
 }
