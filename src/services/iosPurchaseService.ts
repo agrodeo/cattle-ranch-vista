@@ -1,4 +1,4 @@
-import { CapacitorPurchases, type CustomerInfo, type PurchasesOfferings } from '@capgo/capacitor-purchases';
+import { Purchases, type CustomerInfo, type PurchasesOfferings } from '@revenuecat/purchases-capacitor';
 import { Capacitor } from '@capacitor/core';
 
 export class IOSPurchaseService {
@@ -22,7 +22,7 @@ export class IOSPurchaseService {
         return;
       }
 
-      await CapacitorPurchases.setUpPurchases({
+      await Purchases.configure({
         apiKey,
         appUserID: userId
       });
@@ -37,8 +37,7 @@ export class IOSPurchaseService {
 
   static async getOfferings(): Promise<PurchasesOfferings> {
     try {
-      const result = await CapacitorPurchases.getOfferings();
-      return result.offerings;
+      return await Purchases.getOfferings();
     } catch (error) {
       console.error('Failed to get offerings:', error);
       throw error;
@@ -47,12 +46,36 @@ export class IOSPurchaseService {
 
   static async purchaseProduct(productId: string): Promise<CustomerInfo> {
     try {
-      const result = await CapacitorPurchases.purchaseStoreProduct({ 
-        identifier: productId,
-        offeringIdentifier: 'default'
-      });
-      console.log('Purchase successful:', result);
-      return result.customerInfo;
+      // First get the offerings to find the product
+      const offerings = await Purchases.getOfferings();
+      const products = offerings.current?.availablePackages || [];
+      
+      // Find the package with matching product identifier
+      const pkg = products.find(p => p.product.identifier === productId);
+      
+      if (pkg) {
+        // Purchase using package
+        const result = await Purchases.purchasePackage({ 
+          aPackage: pkg
+        });
+        console.log('Purchase successful:', result);
+        return result.customerInfo;
+      } else {
+        // Fallback: get product by ID and purchase directly
+        const { products: productList } = await Purchases.getProducts({
+          productIdentifiers: [productId]
+        });
+        
+        if (productList.length > 0) {
+          const result = await Purchases.purchaseStoreProduct({ 
+            product: productList[0]
+          });
+          console.log('Purchase successful:', result);
+          return result.customerInfo;
+        }
+        
+        throw new Error('Product not found');
+      }
     } catch (error: any) {
       console.error('Purchase failed:', error);
       throw error;
@@ -61,7 +84,7 @@ export class IOSPurchaseService {
 
   static async restorePurchases(): Promise<CustomerInfo> {
     try {
-      const result = await CapacitorPurchases.restorePurchases();
+      const result = await Purchases.restorePurchases();
       console.log('Purchases restored:', result);
       return result.customerInfo;
     } catch (error) {
@@ -72,7 +95,7 @@ export class IOSPurchaseService {
 
   static async getCustomerInfo(): Promise<CustomerInfo> {
     try {
-      const result = await CapacitorPurchases.getCustomerInfo();
+      const result = await Purchases.getCustomerInfo();
       return result.customerInfo;
     } catch (error) {
       console.error('Failed to get customer info:', error);
