@@ -46,5 +46,66 @@
     "regular": "Regular",
     "low": "Low",
     "pregnant": "PREGNANT"
+  },
+  "metrics": {
+    "totalCorrals": "Total Corrals",
+    "totalAnimals": "Total Animals",
+    "avgVaccination": "Avg. Vaccination %",
+    "avgGDP": "Avg. ADG",
+    "loading": "Loading corrals...",
+    "animals": "animals",
+    "hectares": "ha",
+    "occupied": "occupied",
+    "freeSpaces": "free spaces",
+    "availableCorrals": "available corrals"
+  },
+  "sections": {
+    "health": "Health",
+    "vaccination": "Vaccination",
+    "alerts": "Alerts",
+    "production": "Production",
+    "avgWeight": "Avg. Weight",
+    "reproduction": "Reproduction",
+    "pregnancyRate": "Pregnancy rate"
+  },
+  "details": {
+    "vaccinationDetails": "Vaccination Details",
+    "vaccinesApplied": "Vaccines Applied",
+    "generalCompliance": "Overall Compliance",
+    "requiresAttention": "attention",
+    "animalRequires": "animal requires",
+    "animalsRequire": "animals require",
+    "pregnancyDetails": "Pregnancy Details",
+    "pregnantFemales": "Pregnant Females",
+    "femalesPregnant": "of females are pregnant"
+  },
+  "risks": {
+    "consanguinityRisk": "Consanguinity Risk Detected",
+    "animalPresents": "animal presents",
+    "animalsPresent": "animals present",
+    "consanguinityRiskText": "consanguinity risk",
+    "riskAlerts": "Risk Alerts",
+    "risksDetected": "risks detected",
+    "risks": "risks",
+    "noRisksDetected": "No consanguinity risks detected"
+  },
+  "buttons": {
+    "bulkMove": "Bulk Move",
+    "optimize": "Optimize Corrals",
+    "moveAnimals": "Move Animals",
+    "newCorral": "New Corral",
+    "move": "Move",
+    "new": "New",
+    "createFirst": "Create First Corral"
+  },
+  "empty": {
+    "noCorrals": "No corrals",
+    "createFirst": "Create your first corral to start managing animals"
+  },
+  "occupancy": {
+    "label": "Occupancy"
+  },
+  "errors": {
+    "loadError": "Could not load corrals"
   }
 }

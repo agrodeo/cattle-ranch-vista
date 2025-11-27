@@ -46,5 +46,66 @@
     "regular": "Regular",
     "low": "Baixo",
     "pregnant": "PRENHA"
+  },
+  "metrics": {
+    "totalCorrals": "Total de Currais",
+    "totalAnimals": "Total de Animais",
+    "avgVaccination": "% Vacinação Média",
+    "avgGDP": "GPD Médio",
+    "loading": "Carregando currais...",
+    "animals": "animais",
+    "hectares": "ha",
+    "occupied": "ocupado",
+    "freeSpaces": "espaços livres",
+    "availableCorrals": "currais disponíveis"
+  },
+  "sections": {
+    "health": "Saúde",
+    "vaccination": "Vacinação",
+    "alerts": "Alertas",
+    "production": "Produção",
+    "avgWeight": "Peso médio",
+    "reproduction": "Reprodução",
+    "pregnancyRate": "Taxa de prenhez"
+  },
+  "details": {
+    "vaccinationDetails": "Detalhes de Vacinação",
+    "vaccinesApplied": "Vacinas Aplicadas",
+    "generalCompliance": "Conformidade Geral",
+    "requiresAttention": "atenção",
+    "animalRequires": "animal requer",
+    "animalsRequire": "animais requerem",
+    "pregnancyDetails": "Detalhes de Prenhez",
+    "pregnantFemales": "Fêmeas Prenhes",
+    "femalesPregnant": "das fêmeas estão prenhes"
+  },
+  "risks": {
+    "consanguinityRisk": "Risco de Consanguinidade Detectado",
+    "animalPresents": "animal apresenta",
+    "animalsPresent": "animais apresentam",
+    "consanguinityRiskText": "risco de consanguinidade",
+    "riskAlerts": "Alertas de Risco",
+    "risksDetected": "riscos detectados",
+    "risks": "riscos",
+    "noRisksDetected": "Nenhum risco de consanguinidade detectado"
+  },
+  "buttons": {
+    "bulkMove": "Mover em Massa",
+    "optimize": "Otimizar Currais",
+    "moveAnimals": "Mover Animais",
+    "newCorral": "Novo Curral",
+    "move": "Mover",
+    "new": "Novo",
+    "createFirst": "Criar Primeiro Curral"
+  },
+  "empty": {
+    "noCorrals": "Nenhum curral",
+    "createFirst": "Crie seu primeiro curral para começar a gerenciar os animais"
+  },
+  "occupancy": {
+    "label": "Ocupação"
+  },
+  "errors": {
+    "loadError": "Não foi possível carregar os currais"
   }
 }
