@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, FileSpreadsheet, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ interface AnimalCreationFlowProps {
 type FlowStep = "selection" | "manual" | "excel";
 
 export function AnimalCreationFlow({ onClose }: AnimalCreationFlowProps) {
+  const { t } = useTranslation('animals');
   const [currentStep, setCurrentStep] = useState<FlowStep>("selection");
 
   const handleStepChange = (step: FlowStep) => {
@@ -41,7 +43,7 @@ export function AnimalCreationFlow({ onClose }: AnimalCreationFlowProps) {
         <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-semibold">Cargar Animales</h1>
+        <h1 className="text-xl font-semibold">{t('animalCreation.title')}</h1>
       </div>
 
       {/* Content */}
@@ -56,9 +58,9 @@ export function AnimalCreationFlow({ onClose }: AnimalCreationFlowProps) {
                 <Plus className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Carga Manual</CardTitle>
+                <CardTitle>{t('animalCreation.manualLoad')}</CardTitle>
                 <CardDescription>
-                  Agregar animales uno por uno con formulario
+                  {t('animalCreation.manualLoadDesc')}
                 </CardDescription>
               </div>
             </div>
@@ -75,9 +77,9 @@ export function AnimalCreationFlow({ onClose }: AnimalCreationFlowProps) {
                 <FileSpreadsheet className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>Carga por Excel</CardTitle>
+                <CardTitle>{t('animalCreation.excelLoad')}</CardTitle>
                 <CardDescription>
-                  Subir archivo Excel con múltiples animales
+                  {t('animalCreation.excelLoadDesc')}
                 </CardDescription>
               </div>
             </div>

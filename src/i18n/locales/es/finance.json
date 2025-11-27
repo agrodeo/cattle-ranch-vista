@@ -44,5 +44,45 @@
     "weekly": "Semanal",
     "monthly": "Mensual",
     "yearly": "Anual"
+  },
+  "mobile": {
+    "loadMovements": "Cargar Movimientos",
+    "newIncome": "Nuevo Ingreso",
+    "newExpense": "Nuevo Egreso",
+    "incomeTitle": "Ingreso",
+    "incomeDesc": "Registrar entrada de dinero",
+    "expenseTitle": "Egreso",
+    "expenseDesc": "Registrar salida de dinero",
+    "movementInfo": "Información del Movimiento",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Ej: Venta de novillo",
+    "amount": "Monto",
+    "date": "Fecha",
+    "category": "Categoría",
+    "selectCategory": "Seleccionar categoría",
+    "observations": "Observaciones",
+    "observationsPlaceholder": "Observaciones adicionales...",
+    "requiredFields": "Campos requeridos: Descripción, Monto y Categoría",
+    "saving": "Guardando...",
+    "save": "Guardar",
+    "success": "Movimiento registrado exitosamente",
+    "error": "Error al registrar el movimiento",
+    "incomeCategories": {
+      "animalSales": "Venta de animales",
+      "milkSales": "Venta de leche",
+      "meatSales": "Venta de carne",
+      "services": "Servicios",
+      "subsidies": "Subsidios",
+      "other": "Otros ingresos"
+    },
+    "expenseCategories": {
+      "feed": "Alimentación",
+      "health": "Sanidad",
+      "reproduction": "Reproducción",
+      "maintenance": "Mantenimiento",
+      "services": "Servicios",
+      "taxes": "Impuestos",
+      "other": "Otros gastos"
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, DollarSign, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +17,7 @@ interface FinanceCreationFlowProps {
 type MovementType = "income" | "expense";
 
 export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
+  const { t } = useTranslation('finance');
   const [selectedType, setSelectedType] = useState<MovementType | null>(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,37 +31,37 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
   const movementTypes = [
     {
       id: "income" as MovementType,
-      title: "Ingreso",
-      description: "Registrar entrada de dinero",
+      title: t('mobile.incomeTitle'),
+      description: t('mobile.incomeDesc'),
       icon: TrendingUp,
       color: "bg-green-500",
     },
     {
       id: "expense" as MovementType,
-      title: "Egreso",
-      description: "Registrar salida de dinero",
+      title: t('mobile.expenseTitle'),
+      description: t('mobile.expenseDesc'),
       icon: TrendingDown,
       color: "bg-red-500",
     },
   ];
 
   const incomeCategories = [
-    "Venta de animales",
-    "Venta de leche",
-    "Venta de carne",
-    "Servicios",
-    "Subsidios",
-    "Otros ingresos",
+    t('mobile.incomeCategories.animalSales'),
+    t('mobile.incomeCategories.milkSales'),
+    t('mobile.incomeCategories.meatSales'),
+    t('mobile.incomeCategories.services'),
+    t('mobile.incomeCategories.subsidies'),
+    t('mobile.incomeCategories.other'),
   ];
 
   const expenseCategories = [
-    "Alimentación",
-    "Sanidad",
-    "Reproducción",
-    "Mantenimiento",
-    "Servicios",
-    "Impuestos",
-    "Otros gastos",
+    t('mobile.expenseCategories.feed'),
+    t('mobile.expenseCategories.health'),
+    t('mobile.expenseCategories.reproduction'),
+    t('mobile.expenseCategories.maintenance'),
+    t('mobile.expenseCategories.services'),
+    t('mobile.expenseCategories.taxes'),
+    t('mobile.expenseCategories.other'),
   ];
 
   const handleInputChange = (field: string, value: string) => {
@@ -76,7 +78,7 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
 
   const handleSubmit = async () => {
     if (!formData.descripcion || !formData.monto || !formData.categoria) {
-      toast.error("Campos requeridos: Descripción, Monto y Categoría");
+      toast.error(t('mobile.requiredFields'));
       return;
     }
 
@@ -86,7 +88,7 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
       const { error } = await supabase
         .from("activities")
         .insert([{
-          description: `${selectedType === "income" ? "Ingreso" : "Egreso"}: ${formData.descripcion}`,
+          description: `${selectedType === "income" ? t('mobile.incomeTitle') : t('mobile.expenseTitle')}: ${formData.descripcion}`,
           type: "finance",
           date: formData.fecha,
           animal_id: "", // Placeholder
@@ -94,11 +96,11 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
 
       if (error) throw error;
 
-      toast.success("Movimiento registrado exitosamente");
+      toast.success(t('mobile.success'));
       onClose();
     } catch (error) {
       console.error("Error creating movement:", error);
-      toast.error("Error al registrar el movimiento");
+      toast.error(t('mobile.error'));
     } finally {
       setLoading(false);
     }
@@ -117,12 +119,12 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-semibold">
-              Nuevo {isIncome ? "Ingreso" : "Egreso"}
+              {isIncome ? t('mobile.newIncome') : t('mobile.newExpense')}
             </h1>
           </div>
           <Button onClick={handleSubmit} disabled={loading} size="sm">
             <DollarSign className="h-4 w-4 mr-2" />
-            {loading ? "Guardando..." : "Guardar"}
+            {loading ? t('mobile.saving') : t('mobile.save')}
           </Button>
         </div>
 
@@ -130,21 +132,21 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
         <div className="flex-1 p-4 space-y-6 overflow-y-auto pb-20">
           <Card>
             <CardHeader>
-              <CardTitle>Información del Movimiento</CardTitle>
+              <CardTitle>{t('mobile.movementInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="descripcion">Descripción *</Label>
+                <Label htmlFor="descripcion">{t('mobile.description')} *</Label>
                 <Input
                   id="descripcion"
                   value={formData.descripcion}
                   onChange={(e) => handleInputChange("descripcion", e.target.value)}
-                  placeholder="Ej: Venta de novillo"
+                  placeholder={t('mobile.descriptionPlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="monto">Monto *</Label>
+                <Label htmlFor="monto">{t('mobile.amount')} *</Label>
                 <Input
                   id="monto"
                   type="number"
@@ -156,7 +158,7 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
               </div>
 
               <div>
-                <Label htmlFor="fecha">Fecha</Label>
+                <Label htmlFor="fecha">{t('mobile.date')}</Label>
                 <Input
                   id="fecha"
                   type="date"
@@ -166,10 +168,10 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
               </div>
 
               <div>
-                <Label htmlFor="categoria">Categoría *</Label>
+                <Label htmlFor="categoria">{t('mobile.category')} *</Label>
                 <Select value={formData.categoria} onValueChange={(value) => handleInputChange("categoria", value)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar categoría" />
+                    <SelectValue placeholder={t('mobile.selectCategory')} />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -182,12 +184,12 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
               </div>
 
               <div>
-                <Label htmlFor="observaciones">Observaciones</Label>
+                <Label htmlFor="observaciones">{t('mobile.observations')}</Label>
                 <Textarea
                   id="observaciones"
                   value={formData.observaciones}
                   onChange={(e) => handleInputChange("observaciones", e.target.value)}
-                  placeholder="Observaciones adicionales..."
+                  placeholder={t('mobile.observationsPlaceholder')}
                   rows={3}
                 />
               </div>
@@ -205,7 +207,7 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
         <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-semibold">Cargar Movimientos</h1>
+        <h1 className="text-xl font-semibold">{t('mobile.loadMovements')}</h1>
       </div>
 
       {/* Content */}
