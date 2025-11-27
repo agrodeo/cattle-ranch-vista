@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +20,7 @@ interface AIMessage {
 }
 
 export function AICorralAssistant({ corralesData, currentRisks, cabanaId }: AICorralAssistantProps) {
+  const { t } = useTranslation(['common', 'corrals']);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,7 +54,7 @@ export function AICorralAssistant({ corralesData, currentRisks, cabanaId }: AICo
       }]);
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Error al consultar el asistente IA');
+      toast.error(t('common:error.failed'));
       setMessages(prev => prev.slice(0, -1)); // Remove user message on error
     } finally {
       setLoading(false);

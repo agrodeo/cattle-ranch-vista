@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -33,6 +34,7 @@ const requirementSchema = z.object({
 type RequirementFormData = z.infer<typeof requirementSchema>;
 
 export const VaccinationRequirementsManager = () => {
+  const { t } = useTranslation(['common', 'settings']);
   const { requirements, loading, createRequirement, updateRequirement, deleteRequirement } = useVaccinationRequirements();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingRequirement, setEditingRequirement] = useState<any>(null);
@@ -81,7 +83,7 @@ export const VaccinationRequirementsManager = () => {
       setEditingRequirement(null);
       form.reset();
     } catch (error) {
-      toast.error("Error al guardar el requisito de vacunación");
+      toast.error(t('common:error.saveFailed'));
     }
   };
 

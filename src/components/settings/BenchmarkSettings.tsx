@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ const DEFAULT_FORM_DATA: BenchmarkFormData = {
 };
 
 export const BenchmarkSettings = () => {
+  const { t } = useTranslation(['common', 'settings']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const [customBenchmarks, setCustomBenchmarks] = useState<CustomBenchmark[]>([]);
@@ -67,8 +69,8 @@ export const BenchmarkSettings = () => {
     } catch (error) {
       console.error("Error fetching custom benchmarks:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los benchmarks personalizados",
+        title: t('common:error.title'),
+        description: t('common:error.loadFailed'),
         variant: "destructive",
       });
     } finally {
