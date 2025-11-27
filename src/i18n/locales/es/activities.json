@@ -106,7 +106,11 @@
     "viewFullCalendar": "Ver calendario completo",
     "dueToday": "Vence hoy",
     "in3Days": "En 3 días",
-    "animals": "animales"
+    "animals": "animales",
+    "plus7days": "+7 días",
+    "noVaccinesPending": "No hay vacunas pendientes",
+    "calendarTitle": "Calendario de Actividades",
+    "calendarComingSoon": "Vista temporal próximamente"
   },
   "typeSelector": {
     "title": "Seleccionar Tipo de Actividad",
@@ -174,6 +178,33 @@
   "common": {
     "cancel": "Cancelar",
     "save": "Guardar"
+  },
+  "activityCreation": {
+    "title": "Cargar Actividad",
+    "vaccination": {
+      "title": "Vacunación",
+      "description": "Registrar aplicación de vacunas"
+    },
+    "weighing": {
+      "title": "Pesaje",
+      "description": "Registrar peso de animales"
+    },
+    "insemination": {
+      "title": "Inseminación Artificial",
+      "description": "Registrar servicios de IA"
+    },
+    "general": {
+      "title": "Actividad General",
+      "description": "Otras actividades de manejo"
+    },
+    "tacto": {
+      "title": "Tacto/Detección",
+      "description": "Detectar preñeces"
+    },
+    "pregnancyLoss": {
+      "title": "Pérdida de Preñez",
+      "description": "Registrar pérdidas reproductivas"
+    }
   },
   "activityCard": {
     "animal": "animal",

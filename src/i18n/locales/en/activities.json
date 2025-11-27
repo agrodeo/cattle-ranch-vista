@@ -106,7 +106,11 @@
     "viewFullCalendar": "View Full Calendar",
     "dueToday": "Due today",
     "in3Days": "In 3 days",
-    "animals": "animals"
+    "animals": "animals",
+    "plus7days": "+7 days",
+    "noVaccinesPending": "No pending vaccines",
+    "calendarTitle": "Activities Calendar",
+    "calendarComingSoon": "Temporal view coming soon"
   },
   "typeSelector": {
     "title": "Select Activity Type",
@@ -174,6 +178,33 @@
   "common": {
     "cancel": "Cancel",
     "save": "Save"
+  },
+  "activityCreation": {
+    "title": "Register Activity",
+    "vaccination": {
+      "title": "Vaccination",
+      "description": "Register vaccine application"
+    },
+    "weighing": {
+      "title": "Weighing",
+      "description": "Record animal weights"
+    },
+    "insemination": {
+      "title": "Artificial Insemination",
+      "description": "Record AI services"
+    },
+    "general": {
+      "title": "General Activity",
+      "description": "Other management activities"
+    },
+    "tacto": {
+      "title": "Pregnancy Check",
+      "description": "Detect pregnancies"
+    },
+    "pregnancyLoss": {
+      "title": "Pregnancy Loss",
+      "description": "Record reproductive losses"
+    }
   },
   "activityCard": {
     "animal": "animal",
