@@ -39,11 +39,14 @@ export const useSubscription = () => {
 
   const fetchSubscriptionStatus = useCallback(async () => {
     if (!currentUser?.cabañaId) {
+      console.warn('⚠️ No cabaña ID found, skipping subscription status fetch');
+      setSubscriptionStatus(null);
       setLoading(false);
       return;
     }
 
     try {
+      console.log('📊 Fetching subscription status for cabaña:', currentUser.cabañaId);
       const { data, error } = await supabase.rpc('get_subscription_status', {
         cabana_uuid: currentUser.cabañaId
       });
@@ -55,11 +58,13 @@ export const useSubscription = () => {
           description: "No se pudo obtener el estado de la suscripción",
           variant: "destructive"
         });
+        setLoading(false);
         return;
       }
 
       if (data && data.length > 0) {
         const status = data[0];
+        console.log('✅ Subscription status:', status);
         setSubscriptionStatus({
           plan: status.plan,
           isTrialActive: status.is_trial_active,
