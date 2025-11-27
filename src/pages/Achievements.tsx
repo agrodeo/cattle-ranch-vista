@@ -13,8 +13,8 @@ export default function Achievements() {
           <Trophy className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold">Mis Logros</h1>
-          <p className="text-muted-foreground">Tus medallas y reconocimientos en AgroDeo</p>
+          <h1 className="text-3xl font-bold">{t('common:achievements.title')}</h1>
+          <p className="text-muted-foreground">{t('common:achievements.subtitle')}</p>
         </div>
       </div>
       
