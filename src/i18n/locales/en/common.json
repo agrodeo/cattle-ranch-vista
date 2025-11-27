@@ -177,5 +177,45 @@
         "description": "You've created and organized corrals"
       }
     }
+  },
+  "sync": {
+    "syncCenter": "Sync Center",
+    "syncNow": "Sync now",
+    "syncing": "Syncing...",
+    "pending": "Pending",
+    "failed": "Failed",
+    "synced": "Synced",
+    "retryFailed": "Retry failed",
+    "pendingEvents": "Pending events to sync",
+    "noInternet": "No internet connection",
+    "syncCompleted": "Sync completed",
+    "syncError": "Error syncing",
+    "noConnectionWarning": "You're offline. Everything will be saved as pending and synced when reconnected.",
+    "eventsRetried": "Events retried"
+  },
+  "connectivity": {
+    "offlineBanner": "You're offline. Everything will be saved as pending and synced when reconnected."
+  },
+  "support": {
+    "needHelp": "Need help?",
+    "contactSupport": "Contact support",
+    "close": "Close",
+    "generalQuery": "General query",
+    "supportEmail": "Support"
+  },
+  "errors": {
+    "unexpectedError": "Unexpected error",
+    "reload": "Reload",
+    "errorProcessing": "Error processing",
+    "loadError": "Error loading",
+    "saveError": "Error saving"
+  },
+  "forms": {
+    "select": "Select",
+    "selectType": "Select type",
+    "selectDate": "Select date",
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "registering": "Registering..."
   }
 }

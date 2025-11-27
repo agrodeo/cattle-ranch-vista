@@ -7,10 +7,12 @@ import { useReproductiveSystem } from '@/hooks/useReproductiveSystem';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { useTranslation } from 'react-i18next';
 
 export function ReproductiveAlertsCard() {
   const { alerts, loading, loadAlerts, markAlertAsResolved, checkOverduePregnancies } = useReproductiveSystem();
   const { currentUser } = useSupabaseAuth();
+  const { t } = useTranslation('reproductive');
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -45,20 +47,20 @@ export function ReproductiveAlertsCard() {
   const getAlertTitle = (alertType: string) => {
     switch (alertType) {
       case 'parto_vencido':
-        return 'Parto Vencido';
+        return t('alerts.overdueCalving');
       case 'overdue_calving':
-        return 'Parto Atrasado';
+        return t('alerts.overdueCalving');
       case 'overdue_pregnancy_resolution':
-        return 'Preñez a Resolver';
+        return t('alerts.pregnancyToResolve');
       default:
-        return 'Alerta Reproductiva';
+        return t('alerts.reproductiveAlert');
     }
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-lg font-semibold">Alertas Reproductivas</CardTitle>
+        <CardTitle className="text-lg font-semibold">{t('alerts.title')}</CardTitle>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -67,19 +69,19 @@ export function ReproductiveAlertsCard() {
             disabled={loading}
           >
             <Clock className="h-4 w-4 mr-2" />
-            Verificar
+            {t('alerts.verify')}
           </Button>
         </div>
       </CardHeader>
       <CardContent>
         {loading ? (
           <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground">Cargando alertas...</p>
+            <p className="text-sm text-muted-foreground">{t('alerts.loadingAlerts')}</p>
           </div>
         ) : alerts.length === 0 ? (
           <div className="text-center py-8">
             <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">No hay alertas pendientes</p>
+            <p className="text-sm text-muted-foreground">{t('alerts.noAlerts')}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -122,7 +124,7 @@ export function ReproductiveAlertsCard() {
                   className="ml-2"
                 >
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  Resolver
+                  {t('alerts.resolve')}
                 </Button>
               </div>
             ))}

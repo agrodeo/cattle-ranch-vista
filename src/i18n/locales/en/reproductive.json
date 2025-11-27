@@ -1,0 +1,25 @@
+{
+  "alerts": {
+    "title": "Reproductive Alerts",
+    "overdueCalving": "Overdue calving",
+    "pregnancyToResolve": "Pregnancy to resolve",
+    "reproductiveAlert": "Reproductive alert",
+    "loadingAlerts": "Loading alerts...",
+    "noAlerts": "No reproductive alerts",
+    "verify": "Verify",
+    "resolve": "Resolve"
+  },
+  "pregnancy": {
+    "pregnant": "Pregnant",
+    "empty": "Empty",
+    "gestationDays": "{{days}} days of gestation"
+  },
+  "loss": {
+    "title": "Pregnancy Loss",
+    "earlyAbortion": "Early abortion",
+    "lateAbortion": "Late abortion",
+    "neonatalLoss": "Neonatal loss",
+    "registered": "Pregnancy loss registered",
+    "error": "Error registering pregnancy loss"
+  }
+}

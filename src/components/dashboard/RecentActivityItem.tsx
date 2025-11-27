@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, Syringe, Heart, Stethoscope, Scale, Activity, Calendar, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BadgePill } from "@/components/ui/badge-pill";
+import { useTranslation } from 'react-i18next';
 
 interface ActivityDetail {
   id: string;
@@ -53,6 +54,7 @@ const getActivityColor = (type: string) => {
 
 export function RecentActivityItem({ activity }: RecentActivityItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useTranslation(['dashboard', 'activities', 'common']);
   const Icon = getActivityIcon(activity.type);
   const colorClass = getActivityColor(activity.type);
   const hasDetails = activity.details && Object.keys(activity.details).length > 0;
@@ -86,7 +88,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
                 <>
                   <span className="text-slate-300">•</span>
                   <p className="text-xs text-slate-500">
-                    {activity.animalCount} {activity.animalCount === 1 ? 'animal' : 'animales'}
+                    {activity.animalCount} {t('dashboard:activity.animals')}
                   </p>
                 </>
               )}
@@ -115,7 +117,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
             {activity.details.vacuna && (
               <>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">Vacuna:</span>
+                  <span className="text-slate-500">{t('dashboard:activity.vaccines')}:</span>
                   <span className="font-medium text-slate-900">{activity.details.vacuna}</span>
                 </div>
                 {activity.details.lote && (
@@ -143,7 +145,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
             {activity.details.toro_nombre && (
               <>
                 <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">Toro:</span>
+                  <span className="text-slate-500">{t('dashboard:activity.bullName')}:</span>
                   <span className="font-medium text-slate-900">{activity.details.toro_nombre}</span>
                 </div>
                 {activity.details.raza_toro && (
@@ -160,7 +162,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
               <>
                 {activity.details.positivos !== undefined && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Preñadas:</span>
+                    <span className="text-slate-500">{t('dashboard:activity.tactileExam')}:</span>
                     <span className="font-medium text-emerald-600">{activity.details.positivos}</span>
                   </div>
                 )}
@@ -176,7 +178,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
             {/* Weighing Details */}
             {activity.details.peso_promedio && (
               <div className="flex justify-between text-xs">
-                <span className="text-slate-500">Peso Promedio:</span>
+                <span className="text-slate-500">{t('dashboard:activity.averageWeight')}:</span>
                 <span className="font-medium text-slate-900">{activity.details.peso_promedio} kg</span>
               </div>
             )}
@@ -193,7 +195,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
             {activity.user && (
               <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-2">
                 <User className="h-3 w-3" />
-                <span>{activity.user}</span>
+                <span>{t('dashboard:activity.registeredBy')}: {activity.user}</span>
               </div>
             )}
           </div>

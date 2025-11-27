@@ -21,6 +21,8 @@ import authEs from './locales/es/auth.json';
 import errorsEs from './locales/es/errors.json';
 import formsEs from './locales/es/forms.json';
 import settingsEs from './locales/es/settings.json';
+import subscriptionEs from './locales/es/subscription.json';
+import reproductiveEs from './locales/es/reproductive.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
@@ -33,6 +35,8 @@ import authEn from './locales/en/auth.json';
 import errorsEn from './locales/en/errors.json';
 import formsEn from './locales/en/forms.json';
 import settingsEn from './locales/en/settings.json';
+import subscriptionEn from './locales/en/subscription.json';
+import reproductiveEn from './locales/en/reproductive.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -45,6 +49,8 @@ import authPt from './locales/pt/auth.json';
 import errorsPt from './locales/pt/errors.json';
 import formsPt from './locales/pt/forms.json';
 import settingsPt from './locales/pt/settings.json';
+import subscriptionPt from './locales/pt/subscription.json';
+import reproductivePt from './locales/pt/reproductive.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -87,6 +93,8 @@ const resources = {
     errors: errorsEs,
     forms: formsEs,
     settings: settingsEs,
+    subscription: subscriptionEs,
+    reproductive: reproductiveEs,
   },
   en: {
     common: commonEn,
@@ -100,6 +108,8 @@ const resources = {
     errors: errorsEn,
     forms: formsEn,
     settings: settingsEn,
+    subscription: subscriptionEn,
+    reproductive: reproductiveEn,
   },
   pt: {
     common: commonPt,
@@ -113,6 +123,8 @@ const resources = {
     errors: errorsPt,
     forms: formsPt,
     settings: settingsPt,
+    subscription: subscriptionPt,
+    reproductive: reproductivePt,
   },
 };
 
@@ -123,7 +135,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'finance', 'auth', 'errors', 'forms', 'settings'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'finance', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],

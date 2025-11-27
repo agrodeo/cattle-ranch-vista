@@ -9,18 +9,19 @@ import { trySync } from "@/services/sync";
 import { useConnectivity } from "@/services/connectivity";
 import { db, OutboxEvent } from "@/services/db";
 import { toast } from "sonner";
+import { useTranslation } from 'react-i18next';
 
 export function SyncCenter() {
   const [status, setStatus] = useState({ pending: 0, failed: 0, synced: 0 });
   const [events, setEvents] = useState<OutboxEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const { isOnline } = useConnectivity();
+  const { t } = useTranslation('common');
 
   const loadStatus = async () => {
     const statusData = await getOutboxStatus();
     setStatus(statusData);
     
-    // Cargar eventos pendientes y fallidos
     const pendingEvents = await db.outbox.where('status').anyOf(['pending', 'failed']).toArray();
     setEvents(pendingEvents);
   };
@@ -31,17 +32,17 @@ export function SyncCenter() {
 
   const handleSync = async () => {
     if (!isOnline) {
-      toast.error("No hay conexión a internet");
+      toast.error(t('sync.noInternet'));
       return;
     }
 
     setLoading(true);
     try {
       await trySync();
-      toast.success("Sincronización completada");
+      toast.success(t('sync.syncCompleted'));
       await loadStatus();
     } catch (error) {
-      toast.error("Error en la sincronización");
+      toast.error(t('sync.syncError'));
       console.error('Sync error:', error);
     } finally {
       setLoading(false);
@@ -51,7 +52,7 @@ export function SyncCenter() {
   const handleRetryFailed = async () => {
     const retried = await retryFailedEvents();
     if (retried > 0) {
-      toast.info(`${retried} eventos marcados para reintento`);
+      toast.info(t('sync.eventsRetried', { count: retried }));
       await loadStatus();
     }
   };
@@ -69,11 +70,11 @@ export function SyncCenter() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pendiente</Badge>;
+        return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />{t('sync.pending')}</Badge>;
       case 'failed':
-        return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />Falló</Badge>;
+        return <Badge variant="destructive"><AlertTriangle className="h-3 w-3 mr-1" />{t('sync.failed')}</Badge>;
       case 'synced':
-        return <Badge variant="default"><CheckCircle className="h-3 w-3 mr-1" />Sincronizado</Badge>;
+        return <Badge variant="default"><CheckCircle className="h-3 w-3 mr-1" />{t('sync.synced')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -83,14 +84,14 @@ export function SyncCenter() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Centro de Sincronización
+          {t('sync.syncCenter')}
           <Button 
             onClick={handleSync} 
             disabled={loading || !isOnline}
             size="sm"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? 'Sincronizando...' : 'Sincronizar Ahora'}
+            {loading ? t('sync.syncing') : t('sync.syncNow')}
           </Button>
         </CardTitle>
       </CardHeader>
@@ -99,7 +100,7 @@ export function SyncCenter() {
           <Alert className="bg-amber-50 border-amber-200">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Sin conexión. La sincronización se realizará automáticamente al reconectar.
+              {t('sync.noConnectionWarning')}
             </AlertDescription>
           </Alert>
         )}
@@ -107,15 +108,15 @@ export function SyncCenter() {
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-amber-600">{status.pending}</div>
-            <div className="text-sm text-muted-foreground">Pendientes</div>
+            <div className="text-sm text-muted-foreground">{t('sync.pending')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-red-600">{status.failed}</div>
-            <div className="text-sm text-muted-foreground">Fallidos</div>
+            <div className="text-sm text-muted-foreground">{t('sync.failed')}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{status.synced}</div>
-            <div className="text-sm text-muted-foreground">Sincronizados</div>
+            <div className="text-sm text-muted-foreground">{t('sync.synced')}</div>
           </div>
         </div>
 
@@ -126,14 +127,14 @@ export function SyncCenter() {
               variant="outline"
               size="sm"
             >
-              Reintentar Fallidos
+              {t('sync.retryFailed')}
             </Button>
           </div>
         )}
 
         {events.length > 0 && (
           <div className="space-y-2">
-            <h4 className="font-semibold">Eventos Pendientes</h4>
+            <h4 className="font-semibold">{t('sync.pendingEvents')}</h4>
             {events.map((event) => (
               <div key={event.id} className="flex items-center justify-between p-2 border rounded">
                 <div>
@@ -160,7 +161,7 @@ export function SyncCenter() {
 
         {events.length === 0 && (
           <div className="text-center py-8 text-muted-foreground">
-            No hay eventos pendientes de sincronización
+            {t('sync.pendingEvents')}
           </div>
         )}
       </CardContent>
