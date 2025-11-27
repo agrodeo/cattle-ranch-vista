@@ -161,5 +161,16 @@
     },
     "noData": "No hay suficientes datos para mostrar la evolución temporal",
     "animalsAnalyzed": "{{count}} animales analizados"
+  },
+  "mobile": {
+    "subtitle": "Análisis y métricas del establecimiento",
+    "dateRange": "Rango de fechas",
+    "weekly": "Semanal",
+    "monthly": "Mensual",
+    "quarterly": "Trimestral",
+    "yearly": "Anual",
+    "exportData": "Exportar Datos",
+    "noDataAvailable": "No hay datos disponibles",
+    "noDataMessage": "No se pueden generar reportes en este momento"
   }
 }

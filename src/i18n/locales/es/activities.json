@@ -175,6 +175,21 @@
       "description": "Registro de nacimientos"
     }
   },
+  "mobile": {
+    "searchPlaceholder": "Buscar actividades...",
+    "filterByType": "Filtrar por tipo",
+    "allTypes": "Todos los tipos",
+    "allDates": "Todas las fechas",
+    "today": "Hoy",
+    "lastWeek": "Última semana",
+    "lastMonth": "Último mes",
+    "recent": "Recientes",
+    "upcoming": "Próximas",
+    "noActivities": "No hay actividades",
+    "noActivitiesMessage": "No se encontraron actividades con los filtros seleccionados",
+    "activity": "actividad",
+    "activities": "actividades"
+  },
   "common": {
     "cancel": "Cancelar",
     "save": "Guardar"

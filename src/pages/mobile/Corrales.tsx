@@ -183,8 +183,8 @@ export function MobileCorrales() {
   return (
     <div className="min-h-screen bg-background">
       <MobilePageHeader 
-        title={t('corrals:title', 'Corrales')}
-        subtitle={`${corrales.length} corrales disponibles`}
+        title={t('corrals:title')}
+        subtitle={`${corrales.length} ${t('corrals:mobile.availableCorrals')}`}
       />
 
       {/* Primary Actions - Centered */}
@@ -197,9 +197,9 @@ export function MobileCorrales() {
                   <ArrowRight className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">Movimiento de Animales</CardTitle>
+                  <CardTitle className="text-lg">{t('corrals:mobile.moveAnimals')}</CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Mover animales entre corrales
+                    {t('corrals:mobile.moveAnimalsBetween')}
                   </p>
                 </div>
               </div>
@@ -213,9 +213,9 @@ export function MobileCorrales() {
                   <Plus className="h-6 w-6" />
                 </div>
                 <div className="flex-1">
-                  <CardTitle className="text-lg">Nuevo Corral</CardTitle>
+                  <CardTitle className="text-lg">{t('corrals:mobile.newCorral')}</CardTitle>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Crear un nuevo corral
+                    {t('corrals:mobile.createNewCorral')}
                   </p>
                 </div>
               </div>
@@ -226,13 +226,13 @@ export function MobileCorrales() {
 
       {/* Corrales List */}
       <div className="p-4">
-        <h2 className="text-lg font-semibold mb-4">Corrales Existentes</h2>
+        <h2 className="text-lg font-semibold mb-4">{t('corrals:mobile.existingCorrals')}</h2>
         
         {corrales.length === 0 ? (
           <EmptyState
             icon={<Home className="h-12 w-12" />}
-            title="No hay corrales"
-            description="Crea tu primer corral para organizar tus animales"
+            title={t('corrals:mobile.noCorrals')}
+            description={t('corrals:mobile.noCorralsMessage')}
           />
         ) : (
           <div className="space-y-3">
@@ -327,7 +327,7 @@ export function MobileCorrales() {
                           />
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {Math.max(0, estimatedCapacity - corral.animal_count)} espacios libres
+                          {Math.max(0, estimatedCapacity - corral.animal_count)} {t('corrals:mobile.availableSpaces')}
                         </div>
                       </div>
                     )}
@@ -337,17 +337,17 @@ export function MobileCorrales() {
                       {/* Health Metrics */}
                       {corralKPI && (
                         <div className="space-y-2">
-                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Salud</h4>
+                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('corrals:mobile.health')}</h4>
                           <div className="space-y-1">
                             {corralKPI.vaccination_percentage !== undefined && (
                               <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Vacunación</span>
+                                <span className="text-muted-foreground">{t('corrals:mobile.vaccination')}</span>
                                 <span className="font-medium">{corralKPI.vaccination_percentage.toFixed(0)}%</span>
                               </div>
                             )}
                             {corralKPI.vaccination_alerts > 0 && (
                               <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Alertas</span>
+                                <span className="text-muted-foreground">{t('corrals:mobile.alerts')}</span>
                                 <span className="font-medium text-amber-600">{corralKPI.vaccination_alerts}</span>
                               </div>
                             )}
@@ -358,17 +358,17 @@ export function MobileCorrales() {
                       {/* Production Metrics */}
                       {corralKPI && (corralKPI.avg_daily_gain > 0 || corralKPI.avg_weight > 0) && (
                         <div className="space-y-2">
-                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Producción</h4>
+                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t('corrals:mobile.production')}</h4>
                           <div className="space-y-1">
                             {corralKPI.avg_daily_gain > 0 && (
                               <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">GDP</span>
+                                <span className="text-muted-foreground">{t('corrals:mobile.avgDailyGain')}</span>
                                 <span className="font-medium">{corralKPI.avg_daily_gain.toFixed(2)}kg/d</span>
                               </div>
                             )}
                             {corralKPI.avg_weight > 0 && (
                               <div className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">Peso prom</span>
+                                <span className="text-muted-foreground">{t('corrals:mobile.avgWeight')}</span>
                                 <span className="font-medium">{corralKPI.avg_weight.toFixed(0)}kg</span>
                               </div>
                             )}
@@ -385,7 +385,7 @@ export function MobileCorrales() {
                           <div className="p-2 border-b border-muted/50">
                             <div className="flex items-center gap-2">
                               <Syringe className="h-3 w-3 text-primary" />
-                              <span className="text-sm font-medium">Detalles de Vacunación</span>
+                              <span className="text-sm font-medium">{t('corrals:mobile.vaccinationDetails')}</span>
                             </div>
                           </div>
                           <div className="p-2 space-y-1 text-xs">
@@ -398,7 +398,7 @@ export function MobileCorrales() {
                                 <span className="text-xs">12/20</span>
                               </div>
                             </div>
-                            <span className="text-xs text-muted-foreground block">12 de 20 animales vacunados</span>
+                            <span className="text-xs text-muted-foreground block">12 {t('corrals:mobile.animalsVaccinated').replace('{{count}}', '20')}</span>
                             
                             <div className="flex items-center justify-between">
                               <span>Brucelosis</span>

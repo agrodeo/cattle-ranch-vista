@@ -96,5 +96,16 @@
       "noData": "Not enough data to show temporal analysis. Make sure you have weighings recorded in different periods.",
       "animalsAnalyzed": "{{count}} animals analyzed"
     }
+  },
+  "mobile": {
+    "subtitle": "Analytics and establishment metrics",
+    "dateRange": "Date range",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly",
+    "exportData": "Export Data",
+    "noDataAvailable": "No data available",
+    "noDataMessage": "Cannot generate reports at this time"
   }
 }
