@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,48 +17,49 @@ interface ActivityCreationFlowProps {
 type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto";
 
 export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
+  const { t } = useTranslation('activities');
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
 
   const activities = [
     {
       id: "vaccination" as ActivityType,
-      title: "Vacunación",
-      description: "Registrar aplicación de vacunas",
+      title: t('activityCreation.vaccination.title'),
+      description: t('activityCreation.vaccination.description'),
       icon: Syringe,
       color: "bg-red-500",
     },
     {
       id: "weighing" as ActivityType,
-      title: "Pesaje",
-      description: "Registrar peso de animales",
+      title: t('activityCreation.weighing.title'),
+      description: t('activityCreation.weighing.description'),
       icon: Weight,
       color: "bg-blue-500",
     },
     {
       id: "insemination" as ActivityType,
-      title: "Inseminación Artificial",
-      description: "Registrar servicios de IA",
+      title: t('activityCreation.insemination.title'),
+      description: t('activityCreation.insemination.description'),
       icon: Heart,
       color: "bg-pink-500",
     },
     {
       id: "general" as ActivityType,
-      title: "Actividad General",
-      description: "Otras actividades de manejo",
+      title: t('activityCreation.general.title'),
+      description: t('activityCreation.general.description'),
       icon: Activity,
       color: "bg-green-500",
     },
     {
       id: "tacto" as ActivityType,
-      title: "Tacto/Detección",
-      description: "Detectar preñeces",
+      title: t('activityCreation.tacto.title'),
+      description: t('activityCreation.tacto.description'),
       icon: Stethoscope,
       color: "bg-purple-500",
     },
     {
       id: "pregnancy_loss" as ActivityType,
-      title: "Pérdida de Preñez",
-      description: "Registrar pérdidas reproductivas",
+      title: t('activityCreation.pregnancyLoss.title'),
+      description: t('activityCreation.pregnancyLoss.description'),
       icon: AlertTriangle,
       color: "bg-orange-500",
     },
@@ -86,7 +88,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
           <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Cargar Actividad</h1>
+          <h1 className="text-xl font-semibold">{t('activityCreation.title')}</h1>
         </div>
 
         {/* Content */}
@@ -121,7 +123,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
             <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-semibold">Cargar Actividad</h1>
+            <h1 className="text-xl font-semibold">{t('activityCreation.title')}</h1>
           </div>
 
           {/* Content */}

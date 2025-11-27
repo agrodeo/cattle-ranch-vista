@@ -256,7 +256,7 @@ export function ResumenTab() {
           >
             <div className="space-y-3">
               <CompactList items={[
-                { id: '1', title: 'Calendario de Actividades', subtitle: 'Vista temporal próximamente', date: 'Hoy', status: 'pending' as const }
+                { id: '1', title: t('sidebar.calendarTitle'), subtitle: t('sidebar.calendarComingSoon'), date: t('next7d.today'), status: 'pending' as const }
               ]} />
             </div>
           </ActivityAccordion>
@@ -278,7 +278,7 @@ export function ResumenTab() {
               <Badge variant="outline">1</Badge>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium text-slate-900">+7 días</span>
+              <span className="font-medium text-slate-900">{t('sidebar.plus7days')}</span>
               <Badge variant="outline">2</Badge>
             </div>
             <Button variant="ghost" size="sm" className="w-full mt-3">
@@ -293,7 +293,7 @@ export function ResumenTab() {
           <h3 className="font-medium text-slate-900 mb-3">{t('sidebar.upcomingVaccines')}</h3>
           <div className="space-y-3">
             <div className="text-center py-4 text-muted-foreground text-sm">
-              No hay vacunas pendientes
+              {t('sidebar.noVaccinesPending')}
             </div>
           </div>
         </div>
