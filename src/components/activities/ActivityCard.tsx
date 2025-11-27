@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -43,41 +44,43 @@ const getActivityColor = (tipo: UnifiedActivity['tipo']) => {
   }
 };
 
-const getActivityLabel = (activity: UnifiedActivity) => {
+const getActivityLabel = (activity: UnifiedActivity, t: any) => {
   switch (activity.tipo) {
     case 'VACUNACION':
-      return activity.subtipo || 'Vacunación';
+      return activity.subtipo || t('activities:activityTypes.vaccination');
     case 'PESAJE':
-      return 'Pesaje';
+      return t('activities:activityTypes.weighing');
     case 'TACTO':
-      return 'Tacto';
+      return t('activities:activityTypes.tacto');
     case 'IA':
-      return `IA - ${activity.detalles.bull_name}`;
+      return `${t('activities:activityTypes.ia')} - ${activity.detalles.bull_name}`;
     case 'PARTO':
-      return 'Parto';
+      return t('activities:activityTypes.birth');
     case 'MUERTE':
-      return 'Muerte';
+      return t('activities:activityTypes.death');
     case 'PERDIDA_PREÑEZ':
-      return 'Pérdida de Preñez';
+      return t('activities:activityTypes.pregnancyLoss');
     case 'GENERAL':
-      return activity.subtipo || 'Actividad General';
+      return activity.subtipo || t('activities:activityTypes.general');
     default:
-      return 'Actividad';
+      return t('activities:activityTypes.activity');
   }
 };
 
-const formatDate = (fecha: string) => {
+const formatDate = (fecha: string, t: any, i18n: any) => {
   const date = new Date(fecha);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
 
+  const locale = i18n.language || 'es';
+
   if (date.toDateString() === today.toDateString()) {
-    return `Hoy, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    return `${t('activities:activityCard.today')}, ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
   } else if (date.toDateString() === yesterday.toDateString()) {
-    return `Ayer, ${date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`;
+    return `${t('activities:activityCard.yesterday')}, ${date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' })}`;
   } else {
-    return date.toLocaleDateString('es-ES', { 
+    return date.toLocaleDateString(locale, { 
       day: 'numeric', 
       month: 'short',
       year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
@@ -86,9 +89,10 @@ const formatDate = (fecha: string) => {
 };
 
 export function ActivityCard({ activity, onClick }: ActivityCardProps) {
+  const { t, i18n } = useTranslation();
   const IconComponent = getActivityIcon(activity.tipo);
   const colorClass = getActivityColor(activity.tipo);
-  const label = getActivityLabel(activity);
+  const label = getActivityLabel(activity, t);
 
   const animalPreview = activity.animales.slice(0, 3);
   const moreCount = activity.animales.length - 3;
@@ -108,13 +112,13 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="text-sm font-medium truncate">{label}</span>
               <span className="text-xs text-muted-foreground">
-                {formatDate(activity.fecha)}
+                {formatDate(activity.fecha, t, i18n)}
               </span>
             </div>
             
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
               <Badge variant="secondary" className="text-xs">
-                {activity.animales.length} {activity.animales.length === 1 ? 'animal' : 'animales'}
+                {activity.animales.length} {activity.animales.length === 1 ? t('activities:activityCard.animal') : t('activities:activityCard.animals')}
               </Badge>
             </div>
 
@@ -127,7 +131,7 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
                 ))}
                 {moreCount > 0 && (
                   <span className="text-muted-foreground font-medium">
-                    +{moreCount} más
+                    +{moreCount} {t('activities:activityCard.more')}
                   </span>
                 )}
               </div>
@@ -135,7 +139,7 @@ export function ActivityCard({ activity, onClick }: ActivityCardProps) {
 
             {activity.responsable && (
               <div className="text-xs text-muted-foreground mt-1">
-                Por: {activity.responsable}
+                {t('activities:activityCard.by')} {activity.responsable}
               </div>
             )}
           </div>

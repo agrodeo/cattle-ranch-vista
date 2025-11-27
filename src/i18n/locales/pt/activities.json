@@ -107,5 +107,186 @@
     "dueToday": "Vence hoje",
     "in3Days": "Em 3 dias",
     "animals": "animais"
+  },
+  "typeSelector": {
+    "title": "Selecionar Tipo de Atividade",
+    "general": {
+      "title": "Atividades de Manejo",
+      "description": "Gestão diária do rebanho"
+    },
+    "insemination": {
+      "title": "Inseminação Artificial",
+      "description": "Registrar serviço de IA"
+    },
+    "vaccination": {
+      "title": "Vacinação",
+      "description": "Controle sanitário"
+    },
+    "weighing": {
+      "title": "Pesagem",
+      "description": "Controle produtivo"
+    },
+    "pregnancy": {
+      "title": "Controle de Gestação",
+      "description": "Exames e diagnósticos"
+    }
+  },
+  "managementTypes": {
+    "title": "Tipo de Atividade de Manejo",
+    "back": "Voltar",
+    "destete": {
+      "title": "Desmame",
+      "description": "Separação de bezerros das mães"
+    },
+    "marcacion": {
+      "title": "Marcação",
+      "description": "Identificação com ferro quente"
+    },
+    "castracion": {
+      "title": "Castração",
+      "description": "Procedimento cirúrgico"
+    },
+    "descorne": {
+      "title": "Descorna",
+      "description": "Remoção de chifres"
+    },
+    "traslado": {
+      "title": "Transferência",
+      "description": "Movimentação entre currais"
+    },
+    "tratamiento": {
+      "title": "Tratamento",
+      "description": "Administração de medicamentos"
+    },
+    "revision": {
+      "title": "Revisão",
+      "description": "Controle geral de saúde"
+    },
+    "apareamiento": {
+      "title": "Acasalamento Natural",
+      "description": "Serviço com touro"
+    },
+    "parto": {
+      "title": "Parto",
+      "description": "Registro de nascimentos"
+    }
+  },
+  "common": {
+    "cancel": "Cancelar",
+    "save": "Salvar"
+  },
+  "activityCard": {
+    "animal": "animal",
+    "animals": "animais",
+    "more": "mais",
+    "by": "Por:",
+    "today": "Hoje",
+    "yesterday": "Ontem"
+  },
+  "activityTypes": {
+    "vaccination": "Vacinação",
+    "weighing": "Pesagem",
+    "tacto": "Exame de Gestação",
+    "ia": "IA",
+    "birth": "Parto",
+    "death": "Morte",
+    "pregnancyLoss": "Perda de Gestação",
+    "general": "Atividade Geral",
+    "activity": "Atividade"
+  },
+  "newGeneralActivity": {
+    "title": "Nova Atividade Geral",
+    "activityType": "Tipo de Atividade",
+    "selectType": "Selecionar tipo",
+    "date": "Data",
+    "responsible": "Responsável",
+    "notes": "Observações",
+    "selectAnimals": "Selecionar Animais",
+    "availableAnimals": "animais disponíveis",
+    "selectAll": "Selecionar Todos",
+    "clear": "Limpar",
+    "animal": "Animal",
+    "sex": "Sexo",
+    "breed": "Raça",
+    "corral": "Curral",
+    "selected": "selecionado(s)",
+    "register": "Registrar",
+    "saving": "Salvando...",
+    "success": "Atividade registrada",
+    "successDesc": "registrado com sucesso para",
+    "errorTitle": "Erro",
+    "errorRequired": "Por favor preencha todos os campos obrigatórios",
+    "errorSelectAnimal": "Você deve selecionar pelo menos um animal",
+    "errorSaving": "Não foi possível registrar a atividade",
+    "specificInfo": "Informação Específica"
+  },
+  "newInsemination": {
+    "title": "Inseminação Artificial",
+    "serviceDate": "Data do Serviço",
+    "bullName": "Nome do Touro",
+    "bullBreed": "Raça do Touro",
+    "selectBreed": "Selecionar raça",
+    "horns": "Chifres",
+    "selectHornType": "Selecionar tipo de chifres",
+    "polled": "Mocho",
+    "homozygousPolled": "Mocho Homozigoto",
+    "horned": "Com Chifres",
+    "hornInfo": "A cria será 100% mocha se houver gestação",
+    "coat": "Pelagem",
+    "selectCoat": "Selecionar cor da pelagem",
+    "black": "Preto",
+    "red": "Vermelho",
+    "homozygousBlack": "Preto Homozigoto",
+    "homozygousRed": "Vermelho Homozigoto",
+    "coatInfo": "A cria será 100% da cor do pai se houver gestação",
+    "additionalData": "Dados Adicionais do Touro",
+    "birthWeight": "Peso Nascimento (kg)",
+    "weaningWeight": "Peso Desmame (kg)",
+    "finalWeight": "Peso Final (kg)",
+    "ce": "CE (cm)",
+    "registration": "Registro Racial",
+    "registrationNumber": "Número de registro",
+    "origin": "Origem",
+    "originPlaceholder": "País/região de origem",
+    "observations": "Observações",
+    "serviceObservations": "Observações do serviço...",
+    "eligibleFemales": "Fêmeas Elegíveis",
+    "all": "Todas",
+    "months": "meses",
+    "notRecorded": "Não registrada",
+    "notSpecified": "Não especificada",
+    "noEligibleAnimals": "Não há fêmeas elegíveis para inseminação artificial.",
+    "requiresFemales": "Requer fêmeas ≥15 meses que não estejam gestantes.",
+    "registered": "Inseminação registrada",
+    "registeredDesc": "Foram inseminadas",
+    "femalesWithBull": "fêmeas com",
+    "errorBullName": "O nome do touro é obrigatório",
+    "errorSelectFemale": "Você deve selecionar pelo menos uma fêmea"
+  },
+  "newVaccination": {
+    "title": "Registrar Vacinação",
+    "description": "Registre a aplicação de vacinas nos animais",
+    "date": "Data da Vacinação",
+    "vaccine": "Vacina",
+    "selectVaccine": "Selecionar vacina",
+    "lot": "Lote",
+    "lotNumber": "Número do lote",
+    "dose": "Dose",
+    "doseAmount": "Quantidade da dose",
+    "route": "Via de Administração",
+    "routePlaceholder": "Intramuscular, subcutânea, etc.",
+    "observations": "Observações",
+    "additionalObservations": "Observações adicionais...",
+    "animals": "Animais",
+    "available": "disponíveis",
+    "noEligibleAnimals": "Não há animais elegíveis para vacinação.",
+    "checkActiveAnimals": "Verifique se você tem animais ativos em sua fazenda.",
+    "registered": "Vacinação registrada",
+    "registeredDesc": "Foram vacinados",
+    "animalsVaccinated": "animais",
+    "errorSelectVaccine": "Você deve selecionar uma vacina",
+    "errorSelectAnimal": "Você deve selecionar pelo menos um animal",
+    "errorSaving": "Não foi possível registrar a vacinação",
+    "registerButton": "Registrar Vacinação"
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,6 +105,7 @@ const activityTypes = [
 ];
 
 export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, preselectedType, onClose, onSuccess }: NewGeneralActivityDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(externalOpen || false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAnimals, setLoadingAnimals] = useState(false);
@@ -177,8 +179,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
     } catch (error) {
       console.error('Error loading animals:', error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los animales",
+        title: t('activities:newGeneralActivity.errorTitle'),
+        description: t('activities:newGeneralActivity.errorRequired'),
         variant: "destructive",
       });
     } finally {
@@ -236,8 +238,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
     
     if (!selectedDate || !selectedType) {
       toast({
-        title: "Error",
-        description: "Por favor complete todos los campos requeridos",
+        title: t('activities:newGeneralActivity.errorTitle'),
+        description: t('activities:newGeneralActivity.errorRequired'),
         variant: "destructive",
       });
       return;
@@ -245,8 +247,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
     if (selectedAnimals.length === 0) {
       toast({
-        title: "Error", 
-        description: "Debe seleccionar al menos un animal",
+        title: t('activities:newGeneralActivity.errorTitle'), 
+        description: t('activities:newGeneralActivity.errorSelectAnimal'),
         variant: "destructive",
       });
       return;
@@ -264,8 +266,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
       await createEvent("GENERAL", selectedDate, notes, eventPayload);
       
       toast({
-        title: "Actividad registrada",
-        description: `${selectedType} registrado exitosamente para ${selectedAnimals.length} animal(es)`,
+        title: t('activities:newGeneralActivity.success'),
+        description: `${selectedType} ${t('activities:newGeneralActivity.successDesc')} ${selectedAnimals.length} ${t('activities:newGeneralActivity.animal')}(es)`,
       });
       
       // Call success callback
@@ -283,8 +285,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
       onClose?.();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "No se pudo registrar la actividad",
+        title: t('activities:newGeneralActivity.errorTitle'),
+        description: t('activities:newGeneralActivity.errorSaving'),
         variant: "destructive",
       });
     } finally {
@@ -299,7 +301,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
     return (
       <div className="space-y-4 p-4 border rounded-lg">
-        <Label className="text-sm font-medium">Información Específica - {selectedActivityType.label}</Label>
+        <Label className="text-sm font-medium">{t('activities:newGeneralActivity.specificInfo')} - {selectedActivityType.label}</Label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {selectedActivityType.fields.map((field) => (
             <div key={field} className="space-y-2">
@@ -472,7 +474,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Plus className="h-5 w-5" />
-            Nueva Actividad General
+            {t('activities:newGeneralActivity.title')}
           </DialogTitle>
         </DialogHeader>
         
