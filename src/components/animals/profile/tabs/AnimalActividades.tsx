@@ -43,6 +43,22 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
   const { activities: allActivities } = useAllActivities();
   const navigate = useNavigate();
 
+  // Helper function to match activity types between batch and individual activities
+  const matchActivityTypes = (batchTipo: string, actividadType: string): boolean => {
+    const typeMap: Record<string, string[]> = {
+      'VACUNACION': ['vaccination', 'vacunacion'],
+      'PESAJE': ['pesaje'],
+      'TACTO': ['tacto'],
+      'IA': ['insemination', 'ia'],
+      'PARTO': ['parto'],
+      'MUERTE': ['muerte'],
+      'GENERAL': ['general', 'destete', 'marcacion', 'castracion', 'descorne', 'tratamiento'],
+    };
+    
+    const mappedTypes = typeMap[batchTipo] || [batchTipo.toLowerCase()];
+    return mappedTypes.includes(actividadType.toLowerCase());
+  };
+
   const actividadesFiltradas = activities.filter(actividad => {
     const cumpleTipo = filtroTipo === 'todos' || actividad.type === filtroTipo;
     const cumpleFecha = !filtroFecha || actividad.date.includes(filtroFecha);
@@ -310,7 +326,7 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
                           const batchActivity = allActivities.find(batch => 
                             batch.animales.some(a => a.id === animal.id) &&
                             batch.fecha === actividad.date &&
-                            batch.tipo.toLowerCase().includes(actividad.type.toLowerCase())
+                            matchActivityTypes(batch.tipo, actividad.type)
                           );
                           
                           if (batchActivity && batchActivity.animales.length > 1) {

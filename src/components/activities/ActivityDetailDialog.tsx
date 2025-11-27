@@ -109,19 +109,20 @@ const renderDetails = (activity: UnifiedActivity) => {
       break;
 
     case 'PESAJE':
-      if (activity.detalles.mediciones) {
-        const mediciones = activity.detalles.mediciones;
-        if (Array.isArray(mediciones)) {
-          const totalPeso = mediciones.reduce((sum: number, m: any) => sum + (m.peso_kg || 0), 0);
-          const promedio = totalPeso / mediciones.length;
-          details.push({ label: 'Peso Promedio', value: `${promedio.toFixed(1)} kg` });
-        }
+      if (activity.detalles.peso_promedio) {
+        details.push({ label: 'Peso Promedio', value: `${activity.detalles.peso_promedio} kg` });
+      }
+      if (activity.detalles.total_animals) {
+        details.push({ label: 'Total Animales', value: String(activity.detalles.total_animals) });
       }
       break;
 
     case 'TACTO':
-      if (activity.detalles.resultado) {
-        details.push({ label: 'Resultado', value: activity.detalles.resultado });
+      if (activity.detalles.prenadas !== undefined) {
+        details.push({ label: 'Preñadas', value: String(activity.detalles.prenadas) });
+      }
+      if (activity.detalles.vacias !== undefined) {
+        details.push({ label: 'Vacías', value: String(activity.detalles.vacias) });
       }
       break;
 
