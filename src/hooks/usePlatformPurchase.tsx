@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { detectPlatform, openPlatformStore } from '@/lib/platformDetection';
+import { useState, useEffect } from 'react';
+import { detectPlatform, isNativeApp } from '@/lib/platformDetection';
+import { IOSPurchaseService } from '@/services/iosPurchaseService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { getAppStoreProductId } from '@/config/appStoreProducts';
 
 export interface PurchaseData {
   planId: string;
@@ -11,77 +14,95 @@ export interface PurchaseData {
 
 export const usePlatformPurchase = () => {
   const [loading, setLoading] = useState(false);
+  const [offerings, setOfferings] = useState<any[]>([]);
   const { toast } = useToast();
+  const { session } = useSupabaseAuth();
   const platform = detectPlatform();
+
+  useEffect(() => {
+    if (platform === 'ios' && session?.user?.id) {
+      initializeIOS();
+    }
+  }, [platform, session?.user?.id]);
+
+  const initializeIOS = async () => {
+    try {
+      await IOSPurchaseService.initialize(session!.user!.id);
+      const offeringsData = await IOSPurchaseService.getOfferings();
+      setOfferings(offeringsData);
+    } catch (error) {
+      console.error('Failed to initialize iOS purchases:', error);
+    }
+  };
 
   const initiatePurchase = async (purchaseData: PurchaseData) => {
     setLoading(true);
     
     try {
-      switch (platform) {
-        case 'ios':
-          await initiateIOSPurchase(purchaseData);
-          break;
-        case 'android':
-          await initiateAndroidPurchase(purchaseData);
-          break;
-        case 'web':
-          await initiateMercadoPagoPurchase(purchaseData);
-          break;
+      if (platform === 'ios') {
+        return await purchaseIOS(purchaseData);
+      } else if (platform === 'android') {
+        return await purchaseAndroid(purchaseData);
+      } else {
+        return await purchaseWeb(purchaseData);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Purchase failed:', error);
+      
+      // Handle user cancellation gracefully
+      if (error?.code === 'PURCHASE_CANCELLED' || error?.userCancelled) {
+        return { success: false, cancelled: true };
+      }
+      
       toast({
         title: "Error en la compra",
-        description: "No se pudo completar la compra. Intenta nuevamente.",
+        description: error.message || "No se pudo completar la compra. Intenta nuevamente.",
         variant: "destructive",
       });
+      return { success: false, error };
     } finally {
       setLoading(false);
     }
   };
 
-  const initiateIOSPurchase = async (data: PurchaseData) => {
-    // Check if running in iOS app context
-    if ((window as any).webkit?.messageHandlers?.purchase) {
-      // Send purchase request to native iOS app
-      (window as any).webkit.messageHandlers.purchase.postMessage({
-        planId: data.planId,
-        billingCycle: data.billingCycle,
-      });
-    } else {
-      // Fallback: open App Store
-      openPlatformStore('ios', data.planId);
+  const purchaseIOS = async (data: PurchaseData) => {
+    try {
+      const productId = getAppStoreProductId(data.planId as any, data.billingCycle);
+      
+      const customerInfo = await IOSPurchaseService.purchaseProduct(productId);
+      
+      // Sync purchase with backend
+      await IOSPurchaseService.syncWithBackend(customerInfo, supabase.functions.invoke.bind(supabase.functions));
+      
       toast({
-        title: "Redirigiendo al App Store",
-        description: "Completa tu compra en la app oficial de AgroDeo.",
+        title: "¡Compra exitosa!",
+        description: "Tu suscripción ha sido activada.",
       });
+      
+      // Refresh page to update subscription status
+      setTimeout(() => window.location.reload(), 1000);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('iOS purchase error:', error);
+      throw error;
     }
   };
 
-  const initiateAndroidPurchase = async (data: PurchaseData) => {
-    // Check if running in Android app context
-    if ((window as any).AndroidInterface?.purchase) {
-      // Send purchase request to native Android app
-      (window as any).AndroidInterface.purchase(JSON.stringify({
-        planId: data.planId,
-        billingCycle: data.billingCycle,
-      }));
-    } else {
-      // Fallback: open Google Play
-      openPlatformStore('android', data.planId);
-      toast({
-        title: "Redirigiendo a Google Play",
-        description: "Completa tu compra en la app oficial de AgroDeo.",
-      });
-    }
+  const purchaseAndroid = async (data: PurchaseData) => {
+    // TODO: Implement Android purchase flow
+    toast({
+      title: "Próximamente",
+      description: "Las compras en Android estarán disponibles pronto.",
+    });
+    return { success: false };
   };
 
-  const initiateMercadoPagoPurchase = async (data: PurchaseData) => {
+  const purchaseWeb = async (data: PurchaseData) => {
     try {
       const { data: response, error } = await supabase.functions.invoke('mp-sub-create-link', {
         body: {
-          cabanaId: (await supabase.auth.getUser()).data.user?.id,
+          cabanaId: session?.user?.id,
           productCode: data.planId
         }
       });
@@ -89,49 +110,59 @@ export const usePlatformPurchase = () => {
       if (error) throw error;
 
       if (response?.init_point) {
-        // Open Mercado Pago checkout in new tab
         window.open(response.init_point, '_blank');
+        toast({
+          title: "Redirigiendo a Mercado Pago",
+          description: "Completa tu pago en la ventana que se abrió.",
+        });
+        return { success: true };
       }
+      
+      throw new Error('No se recibió el link de pago');
     } catch (error) {
       console.error('Mercado Pago error:', error);
       throw error;
     }
   };
 
-  const verifyPurchase = async (receiptData: any) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('verify-purchase', {
-        body: {
-          platform,
-          receiptData,
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        toast({
-          title: "¡Compra verificada!",
-          description: "Tu suscripción ha sido activada.",
-        });
-        
-        // Refresh subscription status
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error('Purchase verification failed:', error);
+  const restorePurchases = async () => {
+    if (platform !== 'ios') {
       toast({
-        title: "Error de verificación",
-        description: "No se pudo verificar la compra. Contacta soporte.",
+        title: "Función no disponible",
+        description: "Restaurar compras solo está disponible en iOS.",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const customerInfo = await IOSPurchaseService.restorePurchases();
+      await IOSPurchaseService.syncWithBackend(customerInfo, supabase.functions.invoke.bind(supabase.functions));
+      
+      toast({
+        title: "Compras restauradas",
+        description: "Se han verificado tus compras anteriores.",
+      });
+      
+      setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+      console.error('Restore purchases failed:', error);
+      toast({
+        title: "Error al restaurar",
+        description: "No se pudieron restaurar las compras.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return {
     platform,
     loading,
+    offerings,
     initiatePurchase,
-    verifyPurchase,
+    restorePurchases,
+    isNativeApp: isNativeApp(),
   };
 };
