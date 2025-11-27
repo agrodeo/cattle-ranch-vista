@@ -14,10 +14,17 @@ export function useLanguage() {
   // Use i18n.language directly for reactive updates
   const currentLang = (i18n.language as SupportedLanguage) || 'es';
 
-  // Initialize language from user profile or cabaña on login
+  // Initialize language from user profile or cabaña on login (only once)
   useEffect(() => {
     const initializeLanguage = async () => {
       if (!currentUser?.id) return;
+
+      // Check if language is already set in localStorage (from a previous manual selection)
+      const storedLang = localStorage.getItem('agrodeo:lang');
+      if (storedLang && availableLanguages.includes(storedLang as SupportedLanguage)) {
+        // Language already set, don't override
+        return;
+      }
 
       try {
         setIsLoading(true);
@@ -90,7 +97,7 @@ export function useLanguage() {
     };
 
     initializeLanguage();
-  }, [currentUser?.id]); // Removed i18n.language from dependencies
+  }, [currentUser?.id]); // Only run when user changes
 
   // Handle query parameter language override
   useEffect(() => {
