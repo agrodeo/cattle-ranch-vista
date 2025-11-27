@@ -14,7 +14,7 @@ export interface PurchaseData {
 
 export const usePlatformPurchase = () => {
   const [loading, setLoading] = useState(false);
-  const [offerings, setOfferings] = useState<any[]>([]);
+  const [offerings, setOfferings] = useState<any>(null);
   const { toast } = useToast();
   const { session } = useSupabaseAuth();
   const platform = detectPlatform();
