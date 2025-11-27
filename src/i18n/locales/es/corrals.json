@@ -110,29 +110,35 @@
       "title": "Crear Nuevo Corral",
       "nameLabel": "Nombre del Corral",
       "hectaresLabel": "Hectáreas",
+      "namePlaceholder": "Ej: Corral 1",
+      "hectaresPlaceholder": "Ej: 5.5",
       "creating": "Creando...",
       "createButton": "Crear Corral",
       "cancelButton": "Cancelar",
       "successTitle": "Éxito",
-      "successDescription": "Corral creado correctamente",
-      "errorDescription": "No se pudo crear el corral"
+      "successMessage": "Corral creado exitosamente",
+      "errorMessage": "Error al crear el corral",
+      "noCabanaError": "No se encontró la cabaña del usuario"
     },
     "edit": {
       "title": "Editar Corral",
-      "updating": "Actualizando...",
-      "updateButton": "Actualizar Corral",
-      "successDescription": "Corral actualizado correctamente",
-      "errorDescription": "No se pudo actualizar el corral"
+      "saving": "Guardando...",
+      "saveButton": "Guardar Cambios",
+      "successMessage": "Corral actualizado exitosamente",
+      "errorMessage": "Error al actualizar el corral",
+      "loadError": "Error al cargar los datos del corral"
     },
     "delete": {
       "title": "Eliminar Corral",
-      "description": "¿Estás seguro de eliminar este corral? Esta acción no se puede deshacer.",
       "deleting": "Eliminando...",
       "deleteButton": "Eliminar",
-      "cancelButton": "Cancelar",
-      "successTitle": "Éxito",
-      "successDescription": "Corral eliminado correctamente",
-      "errorDescription": "No se pudo eliminar el corral"
+      "successMessage": "Corral {{name}} eliminado exitosamente",
+      "errorMessage": "Error al eliminar el corral",
+      "cannotDelete": "No se puede eliminar el corral {{name}} con {{count}} animales",
+      "cannotDeleteTitle": "El corral no está vacío",
+      "cannotDeleteMessage": "El corral {{name}} tiene {{count}} animales. Debes mover o eliminar todos los animales antes de eliminar el corral.",
+      "confirmTitle": "Confirmar eliminación",
+      "confirmMessage": "¿Estás seguro de que deseas eliminar permanentemente el corral {{name}}? Esta acción no se puede deshacer."
     },
     "detail": {
       "totalAnimals": "Total Animales",

@@ -113,29 +113,35 @@
       "title": "Criar Novo Curral",
       "nameLabel": "Nome do Curral",
       "hectaresLabel": "Hectares",
+      "namePlaceholder": "ex: Curral 1",
+      "hectaresPlaceholder": "ex: 5.5",
       "creating": "Criando...",
       "createButton": "Criar Curral",
       "cancelButton": "Cancelar",
       "successTitle": "Sucesso",
-      "successDescription": "Curral criado com sucesso",
-      "errorDescription": "Não foi possível criar o curral"
+      "successMessage": "Curral criado com sucesso",
+      "errorMessage": "Erro ao criar curral",
+      "noCabanaError": "Cabaña do usuário não encontrada"
     },
     "edit": {
       "title": "Editar Curral",
-      "updating": "Atualizando...",
-      "updateButton": "Atualizar Curral",
-      "successDescription": "Curral atualizado com sucesso",
-      "errorDescription": "Não foi possível atualizar o curral"
+      "saving": "Salvando...",
+      "saveButton": "Salvar Alterações",
+      "successMessage": "Curral atualizado com sucesso",
+      "errorMessage": "Erro ao atualizar curral",
+      "loadError": "Erro ao carregar dados do curral"
     },
     "delete": {
       "title": "Excluir Curral",
-      "description": "Tem certeza de que deseja excluir este curral? Esta ação não pode ser desfeita.",
       "deleting": "Excluindo...",
       "deleteButton": "Excluir",
-      "cancelButton": "Cancelar",
-      "successTitle": "Sucesso",
-      "successDescription": "Curral excluído com sucesso",
-      "errorDescription": "Não foi possível excluir o curral"
+      "successMessage": "Curral {{name}} excluído com sucesso",
+      "errorMessage": "Erro ao excluir curral",
+      "cannotDelete": "Não é possível excluir o curral {{name}} com {{count}} animais",
+      "cannotDeleteTitle": "O curral não está vazio",
+      "cannotDeleteMessage": "O curral {{name}} tem {{count}} animais. Você deve mover ou remover todos os animais antes de excluir o curral.",
+      "confirmTitle": "Confirmar exclusão",
+      "confirmMessage": "Tem certeza de que deseja excluir permanentemente o curral {{name}}? Esta ação não pode ser desfeita."
     },
     "detail": {
       "totalAnimals": "Total de Animais",
