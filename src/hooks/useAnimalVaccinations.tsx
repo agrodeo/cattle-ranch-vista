@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -30,6 +31,7 @@ export interface VaccinationHistory {
 }
 
 export function useAnimalVaccinations(animalId: string | null) {
+  const { t } = useTranslation(['common']);
   const [status, setStatus] = useState<VaccinationStatus[]>([]);
   const [history, setHistory] = useState<VaccinationHistory[]>([]);
   const [loading, setLoading] = useState(false);
@@ -94,7 +96,7 @@ export function useAnimalVaccinations(animalId: string | null) {
 
     } catch (error: any) {
       console.error('Error fetching vaccination data:', error);
-      toast.error('Error al cargar datos de vacunación');
+      toast.error(t('common:error.loadFailed'));
       setStatus([]);
       setHistory([]);
     } finally {
