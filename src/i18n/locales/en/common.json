@@ -86,5 +86,40 @@
     "english": "English",
     "portuguese": "Português",
     "switch": "Switch language"
+  },
+  "aiChat": {
+    "title": "Livestock Assistant",
+    "newConversation": "New conversation",
+    "search": "Search...",
+    "saving": "Saving...",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "thisWeek": "This week",
+    "older": "Older",
+    "deleteConfirm": "Are you sure you want to delete this conversation?",
+    "welcomeTitle": "Hello! I'm your livestock assistant",
+    "welcomeMessage": "I can help you with information about your herd, analyze images of animals, facilities and documents, and answer questions about livestock management.",
+    "inputPlaceholder": "Type your question, upload an image for analysis...",
+    "quickActions": {
+      "mortality": "How are my mortalities?",
+      "vaccinations": "What are my upcoming vaccinations?",
+      "reproductive": "Show me my females' reproductive status",
+      "corrals": "How is my corrals' performance?",
+      "analyzeImage": "Analyze this image of my cattle",
+      "improvements": "What improvements can I make in my management?"
+    }
+  },
+  "weighingMethod": {
+    "title": "Select recording method",
+    "manual": {
+      "title": "Manual Entry",
+      "subtitle": "For few animals",
+      "description": "Select animals individually and record their weights one by one"
+    },
+    "bulk": {
+      "title": "Bulk Upload",
+      "subtitle": "For many animals",
+      "description": "Upload multiple weighings from an Excel or CSV file"
+    }
   }
 }
