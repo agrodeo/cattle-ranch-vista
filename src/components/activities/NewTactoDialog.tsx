@@ -228,12 +228,13 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       if (!user.data.user) throw new Error("Usuario no autenticado");
 
       const { data: userData } = await supabase
-        .from('users')
-        .select('cabaña_id')
-        .eq('id', user.data.user.id)
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.data.user.id)
         .single();
 
-      if (!userData?.['cabaña_id']) throw new Error("Usuario sin cabaña asignada");
+      const cabanaId = (userData as any)?.cabaña_id;
+      if (!cabanaId) throw new Error("Usuario sin cabaña asignada");
 
       // Process pregnancy detection using new function
       for (const record of finalRecords) {
@@ -241,7 +242,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           _animal_id: record.animalId,
           _fecha_tacto: format(fecha, 'yyyy-MM-dd'),
           _resultado: record.resultado,
-          _cabana_id: userData['cabaña_id'],
+          _cabana_id: cabanaId,
           _observaciones: record.observaciones
         });
 

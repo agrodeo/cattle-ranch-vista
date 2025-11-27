@@ -113,28 +113,32 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
       if (!user.data.user) throw new Error("Usuario no autenticado");
 
       const { data: userData } = await supabase
-        .from('users')
-        .select('cabaña_id')
-        .eq('id', user.data.user.id)
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.data.user.id)
         .single();
 
-      if (!userData?.['cabaña_id']) throw new Error("Usuario sin cabaña asignada");
+      const cabanaId = (userData as any)?.cabaña_id;
+      if (!cabanaId) throw new Error("Usuario sin cabaña asignada");
 
       // Create the event
       const event = await createEvent('IA', fecha, notas);
 
-      // Create the AI record
-      const { error } = await supabase
-        .from("ia")
-        .insert({
-          evento_id: event.id,
-          toro_nombre: toroNombre.trim(),
-          raza_toro: razaToro || null,
-          extras_toro: extrasToro,
-          animales_ids: selectedAnimals,
-        });
+      // Create the AI records in artificial_inseminations table for each female
+      for (const femaleId of selectedAnimals) {
+        const { error: aiError } = await supabase
+          .from("artificial_inseminations")
+          .insert({
+            cabaña_id: cabanaId,
+            female_id: femaleId,
+            bull_name: toroNombre.trim(),
+            insemination_date: format(fecha, 'yyyy-MM-dd'),
+            notes: notas || null,
+            created_by: user.data.user.id,
+          });
 
-      if (error) throw error;
+        if (aiError) throw aiError;
+      }
 
       // Update reproductive states for each animal using new function
       for (const animalId of selectedAnimals) {
@@ -142,7 +146,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           _animal_id: animalId,
           _tipo_actividad: 'inseminacion_artificial',
           _fecha_actividad: format(fecha, 'yyyy-MM-dd'),
-          _cabana_id: userData['cabaña_id'],
+          _cabana_id: cabanaId,
           _detalle: extrasToro
         });
 

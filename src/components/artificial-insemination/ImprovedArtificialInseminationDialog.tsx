@@ -398,18 +398,21 @@ export function ImprovedArtificialInseminationDialog({
 
       if (eventoError) throw eventoError;
 
-      // Create IA record
-      const { error: iaError } = await supabase
-        .from('ia')
-        .insert({
-          evento_id: eventoData.id,
-          toro_nombre: aiData.toro_nombre,
-          raza_toro: aiData.raza_toro,
-          animales_ids: aiData.animales_ids,
-          extras_toro: JSON.stringify(aiData.extras_toro)
-        });
+      // Create AI records in artificial_inseminations table for each female
+      for (const female of selectedFemales) {
+        const { error: aiError } = await supabase
+          .from('artificial_inseminations')
+          .insert({
+            cabaña_id: currentUser.cabañaId,
+            female_id: female.id,
+            bull_name: aiData.toro_nombre,
+            insemination_date: format(date, 'yyyy-MM-dd'),
+            notes: observaciones || null,
+            created_by: currentUser.id,
+          });
 
-      if (iaError) throw iaError;
+        if (aiError) throw aiError;
+      }
 
       toast({
         title: "Éxito",

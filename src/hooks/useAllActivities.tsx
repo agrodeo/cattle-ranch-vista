@@ -49,7 +49,7 @@ export function useAllActivities() {
       }
       const allActivities: UnifiedActivity[] = [];
 
-      // 1. Fetch eventos (general activities, weighing, etc.)
+      // 1. Fetch eventos with related data
       const { data: eventos, error: eventosError } = await supabase
         .from('eventos')
         .select('*')
@@ -65,9 +65,44 @@ export function useAllActivities() {
         for (const evento of eventos) {
           const payload = evento.payload as any;
           let animalIds: string[] = [];
+          const detalles: Record<string, any> = {};
 
-          // Extract animal IDs based on activity type
-          if (payload?.animales_ids) {
+          // Handle PESAJE - get animal_ids from pesajes table
+          if (evento.tipo === 'PESAJE') {
+            const { data: pesajesData } = await supabase
+              .from('pesajes')
+              .select('mediciones')
+              .eq('evento_id', evento.id)
+              .single();
+            
+            if (pesajesData?.mediciones) {
+              const mediciones = pesajesData.mediciones as any[];
+              animalIds = mediciones.map((m: any) => m.animal_id).filter(Boolean);
+              detalles.peso_promedio = (
+                mediciones.reduce((sum: number, m: any) => sum + (parseFloat(m.peso_kg) || 0), 0) / 
+                mediciones.length
+              ).toFixed(1);
+            }
+          } 
+          // Handle TACTO - get animal_ids from tactos table
+          else if (evento.tipo === 'TACTO') {
+            const { data: tactosData } = await supabase
+              .from('tactos')
+              .select('resultados')
+              .eq('evento_id', evento.id)
+              .single();
+            
+            if (tactosData?.resultados) {
+              const resultados = tactosData.resultados as any[];
+              animalIds = resultados.map((r: any) => r.animal_id).filter(Boolean);
+              const prenadas = resultados.filter((r: any) => r.resultado === 'preñada').length;
+              const vacias = resultados.filter((r: any) => r.resultado === 'vacia').length;
+              detalles.prenadas = prenadas;
+              detalles.vacias = vacias;
+            }
+          }
+          // Other event types - get animal_ids from payload
+          else if (payload?.animales_ids) {
             animalIds = payload.animales_ids;
           } else if (payload?.animal_id) {
             animalIds = [payload.animal_id];
@@ -93,16 +128,11 @@ export function useAllActivities() {
           // Determine activity type and details
           let tipo: UnifiedActivity['tipo'] = 'GENERAL';
           let subtipo: string | undefined;
-          const detalles: Record<string, any> = {};
 
           if (evento.tipo === 'PESAJE') {
             tipo = 'PESAJE';
-            if (payload?.mediciones) {
-              detalles.mediciones = payload.mediciones;
-            }
           } else if (evento.tipo === 'TACTO') {
             tipo = 'TACTO';
-            if (payload?.resultado) detalles.resultado = payload.resultado;
           } else if (evento.tipo === 'PARTO') {
             tipo = 'PARTO';
             if (payload?.tipo_parto) detalles.tipo_parto = payload.tipo_parto;
@@ -200,7 +230,7 @@ export function useAllActivities() {
         }
       }
 
-      // 3. Fetch artificial inseminations
+      // 3. Fetch artificial inseminations grouped by date + bull
       const { data: inseminations, error: iaError } = await supabase
         .from('artificial_inseminations')
         .select('id, female_id, bull_name, insemination_date, notes, created_by, created_at')
@@ -213,31 +243,43 @@ export function useAllActivities() {
       }
 
       if (inseminations) {
-        for (const ia of inseminations) {
-          const { data: animalData } = await supabase
+        // Group by date + bull_name
+        const iaGroups = new Map<string, typeof inseminations>();
+        inseminations.forEach(ia => {
+          const key = `${ia.insemination_date}_${ia.bull_name}`;
+          if (!iaGroups.has(key)) {
+            iaGroups.set(key, []);
+          }
+          iaGroups.get(key)!.push(ia);
+        });
+
+        // Convert groups to activities
+        for (const [key, group] of iaGroups.entries()) {
+          const animalIds = group.map(ia => ia.female_id);
+          const { data: animalsData } = await supabase
             .from('animals')
             .select('id, name, id_tag')
-            .eq('id', ia.female_id)
-            .single();
+            .in('id', animalIds);
 
-          const animales: UnifiedActivity['animales'] = animalData ? [{
-            id: animalData.id,
-            name: animalData.name || undefined,
-            id_tag: animalData.id_tag || 'Sin ID'
-          }] : [];
+          const animales: UnifiedActivity['animales'] = animalsData?.map(a => ({
+            id: a.id,
+            name: a.name || undefined,
+            id_tag: a.id_tag || 'Sin ID'
+          })) || [];
 
           allActivities.push({
-            id: ia.id,
+            id: `ia_${key}`,
             tipo: 'IA',
             subtipo: undefined,
-            fecha: ia.insemination_date,
-            responsable: ia.created_by || undefined,
-            notas: ia.notes || undefined,
+            fecha: group[0].insemination_date,
+            responsable: group[0].created_by || undefined,
+            notas: group[0].notes || undefined,
             animales,
             detalles: {
-              bull_name: ia.bull_name
+              bull_name: group[0].bull_name,
+              total_animals: group.length
             },
-            created_at: ia.created_at
+            created_at: group[0].created_at
           });
         }
       }
