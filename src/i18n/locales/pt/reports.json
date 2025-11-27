@@ -96,5 +96,16 @@
       "noData": "Dados insuficientes para mostrar a análise temporal. Certifique-se de ter pesagens registradas em diferentes períodos.",
       "animalsAnalyzed": "{{count}} animais analisados"
     }
+  },
+  "mobile": {
+    "subtitle": "Análises e métricas do estabelecimento",
+    "dateRange": "Intervalo de datas",
+    "weekly": "Semanal",
+    "monthly": "Mensal",
+    "quarterly": "Trimestral",
+    "yearly": "Anual",
+    "exportData": "Exportar Dados",
+    "noDataAvailable": "Não há dados disponíveis",
+    "noDataMessage": "Não é possível gerar relatórios no momento"
   }
 }

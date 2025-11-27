@@ -159,8 +159,8 @@ export function MobileActivities() {
   return (
     <div className="min-h-screen bg-background">
       <MobilePageHeader 
-        title={t('activities:title', 'Actividades')}
-        subtitle={`${filteredActivities.length} ${filteredActivities.length === 1 ? 'actividad' : 'actividades'}`}
+        title={t('activities:title')}
+        subtitle={`${filteredActivities.length} ${filteredActivities.length === 1 ? t('activities:mobile.activity') : t('activities:mobile.activities')}`}
       />
 
       {/* Search and Filters */}
@@ -168,7 +168,7 @@ export function MobileActivities() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar actividades..."
+            placeholder={t('activities:mobile.searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -181,7 +181,7 @@ export function MobileActivities() {
               <SelectValue placeholder="Tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
+              <SelectItem value="all">{t('activities:mobile.allTypes')}</SelectItem>
               {uniqueTypes.map(type => (
                 <SelectItem key={type} value={type}>
                   {type}
@@ -195,10 +195,10 @@ export function MobileActivities() {
               <SelectValue placeholder="Fecha" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las fechas</SelectItem>
-              <SelectItem value="today">Hoy</SelectItem>
-              <SelectItem value="week">Última semana</SelectItem>
-              <SelectItem value="month">Último mes</SelectItem>
+              <SelectItem value="all">{t('activities:mobile.allDates')}</SelectItem>
+              <SelectItem value="today">{t('activities:mobile.today')}</SelectItem>
+              <SelectItem value="week">{t('activities:mobile.lastWeek')}</SelectItem>
+              <SelectItem value="month">{t('activities:mobile.lastMonth')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -209,8 +209,8 @@ export function MobileActivities() {
         {filteredActivities.length === 0 ? (
           <EmptyState
             icon={<Clock className="h-12 w-12" />}
-            title="No hay actividades"
-            description="No se encontraron actividades con los filtros seleccionados"
+            title={t('activities:mobile.noActivities')}
+            description={t('activities:mobile.noActivitiesMessage')}
           />
         ) : (
           <div className="space-y-3">

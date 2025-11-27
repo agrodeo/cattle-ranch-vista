@@ -175,6 +175,19 @@
       "description": "Birth record"
     }
   },
+  "mobile": {
+    "searchPlaceholder": "Search activities...",
+    "filterByType": "Filter by type",
+    "allTypes": "All types",
+    "allDates": "All dates",
+    "today": "Today",
+    "lastWeek": "Last week",
+    "lastMonth": "Last month",
+    "recent": "Recent",
+    "upcoming": "Upcoming",
+    "noActivities": "No activities",
+    "noActivitiesMessage": "No activities found with the selected filters"
+  },
   "common": {
     "cancel": "Cancel",
     "save": "Save"

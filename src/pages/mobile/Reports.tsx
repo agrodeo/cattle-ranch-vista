@@ -101,8 +101,8 @@ export function MobileReports() {
   return (
     <div className="min-h-screen bg-background">
       <MobilePageHeader 
-        title={t('reports:title', 'Reportes')}
-        subtitle="Análisis y métricas del establecimiento"
+        title={t('reports:title')}
+        subtitle={t('reports:mobile.subtitle')}
         action={
           <Button variant="outline" size="sm" onClick={() => exportData('xlsx')}>
             <Download className="h-4 w-4" />
@@ -119,10 +119,10 @@ export function MobileReports() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="weekly">Semanal</SelectItem>
-              <SelectItem value="monthly">Mensual</SelectItem>
-              <SelectItem value="quarterly">Trimestral</SelectItem>
-              <SelectItem value="yearly">Anual</SelectItem>
+              <SelectItem value="weekly">{t('reports:mobile.weekly')}</SelectItem>
+              <SelectItem value="monthly">{t('reports:mobile.monthly')}</SelectItem>
+              <SelectItem value="quarterly">{t('reports:mobile.quarterly')}</SelectItem>
+              <SelectItem value="yearly">{t('reports:mobile.yearly')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -133,8 +133,8 @@ export function MobileReports() {
         {kpis.length === 0 ? (
           <EmptyState
             icon={<BarChart3 className="h-12 w-12" />}
-            title="No hay datos disponibles"
-            description="No se pueden generar reportes en este momento"
+            title={t('reports:mobile.noDataAvailable')}
+            description={t('reports:mobile.noDataMessage')}
           />
         ) : (
           <div className="space-y-4">
@@ -196,7 +196,7 @@ export function MobileReports() {
       {/* Export Options */}
       <div className="p-4 border-t border-border">
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-foreground">Exportar Datos</h3>
+          <h3 className="text-sm font-medium text-foreground">{t('reports:mobile.exportData')}</h3>
           <div className="flex gap-2">
             <Button 
               variant="outline" 

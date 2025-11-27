@@ -176,5 +176,26 @@
       "availableAnimals": "Animais Disponíveis",
       "searchPlaceholder": "Pesquisar por nome ou identificador..."
     }
+  },
+  "mobile": {
+    "searchPlaceholder": "Pesquisar currais...",
+    "noCorrals": "Nenhum curral",
+    "noCorralsMessage": "Crie seu primeiro curral para organizar seus animais",
+    "existingCorrals": "Currais Existentes",
+    "availableSpaces": "espaços livres",
+    "occupancy": "Ocupação",
+    "health": "Saúde",
+    "production": "Produção",
+    "vaccination": "Vacinação",
+    "alerts": "Alertas",
+    "avgDailyGain": "GPD",
+    "avgWeight": "Peso méd",
+    "vaccinationDetails": "Detalhes de Vacinação",
+    "animalsVaccinated": "animais vacinados",
+    "moveAnimals": "Movimentação de Animais",
+    "moveAnimalsBetween": "Mover animais entre currais",
+    "newCorral": "Novo Curral",
+    "createNewCorral": "Criar um novo curral",
+    "availableCorrals": "currais disponíveis"
   }
 }
