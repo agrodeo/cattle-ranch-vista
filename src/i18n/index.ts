@@ -19,6 +19,7 @@ import financeEs from './locales/es/finance.json';
 import authEs from './locales/es/auth.json';
 import errorsEs from './locales/es/errors.json';
 import formsEs from './locales/es/forms.json';
+import settingsEs from './locales/es/settings.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
@@ -29,6 +30,7 @@ import financeEn from './locales/en/finance.json';
 import authEn from './locales/en/auth.json';
 import errorsEn from './locales/en/errors.json';
 import formsEn from './locales/en/forms.json';
+import settingsEn from './locales/en/settings.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -39,6 +41,7 @@ import financePt from './locales/pt/finance.json';
 import authPt from './locales/pt/auth.json';
 import errorsPt from './locales/pt/errors.json';
 import formsPt from './locales/pt/forms.json';
+import settingsPt from './locales/pt/settings.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -79,6 +82,7 @@ const resources = {
     auth: authEs,
     errors: errorsEs,
     forms: formsEs,
+    settings: settingsEs,
   },
   en: {
     common: commonEn,
@@ -90,6 +94,7 @@ const resources = {
     auth: authEn,
     errors: errorsEn,
     forms: formsEn,
+    settings: settingsEn,
   },
   pt: {
     common: commonPt,
@@ -101,6 +106,7 @@ const resources = {
     auth: authPt,
     errors: errorsPt,
     forms: formsPt,
+    settings: settingsPt,
   },
 };
 
@@ -111,7 +117,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'finance', 'auth', 'errors', 'forms'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'finance', 'auth', 'errors', 'forms', 'settings'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],
