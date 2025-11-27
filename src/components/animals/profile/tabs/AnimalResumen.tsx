@@ -1,4 +1,5 @@
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -26,6 +27,7 @@ interface AnimalResumenProps {
 }
 
 export function AnimalResumen({ animal }: AnimalResumenProps) {
+  const { t } = useTranslation(['common', 'animals']);
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const { status: vaccinationStatus, loading: vaccinationLoading } = useAnimalVaccinations(animal.id);
   const [reproductiveData, setReproductiveData] = useState<{

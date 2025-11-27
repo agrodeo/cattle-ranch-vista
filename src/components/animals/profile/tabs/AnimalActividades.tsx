@@ -1,4 +1,5 @@
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ interface AnimalActividadesProps {
 }
 
 export function AnimalActividades({ animal }: AnimalActividadesProps) {
+  const { t } = useTranslation(['common', 'activities']);
   const [filtroTipo, setFiltroTipo] = useState<string>('todos');
   const [filtroFecha, setFiltroFecha] = useState<string>('');
   const [busqueda, setBusqueda] = useState<string>('');

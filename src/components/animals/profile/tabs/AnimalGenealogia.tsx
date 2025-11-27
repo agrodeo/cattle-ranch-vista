@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ interface AnimalGenealogiaProps {
 }
 
 export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
+  const { t } = useTranslation(['common', 'animals']);
   const [showFullTree, setShowFullTree] = useState(false);
 
   const getRegistrationBadgeColor = (level?: string) => {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ interface AnimalDocumentosProps {
 }
 
 export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
+  const { t } = useTranslation(['common', 'animals']);
   const { documents, isLoading, uploadProgress, uploadDocument, deleteDocument } = useAnimalDocuments(animal.id);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFileType, setSelectedFileType] = useState<AnimalDocument['file_type']>('other');

@@ -1,4 +1,5 @@
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +15,7 @@ interface AnimalProduccionProps {
 }
 
 export function AnimalProduccion({ animal }: AnimalProduccionProps) {
+  const { t } = useTranslation(['common', 'activities']);
   const { weights, isLoading } = useAnimalWeights(animal.id);
 
   // Calculate average daily gain (ADG)
