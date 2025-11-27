@@ -60,5 +60,16 @@
     "weighing": "Pesaje",
     "averageWeight": "Peso promedio",
     "registeredBy": "Registrado por"
+  },
+  "warnings": {
+    "consanguinityRisk": "Riesgo de Consanguinidad",
+    "corralsWithRisk": "corral(es) con posible consanguinidad detectada"
+  },
+  "activityTypes": {
+    "general": "General",
+    "vaccination": "Vacunación",
+    "weighing": "Pesaje",
+    "insemination": "Inseminación",
+    "tacto": "Tacto"
   }
 }

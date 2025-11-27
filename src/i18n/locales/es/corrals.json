@@ -17,14 +17,10 @@
   },
   "actions": {
     "view": "Ver",
-    "edit": "Editar", 
+    "edit": "Editar",
     "delete": "Eliminar",
     "assignAnimals": "Asignar Animales",
-    "moveAnimals": "Mover Animales",
-    "confirmDelete": "¿Estás seguro?",
-    "deleteWarning": "Esta acción eliminará permanentemente el corral. No se puede deshacer.",
-    "cannotDelete": "No se puede eliminar",
-    "hasAnimalsWarning": "El corral tiene animales asignados. Mueve todos los animales antes de eliminar."
+    "moveAnimals": "Mover Animales"
   },
   "status": {
     "empty": "Vacío",
@@ -106,10 +102,70 @@
     "noCorrals": "No hay corrales",
     "createFirst": "Crea tu primer corral para comenzar a gestionar los animales"
   },
-  "occupancy": {
-    "label": "Ocupación"
-  },
   "errors": {
     "loadError": "No se pudieron cargar los corrales"
+  },
+  "dialogs": {
+    "create": {
+      "title": "Crear Nuevo Corral",
+      "nameLabel": "Nombre del Corral",
+      "hectaresLabel": "Hectáreas",
+      "creating": "Creando...",
+      "createButton": "Crear Corral",
+      "cancelButton": "Cancelar",
+      "successTitle": "Éxito",
+      "successDescription": "Corral creado correctamente",
+      "errorDescription": "No se pudo crear el corral"
+    },
+    "edit": {
+      "title": "Editar Corral",
+      "updating": "Actualizando...",
+      "updateButton": "Actualizar Corral",
+      "successDescription": "Corral actualizado correctamente",
+      "errorDescription": "No se pudo actualizar el corral"
+    },
+    "delete": {
+      "title": "Eliminar Corral",
+      "description": "¿Estás seguro de eliminar este corral? Esta acción no se puede deshacer.",
+      "deleting": "Eliminando...",
+      "deleteButton": "Eliminar",
+      "cancelButton": "Cancelar",
+      "successTitle": "Éxito",
+      "successDescription": "Corral eliminado correctamente",
+      "errorDescription": "No se pudo eliminar el corral"
+    },
+    "detail": {
+      "totalAnimals": "Total Animales",
+      "malesFemales": "Machos / Hembras",
+      "hectares": "Hectáreas",
+      "vaccinationMetrics": "Métricas de Vacunación",
+      "generalCompliance": "Cumplimiento General",
+      "mandatoryVaccines": "Vacunas Obligatorias",
+      "complete": "Completos",
+      "partial": "Parciales",
+      "incomplete": "Incompletos",
+      "animalsWithAlerts": "Animales con alertas de vacunación",
+      "viewAffected": "Ver animales afectados",
+      "hideDetails": "Ocultar detalles"
+    },
+    "consanguinity": {
+      "whatIs": "¿Qué es la consanguinidad?",
+      "explanation": "La consanguinidad ocurre cuando se aparean animales relacionados genéticamente, aumentando el riesgo de problemas hereditarios.",
+      "coefficient": "Coeficiente:",
+      "suggestion": "Sugerencia:",
+      "riskTitle": "Riesgo de Consanguinidad",
+      "analysisTitle": "Análisis de Consanguinidad",
+      "filterBySeverity": "Filtrar por severidad",
+      "allRisks": "Todos los riesgos",
+      "severeRisk": "Riesgo Severo",
+      "moderateRisk": "Riesgo Moderado",
+      "lowRisk": "Riesgo Bajo",
+      "noRisks": "No se detectaron riesgos de consanguinidad"
+    },
+    "assignment": {
+      "title": "Asignar Animales al Corral",
+      "availableAnimals": "Animales Disponibles",
+      "searchPlaceholder": "Buscar por nombre o identificador..."
+    }
   }
 }

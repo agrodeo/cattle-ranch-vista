@@ -16,7 +16,9 @@ import animalsEs from './locales/es/animals.json';
 import activitiesEs from './locales/es/activities.json';
 import corralsEs from './locales/es/corrals.json';
 import dashboardEs from './locales/es/dashboard.json';
+import reportsEs from './locales/es/reports.json';
 import financeEs from './locales/es/finance.json';
+import mortalityEs from './locales/es/mortality.json';
 import authEs from './locales/es/auth.json';
 import errorsEs from './locales/es/errors.json';
 import formsEs from './locales/es/forms.json';
@@ -30,7 +32,9 @@ import animalsEn from './locales/en/animals.json';
 import activitiesEn from './locales/en/activities.json';
 import corralsEn from './locales/en/corrals.json';
 import dashboardEn from './locales/en/dashboard.json';
+import reportsEn from './locales/en/reports.json';
 import financeEn from './locales/en/finance.json';
+import mortalityEn from './locales/en/mortality.json';
 import authEn from './locales/en/auth.json';
 import errorsEn from './locales/en/errors.json';
 import formsEn from './locales/en/forms.json';
@@ -44,7 +48,9 @@ import animalsPt from './locales/pt/animals.json';
 import activitiesPt from './locales/pt/activities.json';
 import corralsPt from './locales/pt/corrals.json';
 import dashboardPt from './locales/pt/dashboard.json';
+import reportsPt from './locales/pt/reports.json';
 import financePt from './locales/pt/finance.json';
+import mortalityPt from './locales/pt/mortality.json';
 import authPt from './locales/pt/auth.json';
 import errorsPt from './locales/pt/errors.json';
 import formsPt from './locales/pt/forms.json';
@@ -88,7 +94,9 @@ const resources = {
     activities: activitiesEs,
     corrals: corralsEs,
     dashboard: dashboardEs,
+    reports: reportsEs,
     finance: financeEs,
+    mortality: mortalityEs,
     auth: authEs,
     errors: errorsEs,
     forms: formsEs,
@@ -103,7 +111,9 @@ const resources = {
     activities: activitiesEn,
     corrals: corralsEn,
     dashboard: dashboardEn,
+    reports: reportsEn,
     finance: financeEn,
+    mortality: mortalityEn,
     auth: authEn,
     errors: errorsEn,
     forms: formsEn,
@@ -118,7 +128,9 @@ const resources = {
     activities: activitiesPt,
     corrals: corralsPt,
     dashboard: dashboardPt,
+    reports: reportsPt,
     finance: financePt,
+    mortality: mortalityPt,
     auth: authPt,
     errors: errorsPt,
     forms: formsPt,
@@ -135,7 +147,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'finance', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],
