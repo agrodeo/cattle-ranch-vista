@@ -34,6 +34,7 @@ import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 import { normalizeAnimalStatus, getDisplayStatus } from "@/lib/statusUtils";
 import { categorizeAnimal } from "@/lib/animalCategories";
 import { useTranslation } from "react-i18next";
+import { getTranslatedCategory, getTranslatedSex, getTranslatedStatus, getCategoryOptions, getSexOptions, getStatusOptions } from "@/lib/translations";
 import { formatNumber, formatDate } from "@/lib/format";
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 import { usePullToRefresh } from "@/hooks/usePullToRefresh";
@@ -80,10 +81,11 @@ const ARGENTINE_BREEDS = [
 // Breeds that can have horns
 const HORNED_BREEDS = ["Hereford", "Braford", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Santa Gertrudis", "Criollo", "Corriente"];
 
-const MOCHO_OPTIONS = [
-  { value: "Mocho", label: "Mocho" },
-  { value: "Con Cuernos", label: "Con Cuernos" },
-  { value: "Desconocido", label: "Desconocido" }
+// Mocho options - will be translated at render time
+const getMochoOptions = (t: any) => [
+  { value: "Mocho", label: t('animals:hornOptions.polled') },
+  { value: "Con Cuernos", label: t('animals:hornOptions.horned') },
+  { value: "Desconocido", label: t('animals:hornOptions.unknown') }
 ];
 
 const BODY_CONDITION_SCORES = ["1", "2", "3", "4", "5"];
@@ -735,10 +737,10 @@ const Animals = () => {
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
             <DialogHeader>
               <DialogTitle>
-                {editingAnimal ? "Editar Animal" : "Agregar Nuevo Animal"}
+                {editingAnimal ? t('animals:editAnimal') : t('animals:addAnimal')}
               </DialogTitle>
               <DialogDescription>
-                {editingAnimal ? "Modifica la información del animal" : "Registra un nuevo animal en el sistema"}
+                {editingAnimal ? t('animals:subtitle') : t('animals:subtitle')}
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -746,53 +748,53 @@ const Animals = () => {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="id_tag">Identificación *</Label>
+                    <Label htmlFor="id_tag">{t('animals:form.identification')} *</Label>
                     <Input
                       id="id_tag"
                       value={formData.id_tag}
                       onChange={(e) => setFormData({...formData, id_tag: e.target.value})}
-                      placeholder="Número de identificación"
+                      placeholder={t('animals:form.identification')}
                       required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="caravana_electronica">Caravana Electrónica (opcional)</Label>
+                    <Label htmlFor="caravana_electronica">{t('animals:form.electronicTag')} ({t('forms:placeholders.optional')})</Label>
                     <Input
                       id="caravana_electronica"
                       value={formData.caravana_electronica}
                       onChange={(e) => setFormData({...formData, caravana_electronica: e.target.value})}
-                      placeholder="Número de caravana electrónica/RFID"
+                      placeholder={t('animals:form.electronicTag')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre (opcional)</Label>
+                    <Label htmlFor="name">{t('animals:fields.name')} ({t('forms:placeholders.optional')})</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      placeholder="Nombre del animal"
+                      placeholder={t('animals:fields.name')}
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="sex">Sexo *</Label>
+                    <Label htmlFor="sex">{t('animals:fields.sex')} *</Label>
                     <Select value={formData.sex} onValueChange={(value) => setFormData({...formData, sex: value})} required>
                       <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Seleccionar sexo" />
+                        <SelectValue placeholder={t('animals:form.selectSex')} />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-md z-50">
-                        <SelectItem value="Macho">Macho</SelectItem>
-                        <SelectItem value="Hembra">Hembra</SelectItem>
+                        <SelectItem value="Macho">{t('animals:sex.male')}</SelectItem>
+                        <SelectItem value="Hembra">{t('animals:sex.female')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="breed">Raza *</Label>
+                    <Label htmlFor="breed">{t('animals:fields.breed')} *</Label>
                     <Select value={formData.breed} onValueChange={(value) => setFormData({...formData, breed: value})} required>
                       <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Seleccionar raza" />
+                        <SelectValue placeholder={t('animals:form.selectBreed')} />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-md z-50 max-h-60">
                         {ARGENTINE_BREEDS.map((breed) => (
@@ -808,16 +810,16 @@ const Animals = () => {
                 {/* Conditional Mocho field */}
                 {formData.breed && HORNED_BREEDS.includes(formData.breed) && (
                   <div className="space-y-2">
-                    <Label htmlFor="mocho">Condición de Cuernos</Label>
+                    <Label htmlFor="mocho">{t('animals:form.hornCondition')}</Label>
                     <Select 
                       value={formData.mocho || "Desconocido"} 
                       onValueChange={(value) => setFormData({...formData, mocho: value})}
                     >
                       <SelectTrigger className="bg-background">
-                        <SelectValue placeholder="Seleccionar condición" />
+                        <SelectValue placeholder={t('animals:form.selectCondition')} />
                       </SelectTrigger>
                       <SelectContent className="bg-background border shadow-md z-50">
-                        {MOCHO_OPTIONS.map((option) => (
+                        {getMochoOptions(t).map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
                           </SelectItem>
@@ -830,13 +832,13 @@ const Animals = () => {
                  {/* Conditional Registration field */}
                  {formData.breed && breedRequiresRegistration(formData.breed) && (
                    <div className="space-y-2">
-                     <Label htmlFor="registration_level">Registro</Label>
+                     <Label htmlFor="registration_level">{t('animals:form.registration')}</Label>
                      <Select 
                        value={formData.registration_level} 
                        onValueChange={(value) => setFormData({...formData, registration_level: value})}
                      >
                        <SelectTrigger className="bg-background">
-                         <SelectValue placeholder="Seleccionar registro" />
+                         <SelectValue placeholder={t('animals:form.selectRegistration')} />
                        </SelectTrigger>
                        <SelectContent className="bg-background border shadow-md z-50">
                          {getRegistrationOptions(formData.breed).map((option) => (
@@ -851,7 +853,7 @@ const Animals = () => {
 
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="birth_date">Fecha de Nacimiento</Label>
+                    <Label htmlFor="birth_date">{t('animals:fields.birthDate')}</Label>
                     <Input
                       id="birth_date"
                       type="date"
@@ -861,7 +863,7 @@ const Animals = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="peso_nacimiento">Peso al Nacer (kg)</Label>
+                    <Label htmlFor="peso_nacimiento">{t('animals:form.birthWeight')} (kg)</Label>
                     <Input
                       id="peso_nacimiento"
                       type="number"
@@ -876,12 +878,12 @@ const Animals = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="mother_id">Madre (Nombre o ID)</Label>
+                    <Label htmlFor="mother_id">{t('animals:form.motherNameOrId')}</Label>
                     <Input
                       id="mother_id"
                       value={formData.mother_id}
                       onChange={(e) => setFormData({...formData, mother_id: e.target.value})}
-                      placeholder="Nombre o ID de la madre"
+                      placeholder={t('animals:form.motherNameOrId')}
                       list="mother-suggestions"
                     />
                     <datalist id="mother-suggestions">
@@ -898,10 +900,10 @@ const Animals = () => {
                     {formData.mother_id && (
                       <div className="grid grid-cols-2 gap-2 mt-2">
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Raza de la Madre</Label>
+                          <Label className="text-xs text-muted-foreground">{t('animals:form.motherBreed')}</Label>
                           <Select value={formData.mother_breed} onValueChange={(value) => setFormData({...formData, mother_breed: value})}>
                             <SelectTrigger className="h-8 text-xs bg-background">
-                              <SelectValue placeholder="Raza" />
+                              <SelectValue placeholder={t('animals:fields.breed')} />
                             </SelectTrigger>
                             <SelectContent className="bg-background border shadow-md z-50">
                               {ARGENTINE_BREEDS.map((breed) => (
@@ -914,10 +916,10 @@ const Animals = () => {
                         </div>
                         {formData.mother_breed && breedRequiresRegistration(formData.mother_breed) && (
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Registro de la Madre</Label>
+                            <Label className="text-xs text-muted-foreground">{t('animals:form.motherRegistration')}</Label>
                             <Select value={formData.mother_registration} onValueChange={(value) => setFormData({...formData, mother_registration: value})}>
                               <SelectTrigger className="h-8 text-xs bg-background">
-                                <SelectValue placeholder="Registro" />
+                                <SelectValue placeholder={t('animals:form.registration')} />
                               </SelectTrigger>
                               <SelectContent className="bg-background border shadow-md z-50">
                                 {getRegistrationOptions(formData.mother_breed).map((option) => (
@@ -933,12 +935,12 @@ const Animals = () => {
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="father_id">Padre (Nombre o ID)</Label>
+                    <Label htmlFor="father_id">{t('animals:form.fatherNameOrId')}</Label>
                     <Input
                       id="father_id"
                       value={formData.father_id}
                       onChange={(e) => setFormData({...formData, father_id: e.target.value})}
-                      placeholder="Nombre o ID del padre"
+                      placeholder={t('animals:form.fatherNameOrId')}
                       list="father-suggestions"
                     />
                     <datalist id="father-suggestions">
@@ -955,10 +957,10 @@ const Animals = () => {
                     {formData.father_id && (
                       <div className="grid grid-cols-2 gap-2 mt-2">
                         <div className="space-y-1">
-                          <Label className="text-xs text-muted-foreground">Raza del Padre</Label>
+                          <Label className="text-xs text-muted-foreground">{t('animals:form.fatherBreed')}</Label>
                           <Select value={formData.father_breed} onValueChange={(value) => setFormData({...formData, father_breed: value})}>
                             <SelectTrigger className="h-8 text-xs bg-background">
-                              <SelectValue placeholder="Raza" />
+                              <SelectValue placeholder={t('animals:fields.breed')} />
                             </SelectTrigger>
                             <SelectContent className="bg-background border shadow-md z-50">
                               {ARGENTINE_BREEDS.map((breed) => (
@@ -971,10 +973,10 @@ const Animals = () => {
                         </div>
                         {formData.father_breed && breedRequiresRegistration(formData.father_breed) && (
                           <div className="space-y-1">
-                            <Label className="text-xs text-muted-foreground">Registro del Padre</Label>
+                            <Label className="text-xs text-muted-foreground">{t('animals:form.fatherRegistration')}</Label>
                             <Select value={formData.father_registration} onValueChange={(value) => setFormData({...formData, father_registration: value})}>
                               <SelectTrigger className="h-8 text-xs bg-background">
-                                <SelectValue placeholder="Registro" />
+                                <SelectValue placeholder={t('animals:form.registration')} />
                               </SelectTrigger>
                               <SelectContent className="bg-background border shadow-md z-50">
                                 {getRegistrationOptions(formData.father_breed).map((option) => (
@@ -992,15 +994,15 @@ const Animals = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status">Estado</Label>
+                  <Label htmlFor="status">{t('animals:fields.status')}</Label>
                   <Select value={formData.status} onValueChange={(value) => setFormData({...formData, status: value})}>
                     <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="Seleccionar estado" />
+                      <SelectValue placeholder={t('animals:form.selectStatus')} />
                     </SelectTrigger>
                     <SelectContent className="bg-background border shadow-md z-50">
-                      <SelectItem value="Activo">Activo</SelectItem>
-                      <SelectItem value="Vendido">Vendido</SelectItem>
-                      <SelectItem value="Muerto">Muerto</SelectItem>
+                      <SelectItem value="Activo">{t('animals:status.active')}</SelectItem>
+                      <SelectItem value="Vendido">{t('animals:status.sold')}</SelectItem>
+                      <SelectItem value="Muerto">{t('animals:status.dead')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1010,26 +1012,26 @@ const Animals = () => {
               <Collapsible open={showOptionalFields} onOpenChange={setShowOptionalFields}>
                 <CollapsibleTrigger asChild>
                   <Button variant="ghost" className="w-full justify-between p-2">
-                    <span>Campos Adicionales (Opcional)</span>
+                    <span>{t('animals:form.additionalFields')}</span>
                     <ChevronDown className={`h-4 w-4 transition-transform ${showOptionalFields ? 'rotate-180' : ''}`} />
                   </Button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-4 mt-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="color">Color</Label>
+                      <Label htmlFor="color">{t('animals:fields.color')}</Label>
                       <Input
                         id="color"
                         value={formData.color}
                         onChange={(e) => setFormData({...formData, color: e.target.value})}
-                        placeholder="Color del animal"
+                        placeholder={t('animals:fields.color')}
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="condicion_corporal">Condición Corporal (1-5)</Label>
+                      <Label htmlFor="condicion_corporal">{t('animals:form.bodyCondition')} (1-5)</Label>
                       <Select value={formData.condicion_corporal} onValueChange={(value) => setFormData({...formData, condicion_corporal: value})}>
                         <SelectTrigger className="bg-background">
-                          <SelectValue placeholder="Seleccionar condición" />
+                          <SelectValue placeholder={t('animals:form.selectCondition')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background border shadow-md z-50">
                           {BODY_CONDITION_SCORES.map((score) => (
@@ -1042,12 +1044,12 @@ const Animals = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="observaciones">Observaciones Generales</Label>
+                    <Label htmlFor="observaciones">{t('animals:form.generalObservations')}</Label>
                     <Textarea
                       id="observaciones"
                       value={formData.observaciones}
                       onChange={(e) => setFormData({...formData, observaciones: e.target.value})}
-                      placeholder="Notas adicionales sobre el animal..."
+                      placeholder={t('animals:form.additionalNotes')}
                       rows={3}
                     />
                   </div>
@@ -1056,10 +1058,10 @@ const Animals = () => {
 
               <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
                 <Button type="button" variant="outline" onClick={() => setShowAddDialog(false)}>
-                  Cancelar
+                  {t('forms:buttons.cancel')}
                 </Button>
                 <Button type="submit">
-                  {editingAnimal ? "Actualizar" : "Agregar"}
+                  {editingAnimal ? t('forms:buttons.save') : t('common:add')}
                 </Button>
               </div>
             </form>
@@ -1073,22 +1075,22 @@ const Animals = () => {
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
-          title="Total de Animales"
+          title={t('animals:totalAnimals')}
           value={totalAnimals}
           icon={Users}
         />
         <MetricCard
-          title="Animales Activos"
+          title={t('animals:activeAnimals')}
           value={activeAnimals}
           icon={Activity}
         />
         <MetricCard
-          title="Hembras"
+          title={t('animals:sex.female')}
           value={femaleAnimals}
           icon={TrendingUp}
         />
         <MetricCard
-          title="Machos"
+          title={t('animals:sex.male')}
           value={maleAnimals}
           icon={TrendingUp}
         />
@@ -1103,7 +1105,7 @@ const Animals = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nombre, ID o raza..."
+                  placeholder={t('animals:searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 w-full sm:w-80"
@@ -1113,26 +1115,26 @@ const Animals = () => {
               <div className="flex gap-2">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-full sm:w-auto">
-                    <SelectValue placeholder="Categoría" />
+                    <SelectValue placeholder={t('animals:filters.allCategories')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
-                    <SelectItem value="Ternero">Terneros (machos &lt;8m)</SelectItem>
-                    <SelectItem value="Ternera">Terneras (hembras &lt;8m)</SelectItem>
-                    <SelectItem value="Torito">Toritos (machos 8-24m)</SelectItem>
-                    <SelectItem value="Vaquillona">Vaquillonas (hembras 8-24m)</SelectItem>
-                    <SelectItem value="Novillo">Novillos (castrados)</SelectItem>
-                    <SelectItem value="Toro">Toros (machos adultos)</SelectItem>
-                    <SelectItem value="Vaca">Vacas (hembras adultas)</SelectItem>
+                    <SelectItem value="all">{t('animals:filters.allCategories')}</SelectItem>
+                    <SelectItem value="Ternero">{t('animals:categories.maleCalf')} ({t('animals:categoryDescriptions.maleCalf')})</SelectItem>
+                    <SelectItem value="Ternera">{t('animals:categories.femaleCalf')} ({t('animals:categoryDescriptions.femaleCalf')})</SelectItem>
+                    <SelectItem value="Torito">{t('animals:categories.youngBull')} ({t('animals:categoryDescriptions.youngBull')})</SelectItem>
+                    <SelectItem value="Vaquillona">{t('animals:categories.heifer')} ({t('animals:categoryDescriptions.heifer')})</SelectItem>
+                    <SelectItem value="Novillo">{t('animals:categories.steer')} ({t('animals:categoryDescriptions.steer')})</SelectItem>
+                    <SelectItem value="Toro">{t('animals:categories.bull')} ({t('animals:categoryDescriptions.bull')})</SelectItem>
+                    <SelectItem value="Vaca">{t('animals:categories.cow')} ({t('animals:categoryDescriptions.cow')})</SelectItem>
                   </SelectContent>
                 </Select>
 
                 <Select value={breedFilter} onValueChange={setBreedFilter}>
                   <SelectTrigger className="w-full sm:w-auto">
-                    <SelectValue placeholder="Raza" />
+                    <SelectValue placeholder={t('animals:filters.allBreeds')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las razas</SelectItem>
+                    <SelectItem value="all">{t('animals:filters.allBreeds')}</SelectItem>
                     {availableBreeds.map(breed => (
                       <SelectItem key={breed} value={breed}>{breed}</SelectItem>
                     ))}
@@ -1141,13 +1143,13 @@ const Animals = () => {
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-full sm:w-auto">
-                    <SelectValue placeholder="Estado" />
+                    <SelectValue placeholder={t('animals:filters.allStatuses')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="active">Activos</SelectItem>
-                    <SelectItem value="sold">Vendidos</SelectItem>
-                    <SelectItem value="dead">Muertos</SelectItem>
+                    <SelectItem value="all">{t('animals:filters.allStatuses')}</SelectItem>
+                    <SelectItem value="active">{t('animals:status.active')}</SelectItem>
+                    <SelectItem value="sold">{t('animals:status.sold')}</SelectItem>
+                    <SelectItem value="dead">{t('animals:status.dead')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1157,7 +1159,7 @@ const Animals = () => {
         <CardContent>
           {filteredAnimals.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              {searchTerm ? "No se encontraron animales que coincidan con tu búsqueda." : "No hay animales registrados aún."}
+              {searchTerm ? t('animals:messages.noAnimalsFound') : t('animals:messages.noAnimalsRegistered')}
             </div>
           ) : (
             <>
@@ -1167,13 +1169,13 @@ const Animals = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead></TableHead>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Categoría</TableHead>
-                      <TableHead>Raza</TableHead>
-                      <TableHead>Fecha de Nacimiento</TableHead>
-                      <TableHead>Estado</TableHead>
-                      <TableHead>Acciones</TableHead>
+                      <TableHead>{t('animals:fields.name')}</TableHead>
+                      <TableHead>{t('animals:fields.id')}</TableHead>
+                      <TableHead>{t('common:category')}</TableHead>
+                      <TableHead>{t('animals:fields.breed')}</TableHead>
+                      <TableHead>{t('animals:fields.birthDate')}</TableHead>
+                      <TableHead>{t('animals:fields.status')}</TableHead>
+                      <TableHead>{t('common:actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1200,28 +1202,28 @@ const Animals = () => {
                            >
                              {getAnimalDisplayName(animal)}
                            </TableCell>
-                          <TableCell>{animal.id_tag}</TableCell>
-                           <TableCell>
-                             <Badge variant="outline">
-                               {getAgeCategory(animal)}
-                             </Badge>
-                           </TableCell>
-                          <TableCell>{animal.breed}</TableCell>
+                           <TableCell>{animal.id_tag}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {getTranslatedCategory(getAgeCategory(animal), t)}
+                              </Badge>
+                            </TableCell>
+                           <TableCell>{animal.breed}</TableCell>
                           <TableCell>
                             {animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}
                           </TableCell>
                           <TableCell>{getStatusBadge(animal.status)}</TableCell>
                            <TableCell>
                              <div className="flex items-center gap-2">
-                               <Button
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => navigate(`/animales/${animal.id}`)}
-                                 className="flex items-center gap-1"
-                               >
-                                 <Eye className="h-4 w-4" />
-                                 Ver
-                               </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/animales/${animal.id}`)}
+                                  className="flex items-center gap-1"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  {t('animals:actions.view')}
+                                </Button>
                                <Button
                                  variant="outline"
                                  size="sm"
@@ -1258,57 +1260,57 @@ const Animals = () => {
                                  {/* Top Section: Info + Genealogy */}
                                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                    {/* Basic Info Recap */}
-                                   <Card>
-                                     <CardHeader className="pb-3">
-                                       <CardTitle className="text-base">Información Básica</CardTitle>
-                                     </CardHeader>
-                                     <CardContent>
-                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Sexo</span>
-                                           <span className="font-medium">{animal.sex}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Raza</span>
-                                           <span className="font-medium">{animal.breed}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Fecha de Nacimiento</span>
-                                           <span className="font-medium">{animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Cuernos</span>
-                                           <span className="font-medium">{animal.mocho || "N/A"}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Peso al Nacer</span>
-                                           <span className="font-medium">{animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Estado</span>
-                                           <span className="font-medium">{animal.status}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Color</span>
-                                           <span className="font-medium">{animal.color || "N/A"}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Condición Corporal</span>
-                                           <span className="font-medium">{animal.condicion_corporal || "N/A"}</span>
-                                         </div>
-                                         <div className="flex flex-col">
-                                           <span className="text-muted-foreground text-xs">Registro</span>
-                                           <span className="font-medium">{animal.registration_level || "N/A"}</span>
-                                         </div>
-                                       </div>
-                                       {animal.observaciones && (
-                                         <div className="mt-4 pt-4 border-t">
-                                           <span className="text-xs text-muted-foreground">Observaciones</span>
-                                           <p className="text-sm mt-1">{animal.observaciones}</p>
-                                         </div>
-                                       )}
-                                     </CardContent>
-                                   </Card>
+                                    <Card>
+                                      <CardHeader className="pb-3">
+                                        <CardTitle className="text-base">{t('common:basicInfo')}</CardTitle>
+                                      </CardHeader>
+                                      <CardContent>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:fields.sex')}</span>
+                                            <span className="font-medium">{getTranslatedSex(animal.sex, t)}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:fields.breed')}</span>
+                                            <span className="font-medium">{animal.breed}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:fields.birthDate')}</span>
+                                            <span className="font-medium">{animal.birth_date ? new Date(animal.birth_date).toLocaleDateString() : "N/A"}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:form.hornCondition')}</span>
+                                            <span className="font-medium">{animal.mocho || "N/A"}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:form.birthWeight')}</span>
+                                            <span className="font-medium">{animal.peso_nacimiento ? `${animal.peso_nacimiento} kg` : "N/A"}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:fields.status')}</span>
+                                            <span className="font-medium">{getTranslatedStatus(animal.status, t)}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:fields.color')}</span>
+                                            <span className="font-medium">{animal.color || "N/A"}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:form.bodyCondition')}</span>
+                                            <span className="font-medium">{animal.condicion_corporal || "N/A"}</span>
+                                          </div>
+                                          <div className="flex flex-col">
+                                            <span className="text-muted-foreground text-xs">{t('animals:form.registration')}</span>
+                                            <span className="font-medium">{animal.registration_level || "N/A"}</span>
+                                          </div>
+                                        </div>
+                                        {animal.observaciones && (
+                                          <div className="mt-4 pt-4 border-t">
+                                            <span className="text-xs text-muted-foreground">{t('animals:fields.observations')}</span>
+                                            <p className="text-sm mt-1">{animal.observaciones}</p>
+                                          </div>
+                                        )}
+                                      </CardContent>
+                                    </Card>
                                    
                                    {/* Genealogy Tree */}
                                    <div className="min-w-0">
@@ -1378,7 +1380,7 @@ const Animals = () => {
                           <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0 space-y-2">
                               <div className="flex items-center gap-2">
-                                <h3 
+                                 <h3 
                                   className="font-medium truncate cursor-pointer hover:text-primary"
                                   onClick={(e) => {
                                     e.stopPropagation();
@@ -1388,7 +1390,7 @@ const Animals = () => {
                                   {getAnimalDisplayName(animal)}
                                 </h3>
                                  <Badge variant="outline" className="shrink-0">
-                                   {getAgeCategory(animal)}
+                                   {getTranslatedCategory(getAgeCategory(animal), t)}
                                  </Badge>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">

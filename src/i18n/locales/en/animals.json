@@ -31,12 +31,23 @@
     "dead": "Dead"
   },
   "categories": {
-    "calf": "Calf",
+    "maleCalf": "Male Calf",
+    "femaleCalf": "Female Calf",
+    "youngBull": "Young Bull",
     "heifer": "Heifer",
+    "steer": "Steer",
     "bull": "Bull",
     "cow": "Cow",
-    "adult": "Adult Cow",
-    "unknown": "Unclassified"
+    "unknown": "Unknown"
+  },
+  "categoryDescriptions": {
+    "maleCalf": "males <8mo",
+    "femaleCalf": "females <8mo",
+    "youngBull": "males 8-24mo",
+    "heifer": "females 8-24mo",
+    "steer": "castrated",
+    "bull": "adult males",
+    "cow": "adult females"
   },
   "filters": {
     "allCategories": "All categories",
@@ -48,6 +59,46 @@
     "edit": "Edit",
     "delete": "Delete",
     "markDead": "Mark Dead"
+  },
+  "form": {
+    "identification": "Identification",
+    "electronicTag": "Electronic Tag",
+    "selectSex": "Select sex",
+    "selectBreed": "Select breed",
+    "selectStatus": "Select status",
+    "selectCondition": "Select condition",
+    "selectRegistration": "Select registration",
+    "hornCondition": "Horn Condition",
+    "registration": "Registration",
+    "birthWeight": "Birth Weight",
+    "motherNameOrId": "Mother (Name or ID)",
+    "fatherNameOrId": "Father (Name or ID)",
+    "motherBreed": "Mother's Breed",
+    "fatherBreed": "Father's Breed",
+    "motherRegistration": "Mother's Registration",
+    "fatherRegistration": "Father's Registration",
+    "additionalFields": "Additional Fields (Optional)",
+    "bodyCondition": "Body Condition",
+    "generalObservations": "General Observations",
+    "additionalNotes": "Additional notes about the animal...",
+    "isCastrated": "Is castrated?"
+  },
+  "hornOptions": {
+    "polled": "Polled",
+    "horned": "Horned",
+    "unknown": "Unknown"
+  },
+  "messages": {
+    "loadingAnimals": "Loading animals...",
+    "animalSaved": "Animal saved successfully",
+    "animalUpdated": "Animal updated successfully",
+    "animalDeleted": "Animal deleted successfully",
+    "duplicateId": "An animal with that ID already exists in this herd",
+    "futureBirthDate": "Birth date cannot be in the future",
+    "sameParent": "Mother and father cannot be the same animal",
+    "noAnimalsFound": "No animals found matching your search",
+    "noAnimalsRegistered": "No animals registered yet",
+    "confirmDelete": "Are you sure you want to delete this animal?"
   },
   "profile": {
     "tabs": {

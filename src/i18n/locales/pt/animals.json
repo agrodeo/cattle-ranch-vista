@@ -31,12 +31,23 @@
     "dead": "Morto"
   },
   "categories": {
-    "calf": "Bezerro",
-    "heifer": "Bezerra",
-    "bull": "Novilho",
-    "cow": "Novilha",
-    "adult": "Vaca Adulta",
-    "unknown": "Não Classificado"
+    "maleCalf": "Bezerro",
+    "femaleCalf": "Bezerra",
+    "youngBull": "Tourinho",
+    "heifer": "Novilha",
+    "steer": "Novilho",
+    "bull": "Touro",
+    "cow": "Vaca",
+    "unknown": "Desconhecido"
+  },
+  "categoryDescriptions": {
+    "maleCalf": "machos <8m",
+    "femaleCalf": "fêmeas <8m",
+    "youngBull": "machos 8-24m",
+    "heifer": "fêmeas 8-24m",
+    "steer": "castrados",
+    "bull": "machos adultos",
+    "cow": "fêmeas adultas"
   },
   "filters": {
     "allCategories": "Todas as categorias",
@@ -48,6 +59,46 @@
     "edit": "Editar",
     "delete": "Excluir", 
     "markDead": "Marcar Morto"
+  },
+  "form": {
+    "identification": "Identificação",
+    "electronicTag": "Etiqueta Eletrônica",
+    "selectSex": "Selecionar sexo",
+    "selectBreed": "Selecionar raça",
+    "selectStatus": "Selecionar status",
+    "selectCondition": "Selecionar condição",
+    "selectRegistration": "Selecionar registro",
+    "hornCondition": "Condição dos Chifres",
+    "registration": "Registro",
+    "birthWeight": "Peso ao Nascer",
+    "motherNameOrId": "Mãe (Nome ou ID)",
+    "fatherNameOrId": "Pai (Nome ou ID)",
+    "motherBreed": "Raça da Mãe",
+    "fatherBreed": "Raça do Pai",
+    "motherRegistration": "Registro da Mãe",
+    "fatherRegistration": "Registro do Pai",
+    "additionalFields": "Campos Adicionais (Opcional)",
+    "bodyCondition": "Condição Corporal",
+    "generalObservations": "Observações Gerais",
+    "additionalNotes": "Notas adicionais sobre o animal...",
+    "isCastrated": "Está castrado?"
+  },
+  "hornOptions": {
+    "polled": "Mocho",
+    "horned": "Com Chifres",
+    "unknown": "Desconhecido"
+  },
+  "messages": {
+    "loadingAnimals": "Carregando animais...",
+    "animalSaved": "Animal salvo com sucesso",
+    "animalUpdated": "Animal atualizado com sucesso",
+    "animalDeleted": "Animal excluído com sucesso",
+    "duplicateId": "Já existe um animal com esse ID neste rebanho",
+    "futureBirthDate": "A data de nascimento não pode ser no futuro",
+    "sameParent": "A mãe e o pai não podem ser o mesmo animal",
+    "noAnimalsFound": "Nenhum animal encontrado correspondente à sua pesquisa",
+    "noAnimalsRegistered": "Nenhum animal registrado ainda",
+    "confirmDelete": "Tem certeza de que deseja excluir este animal?"
   },
   "profile": {
     "tabs": {
