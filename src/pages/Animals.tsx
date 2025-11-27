@@ -668,7 +668,7 @@ const Animals = () => {
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = normalizeAnimalStatus(status);
-    const displayStatus = getDisplayStatus(normalizedStatus);
+    const displayStatus = getTranslatedStatus(normalizedStatus, t);
     
     let variant: "default" | "secondary" | "destructive" | "outline" = "default";
     
@@ -720,7 +720,7 @@ const Animals = () => {
         <div className="space-y-2">
           <h1 className="hidden sm:block text-3xl font-bold">{t('animals:title')}</h1>
           <p className="hidden sm:block text-muted-foreground">
-            Gestiona y monitorea tu inventario ganadero
+            {t('animals:subtitle')}
           </p>
         </div>
         
