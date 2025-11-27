@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useSupabaseAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SupportProvider from "@/components/SupportProvider";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
+import { RevenueCatProvider } from "@/providers/RevenueCatProvider";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
@@ -30,12 +31,13 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <SupportProvider>
-        <GlobalErrorBoundary>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
+      <RevenueCatProvider>
+        <SupportProvider>
+          <GlobalErrorBoundary>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/auth" element={<Auth />} />
@@ -118,10 +120,11 @@ const App = () => (
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-        </GlobalErrorBoundary>
-      </SupportProvider>
+           </BrowserRouter>
+         </TooltipProvider>
+          </GlobalErrorBoundary>
+        </SupportProvider>
+      </RevenueCatProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
