@@ -30,7 +30,7 @@ export function DeleteCorralDialog({
   onSuccess 
 }: DeleteCorralDialogProps) {
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['corrals', 'common']);
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
@@ -39,8 +39,8 @@ export function DeleteCorralDialog({
     // Verificar que el corral esté vacío
     if (animalCount > 0) {
       toast({
-        title: "Error",
-        description: `No se puede eliminar el corral "${corralName}" porque tiene ${animalCount} animales asignados. Mueve los animales a otro corral primero.`,
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.delete.cannotDelete', { name: corralName, count: animalCount }),
         variant: "destructive",
       });
       return;
@@ -57,8 +57,8 @@ export function DeleteCorralDialog({
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: `Corral "${corralName}" eliminado correctamente`,
+        title: t('common:success.title'),
+        description: t('corrals:dialogs.delete.successMessage', { name: corralName }),
       });
 
       onSuccess();
@@ -66,8 +66,8 @@ export function DeleteCorralDialog({
     } catch (error) {
       console.error("Error deleting corral:", error);
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el corral",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.delete.errorMessage'),
         variant: "destructive",
       });
     } finally {
@@ -83,7 +83,7 @@ export function DeleteCorralDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Trash2 className="h-5 w-5 text-destructive" />
-            Eliminar Corral
+            {t('corrals:dialogs.delete.title')}
           </DialogTitle>
         </DialogHeader>
         
@@ -92,10 +92,9 @@ export function DeleteCorralDialog({
             <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
               <div>
-                <p className="font-medium text-yellow-800">No se puede eliminar</p>
+                <p className="font-medium text-yellow-800">{t('corrals:dialogs.delete.cannotDeleteTitle')}</p>
                 <p className="text-sm text-yellow-700 mt-1">
-                  El corral <strong>"{corralName}"</strong> tiene <strong>{animalCount} animales</strong> asignados.
-                  Debes mover todos los animales a otro corral antes de poder eliminarlo.
+                  {t('corrals:dialogs.delete.cannotDeleteMessage', { name: corralName, count: animalCount })}
                 </p>
               </div>
             </div>
@@ -103,10 +102,9 @@ export function DeleteCorralDialog({
             <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
               <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
               <div>
-                <p className="font-medium text-red-800">¿Estás seguro?</p>
+                <p className="font-medium text-red-800">{t('corrals:dialogs.delete.confirmTitle')}</p>
                 <p className="text-sm text-red-700 mt-1">
-                  Esta acción eliminará permanentemente el corral <strong>"{corralName}"</strong>. 
-                  Esta acción no se puede deshacer.
+                  {t('corrals:dialogs.delete.confirmMessage', { name: corralName })}
                 </p>
               </div>
             </div>
@@ -120,7 +118,7 @@ export function DeleteCorralDialog({
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Cancelar
+            {t('common:actions.cancel')}
           </Button>
           <Button 
             type="button"
@@ -128,7 +126,7 @@ export function DeleteCorralDialog({
             onClick={handleDelete}
             disabled={loading || !canDelete}
           >
-            {loading ? "Eliminando..." : "Eliminar Corral"}
+            {loading ? t('corrals:dialogs.delete.deleting') : t('corrals:dialogs.delete.deleteButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

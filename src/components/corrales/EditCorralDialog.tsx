@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface EditCorralDialogProps {
   open: boolean;
@@ -21,6 +22,7 @@ interface EditCorralDialogProps {
 
 export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: EditCorralDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation(['corrals', 'common']);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -52,8 +54,8 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
     } catch (error) {
       console.error("Error fetching corral:", error);
       toast({
-        title: "Error",
-        description: "No se pudo cargar el corral",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.edit.loadError'),
         variant: "destructive",
       });
     }
@@ -77,16 +79,16 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Corral actualizado correctamente",
+        title: t('common:success.title'),
+        description: t('corrals:dialogs.edit.successMessage'),
       });
 
       onSuccess();
     } catch (error) {
       console.error("Error updating corral:", error);
       toast({
-        title: "Error",
-        description: "No se pudo actualizar el corral",
+        title: t('common:error.title'),
+        description: t('corrals:dialogs.edit.errorMessage'),
         variant: "destructive",
       });
     } finally {
@@ -98,13 +100,13 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Editar Corral</DialogTitle>
+          <DialogTitle>{t('corrals:dialogs.edit.title')}</DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="name">Nombre del Corral</Label>
+              <Label htmlFor="name">{t('corrals:dialogs.create.nameLabel')}</Label>
               <Input
                 id="name"
                 value={formData.name}
@@ -115,7 +117,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
             </div>
             
             <div>
-              <Label htmlFor="hectareas">Hectáreas</Label>
+              <Label htmlFor="hectareas">{t('corrals:dialogs.create.hectaresLabel')}</Label>
               <Input
                 id="hectareas"
                 type="number"
@@ -134,10 +136,10 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
               onClick={() => onOpenChange(false)}
               disabled={loading}
             >
-              Cancelar
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Guardando..." : "Guardar Cambios"}
+              {loading ? t('corrals:dialogs.edit.saving') : t('corrals:dialogs.edit.saveButton')}
             </Button>
           </DialogFooter>
         </form>
