@@ -99,7 +99,24 @@
     "sameParent": "La madre y el padre no pueden ser el mismo animal",
     "noAnimalsFound": "No se encontraron animales que coincidan con tu búsqueda",
     "noAnimalsRegistered": "No hay animales registrados aún",
-    "confirmDelete": "¿Estás seguro de que quieres eliminar este animal?"
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este animal?",
+    "created": "Animal agregado correctamente",
+    "updated": "Animal actualizado correctamente",
+    "deleted": "Animal eliminado correctamente",
+    "suggestion": "Sugerencia",
+    "aiSuggestion": "Esta hembra tiene más de 15 meses. Considera registrar inseminación artificial si está en edad reproductiva"
+  },
+  "errors": {
+    "configRequired": "Configuración requerida",
+    "contactAdmin": "Por favor contacte al administrador para asignar su cabaña",
+    "noCabana": "No tienes una cabaña asociada. Contacta al administrador",
+    "loadUserInfo": "No se pudo cargar la información del usuario",
+    "loadAnimals": "No se pudieron cargar los animales",
+    "futureBirthDate": "La fecha de nacimiento no puede ser en el futuro",
+    "sameParents": "La madre y el padre no pueden ser el mismo animal",
+    "duplicateId": "Ya existe un animal con ese ID en esta cabaña",
+    "saveFailed": "No se pudo guardar el animal",
+    "deleteFailed": "No se pudo eliminar el animal"
   },
   "profile": {
     "tabs": {

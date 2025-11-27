@@ -99,7 +99,24 @@
     "sameParent": "Mother and father cannot be the same animal",
     "noAnimalsFound": "No animals found matching your search",
     "noAnimalsRegistered": "No animals registered yet",
-    "confirmDelete": "Are you sure you want to delete this animal?"
+    "confirmDelete": "Are you sure you want to delete this animal?",
+    "created": "Animal added successfully",
+    "updated": "Animal updated successfully",
+    "deleted": "Animal deleted successfully",
+    "suggestion": "Suggestion",
+    "aiSuggestion": "This female is over 15 months old. Consider registering artificial insemination if she's of breeding age"
+  },
+  "errors": {
+    "configRequired": "Configuration required",
+    "contactAdmin": "Please contact the administrator to assign your herd",
+    "noCabana": "You don't have an associated herd. Contact the administrator",
+    "loadUserInfo": "Could not load user information",
+    "loadAnimals": "Could not load animals",
+    "futureBirthDate": "Birth date cannot be in the future",
+    "sameParents": "Mother and father cannot be the same animal",
+    "duplicateId": "An animal with that ID already exists in this herd",
+    "saveFailed": "Could not save animal",
+    "deleteFailed": "Could not delete animal"
   },
   "profile": {
     "tabs": {
