@@ -32,12 +32,23 @@
     "dead": "Muerto"
   },
   "categories": {
-    "calf": "Ternero",
-    "heifer": "Ternera",
-    "bull": "Novillo",
-    "cow": "Vaquillona",
-    "adult": "Vaca adulta",
-    "unknown": "Sin clasificar"
+    "maleCalf": "Ternero",
+    "femaleCalf": "Ternera",
+    "youngBull": "Torito",
+    "heifer": "Vaquillona",
+    "steer": "Novillo",
+    "bull": "Toro",
+    "cow": "Vaca",
+    "unknown": "Desconocido"
+  },
+  "categoryDescriptions": {
+    "maleCalf": "machos <8m",
+    "femaleCalf": "hembras <8m",
+    "youngBull": "machos 8-24m",
+    "heifer": "hembras 8-24m",
+    "steer": "castrados",
+    "bull": "machos adultos",
+    "cow": "hembras adultas"
   },
   "filters": {
     "allCategories": "Todas las categorías",
@@ -49,6 +60,46 @@
     "edit": "Editar",
     "delete": "Eliminar",
     "markDead": "Marcar Fallecido"
+  },
+  "form": {
+    "identification": "Identificación",
+    "electronicTag": "Caravana Electrónica",
+    "selectSex": "Seleccionar sexo",
+    "selectBreed": "Seleccionar raza",
+    "selectStatus": "Seleccionar estado",
+    "selectCondition": "Seleccionar condición",
+    "selectRegistration": "Seleccionar registro",
+    "hornCondition": "Condición de Cuernos",
+    "registration": "Registro",
+    "birthWeight": "Peso al Nacer",
+    "motherNameOrId": "Madre (Nombre o ID)",
+    "fatherNameOrId": "Padre (Nombre o ID)",
+    "motherBreed": "Raza de la Madre",
+    "fatherBreed": "Raza del Padre",
+    "motherRegistration": "Registro de la Madre",
+    "fatherRegistration": "Registro del Padre",
+    "additionalFields": "Campos Adicionales (Opcional)",
+    "bodyCondition": "Condición Corporal",
+    "generalObservations": "Observaciones Generales",
+    "additionalNotes": "Notas adicionales sobre el animal...",
+    "isCastrated": "¿Está castrado?"
+  },
+  "hornOptions": {
+    "polled": "Mocho",
+    "horned": "Con Cuernos",
+    "unknown": "Desconocido"
+  },
+  "messages": {
+    "loadingAnimals": "Cargando animales...",
+    "animalSaved": "Animal guardado correctamente",
+    "animalUpdated": "Animal actualizado correctamente",
+    "animalDeleted": "Animal eliminado correctamente",
+    "duplicateId": "Ya existe un animal con ese ID en esta cabaña",
+    "futureBirthDate": "La fecha de nacimiento no puede ser en el futuro",
+    "sameParent": "La madre y el padre no pueden ser el mismo animal",
+    "noAnimalsFound": "No se encontraron animales que coincidan con tu búsqueda",
+    "noAnimalsRegistered": "No hay animales registrados aún",
+    "confirmDelete": "¿Estás seguro de que quieres eliminar este animal?"
   },
   "profile": {
     "tabs": {
