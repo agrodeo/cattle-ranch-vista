@@ -76,7 +76,7 @@ export function useAchievements() {
             
             // Show celebration toast
             toast.success(
-              `🎉 ¡Medalla ${currentTier === 'gold' ? 'de Oro' : currentTier === 'silver' ? 'de Plata' : 'de Bronce'} desbloqueada!`,
+              t('common:achievements.medal_unlocked', { tier: t(`common:achievements.tiers.${currentTier}`) }),
               {
                 description: t(definition.nameKey),
                 duration: 5000

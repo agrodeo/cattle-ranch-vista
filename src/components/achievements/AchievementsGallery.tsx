@@ -58,14 +58,14 @@ export function AchievementsGallery() {
             <Trophy className="h-8 w-8 text-primary" />
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-foreground">Mis Logros</h2>
+            <h2 className="text-2xl font-bold text-foreground">{t('common:achievements.title')}</h2>
             <p className="text-muted-foreground">
-              Has desbloqueado {totalUnlocked} de {totalPossible} medallas
+              {t('common:achievements.unlocked')} {totalUnlocked} {t('common:common.of')} {totalPossible} {t('common:achievements.medals').toLowerCase()}
             </p>
           </div>
           <div className="text-right">
             <div className="text-3xl font-bold text-primary">{totalUnlocked}</div>
-            <div className="text-sm text-muted-foreground">Medallas</div>
+            <div className="text-sm text-muted-foreground">{t('common:achievements.medals')}</div>
           </div>
         </div>
       </Card>
@@ -114,7 +114,7 @@ export function AchievementsGallery() {
                     {unlocked && (
                       <DialogContent className="max-w-md">
                         <DialogHeader>
-                          <DialogTitle>¡Logro Desbloqueado!</DialogTitle>
+                          <DialogTitle>{t('common:achievements.unlocked_achievement')}</DialogTitle>
                         </DialogHeader>
                         <AchievementCard
                           achievementCode={definition.code}
@@ -135,7 +135,7 @@ export function AchievementsGallery() {
             {/* Progress Bar */}
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Progreso</span>
+                <span className="text-muted-foreground">{t('common:achievements.progress')}</span>
                 <span className="font-medium">{currentValue} / {definition.tiers.gold.threshold}</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">

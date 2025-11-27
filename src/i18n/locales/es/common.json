@@ -123,6 +123,24 @@
     }
   },
   "achievements": {
+    "title": "Mis Logros",
+    "subtitle": "Tus medallas y reconocimientos en AgroDeo",
+    "unlocked": "Has desbloqueado",
+    "of": "de",
+    "medals": "Medallas",
+    "medal": "Medalla",
+    "progress": "Progreso",
+    "achievements_count": "logros",
+    "unlocked_on": "Desbloqueado",
+    "share": "Compartir en Redes",
+    "awarded_message": "AgroDeo te otorga la medalla de {{tier}} por conseguir {{achievement}}",
+    "unlocked_achievement": "¡Logro Desbloqueado!",
+    "medal_unlocked": "¡Medalla de {{tier}} desbloqueada!",
+    "tiers": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro"
+    },
     "herd": {
       "starter": {
         "name": "Primera Manada",

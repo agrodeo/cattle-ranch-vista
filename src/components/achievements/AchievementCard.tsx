@@ -29,7 +29,7 @@ export function AchievementCard({
   
   const medalGradient = getMedalColor(medalTier);
   const medalEmoji = getMedalIcon(medalTier);
-  const tierName = medalTier === 'gold' ? 'Oro' : medalTier === 'silver' ? 'Plata' : 'Bronce';
+  const tierName = t(`common:achievements.tiers.${medalTier}`);
 
   const handleDownload = async () => {
     const element = document.getElementById(`achievement-${achievementCode}`);
@@ -56,8 +56,11 @@ export function AchievementCard({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Agrodeo - Medalla de ${tierName}`,
-          text: `¡Desbloqueé una medalla de ${tierName} en Agrodeo por ${t(nameKey)}!`,
+          title: `AgroDeo - ${t('common:achievements.medal')} ${t(`common:achievements.tiers.${medalTier}`)}`,
+          text: t('common:achievements.awarded_message', {
+            tier: tierName,
+            achievement: t(nameKey)
+          }),
           url: window.location.origin
         });
         onShare?.();
@@ -103,7 +106,7 @@ export function AchievementCard({
           {/* Achievement Text */}
           <div className="space-y-3">
             <h3 className="text-2xl font-bold text-foreground">
-              Medalla de {tierName}
+              {t('common:achievements.medal')} {t('common:common.of')} {tierName}
             </h3>
             <p className="text-lg text-muted-foreground font-medium">
               {t(nameKey)}
@@ -117,11 +120,11 @@ export function AchievementCard({
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground pt-4 border-t border-border/50">
             <div>
               <span className="font-semibold text-foreground">{progressValue}</span>
-              <span className="ml-1">logros</span>
+              <span className="ml-1">{t('common:achievements.achievements_count')}</span>
             </div>
             <div className="w-px h-4 bg-border" />
             <div>
-              Desbloqueado {new Date(unlockedAt).toLocaleDateString('es-ES', { 
+              {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', { 
                 day: 'numeric', 
                 month: 'short', 
                 year: 'numeric' 
@@ -132,7 +135,10 @@ export function AchievementCard({
           {/* Message */}
           <div className="pt-4">
             <p className="text-base font-medium text-primary">
-              AgroDeo te otorga la medalla de {tierName} por conseguir {t(nameKey)}
+              {t('common:achievements.awarded_message', {
+                tier: tierName,
+                achievement: t(nameKey)
+              })}
             </p>
           </div>
         </div>
@@ -146,7 +152,7 @@ export function AchievementCard({
           size="lg"
         >
           <Share2 className="mr-2 h-4 w-4" />
-          Compartir en Redes
+          {t('common:achievements.share')}
         </Button>
         <Button
           onClick={handleDownload}
