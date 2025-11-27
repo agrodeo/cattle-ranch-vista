@@ -1,6 +1,7 @@
 {
   "title": "Activities",
   "description": "Manage all your farm activities",
+  "subtitle": "Record of all livestock activities",
   "summary": {
     "title": "Activities Summary",
     "activities30d": "Activities (30 days)",
@@ -14,6 +15,18 @@
     "weighAnimals": "Weigh Animals",
     "inseminate": "Inseminate",
     "pregnancy": "Pregnancy Check"
+  },
+  "groupings": {
+    "today": "Today",
+    "last7Days": "Last 7 days",
+    "older": "Earlier"
+  },
+  "empty": {
+    "noActivities": "No activities recorded",
+    "description": "Use the 'Register Activity' button to start recording your livestock activities",
+    "today": "No activities for today",
+    "recent": "No recent activities",
+    "older": "No earlier activities"
   },
   "next7d": {
     "title": "Next 7 Days",
