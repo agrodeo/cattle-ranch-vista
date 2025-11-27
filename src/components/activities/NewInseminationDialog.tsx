@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,7 @@ interface InseminationDialogProps {
 }
 
 export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSuccess }: InseminationDialogProps) {
+  const { t } = useTranslation();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
@@ -91,8 +93,8 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
       if (!toroNombre.trim()) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "El nombre del toro es requerido",
+          title: t('activities:newInsemination.errorTitle'),
+          description: t('activities:newInsemination.errorBullName'),
         });
         return;
       }
@@ -100,8 +102,8 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
       if (selectedAnimals.length === 0) {
         toast({
           variant: "destructive",
-          title: "Error", 
-          description: "Debe seleccionar al menos una hembra",
+          title: t('activities:newInsemination.errorTitle'), 
+          description: t('activities:newInsemination.errorSelectFemale'),
         });
         return;
       }
@@ -157,8 +159,8 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
       }
 
       toast({
-        title: "Inseminación registrada",
-        description: `Se inseminaron ${selectedAnimals.length} hembras con ${toroNombre}`,
+        title: t('activities:newInsemination.registered'),
+        description: `${t('activities:newInsemination.registeredDesc')} ${selectedAnimals.length} ${t('activities:newInsemination.femalesWithBull')} ${toroNombre}`,
       });
 
       // Reset form

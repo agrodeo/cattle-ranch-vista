@@ -107,5 +107,186 @@
     "dueToday": "Due today",
     "in3Days": "In 3 days",
     "animals": "animals"
+  },
+  "typeSelector": {
+    "title": "Select Activity Type",
+    "general": {
+      "title": "Management Activities",
+      "description": "Daily livestock management"
+    },
+    "insemination": {
+      "title": "Artificial Insemination",
+      "description": "Record AI service"
+    },
+    "vaccination": {
+      "title": "Vaccination",
+      "description": "Health control"
+    },
+    "weighing": {
+      "title": "Weighing",
+      "description": "Production control"
+    },
+    "pregnancy": {
+      "title": "Pregnancy Control",
+      "description": "Checks and diagnostics"
+    }
+  },
+  "managementTypes": {
+    "title": "Management Activity Type",
+    "back": "Back",
+    "destete": {
+      "title": "Weaning",
+      "description": "Separation of calves from mothers"
+    },
+    "marcacion": {
+      "title": "Branding",
+      "description": "Hot iron identification"
+    },
+    "castracion": {
+      "title": "Castration",
+      "description": "Surgical procedure"
+    },
+    "descorne": {
+      "title": "Dehorning",
+      "description": "Horn removal"
+    },
+    "traslado": {
+      "title": "Transfer",
+      "description": "Movement between corrals"
+    },
+    "tratamiento": {
+      "title": "Treatment",
+      "description": "Medication administration"
+    },
+    "revision": {
+      "title": "Examination",
+      "description": "General health check"
+    },
+    "apareamiento": {
+      "title": "Natural Mating",
+      "description": "Service with bull"
+    },
+    "parto": {
+      "title": "Birth",
+      "description": "Birth record"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "activityCard": {
+    "animal": "animal",
+    "animals": "animals",
+    "more": "more",
+    "by": "By:",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "activityTypes": {
+    "vaccination": "Vaccination",
+    "weighing": "Weighing",
+    "tacto": "Pregnancy Check",
+    "ia": "AI",
+    "birth": "Birth",
+    "death": "Death",
+    "pregnancyLoss": "Pregnancy Loss",
+    "general": "General Activity",
+    "activity": "Activity"
+  },
+  "newGeneralActivity": {
+    "title": "New General Activity",
+    "activityType": "Activity Type",
+    "selectType": "Select type",
+    "date": "Date",
+    "responsible": "Responsible",
+    "notes": "Observations",
+    "selectAnimals": "Select Animals",
+    "availableAnimals": "animals available",
+    "selectAll": "Select All",
+    "clear": "Clear",
+    "animal": "Animal",
+    "sex": "Sex",
+    "breed": "Breed",
+    "corral": "Corral",
+    "selected": "selected",
+    "register": "Register",
+    "saving": "Saving...",
+    "success": "Activity registered",
+    "successDesc": "successfully registered for",
+    "errorTitle": "Error",
+    "errorRequired": "Please complete all required fields",
+    "errorSelectAnimal": "You must select at least one animal",
+    "errorSaving": "Could not register activity",
+    "specificInfo": "Specific Information"
+  },
+  "newInsemination": {
+    "title": "Artificial Insemination",
+    "serviceDate": "Service Date",
+    "bullName": "Bull Name",
+    "bullBreed": "Bull Breed",
+    "selectBreed": "Select breed",
+    "horns": "Horns",
+    "selectHornType": "Select horn type",
+    "polled": "Polled",
+    "homozygousPolled": "Homozygous Polled",
+    "horned": "Horned",
+    "hornInfo": "Offspring will be 100% polled if pregnant",
+    "coat": "Coat",
+    "selectCoat": "Select coat color",
+    "black": "Black",
+    "red": "Red",
+    "homozygousBlack": "Homozygous Black",
+    "homozygousRed": "Homozygous Red",
+    "coatInfo": "Offspring will be 100% father's color if pregnant",
+    "additionalData": "Additional Bull Data",
+    "birthWeight": "Birth Weight (kg)",
+    "weaningWeight": "Weaning Weight (kg)",
+    "finalWeight": "Final Weight (kg)",
+    "ce": "SC (cm)",
+    "registration": "Breed Registration",
+    "registrationNumber": "Registration number",
+    "origin": "Origin",
+    "originPlaceholder": "Country/region of origin",
+    "observations": "Observations",
+    "serviceObservations": "Service observations...",
+    "eligibleFemales": "Eligible Females",
+    "all": "All",
+    "months": "months",
+    "notRecorded": "Not recorded",
+    "notSpecified": "Not specified",
+    "noEligibleAnimals": "No eligible females for artificial insemination.",
+    "requiresFemales": "Requires females ≥15 months that are not pregnant.",
+    "registered": "Insemination registered",
+    "registeredDesc": "Inseminated",
+    "femalesWithBull": "females with",
+    "errorBullName": "Bull name is required",
+    "errorSelectFemale": "You must select at least one female"
+  },
+  "newVaccination": {
+    "title": "Register Vaccination",
+    "description": "Register vaccine application to animals",
+    "date": "Vaccination Date",
+    "vaccine": "Vaccine",
+    "selectVaccine": "Select vaccine",
+    "lot": "Lot",
+    "lotNumber": "Lot number",
+    "dose": "Dose",
+    "doseAmount": "Dose amount",
+    "route": "Administration Route",
+    "routePlaceholder": "Intramuscular, subcutaneous, etc.",
+    "observations": "Observations",
+    "additionalObservations": "Additional observations...",
+    "animals": "Animals",
+    "available": "available",
+    "noEligibleAnimals": "No eligible animals for vaccination.",
+    "checkActiveAnimals": "Verify that you have active animals in your farm.",
+    "registered": "Vaccination registered",
+    "registeredDesc": "Vaccinated",
+    "animalsVaccinated": "animals",
+    "errorSelectVaccine": "You must select a vaccine",
+    "errorSelectAnimal": "You must select at least one animal",
+    "errorSaving": "Could not register vaccination",
+    "registerButton": "Register Vaccination"
   }
 }

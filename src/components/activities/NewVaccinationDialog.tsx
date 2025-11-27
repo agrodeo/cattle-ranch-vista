@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ interface VaccinationDialogProps {
 }
 
 export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSuccess }: VaccinationDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
@@ -89,8 +91,8 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
       if (!vacuna.trim()) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Debe seleccionar una vacuna",
+          title: t('activities:newVaccination.errorTitle'),
+          description: t('activities:newVaccination.errorSelectVaccine'),
         });
         return;
       }
@@ -98,8 +100,8 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
       if (selectedAnimals.length === 0) {
         toast({
           variant: "destructive",
-          title: "Error", 
-          description: "Debe seleccionar al menos un animal",
+          title: t('activities:newVaccination.errorTitle'), 
+          description: t('activities:newVaccination.errorSelectAnimal'),
         });
         return;
       }
@@ -125,8 +127,8 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
       await Promise.all(vaccinationPromises);
 
       toast({
-        title: "Vacunación registrada",
-        description: `Se vacunaron ${selectedAnimals.length} animales`,
+        title: t('activities:newVaccination.registered'),
+        description: `${t('activities:newVaccination.registeredDesc')} ${selectedAnimals.length} ${t('activities:newVaccination.animalsVaccinated')}`,
       });
 
       // Reset form
@@ -144,8 +146,8 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
       console.error("Error saving vaccination:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo registrar la vacunación",
+        title: t('activities:newVaccination.errorTitle'),
+        description: t('activities:newVaccination.errorSaving'),
       });
     } finally {
       setLoading(false);
@@ -156,19 +158,19 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Vacunación</DialogTitle>
+          <DialogTitle>{t('activities:newVaccination.title')}</DialogTitle>
           <DialogDescription>
-            Registre la aplicación de vacunas a los animales
+            {t('activities:newVaccination.description')}
           </DialogDescription>
         </DialogHeader>
         
         {animals.length === 0 && !loading && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-2">
-              No hay animales elegibles para vacunación.
+              {t('activities:newVaccination.noEligibleAnimals')}
             </p>
             <p className="text-sm text-muted-foreground">
-              Verifica que tengas animales activos en tu cabaña.
+              {t('activities:newVaccination.checkActiveAnimals')}
             </p>
           </div>
         )}
