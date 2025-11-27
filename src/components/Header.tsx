@@ -62,13 +62,13 @@ export function Header() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1 px-2 py-1.5">
                   <p className="text-sm font-semibold leading-none text-ink-900">
-                    {currentUser?.fullName || "Usuario"}
+                    {currentUser?.fullName || t('common:user')}
                   </p>
                   <p className="text-xs leading-none text-ink-600">
                     {currentUser?.email || currentUser?.username}
                   </p>
                   <p className="text-xs leading-none text-ink-500">
-                    {currentUser?.cabañaName || "Sin cabaña"} • {currentUser?.role || 'Sin rol'}
+                    {currentUser?.cabañaName || t('common:noHerd')} • {currentUser?.role || t('common:noRole')}
                   </p>
                 </div>
               </DropdownMenuLabel>
