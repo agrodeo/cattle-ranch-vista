@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -21,6 +22,7 @@ export interface UploadProgress {
 }
 
 export function useAnimalDocuments(animalId: string) {
+  const { t } = useTranslation(['common']);
   const [documents, setDocuments] = useState<AnimalDocument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({});
@@ -60,8 +62,8 @@ export function useAnimalDocuments(animalId: string) {
     } catch (error) {
       console.error('Error fetching documents:', error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los documentos",
+        title: t('common:error.title'),
+        description: t('common:error.loadFailed'),
         variant: "destructive"
       });
     } finally {
@@ -128,8 +130,8 @@ export function useAnimalDocuments(animalId: string) {
       }));
 
       toast({
-        title: "Éxito",
-        description: "Documento subido correctamente"
+        title: t('common:success.title'),
+        description: t('common:success.uploaded')
       });
 
       // Refresh documents list
@@ -155,8 +157,8 @@ export function useAnimalDocuments(animalId: string) {
       }));
       
       toast({
-        title: "Error",
-        description: "No se pudo subir el documento",
+        title: t('common:error.title'),
+        description: t('common:error.uploadFailed'),
         variant: "destructive"
       });
     }
@@ -189,8 +191,8 @@ export function useAnimalDocuments(animalId: string) {
       if (metadataError) throw metadataError;
 
       toast({
-        title: "Éxito",
-        description: "Documento eliminado correctamente"
+        title: t('common:success.title'),
+        description: t('common:success.deleted')
       });
 
       // Refresh documents list
@@ -199,8 +201,8 @@ export function useAnimalDocuments(animalId: string) {
     } catch (error) {
       console.error('Error deleting document:', error);
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el documento",
+        title: t('common:error.title'),
+        description: t('common:error.deleteFailed'),
         variant: "destructive"
       });
     }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -69,6 +70,7 @@ const getCurrentCabanaId = async (): Promise<string> => {
 };
 
 export function useVaccinationRequirements() {
+  const { t } = useTranslation(['common']);
   const [requirements, setRequirements] = useState<VaccinationRequirement[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -97,11 +99,11 @@ export function useVaccinationRequirements() {
     } catch (error) {
       console.error('💥 Error fetching vaccination requirements:', error);
       if (error.message.includes('Usuario no autenticado')) {
-        toast.error('Debes iniciar sesión para acceder a las vacunas');
+        toast.error(t('common:error.unauthorized'));
       } else if (error.message.includes('No se pudo obtener la cabaña')) {
-        toast.error('No se pudo encontrar tu cabaña. Contacta al administrador.');
+        toast.error(t('common:error.loadFailed'));
       } else {
-        toast.error('Error al cargar los requisitos de vacunación');
+        toast.error(t('common:error.loadFailed'));
       }
       setRequirements([]);
     } finally {
@@ -133,12 +135,12 @@ export function useVaccinationRequirements() {
         });
 
       if (error) throw error;
-      toast.success('Requisito de vacunación creado');
+      toast.success(t('common:success.created'));
       fetchRequirements();
       return true;
     } catch (error) {
       console.error('Error creating vaccination requirement:', error);
-      toast.error('Error al crear el requisito de vacunación');
+      toast.error(t('common:error.createFailed'));
       return false;
     }
   };
@@ -151,12 +153,12 @@ export function useVaccinationRequirements() {
         .eq('id', id);
 
       if (error) throw error;
-      toast.success('Requisito de vacunación actualizado');
+      toast.success(t('common:success.updated'));
       fetchRequirements();
       return true;
     } catch (error) {
       console.error('Error updating vaccination requirement:', error);
-      toast.error('Error al actualizar el requisito de vacunación');
+      toast.error(t('common:error.updateFailed'));
       return false;
     }
   };
@@ -169,12 +171,12 @@ export function useVaccinationRequirements() {
         .eq('id', id);
 
       if (error) throw error;
-      toast.success('Requisito de vacunación eliminado');
+      toast.success(t('common:success.deleted'));
       fetchRequirements();
       return true;
     } catch (error) {
       console.error('Error deleting vaccination requirement:', error);
-      toast.error('Error al eliminar el requisito de vacunación');
+      toast.error(t('common:error.deleteFailed'));
       return false;
     }
   };
@@ -194,6 +196,7 @@ export function useVaccinationRequirements() {
 }
 
 export function useAnimalVaccinationStatus(animalId?: string) {
+  const { t } = useTranslation(['common']);
   const [status, setStatus] = useState<VaccinationStatus[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -213,7 +216,7 @@ export function useAnimalVaccinationStatus(animalId?: string) {
       setStatus((data || []) as VaccinationStatus[]);
     } catch (error) {
       console.error('Error fetching vaccination status:', error);
-      toast.error('Error al obtener el estado de vacunación');
+      toast.error(t('common:error.loadFailed'));
     } finally {
       setLoading(false);
     }

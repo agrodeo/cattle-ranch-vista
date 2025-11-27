@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,6 +53,7 @@ interface ReproductiveKPI {
 }
 
 export function useReproductiveSystem() {
+  const { t } = useTranslation(['reproductive', 'common']);
   const [states, setStates] = useState<ReproductiveState[]>([]);
   const [alerts, setAlerts] = useState<ReproductiveAlert[]>([]);
   const [kpis, setKpis] = useState<ReproductiveKPI[]>([]);
@@ -172,8 +174,8 @@ export function useReproductiveSystem() {
       if (error) throw error;
       
       toast({
-        title: "Verificación completada",
-        description: "Se han verificado las preñeces vencidas y creado alertas según corresponda",
+        title: t('common:success.title'),
+        description: t('common:success.verified'),
       });
       
       // Refresh alerts
@@ -182,8 +184,8 @@ export function useReproductiveSystem() {
       console.error('Error checking overdue pregnancies:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo verificar las preñeces vencidas",
+        title: t('common:error.title'),
+        description: t('common:error.verifyFailed'),
       });
     }
   };
@@ -196,15 +198,15 @@ export function useReproductiveSystem() {
       if (error) throw error;
       
       toast({
-        title: "Migración completada",
-        description: "Se han migrado los datos reproductivos existentes",
+        title: t('common:success.title'),
+        description: t('common:success.migrated'),
       });
     } catch (error) {
       console.error('Error migrating reproductive data:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo migrar los datos reproductivos",
+        title: t('common:error.title'),
+        description: t('common:error.migrateFailed'),
       });
     } finally {
       setLoading(false);
@@ -273,15 +275,15 @@ export function useReproductiveSystem() {
       setAlerts(prev => prev.filter(alert => alert.id !== alertId));
       
       toast({
-        title: "Alerta resuelta",
-        description: "La alerta ha sido marcada como resuelta",
+        title: t('common:success.title'),
+        description: t('common:success.resolved'),
       });
     } catch (error) {
       console.error('Error resolving alert:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo resolver la alerta",
+        title: t('common:error.title'),
+        description: t('common:error.resolveFailed'),
       });
     }
   };

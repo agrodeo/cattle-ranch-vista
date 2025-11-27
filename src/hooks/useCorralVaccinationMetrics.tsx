@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ export interface CorralVaccinationMetrics {
 }
 
 export function useCorralVaccinationMetrics(corralId?: string) {
+  const { t } = useTranslation(['common']);
   const [metrics, setMetrics] = useState<CorralVaccinationMetrics | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -39,7 +41,7 @@ export function useCorralVaccinationMetrics(corralId?: string) {
       }
     } catch (error) {
       console.error('Error fetching corral vaccination metrics:', error);
-      toast.error('Error al obtener métricas de vacunación del corral');
+      toast.error(t('common:error.loadFailed'));
       setMetrics(null);
     } finally {
       setLoading(false);

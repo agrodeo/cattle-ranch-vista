@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -84,6 +85,7 @@ interface DashboardSummary {
 }
 
 export const useDashboardSummary = (): DashboardSummary => {
+  const { t } = useTranslation(['dashboard', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { subscriptionStatus } = useSubscription();
   
