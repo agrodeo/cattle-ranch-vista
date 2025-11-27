@@ -1,0 +1,38 @@
+{
+  "title": "Configuración",
+  "subtitle": "Personaliza tu experiencia y configura parámetros específicos",
+  "tabs": {
+    "benchmarks": "Benchmarks",
+    "vaccines": "Vacunas",
+    "users": "Usuarios",
+    "general": "General",
+    "billing": "Facturación"
+  },
+  "general": {
+    "title": "Configuración General",
+    "subtitle": "Ajustes generales del sistema",
+    "language": {
+      "title": "Idioma de la Aplicación",
+      "description": "Selecciona el idioma en el que deseas ver la aplicación. Este cambio afecta todos los textos de la interfaz.",
+      "current": "Idioma actual"
+    }
+  },
+  "benchmarks": {
+    "title": "Benchmarks de Rendimiento",
+    "subtitle": "Configura benchmarks personalizados para evaluar el rendimiento de tu ganado"
+  },
+  "vaccines": {
+    "title": "Requisitos de Vacunación",
+    "subtitle": "Configura los requisitos de vacunación para tu cabaña"
+  },
+  "users": {
+    "title": "Gestión de Usuarios",
+    "subtitle": "Administra usuarios y permisos",
+    "comingSoon": "Esta sección estará disponible próximamente."
+  },
+  "billing": {
+    "title": "Facturación y Suscripción",
+    "subtitle": "Gestiona tu plan y facturación",
+    "comingSoon": "Esta sección estará disponible próximamente."
+  }
+}

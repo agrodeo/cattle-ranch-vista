@@ -1,0 +1,38 @@
+{
+  "title": "Settings",
+  "subtitle": "Customize your experience and configure specific parameters",
+  "tabs": {
+    "benchmarks": "Benchmarks",
+    "vaccines": "Vaccines",
+    "users": "Users",
+    "general": "General",
+    "billing": "Billing"
+  },
+  "general": {
+    "title": "General Settings",
+    "subtitle": "System general settings",
+    "language": {
+      "title": "Application Language",
+      "description": "Select the language you want to see the application in. This change affects all interface texts.",
+      "current": "Current language"
+    }
+  },
+  "benchmarks": {
+    "title": "Performance Benchmarks",
+    "subtitle": "Configure custom benchmarks to evaluate your livestock performance"
+  },
+  "vaccines": {
+    "title": "Vaccination Requirements",
+    "subtitle": "Configure vaccination requirements for your herd"
+  },
+  "users": {
+    "title": "User Management",
+    "subtitle": "Manage users and permissions",
+    "comingSoon": "This section will be available soon."
+  },
+  "billing": {
+    "title": "Billing and Subscription",
+    "subtitle": "Manage your plan and billing",
+    "comingSoon": "This section will be available soon."
+  }
+}

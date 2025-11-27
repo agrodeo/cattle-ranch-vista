@@ -1,0 +1,38 @@
+{
+  "title": "Configurações",
+  "subtitle": "Personalize sua experiência e configure parâmetros específicos",
+  "tabs": {
+    "benchmarks": "Benchmarks",
+    "vaccines": "Vacinas",
+    "users": "Usuários",
+    "general": "Geral",
+    "billing": "Faturamento"
+  },
+  "general": {
+    "title": "Configurações Gerais",
+    "subtitle": "Ajustes gerais do sistema",
+    "language": {
+      "title": "Idioma do Aplicativo",
+      "description": "Selecione o idioma em que deseja ver o aplicativo. Esta mudança afeta todos os textos da interface.",
+      "current": "Idioma atual"
+    }
+  },
+  "benchmarks": {
+    "title": "Benchmarks de Desempenho",
+    "subtitle": "Configure benchmarks personalizados para avaliar o desempenho do seu gado"
+  },
+  "vaccines": {
+    "title": "Requisitos de Vacinação",
+    "subtitle": "Configure os requisitos de vacinação para seu rebanho"
+  },
+  "users": {
+    "title": "Gestão de Usuários",
+    "subtitle": "Gerencie usuários e permissões",
+    "comingSoon": "Esta seção estará disponível em breve."
+  },
+  "billing": {
+    "title": "Faturamento e Assinatura",
+    "subtitle": "Gerencie seu plano e faturamento",
+    "comingSoon": "Esta seção estará disponível em breve."
+  }
+}
