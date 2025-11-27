@@ -107,5 +107,68 @@
   },
   "errors": {
     "loadError": "Não foi possível carregar os currais"
+  },
+  "dialogs": {
+    "create": {
+      "title": "Criar Novo Curral",
+      "nameLabel": "Nome do Curral",
+      "hectaresLabel": "Hectares",
+      "creating": "Criando...",
+      "createButton": "Criar Curral",
+      "cancelButton": "Cancelar",
+      "successTitle": "Sucesso",
+      "successDescription": "Curral criado com sucesso",
+      "errorDescription": "Não foi possível criar o curral"
+    },
+    "edit": {
+      "title": "Editar Curral",
+      "updating": "Atualizando...",
+      "updateButton": "Atualizar Curral",
+      "successDescription": "Curral atualizado com sucesso",
+      "errorDescription": "Não foi possível atualizar o curral"
+    },
+    "delete": {
+      "title": "Excluir Curral",
+      "description": "Tem certeza de que deseja excluir este curral? Esta ação não pode ser desfeita.",
+      "deleting": "Excluindo...",
+      "deleteButton": "Excluir",
+      "cancelButton": "Cancelar",
+      "successTitle": "Sucesso",
+      "successDescription": "Curral excluído com sucesso",
+      "errorDescription": "Não foi possível excluir o curral"
+    },
+    "detail": {
+      "totalAnimals": "Total de Animais",
+      "malesFemales": "Machos / Fêmeas",
+      "hectares": "Hectares",
+      "vaccinationMetrics": "Métricas de Vacinação",
+      "generalCompliance": "Conformidade Geral",
+      "mandatoryVaccines": "Vacinas Obrigatórias",
+      "complete": "Completos",
+      "partial": "Parciais",
+      "incomplete": "Incompletos",
+      "animalsWithAlerts": "Animais com alertas de vacinação",
+      "viewAffected": "Ver animais afetados",
+      "hideDetails": "Ocultar detalhes"
+    },
+    "consanguinity": {
+      "whatIs": "O que é consanguinidade?",
+      "explanation": "A consanguinidade ocorre quando animais geneticamente relacionados são acasalados, aumentando o risco de problemas hereditários.",
+      "coefficient": "Coeficiente:",
+      "suggestion": "Sugestão:",
+      "riskTitle": "Risco de Consanguinidade",
+      "analysisTitle": "Análise de Consanguinidade",
+      "filterBySeverity": "Filtrar por gravidade",
+      "allRisks": "Todos os riscos",
+      "severeRisk": "Risco Grave",
+      "moderateRisk": "Risco Moderado",
+      "lowRisk": "Risco Baixo",
+      "noRisks": "Nenhum risco de consanguinidade detectado"
+    },
+    "assignment": {
+      "title": "Atribuir Animais ao Curral",
+      "availableAnimals": "Animais Disponíveis",
+      "searchPlaceholder": "Pesquisar por nome ou identificador..."
+    }
   }
 }

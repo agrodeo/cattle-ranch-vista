@@ -60,5 +60,16 @@
     "weighing": "Weighing",
     "averageWeight": "Average weight",
     "registeredBy": "Registered by"
+  },
+  "warnings": {
+    "consanguinityRisk": "Consanguinity Risk",
+    "corralsWithRisk": "corral(s) with possible consanguinity detected"
+  },
+  "activityTypes": {
+    "general": "General",
+    "vaccination": "Vaccination",
+    "weighing": "Weighing",
+    "insemination": "Insemination",
+    "tacto": "Pregnancy Check"
   }
 }

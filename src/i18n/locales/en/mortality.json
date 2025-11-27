@@ -1,0 +1,50 @@
+{
+  "markDeath": {
+    "title": "Mark as Deceased",
+    "loadingAnimal": "Loading animal data...",
+    "animalNotFound": "Animal data not found",
+    "name": "Name",
+    "noName": "No name",
+    "identifier": "Identifier",
+    "sex": "Sex",
+    "breed": "Breed",
+    "birthDate": "Birth date",
+    "ageAtDeath": "Age at death",
+    "deathDate": "Death date",
+    "causeOfDeath": "Cause of death",
+    "selectCause": "Select cause",
+    "addNewCause": "Add new cause",
+    "otherCause": "Other cause...",
+    "specifyCause": "Specify cause",
+    "writeCause": "Write cause of death",
+    "addNewCauseTitle": "Add new cause of death",
+    "newCauseName": "New cause name",
+    "adding": "Adding...",
+    "addButton": "Add",
+    "additionalNotes": "Additional notes",
+    "observations": "Observations about the death...",
+    "confirmDeath": "Confirm Death",
+    "processing": "Processing..."
+  },
+  "validation": {
+    "dateRequired": "Death date is required",
+    "causeRequired": "You must select a cause or write a custom cause",
+    "invalidDate": "Invalid date"
+  },
+  "success": {
+    "title": "Success",
+    "causeAdded": "Cause of death added successfully",
+    "deathRegistered": "Death registered successfully"
+  },
+  "errors": {
+    "loadAnimal": "Could not load animal data",
+    "loadCauses": "Could not load causes of death",
+    "addCause": "Could not add cause",
+    "registerDeath": "Could not register death"
+  },
+  "manager": {
+    "title": "Death Causes Management",
+    "noCauses": "No death causes configured",
+    "addFirst": "Add first cause"
+  }
+}

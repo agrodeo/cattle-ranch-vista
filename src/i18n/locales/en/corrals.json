@@ -107,5 +107,68 @@
   },
   "errors": {
     "loadError": "Could not load corrals"
+  },
+  "dialogs": {
+    "create": {
+      "title": "Create New Corral",
+      "nameLabel": "Corral Name",
+      "hectaresLabel": "Hectares",
+      "creating": "Creating...",
+      "createButton": "Create Corral",
+      "cancelButton": "Cancel",
+      "successTitle": "Success",
+      "successDescription": "Corral created successfully",
+      "errorDescription": "Could not create corral"
+    },
+    "edit": {
+      "title": "Edit Corral",
+      "updating": "Updating...",
+      "updateButton": "Update Corral",
+      "successDescription": "Corral updated successfully",
+      "errorDescription": "Could not update corral"
+    },
+    "delete": {
+      "title": "Delete Corral",
+      "description": "Are you sure you want to delete this corral? This action cannot be undone.",
+      "deleting": "Deleting...",
+      "deleteButton": "Delete",
+      "cancelButton": "Cancel",
+      "successTitle": "Success",
+      "successDescription": "Corral deleted successfully",
+      "errorDescription": "Could not delete corral"
+    },
+    "detail": {
+      "totalAnimals": "Total Animals",
+      "malesFemales": "Males / Females",
+      "hectares": "Hectares",
+      "vaccinationMetrics": "Vaccination Metrics",
+      "generalCompliance": "Overall Compliance",
+      "mandatoryVaccines": "Mandatory Vaccines",
+      "complete": "Complete",
+      "partial": "Partial",
+      "incomplete": "Incomplete",
+      "animalsWithAlerts": "Animals with vaccination alerts",
+      "viewAffected": "View affected animals",
+      "hideDetails": "Hide details"
+    },
+    "consanguinity": {
+      "whatIs": "What is consanguinity?",
+      "explanation": "Consanguinity occurs when genetically related animals are mated, increasing the risk of hereditary problems.",
+      "coefficient": "Coefficient:",
+      "suggestion": "Suggestion:",
+      "riskTitle": "Consanguinity Risk",
+      "analysisTitle": "Consanguinity Analysis",
+      "filterBySeverity": "Filter by severity",
+      "allRisks": "All risks",
+      "severeRisk": "Severe Risk",
+      "moderateRisk": "Moderate Risk",
+      "lowRisk": "Low Risk",
+      "noRisks": "No consanguinity risks detected"
+    },
+    "assignment": {
+      "title": "Assign Animals to Corral",
+      "availableAnimals": "Available Animals",
+      "searchPlaceholder": "Search by name or identifier..."
+    }
   }
 }

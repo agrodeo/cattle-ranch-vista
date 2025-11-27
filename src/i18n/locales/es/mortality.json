@@ -1,0 +1,50 @@
+{
+  "markDeath": {
+    "title": "Marcar como Fallecido",
+    "loadingAnimal": "Cargando datos del animal...",
+    "animalNotFound": "No se encontraron datos del animal",
+    "name": "Nombre",
+    "noName": "Sin nombre",
+    "identifier": "Identificador",
+    "sex": "Sexo",
+    "breed": "Raza",
+    "birthDate": "Fecha de nacimiento",
+    "ageAtDeath": "Edad al morir",
+    "deathDate": "Fecha de defunción",
+    "causeOfDeath": "Causa de muerte",
+    "selectCause": "Seleccionar causa",
+    "addNewCause": "Agregar nueva causa",
+    "otherCause": "Otra causa...",
+    "specifyCause": "Especificar causa",
+    "writeCause": "Escribir causa de muerte",
+    "addNewCauseTitle": "Agregar nueva causa de muerte",
+    "newCauseName": "Nombre de la nueva causa",
+    "adding": "Agregando...",
+    "addButton": "Agregar",
+    "additionalNotes": "Notas adicionales",
+    "observations": "Observaciones sobre el deceso...",
+    "confirmDeath": "Confirmar Defunción",
+    "processing": "Procesando..."
+  },
+  "validation": {
+    "dateRequired": "La fecha de defunción es requerida",
+    "causeRequired": "Debe seleccionar una causa o escribir una causa personalizada",
+    "invalidDate": "Fecha inválida"
+  },
+  "success": {
+    "title": "Éxito",
+    "causeAdded": "Causa de muerte agregada correctamente",
+    "deathRegistered": "Defunción registrada correctamente"
+  },
+  "errors": {
+    "loadAnimal": "No se pudo cargar los datos del animal",
+    "loadCauses": "No se pudieron cargar las causas de muerte",
+    "addCause": "No se pudo agregar la causa",
+    "registerDeath": "No se pudo marcar la defunción"
+  },
+  "manager": {
+    "title": "Gestión de Causas de Muerte",
+    "noCauses": "No hay causas de muerte configuradas",
+    "addFirst": "Agregar primera causa"
+  }
+}
