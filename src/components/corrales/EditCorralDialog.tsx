@@ -111,7 +111,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ej: Corral 1"
+                placeholder={t('corrals:dialogs.create.namePlaceholder')}
                 required
               />
             </div>
@@ -124,7 +124,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
                 step="0.1"
                 value={formData.hectareas}
                 onChange={(e) => setFormData({ ...formData, hectareas: e.target.value })}
-                placeholder="Ej: 5.5"
+                placeholder={t('corrals:dialogs.create.hectaresPlaceholder')}
               />
             </div>
           </div>

@@ -113,29 +113,35 @@
       "title": "Create New Corral",
       "nameLabel": "Corral Name",
       "hectaresLabel": "Hectares",
+      "namePlaceholder": "e.g., Corral 1",
+      "hectaresPlaceholder": "e.g., 5.5",
       "creating": "Creating...",
       "createButton": "Create Corral",
       "cancelButton": "Cancel",
       "successTitle": "Success",
-      "successDescription": "Corral created successfully",
-      "errorDescription": "Could not create corral"
+      "successMessage": "Corral created successfully",
+      "errorMessage": "Could not create corral",
+      "noCabanaError": "User's cabaña not found"
     },
     "edit": {
       "title": "Edit Corral",
-      "updating": "Updating...",
-      "updateButton": "Update Corral",
-      "successDescription": "Corral updated successfully",
-      "errorDescription": "Could not update corral"
+      "saving": "Saving...",
+      "saveButton": "Save Changes",
+      "successMessage": "Corral updated successfully",
+      "errorMessage": "Could not update corral",
+      "loadError": "Could not load corral data"
     },
     "delete": {
       "title": "Delete Corral",
-      "description": "Are you sure you want to delete this corral? This action cannot be undone.",
       "deleting": "Deleting...",
       "deleteButton": "Delete",
-      "cancelButton": "Cancel",
-      "successTitle": "Success",
-      "successDescription": "Corral deleted successfully",
-      "errorDescription": "Could not delete corral"
+      "successMessage": "Corral {{name}} deleted successfully",
+      "errorMessage": "Could not delete corral",
+      "cannotDelete": "Cannot delete corral {{name}} with {{count}} animals",
+      "cannotDeleteTitle": "Corral is not empty",
+      "cannotDeleteMessage": "Corral {{name}} has {{count}} animals. You must move or remove all animals before deleting the corral.",
+      "confirmTitle": "Confirm deletion",
+      "confirmMessage": "Are you sure you want to permanently delete corral {{name}}? This action cannot be undone."
     },
     "detail": {
       "totalAnimals": "Total Animals",

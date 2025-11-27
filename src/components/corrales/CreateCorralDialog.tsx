@@ -45,7 +45,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
       const cabanaId = currentUser.cabañaId;
       
       if (!cabanaId) {
-        throw new Error("No se encontró la cabaña del usuario");
+        throw new Error(t('corrals:dialogs.create.noCabanaError'));
       }
 
       // Prepare insert data - only include user_id for Supabase auth users
@@ -98,7 +98,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ej: Corral 1"
+                placeholder={t('corrals:dialogs.create.namePlaceholder')}
                 className="h-10 mt-1"
                 required
               />
@@ -112,7 +112,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
                 step="0.1"
                 value={formData.hectareas}
                 onChange={(e) => setFormData({ ...formData, hectareas: e.target.value })}
-                placeholder="Ej: 5.5"
+                placeholder={t('corrals:dialogs.create.hectaresPlaceholder')}
                 className="h-10 mt-1"
               />
             </div>
