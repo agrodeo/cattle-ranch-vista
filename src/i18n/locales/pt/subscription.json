@@ -1,4 +1,10 @@
 {
+  "title": "Assinatura",
+  "subtitle": "Gerencie seu plano e limites de uso",
+  "customerCenter": "Centro de Assinatura",
+  "viewPlans": "Ver Planos",
+  "status": "Status da Assinatura",
+  "currentPlan": "Informações sobre seu plano atual",
   "trial": {
     "ending": "Seu teste termina em {{days}} dias",
     "daysRemaining": "{{days}} dias restantes",

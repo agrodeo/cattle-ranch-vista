@@ -1,4 +1,10 @@
 {
+  "title": "Subscription",
+  "subtitle": "Manage your plan and usage limits",
+  "customerCenter": "Subscription Center",
+  "viewPlans": "View Plans",
+  "status": "Subscription Status",
+  "currentPlan": "Information about your current plan",
   "trial": {
     "ending": "Your trial ends in {{days}} days",
     "daysRemaining": "{{days}} days remaining",

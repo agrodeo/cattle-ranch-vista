@@ -7,8 +7,10 @@ import { SubscriptionPlansModal } from "@/components/subscription/SubscriptionPl
 import { CustomerCenter } from "@/components/subscription/CustomerCenter";
 import { CreditCard, Settings } from "lucide-react";
 import { isNativeApp } from "@/lib/platformDetection";
+import { useTranslation } from "react-i18next";
 
 export default function Subscription() {
+  const { t } = useTranslation(['subscription', 'common']);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showCustomerCenter, setShowCustomerCenter] = useState(false);
   const isNative = isNativeApp();
@@ -23,8 +25,8 @@ export default function Subscription() {
     <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
       <div className="space-y-3">
         <PageHeader 
-          title="Suscripción"
-          subtitle="Gestiona tu plan y límites de uso"
+          title={t('subscription:title', 'Suscripción')}
+          subtitle={t('subscription:subtitle', 'Gestiona tu plan y límites de uso')}
           action={
             <div className="flex gap-2">
               {isNative && (
@@ -33,7 +35,7 @@ export default function Subscription() {
                   variant="outline"
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  Centro de Suscripción
+                  {t('subscription:customerCenter', 'Centro de Suscripción')}
                 </Button>
               )}
               <Button 
@@ -41,15 +43,15 @@ export default function Subscription() {
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <CreditCard className="h-4 w-4 mr-2" />
-                Ver Planes
+                {t('subscription:viewPlans', 'Ver Planes')}
               </Button>
             </div>
           }
         />
 
         <SectionCard
-          title="Estado de Suscripción"
-          subtitle="Información de tu plan actual"
+          title={t('subscription:status', 'Estado de Suscripción')}
+          subtitle={t('subscription:currentPlan', 'Información de tu plan actual')}
         >
           <SubscriptionAlert onUpgrade={() => setShowPlansModal(true)} />
         </SectionCard>
