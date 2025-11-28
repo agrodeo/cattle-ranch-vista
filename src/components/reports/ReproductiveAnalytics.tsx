@@ -220,10 +220,10 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         
         const category = ageMonths < 12 ? 'Ternera' : ageMonths < 24 ? 'Vaquillona' : 'Vaca';
 
-        // Determine current reproductive state (store in Spanish for now, translate in UI)
-        let currentState = 'empty';
+        // Determine current reproductive state (store in Spanish to match UI checks)
+        let currentState = 'Vacía';
         if (animal.esta_preñada) {
-          currentState = 'pregnant';
+          currentState = 'Preñada';
         } else if (animalOffspring.length > 0) {
           const lastCalving = animalOffspring
             .filter(o => o.birth_date)
@@ -232,7 +232,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           if (lastCalving && lastCalving.birth_date) {
             const daysSinceCalving = Math.floor((new Date().getTime() - new Date(lastCalving.birth_date).getTime()) / (1000 * 60 * 60 * 24));
             if (daysSinceCalving <= 60) {
-              currentState = 'postpartum';
+              currentState = 'Post-parto';
             }
           }
         }
