@@ -245,7 +245,7 @@ const Dashboard = () => {
                     <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">
-                          {activity.type}
+                          {t(`dashboard:activityTypes.${activity.type}`, { defaultValue: activity.type })}
                         </p>
                         <p className="text-xs text-slate-500">{activity.date}</p>
                       </div>

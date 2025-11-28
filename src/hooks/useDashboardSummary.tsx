@@ -6,6 +6,25 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { normalizeStatus } from '@/lib/status';
 import { isValidUUID } from '@/lib/cabana';
 
+// Helper to normalize activity types to translation keys
+const normalizeActivityType = (tipo: string): string => {
+  const mapping: Record<string, string> = {
+    'vacunación': 'vaccination',
+    'vacunacion': 'vaccination',
+    'pesaje': 'weighing',
+    'ia': 'insemination',
+    'inseminacion': 'insemination',
+    'inseminación': 'insemination',
+    'tacto': 'tacto',
+    'general': 'general',
+    'parto': 'birth',
+    'muerte': 'death',
+    'tratamiento': 'treatment',
+    'movimiento': 'movement',
+  };
+  return mapping[tipo.toLowerCase()] || 'general';
+};
+
 interface DashboardCounts {
   animalsActive: number;
   corrals: number;
@@ -422,7 +441,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       (eventosData || []).forEach(event => {
         allActivities.push({
           id: event.id,
-          type: event.tipo || 'General',
+          type: normalizeActivityType(event.tipo || 'General'),
           date: event.fecha,
           sortDate: event.fecha,
           source: 'eventos',
@@ -435,7 +454,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       vaccineBatches.forEach((batch, key) => {
         allActivities.push({
           id: key,
-          type: 'Vacunación',
+          type: 'vaccination',
           date: batch.date,
           sortDate: batch.created_at,
           source: 'vaccination',
@@ -448,7 +467,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       inseminationBatches.forEach((batch, key) => {
         allActivities.push({
           id: key,
-          type: 'IA',
+          type: 'insemination',
           date: batch.insemination_date,
           sortDate: batch.created_at,
           source: 'insemination',

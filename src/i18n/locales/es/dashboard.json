@@ -77,6 +77,10 @@
     "vaccination": "Vacunación",
     "weighing": "Pesaje",
     "insemination": "Inseminación",
-    "tacto": "Tacto"
+    "tacto": "Tacto",
+    "birth": "Parto",
+    "death": "Muerte",
+    "treatment": "Tratamiento",
+    "movement": "Movimiento"
   }
 }

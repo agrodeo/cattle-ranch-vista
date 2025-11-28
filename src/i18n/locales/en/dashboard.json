@@ -77,6 +77,10 @@
     "vaccination": "Vaccination",
     "weighing": "Weighing",
     "insemination": "Insemination",
-    "tacto": "Pregnancy Check"
+    "tacto": "Pregnancy Check",
+    "birth": "Birth",
+    "death": "Death",
+    "treatment": "Treatment",
+    "movement": "Movement"
   }
 }
