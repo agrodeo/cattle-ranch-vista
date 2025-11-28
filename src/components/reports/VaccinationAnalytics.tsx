@@ -291,8 +291,8 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
         const animalData = {
           animal_id: item.animal.id,
-          animal_name: item.animal.name || item.animal.id_tag || 'Sin nombre',
-          animal_tag: item.animal.id_tag || 'Sin caravana',
+          animal_name: item.animal.name || item.animal.id_tag || t('reports:vaccination.noName'),
+          animal_tag: item.animal.id_tag || t('reports:vaccination.noTag'),
           reason: item.reason,
           issues: item.issues || [],
           vaccines: item.vaccines || []
@@ -719,7 +719,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-blue-600" />
-              Animales con Vacunas Obligatorias No Aplicadas ({animalsMissingMandatory.length})
+              {t('reports:vaccination.animalsMandatoryNotApplied')} ({animalsMissingMandatory.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -748,12 +748,12 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                             {animal.animal_name}
                           </div>
                           <div className="text-sm text-blue-700 dark:text-blue-300">
-                            Caravana: {animal.animal_tag}
+                            {t('reports:vaccination.tag')}: {animal.animal_tag}
                           </div>
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-blue-200 text-blue-900">
-                        {animal.issues.length} no aplicadas
+                        {animal.issues.length} {t('reports:vaccination.notApplied')}
                       </Badge>
                     </button>
                   </CollapsibleTrigger>
@@ -764,7 +764,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                           <div className="flex-1">
                             <div className="font-medium text-blue-900 dark:text-blue-100">{issue.vaccine_name}</div>
                             <div className="text-sm text-blue-600 font-medium mt-1">
-                              Estado: No aplicada (Obligatoria)
+                              {t('reports:vaccination.status')}: {t('reports:vaccination.statusNotAppliedMandatory')}
                             </div>
                           </div>
                           <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0" />
@@ -785,7 +785,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Info className="h-5 w-5 text-slate-500" />
-              Animales Sin Requisitos de Vacunación Aplicables ({animalsNoRequirements.length})
+              {t('reports:vaccination.animalsNoRequirements')} ({animalsNoRequirements.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -800,7 +800,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                       {animal.animal_name}
                     </div>
                     <div className="text-sm text-slate-600 dark:text-slate-400">
-                      Caravana: {animal.animal_tag}
+                      {t('reports:vaccination.tag')}: {animal.animal_tag}
                     </div>
                     <div className="text-xs text-slate-500 mt-1">
                       {animal.reason}
@@ -820,7 +820,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-700" />
-              Animales con Errores al Procesar ({animalsWithErrors.length})
+              {t('reports:vaccination.animalsWithErrors')} ({animalsWithErrors.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -835,7 +835,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                       {animal.animal_name}
                     </div>
                     <div className="text-sm text-red-700 dark:text-red-300">
-                      Caravana: {animal.animal_tag}
+                      {t('reports:vaccination.tag')}: {animal.animal_tag}
                     </div>
                     <div className="text-xs text-red-600 mt-1">
                       {animal.reason}
@@ -854,9 +854,9 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
         <Card>
           <CardContent className="p-12 text-center">
             <Shield className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Sin datos de vacunación</h3>
+            <h3 className="text-lg font-semibold mb-2">{t('reports:vaccination.noDataAvailable')}</h3>
             <p className="text-muted-foreground">
-              No hay animales activos en el sistema
+              {t('reports:vaccination.noAnimalsActive')}
             </p>
           </CardContent>
         </Card>

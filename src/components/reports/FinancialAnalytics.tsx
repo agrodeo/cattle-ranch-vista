@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
@@ -33,6 +34,7 @@ interface FinancialAnalyticsProps {
 
 export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalyticsProps) => {
   const { t } = useTranslation(['reports']);
+  const { lang } = useLanguage();
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -134,7 +136,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
       const monthExpense = monthExpenses.reduce((sum, f) => sum + Number(f.amount || 0), 0);
       
       monthlyData.push({
-        month: date.toLocaleString('es', { month: 'short', year: '2-digit' }),
+        month: date.toLocaleString(lang, { month: 'short', year: '2-digit' }),
         revenue: monthRevenue,
         expenses: monthExpense,
         profit: monthRevenue - monthExpense

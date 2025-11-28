@@ -479,14 +479,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Tag</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Categoría</TableHead>
-                        <TableHead>Corral</TableHead>
-                        <TableHead>Estado Actual</TableHead>
-                        <TableHead>% Preñez</TableHead>
-                        <TableHead>% Parición</TableHead>
-                        <TableHead>Crías</TableHead>
+                        <TableHead>{t('reports:reproductive.tableTag')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tableName')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tableCategory')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tableCorral')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tableCurrentState')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tablePregnancyPct')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tableCalvingPct')}</TableHead>
+                        <TableHead>{t('reports:reproductive.tableOffspring')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

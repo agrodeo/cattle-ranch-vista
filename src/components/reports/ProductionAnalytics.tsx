@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ interface ProductionAnalyticsProps {
 
 export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyticsProps) => {
   const { t } = useTranslation(['reports']);
+  const { lang } = useLanguage();
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -164,7 +166,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
         const monthFinalWeights = monthAnimals.filter(a => a.peso_final).map(a => Number(a.peso_final));
 
         growthTrends.push({
-          month: date.toLocaleString('es', { month: 'short', year: '2-digit' }),
+          month: date.toLocaleString(lang, { month: 'short', year: '2-digit' }),
           avgBirthWeight: monthBirthWeights.length > 0 ? monthBirthWeights.reduce((a, b) => a + b, 0) / monthBirthWeights.length : 0,
           avgWeaningWeight: monthWeaningWeights.length > 0 ? monthWeaningWeights.reduce((a, b) => a + b, 0) / monthWeaningWeights.length : 0,
           avgFinalWeight: monthFinalWeights.length > 0 ? monthFinalWeights.reduce((a, b) => a + b, 0) / monthFinalWeights.length : 0
