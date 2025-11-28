@@ -129,15 +129,17 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-full">
-                <Label htmlFor="file-upload">{t('animals:profile.documents.file')}</Label>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  onChange={handleFileUpload}
-                  accept="image/*,.pdf,.doc,.docx,.txt"
-                  className="cursor-pointer text-xs md:text-sm w-full file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:md:text-sm file:font-medium"
-                />
+              <div className="w-full space-y-2">
+                <Label htmlFor="file-upload" className="block">{t('animals:profile.documents.file')}</Label>
+                <div className="relative">
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    onChange={handleFileUpload}
+                    accept="image/*,.pdf,.doc,.docx,.txt"
+                    className="w-full cursor-pointer file:cursor-pointer file:border-0 file:bg-primary file:text-primary-foreground file:hover:bg-primary/90 file:rounded-md file:px-4 file:py-2 file:mr-4"
+                  />
+                </div>
               </div>
             </div>
 
@@ -155,7 +157,7 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
         </CardContent>
       </Card>
 
-      {/* Documents Tabs */}
+      {/* Documents List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -164,65 +166,15 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1">
-              <TabsTrigger value="all" className="text-xs md:text-sm whitespace-normal">
-                {t('animals:profile.documents.all')} ({documents.length})
-              </TabsTrigger>
-              <TabsTrigger value="photos" className="text-xs md:text-sm whitespace-normal">
-                {t('animals:profile.documents.photos')} ({filterDocuments('photos').length})
-              </TabsTrigger>
-              <TabsTrigger value="certificate" className="text-xs md:text-sm whitespace-normal">
-                {t('animals:profile.documents.certificates')} ({filterDocuments('certificate').length})
-              </TabsTrigger>
-              <TabsTrigger value="medical" className="text-xs md:text-sm whitespace-normal">
-                {t('animals:profile.documents.medicalTab')} ({filterDocuments('medical').length})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="all" className="space-y-4">
-              <DocumentsList 
-                documents={filterDocuments('all')} 
-                onImageClick={setSelectedImage}
-                onDelete={deleteDocument}
-                getFileIcon={getFileIcon}
-                getTypeIcon={getTypeIcon}
-                getTypeLabel={getTypeLabel}
-                formatFileSize={formatFileSize}
-              />
-            </TabsContent>
-
-            <TabsContent value="photos" className="space-y-4">
-              <PhotoGallery 
-                documents={filterDocuments('photos')} 
-                onImageClick={setSelectedImage} 
-              />
-            </TabsContent>
-
-            <TabsContent value="certificate" className="space-y-4">
-              <DocumentsList 
-                documents={filterDocuments('certificate')} 
-                onImageClick={setSelectedImage}
-                onDelete={deleteDocument}
-                getFileIcon={getFileIcon}
-                getTypeIcon={getTypeIcon}
-                getTypeLabel={getTypeLabel}
-                formatFileSize={formatFileSize}
-              />
-            </TabsContent>
-
-            <TabsContent value="medical" className="space-y-4">
-              <DocumentsList 
-                documents={filterDocuments('medical')} 
-                onImageClick={setSelectedImage}
-                onDelete={deleteDocument}
-                getFileIcon={getFileIcon}
-                getTypeIcon={getTypeIcon}
-                getTypeLabel={getTypeLabel}
-                formatFileSize={formatFileSize}
-              />
-            </TabsContent>
-          </Tabs>
+          <DocumentsList 
+            documents={documents} 
+            onImageClick={setSelectedImage}
+            onDelete={deleteDocument}
+            getFileIcon={getFileIcon}
+            getTypeIcon={getTypeIcon}
+            getTypeLabel={getTypeLabel}
+            formatFileSize={formatFileSize}
+          />
         </CardContent>
       </Card>
 
