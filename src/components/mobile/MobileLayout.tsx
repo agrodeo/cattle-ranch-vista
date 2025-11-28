@@ -6,7 +6,7 @@ import { AddOverlay } from "./AddOverlay";
 import { SupportFooter } from "@/components/SupportFooter";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Menu, Home } from "lucide-react";
+import { Menu } from "lucide-react";
 import { AIChatButton } from "@/components/ai-chat/AIChatButton";
 import { NotificationBell } from "./NotificationBell";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -50,18 +50,24 @@ export function MobileLayout() {
         {/* Mobile header with hamburger menu, cabaña name, and notifications */}
         <header className="bg-background border-b border-border p-4 sticky top-0 z-30">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
               <SidebarTrigger className="text-ink-600 hover:text-ink-900 h-9 w-9 p-2 shrink-0">
                 <Menu className="h-4 w-4" />
                 <span className="sr-only">Toggle sidebar</span>
               </SidebarTrigger>
               
-              <div className="flex items-center gap-1.5 min-w-0">
-                <Home className="h-3.5 w-3.5 text-primary shrink-0" />
-                <span className="text-sm font-medium text-foreground truncate">
-                  {currentUser?.cabañaName || 'Mi Cabaña'}
-                </span>
-              </div>
+              {currentUser && (
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold text-foreground truncate leading-tight">
+                    {currentUser.cabañaName}
+                  </span>
+                  {currentUser.fullName && (
+                    <span className="text-xs text-muted-foreground truncate">
+                      {currentUser.fullName}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             
             <div className="shrink-0">
