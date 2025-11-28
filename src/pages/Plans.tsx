@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { BillingToggle } from '@/components/subscription/BillingToggle';
 import { PlansCarousel } from '@/components/subscription/PlansCarousel';
@@ -25,51 +26,51 @@ export interface Plan {
   bullets: string[];
 }
 
-const PLANS_DATA: Plan[] = [
+const getPlanData = (t: any): Plan[] => [
   {
     id: "free",
-    nombre: "Gratuito",
+    nombre: t('subscription:plans.free.name'),
     precio_mensual: 0,
     precio_anual: 0,
-    bullets: ["Hasta 50 animales", "1 usuario", "Funciones básicas"]
+    bullets: t('subscription:plans.free.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "personal",
-    nombre: "Personal",
+    nombre: t('subscription:plans.personal.name'),
     precio_mensual: 24900,
     precio_anual: 24900 * 12 * 0.8,
-    bullets: ["Hasta 500 animales", "2 usuarios", "Soporte estándar"]
+    bullets: t('subscription:plans.personal.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "avanzado",
-    nombre: "Avanzado",
+    nombre: t('subscription:plans.avanzado.name'),
     precio_mensual: 44900,
     precio_anual: 44900 * 12 * 0.8,
-    bullets: ["Hasta 2.000 animales", "Usuarios ilimitados", "Integraciones básicas"]
+    bullets: t('subscription:plans.avanzado.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "productor",
-    nombre: "Productor",
-    badge: "Más popular",
+    nombre: t('subscription:plans.productor.name'),
+    badge: t('subscription:plans.productor.badge'),
     precio_mensual: 69900,
     precio_anual: 69900 * 12 * 0.8,
-    bullets: ["Hasta 10.000 animales", "Usuarios ilimitados", "Soporte prioritario"]
+    bullets: t('subscription:plans.productor.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "cabana",
-    nombre: "Cabaña",
-    badge: "Pro",
+    nombre: t('subscription:plans.cabana.name'),
+    badge: t('subscription:plans.cabana.badge'),
     precio_mensual: 149000,
     precio_anual: 149000 * 12 * 0.8,
-    bullets: ["Animales ilimitados", "Reportes avanzados", "Roles y permisos"]
+    bullets: t('subscription:plans.cabana.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "corporativo",
-    nombre: "Corporativo",
-    badge: "Empresas",
+    nombre: t('subscription:plans.corporativo.name'),
+    badge: t('subscription:plans.corporativo.badge'),
     precio_mensual: 159000,
     precio_anual: 159000 * 12 * 0.8,
-    bullets: ["Multi-establecimiento", "SSO/seguridad", "Éxito del cliente dedicado"]
+    bullets: t('subscription:plans.corporativo.bullets', { returnObjects: true }) as string[]
   }
 ];
 
@@ -79,6 +80,7 @@ const PLANS_DATA: Plan[] = [
 export default function Plans() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation(['subscription']);
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [compareSheetOpen, setCompareSheetOpen] = useState(false);
@@ -90,6 +92,8 @@ export default function Plans() {
   const platform = detectPlatform();
   const isNative = isNativeApp();
   
+  const PLANS_DATA = getPlanData(t);
+  
   // Get real packages from RevenueCat if available
   const realPackages = offerings?.current?.availablePackages || [];
   
@@ -99,11 +103,11 @@ export default function Plans() {
         const id = pkg.identifier.toLowerCase();
         return {
           id: pkg.identifier,
-          nombre: id.includes('lifetime') ? 'De por vida' : id.includes('year') ? 'Anual' : 'Mensual',
+          nombre: id.includes('lifetime') ? t('subscription:plansPage.free') : id.includes('year') ? t('subscription:plansModal.annual') : t('subscription:plansModal.monthly'),
           precio_mensual: pkg.product.price,
           precio_anual: pkg.product.price,
           bullets: [pkg.product.title, pkg.product.description],
-          badge: id.includes('year') ? 'Más popular' : undefined
+          badge: id.includes('year') ? t('subscription:plansModal.mostPopular') : undefined
         } as Plan;
       })
     : PLANS_DATA;
@@ -154,8 +158,8 @@ export default function Plans() {
       console.log('Event: purchase_succeeded', { plan: selectedPlan.id, billingCycle });
       
       toast({
-        title: "¡Suscripción activa!",
-        description: "Tu plan ha sido activado exitosamente.",
+        title: t('subscription:plansPage.subscriptionActive'),
+        description: t('subscription:plansPage.planActivated'),
       });
       
       navigate('/dashboard');
@@ -167,8 +171,8 @@ export default function Plans() {
       console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error });
       
       toast({
-        title: "No pudimos completar la compra",
-        description: "Intentá de nuevo. Si persiste, escribinos a ayuda@agrodeo.farm",
+        title: t('subscription:plansPage.purchaseFailed'),
+        description: t('subscription:plansPage.purchaseFailedDesc'),
         variant: "destructive",
       });
     } finally {
@@ -190,13 +194,13 @@ export default function Plans() {
       }
       
       toast({
-        title: "Compras restauradas",
-        description: "Se han verificado tus compras anteriores.",
+        title: t('subscription:plansPage.purchasesRestored'),
+        description: t('subscription:plansPage.purchasesRestoredDesc'),
       });
     } catch (error) {
       toast({
-        title: "Error al restaurar compras",
-        description: "No se pudieron restaurar las compras anteriores.",
+        title: t('subscription:plansPage.restoreError'),
+        description: t('subscription:plansPage.restoreErrorDesc'),
         variant: "destructive",
       });
     }
@@ -222,7 +226,7 @@ export default function Plans() {
               onClick={handleRestorePurchases}
               className="text-sm"
             >
-              Restaurar compras
+              {t('subscription:plansPage.restorePurchases')}
             </Button>
           )}
         </div>
@@ -233,10 +237,10 @@ export default function Plans() {
         {/* Hero Section */}
         <section className="text-center px-4 py-8 max-w-lg mx-auto">
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            Elegí tu plan
+            {t('subscription:plansPage.title')}
           </h1>
           <p className="text-muted-foreground">
-            Probalo 7 días. Cancelás cuando quieras.
+            {t('subscription:plansPage.subtitle')}
           </p>
         </section>
 
@@ -266,7 +270,7 @@ export default function Plans() {
             onClick={handleCompareOpen}
             className="w-full"
           >
-            Comparar planes
+            {t('subscription:plansPage.comparePlans')}
           </Button>
         </section>
 
@@ -278,9 +282,9 @@ export default function Plans() {
         {/* Footer Links */}
         <footer className="px-4 max-w-lg mx-auto text-center space-y-2">
           <div className="flex justify-center space-x-4 text-sm text-muted-foreground">
-            <button className="hover:text-foreground">Términos</button>
-            <button className="hover:text-foreground">Privacidad</button>
-            <button className="hover:text-foreground">Centro de ayuda</button>
+            <button className="hover:text-foreground">{t('subscription:plansPage.terms')}</button>
+            <button className="hover:text-foreground">{t('subscription:plansPage.privacy')}</button>
+            <button className="hover:text-foreground">{t('subscription:plansPage.helpCenter')}</button>
           </div>
         </footer>
       </main>

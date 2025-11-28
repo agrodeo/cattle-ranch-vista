@@ -79,5 +79,80 @@
     "contactSales": "Contactar Ventas",
     "allPlansInclude": "Todos los planes incluyen soporte técnico y actualizaciones gratuitas.",
     "pricesDisclaimer": "Los precios están en pesos argentinos e incluyen IVA."
+  },
+  "plans": {
+    "free": {
+      "name": "Gratuito",
+      "bullets": [
+        "Hasta 50 animales",
+        "1 usuario",
+        "Funciones básicas"
+      ]
+    },
+    "personal": {
+      "name": "Personal",
+      "bullets": [
+        "Hasta 500 animales",
+        "2 usuarios",
+        "Soporte estándar"
+      ]
+    },
+    "avanzado": {
+      "name": "Avanzado",
+      "bullets": [
+        "Hasta 2.000 animales",
+        "Usuarios ilimitados",
+        "Integraciones básicas"
+      ]
+    },
+    "productor": {
+      "name": "Productor",
+      "badge": "Más popular",
+      "bullets": [
+        "Hasta 10.000 animales",
+        "Usuarios ilimitados",
+        "Soporte prioritario"
+      ]
+    },
+    "cabana": {
+      "name": "Cabaña",
+      "badge": "Pro",
+      "bullets": [
+        "Animales ilimitados",
+        "Reportes avanzados",
+        "Roles y permisos"
+      ]
+    },
+    "corporativo": {
+      "name": "Corporativo",
+      "badge": "Empresas",
+      "bullets": [
+        "Multi-establecimiento",
+        "SSO/seguridad",
+        "Éxito del cliente dedicado"
+      ]
+    }
+  },
+  "plansPage": {
+    "title": "Elegí tu plan",
+    "subtitle": "Probalo 7 días. Cancelás cuando quieras.",
+    "restorePurchases": "Restaurar compras",
+    "comparePlans": "Comparar planes",
+    "terms": "Términos",
+    "privacy": "Privacidad",
+    "helpCenter": "Centro de ayuda",
+    "subscriptionActive": "¡Suscripción activa!",
+    "planActivated": "Tu plan ha sido activado exitosamente.",
+    "purchaseFailed": "No pudimos completar la compra",
+    "purchaseFailedDesc": "Intentá de nuevo. Si persiste, escribinos a ayuda@agrodeo.farm",
+    "purchasesRestored": "Compras restauradas",
+    "purchasesRestoredDesc": "Se han verificado tus compras anteriores.",
+    "restoreError": "Error al restaurar compras",
+    "restoreErrorDesc": "No se pudieron restaurar las compras anteriores.",
+    "selected": "Seleccionado",
+    "choose": "Elegir",
+    "free": "Gratis",
+    "perMonth": "/mes",
+    "perYear": "/año"
   }
 }

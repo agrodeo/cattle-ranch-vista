@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, Users, Shield, Zap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ const formatPrice = (price: number) => {
 };
 
 export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: PlanCardProps) {
+  const { t } = useTranslation(['subscription']);
   const price = billingCycle === 'monthly' ? plan.precio_mensual : plan.precio_anual / 12;
   const totalAnual = plan.precio_anual;
   const isFree = plan.precio_mensual === 0;
@@ -59,13 +61,13 @@ export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: 
         <div className="space-y-1">
           <div className="flex items-baseline">
             <span className="text-3xl font-bold text-foreground">
-              {isFree ? 'Gratis' : formatPrice(price)}
+              {isFree ? t('subscription:plansPage.free') : formatPrice(price)}
             </span>
-            {!isFree && <span className="text-muted-foreground ml-1">/mes</span>}
+            {!isFree && <span className="text-muted-foreground ml-1">{t('subscription:plansPage.perMonth')}</span>}
           </div>
           {billingCycle === 'annual' && !isFree && (
             <p className="text-sm text-muted-foreground">
-              {formatPrice(totalAnual)}/año
+              {formatPrice(totalAnual)}{t('subscription:plansPage.perYear')}
             </p>
           )}
         </div>
@@ -99,7 +101,7 @@ export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: 
           variant={isSelected ? 'default' : 'outline'}
         >
           {isSelected && <Check className="h-4 w-4 mr-2" />}
-          {isSelected ? 'Seleccionado' : `Elegir ${plan.nombre}`}
+          {isSelected ? t('subscription:plansPage.selected') : `${t('subscription:plansPage.choose')} ${plan.nombre}`}
         </Button>
       </CardContent>
     </Card>
