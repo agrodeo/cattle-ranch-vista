@@ -275,5 +275,141 @@
       "medium": "Media",
       "low": "Baja"
     }
+  },
+  "consanguinity": {
+    "title": "Detalles de Consanguinidad",
+    "loading": "Cargando análisis...",
+    "noRisks": "No se encontraron riesgos de consanguinidad",
+    "pairsAtRisk": "parejas con riesgo",
+    "severity": {
+      "severe": "Alto",
+      "medium": "Medio",
+      "low": "Bajo",
+      "unknown": "Desconocido"
+    },
+    "coefficient": "Coef",
+    "description": "Desc",
+    "advice": "Consejo: Evita cruzar animales con alto coeficiente"
+  },
+  "optimization": {
+    "title": "Asistente de Optimización de Corrales",
+    "subtitle": "Optimiza la distribución de tus animales con IA",
+    "steps": {
+      "objective": "Objetivo",
+      "parameters": "Parámetros",
+      "preview": "Vista Previa",
+      "confirm": "Confirmar"
+    },
+    "navigation": {
+      "next": "Siguiente",
+      "back": "Atrás",
+      "cancel": "Cancelar",
+      "analyze": "Analizar Distribución",
+      "apply": "Aplicar Cambios"
+    },
+    "step1": {
+      "title": "Selecciona tu Objetivo",
+      "subtitle": "¿Qué aspecto quieres optimizar?",
+      "objectives": {
+        "consanguinity": {
+          "title": "Reducir Consanguinidad",
+          "description": "Minimiza el riesgo de cruces entre animales emparentados",
+          "howItWorks": "Cómo funciona",
+          "explanation": "La IA analiza las relaciones genéticas entre tus animales y redistribuye los corrales para minimizar el riesgo de consanguinidad. Separa padres de hijas, hermanos, y otros parientes cercanos en corrales reproductivos."
+        },
+        "reproduction": {
+          "title": "Optimizar Reproducción",
+          "description": "Maximiza la eficiencia reproductiva del rodeo",
+          "howItWorks": "Cómo funciona",
+          "explanation": "La IA agrupa hembras según su estado reproductivo y edad, y asigna toros de manera estratégica para maximizar la tasa de preñez y mejorar la genética del rodeo."
+        },
+        "production": {
+          "title": "Mejorar Producción",
+          "description": "Optimiza peso y ganancia diaria por categoría",
+          "howItWorks": "Cómo funciona",
+          "explanation": "La IA agrupa animales según peso, edad y ganancia diaria similar para facilitar el manejo y mejorar la eficiencia alimenticia. Separa animales de alto y bajo rendimiento para tratamientos diferenciados."
+        },
+        "benchmarks": {
+          "title": "Alcanzar Benchmarks",
+          "description": "Organiza según objetivos de peso y rendimiento",
+          "howItWorks": "Cómo funciona",
+          "explanation": "La IA compara tus animales con benchmarks de la raza y los agrupa según su desempeño. Identifica animales que necesitan atención especial y los separa para manejo focalizado."
+        }
+      }
+    },
+    "step2": {
+      "title": "Configura los Parámetros",
+      "subtitle": "Ajusta los parámetros técnicos de optimización",
+      "maxBullsPerCorral": {
+        "label": "Máximo de Toros por Corral",
+        "description": "Cantidad máxima de toros reproductores por corral"
+      },
+      "targetDensity": {
+        "label": "Densidad Objetivo (animales/ha)",
+        "description": "Cantidad deseada de animales por hectárea"
+      },
+      "minAnimalsPerCorral": {
+        "label": "Mínimo de Animales por Corral",
+        "description": "Cantidad mínima para considerar un corral viable"
+      },
+      "maxAnimalsPerCorral": {
+        "label": "Máximo de Animales por Corral",
+        "description": "Capacidad máxima del corral según infraestructura"
+      },
+      "allowMixedSex": {
+        "label": "Permitir Mezcla de Sexos",
+        "description": "Permite machos y hembras en el mismo corral"
+      },
+      "prioritizeYoungFemales": {
+        "label": "Priorizar Hembras Jóvenes",
+        "description": "Da preferencia a vaquillonas en corrales reproductivos"
+      }
+    },
+    "step3": {
+      "title": "Análisis de Distribución",
+      "subtitle": "Revisa el plan propuesto antes de aplicarlo",
+      "analyzing": "Analizando distribución óptima...",
+      "summary": {
+        "title": "Resumen del Plan",
+        "animalsToMove": "Animales a mover",
+        "corralsAffected": "Corrales afectados",
+        "estimatedTime": "Tiempo estimado"
+      },
+      "metrics": {
+        "title": "Métricas de Mejora",
+        "consanguinity": {
+          "label": "Riesgo de Consanguinidad",
+          "current": "Actual",
+          "after": "Después",
+          "reduction": "Reducción"
+        },
+        "reproduction": {
+          "label": "Eficiencia Reproductiva",
+          "current": "Actual",
+          "after": "Después",
+          "improvement": "Mejora"
+        }
+      },
+      "movements": {
+        "title": "Movimientos Propuestos",
+        "from": "De",
+        "to": "A",
+        "animals": "animales",
+        "reason": "Razón"
+      }
+    },
+    "step4": {
+      "title": "Confirmar Cambios",
+      "subtitle": "Revisa y confirma los movimientos antes de aplicarlos",
+      "warning": "Esta acción moverá {{count}} animales entre corrales. ¿Estás seguro?",
+      "success": "¡Distribución optimizada exitosamente!",
+      "successDescription": "Se movieron {{count}} animales según el plan de optimización"
+    },
+    "toast": {
+      "analyzing": "Analizando distribución...",
+      "success": "Distribución optimizada exitosamente",
+      "error": "Error al optimizar distribución",
+      "applying": "Aplicando cambios..."
+    }
   }
 }

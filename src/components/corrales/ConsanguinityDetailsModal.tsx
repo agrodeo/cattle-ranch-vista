@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, Users, Calendar, Info } from "lucide-react";
+import { AlertTriangle, Users, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { analyzeCorralConsanguinity, RelationshipRisk } from "@/lib/consanguinityAnalysis";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,7 @@ interface ConsanguinityDetailsModalProps {
 }
 
 export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModalProps) {
-  const { t } = useTranslation(['common', 'corrals']);
+  const { t } = useTranslation('corrals');
   const { currentUser } = useSupabaseAuth();
   const [risks, setRisks] = useState<RelationshipRisk[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,13 +63,13 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
   const getSeverityLabel = (severity: string) => {
     switch (severity) {
       case 'severe':
-        return 'Alto';
+        return t('consanguinity.severity.severe');
       case 'medium':
-        return 'Medio';
+        return t('consanguinity.severity.medium');
       case 'low':
-        return 'Bajo';
+        return t('consanguinity.severity.low');
       default:
-        return 'Desconocido';
+        return t('consanguinity.severity.unknown');
     }
   };
 
@@ -90,7 +90,7 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
       <div className="bg-muted/50 rounded-lg p-3 text-center">
         <Info className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
         <p className="text-xs text-muted-foreground">
-          No se encontraron riesgos de consanguinidad
+          {t('consanguinity.noRisks')}
         </p>
       </div>
     );
@@ -101,10 +101,10 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
       <div className="p-2 border-b border-muted">
         <div className="flex items-center gap-2 mb-1">
           <AlertTriangle className="h-3 w-3 text-destructive flex-shrink-0" />
-          <span className="text-xs font-medium truncate">Detalles de Consanguinidad</span>
+          <span className="text-xs font-medium truncate">{t('consanguinity.title')}</span>
         </div>
         <p className="text-xs text-muted-foreground">
-          {risks.length} parejas con riesgo
+          {risks.length} {t('consanguinity.pairsAtRisk')}
         </p>
       </div>
       
@@ -138,13 +138,13 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
                   
                   {risk.inbreedingCoefficient && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Coef:</span>
+                      <span className="text-muted-foreground">{t('consanguinity.coefficient')}:</span>
                       <span className="font-mono">{(risk.inbreedingCoefficient * 100).toFixed(1)}%</span>
                     </div>
                   )}
                   
                   <div className="text-xs">
-                    <span className="text-muted-foreground">Desc: </span>
+                    <span className="text-muted-foreground">{t('consanguinity.description')}: </span>
                     <span className="text-xs break-words line-clamp-2">{risk.description}</span>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
       
       <div className="p-2 border-t border-muted bg-muted/30">
         <p className="text-xs text-muted-foreground break-words">
-          <strong>Consejo:</strong> Evita cruzar animales con alto coeficiente
+          {t('consanguinity.advice')}
         </p>
       </div>
     </div>
