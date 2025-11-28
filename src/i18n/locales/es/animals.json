@@ -345,6 +345,7 @@
       "uploadDocumentDesc": "Sube certificados, fotos y documentos médicos",
       "documentType": "Tipo de Documento",
       "file": "Archivo",
+      "selectFile": "Seleccionar archivo",
       "certificate": "Certificado",
       "medical": "Médico",
       "photo": "Foto",

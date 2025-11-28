@@ -129,17 +129,23 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-full space-y-2">
-                <Label htmlFor="file-upload" className="block">{t('animals:profile.documents.file')}</Label>
-                <div className="relative">
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    onChange={handleFileUpload}
-                    accept="image/*,.pdf,.doc,.docx,.txt"
-                    className="w-full cursor-pointer file:cursor-pointer file:border-0 file:bg-primary file:text-primary-foreground file:hover:bg-primary/90 file:rounded-md file:px-4 file:py-2 file:mr-4"
-                  />
-                </div>
+              <div className="w-full">
+                <Label htmlFor="file-upload" className="sr-only">{t('animals:profile.documents.file')}</Label>
+                <Button
+                  type="button"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                  className="w-full"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {t('animals:profile.documents.selectFile')}
+                </Button>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  onChange={handleFileUpload}
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  className="hidden"
+                />
               </div>
             </div>
 
@@ -236,14 +242,14 @@ function DocumentsList({
   return (
     <div className="space-y-3">
       {documents.map((doc) => (
-        <div key={doc.id} className="flex items-center justify-between p-3 border rounded-lg">
-          <div className="flex items-center space-x-3">
-            <div className="flex-shrink-0">
+        <div key={doc.id} className="flex flex-col md:flex-row md:items-center md:justify-between p-3 border rounded-lg gap-3">
+          <div className="flex items-start space-x-3 min-w-0 flex-1">
+            <div className="flex-shrink-0 mt-1">
               {getTypeIcon(doc.file_type)}
             </div>
-            <div>
-              <p className="font-medium">{doc.file_name}</p>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="min-w-0 flex-1">
+              <p className="font-medium truncate">{doc.file_name}</p>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                 <Badge variant="outline">{getTypeLabel(doc.file_type)}</Badge>
                 <span>{formatFileSize(doc.file_size)}</span>
                 <span>•</span>
@@ -252,7 +258,7 @@ function DocumentsList({
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2 flex-shrink-0 justify-end md:justify-start">
             {doc.file_type === 'photo' && doc.url && (
               <Button
                 variant="outline"
