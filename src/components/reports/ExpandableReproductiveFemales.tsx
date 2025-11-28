@@ -124,33 +124,33 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between p-2 sm:p-4 md:p-6 h-auto overflow-hidden">
-            <div className="flex flex-col items-start gap-1 sm:gap-2 w-full overflow-hidden">
-              <div className="flex items-center gap-1.5 w-full overflow-hidden">
-                <Heart className="h-3.5 w-3.5 sm:h-4 sm:w-4 md:h-5 md:w-5 text-pink-500 shrink-0" />
-                <span className="text-[10px] sm:text-sm md:text-base font-semibold truncate min-w-0 flex-1">
+          <Button variant="ghost" className="w-full justify-between p-1.5 sm:p-4 md:p-6 h-auto overflow-hidden">
+            <div className="flex flex-col items-start gap-0.5 sm:gap-2 w-full overflow-hidden">
+              <div className="flex items-center gap-1 w-full overflow-hidden">
+                <Heart className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-pink-500 shrink-0" />
+                <span className="text-[9px] sm:text-sm md:text-base font-semibold truncate min-w-0 flex-1">
                   <span className="md:hidden">Hembras</span>
                   <span className="hidden md:inline">Detalle Hembras Reproductivas</span>
                 </span>
-                {isOpen ? <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ml-1" /> : <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 ml-1" />}
+                {isOpen ? <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 shrink-0 ml-0.5" /> : <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 shrink-0 ml-0.5" />}
               </div>
-              <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-[9px] sm:text-xs w-full overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-0.5 sm:gap-2 text-[8px] sm:text-xs w-full overflow-hidden">
                 <div className="flex items-center gap-0.5 shrink-0">
-                  <Baby className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 text-blue-500 shrink-0" />
+                  <Baby className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-blue-500 shrink-0" />
                   <span className="text-muted-foreground whitespace-nowrap">
-                    {totalFemales}•{pregnantCount} ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)
+                    {totalFemales}•{pregnantCount}•{totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%
                   </span>
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
-                  <TrendingUp className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 text-success shrink-0" />
+                  <TrendingUp className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-success shrink-0" />
                   <span className="text-muted-foreground whitespace-nowrap">
                     {avgPregnancyRate.toFixed(1)}%
                   </span>
                 </div>
                 {totalAlerts > 0 && (
                   <div className="flex items-center gap-0.5 shrink-0">
-                    <AlertTriangle className="h-2.5 w-2.5 sm:h-3.5 sm:w-3.5 text-destructive shrink-0" />
-                    <Badge variant="destructive" className="h-3 sm:h-4 text-[8px] sm:text-[10px] px-0.5 sm:px-1">
+                    <AlertTriangle className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-destructive shrink-0" />
+                    <Badge variant="destructive" className="h-2.5 sm:h-4 text-[7px] sm:text-[10px] px-0.5 sm:px-1 py-0">
                       {totalAlerts}
                     </Badge>
                   </div>
