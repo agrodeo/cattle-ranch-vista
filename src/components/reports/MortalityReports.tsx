@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
 import { ReportFilters } from "./ReportsFilters";
+import { categorizeAnimal } from "@/lib/animalCategories";
 
 interface MortalityStats {
   totalDeaths: number;
@@ -39,23 +40,73 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
 
   const fetchMortalityStats = async () => {
     try {
-      // Fetch deaths data
-      const { data: deaths } = await supabase
-        .from("defunciones")
+      // Fetch death records with animal and cause info
+      let query = supabase
+        .from('defunciones')
         .select(`
           *,
-          catalogo_causas(nombre)
+          animal:animals!defunciones_animal_id_fkey(id, name, id_tag, sex, breed, birth_date, corral_id, is_castrated),
+          causa:catalogo_causas!defunciones_causa_id_fkey(nombre)
         `)
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq('cabaña_id', currentUser.cabañaId);
+      
+      // Apply date filters
+      if (globalFilters?.date_from) {
+        query = query.gte('fecha_defuncion', globalFilters.date_from);
+      }
+      if (globalFilters?.date_to) {
+        query = query.lte('fecha_defuncion', globalFilters.date_to);
+      }
+      
+      // Apply breed filter
+      if (globalFilters?.breed) {
+        // This will be applied client-side since we're joining to animals
+      }
+      
+      const { data: deaths, error } = await query;
+
+      if (error) throw error;
+      
+      let filteredDeaths = deaths || [];
+      
+      // Apply corral filter (client-side)
+      if (globalFilters?.corral_ids?.length) {
+        filteredDeaths = filteredDeaths.filter(d => {
+          const animal = Array.isArray(d.animal) ? d.animal[0] : d.animal;
+          return animal?.corral_id && globalFilters.corral_ids?.includes(animal.corral_id);
+        });
+      }
+      
+      // Apply category filter (client-side)
+      if (globalFilters?.category) {
+        filteredDeaths = filteredDeaths.filter(d => {
+          const animal = Array.isArray(d.animal) ? d.animal[0] : d.animal;
+          if (!animal) return false;
+          const category = categorizeAnimal(
+            { birth_date: animal.birth_date, sex: animal.sex, id: animal.id },
+            animal.is_castrated || false
+          );
+          return category === globalFilters.category;
+        });
+      }
+      
+      // Apply breed filter (client-side)
+      if (globalFilters?.breed) {
+        filteredDeaths = filteredDeaths.filter(d => {
+          const animal = Array.isArray(d.animal) ? d.animal[0] : d.animal;
+          return animal?.breed === globalFilters.breed;
+        });
+      }
 
       // Fetch all animals for rate calculations
       const { data: animals } = await supabase
         .from("animals")
         .select("id, breed, birth_date")
-        .eq("cabaña_id", currentUser?.cabañaId);
+        .eq("cabaña_id", currentUser.cabañaId);
 
-      const mortalityStats = calculateMortalityStats(deaths || [], animals || []);
-      setStats(mortalityStats);
+      // Calculate statistics
+      const mortalityData = calculateMortalityStats(filteredDeaths, animals || []);
+      setStats(mortalityData);
     } catch (error) {
       console.error("Error fetching mortality stats:", error);
     } finally {

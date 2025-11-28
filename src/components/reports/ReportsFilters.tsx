@@ -40,6 +40,8 @@ export interface ReportFilters {
   category?: string;
   breed?: string;
   include_sold_dead?: boolean;
+  status?: string; // For reproductive status (pregnant/open)
+  vaccination_status?: string; // For vaccination status (compliant/needs_attention)
 }
 
 export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, className }: ReportsFiltersProps) {

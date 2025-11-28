@@ -154,10 +154,16 @@ const Reports = () => {
         .filter(f => f.type === 'category')
         .map(f => f.value);
       
+      const statuses = activeFiltersData
+        .filter(f => f.type === 'status')
+        .map(f => f.value);
+      
       setAppliedFilters(prev => ({
         ...prev,
         corral_ids: corralIds.length > 0 ? corralIds : undefined,
-        category: categories.length > 0 ? categories[0] : undefined
+        category: categories.length > 0 ? categories[0] : undefined,
+        status: statuses.length > 0 ? statuses[0] : undefined,
+        vaccination_status: statuses.length > 0 ? statuses[0] : undefined
       }));
       
       return newActive;

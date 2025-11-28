@@ -11,6 +11,7 @@ import { Scale, TrendingUp, Target, Award, ChevronDown, ChevronUp } from "lucide
 import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, type BreedBenchmarks } from "@/lib/breedBenchmarks";
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
 import { AnimalProductionTable } from "./AnimalProductionTable";
+import { categorizeAnimal } from "@/lib/animalCategories";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -46,14 +47,46 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
   const fetchProductionStats = async () => {
     try {
-      const { data: animals, error } = await supabase
-        .from("animals")
-        .select("*")
-        .eq("cabaña_id", currentUser?.cabañaId);
+      setLoading(true);
+      let animalsQuery = supabase
+        .from('animals')
+        .select('*, animal_weight_history(*), is_castrated')
+        .eq('cabaña_id', currentUser?.cabañaId);
+      
+      // Apply corral filter
+      if (globalFilters?.corral_ids?.length) {
+        animalsQuery = animalsQuery.in('corral_id', globalFilters.corral_ids);
+      }
+      
+      // Apply breed filter
+      if (globalFilters?.breed) {
+        animalsQuery = animalsQuery.eq('breed', globalFilters.breed);
+      }
+      
+      // Apply include_sold_dead filter
+      if (!globalFilters?.include_sold_dead) {
+        animalsQuery = animalsQuery
+          .neq('status', 'vendido')
+          .neq('status', 'muerto')
+          .neq('status', 'Vendido')
+          .neq('status', 'Muerto');
+      }
+      
+      const { data: animals, error } = await animalsQuery;
 
       if (error) throw error;
-
-      const prodStats = await calculateProductionStats(animals || []);
+      
+      let filteredData = animals || [];
+      
+      // Apply category filter (client-side since category is computed from age)
+      if (globalFilters?.category) {
+        filteredData = filteredData.filter(animal => {
+          const category = categorizeAnimal(animal, animal.is_castrated || false);
+          return category === globalFilters.category;
+        });
+      }
+      
+      const prodStats = await calculateProductionStats(filteredData);
       setStats(prodStats);
     } catch (error) {
       console.error("Error fetching production stats:", error);
