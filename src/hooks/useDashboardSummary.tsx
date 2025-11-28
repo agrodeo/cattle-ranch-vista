@@ -464,12 +464,12 @@ export const useDashboardSummary = (): DashboardSummary => {
       
       console.log('📊 Recent batch activities merged:', { count: recentData.length, data: recentData });
 
-      // Get upcoming activities (next 7 days) - using eventos table
+      // Get upcoming activities (next 7 days) - using eventos table, only future dates
       const { data: upcomingData, error: upcomingError } = await supabase
         .from('eventos')
         .select('id, tipo, fecha')
         .eq('cabaña_id', cabanaId)
-        .gte('fecha', today.toISOString().split('T')[0])
+        .gt('fecha', today.toISOString().split('T')[0])
         .lte('fecha', sevenDaysFromNow.toISOString().split('T')[0])
         .order('fecha', { ascending: true })
         .limit(5);
