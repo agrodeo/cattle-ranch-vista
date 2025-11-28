@@ -423,5 +423,226 @@
     "expenses": "Despesas",
     "loading": "Carregando análise financeira...",
     "error": "Erro ao carregar análise financeira"
+  },
+  "filters": {
+    "period": "Período",
+    "since": "Desde",
+    "until": "Até",
+    "corrals": "Currais",
+    "category": "Categoria",
+    "breed": "Raça",
+    "all": "Todas",
+    "options": "Opções",
+    "includeSoldDead": "Incluir vendidos/mortos",
+    "clear": "Limpar",
+    "apply": "Aplicar Filtros",
+    "filter": "filtro",
+    "filters": "filtros",
+    "categories": {
+      "calf": "Bezerro",
+      "heifer": "Bezerra",
+      "youngBull": "Touro Jovem",
+      "heifer2": "Novilha",
+      "bull": "Touro",
+      "cow": "Vaca"
+    }
+  },
+  "export": {
+    "button": "Exportar",
+    "exporting": "Exportando...",
+    "toExcel": "Exportar para Excel",
+    "toCSV": "Exportar para CSV",
+    "success": "Exportação bem-sucedida",
+    "successDesc": "Os dados foram exportados corretamente",
+    "error": "Erro ao exportar",
+    "errorDesc": "Não foi possível exportar os dados",
+    "columns": {
+      "period": "Período",
+      "year": "Ano",
+      "birthWeight": "Peso Nascimento (kg)",
+      "weaningWeight": "Peso Desmame (kg)",
+      "finalWeight": "Peso Final (kg)",
+      "adg": "GPD (kg/dia)",
+      "animalCount": "Quantidade Animais",
+      "improvement": "Melhoria vs Anterior (%)",
+      "percentile25": "Percentil 25",
+      "percentile75": "Percentil 75"
+    }
+  },
+  "performanceBadge": {
+    "excellent": "Excelente",
+    "good": "Bom",
+    "average": "Regular",
+    "poor": "Baixo",
+    "unknown": "Sem dados"
+  },
+  "animalReproduction": {
+    "title": "Reprodução por Animal",
+    "subtitle": "fêmeas com atividade reprodutiva",
+    "noData": "Sem dados de reprodução",
+    "noDataDesc": "Não foram encontradas fêmeas com atividade reprodutiva no período selecionado",
+    "columns": {
+      "animal": "Animal",
+      "corral": "Curral",
+      "exposures": "Exp.",
+      "pregnancies": "Grav.",
+      "pregnancyRate": "% Gravidez",
+      "openDays": "D. Abertos",
+      "repeater": "Repetidora",
+      "yes": "Sim",
+      "no": "Não",
+      "noCorral": "Sem curral"
+    },
+    "tooltips": {
+      "exposures": "Exposições (serviços) no período",
+      "pregnancies": "Gravidezes confirmadas",
+      "openDays": "Dias entre último parto e primeiro serviço",
+      "repeater": "≥2 serviços sem gravidez confirmada"
+    }
+  },
+  "pregnantAnimals": {
+    "title": "Fêmeas Grávidas",
+    "noData": "Nenhuma fêmea grávida encontrada",
+    "noDataDesc": "Não há fêmeas com gravidez ativa neste momento",
+    "columns": {
+      "name": "Nome",
+      "tag": "Brinco",
+      "status": "Status",
+      "corral": "Curral",
+      "age": "Idade",
+      "dueDate": "Data Provável Parto"
+    },
+    "actions": {
+      "view": "Ver"
+    },
+    "status": {
+      "pregnant": "Grávida",
+      "confirmed": "Confirmada"
+    }
+  },
+  "reproductiveDetails": {
+    "totalFemales": "Fêmeas Reprodutivas",
+    "ageRestriction": "≥15 meses de idade",
+    "pregnancyRate": "Taxa de Gravidez",
+    "confirmedPregnancies": "Gravidezes confirmadas",
+    "calvingRate": "Taxa de Parição",
+    "successfulBirths": "Partos bem-sucedidos",
+    "currentPregnant": "Grávidas Atuais",
+    "activePregnancies": "Fêmeas com gravidez ativa",
+    "femaleDetails": "Detalhe Fêmeas Reprodutivas",
+    "animals": "animais",
+    "noFemales": "Nenhuma fêmea reprodutiva encontrada",
+    "noFemalesDesc": "As fêmeas devem ter pelo menos 15 meses de idade para aparecer neste relatório.",
+    "allYoung": "Atualmente todas as fêmeas têm menos de 15 meses.",
+    "errorLoading": "Erro ao carregar dados",
+    "dataUpdated": "Dados atualizados",
+    "dataUpdatedDesc": "Os dados reprodutivos foram atualizados corretamente.",
+    "retry": "Tentar novamente",
+    "columns": {
+      "animal": "Animal",
+      "age": "Idade",
+      "state": "Estado",
+      "services": "Serviços",
+      "pregnancies": "Gravidezes",
+      "calvings": "Partos",
+      "pregnancyRate": "% Gravidez",
+      "calvingRate": "% Parição"
+    },
+    "states": {
+      "pregnant": "Grávida",
+      "empty": "Vazia",
+      "postpartum": "Pós-parto"
+    }
+  },
+  "vaccinationDetails": {
+    "title": "Análise de Vacinação",
+    "subtitle": "animais ativos • requisitos configurados • obrigatórios",
+    "loading": "Carregando dados de vacinação...",
+    "noData": "Não há dados de vacinação disponíveis",
+    "totalAnimals": "Total de Animais",
+    "compliant": "Em Dia",
+    "overdue": "Vencidas",
+    "pending": "Pendentes",
+    "missingMandatory": "Falta Aplicar",
+    "missingMandatoryDesc": "Obrigatórias não aplicadas",
+    "noRequirements": "Sem Requisitos",
+    "noRequirementsDesc": "Sem requisitos configurados",
+    "errors": "Erros",
+    "errorsDesc": "Processamento falhou",
+    "ofTotal": "do total",
+    "vaccines": "vacinas",
+    "sections": {
+      "compliant": "Animais em Dia",
+      "requiresAttention": "Animais que Requerem Atenção"
+    },
+    "empty": "Não há animais nesta categoria",
+    "columns": {
+      "animal": "Animal",
+      "tag": "Brinco",
+      "reason": "Motivo",
+      "details": "Detalhes"
+    },
+    "statuses": {
+      "overdue": "Vencida",
+      "pending": "Pendente",
+      "notApplied": "Não aplicada",
+      "mandatory": "obrigatória"
+    },
+    "phrases": {
+      "vaccineOverdue": "vacina vencida",
+      "vaccinesOverdue": "vacinas vencidas",
+      "vaccinePending": "vacina pendente",
+      "vaccinesPending": "vacinas pendentes",
+      "mandatoryNotApplied": "vacina obrigatória não aplicada",
+      "mandatoriesNotApplied": "vacinas obrigatórias não aplicadas",
+      "noMandatory": "Sem vacinas obrigatórias aplicáveis",
+      "allMandatoryComplete": "Todas as vacinas obrigatórias completas",
+      "noRequirementsApplicable": "Sem requisitos de vacinação aplicáveis",
+      "errorProcessing": "Erro ao processar",
+      "noStatusData": "Sem dados de estado",
+      "unknown": "Desconhecido"
+    },
+    "issues": {
+      "vaccine": "Vacina",
+      "status": "Status",
+      "daysOverdue": "Dias vencido",
+      "nextDue": "Próxima dose",
+      "isMandatory": "É obrigatória"
+    }
+  },
+  "mortalityDetails": {
+    "title": "Análise de Mortalidade",
+    "loading": "Carregando relatórios de mortalidade...",
+    "errorLoading": "Não foi possível carregar as estatísticas de mortalidade.",
+    "totalDeaths": "Total de Mortes",
+    "totalDeathsDesc": "Registros totais",
+    "mortalityRate": "Taxa de Mortalidade",
+    "averageAge": "Idade Média de Morte",
+    "averageAgeDesc": "dias em média",
+    "months": "meses",
+    "trend": "Tendência",
+    "lastMonths": "Últimos 3 meses",
+    "rateLevel": {
+      "high": "Alta",
+      "moderate": "Moderada",
+      "low": "Baixa"
+    },
+    "charts": {
+      "byAge": "Mortalidade por Grupo de Idade",
+      "byCause": "Principais Causas de Morte",
+      "monthly": "Tendência Mensal de Mortalidade",
+      "byBreed": "Mortalidade por Raça"
+    },
+    "ageGroups": {
+      "calves": "Bezerros (0-12m)",
+      "young": "Jovens (1-2 anos)",
+      "adults": "Adultos (2+ anos)",
+      "unknown": "Idade desconhecida"
+    },
+    "causeDetails": "Detalhe das Causas de Morte",
+    "cases": "casos",
+    "unknownCause": "Causa desconhecida",
+    "deaths": "Mortes",
+    "rate": "Taxa %"
   }
 }
