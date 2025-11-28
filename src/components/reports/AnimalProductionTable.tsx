@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ interface AnimalProductionTableProps {
 }
 
 export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
+  const { t } = useTranslation(['reports', 'common']);
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
@@ -178,7 +180,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Producción por Animal
+            {t('reports:production.productionByAnimal')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -198,12 +200,12 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
           {animals.length === 0 ? (
             <div className="text-center py-12">
               <TrendingUp className="h-16 w-16 mx-auto mb-4 opacity-20 text-muted-foreground" />
-              <div className="text-lg font-medium mb-2">Aún no hay pesajes registrados</div>
+              <div className="text-lg font-medium mb-2">{t('reports:production.noWeighingsYet')}</div>
               <div className="text-sm text-muted-foreground mb-6">
-                Registra pesajes en la sección de Actividades para ver los datos de producción y ganancia diaria
+                {t('reports:production.noWeighingsDesc')}
               </div>
               <Button variant="outline" onClick={() => window.location.href = '/actividades'}>
-                Ir a Actividades
+                {t('reports:production.goToActivities')}
               </Button>
             </div>
           ) : isMobile ? (
@@ -219,23 +221,23 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                   }}
                 >
                   <SelectTrigger className="h-9">
-                    <SelectValue placeholder="Ordenar por..." />
+                    <SelectValue placeholder={t('reports:production.sortBy')} />
                   </SelectTrigger>
                   <SelectContent className="bg-background z-50">
-                    <SelectItem value="tag">Animal (Caravana)</SelectItem>
-                    <SelectItem value="name">Animal (Nombre)</SelectItem>
-                    <SelectItem value="category">Categoría</SelectItem>
-                    <SelectItem value="corral_name">Corral</SelectItem>
-                    <SelectItem value="last_weight_kg">Último Peso</SelectItem>
-                    <SelectItem value="last_weight_date">Fecha Pesaje</SelectItem>
-                    <SelectItem value="adg_recent_90d">ADG N-D</SelectItem>
-                    <SelectItem value="adg_season">ADG Temporada</SelectItem>
-                    <SelectItem value="weighs_count">Cantidad Pesadas</SelectItem>
-                    <SelectItem value="weight_birth">Peso Nacer</SelectItem>
-                    <SelectItem value="weight_weaning">Peso Destete</SelectItem>
-                    <SelectItem value="weight_yearling">Peso 18m</SelectItem>
-                    <SelectItem value="weight_final">Peso Final</SelectItem>
-                    <SelectItem value="adg_percentile">Percentil</SelectItem>
+                    <SelectItem value="tag">{t('reports:production.animalTag')}</SelectItem>
+                    <SelectItem value="name">{t('reports:production.animalName')}</SelectItem>
+                    <SelectItem value="category">{t('reports:filters.category')}</SelectItem>
+                    <SelectItem value="corral_name">{t('reports:filters.corrals')}</SelectItem>
+                    <SelectItem value="last_weight_kg">{t('reports:production.lastWeight')}</SelectItem>
+                    <SelectItem value="last_weight_date">{t('reports:production.weighDate')}</SelectItem>
+                    <SelectItem value="adg_recent_90d">{t('reports:production.adgND')}</SelectItem>
+                    <SelectItem value="adg_season">{t('reports:production.adgSeason')}</SelectItem>
+                    <SelectItem value="weighs_count">{t('reports:production.weighsCount')}</SelectItem>
+                    <SelectItem value="weight_birth">{t('reports:production.weightBirth')}</SelectItem>
+                    <SelectItem value="weight_weaning">{t('reports:production.weightWeaning')}</SelectItem>
+                    <SelectItem value="weight_yearling">{t('reports:production.weight18m')}</SelectItem>
+                    <SelectItem value="weight_final">{t('reports:production.weightFinal')}</SelectItem>
+                    <SelectItem value="adg_percentile">{t('common:percentile')}</SelectItem>
                   </SelectContent>
                 </Select>
                 {sortColumn && (
@@ -271,8 +273,8 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-3">
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">Último Peso</div>
+                     <div>
+                        <div className="text-xs text-muted-foreground mb-1">{t('reports:production.lastWeight')}</div>
                         <div className="font-medium">{formatWeight(animal.last_weight_kg)}</div>
                         {animal.last_weight_date && (
                           <div className="text-xs text-muted-foreground">
@@ -281,20 +283,20 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                         )}
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground mb-1">Pesadas</div>
+                        <div className="text-xs text-muted-foreground mb-1">{t('reports:production.weighCount')}</div>
                         <div className="font-medium">{animal.weighs_count}</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <div className="text-xs text-muted-foreground mb-1">ADG Temporada</div>
+                        <div className="text-xs text-muted-foreground mb-1">{t('reports:production.adgSeason')}</div>
                         <Badge variant={getAdgBadgeColor(animal.adg_season)}>
                           {formatAdg(animal.adg_season)}
                         </Badge>
                       </div>
                       <div>
-                        <div className="text-xs text-muted-foreground mb-1">Percentil</div>
+                        <div className="text-xs text-muted-foreground mb-1">{t('common:percentile')}</div>
                         <Badge variant={getPercentileBadgeColor(animal.adg_percentile)}>
                           P{animal.adg_percentile}
                         </Badge>
@@ -309,15 +311,15 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <SortableHeader column="tag">Animal</SortableHeader>
-                    <SortableHeader column="name">Nombre</SortableHeader>
-                    <SortableHeader column="category">Categoría</SortableHeader>
-                    <SortableHeader column="corral_name">Corral</SortableHeader>
+                     <SortableHeader column="tag">{t('reports:production.animalTag')}</SortableHeader>
+                    <SortableHeader column="name">{t('reports:production.animalName')}</SortableHeader>
+                    <SortableHeader column="category">{t('reports:filters.category')}</SortableHeader>
+                    <SortableHeader column="corral_name">{t('reports:filters.corrals')}</SortableHeader>
                     <TableHead className="text-center">
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
                           <div onClick={() => handleSort('last_weight_kg')} className="cursor-pointer">
-                            Último Peso
+                            {t('reports:production.lastWeight')}
                             {sortColumn === 'last_weight_kg' && (
                               <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
@@ -325,16 +327,16 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                           <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Peso más reciente registrado</p>
+                          <p>{t('reports:production.recentWeight')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <SortableHeader column="last_weight_date">Fecha</SortableHeader>
+                    <SortableHeader column="last_weight_date">{t('reports:production.weighDate')}</SortableHeader>
                     <TableHead className="text-center">
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
                           <div onClick={() => handleSort('adg_recent_90d')} className="cursor-pointer">
-                            ADG N-D
+                            {t('reports:production.adgND')}
                             {sortColumn === 'adg_recent_90d' && (
                               <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
@@ -342,7 +344,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                           <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Ganancia Diaria Promedio Nacimiento-Destete</p>
+                          <p>{t('reports:production.adgNDTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
@@ -350,7 +352,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
                           <div onClick={() => handleSort('adg_season')} className="cursor-pointer">
-                            ADG Temporada
+                            {t('reports:production.adgSeason')}
                             {sortColumn === 'adg_season' && (
                               <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
@@ -358,20 +360,20 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                           <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Ganancia Diaria Promedio de la Temporada Completa</p>
+                          <p>{t('reports:production.adgSeasonTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <SortableHeader column="weighs_count">Pesadas</SortableHeader>
-                    <SortableHeader column="weight_birth">P. Nacer</SortableHeader>
-                    <SortableHeader column="weight_weaning">P. Destete</SortableHeader>
-                    <SortableHeader column="weight_yearling">P. 18m</SortableHeader>
-                    <SortableHeader column="weight_final">P. Final</SortableHeader>
+                    <SortableHeader column="weighs_count">{t('reports:production.weighCount')}</SortableHeader>
+                    <SortableHeader column="weight_birth">{t('reports:production.weightBirth')}</SortableHeader>
+                    <SortableHeader column="weight_weaning">{t('reports:production.weightWeaning')}</SortableHeader>
+                    <SortableHeader column="weight_yearling">{t('reports:production.weight18m')}</SortableHeader>
+                    <SortableHeader column="weight_final">{t('reports:production.weightFinal')}</SortableHeader>
                     <TableHead className="text-center">
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
                           <div onClick={() => handleSort('adg_percentile')} className="cursor-pointer">
-                            Percentil
+                            {t('common:percentile')}
                             {sortColumn === 'adg_percentile' && (
                               <span className="text-xs ml-1">{sortDirection === 'asc' ? '↑' : '↓'}</span>
                             )}
@@ -379,11 +381,11 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                           <Info className="h-3 w-3" />
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Percentil de ADG comparado con su categoría</p>
+                          <p>{t('reports:production.percentileTooltip')}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TableHead>
-                    <TableHead>Acciones</TableHead>
+                    <TableHead>{t('reports:production.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -395,7 +397,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                         <Badge variant="outline">{animal.category}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{animal.corral_name || 'Sin corral'}</Badge>
+                        <Badge variant="secondary">{animal.corral_name || t('reports:production.noCorral')}</Badge>
                       </TableCell>
                       <TableCell className="text-center font-medium">
                         {formatWeight(animal.last_weight_kg)}

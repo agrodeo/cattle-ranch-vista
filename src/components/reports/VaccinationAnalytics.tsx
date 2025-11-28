@@ -84,7 +84,97 @@ interface ClassificationResult {
   vaccines?: any[];
 }
 
-const classifyAnimal = (animal: any, statusData: any[] | null, error: any): ClassificationResult => {
+  {
+    // ... keep existing code
+  }
+  
+  const classifyAnimal = (animal: any, statusData: any[] | null, error: any, t: any): ClassificationResult => {
+  // Error category
+  if (error || !statusData) {
+    return { 
+      category: 'error', 
+      reason: error ? `${t('reports:vaccination.errorProcessing')}: ${error.message || t('common:unknown')}` : t('reports:vaccination.noStatusData')
+    };
+  }
+  
+  // No requirements category
+  if (statusData.length === 0) {
+    return { 
+      category: 'no_requirements', 
+      reason: t('reports:vaccination.noRequirementsApplicable')
+    };
+  }
+  
+  const mandatoryVaccines = statusData.filter(s => s.is_mandatory);
+  const overdueVaccines = statusData.filter(s => s.status === 'vencida');
+  const pendingVaccines = statusData.filter(s => s.status === 'pendiente');
+  const completeVaccines = statusData.filter(s => s.status === 'completa');
+  
+  // Priority 1: Overdue vaccines
+  if (overdueVaccines.length > 0) {
+    return { 
+      category: 'overdue', 
+      reason: `${overdueVaccines.length} ${overdueVaccines.length === 1 ? t('reports:vaccination.vaccineExpiredReason') : t('reports:vaccination.vaccinesExpiredReason')}`,
+      issues: overdueVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        status: t('reports:vaccination.statusExpired'),
+        days_overdue: v.days_overdue
+      }))
+    };
+  }
+  
+  // Priority 2: Pending vaccines
+  if (pendingVaccines.length > 0) {
+    return { 
+      category: 'pending', 
+      reason: `${pendingVaccines.length} ${pendingVaccines.length === 1 ? t('reports:vaccination.vaccinePendingReason') : t('reports:vaccination.vaccinesPendingReason')}`,
+      issues: pendingVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        status: t('reports:vaccination.statusPending'),
+        next_due: v.next_due_date
+      }))
+    };
+  }
+  
+  // Priority 3: Check mandatory vaccines
+  if (mandatoryVaccines.length === 0) {
+    return { 
+      category: 'compliant', 
+      reason: t('reports:vaccination.noMandatoryApplicable'),
+      vaccines: completeVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        last_date: v.last_vaccination_date,
+        next_due: v.next_due_date
+      }))
+    };
+  }
+  
+  const mandatoryComplete = mandatoryVaccines.filter(s => s.status === 'completa');
+  
+  if (mandatoryComplete.length === mandatoryVaccines.length) {
+    return { 
+      category: 'compliant', 
+      reason: `${t('reports:vaccination.allMandatoryComplete')} (${mandatoryComplete.length}/${mandatoryVaccines.length})`,
+      vaccines: completeVaccines.map(v => ({
+        vaccine_name: v.vaccine_name,
+        last_date: v.last_vaccination_date,
+        next_due: v.next_due_date
+      }))
+    };
+  }
+  
+  // Priority 4: Missing mandatory vaccines
+  const mandatoryMissing = mandatoryVaccines.filter(s => s.status === 'no_aplicada');
+  return { 
+    category: 'missing_mandatory', 
+    reason: `${mandatoryMissing.length} ${mandatoryMissing.length === 1 ? t('reports:vaccination.mandatoryNotAppliedCount') : t('reports:vaccination.mandatoryNotAppliedCountPlural')}`,
+    issues: mandatoryMissing.map(v => ({
+      vaccine_name: v.vaccine_name,
+      status: t('reports:vaccination.statusNotAppliedMandatory'),
+      is_mandatory: true
+    }))
+  };
+};
   // Error category
   if (error || !statusData) {
     return { 
@@ -443,12 +533,14 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Vencidas</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('reports:vaccination.expiredTitle')}
+                </p>
                 <AlertTriangle className="h-5 w-5 text-red-600" />
               </div>
               <p className="text-2xl font-bold text-red-600">{stats?.animalsWithOverdue || 0}</p>
               <p className="text-xs text-muted-foreground">
-                {stats?.totalOverdueVaccines || 0} vacunas
+                {stats?.totalOverdueVaccines || 0} {t('reports:vaccination.vaccinesCount')}
               </p>
             </div>
           </CardContent>
@@ -458,12 +550,12 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Pendientes</p>
+                <p className="text-sm text-muted-foreground">{t('reports:vaccination.pendingTitle')}</p>
                 <Clock className="h-5 w-5 text-amber-600" />
               </div>
               <p className="text-2xl font-bold text-amber-600">{stats?.animalsWithPending || 0}</p>
               <p className="text-xs text-muted-foreground">
-                {stats?.totalPendingVaccines || 0} vacunas
+                {stats?.totalPendingVaccines || 0} {t('reports:vaccination.vaccinesCount')}
               </p>
             </div>
           </CardContent>
@@ -473,7 +565,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Falta Aplicar</p>
+                <p className="text-sm text-muted-foreground">{t('reports:vaccination.needsApplication')}</p>
                 <AlertCircle className="h-5 w-5 text-blue-600" />
               </div>
               <p className="text-2xl font-bold text-blue-600">{stats?.animalsWithMissingMandatory || 0}</p>
