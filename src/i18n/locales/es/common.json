@@ -207,6 +207,17 @@
     "generalQuery": "Consulta general",
     "supportEmail": "Soporte"
   },
+  "notifications": {
+    "notifications": "Notificaciones",
+    "noNotifications": "No hay notificaciones pendientes",
+    "systemAlerts": "Alertas del Sistema",
+    "upcomingActivities": "Actividades Próximas",
+    "affected": "afectados",
+    "animalLimitExceeded": "Límite de animales excedido",
+    "upgradeRequired": "Actualiza tu plan para continuar",
+    "nearAnimalLimit": "Cerca del límite de animales",
+    "considerUpgrade": "Considera actualizar tu plan"
+  },
   "errors": {
     "unexpectedError": "Error inesperado",
     "reload": "Recargar",
