@@ -216,7 +216,21 @@
     "animalLimitExceeded": "Límite de animales excedido",
     "upgradeRequired": "Actualiza tu plan para continuar",
     "nearAnimalLimit": "Cerca del límite de animales",
-    "considerUpgrade": "Considera actualizar tu plan"
+    "considerUpgrade": "Considera actualizar tu plan",
+    "vaccinationAlerts": "Alertas de Vacunación",
+    "vaccinationDue": "Vacunas por aplicar",
+    "vaccinationOverdue": "Vacunas vencidas",
+    "dueIn": "Vence en {{days}} días",
+    "overdueDays": "{{days}} días de atraso",
+    "birthAlerts": "Alertas de Parto",
+    "upcomingBirths": "Partos próximos",
+    "overdueBirths": "Partos atrasados",
+    "expectedBirth": "Parto esperado",
+    "expectedIn": "En {{days}} días",
+    "overdueBy": "Atrasado {{days}} días",
+    "reproductiveAlerts": "Alertas Reproductivas",
+    "requiresAttention": "Requiere atención inmediata",
+    "viewAnimal": "Ver animal"
   },
   "errors": {
     "unexpectedError": "Error inesperado",

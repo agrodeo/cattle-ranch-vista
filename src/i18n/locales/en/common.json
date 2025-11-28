@@ -216,7 +216,21 @@
     "animalLimitExceeded": "Animal limit exceeded",
     "upgradeRequired": "Upgrade your plan to continue",
     "nearAnimalLimit": "Near animal limit",
-    "considerUpgrade": "Consider upgrading your plan"
+    "considerUpgrade": "Consider upgrading your plan",
+    "vaccinationAlerts": "Vaccination Alerts",
+    "vaccinationDue": "Vaccines due",
+    "vaccinationOverdue": "Overdue vaccines",
+    "dueIn": "Due in {{days}} days",
+    "overdueDays": "{{days}} days overdue",
+    "birthAlerts": "Calving Alerts",
+    "upcomingBirths": "Upcoming births",
+    "overdueBirths": "Overdue births",
+    "expectedBirth": "Expected birth",
+    "expectedIn": "In {{days}} days",
+    "overdueBy": "{{days}} days overdue",
+    "reproductiveAlerts": "Reproductive Alerts",
+    "requiresAttention": "Requires immediate attention",
+    "viewAnimal": "View animal"
   },
   "errors": {
     "unexpectedError": "Unexpected error",
