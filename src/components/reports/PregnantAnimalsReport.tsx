@@ -180,57 +180,72 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
             {t('reports:reproductive.noPregnantFound')}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {pregnantAnimals.map((animal) => (
-              <div
+              <Card
                 key={animal.id}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                className="hover:bg-accent/50 transition-colors"
               >
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {/* Header */}
                     <div>
-                      <h4 className="font-medium">
+                      <h4 className="font-semibold text-base truncate">
                         {animal.name || animal.id_tag}
                       </h4>
                       <p className="text-sm text-muted-foreground">
-                        ID: {animal.id_tag}
+                        {animal.id_tag}
                       </p>
                     </div>
-                    <Badge className={`text-xs ${getStatusBadgeColor(animal.reproductive_status)}`}>
+
+                    {/* Status Badge */}
+                    <Badge className={`text-xs w-fit ${getStatusBadgeColor(animal.reproductive_status)}`}>
                       {getStatusLabel(animal.reproductive_status)}
                     </Badge>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      <span>{animal.corral_name || t('reports:production.noCorral')}</span>
-                    </div>
-                    {animal.age_months && (
-                      <span>{animal.age_months} {t('common:months')}</span>
-                    )}
-                    {animal.fecha_probable_parto && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{t('reports:reproductive.calving')}: {formatDate(animal.fecha_probable_parto)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="text-right text-sm">
-                    {animal.fecha_ultima_preñez && (
-                      <p className="text-muted-foreground">
-                        {t('reports:reproductive.pregnancy')}: {formatDate(animal.fecha_ultima_preñez)}
-                      </p>
-                    )}
+                    {/* Details */}
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground" />
+                        <span className="text-muted-foreground truncate">
+                          {animal.corral_name || t('reports:production.noCorral')}
+                        </span>
+                      </div>
+                      
+                      {animal.age_months && (
+                        <div className="text-muted-foreground">
+                          {animal.age_months} {t('common:months')}
+                        </div>
+                      )}
+                      
+                      {animal.fecha_probable_parto && (
+                        <div className="flex items-start gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 flex-shrink-0 text-muted-foreground mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs text-muted-foreground">
+                              {t('reports:reproductive.calving')}
+                            </div>
+                            <div className="font-medium">
+                              {formatDate(animal.fecha_probable_parto)}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {animal.fecha_ultima_preñez && (
+                        <div className="pt-2 border-t">
+                          <div className="text-xs text-muted-foreground">
+                            {t('reports:reproductive.pregnancy')}
+                          </div>
+                          <div className="font-medium">
+                            {formatDate(animal.fecha_ultima_preñez)}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
