@@ -199,7 +199,7 @@ export function EditArtificialInseminationDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            {t('common:cancel')}
+            {t('common:actions.cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
             {isLoading ? t('activities:artificialInsemination.saving') : t('activities:artificialInsemination.saveChanges')}
