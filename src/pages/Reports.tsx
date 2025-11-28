@@ -3,10 +3,6 @@ import { PageHeader } from "@/components/ui/page-header";
 import { SectionCard } from "@/components/ui/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ReportsFilters, ReportFilters } from "@/components/reports/ReportsFilters";
-import { MobileReportsFilters } from "@/components/reports/MobileReportsFilters";
 import { MobilePageHeader } from "@/components/mobile/MobilePageHeader";
 import { IconTabsBar } from "@/components/reports/IconTabsBar";
 import { HerdOverview } from "@/components/reports/HerdOverview";
@@ -18,11 +14,22 @@ import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsW
 import { TemporalEvolutionAnalytics } from "@/components/reports/TemporalEvolutionAnalytics";
 import { QuickFilterChips, QuickFilter } from "@/components/reports/QuickFilterChips";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+
+export interface ReportFilters {
+  season?: string;
+  date_from?: Date | string;
+  date_to?: Date | string;
+  corral_ids?: string[];
+  category?: string;
+  breed?: string;
+  include_sold_dead?: boolean;
+  status?: string;
+  vaccination_status?: string;
+}
 
 const Reports = () => {
   const isMobile = useIsMobile();
@@ -38,9 +45,6 @@ const Reports = () => {
 
   // Active tab state
   const [activeTab, setActiveTab] = useState("reproductive");
-  
-  // Collapsible filters state
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
 
   // Handle tab change - clear quick filters when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -53,8 +57,7 @@ const Reports = () => {
     }));
   };
 
-  // Separate state for pending (being edited) and applied filters (used by analytics)
-  const [pendingFilters, setPendingFilters] = useState<ReportFilters>(defaultFilters);
+  // Applied filters (used by analytics)
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>(defaultFilters);
   
   // Quick filters state
@@ -83,20 +86,6 @@ const Reports = () => {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", t('reports:pageSubtitle'));
   }, [t]);
-
-  const getActiveFiltersCount = (filters: ReportFilters) => {
-    let count = 0;
-    if (filters.corral_ids?.length) count++;
-    if (filters.category) count++;
-    if (filters.breed) count++;
-    if (filters.include_sold_dead) count++;
-    if (filters.date_from || filters.date_to) count++;
-    return count;
-  };
-
-  const applyFilters = () => {
-    setAppliedFilters({ ...pendingFilters });
-  };
 
   // Quick filter configuration per tab
   const getQuickFiltersForTab = (tabId: string): QuickFilter[] => {
@@ -208,17 +197,10 @@ const Reports = () => {
     return (
       <div className="mx-auto w-full max-w-screen-sm px-3 pb-24 overflow-x-hidden">
         <div className="space-y-4">
-          {/* Mobile Header with Filter */}
+          {/* Mobile Header */}
           <MobilePageHeader
             title={t('reports:title')}
             subtitle={t('reports:subtitle')}
-            action={
-              <MobileReportsFilters
-                filters={pendingFilters}
-                onFiltersChange={setPendingFilters}
-                onApplyFilters={applyFilters}
-              />
-            }
           />
 
           {/* Mobile Tab Navigation */}
@@ -254,40 +236,6 @@ const Reports = () => {
           title={t('reports:title')}
           subtitle={t('reports:subtitle')}
         />
-        
-        {/* Desktop Global Filters */}
-        <Card>
-          <CardHeader 
-            className="cursor-pointer"
-            onClick={() => setFiltersExpanded(!filtersExpanded)}
-          >
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              {t('reports:globalFilters')}
-              {getActiveFiltersCount(pendingFilters) > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {getActiveFiltersCount(pendingFilters)} {t('common:filter')}{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
-                </Badge>
-              )}
-              <div className="ml-auto">
-                {filtersExpanded ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-              </div>
-            </CardTitle>
-          </CardHeader>
-          {filtersExpanded && (
-            <CardContent>
-              <ReportsFilters 
-                filters={pendingFilters} 
-                onFiltersChange={setPendingFilters}
-                onApplyFilters={applyFilters}
-              />
-            </CardContent>
-          )}
-        </Card>
 
         <SectionCard
           title={t('reports:analysisPanel')}
