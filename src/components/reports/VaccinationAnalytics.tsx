@@ -478,7 +478,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
               </div>
               <p className="text-2xl font-bold text-blue-600">{stats?.animalsWithMissingMandatory || 0}</p>
               <p className="text-xs text-muted-foreground">
-                Obligatorias no aplicadas
+                {t('reports:vaccination.mandatoryNotApplied')}
               </p>
             </div>
           </CardContent>
@@ -488,12 +488,12 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Sin Requisitos</p>
+                <p className="text-sm text-muted-foreground">{t('reports:vaccination.noRequirements')}</p>
                 <Info className="h-5 w-5 text-slate-500" />
               </div>
               <p className="text-2xl font-bold text-slate-600">{stats?.animalsNoRequirements || 0}</p>
               <p className="text-xs text-muted-foreground">
-                No aplicables
+                {t('reports:vaccination.notApplicable')}
               </p>
             </div>
           </CardContent>
@@ -506,7 +506,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              Animales al Día ({animalsCompliant.length})
+              {t('reports:vaccination.animalsUpToDate')} ({animalsCompliant.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -540,7 +540,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-green-200 text-green-900">
-                        {animal.vaccines.length} {animal.vaccines.length === 1 ? 'vacuna' : 'vacunas'}
+                        {animal.vaccines.length} {animal.vaccines.length === 1 ? t('reports:vaccination.vaccine') : t('reports:vaccination.vaccines')}
                       </Badge>
                     </button>
                   </CollapsibleTrigger>
@@ -551,11 +551,11 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                           <div className="flex-1">
                             <div className="font-medium">{vaccine.vaccine_name}</div>
                             <div className="text-sm text-muted-foreground mt-1">
-                              Última aplicación: {vaccine.last_date ? new Date(vaccine.last_date).toLocaleDateString('es-ES') : 'N/A'}
+                              {t('reports:vaccination.lastApplication')}: {vaccine.last_date ? new Date(vaccine.last_date).toLocaleDateString('es-ES') : 'N/A'}
                             </div>
                             {vaccine.next_due && (
                               <div className="text-sm text-muted-foreground">
-                                Próxima: {new Date(vaccine.next_due).toLocaleDateString('es-ES')}
+                                {t('reports:vaccination.next')}: {new Date(vaccine.next_due).toLocaleDateString('es-ES')}
                               </div>
                             )}
                           </div>
@@ -577,7 +577,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-600" />
-              Animales con Vacunas Vencidas ({animalsOverdue.length})
+              {t('reports:vaccination.animalsWithExpired')} ({animalsOverdue.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -611,7 +611,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-red-200 text-red-900">
-                        {animal.issues.length} vencidas
+                        {animal.issues.length} {t('reports:vaccination.expired')}
                       </Badge>
                     </button>
                   </CollapsibleTrigger>
@@ -622,10 +622,10 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                           <div className="flex-1">
                             <div className="font-medium text-red-900 dark:text-red-100">{issue.vaccine_name}</div>
                             <div className="text-sm text-red-600 font-medium mt-1">
-                              Estado: Vencida
+                              {t('reports:vaccination.status')}: {t('reports:vaccination.statusExpired')}
                               {issue.days_overdue && issue.days_overdue > 0 && (
                                 <span className="ml-2">
-                                  ({issue.days_overdue} {issue.days_overdue === 1 ? 'día' : 'días'} de retraso)
+                                  ({issue.days_overdue} {issue.days_overdue === 1 ? t('reports:vaccination.day') : t('reports:vaccination.days')} {t('reports:vaccination.daysDelay')})
                                 </span>
                               )}
                             </div>
@@ -648,7 +648,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-amber-600" />
-              Animales con Vacunas Pendientes ({animalsPending.length})
+              {t('reports:vaccination.animalsWithPending')} ({animalsPending.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -682,7 +682,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                         </div>
                       </div>
                       <Badge variant="secondary" className="bg-amber-200 text-amber-900">
-                        {animal.issues.length} pendientes
+                        {animal.issues.length} {t('reports:vaccination.pending')}
                       </Badge>
                     </button>
                   </CollapsibleTrigger>
@@ -693,10 +693,10 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
                           <div className="flex-1">
                             <div className="font-medium text-amber-900 dark:text-amber-100">{issue.vaccine_name}</div>
                             <div className="text-sm text-amber-600 font-medium mt-1">
-                              Estado: Pendiente
+                              {t('reports:vaccination.status')}: {t('reports:vaccination.statusPending')}
                               {issue.next_due && (
                                 <span className="ml-2">
-                                  (Vence: {new Date(issue.next_due).toLocaleDateString('es-ES')})
+                                  ({t('reports:vaccination.expires')}: {new Date(issue.next_due).toLocaleDateString('es-ES')})
                                 </span>
                               )}
                             </div>
