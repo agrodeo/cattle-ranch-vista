@@ -202,7 +202,7 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
             <VaccineSelector
               value={vacuna}
               onChange={setVacuna}
-              placeholder="Seleccionar vacuna"
+              placeholder={t('activities:vaccination.selectVaccine')}
               selectedAnimals={selectedAnimals}
             />
 
@@ -256,10 +256,10 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar Todos
+                  {t('activities:common.selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  Limpiar
+                  {t('activities:common.clear')}
                 </Button>
               </div>
             </div>
@@ -306,7 +306,7 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
 
             {selectedAnimals.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {selectedAnimals.length} animal(es) seleccionado(s)
+                {t('activities:common.animalsSelected', { count: selectedAnimals.length })}
               </div>
             )}
           </div>

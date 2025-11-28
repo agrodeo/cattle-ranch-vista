@@ -21,6 +21,7 @@ import {
   ExternalLink,
   User
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { UnifiedActivity } from '@/hooks/useAllActivities';
 import { useNavigate } from 'react-router-dom';
 
@@ -165,6 +166,7 @@ const renderDetails = (activity: UnifiedActivity) => {
 };
 
 export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetailDialogProps) {
+  const { t } = useTranslation(['activities']);
   const navigate = useNavigate();
 
   if (!activity) return null;
@@ -276,7 +278,7 @@ export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetail
               <Separator />
               <div>
                 <h3 className="text-sm font-semibold text-foreground mb-2">
-                  Notas
+                  {t('activities:common.notes')}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {activity.notas}

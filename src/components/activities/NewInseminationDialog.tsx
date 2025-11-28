@@ -204,7 +204,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             onValueChange={(value) => setExtrasToro(prev => ({ ...prev, cuernos: value }))}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar tipo de cuernos" />
+              <SelectValue placeholder={t('activities:common.selectHornType')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="astado">Astado</SelectItem>
@@ -231,7 +231,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             onValueChange={(value) => setExtrasToro(prev => ({ ...prev, pelaje: value }))}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Seleccionar color de pelaje" />
+              <SelectValue placeholder={t('activities:common.selectCoatColor')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="negro">Negro</SelectItem>
@@ -281,7 +281,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             {/* Service Details */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="fecha">Fecha de Servicio</Label>
+                <Label htmlFor="fecha">{t('activities:newInsemination.serviceDate')}</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -312,10 +312,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="raza_toro">Raza del Toro</Label>
+                <Label htmlFor="raza_toro">{t('activities:newInsemination.bullBreed')}</Label>
                 <Select value={razaToro} onValueChange={setRazaToro}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Seleccionar raza" />
+                    <SelectValue placeholder={t('activities:common.selectBreed')} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Braford">Braford</SelectItem>
@@ -401,12 +401,12 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notas">Observaciones</Label>
+              <Label htmlFor="notas">{t('activities:common.observations')}</Label>
               <Textarea
                 id="notas"
                 value={notas}
                 onChange={(e) => setNotas(e.target.value)}
-                placeholder="Observaciones del servicio..."
+                placeholder={t('activities:newInsemination.serviceObservations')}
                 rows={3}
               />
             </div>
@@ -454,9 +454,9 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               {selectedAnimals.length > 0 && (
-                <div className="text-sm text-muted-foreground">
-                  {selectedAnimals.length} hembra(s) seleccionada(s)
-                </div>
+              <div className="text-sm text-muted-foreground">
+                {t('activities:common.femalesSelected', { count: selectedAnimals.length })}
+              </div>
               )}
             </div>
           </div>
@@ -466,7 +466,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
-              Cancelar
+              {t('activities:common.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
@@ -515,7 +515,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           {/* Service Details */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fecha">Fecha de Servicio</Label>
+              <Label htmlFor="fecha">{t('activities:newInsemination.serviceDate')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -546,10 +546,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="raza_toro">Raza del Toro</Label>
+              <Label htmlFor="raza_toro">{t('activities:newInsemination.bullBreed')}</Label>
               <Select value={razaToro} onValueChange={setRazaToro}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar raza" />
+                  <SelectValue placeholder={t('activities:common.selectBreed')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Braford">Braford</SelectItem>
@@ -635,12 +635,12 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notas">Observaciones</Label>
+            <Label htmlFor="notas">{t('activities:common.observations')}</Label>
             <Textarea
               id="notas"
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
-              placeholder="Observaciones del servicio..."
+              placeholder={t('activities:newInsemination.serviceObservations')}
               rows={3}
             />
           </div>
@@ -649,14 +649,14 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                Hembras Elegibles ({animals.length} disponibles)
+                {t('activities:common.eligibleFemales', { count: animals.length })}
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar Todas
+                  {t('activities:common.selectAllFemale')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  Limpiar
+                  {t('activities:common.clear')}
                 </Button>
               </div>
             </div>
@@ -718,14 +718,14 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
 
             {selectedAnimals.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {selectedAnimals.length} hembra(s) seleccionada(s)
+                {t('activities:common.femalesSelected', { count: selectedAnimals.length })}
               </div>
             )}
           </div>
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancelar
+              {t('activities:common.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 

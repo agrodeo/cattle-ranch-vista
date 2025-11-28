@@ -202,7 +202,37 @@
   },
   "common": {
     "cancel": "Cancelar",
-    "save": "Salvar"
+    "save": "Salvar",
+    "selectAll": "Selecionar Todos",
+    "selectAllFemale": "Selecionar Todas",
+    "clear": "Limpar",
+    "search": "Buscar",
+    "date": "Data",
+    "dateRequired": "Data *",
+    "selectDate": "Selecionar data",
+    "notes": "Notas",
+    "notesAndObservations": "Notas e Observações",
+    "observations": "Observações",
+    "all": "Todos",
+    "none": "Nenhum",
+    "filters": "Filtros",
+    "category": "Categoria",
+    "sex": "Sexo",
+    "corral": "Curral",
+    "breed": "Raça",
+    "selectAnimal": "Selecionar animal",
+    "selectBreed": "Selecionar raça",
+    "animalsSelected": "{{count}} animal(is) selecionado(s)",
+    "femalesSelected": "{{count}} fêmea(s) selecionada(s)",
+    "eligibleFemales": "Fêmeas Elegíveis ({{count}} disponíveis)",
+    "eligibleAnimals": "{{count}} disponíveis",
+    "noAnimalsFound": "Nenhum animal encontrado com os filtros selecionados",
+    "registerActivity": "Registrar Atividade",
+    "saving": "Salvando...",
+    "required": "obrigatório",
+    "optional": "opcional",
+    "selectHornType": "Selecionar tipo de chifre",
+    "selectCoatColor": "Selecionar cor da pelagem"
   },
   "activityCreation": {
     "title": "Registrar Atividade",
@@ -767,5 +797,14 @@
     "noRecordsFound": "Nenhum registro encontrado",
     "noCorral": "Sem curral",
     "showingRecords": "Mostrando {{filtered}} de {{total}} registros"
+  },
+  "newPregnancyLoss": {
+    "pregnantAnimal": "Animal Prenhe *",
+    "selectPregnantAnimal": "Selecionar animal prenhe",
+    "lossType": "Tipo de Perda *",
+    "selectLossType": "Selecionar tipo de perda",
+    "specificCause": "Causa Específica *",
+    "selectCause": "Selecionar causa",
+    "errorRequired": "Por favor preencha todos os campos obrigatórios"
   }
 }

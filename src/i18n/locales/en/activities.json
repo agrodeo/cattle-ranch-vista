@@ -200,7 +200,37 @@
   },
   "common": {
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "selectAll": "Select All",
+    "selectAllFemale": "Select All",
+    "clear": "Clear",
+    "search": "Search",
+    "date": "Date",
+    "dateRequired": "Date *",
+    "selectDate": "Select date",
+    "notes": "Notes",
+    "notesAndObservations": "Notes and Observations",
+    "observations": "Observations",
+    "all": "All",
+    "none": "None",
+    "filters": "Filters",
+    "category": "Category",
+    "sex": "Sex",
+    "corral": "Corral",
+    "breed": "Breed",
+    "selectAnimal": "Select animal",
+    "selectBreed": "Select breed",
+    "animalsSelected": "{{count}} animal(s) selected",
+    "femalesSelected": "{{count}} female(s) selected",
+    "eligibleFemales": "Eligible Females ({{count}} available)",
+    "eligibleAnimals": "{{count}} available",
+    "noAnimalsFound": "No animals found with selected filters",
+    "registerActivity": "Register Activity",
+    "saving": "Saving...",
+    "required": "required",
+    "optional": "optional",
+    "selectHornType": "Select horn type",
+    "selectCoatColor": "Select coat color"
   },
   "activityCreation": {
     "title": "Register Activity",
@@ -765,5 +795,14 @@
     "noRecordsFound": "No records found",
     "noCorral": "No corral",
     "showingRecords": "Showing {{filtered}} of {{total}} records"
+  },
+  "newPregnancyLoss": {
+    "pregnantAnimal": "Pregnant Animal *",
+    "selectPregnantAnimal": "Select pregnant animal",
+    "lossType": "Loss Type *",
+    "selectLossType": "Select loss type",
+    "specificCause": "Specific Cause *",
+    "selectCause": "Select cause",
+    "errorRequired": "Please complete all required fields"
   }
 }
