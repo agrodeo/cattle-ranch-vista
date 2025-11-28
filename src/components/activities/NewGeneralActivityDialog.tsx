@@ -38,74 +38,75 @@ interface Animal {
   is_castrated?: boolean;
 }
 
-const activityTypes = [
+const getActivityTypes = (t: any) => [
   { 
     value: "destete", 
-    label: "Destete", 
+    label: t('activities:activityTypes.destete.label'),
     icon: "🐄",
-    description: "Separación de crías de sus madres",
+    description: t('activities:activityTypes.destete.description'),
     fields: ["peso_destete", "edad_destete", "metodo"]
   },
   { 
     value: "marcacion", 
-    label: "Marcación", 
+    label: t('activities:activityTypes.marcacion.label'),
     icon: "🔥",
-    description: "Identificación con hierro candente",
+    description: t('activities:activityTypes.marcacion.description'),
     fields: ["ubicacion_marca", "tipo_hierro", "numero_marca"]
   },
   { 
     value: "castracion", 
-    label: "Castración", 
+    label: t('activities:activityTypes.castracion.label'),
     icon: "✂️",
-    description: "Procedimiento quirúrgico de castración",
+    description: t('activities:activityTypes.castracion.description'),
     fields: ["metodo_castracion", "anestesia", "antibiotico"]
   },
   { 
     value: "descorne", 
-    label: "Descorne", 
+    label: t('activities:activityTypes.descorne.label'),
     icon: "🦏",
-    description: "Remoción de cuernos",
+    description: t('activities:activityTypes.descorne.description'),
     fields: ["metodo_descorne", "edad_animal", "cicatrizante"]
   },
   { 
     value: "traslado", 
-    label: "Traslado", 
+    label: t('activities:activityTypes.traslado.label'),
     icon: "📦",
-    description: "Movimiento entre corrales o potreros",
+    description: t('activities:activityTypes.traslado.description'),
     fields: ["corral_origen", "corral_destino", "motivo_traslado"]
   },
   { 
     value: "tratamiento", 
-    label: "Tratamiento", 
+    label: t('activities:activityTypes.tratamiento.label'),
     icon: "💊",
-    description: "Administración de medicamentos",
+    description: t('activities:activityTypes.tratamiento.description'),
     fields: ["medicamento", "dosis", "via_administracion", "diagnostico"]
   },
   { 
     value: "revision", 
-    label: "Revisión", 
+    label: t('activities:activityTypes.revision.label'),
     icon: "🔍",
-    description: "Control general de salud",
+    description: t('activities:activityTypes.revision.description'),
     fields: ["temperatura", "frecuencia_cardiaca", "estado_general", "hallazgos"]
   },
   { 
     value: "apareamiento", 
-    label: "Apareamiento", 
+    label: t('activities:activityTypes.apareamiento.label'),
     icon: "💕",
-    description: "Servicio natural con toro",
+    description: t('activities:activityTypes.apareamiento.description'),
     fields: ["toro_id", "toro_nombre", "metodo_monta"]
   },
   { 
     value: "parto", 
-    label: "Parto", 
+    label: t('activities:activityTypes.parto.label'),
     icon: "🐄",
-    description: "Registro de nacimientos",
+    description: t('activities:activityTypes.parto.description'),
     fields: ["tipo_parto", "dificultad", "peso_cria", "sexo_cria", "vitalidad"]
   },
 ];
 
 export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, preselectedType, onClose, onSuccess }: NewGeneralActivityDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('activities');
+  const activityTypes = getActivityTypes(t);
   const [open, setOpen] = useState(externalOpen || false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAnimals, setLoadingAnimals] = useState(false);
@@ -315,40 +316,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
   };
 
   const getFieldLabel = (field: string): string => {
-    const labels: Record<string, string> = {
-      peso_destete: "Peso al Destete (kg)",
-      edad_destete: "Edad al Destete (días)",
-      metodo: "Método Utilizado",
-      ubicacion_marca: "Ubicación de la Marca",
-      tipo_hierro: "Tipo de Hierro",
-      numero_marca: "Número de Marca",
-      metodo_castracion: "Método de Castración",
-      anestesia: "Anestesia Utilizada",
-      antibiotico: "Antibiótico Aplicado",
-      metodo_descorne: "Método de Descorne",
-      edad_animal: "Edad del Animal",
-      cicatrizante: "Cicatrizante Aplicado",
-      corral_origen: "Corral de Origen",
-      corral_destino: "Corral de Destino",
-      motivo_traslado: "Motivo del Traslado",
-      medicamento: "Medicamento",
-      dosis: "Dosis",
-      via_administracion: "Vía de Administración",
-      diagnostico: "Diagnóstico",
-      temperatura: "Temperatura (°C)",
-      frecuencia_cardiaca: "Frecuencia Cardíaca",
-      estado_general: "Estado General",
-      hallazgos: "Hallazgos",
-      toro_id: "ID del Toro",
-      toro_nombre: "Nombre del Toro",
-      metodo_monta: "Método de Monta",
-      tipo_parto: "Tipo de Parto",
-      dificultad: "Dificultad",
-      peso_cria: "Peso de la Cría (kg)",
-      sexo_cria: "Sexo de la Cría",
-      vitalidad: "Vitalidad de la Cría",
-    };
-    return labels[field] || field;
+    return t(`activityFields.${field}`, field);
   };
 
   const getFieldInput = (field: string) => {
@@ -361,7 +329,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           onValueChange={(value) => setActivityData(prev => ({ ...prev, [field]: value }))}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Seleccionar..." />
+            <SelectValue placeholder={t('activityOptions.selectOption')} />
           </SelectTrigger>
           <SelectContent>
             {getSelectOptions(field).map((option) => (
@@ -387,11 +355,11 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
     }
     
     return (
-      <Input
-        value={activityData[field] || ""}
-        onChange={(e) => setActivityData(prev => ({ ...prev, [field]: e.target.value }))}
-        placeholder={`Ingrese ${getFieldLabel(field).toLowerCase()}`}
-      />
+        <Input
+          value={activityData[field] || ""}
+          onChange={(e) => setActivityData(prev => ({ ...prev, [field]: e.target.value }))}
+          placeholder={`${t('activityFields.enterValue')} ${getFieldLabel(field).toLowerCase()}`}
+        />
     );
   };
 
@@ -405,67 +373,24 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
   };
 
   const getSelectOptions = (field: string) => {
-    const options: Record<string, Array<{value: string, label: string}>> = {
-      metodo: [
-        { value: 'tradicional', label: 'Tradicional' },
-        { value: 'gradual', label: 'Gradual' },
-        { value: 'temporal', label: 'Temporal' }
-      ],
-      tipo_hierro: [
-        { value: 'electrico', label: 'Eléctrico' },
-        { value: 'fuego', label: 'A Fuego' },
-        { value: 'frio', label: 'En Frío' }
-      ],
-      metodo_castracion: [
-        { value: 'quirurgico', label: 'Quirúrgico' },
-        { value: 'elastico', label: 'Elástico' },
-        { value: 'pinza', label: 'Pinza' }
-      ],
-      metodo_descorne: [
-        { value: 'cauterizacion', label: 'Cauterización' },
-        { value: 'pasta', label: 'Pasta Cáustica' },
-        { value: 'quirurgico', label: 'Quirúrgico' }
-      ],
-      via_administracion: [
-        { value: 'oral', label: 'Oral' },
-        { value: 'intramuscular', label: 'Intramuscular' },
-        { value: 'subcutanea', label: 'Subcutánea' },
-        { value: 'intravenosa', label: 'Intravenosa' }
-      ],
-      tipo_parto: [
-        { value: 'normal', label: 'Normal' },
-        { value: 'distocico', label: 'Distócico' },
-        { value: 'cesarea', label: 'Cesárea' }
-      ],
-      dificultad: [
-        { value: 'sin_dificultad', label: 'Sin Dificultad' },
-        { value: 'leve', label: 'Leve' },
-        { value: 'moderada', label: 'Moderada' },
-        { value: 'severa', label: 'Severa' }
-      ],
-      sexo_cria: [
-        { value: 'macho', label: 'Macho' },
-        { value: 'hembra', label: 'Hembra' }
-      ],
-      vitalidad: [
-        { value: 'vivo', label: 'Vivo' },
-        { value: 'muerto', label: 'Muerto' },
-        { value: 'debil', label: 'Débil' }
-      ],
-      estado_general: [
-        { value: 'excelente', label: 'Excelente' },
-        { value: 'bueno', label: 'Bueno' },
-        { value: 'regular', label: 'Regular' },
-        { value: 'malo', label: 'Malo' }
-      ],
-      metodo_monta: [
-        { value: 'libre', label: 'Monta Libre' },
-        { value: 'controlada', label: 'Monta Controlada' },
-        { value: 'dirigida', label: 'Monta Dirigida' }
-      ]
+    const optionsMap: Record<string, string[]> = {
+      metodo: ['tradicional', 'gradual', 'temporal'],
+      tipo_hierro: ['electrico', 'fuego', 'frio'],
+      metodo_castracion: ['quirurgico', 'elastico', 'pinza'],
+      metodo_descorne: ['cauterizacion', 'pasta', 'quirurgico'],
+      via_administracion: ['oral', 'intramuscular', 'subcutanea', 'intravenosa'],
+      tipo_parto: ['normal', 'distocico', 'cesarea'],
+      dificultad: ['sin_dificultad', 'leve', 'moderada', 'severa'],
+      sexo_cria: ['macho', 'hembra'],
+      vitalidad: ['vivo', 'muerto', 'debil'],
+      estado_general: ['excelente', 'bueno', 'regular', 'malo'],
+      metodo_monta: ['libre', 'controlada', 'dirigida']
     };
     
-    return options[field] || [];
+    return (optionsMap[field] || []).map(value => ({
+      value,
+      label: t(`activityOptions.${value}`)
+    }));
   };
 
   return (
@@ -481,10 +406,10 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="activity-type">Tipo de Actividad *</Label>
+              <Label htmlFor="activity-type">{t('activityFields.activityType')} *</Label>
               <Select value={selectedType} onValueChange={setSelectedType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar tipo" />
+                  <SelectValue placeholder={t('activityFields.selectType')} />
                 </SelectTrigger>
                 <SelectContent>
                   {activityTypes.map((type) => (
