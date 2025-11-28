@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ export function EditArtificialInseminationDialog({
   record,
   onSuccess,
 }: EditArtificialInseminationDialogProps) {
+  const { t } = useTranslation(['activities', 'common']);
   const [date, setDate] = useState<Date>();
   const [bullName, setBullName] = useState("");
   const [isPregnant, setIsPregnant] = useState<string>("pending");
@@ -64,8 +66,8 @@ export function EditArtificialInseminationDialog({
   const handleSubmit = async () => {
     if (!record || !date || !bullName) {
       toast({
-        title: "Error",
-        description: "Por favor completa todos los campos requeridos",
+        title: t('activities:artificialInsemination.errorTitle'),
+        description: t('activities:artificialInsemination.completeRequiredFields'),
         variant: "destructive",
       });
       return;
@@ -87,8 +89,8 @@ export function EditArtificialInseminationDialog({
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Registro actualizado correctamente",
+        title: t('activities:artificialInsemination.successTitle'),
+        description: t('activities:artificialInsemination.recordUpdated'),
       });
 
       onSuccess();
@@ -96,8 +98,8 @@ export function EditArtificialInseminationDialog({
     } catch (error) {
       console.error("Error updating insemination:", error);
       toast({
-        title: "Error",
-        description: "Error al actualizar el registro",
+        title: t('activities:artificialInsemination.errorTitle'),
+        description: t('activities:artificialInsemination.errorUpdating'),
         variant: "destructive",
       });
     } finally {
@@ -112,17 +114,17 @@ export function EditArtificialInseminationDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            Editar Inseminación Artificial
+            {t('activities:artificialInsemination.editTitle')}
           </DialogTitle>
           <p className="text-sm text-muted-foreground">
-            Animal: {record.animals?.name || record.animals?.id_tag || "Sin nombre"}
+            {t('activities:artificialInsemination.animal')}: {record.animals?.name || record.animals?.id_tag || t('activities:artificialInsemination.noName')}
           </p>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="date" className="text-right">
-              Fecha *
+              {t('activities:artificialInsemination.date')}
             </Label>
             <div className="col-span-3">
               <Popover>
@@ -135,7 +137,7 @@ export function EditArtificialInseminationDialog({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "dd/MM/yyyy") : "Seleccionar fecha"}
+                    {date ? format(date, "dd/MM/yyyy") : t('activities:artificialInsemination.selectDate')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -152,30 +154,30 @@ export function EditArtificialInseminationDialog({
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="bull-name" className="text-right">
-              Toro *
+              {t('activities:artificialInsemination.bull')}
             </Label>
             <Input
               id="bull-name"
               value={bullName}
               onChange={(e) => setBullName(e.target.value)}
               className="col-span-3"
-              placeholder="Nombre del toro"
+              placeholder={t('activities:artificialInsemination.bullName')}
             />
           </div>
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="pregnant" className="text-right">
-              ¿Quedó preñada?
+              {t('activities:artificialInsemination.pregnantLabel')}
             </Label>
             <div className="col-span-3">
               <Select value={isPregnant} onValueChange={setIsPregnant}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar resultado" />
+                  <SelectValue placeholder={t('activities:artificialInsemination.selectResult')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="yes">Sí</SelectItem>
-                  <SelectItem value="no">No</SelectItem>
+                  <SelectItem value="pending">{t('activities:artificialInsemination.pending')}</SelectItem>
+                  <SelectItem value="yes">{t('activities:artificialInsemination.yes')}</SelectItem>
+                  <SelectItem value="no">{t('activities:artificialInsemination.no')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -183,24 +185,24 @@ export function EditArtificialInseminationDialog({
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="notes" className="text-right">
-              Observaciones
+              {t('activities:artificialInsemination.notesLabel')}
             </Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="col-span-3"
-              placeholder="Comentarios adicionales..."
+              placeholder={t('activities:artificialInsemination.notesPlaceholder')}
             />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
+            {t('common:cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? "Guardando..." : "Guardar Cambios"}
+            {isLoading ? t('activities:artificialInsemination.saving') : t('activities:artificialInsemination.saveChanges')}
           </Button>
         </DialogFooter>
       </DialogContent>
