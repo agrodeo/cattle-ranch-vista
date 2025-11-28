@@ -296,30 +296,30 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Peso Final Promedio</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:production.avgFinalWeight')}</CardTitle>
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageFinalWeight.toFixed(1)} kg</div>
             <p className="text-xs text-muted-foreground">
-              Peso al final del periodo
+              {t('reports:production.endOfPeriod')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ganancia Diaria Promedio</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:production.avgDailyGain')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.averageDailyGain.toFixed(2)} kg/día</div>
+            <div className="text-2xl font-bold">{stats.averageDailyGain.toFixed(2)} {t('reports:production.kgDay')}</div>
             <div className="flex items-center justify-between">
               <Badge variant={stats.performanceIndicators[2].status === 'good' ? "default" : stats.performanceIndicators[2].status === 'average' ? "secondary" : "destructive"}>
-                {stats.performanceIndicators[2].status === 'good' ? "Excelente" : stats.performanceIndicators[2].status === 'average' ? "Bueno" : "Mejorable"}
+                {stats.performanceIndicators[2].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[2].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                vs {stats.performanceIndicators[2].benchmark.toFixed(2)}kg/día
+                {t('reports:production.vs')} {stats.performanceIndicators[2].benchmark.toFixed(2)}{t('reports:production.kgDay')}
               </span>
             </div>
           </CardContent>

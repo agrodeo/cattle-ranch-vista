@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
@@ -23,6 +24,7 @@ interface MortalityReportsProps {
 }
 
 export const MortalityReports = ({ filters: globalFilters }: MortalityReportsProps) => {
+  const { t } = useTranslation(['reports']);
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,28 +72,28 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
       ? deathsWithAge.reduce((sum, d) => sum + d.edad_dias, 0) / deathsWithAge.length
       : 0;
 
-    // Deaths by age groups
-    const ageGroups = {
-      'Terneros (0-12m)': 0,
-      'Jóvenes (1-2 años)': 0,
-      'Adultos (2+ años)': 0,
-      'Edad desconocida': 0
+    // Deaths by age groups (keys for translation)
+    const ageGroups: Record<string, number> = {
+      'calves0_12': 0,
+      'young1_2': 0,
+      'adults2plus': 0,
+      'unknownAge': 0
     };
 
     deaths.forEach(death => {
       if (!death.edad_dias) {
-        ageGroups['Edad desconocida']++;
+        ageGroups['unknownAge']++;
         return;
       }
       
       const ageInMonths = death.edad_dias / 30.44;
       
       if (ageInMonths < 12) {
-        ageGroups['Terneros (0-12m)']++;
+        ageGroups['calves0_12']++;
       } else if (ageInMonths < 24) {
-        ageGroups['Jóvenes (1-2 años)']++;
+        ageGroups['young1_2']++;
       } else {
-        ageGroups['Adultos (2+ años)']++;
+        ageGroups['adults2plus']++;
       }
     });
 
@@ -106,7 +108,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
     // Deaths by cause
     const causeCounts: { [key: string]: number } = {};
     deaths.forEach(death => {
-      const cause = death.catalogo_causas?.nombre || death.causa_texto || 'Causa desconocida';
+      const cause = death.catalogo_causas?.nombre || death.causa_texto || 'Unknown cause';
       causeCounts[cause] = (causeCounts[cause] || 0) + 1;
     });
 
@@ -165,11 +167,11 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
   };
 
   if (loading) {
-    return <div className="text-center p-8">Cargando reportes de mortalidad...</div>;
+    return <div className="text-center p-8">{t('reports:mortality.loading')}</div>;
   }
 
   if (!stats) {
-    return <div className="text-center p-8">No se pudieron cargar las estadísticas de mortalidad.</div>;
+    return <div className="text-center p-8">{t('reports:mortality.errorLoading')}</div>;
   }
 
   return (
@@ -178,46 +180,46 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Muertes</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:mortality.totalDeaths')}</CardTitle>
             <Skull className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.totalDeaths}</div>
             <p className="text-xs text-muted-foreground">
-              Registros totales
+              {t('reports:mortality.totalRecords')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Mortalidad</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:mortality.mortalityRate')}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">{stats.mortalityRate.toFixed(1)}%</div>
             <Badge variant={stats.mortalityRate > 10 ? "destructive" : stats.mortalityRate > 5 ? "secondary" : "default"}>
-              {stats.mortalityRate > 10 ? "Alta" : stats.mortalityRate > 5 ? "Moderada" : "Baja"}
+              {stats.mortalityRate > 10 ? t('reports:mortality.high') : stats.mortalityRate > 5 ? t('reports:mortality.moderate') : t('reports:mortality.low')}
             </Badge>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Edad Promedio de Muerte</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:mortality.avgDeathAge')}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{Math.round(stats.averageDeathAge / 30.44)} meses</div>
+            <div className="text-2xl font-bold">{Math.round(stats.averageDeathAge / 30.44)} {t('reports:mortality.months')}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.averageDeathAge.toFixed(0)} días promedio
+              {stats.averageDeathAge.toFixed(0)} {t('reports:mortality.daysAvg')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tendencia</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:mortality.trend')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -225,7 +227,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
               {stats.monthlyDeaths.slice(-3).reduce((sum, m) => sum + m.count, 0)}
             </div>
             <p className="text-xs text-muted-foreground">
-              Últimos 3 meses
+              {t('reports:mortality.last3Months')}
             </p>
           </CardContent>
         </Card>
@@ -237,7 +239,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
         {stats.deathsByAge.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Mortalidad por Grupo de Edad</CardTitle>
+              <CardTitle>{t('reports:mortality.mortalityByAge')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -247,7 +249,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ ageGroup, percentage }) => `${ageGroup}: ${percentage.toFixed(1)}%`}
+                    label={({ ageGroup, percentage }) => `${t(`reports:mortality.${ageGroup}`)}: ${percentage.toFixed(1)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="count"
@@ -267,7 +269,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
         {stats.deathsByCause.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Principales Causas de Muerte</CardTitle>
+              <CardTitle>{t('reports:mortality.mainCauses')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -286,7 +288,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
         {/* Monthly Trend */}
         <Card className={stats.hasMultipleBreeds ? "" : "lg:col-span-2"}>
           <CardHeader>
-            <CardTitle>Tendencia Mensual de Mortalidad</CardTitle>
+            <CardTitle>{t('reports:mortality.monthlyTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -305,7 +307,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
         {stats.hasMultipleBreeds && stats.breedMortality.length > 1 && (
           <Card>
             <CardHeader>
-              <CardTitle>Mortalidad por Raza</CardTitle>
+              <CardTitle>{t('reports:mortality.mortalityByBreed')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -315,8 +317,8 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="deaths" fill="#ef4444" name="Muertes" />
-                  <Bar dataKey="rate" fill="#f97316" name="Tasa %" />
+                  <Bar dataKey="deaths" fill="#ef4444" name={t('reports:mortality.deaths')} />
+                  <Bar dataKey="rate" fill="#f97316" name={t('reports:mortality.ratePercent')} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -328,7 +330,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
       {stats.deathsByCause.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Detalle de Causas de Muerte</CardTitle>
+            <CardTitle>{t('reports:mortality.causeDetails')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -336,7 +338,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
                 <div key={index} className="flex items-center justify-between p-2 border rounded">
                   <span className="font-medium">{cause.causa}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{cause.count} casos</span>
+                    <span className="text-sm text-muted-foreground">{cause.count} {t('reports:mortality.cases')}</span>
                     <Badge variant="outline">{cause.percentage.toFixed(1)}%</Badge>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ export interface ReportFilters {
 }
 
 export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, className }: ReportsFiltersProps) {
+  const { t } = useTranslation(['reports']);
   const [corrals, setCorrales] = useState<any[]>([]);
   const [breeds, setBreeds] = useState<string[]>([]);
 
@@ -101,7 +103,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
         <div className="flex items-center gap-2">
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="text-xs">
-              {activeFiltersCount} filtro{activeFiltersCount > 1 ? 's' : ''}
+              {activeFiltersCount} {t('reports:filters.filter')}{activeFiltersCount > 1 ? 's' : ''}
             </Badge>
           )}
         </div>
@@ -115,7 +117,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
               className="text-xs"
             >
               <X className="h-3 w-3 mr-1" />
-              Limpiar
+              {t('reports:filters.clear')}
             </Button>
           )}
           
@@ -126,7 +128,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
               className="text-xs"
             >
               <Filter className="h-3 w-3 mr-1" />
-              Aplicar Filtros
+              {t('reports:filters.applyFilters')}
             </Button>
           )}
         </div>
@@ -135,7 +137,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t">
             {/* Date Range */}
             <div className="space-y-2">
-              <Label className="text-xs">Período</Label>
+              <Label className="text-xs">{t('reports:filters.period')}</Label>
               <div className="flex gap-2">
                 <Popover>
                   <PopoverTrigger asChild>
@@ -151,7 +153,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                       {filters.date_from ? (
                         format(filters.date_from, "dd/MM/yy", { locale: es })
                       ) : (
-                        <span>Desde</span>
+                        <span>{t('reports:filters.from')}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -180,7 +182,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                       {filters.date_to ? (
                         format(filters.date_to, "dd/MM/yy", { locale: es })
                       ) : (
-                        <span>Hasta</span>
+                        <span>{t('reports:filters.until')}</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -199,7 +201,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
 
             {/* Corrals */}
             <div className="space-y-2">
-              <Label className="text-xs">Corrales</Label>
+              <Label className="text-xs">{t('reports:filters.corrals')}</Label>
               <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
                 {corrals.map((corral) => (
                   <Badge
@@ -216,16 +218,16 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
 
             {/* Category */}
             <div className="space-y-2">
-              <Label className="text-xs">Categoría</Label>
+              <Label className="text-xs">{t('reports:filters.category')}</Label>
               <Select
                 value={filters.category || "all"}
                 onValueChange={(value) => updateFilter('category', value === "all" ? undefined : value)}
               >
                 <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Todas" />
+                  <SelectValue placeholder={t('reports:filters.all')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="all">{t('reports:filters.all')}</SelectItem>
                   <SelectItem value="Ternero">Ternero</SelectItem>
                   <SelectItem value="Ternera">Ternera</SelectItem>
                   <SelectItem value="Torete">Torete</SelectItem>
@@ -238,16 +240,16 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
 
             {/* Breed */}
             <div className="space-y-2">
-              <Label className="text-xs">Raza</Label>
+              <Label className="text-xs">{t('reports:filters.breed')}</Label>
               <Select
                 value={filters.breed || "all"}
                 onValueChange={(value) => updateFilter('breed', value === "all" ? undefined : value)}
               >
                 <SelectTrigger className="h-8">
-                  <SelectValue placeholder="Todas" />
+                  <SelectValue placeholder={t('reports:filters.all')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="all">{t('reports:filters.all')}</SelectItem>
                   {breeds.filter(breed => breed && breed.trim()).map(breed => (
                     <SelectItem key={breed} value={breed}>
                       {breed}
@@ -259,7 +261,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
 
             {/* Options */}
             <div className="space-y-2">
-              <Label className="text-xs">Opciones</Label>
+              <Label className="text-xs">{t('reports:filters.options')}</Label>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="include-sold-dead"
@@ -269,7 +271,7 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                   }
                 />
                 <Label htmlFor="include-sold-dead" className="text-xs">
-                  Incluir vendidos/muertos
+                  {t('reports:filters.includeSoldDead')}
                 </Label>
               </div>
             </div>

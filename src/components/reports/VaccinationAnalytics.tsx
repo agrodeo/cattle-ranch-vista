@@ -404,7 +404,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>
-          <strong>Analítica de Vacunación:</strong> {stats?.totalAnimals || 0} animales activos • {stats?.totalRequirements || 0} requisitos configurados ({stats?.mandatoryRequirements || 0} obligatorios)
+          <strong>{t('reports:vaccination.analyticsTitle')}:</strong> {stats?.totalAnimals || 0} {t('reports:vaccination.activeAnimals')} • {stats?.totalRequirements || 0} {t('reports:vaccination.configuredRequirements')} ({stats?.mandatoryRequirements || 0} {t('reports:vaccination.mandatory')})
         </AlertDescription>
       </Alert>
 
@@ -414,7 +414,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Total Animales</p>
+                <p className="text-sm text-muted-foreground">{t('reports:vaccination.totalAnimals')}</p>
                 <Shield className="h-5 w-5 text-primary" />
               </div>
               <p className="text-2xl font-bold">{stats?.totalAnimals || 0}</p>
@@ -426,12 +426,12 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
           <CardContent className="p-6">
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">Al Día</p>
+                <p className="text-sm text-muted-foreground">{t('reports:vaccination.upToDate')}</p>
                 <CheckCircle className="h-5 w-5 text-green-600" />
               </div>
               <p className="text-2xl font-bold text-green-600">{stats?.animalsCompliant || 0}</p>
               <p className="text-xs text-muted-foreground">
-                {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% del total
+                {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% {t('reports:vaccination.ofTotal')}
               </p>
             </div>
           </CardContent>

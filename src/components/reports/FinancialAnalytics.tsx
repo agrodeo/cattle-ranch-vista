@@ -273,7 +273,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Egresos Totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:financial.totalExpenses')}</CardTitle>
             <TrendingDown className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -281,14 +281,14 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
               ${stats.totalExpenses.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              ${stats.costPerAnimal.toFixed(0)} por animal
+              ${stats.costPerAnimal.toFixed(0)} {t('reports:financial.perAnimal')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ganancia Neta</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:financial.netProfit')}</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -296,14 +296,14 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
               ${stats.netProfit.toLocaleString()}
             </div>
             <Badge variant={stats.netProfit >= 0 ? "default" : "destructive"}>
-              {stats.netProfit >= 0 ? "Ganancia" : "Pérdida"}
+              {stats.netProfit >= 0 ? t('reports:financial.profit') : t('reports:financial.loss')}
             </Badge>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Margen de Ganancia</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:financial.profitMargin')}</CardTitle>
             <Calculator className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -311,7 +311,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
               {stats.profitMargin.toFixed(1)}%
             </div>
             <Badge variant={stats.profitMargin >= 10 ? "default" : stats.profitMargin >= 0 ? "secondary" : "destructive"}>
-              {stats.profitMargin >= 10 ? "Excelente" : stats.profitMargin >= 0 ? "Aceptable" : "Crítico"}
+              {stats.profitMargin >= 10 ? t('reports:financial.excellent') : stats.profitMargin >= 0 ? t('reports:financial.acceptable') : t('reports:financial.critical')}
             </Badge>
           </CardContent>
         </Card>
