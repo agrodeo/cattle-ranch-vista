@@ -31,7 +31,7 @@ interface TemporalEvolutionAnalyticsProps {
 
 export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalEvolutionAnalyticsProps) {
   const { lang } = useLanguage();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['reports']);
   const [groupBy, setGroupBy] = useState<GroupByPeriod>('year');
   const [weightType, setWeightType] = useState<WeightType>('destete');
 
@@ -82,7 +82,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          No hay datos suficientes para mostrar el análisis temporal. Asegúrate de tener pesajes registrados en diferentes períodos.
+          {t('reports:temporal.noData')}
         </AlertDescription>
       </Alert>
     );
@@ -112,10 +112,10 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
             <div>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5" />
-                Análisis de Evolución Temporal
+                {t('reports:temporal.title')}
               </CardTitle>
               <CardDescription>
-                Analiza la mejora de tu cabaña a lo largo del tiempo
+                {t('reports:temporal.subtitle')}
               </CardDescription>
             </div>
             <ExportButton data={data} filename="analisis-temporal" />
@@ -124,29 +124,29 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="text-sm font-medium mb-2 block">Agrupar por</label>
+              <label className="text-sm font-medium mb-2 block">{t('reports:temporal.groupBy')}</label>
               <Select value={groupBy} onValueChange={(v) => setGroupBy(v as GroupByPeriod)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="year">Año</SelectItem>
-                  <SelectItem value="semester">Semestre</SelectItem>
-                  <SelectItem value="quarter">Trimestre</SelectItem>
-                  <SelectItem value="month">Mes</SelectItem>
+                  <SelectItem value="year">{t('reports:temporal.year')}</SelectItem>
+                  <SelectItem value="semester">{t('reports:temporal.semester')}</SelectItem>
+                  <SelectItem value="quarter">{t('reports:temporal.quarter')}</SelectItem>
+                  <SelectItem value="month">{t('reports:temporal.month')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Tipo de peso</label>
+              <label className="text-sm font-medium mb-2 block">{t('reports:temporal.weightType')}</label>
               <Select value={weightType} onValueChange={(v) => setWeightType(v as WeightType)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="destete">Destete</SelectItem>
-                  <SelectItem value="final">Final</SelectItem>
-                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="destete">{t('reports:temporal.weaning')}</SelectItem>
+                  <SelectItem value="final">{t('reports:temporal.final')}</SelectItem>
+                  <SelectItem value="all">{t('reports:temporal.all')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -242,9 +242,9 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       {/* Bar Chart - Comparison */}
       <Card>
         <CardHeader>
-          <CardTitle>Comparación por Período</CardTitle>
+          <CardTitle>{t('reports:temporal.comparison')}</CardTitle>
           <CardDescription>
-            Pesos promedio por {groupBy === 'year' ? 'año' : groupBy === 'semester' ? 'semestre' : groupBy === 'quarter' ? 'trimestre' : 'mes'}
+            {t('reports:temporal.avgWeights')} {groupBy === 'year' ? t('reports:temporal.year').toLowerCase() : groupBy === 'semester' ? t('reports:temporal.semester').toLowerCase() : groupBy === 'quarter' ? t('reports:temporal.quarter').toLowerCase() : t('reports:temporal.month').toLowerCase()}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -258,7 +258,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
               />
               <YAxis 
                 label={{ 
-                  value: 'Peso (kg)', 
+                  value: t('reports:temporal.weight'), 
                   angle: -90, 
                   position: 'insideLeft',
                   style: { fill: 'hsl(var(--foreground))' }
@@ -275,14 +275,14 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
               <Legend />
               {weightType === 'all' ? (
                 <>
-                  <Bar dataKey="nacimiento" fill="hsl(142 76% 36%)" name="Nacimiento" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="destete" fill="hsl(221 83% 53%)" name="Destete" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="final" fill="hsl(280 87% 65%)" name="Final" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="nacimiento" fill="hsl(142 76% 36%)" name={t('reports:temporal.birth')} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="destete" fill="hsl(221 83% 53%)" name={t('reports:temporal.weaning')} radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="final" fill="hsl(280 87% 65%)" name={t('reports:temporal.final')} radius={[4, 4, 0, 0]} />
                 </>
               ) : weightType === 'destete' ? (
-                <Bar dataKey="destete" fill="hsl(221 83% 53%)" name="Destete" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="destete" fill="hsl(221 83% 53%)" name={t('reports:temporal.weaning')} radius={[4, 4, 0, 0]} />
               ) : (
-                <Bar dataKey="final" fill="hsl(280 87% 65%)" name="Final" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="final" fill="hsl(280 87% 65%)" name={t('reports:temporal.final')} radius={[4, 4, 0, 0]} />
               )}
             </BarChart>
           </ResponsiveContainer>
@@ -292,8 +292,8 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       {/* Detailed Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Datos Detallados</CardTitle>
-          <CardDescription>{totalAnimals} animales analizados</CardDescription>
+          <CardTitle>{t('reports:temporal.detailedData')}</CardTitle>
+          <CardDescription>{totalAnimals} {t('reports:temporal.animalsAnalyzed')}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Desktop Table */}
@@ -301,12 +301,12 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Período</TableHead>
-                  <TableHead className="text-right">Nacimiento</TableHead>
-                  <TableHead className="text-right">Destete</TableHead>
-                  <TableHead className="text-right">Final</TableHead>
-                  <TableHead className="text-right">Animales</TableHead>
-                  <TableHead className="text-right">Mejora</TableHead>
+                  <TableHead>{t('reports:temporal.period')}</TableHead>
+                  <TableHead className="text-right">{t('reports:temporal.birth')}</TableHead>
+                  <TableHead className="text-right">{t('reports:temporal.weaning')}</TableHead>
+                  <TableHead className="text-right">{t('reports:temporal.final')}</TableHead>
+                  <TableHead className="text-right">{t('reports:temporal.animals')}</TableHead>
+                  <TableHead className="text-right">{t('reports:temporal.improvement')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -345,30 +345,30 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
               <Card key={i}>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-lg">{row.periodo}</CardTitle>
-                  <CardDescription>{row.cantidad_animales} animales</CardDescription>
+                  <CardDescription>{row.cantidad_animales} {t('reports:temporal.animals').toLowerCase()}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   {row.peso_nacimiento_promedio && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Nacimiento:</span>
+                      <span className="text-sm text-muted-foreground">{t('reports:temporal.birth')}:</span>
                       <span className="font-medium">{formatWeight(row.peso_nacimiento_promedio, lang)}</span>
                     </div>
                   )}
                   {row.peso_destete_promedio && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Destete:</span>
+                      <span className="text-sm text-muted-foreground">{t('reports:temporal.weaning')}:</span>
                       <span className="font-medium">{formatWeight(row.peso_destete_promedio, lang)}</span>
                     </div>
                   )}
                   {row.peso_final_promedio && (
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Final:</span>
+                      <span className="text-sm text-muted-foreground">{t('reports:temporal.final')}:</span>
                       <span className="font-medium">{formatWeight(row.peso_final_promedio, lang)}</span>
                     </div>
                   )}
                   {row.mejora_vs_anterior !== null && (
                     <div className="flex justify-between items-center pt-2 border-t">
-                      <span className="text-sm text-muted-foreground">Mejora:</span>
+                      <span className="text-sm text-muted-foreground">{t('reports:temporal.improvement')}:</span>
                       <PerformanceBadge 
                         level={getPerformanceLevel(row.mejora_vs_anterior)} 
                         value={row.mejora_vs_anterior}

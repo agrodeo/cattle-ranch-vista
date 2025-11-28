@@ -239,7 +239,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
           onClick={() => setAnimalTableExpanded(!animalTableExpanded)}
         >
           <CardTitle className="flex items-center justify-between">
-            <span>Producción por Animal</span>
+            <span>{t('reports:production.animalProduction')}</span>
             {animalTableExpanded ? (
               <ChevronUp className="h-5 w-5" />
             ) : (
@@ -260,17 +260,17 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Peso Promedio al Nacer</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:production.avgBirthWeight')}</CardTitle>
             <Scale className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageBirthWeight.toFixed(1)} kg</div>
             <div className="flex items-center justify-between">
               <Badge variant={stats.performanceIndicators[0].status === 'good' ? "default" : stats.performanceIndicators[0].status === 'average' ? "secondary" : "destructive"}>
-                {stats.performanceIndicators[0].status === 'good' ? "Excelente" : stats.performanceIndicators[0].status === 'average' ? "Bueno" : "Mejorable"}
+                {stats.performanceIndicators[0].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[0].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                vs {stats.performanceIndicators[0].benchmark.toFixed(1)}kg
+                {t('reports:production.vs')} {stats.performanceIndicators[0].benchmark.toFixed(1)}kg
               </span>
             </div>
           </CardContent>
@@ -278,17 +278,17 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Peso Promedio al Destete</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:production.avgWeaningWeight')}</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.averageWeaningWeight.toFixed(1)} kg</div>
             <div className="flex items-center justify-between">
               <Badge variant={stats.performanceIndicators[1].status === 'good' ? "default" : stats.performanceIndicators[1].status === 'average' ? "secondary" : "destructive"}>
-                {stats.performanceIndicators[1].status === 'good' ? "Excelente" : stats.performanceIndicators[1].status === 'average' ? "Bueno" : "Mejorable"}
+                {stats.performanceIndicators[1].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[1].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
               </Badge>
               <span className="text-xs text-muted-foreground">
-                vs {stats.performanceIndicators[1].benchmark.toFixed(1)}kg
+                {t('reports:production.vs')} {stats.performanceIndicators[1].benchmark.toFixed(1)}kg
               </span>
             </div>
           </CardContent>
@@ -332,7 +332,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
         {stats.weightByAge.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Peso Promedio por Edad (meses)</CardTitle>
+              <CardTitle>{t('reports:production.avgWeightByAge')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -351,7 +351,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
         {/* Weight by Gender */}
         <Card>
           <CardHeader>
-            <CardTitle>Comparación de Pesos por Sexo</CardTitle>
+            <CardTitle>{t('reports:production.weightComparison')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -361,9 +361,9 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="birthWeight" fill="#8884d8" name="Peso al nacer" />
-                <Bar dataKey="weaningWeight" fill="#10b981" name="Peso al destete" />
-                <Bar dataKey="finalWeight" fill="#3b82f6" name="Peso final" />
+                <Bar dataKey="birthWeight" fill="#8884d8" name={t('reports:production.birthWeight')} />
+                <Bar dataKey="weaningWeight" fill="#10b981" name={t('reports:production.weaningWeight')} />
+                <Bar dataKey="finalWeight" fill="#3b82f6" name={t('reports:production.finalWeight')} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -373,7 +373,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
         {stats.hasMultipleBreeds && stats.weightByBreed.length > 1 && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Comparación de Rendimiento por Raza</CardTitle>
+              <CardTitle>{t('reports:production.breedPerformance')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -383,9 +383,9 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="birthWeight" fill="#8884d8" name="Peso al nacer" />
-                  <Bar dataKey="weaningWeight" fill="#10b981" name="Peso al destete" />
-                  <Bar dataKey="finalWeight" fill="#3b82f6" name="Peso final" />
+                  <Bar dataKey="birthWeight" fill="#8884d8" name={t('reports:production.birthWeight')} />
+                  <Bar dataKey="weaningWeight" fill="#10b981" name={t('reports:production.weaningWeight')} />
+                  <Bar dataKey="finalWeight" fill="#3b82f6" name={t('reports:production.finalWeight')} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -396,7 +396,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
         {stats.growthTrends.length > 0 && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Tendencias de Crecimiento (Últimos 12 meses)</CardTitle>
+              <CardTitle>{t('reports:production.growthTrends')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
