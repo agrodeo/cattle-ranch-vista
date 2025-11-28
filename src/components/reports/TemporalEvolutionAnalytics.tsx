@@ -159,7 +159,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardDescription>Mejora Promedio</CardDescription>
+              <CardDescription>{t('reports:temporal.avgImprovement')}</CardDescription>
               <Target className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardHeader>
@@ -167,21 +167,21 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
             <div className="text-2xl font-bold">
               <TrendIndicator value={averageAnnualImprovement} showIcon={false} />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">por período</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('reports:temporal.perPeriod')}</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardDescription>Tendencia</CardDescription>
+              <CardDescription>{t('reports:temporal.trend')}</CardDescription>
               <TrendIcon className={`h-4 w-4 ${trendColor}`} />
             </div>
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${trendColor}`}>
-              {metrics.trend.direction === 'ascending' ? 'Subiendo' : 
-               metrics.trend.direction === 'descending' ? 'Bajando' : 'Estable'}
+              {metrics.trend.direction === 'ascending' ? t('reports:temporal.ascending') : 
+               metrics.trend.direction === 'descending' ? t('reports:temporal.descending') : t('reports:temporal.stable')}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               R² = {metrics.trend.r2.toFixed(3)}
@@ -192,7 +192,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardDescription>Mejor Período</CardDescription>
+              <CardDescription>{t('reports:temporal.bestPeriod')}</CardDescription>
               <Award className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardHeader>
@@ -212,7 +212,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardDescription>Aceleración</CardDescription>
+              <CardDescription>{t('reports:temporal.acceleration')}</CardDescription>
               <Zap className="h-4 w-4 text-muted-foreground" />
             </div>
           </CardHeader>
@@ -220,7 +220,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
             <div className="flex items-center gap-2">
               <TrendIndicator value={metrics.acceleration} />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">vs histórico</p>
+            <p className="text-xs text-muted-foreground mt-1">{t('reports:temporal.vsHistorical')}</p>
           </CardContent>
         </Card>
       </div>

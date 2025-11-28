@@ -1,423 +1,197 @@
 {
   "title": "Reportes y Análisis",
-  "subtitle": "Análisis detallado del desempeño",
-  "pageTitle": "Reportes",
-  "pageSubtitle": "Análisis de operación ganadera",
-  "globalFilters": "Filtros Globales",
-  "filter": "filtro",
-  "filters": "filtros",
-  "analysisPanel": "Panel de Análisis",
-  "detailedReports": "Reportes detallados por categoría",
+  "subtitle": "Visualiza y analiza el rendimiento de tu cabaña",
   "tabs": {
-    "herd": "Rebaño",
-    "reproduction": "Reproducción",
+    "herd": "Rodeo",
+    "reproductive": "Reproducción",
     "production": "Producción",
     "evolution": "Evolución",
     "mortality": "Mortalidad",
     "vaccines": "Vacunas",
-    "finance": "Finanzas"
+    "financial": "Finanzas"
   },
-  "herd": {
-    "totalAnimals": "Total de Animales",
-    "activeAnimals": "Animales Activos",
-    "sales": "Ventas",
-    "mortality": "Mortalidad",
-    "males": "Machos",
-    "females": "Hembras",
-    "statusDistribution": "Distribución por Estado",
-    "ageDistribution": "Distribución por Edad",
-    "breedComparison": "Comparación por Raza",
-    "unspecified": "Sin especificar",
-    "calves": "Terneros (0-12m)",
-    "young": "Jóvenes (1-2 años)",
-    "adults": "Adultos (2+ años)",
-    "noDate": "Sin fecha",
-    "active": "Activos",
-    "sold": "Vendidos",
-    "deceased": "Fallecidos",
-    "ofTotal": "del total",
-    "loadingStats": "Cargando estadísticas del rebaño...",
-    "errorLoading": "No se pudieron cargar las estadísticas"
-  },
-  "reproductive": {
-    "reproductiveFemales": "Hembras Reproductivas",
-    "ageRestriction": "≥15 meses de edad",
-    "pregnancyRate": "Tasa de Preñez",
-    "confirmedPregnancies": "Preñeces confirmadas",
-    "calvingRate": "Tasa de Parición",
-    "successfulBirths": "Partos exitosos",
-    "currentPregnant": "Preñadas Actuales",
-    "activePregnancies": "Hembras con preñez activa",
-    "femaleDetails": "Detalle Hembras Reproductivas",
-    "animals": "animales",
-    "noFemales": "No se encontraron hembras reproductivas",
-    "errorLoading": "Error al cargar datos",
-    "dataUpdated": "Datos actualizados",
-    "retry": "Reintentar"
-  },
-  "production": {
-    "animalProduction": "Producción por Animal",
-    "avgBirthWeight": "Peso Promedio al Nacer",
-    "avgWeaningWeight": "Peso Promedio al Destete",
-    "avgFinalWeight": "Peso Final Promedio",
-    "avgDailyGain": "Ganancia Diaria Promedio",
-    "excellent": "Excelente",
-    "good": "Bueno",
-    "improvable": "Mejorable",
-    "avgWeightByAge": "Peso Promedio por Edad",
-    "weightComparisonBySex": "Comparación de Pesos por Sexo",
-    "birthWeight": "Peso al nacer",
-    "weaningWeight": "Peso al destete",
-    "finalWeight": "Peso final",
-    "performanceByBreed": "Comparación de Rendimiento por Raza",
-    "growthTrends": "Tendencias de Crecimiento",
-    "loadingProduction": "Cargando análisis de producción...",
-    "errorLoading": "No se pudo cargar el análisis de producción"
-  },
-  "financial": {
-    "totalIncome": "Ingresos Totales",
-    "totalExpenses": "Egresos Totales",
-    "netProfit": "Ganancia Neta",
-    "profitMargin": "Margen de Ganancia",
-    "perAnimal": "por animal",
-    "profit": "Ganancia",
-    "loss": "Pérdida",
-    "excellent": "Excelente",
-    "acceptable": "Aceptable",
-    "critical": "Crítico",
-    "monthlyPerformance": "Rendimiento Mensual",
-    "income": "Ingresos",
-    "expenses": "Egresos",
-    "profitTrend": "Tendencia de Ganancia",
-    "topExpenseCategories": "Principales Categorías de Egresos",
-    "topIncomeCategories": "Principales Categorías de Ingresos",
-    "profitabilityByBreed": "Rentabilidad por Raza",
-    "costPerAnimal": "Costo por Animal",
-    "profitPerAnimal": "Ganancia por Animal",
-    "annualComparison": "Comparación Anual",
-    "loadingFinancial": "Cargando análisis financiero...",
-    "errorLoading": "No se pudo cargar el análisis financiero"
-  },
-  "evolution": {
-    "title": "Evolución Temporal",
-    "subtitle": "Análisis de la evolución productiva del rebaño",
-    "groupBy": "Agrupar por",
-    "weightType": "Tipo de peso",
-    "periods": {
-      "year": "Año",
-      "semester": "Semestre",
-      "quarter": "Trimestre",
-      "month": "Mes"
-    },
-    "weights": {
-      "birth": "Nacimiento",
-      "weaning": "Destete",
-      "final": "Final",
-      "all": "Todos"
-    },
-    "chart": {
-      "title": "Evolución de Pesos",
-      "comparison": "Comparación por Período",
-      "period": "Período",
-      "weight": "Peso (kg)"
-    },
-    "kpis": {
-      "avgImprovement": "Mejora Promedio",
-      "trend": "Tendencia",
-      "bestPeriod": "Mejor Período",
-      "acceleration": "Aceleración"
-    },
-    "trends": {
-      "rising": "Ascendente",
-      "falling": "Descendente",
-      "stable": "Estable"
-    },
-    "insights": {
-      "title": "Insights",
-      "positiveGrowth": "El rebaño muestra una tendencia de crecimiento positiva",
-      "negativeGrowth": "Se observa una disminución en el rendimiento",
-      "stablePerformance": "El rendimiento se mantiene estable"
-    },
-    "table": {
-      "title": "Detalle por Período",
-      "period": "Período",
-      "animals": "Animales",
-      "avgWeight": "Peso Promedio",
-      "change": "Cambio",
-      "performance": "Rendimiento"
-    },
-    "performance": {
-      "excellent": "Excelente",
-      "good": "Bueno",
-      "regular": "Regular",
-      "poor": "Bajo"
-    },
-    "export": {
-      "excel": "Exportar Excel",
-      "csv": "Exportar CSV",
-      "exporting": "Exportando...",
-      "success": "Datos exportados correctamente",
-      "error": "Error al exportar datos"
-    },
-    "noData": "No hay suficientes datos para mostrar la evolución temporal",
-    "animalsAnalyzed": "{{count}} animales analizados"
-  },
-  "mobile": {
-    "subtitle": "Análisis y métricas del establecimiento",
-    "dateRange": "Rango de fechas",
-    "weekly": "Semanal",
-    "monthly": "Mensual",
-    "quarterly": "Trimestral",
-    "yearly": "Anual",
-    "exportData": "Exportar Datos",
-    "noDataAvailable": "No hay datos disponibles",
-    "noDataMessage": "No se pueden generar reportes en este momento"
+  "filters": {
+    "filter": "Filtrar",
+    "filters": "Filtros",
+    "clear": "Limpiar",
+    "applyFilters": "Aplicar Filtros",
+    "period": "Período",
+    "from": "Desde",
+    "until": "Hasta",
+    "corrals": "Corrales",
+    "category": "Categoría",
+    "all": "Todos",
+    "breed": "Raza",
+    "options": "Opciones",
+    "includeSoldDead": "Incluir vendidos/muertos",
+    "calf": "Ternero",
+    "heifer": "Vaquillona",
+    "steer": "Novillo",
+    "bull": "Toro",
+    "cow": "Vaca",
+    "reportFilters": "Filtros de Reportes",
+    "allCategories": "Todas las Categorías",
+    "allBreeds": "Todas las Razas",
+    "includeInactive": "Incluir Inactivos"
   },
   "reproductive": {
     "title": "Análisis Reproductivo",
     "loading": "Cargando datos reproductivos...",
     "error": "Error al cargar datos reproductivos",
-    "retry": "Reintentar",
-    "cards": {
-      "totalFemales": "Total Hembras Reproductivas",
-      "pregnancyRate": "Tasa de Preñez",
-      "calvingRate": "Tasa de Parición",
-      "currentlyPregnant": "Actualmente Preñadas"
-    },
-    "status": {
-      "pregnant": "Preñada",
-      "empty": "Vacía",
-      "postpartum": "Post-parto",
-      "unknown": "Desconocido"
-    },
-    "table": {
-      "title": "Hembras Reproductivas",
-      "showDetails": "Ver detalles de hembras reproductivas",
-      "hideDetails": "Ocultar detalles",
-      "animal": "Animal",
-      "age": "Edad",
-      "status": "Estado",
-      "services": "Servicios",
-      "pregnancies": "Preñeces",
-      "births": "Partos",
-      "pregnancyRate": "% Preñez",
-      "calvingRate": "% Parición"
-    },
-    "pregnantAnimals": {
-      "title": "Animales Preñados",
-      "count": "{{count}} hembras preñadas"
-    }
+    "loadingError": "Error al cargar los datos reproductivos",
+    "retryButton": "Reintentar",
+    "dataUpdated": "Datos actualizados",
+    "dataUpdatedDesc": "Los datos reproductivos se han actualizado correctamente",
+    "reproductiveFemales": "Hembras Reproductivas",
+    "pregnancyRate": "Tasa de Preñez",
+    "calvingRate": "Tasa de Parición",
+    "currentlyPregnant": "Preñadas Actuales",
+    "ageMinimum": "≥15 meses",
+    "confirmedPregnancies": "preñeces confirmadas",
+    "successfulCalvings": "partos exitosos",
+    "activePregancy": "preñez activa",
+    "femalesDetail": "Detalle de Hembras Reproductivas",
+    "animals": "animales",
+    "noFemalesFound": "No se encontraron hembras reproductivas",
+    "noFemalesMinAge": "No hay hembras que cumplan con la edad mínima de 15 meses",
+    "allFemalesUnder15": "Todas las hembras son menores de 15 meses",
+    "tag": "Caravana",
+    "name": "Nombre",
+    "category": "Categoría",
+    "corral": "Corral",
+    "currentState": "Estado Actual",
+    "pregnancyPercent": "% Preñez",
+    "calvingPercent": "% Parición",
+    "offspring": "Crías",
+    "empty": "Vacía",
+    "pregnant": "Preñada",
+    "postpartum": "Post-parto"
   },
   "production": {
     "title": "Análisis de Producción",
     "loading": "Cargando datos de producción...",
     "error": "Error al cargar datos de producción",
-    "cards": {
-      "birthWeight": "Peso Promedio al Nacer",
-      "weaningWeight": "Peso Promedio al Destete",
-      "finalWeight": "Peso Final Promedio",
-      "dailyGain": "Ganancia Diaria Promedia"
-    },
-    "charts": {
-      "weightByAge": "Peso por Edad",
-      "weightByGender": "Peso por Sexo",
-      "weightByBreed": "Peso por Raza",
-      "growthTrend": "Tendencia de Crecimiento (12 meses)",
-      "month": "Mes"
-    },
-    "performance": {
-      "title": "Indicadores de Desempeño",
-      "metric": "Métrica",
-      "value": "Valor",
-      "status": "Estado",
-      "benchmark": "Referencia",
-      "excellent": "Excelente",
-      "good": "Bueno",
-      "average": "Mejorable",
-      "poor": "Deficiente",
-      "noData": "Sin datos"
-    },
-    "table": {
-      "title": "Producción por Animal",
-      "showTable": "Ver tabla de producción",
-      "hideTable": "Ocultar tabla"
-    },
-    "breeds": {
-      "title": "Distribución por Raza",
-      "count": "{{count}} razas"
-    }
+    "avgBirthWeight": "Peso Promedio al Nacer",
+    "avgWeaningWeight": "Peso Promedio al Destete",
+    "avgFinalWeight": "Peso Final Promedio",
+    "avgDailyGain": "Ganancia Diaria Promedio",
+    "endOfPeriod": "al final del período",
+    "kgDay": "kg/día",
+    "excellent": "Excelente",
+    "good": "Bueno",
+    "improvable": "Mejorable",
+    "weightByAge": "Peso por Edad",
+    "weightByGender": "Peso por Sexo",
+    "weightByBreed": "Peso por Raza",
+    "growthTrend": "Tendencia de Crecimiento",
+    "performanceIndicators": "Indicadores de Rendimiento vs Benchmarks",
+    "breedInformation": "Información por Raza",
+    "breedDistribution": "Distribución por Raza"
   },
   "financial": {
     "title": "Análisis Financiero",
     "loading": "Cargando datos financieros...",
     "error": "Error al cargar datos financieros",
     "timeRange": {
-      "label": "Período",
-      "lastMonth": "Último Mes",
-      "last3Months": "Últimos 3 Meses",
-      "last6Months": "Últimos 6 Meses",
-      "lastYear": "Último Año"
+      "last30Days": "Últimos 30 días",
+      "last90Days": "Últimos 90 días",
+      "last6Months": "Últimos 6 meses",
+      "lastYear": "Último año"
     },
-    "cards": {
-      "totalRevenue": "Ingresos Totales",
-      "totalExpenses": "Gastos Totales",
-      "netProfit": "Ganancia Neta",
-      "profitMargin": "Margen de Ganancia"
-    },
-    "charts": {
-      "monthlyPerformance": "Desempeño Mensual",
-      "profitTrend": "Tendencia de Ganancia",
-      "topExpenses": "Principales Gastos",
-      "topRevenue": "Principales Ingresos",
-      "breedProfitability": "Rentabilidad por Raza",
-      "yearlyComparison": "Comparación Anual",
-      "revenue": "Ingresos",
-      "expenses": "Gastos",
-      "profit": "Ganancia"
-    },
-    "perAnimal": {
-      "cost": "Costo por Animal",
-      "revenue": "Ingreso por Animal"
-    },
-    "status": {
-      "profitable": "Rentable",
-      "breakeven": "Punto de Equilibrio",
-      "loss": "Pérdida"
-    }
+    "totalRevenue": "Ingresos Totales",
+    "totalExpenses": "Egresos Totales",
+    "netProfit": "Ganancia Neta",
+    "profitMargin": "Margen de Ganancia",
+    "revenuePerAnimal": "Ingreso por Animal",
+    "expensesPerAnimal": "Egresos por Animal",
+    "perAnimal": "por animal",
+    "profit": "Ganancia",
+    "loss": "Pérdida",
+    "excellent": "Excelente",
+    "acceptable": "Aceptable",
+    "critical": "Crítico",
+    "monthlyRevenue": "Ingresos Mensuales",
+    "monthlyExpenses": "Egresos Mensuales",
+    "monthlyPerformance": "Rendimiento Mensual",
+    "profitEvolution": "Evolución de Ganancia",
+    "expensesByCategory": "Egresos por Categoría",
+    "revenueByCategory": "Ingresos por Categoría",
+    "breedProfitability": "Rentabilidad por Raza",
+    "yearlyComparison": "Comparación Anual",
+    "topExpenseCategories": "Principales Categorías de Egresos",
+    "topRevenueCategories": "Principales Categorías de Ingresos",
+    "profitable": "Rentable",
+    "profitLoss": "Ganancia/Pérdida"
   },
-  "herd": {
-    "title": "Resumen del Rodeo",
-    "loading": "Cargando estadísticas del rodeo...",
-    "error": "Error al cargar las estadísticas del rodeo",
-    "cards": {
-      "totalAnimals": "Total de Animales",
-      "activeAnimals": "Animales Activos",
-      "sales": "Ventas",
-      "mortality": "Mortalidad"
-    },
-    "status": {
-      "active": "Activo",
-      "sold": "Vendido",
-      "dead": "Muerto"
-    },
-    "ageGroups": {
-      "calves": "Terneros",
-      "young": "Jóvenes",
-      "adults": "Adultos"
-    },
-    "charts": {
-      "statusDistribution": "Distribución por Estado",
-      "ageDistribution": "Distribución por Edad",
-      "breedDistribution": "Distribución por Raza"
-    }
-  },
-  "temporalEvolution": {
-    "title": "Evolución Temporal",
-    "subtitle": "Análisis de producción a lo largo del tiempo",
-    "loading": "Cargando datos de evolución...",
-    "error": "Error al cargar datos de evolución",
-    "noData": "No hay datos disponibles para el período seleccionado",
-    "groupBy": {
-      "label": "Agrupar por",
-      "week": "Semana",
-      "month": "Mes",
-      "quarter": "Trimestre",
-      "year": "Año"
-    },
-    "weightType": {
-      "label": "Tipo de Peso",
-      "birth": "Nacimiento",
-      "weaning": "Destete",
-      "final": "Final"
-    },
-    "chart": {
-      "title": "Peso Promedio por Período",
-      "xAxis": "Período",
-      "yAxis": "Peso (kg)"
-    },
-    "kpis": {
-      "averageImprovement": "Mejora Promedio",
-      "trend": "Tendencia",
-      "bestPeriod": "Mejor Período",
-      "acceleration": "Aceleración"
-    },
-    "trends": {
-      "improving": "Mejorando",
-      "stable": "Estable",
-      "declining": "Declinando"
-    },
-    "insights": {
-      "title": "Insights",
-      "positive": "Tendencia positiva detectada",
-      "negative": "Tendencia negativa detectada",
-      "stable": "Rendimiento estable"
-    },
-    "table": {
-      "title": "Datos Detallados",
-      "period": "Período",
-      "averageWeight": "Peso Promedio",
-      "animalCount": "Cantidad de Animales",
-      "performance": "Rendimiento"
-    },
-    "performance": {
-      "excellent": "Excelente",
-      "good": "Bueno",
-      "average": "Promedio",
-      "needsImprovement": "Necesita Mejora"
-    },
-    "export": {
-      "button": "Exportar Datos",
-      "downloading": "Descargando...",
-      "success": "Datos exportados exitosamente",
-      "error": "Error al exportar datos"
-    }
-  },
-  "vaccinationAnalytics": {
-    "title": "Análisis de Vacunación",
-    "loading": "Cargando datos de vacunación...",
-    "error": "Error al cargar datos de vacunación",
-    "noData": "No hay datos de vacunación disponibles",
-    "categories": {
-      "compliant": "Al Día",
-      "requiresAttention": "Requiere Atención",
-      "total": "Total de Animales"
-    },
-    "status": {
-      "compliant": "Cumple",
-      "overdue": "Vencida",
-      "pending": "Pendiente",
-      "notApplied": "No Aplicada"
-    },
-    "animalsList": {
-      "title": "Animales por Estado",
-      "empty": "No hay animales en esta categoría"
-    }
-  },
-  "mortalityAnalytics": {
+  "mortality": {
     "title": "Análisis de Mortalidad",
     "loading": "Cargando datos de mortalidad...",
     "error": "Error al cargar datos de mortalidad",
-    "cards": {
-      "totalDeaths": "Muertes Totales",
-      "mortalityRate": "Tasa de Mortalidad",
-      "averageAge": "Edad Promedio",
-      "mainCause": "Causa Principal"
-    },
-    "rate": {
-      "low": "Baja",
-      "medium": "Media",
-      "high": "Alta"
-    },
-    "charts": {
-      "byCause": "Muertes por Causa",
-      "byAge": "Muertes por Edad",
-      "timeline": "Línea de Tiempo de Mortalidad"
-    },
-    "ageGroups": {
-      "calves": "Terneros (0-6 meses)",
-      "young": "Jóvenes (6-18 meses)",
-      "adults": "Adultos (18+ meses)"
-    }
+    "errorLoading": "Error al cargar los datos de mortalidad",
+    "totalDeaths": "Muertes Totales",
+    "mortalityRate": "Tasa de Mortalidad",
+    "avgDeathAge": "Edad Promedio de Muerte",
+    "trend": "Tendencia",
+    "totalRecords": "registros totales",
+    "months": "meses",
+    "daysAvg": "días promedio",
+    "last3Months": "últimos 3 meses",
+    "high": "Alta",
+    "moderate": "Moderada",
+    "low": "Baja",
+    "calves0_12": "Terneros (0-12m)",
+    "young1_2": "Jóvenes (1-2 años)",
+    "adults2plus": "Adultos (2+ años)",
+    "unknownAge": "Edad Desconocida",
+    "mortalityByAge": "Mortalidad por Edad",
+    "mainCauses": "Principales Causas de Muerte",
+    "monthlyTrend": "Tendencia Mensual de Mortalidad",
+    "mortalityByBreed": "Mortalidad por Raza",
+    "causeDetails": "Detalle de Causas de Muerte",
+    "cases": "Casos",
+    "deaths": "Muertes",
+    "ratePercent": "Tasa (%)"
+  },
+  "vaccination": {
+    "title": "Análisis de Vacunación",
+    "loading": "Cargando datos de vacunación...",
+    "error": "Error al cargar datos de vacunación",
+    "noDataAvailable": "No hay datos de vacunación disponibles",
+    "analyticsTitle": "Análisis de Vacunación del Rodeo",
+    "activeAnimals": "animales activos",
+    "configuredRequirements": "requisitos de vacunación configurados",
+    "mandatory": "obligatorios",
+    "totalAnimals": "Total Animales",
+    "upToDate": "Al Día",
+    "expired": "Vencidas",
+    "pending": "Pendientes",
+    "notApplied": "No Aplicadas",
+    "noRequirements": "Sin Requisitos",
+    "ofTotal": "del total",
+    "vaccines": "vacunas",
+    "mandatoryNotApplied": "obligatorias no aplicadas",
+    "notApplicable": "no aplicables",
+    "animalsUpToDate": "Animales al Día",
+    "animalsWithExpired": "Animales con Vacunas Vencidas",
+    "animalsWithPending": "Animales con Vacunas Pendientes",
+    "animalsMandatoryNotApplied": "Animales con Obligatorias No Aplicadas",
+    "animalsNoRequirements": "Animales sin Requisitos Aplicables",
+    "animalsWithErrors": "Animales con Errores",
+    "tag": "Caravana",
+    "lastApplication": "Última Aplicación",
+    "next": "Próxima",
+    "status": "Estado",
+    "vaccineExpired": "vacuna vencida",
+    "vaccinesExpired": "vacunas vencidas",
+    "vaccinePending": "vacuna pendiente",
+    "vaccinesPending": "vacunas pendientes",
+    "mandatoryNotAppliedReason": "vacuna obligatoria no aplicada",
+    "statusExpired": "Vencida",
+    "statusPending": "Pendiente",
+    "statusNotAppliedMandatory": "Obligatoria No Aplicada",
+    "daysDelay": "días de retraso",
+    "dayDelay": "día de retraso",
+    "expires": "vence"
   },
   "temporal": {
     "title": "Análisis de Evolución Temporal",
@@ -439,7 +213,7 @@
     "stable": "Estable",
     "bestPeriod": "Mejor Período",
     "acceleration": "Aceleración",
-    "vsHistoric": "vs histórico",
+    "vsHistorical": "vs histórico",
     "comparison": "Comparación por Período",
     "avgWeights": "Pesos promedio por",
     "weight": "Peso (kg)",
@@ -449,272 +223,30 @@
     "period": "Período",
     "animals": "Animales",
     "improvement": "Mejora",
-    "noData": "No hay datos suficientes para mostrar el análisis temporal. Asegúrate de tener pesajes registrados en diferentes períodos."
-  },
-  "production": {
-    "animalProduction": "Producción por Animal",
-    "avgBirthWeight": "Peso Promedio al Nacer",
-    "avgWeaningWeight": "Peso Promedio al Destete",
-    "avgFinalWeight": "Peso Final Promedio",
-    "avgDailyGain": "Ganancia Diaria Promedio",
-    "excellent": "Excelente",
-    "good": "Bueno",
-    "improvable": "Mejorable",
-    "vs": "vs",
-    "kgPerDay": "kg/día",
-    "endPeriod": "Peso al final del periodo",
-    "avgWeightByAge": "Peso Promedio por Edad (meses)",
-    "weightComparison": "Comparación de Pesos por Sexo",
-    "birthWeight": "Peso al nacer",
-    "weaningWeight": "Peso al destete",
-    "finalWeight": "Peso final",
-    "breedPerformance": "Comparación de Rendimiento por Raza",
-    "growthTrends": "Tendencias de Crecimiento (Últimos 12 meses)",
-    "loading": "Cargando análisis de producción...",
-    "error": "Error al cargar análisis de producción"
-  },
-  "financial": {
-    "totalRevenue": "Ingresos Totales",
-    "totalExpenses": "Egresos Totales",
-    "netProfit": "Ganancia Neta",
-    "profitMargin": "Margen de Ganancia",
-    "perAnimal": "por animal",
-    "profit": "Ganancia",
-    "loss": "Pérdida",
-    "acceptable": "Aceptable",
-    "critical": "Crítico",
-    "monthlyPerformance": "Rendimiento Mensual",
-    "profitTrend": "Tendencia de Ganancia",
-    "topExpenseCategories": "Principales Categorías de Egresos",
-    "topRevenueCategories": "Principales Categorías de Ingresos",
-    "breedProfitability": "Rentabilidad por Raza",
-    "costPerAnimal": "Costo por Animal",
-    "profitPerAnimal": "Ganancia por Animal",
-    "yearlyComparison": "Comparación Anual",
-    "revenue": "Ingresos",
-    "expenses": "Egresos",
-    "loading": "Cargando análisis financiero...",
-    "error": "Error al cargar análisis financiero"
-  },
-  "filters": {
-    "period": "Período",
-    "since": "Desde",
-    "until": "Hasta",
-    "corrals": "Corrales",
-    "category": "Categoría",
-    "breed": "Raza",
-    "all": "Todas",
-    "options": "Opciones",
-    "includeSoldDead": "Incluir vendidos/muertos",
-    "clear": "Limpiar",
-    "apply": "Aplicar Filtros",
-    "filter": "filtro",
-    "filters": "filtros",
-    "categories": {
-      "calf": "Ternero",
-      "heifer": "Ternera",
-      "youngBull": "Torete",
-      "heifer2": "Vaquillona",
-      "bull": "Toro",
-      "cow": "Vaca"
-    }
-  },
-  "export": {
-    "button": "Exportar",
-    "exporting": "Exportando...",
-    "toExcel": "Exportar a Excel",
-    "toCSV": "Exportar a CSV",
-    "success": "Exportación exitosa",
-    "successDesc": "Los datos se han exportado correctamente",
-    "error": "Error al exportar",
-    "errorDesc": "No se pudo exportar los datos",
-    "columns": {
-      "period": "Período",
-      "year": "Año",
-      "birthWeight": "Peso Nacimiento (kg)",
-      "weaningWeight": "Peso Destete (kg)",
-      "finalWeight": "Peso Final (kg)",
-      "adg": "ADG (kg/día)",
-      "animalCount": "Cantidad Animales",
-      "improvement": "Mejora vs Anterior (%)",
-      "percentile25": "Percentil 25",
-      "percentile75": "Percentil 75"
-    }
+    "noData": "No hay suficientes datos para mostrar la evolución temporal",
+    "loading": "Cargando datos...",
+    "error": "Error al cargar datos"
   },
   "performanceBadge": {
     "excellent": "Excelente",
     "good": "Bueno",
-    "average": "Regular",
+    "average": "Promedio",
     "poor": "Bajo",
-    "unknown": "Sin datos"
+    "unknown": "Desconocido"
   },
-  "animalReproduction": {
-    "title": "Reproducción por Animal",
-    "subtitle": "hembras con actividad reproductiva",
-    "noData": "Sin datos de reproducción",
-    "noDataDesc": "No se encontraron hembras con actividad reproductiva en el período seleccionado",
+  "export": {
+    "button": "Exportar",
+    "excel": "Exportar a Excel",
+    "csv": "Exportar a CSV",
+    "exporting": "Exportando...",
+    "success": "Datos exportados correctamente",
+    "error": "Error al exportar datos",
     "columns": {
-      "animal": "Animal",
-      "corral": "Corral",
-      "exposures": "Exp.",
-      "pregnancies": "Preñ.",
-      "pregnancyRate": "% Preñez",
-      "openDays": "D. Abiertos",
-      "repeater": "Repetidora",
-      "yes": "Sí",
-      "no": "No",
-      "noCorral": "Sin corral"
-    },
-    "tooltips": {
-      "exposures": "Exposiciones (servicios) en el período",
-      "pregnancies": "Preñeces confirmadas",
-      "openDays": "Días entre último parto y primer servicio",
-      "repeater": "≥2 servicios sin preñez confirmada"
+      "period": "Período",
+      "animals": "Animales",
+      "avgWeight": "Peso Promedio (kg)",
+      "change": "Cambio (%)",
+      "performance": "Rendimiento"
     }
-  },
-  "pregnantAnimals": {
-    "title": "Hembras Preñadas",
-    "noData": "No se encontraron hembras preñadas",
-    "noDataDesc": "No hay hembras con preñez activa en este momento",
-    "columns": {
-      "name": "Nombre",
-      "tag": "Caravana",
-      "status": "Estado",
-      "corral": "Corral",
-      "age": "Edad",
-      "dueDate": "Fecha Probable Parto"
-    },
-    "actions": {
-      "view": "Ver"
-    },
-    "status": {
-      "pregnant": "Preñada",
-      "confirmed": "Confirmada"
-    }
-  },
-  "reproductiveDetails": {
-    "totalFemales": "Hembras Reproductivas",
-    "ageRestriction": "≥15 meses de edad",
-    "pregnancyRate": "Tasa de Preñez",
-    "confirmedPregnancies": "Preñeces confirmadas",
-    "calvingRate": "Tasa de Parición",
-    "successfulBirths": "Partos exitosos",
-    "currentPregnant": "Preñadas Actuales",
-    "activePregnancies": "Hembras con preñez activa",
-    "femaleDetails": "Detalle Hembras Reproductivas",
-    "animals": "animales",
-    "noFemales": "No se encontraron hembras reproductivas",
-    "noFemalesDesc": "Las hembras deben tener al menos 15 meses de edad para aparecer en este reporte.",
-    "allYoung": "Actualmente todas las hembras son menores a 15 meses.",
-    "errorLoading": "Error al cargar datos",
-    "dataUpdated": "Datos actualizados",
-    "dataUpdatedDesc": "Los datos reproductivos han sido actualizados correctamente.",
-    "retry": "Reintentar",
-    "columns": {
-      "animal": "Animal",
-      "age": "Edad",
-      "state": "Estado",
-      "services": "Servicios",
-      "pregnancies": "Preñeces",
-      "calvings": "Partos",
-      "pregnancyRate": "% Preñez",
-      "calvingRate": "% Parición"
-    },
-    "states": {
-      "pregnant": "Preñada",
-      "empty": "Vacía",
-      "postpartum": "Post-parto"
-    }
-  },
-  "vaccinationDetails": {
-    "title": "Análisis de Vacunación",
-    "subtitle": "animales activos • requisitos configurados • obligatorios",
-    "loading": "Cargando datos de vacunación...",
-    "noData": "No hay datos de vacunación disponibles",
-    "totalAnimals": "Total Animales",
-    "compliant": "Al Día",
-    "overdue": "Vencidas",
-    "pending": "Pendientes",
-    "missingMandatory": "Falta Aplicar",
-    "missingMandatoryDesc": "Obligatorias no aplicadas",
-    "noRequirements": "Sin Requisitos",
-    "noRequirementsDesc": "Sin requisitos configurados",
-    "errors": "Errores",
-    "errorsDesc": "Procesamiento fallido",
-    "ofTotal": "del total",
-    "vaccines": "vacunas",
-    "sections": {
-      "compliant": "Animales al Día",
-      "requiresAttention": "Animales que Requieren Atención"
-    },
-    "empty": "No hay animales en esta categoría",
-    "columns": {
-      "animal": "Animal",
-      "tag": "Caravana",
-      "reason": "Motivo",
-      "details": "Detalles"
-    },
-    "statuses": {
-      "overdue": "Vencida",
-      "pending": "Pendiente",
-      "notApplied": "No aplicada",
-      "mandatory": "obligatoria"
-    },
-    "phrases": {
-      "vaccineOverdue": "vacuna vencida",
-      "vaccinesOverdue": "vacunas vencidas",
-      "vaccinePending": "vacuna pendiente",
-      "vaccinesPending": "vacunas pendientes",
-      "mandatoryNotApplied": "vacuna obligatoria no aplicada",
-      "mandatoriesNotApplied": "vacunas obligatorias no aplicadas",
-      "noMandatory": "Sin vacunas obligatorias aplicables",
-      "allMandatoryComplete": "Todas las vacunas obligatorias completas",
-      "noRequirementsApplicable": "Sin requisitos de vacunación aplicables",
-      "errorProcessing": "Error al procesar",
-      "noStatusData": "Sin datos de estado",
-      "unknown": "Desconocido"
-    },
-    "issues": {
-      "vaccine": "Vacuna",
-      "status": "Estado",
-      "daysOverdue": "Días vencido",
-      "nextDue": "Próxima dosis",
-      "isMandatory": "Es obligatoria"
-    }
-  },
-  "mortalityDetails": {
-    "title": "Análisis de Mortalidad",
-    "loading": "Cargando reportes de mortalidad...",
-    "errorLoading": "No se pudieron cargar las estadísticas de mortalidad.",
-    "totalDeaths": "Total de Muertes",
-    "totalDeathsDesc": "Registros totales",
-    "mortalityRate": "Tasa de Mortalidad",
-    "averageAge": "Edad Promedio de Muerte",
-    "averageAgeDesc": "días promedio",
-    "months": "meses",
-    "trend": "Tendencia",
-    "lastMonths": "Últimos 3 meses",
-    "rateLevel": {
-      "high": "Alta",
-      "moderate": "Moderada",
-      "low": "Baja"
-    },
-    "charts": {
-      "byAge": "Mortalidad por Grupo de Edad",
-      "byCause": "Principales Causas de Muerte",
-      "monthly": "Tendencia Mensual de Mortalidad",
-      "byBreed": "Mortalidad por Raza"
-    },
-    "ageGroups": {
-      "calves": "Terneros (0-12m)",
-      "young": "Jóvenes (1-2 años)",
-      "adults": "Adultos (2+ años)",
-      "unknown": "Edad desconocida"
-    },
-    "causeDetails": "Detalle de Causas de Muerte",
-    "cases": "casos",
-    "unknownCause": "Causa desconocida",
-    "deaths": "Muertes",
-    "rate": "Tasa %"
   }
 }

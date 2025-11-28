@@ -89,16 +89,16 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       // Get current user and their cabaña_id
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setError(t('reports:reproductive.error'));
-        return;
-      }
+      setError(t('reports:reproductive.loadingError'));
+      return;
+    }
 
-      const { data: userInfo, error: userError } = await supabase.rpc('get_user_cabana_info', { user_uuid: user.id });
+    const { data: userInfo, error: userError } = await supabase.rpc('get_user_cabana_info', { user_uuid: user.id });
 
-      if (userError || !userInfo?.[0]?.cabana_id) {
-        setError(t('reports:reproductive.error'));
-        return;
-      }
+    if (userError || !userInfo?.[0]?.cabana_id) {
+      setError(t('reports:reproductive.loadingError'));
+      return;
+    }
 
       const cabanaId = userInfo[0].cabana_id;
 
@@ -217,10 +217,10 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         
         const category = ageMonths < 12 ? 'Ternera' : ageMonths < 24 ? 'Vaquillona' : 'Vaca';
 
-        // Determine current reproductive state
-        let currentState = 'Vacía';
+        // Determine current reproductive state (store in Spanish for now, translate in UI)
+        let currentState = 'empty';
         if (animal.esta_preñada) {
-          currentState = 'Preñada';
+          currentState = 'pregnant';
         } else if (animalOffspring.length > 0) {
           const lastCalving = animalOffspring
             .filter(o => o.birth_date)
@@ -229,7 +229,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           if (lastCalving && lastCalving.birth_date) {
             const daysSinceCalving = Math.floor((new Date().getTime() - new Date(lastCalving.birth_date).getTime()) / (1000 * 60 * 60 * 24));
             if (daysSinceCalving <= 60) {
-              currentState = 'Post-parto';
+              currentState = 'postpartum';
             }
           }
         }
@@ -325,7 +325,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
     } catch (error) {
       console.error('Error in fetchReproductiveData:', error);
-      setError('Error al cargar datos reproductivos');
+      setError(t('reports:reproductive.loadingError'));
     } finally {
       setLoading(false);
     }
@@ -340,8 +340,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
   const handleRefresh = () => {
     fetchReproductiveData();
     toast({
-      title: "Datos actualizados",
-      description: "Los datos reproductivos han sido actualizados correctamente."
+      title: t('reports:reproductive.dataUpdated'),
+      description: t('reports:reproductive.dataUpdatedDesc')
     });
   };
 
@@ -370,10 +370,10 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Error al cargar datos</h3>
+          <h3 className="text-lg font-semibold mb-2">{t('reports:reproductive.loadingError')}</h3>
           <p className="text-muted-foreground mb-4">{error}</p>
           <Button onClick={handleRefresh}>
-            Reintentar
+            {t('reports:reproductive.retryButton')}
           </Button>
         </div>
       </div>
@@ -386,20 +386,20 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Hembras Reproductivas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:reproductive.reproductiveFemales')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summaryMetrics.totalFemales}</div>
             <p className="text-xs text-muted-foreground">
-              ≥15 meses de edad
+              {t('reports:reproductive.ageMinimum')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Preñez</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:reproductive.pregnancyRate')}</CardTitle>
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -409,14 +409,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                 : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              Preñeces confirmadas
+              {t('reports:reproductive.confirmedPregnancies')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tasa de Parición</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:reproductive.calvingRate')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -426,20 +426,20 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                 : 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              Partos exitosos
+              {t('reports:reproductive.successfulCalvings')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Preñadas Actuales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:reproductive.currentlyPregnant')}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summaryMetrics.currentlyPregnant}</div>
             <p className="text-xs text-muted-foreground">
-              Hembras con preñez activa
+              {t('reports:reproductive.activePregancy')}
             </p>
           </CardContent>
         </Card>
@@ -453,9 +453,9 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
               <Button variant="ghost" className="w-full justify-between p-0 h-auto">
                 <CardTitle className="flex items-center gap-2">
                   <Heart className="h-5 w-5" />
-                  Detalle Hembras Reproductivas
+                  {t('reports:reproductive.femalesDetail')}
                   <Badge variant="secondary" className="ml-2">
-                    {reproductiveFemales.length} animales
+                    {reproductiveFemales.length} {t('reports:reproductive.animals')}
                   </Badge>
                 </CardTitle>
                 {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -466,12 +466,12 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
             <CardContent>
               {reproductiveFemales.length === 0 ? (
                 <div className="text-center text-muted-foreground py-8">
-                  <p className="text-lg font-medium">No se encontraron hembras reproductivas.</p>
+                  <p className="text-lg font-medium">{t('reports:reproductive.noFemalesFound')}</p>
                   <p className="text-sm mt-2">
-                    Las hembras deben tener al menos 15 meses de edad para aparecer en este reporte.
+                    {t('reports:reproductive.noFemalesMinAge')}
                   </p>
                   <p className="text-sm text-blue-600 mt-1">
-                    Actualmente todas las hembras son menores a 15 meses.
+                    {t('reports:reproductive.allFemalesUnder15')}
                   </p>
                 </div>
               ) : (
