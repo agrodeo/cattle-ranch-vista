@@ -43,7 +43,17 @@ export function VaccinationManager() {
   };
 
   const handleSubmit = async () => {
+    console.log('🔵 [VACCINATION] handleSubmit called', {
+      selectedRequirementId,
+      selectedAnimalsCount: selectedAnimals.length,
+      date,
+      lot,
+      dose,
+      route
+    });
+
     if (!selectedRequirementId || selectedAnimals.length === 0) {
+      console.log('⚠️ [VACCINATION] Validation failed - missing requirement or animals');
       toast({
         variant: "destructive",
         title: "Error",
@@ -54,7 +64,10 @@ export function VaccinationManager() {
 
     try {
       setSubmitting(true);
+      console.log('🔵 [VACCINATION] Starting vaccination recording for animals:', selectedAnimals);
+      
       const promises = selectedAnimals.map(async animalId => {
+        console.log('🔵 [VACCINATION] Recording vaccination for animal:', animalId);
         const { data, error } = await supabase.rpc('record_animal_vaccination' as any, {
           _animal_id: animalId,
           _requirement_id: selectedRequirementId,
@@ -63,10 +76,19 @@ export function VaccinationManager() {
           _dose: dose || null,
           _route: route || null
         });
-        if (error) throw error;
+        
+        if (error) {
+          console.error('❌ [VACCINATION] Error for animal', animalId, ':', error);
+          throw error;
+        }
+        
+        console.log('✅ [VACCINATION] Success for animal', animalId, ':', data);
         return data;
       });
+      
       await Promise.all(promises);
+      
+      console.log('✅ [VACCINATION] All vaccinations recorded successfully');
       
       toast({
         title: "✅ Vacunación registrada",
@@ -79,7 +101,14 @@ export function VaccinationManager() {
       setDose("");
       setRoute("");
     } catch (error: any) {
-      console.error("Error recording vaccination:", error);
+      console.error("❌ [VACCINATION] Error recording vaccination:", error);
+      console.error("❌ [VACCINATION] Error details:", {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        full: error
+      });
       toast({
         variant: "destructive",
         title: "Error",
@@ -87,6 +116,7 @@ export function VaccinationManager() {
       });
     } finally {
       setSubmitting(false);
+      console.log('🔵 [VACCINATION] handleSubmit finished');
     }
   };
 
