@@ -140,7 +140,12 @@ export async function buildAncestryMap(animals: Animal[], userCabañaId: string)
 /**
  * Detects specific genealogical relationships between two animals
  */
-export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap: AncestryMap): RelationshipRisk | null {
+export function detectRelationship(
+  animal1: Animal, 
+  animal2: Animal, 
+  ancestryMap: AncestryMap,
+  t?: (key: string, params?: any) => string
+): RelationshipRisk | null {
   if (animal1.id === animal2.id) return null;
 
   const ancestry1 = ancestryMap[animal1.id];
@@ -151,6 +156,10 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
   const name1 = animal1.name || animal1.id_tag || animal1.id;
   const name2 = animal2.name || animal2.id_tag || animal2.id;
 
+  // Helper to get translated description or fallback
+  const getDesc = (key: string, fallback: string) => 
+    t ? t(`relationships.${key}`) : fallback;
+
   // 1. Parent-Offspring relationships (SEVERE)
   if (animal1.father_id === animal2.id) {
     return {
@@ -158,7 +167,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'father-offspring',
       severity: 'severe',
-      description: `${name2} es el padre de ${name1}`,
+      description: `${name2} ${getDesc('fatherOf', 'es el padre de')} ${name1}`,
       inbreedingCoefficient: 0.25
     };
   }
@@ -169,7 +178,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'mother-offspring',
       severity: 'severe',
-      description: `${name2} es la madre de ${name1}`,
+      description: `${name2} ${getDesc('motherOf', 'es la madre de')} ${name1}`,
       inbreedingCoefficient: 0.25
     };
   }
@@ -180,7 +189,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'father-offspring',
       severity: 'severe',
-      description: `${name1} es el padre de ${name2}`,
+      description: `${name1} ${getDesc('fatherOf', 'es el padre de')} ${name2}`,
       inbreedingCoefficient: 0.25
     };
   }
@@ -191,7 +200,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'mother-offspring',
       severity: 'severe',
-      description: `${name1} es la madre de ${name2}`,
+      description: `${name1} ${getDesc('motherOf', 'es la madre de')} ${name2}`,
       inbreedingCoefficient: 0.25
     };
   }
@@ -205,7 +214,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'full-siblings',
       severity: 'severe',
-      description: `${name1} y ${name2} son hermanos completos (mismo padre y madre)`,
+      description: `${name1} y ${name2} ${getDesc('fullSiblings', 'son hermanos completos (mismo padre y madre)')}`,
       inbreedingCoefficient: 0.25
     };
   }
@@ -218,7 +227,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'half-siblings-paternal',
       severity: 'severe',
-      description: `${name1} y ${name2} son medio hermanos (mismo padre)`,
+      description: `${name1} y ${name2} ${getDesc('halfSiblingsPaternal', 'son medio hermanos (mismo padre)')}`,
       inbreedingCoefficient: 0.125
     };
   }
@@ -230,7 +239,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'half-siblings-maternal',
       severity: 'severe',
-      description: `${name1} y ${name2} son medio hermanos (misma madre)`,
+      description: `${name1} y ${name2} ${getDesc('halfSiblingsMaternal', 'son medio hermanos (misma madre)')}`,
       inbreedingCoefficient: 0.125
     };
   }
@@ -242,7 +251,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'grandparent-grandchild',
       severity: 'medium',
-      description: `${name2} es abuelo/a de ${name1}`,
+      description: `${name2} ${getDesc('grandparentOf', 'es abuelo/a de')} ${name1}`,
       inbreedingCoefficient: 0.125
     };
   }
@@ -253,7 +262,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'grandparent-grandchild',
       severity: 'medium',
-      description: `${name1} es abuelo/a de ${name2}`,
+      description: `${name1} ${getDesc('grandparentOf', 'es abuelo/a de')} ${name2}`,
       inbreedingCoefficient: 0.125
     };
   }
@@ -271,7 +280,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
         animal2,
         relationship: 'uncle-niece-nephew',
         severity: 'medium',
-        description: `${name2} es tío/a de ${name1}`,
+        description: `${name2} ${getDesc('uncleAuntOf', 'es tío/a de')} ${name1}`,
         inbreedingCoefficient: 0.0625
       };
     }
@@ -282,7 +291,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
         animal2,
         relationship: 'uncle-niece-nephew',
         severity: 'medium',
-        description: `${name2} es tío/a de ${name1}`,
+        description: `${name2} ${getDesc('uncleAuntOf', 'es tío/a de')} ${name1}`,
         inbreedingCoefficient: 0.0625
       };
     }
@@ -310,7 +319,7 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
       animal2,
       relationship: 'first-cousins',
       severity: 'low',
-      description: `${name1} y ${name2} son primos (comparten ancestros)`,
+      description: `${name1} y ${name2} ${getDesc('cousins', 'son primos (comparten ancestros)')}`,
       inbreedingCoefficient: 0.0625
     };
   }
@@ -321,7 +330,11 @@ export function detectRelationship(animal1: Animal, animal2: Animal, ancestryMap
 /**
  * Analyzes all animals in a corral for consanguinity risks
  */
-export async function analyzeCorralConsanguinity(animals: Animal[], userCabañaId: string): Promise<RelationshipRisk[]> {
+export async function analyzeCorralConsanguinity(
+  animals: Animal[], 
+  userCabañaId: string,
+  t?: (key: string, params?: any) => string
+): Promise<RelationshipRisk[]> {
   // Filter animals over 18 months old
   const eligibleAnimals = animals.filter(animal => {
     if (!animal.birth_date) return false;
@@ -347,7 +360,7 @@ export async function analyzeCorralConsanguinity(animals: Animal[], userCabañaI
       if ((animal1.sex === 'Macho' && animal2.sex === 'Hembra') || 
           (animal1.sex === 'Hembra' && animal2.sex === 'Macho')) {
         
-        const risk = detectRelationship(animal1, animal2, ancestryMap);
+        const risk = detectRelationship(animal1, animal2, ancestryMap, t);
         if (risk) {
           risks.push(risk);
         }
@@ -361,15 +374,44 @@ export async function analyzeCorralConsanguinity(animals: Animal[], userCabañaI
 /**
  * Gets severity color and emoji for display
  */
-export function getSeverityDisplay(severity: 'severe' | 'medium' | 'low'): { color: string; emoji: string; label: string } {
+export function getSeverityDisplay(
+  severity: 'severe' | 'medium' | 'low', 
+  t?: (key: string) => string
+): { color: string; emoji: string; label: string } {
+  const defaultLabels = {
+    severe: 'Riesgo Alto',
+    medium: 'Riesgo Medio',
+    low: 'Riesgo Bajo',
+    unknown: 'Desconocido'
+  };
+
+  const getLabel = (key: string, fallback: string) => 
+    t ? t(`relationships.${key}`) : fallback;
+
   switch (severity) {
     case 'severe':
-      return { color: 'text-red-600', emoji: '🔴', label: 'Riesgo Alto' };
+      return { 
+        color: 'text-red-600', 
+        emoji: '🔴', 
+        label: getLabel('highRisk', defaultLabels.severe)
+      };
     case 'medium':
-      return { color: 'text-orange-600', emoji: '🟠', label: 'Riesgo Medio' };
+      return { 
+        color: 'text-orange-600', 
+        emoji: '🟠', 
+        label: getLabel('mediumRisk', defaultLabels.medium)
+      };
     case 'low':
-      return { color: 'text-yellow-600', emoji: '🟡', label: 'Riesgo Bajo' };
+      return { 
+        color: 'text-yellow-600', 
+        emoji: '🟡', 
+        label: getLabel('lowRisk', defaultLabels.low)
+      };
     default:
-      return { color: 'text-gray-600', emoji: '⚪', label: 'Desconocido' };
+      return { 
+        color: 'text-gray-600', 
+        emoji: '⚪', 
+        label: getLabel('unknown', defaultLabels.unknown)
+      };
   }
 }
