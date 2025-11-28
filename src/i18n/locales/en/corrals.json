@@ -413,5 +413,18 @@
       "error": "Error optimizing distribution",
       "applying": "Applying changes..."
     }
+  },
+  "suggestions": {
+    "title": "Optimization Suggestions",
+    "optimalState": "Optimal State",
+    "riskDetected": "risk detected",
+    "risksDetected": "risks detected",
+    "description": "Consanguinity risks were detected in your corrals. AI can help you optimize animal distribution to reduce these risks and improve productive efficiency.",
+    "aiRecommendations": "AI Recommendations",
+    "priorities": "Priorities:",
+    "optimizeButton": "Optimize Corrals with AI",
+    "optimizing": "Optimizing...",
+    "optimalDescription": "✓ Your corrals are well distributed without detected consanguinity risks. You can use the AI assistant to get recommendations on additional improvements.",
+    "consultAI": "Consult AI Assistant"
   }
 }

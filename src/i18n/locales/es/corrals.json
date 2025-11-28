@@ -411,5 +411,18 @@
       "error": "Error al optimizar distribución",
       "applying": "Aplicando cambios..."
     }
+  },
+  "suggestions": {
+    "title": "Sugerencias de Optimización",
+    "optimalState": "Estado Óptimo",
+    "riskDetected": "riesgo detectado",
+    "risksDetected": "riesgos detectados",
+    "description": "Se detectaron riesgos de consanguinidad en tus corrales. La IA puede ayudarte a optimizar la distribución de animales para reducir estos riesgos y mejorar la eficiencia productiva.",
+    "aiRecommendations": "Recomendaciones IA",
+    "priorities": "Prioridades:",
+    "optimizeButton": "Optimizar Corrales con IA",
+    "optimizing": "Optimizando...",
+    "optimalDescription": "✓ Tus corrales están bien distribuidos sin riesgos de consanguinidad detectados. Puedes usar el asistente IA para obtener recomendaciones sobre mejoras adicionales.",
+    "consultAI": "Consultar Asistente IA"
   }
 }

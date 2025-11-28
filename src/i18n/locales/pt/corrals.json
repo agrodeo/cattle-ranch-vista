@@ -414,5 +414,18 @@
       "error": "Erro ao otimizar distribuição",
       "applying": "Aplicando mudanças..."
     }
+  },
+  "suggestions": {
+    "title": "Sugestões de Otimização",
+    "optimalState": "Estado Ótimo",
+    "riskDetected": "risco detectado",
+    "risksDetected": "riscos detectados",
+    "description": "Riscos de consanguinidade foram detectados em seus currais. A IA pode ajudá-lo a otimizar a distribuição de animais para reduzir esses riscos e melhorar a eficiência produtiva.",
+    "aiRecommendations": "Recomendações IA",
+    "priorities": "Prioridades:",
+    "optimizeButton": "Otimizar Currais com IA",
+    "optimizing": "Otimizando...",
+    "optimalDescription": "✓ Seus currais estão bem distribuídos sem riscos de consanguinidade detectados. Você pode usar o assistente IA para obter recomendações sobre melhorias adicionais.",
+    "consultAI": "Consultar Assistente IA"
   }
 }

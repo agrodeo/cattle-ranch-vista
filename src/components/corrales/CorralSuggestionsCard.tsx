@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, Sparkles, TrendingUp, ArrowRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface CorralSuggestionsCardProps {
   totalRisks: number;
@@ -20,6 +21,7 @@ export function CorralSuggestionsCard({
   aiRecommendations,
   loading 
 }: CorralSuggestionsCardProps) {
+  const { t } = useTranslation('corrals');
   const hasRisks = totalRisks > 0;
 
   return (
@@ -30,18 +32,18 @@ export function CorralSuggestionsCard({
             {hasRisks ? (
               <>
                 <AlertTriangle className="h-5 w-5 text-orange-600" />
-                <span>Sugerencias de Optimización</span>
+                <span>{t('suggestions.title')}</span>
               </>
             ) : (
               <>
                 <TrendingUp className="h-5 w-5 text-green-600" />
-                <span>Estado Óptimo</span>
+                <span>{t('suggestions.optimalState')}</span>
               </>
             )}
           </div>
           {hasRisks && (
             <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-300">
-              {totalRisks} {totalRisks === 1 ? 'riesgo detectado' : 'riesgos detectados'}
+              {totalRisks} {totalRisks === 1 ? t('suggestions.riskDetected') : t('suggestions.risksDetected')}
             </Badge>
           )}
         </CardTitle>
@@ -50,20 +52,19 @@ export function CorralSuggestionsCard({
         {hasRisks ? (
           <>
             <p className="text-sm text-muted-foreground">
-              Se detectaron riesgos de consanguinidad en tus corrales. La IA puede ayudarte a optimizar 
-              la distribución de animales para reducir estos riesgos y mejorar la eficiencia productiva.
+              {t('suggestions.description')}
             </p>
 
             {aiRecommendations && (
               <div className="space-y-3 p-3 bg-white rounded-lg border">
                 <div className="flex items-center gap-2 text-sm font-medium text-purple-700">
                   <Sparkles className="h-4 w-4" />
-                  Recomendaciones IA
+                  {t('suggestions.aiRecommendations')}
                 </div>
                 
                 {aiRecommendations.priorities && (
                   <div className="space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">Prioridades:</p>
+                    <p className="text-xs font-medium text-muted-foreground">{t('suggestions.priorities')}</p>
                     {aiRecommendations.priorities.slice(0, 3).map((priority, i) => (
                       <div key={i} className="flex items-start gap-2 text-sm">
                         <ArrowRight className="h-4 w-4 text-purple-600 mt-0.5 flex-shrink-0" />
@@ -82,14 +83,13 @@ export function CorralSuggestionsCard({
               disabled={loading}
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              {loading ? 'Optimizando...' : 'Optimizar Corrales con IA'}
+              {loading ? t('suggestions.optimizing') : t('suggestions.optimizeButton')}
             </Button>
           </>
         ) : (
           <>
             <p className="text-sm text-muted-foreground">
-              ✓ Tus corrales están bien distribuidos sin riesgos de consanguinidad detectados.
-              Puedes usar el asistente IA para obtener recomendaciones sobre mejoras adicionales.
+              {t('suggestions.optimalDescription')}
             </p>
             
             <Button 
@@ -99,7 +99,7 @@ export function CorralSuggestionsCard({
               disabled={loading}
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Consultar Asistente IA
+              {t('suggestions.consultAI')}
             </Button>
           </>
         )}
