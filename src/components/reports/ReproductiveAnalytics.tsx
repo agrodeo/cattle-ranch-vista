@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,6 +65,7 @@ interface ReproductiveAnalyticsProps {
 }
 
 const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => {
+  const { t } = useTranslation(['reports']);
   const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetrics>({
     totalFemales: 0,
     currentlyPregnant: 0,
@@ -87,14 +89,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       // Get current user and their cabaña_id
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setError('Usuario no autenticado');
+        setError(t('reports:reproductive.error'));
         return;
       }
 
       const { data: userInfo, error: userError } = await supabase.rpc('get_user_cabana_info', { user_uuid: user.id });
 
       if (userError || !userInfo?.[0]?.cabana_id) {
-        setError('No se pudo obtener información del usuario');
+        setError(t('reports:reproductive.error'));
         return;
       }
 

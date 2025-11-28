@@ -107,5 +107,117 @@
     "exportData": "Export Data",
     "noDataAvailable": "No data available",
     "noDataMessage": "Cannot generate reports at this time"
+  },
+  "reproductive": {
+    "title": "Reproductive Analysis",
+    "loading": "Loading reproductive data...",
+    "error": "Error loading reproductive data",
+    "retry": "Retry",
+    "cards": {
+      "totalFemales": "Total Reproductive Females",
+      "pregnancyRate": "Pregnancy Rate",
+      "calvingRate": "Calving Rate",
+      "currentlyPregnant": "Currently Pregnant"
+    },
+    "status": {
+      "pregnant": "Pregnant",
+      "empty": "Empty",
+      "postpartum": "Post-partum",
+      "unknown": "Unknown"
+    },
+    "table": {
+      "title": "Reproductive Females",
+      "showDetails": "View reproductive females details",
+      "hideDetails": "Hide details",
+      "animal": "Animal",
+      "age": "Age",
+      "status": "Status",
+      "services": "Services",
+      "pregnancies": "Pregnancies",
+      "births": "Births",
+      "pregnancyRate": "Pregnancy %",
+      "calvingRate": "Calving %"
+    },
+    "pregnantAnimals": {
+      "title": "Pregnant Animals",
+      "count": "{{count}} pregnant females"
+    }
+  },
+  "production": {
+    "title": "Production Analysis",
+    "loading": "Loading production data...",
+    "error": "Error loading production data",
+    "cards": {
+      "birthWeight": "Average Birth Weight",
+      "weaningWeight": "Average Weaning Weight",
+      "finalWeight": "Average Final Weight",
+      "dailyGain": "Average Daily Gain"
+    },
+    "charts": {
+      "weightByAge": "Weight by Age",
+      "weightByGender": "Weight by Gender",
+      "weightByBreed": "Weight by Breed",
+      "growthTrend": "Growth Trend (12 months)",
+      "month": "Month"
+    },
+    "performance": {
+      "title": "Performance Indicators",
+      "metric": "Metric",
+      "value": "Value",
+      "status": "Status",
+      "benchmark": "Benchmark",
+      "excellent": "Excellent",
+      "good": "Good",
+      "average": "Average",
+      "poor": "Poor",
+      "noData": "No data"
+    },
+    "table": {
+      "title": "Production by Animal",
+      "showTable": "View production table",
+      "hideTable": "Hide table"
+    },
+    "breeds": {
+      "title": "Distribution by Breed",
+      "count": "{{count}} breeds"
+    }
+  },
+  "financial": {
+    "title": "Financial Analysis",
+    "loading": "Loading financial data...",
+    "error": "Error loading financial data",
+    "timeRange": {
+      "label": "Period",
+      "lastMonth": "Last Month",
+      "last3Months": "Last 3 Months",
+      "last6Months": "Last 6 Months",
+      "lastYear": "Last Year"
+    },
+    "cards": {
+      "totalRevenue": "Total Revenue",
+      "totalExpenses": "Total Expenses",
+      "netProfit": "Net Profit",
+      "profitMargin": "Profit Margin"
+    },
+    "charts": {
+      "monthlyPerformance": "Monthly Performance",
+      "profitTrend": "Profit Trend",
+      "topExpenses": "Top Expenses",
+      "topRevenue": "Top Revenue",
+      "breedProfitability": "Breed Profitability",
+      "yearlyComparison": "Yearly Comparison",
+      "revenue": "Revenue",
+      "expenses": "Expenses",
+      "profit": "Profit"
+    },
+    "perAnimal": {
+      "cost": "Cost per Animal",
+      "revenue": "Revenue per Animal"
+    },
+    "status": {
+      "profitable": "Profitable",
+      "breakeven": "Break-even",
+      "loss": "Loss"
+    }
   }
 }

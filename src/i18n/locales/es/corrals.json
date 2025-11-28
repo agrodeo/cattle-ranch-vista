@@ -194,5 +194,86 @@
     "newCorral": "Nuevo Corral",
     "createNewCorral": "Crear un nuevo corral",
     "availableCorrals": "corrales disponibles"
+  },
+  "wizard": {
+    "title": "Optimizar Distribución de Corrales",
+    "subtitle": "Usa IA para organizar los animales de forma óptima",
+    "loading": "Analizando distribución...",
+    "steps": {
+      "config": "Configuración",
+      "preview": "Vista Previa",
+      "confirm": "Confirmar"
+    },
+    "objective": {
+      "title": "Objetivo de Optimización",
+      "label": "¿Qué quieres optimizar?",
+      "consanguinity": "Minimizar Consanguinidad",
+      "consanguinityDesc": "Reduce el riesgo de cruces entre familiares",
+      "reproduction": "Maximizar Reproducción",
+      "reproductionDesc": "Optimiza la distribución de reproductores",
+      "production": "Maximizar Producción",
+      "productionDesc": "Agrupa por peso y ganancia diaria",
+      "benchmarks": "Cumplir Estándares",
+      "benchmarksDesc": "Alcanza los objetivos de tu cabaña"
+    },
+    "parameters": {
+      "title": "Parámetros",
+      "bullsPerCorral": "Toros por corral",
+      "densityPerHectare": "Densidad por hectárea",
+      "animals": "animales/ha"
+    },
+    "howItWorks": {
+      "title": "¿Cómo funciona?",
+      "step1": "Analizamos todos tus animales y corrales",
+      "step2": "Calculamos la distribución óptima según tus objetivos",
+      "step3": "Te mostramos los cambios propuestos antes de aplicarlos"
+    },
+    "preview": {
+      "title": "Vista Previa de Cambios",
+      "currentRisks": "Riesgos Actuales",
+      "risksAfter": "Riesgos Después",
+      "reduction": "Reducción",
+      "movements": "Movimientos Propuestos",
+      "animal": "Animal",
+      "from": "Desde",
+      "to": "Hacia",
+      "reason": "Razón"
+    },
+    "confirm": {
+      "title": "Confirmar Cambios",
+      "warning": "Se moverán {{count}} animales. ¿Continuar?",
+      "applying": "Aplicando cambios...",
+      "success": "¡Distribución optimizada correctamente!",
+      "error": "Error al optimizar distribución"
+    },
+    "buttons": {
+      "analyze": "Analizar Distribución",
+      "back": "Atrás",
+      "next": "Siguiente",
+      "apply": "Aplicar Cambios",
+      "cancel": "Cancelar"
+    }
+  },
+  "alerts": {
+    "vaccination": {
+      "title": "Alertas de Vacunación",
+      "animalsNeedAttention": "{{count}} animal requiere atención",
+      "animalsNeedAttention_plural": "{{count}} animales requieren atención",
+      "overdue": "Vencidas",
+      "pending": "Pendientes",
+      "showDetails": "Ver detalles"
+    },
+    "consanguinity": {
+      "title": "Riesgo de Consanguinidad",
+      "detected": "Riesgo detectado",
+      "highRisk": "Alto riesgo",
+      "mediumRisk": "Riesgo medio",
+      "lowRisk": "Bajo riesgo"
+    },
+    "severity": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    }
   }
 }

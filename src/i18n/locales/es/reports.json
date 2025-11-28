@@ -172,5 +172,117 @@
     "exportData": "Exportar Datos",
     "noDataAvailable": "No hay datos disponibles",
     "noDataMessage": "No se pueden generar reportes en este momento"
+  },
+  "reproductive": {
+    "title": "Análisis Reproductivo",
+    "loading": "Cargando datos reproductivos...",
+    "error": "Error al cargar datos reproductivos",
+    "retry": "Reintentar",
+    "cards": {
+      "totalFemales": "Total Hembras Reproductivas",
+      "pregnancyRate": "Tasa de Preñez",
+      "calvingRate": "Tasa de Parición",
+      "currentlyPregnant": "Actualmente Preñadas"
+    },
+    "status": {
+      "pregnant": "Preñada",
+      "empty": "Vacía",
+      "postpartum": "Post-parto",
+      "unknown": "Desconocido"
+    },
+    "table": {
+      "title": "Hembras Reproductivas",
+      "showDetails": "Ver detalles de hembras reproductivas",
+      "hideDetails": "Ocultar detalles",
+      "animal": "Animal",
+      "age": "Edad",
+      "status": "Estado",
+      "services": "Servicios",
+      "pregnancies": "Preñeces",
+      "births": "Partos",
+      "pregnancyRate": "% Preñez",
+      "calvingRate": "% Parición"
+    },
+    "pregnantAnimals": {
+      "title": "Animales Preñados",
+      "count": "{{count}} hembras preñadas"
+    }
+  },
+  "production": {
+    "title": "Análisis de Producción",
+    "loading": "Cargando datos de producción...",
+    "error": "Error al cargar datos de producción",
+    "cards": {
+      "birthWeight": "Peso Promedio al Nacer",
+      "weaningWeight": "Peso Promedio al Destete",
+      "finalWeight": "Peso Final Promedio",
+      "dailyGain": "Ganancia Diaria Promedia"
+    },
+    "charts": {
+      "weightByAge": "Peso por Edad",
+      "weightByGender": "Peso por Sexo",
+      "weightByBreed": "Peso por Raza",
+      "growthTrend": "Tendencia de Crecimiento (12 meses)",
+      "month": "Mes"
+    },
+    "performance": {
+      "title": "Indicadores de Desempeño",
+      "metric": "Métrica",
+      "value": "Valor",
+      "status": "Estado",
+      "benchmark": "Referencia",
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "average": "Mejorable",
+      "poor": "Deficiente",
+      "noData": "Sin datos"
+    },
+    "table": {
+      "title": "Producción por Animal",
+      "showTable": "Ver tabla de producción",
+      "hideTable": "Ocultar tabla"
+    },
+    "breeds": {
+      "title": "Distribución por Raza",
+      "count": "{{count}} razas"
+    }
+  },
+  "financial": {
+    "title": "Análisis Financiero",
+    "loading": "Cargando datos financieros...",
+    "error": "Error al cargar datos financieros",
+    "timeRange": {
+      "label": "Período",
+      "lastMonth": "Último Mes",
+      "last3Months": "Últimos 3 Meses",
+      "last6Months": "Últimos 6 Meses",
+      "lastYear": "Último Año"
+    },
+    "cards": {
+      "totalRevenue": "Ingresos Totales",
+      "totalExpenses": "Gastos Totales",
+      "netProfit": "Ganancia Neta",
+      "profitMargin": "Margen de Ganancia"
+    },
+    "charts": {
+      "monthlyPerformance": "Desempeño Mensual",
+      "profitTrend": "Tendencia de Ganancia",
+      "topExpenses": "Principales Gastos",
+      "topRevenue": "Principales Ingresos",
+      "breedProfitability": "Rentabilidad por Raza",
+      "yearlyComparison": "Comparación Anual",
+      "revenue": "Ingresos",
+      "expenses": "Gastos",
+      "profit": "Ganancia"
+    },
+    "perAnimal": {
+      "cost": "Costo por Animal",
+      "revenue": "Ingreso por Animal"
+    },
+    "status": {
+      "profitable": "Rentable",
+      "breakeven": "Punto de Equilibrio",
+      "loss": "Pérdida"
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
@@ -31,6 +32,7 @@ interface FinancialAnalyticsProps {
 }
 
 export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalyticsProps) => {
+  const { t } = useTranslation(['reports']);
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -242,11 +244,11 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
   };
 
   if (loading) {
-    return <div className="text-center p-8">Cargando análisis financiero...</div>;
+    return <div className="text-center p-8">{t('reports:financial.loading')}</div>;
   }
 
   if (!stats) {
-    return <div className="text-center p-8">No se pudieron cargar las estadísticas financieras.</div>;
+    return <div className="text-center p-8">{t('reports:financial.error')}</div>;
   }
 
   return (
