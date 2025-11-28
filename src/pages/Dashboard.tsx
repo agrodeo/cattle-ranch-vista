@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Activity, Home, TrendingUp, Plus, Calendar, Settings, AlertTriangle, Shield, Syringe } from "lucide-react";
+import { Users, Activity, Fence, TrendingUp, Plus, Calendar, Settings, AlertTriangle, Shield, Syringe } from "lucide-react";
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { PageHeader } from "@/components/ui/page-header";
@@ -60,7 +60,7 @@ const Dashboard = () => {
     {
       title: t('corrals:title'),
       value: counts.corrals,
-      icon: Home,
+      icon: Fence,
     },
     {
       title: t('dashboard:kpis.pregnancyRate'),
