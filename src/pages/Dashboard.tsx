@@ -257,36 +257,53 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-sm text-slate-600 mb-4">
-                    {warnings.noCabana ? t('dashboard:noCabana.description') : t('dashboard:empty.startTracking')}
-                  </p>
-                  <div className="space-y-2">
-                    {warnings.noCabana ? (
-                      <div 
-                        className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
-                        onClick={handleCreateCabana}
-                      >
-                        <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                        <span className="text-sm font-medium text-slate-900">{t('dashboard:actions.setupCabana')}</span>
-                      </div>
-                    ) : (
-                      [
-                        { label: t('dashboard:actions.addFirstAnimal'), action: handleAddAnimal },
-                        { label: t('dashboard:actions.registerActivity'), action: handleRegisterActivity },
-                        { label: t('corrals:actions.create'), action: () => navigate('/corrales') },
-                        { label: t('finance:title'), action: () => navigate('/finances') }
-                      ].map((item, index) => (
+                  {warnings.noCabana ? (
+                    <>
+                      <p className="text-sm text-slate-600 mb-4">
+                        {t('dashboard:noCabana.description')}
+                      </p>
+                      <div className="space-y-2">
                         <div 
-                          key={index} 
                           className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
-                          onClick={item.action}
+                          onClick={handleCreateCabana}
                         >
                           <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                          <span className="text-sm font-medium text-slate-900">{item.label}</span>
+                          <span className="text-sm font-medium text-slate-900">{t('dashboard:actions.setupCabana')}</span>
                         </div>
-                      ))
-                    )}
-                  </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Only show getting started prompts if user hasn't completed those actions */}
+                      {counts.animalsActive === 0 || counts.activitiesLast30d === 0 || counts.corrals === 0 ? (
+                        <>
+                          <p className="text-sm text-slate-600 mb-4">
+                            {t('dashboard:empty.startTracking')}
+                          </p>
+                          <div className="space-y-2">
+                            {[
+                              counts.animalsActive === 0 && { label: t('dashboard:actions.addFirstAnimal'), action: handleAddAnimal },
+                              counts.activitiesLast30d === 0 && { label: t('dashboard:actions.registerActivity'), action: handleRegisterActivity },
+                              counts.corrals === 0 && { label: t('corrals:actions.create'), action: () => navigate('/corrales') },
+                            ].filter(Boolean).map((item: any, index) => (
+                              <div 
+                                key={index} 
+                                className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                                onClick={item.action}
+                              >
+                                <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                                <span className="text-sm font-medium text-slate-900">{item.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-8">
+                          <p className="text-sm text-slate-500">{t('dashboard:empty.noUpcomingActivities')}</p>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </SectionCard>
