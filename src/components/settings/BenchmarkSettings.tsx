@@ -189,7 +189,7 @@ export const BenchmarkSettings = () => {
   };
 
   if (loading) {
-    return <div className="text-center p-8">Cargando configuración de benchmarks...</div>;
+    return <div className="text-center p-8">{t('settings:benchmarks.loading')}</div>;
   }
 
   return (
@@ -197,7 +197,7 @@ export const BenchmarkSettings = () => {
       {/* Current Benchmarks */}
       <Card>
         <CardHeader>
-          <CardTitle>Benchmarks Personalizados</CardTitle>
+          <CardTitle>{t('settings:benchmarks.customBenchmarks')}</CardTitle>
         </CardHeader>
         <CardContent>
           {customBenchmarks.length > 0 ? (
@@ -207,16 +207,16 @@ export const BenchmarkSettings = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">
-                        {benchmark.breed || "Benchmarks Generales"}
+                        {benchmark.breed || t('settings:benchmarks.noBenchmarks')}
                       </h4>
                       {!benchmark.breed && (
-                        <Badge variant="secondary">Por defecto</Badge>
+                        <Badge variant="secondary">{t('common:default')}</Badge>
                       )}
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
-                      Nacer: {benchmark.birth_weight_excellent}kg (exc) / {benchmark.birth_weight_good}kg (bueno) |
-                      Destete: {benchmark.weaning_weight_excellent}kg (exc) / {benchmark.weaning_weight_good}kg (bueno) |
-                      Ganancia: {benchmark.daily_gain_excellent}kg/día (exc)
+                      {t('settings:benchmarks.birthWeight')}: {benchmark.birth_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.birth_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()}) |
+                      {t('settings:benchmarks.weaningWeight')}: {benchmark.weaning_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.weaning_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()}) |
+                      {t('settings:benchmarks.dailyGain')}: {benchmark.daily_gain_excellent}kg/día ({t('settings:benchmarks.excellent').toLowerCase()})
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -225,7 +225,7 @@ export const BenchmarkSettings = () => {
                       size="sm"
                       onClick={() => handleEdit(benchmark)}
                     >
-                      Editar
+                      {t('settings:benchmarks.edit')}
                     </Button>
                     <Button
                       variant="outline"
@@ -240,7 +240,7 @@ export const BenchmarkSettings = () => {
             </div>
           ) : (
             <p className="text-muted-foreground">
-              No hay benchmarks personalizados configurados. Se utilizarán los benchmarks por defecto del sistema.
+              {t('settings:benchmarks.noBenchmarks')}
             </p>
           )}
         </CardContent>
@@ -250,13 +250,13 @@ export const BenchmarkSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle>
-            {editingId ? "Editar Benchmark" : "Agregar Benchmark Personalizado"}
+            {editingId ? t('settings:benchmarks.editBenchmark') : t('settings:benchmarks.addBenchmark')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="breed">Raza</Label>
+              <Label htmlFor="breed">{t('settings:benchmarks.breed')}</Label>
               <Select
                 value={formData.breed || "default"}
                 onValueChange={(value) => 
@@ -264,10 +264,10 @@ export const BenchmarkSettings = () => {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar raza" />
+                  <SelectValue placeholder={t('settings:benchmarks.selectBreed')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="default">Benchmarks Generales (Todas las razas)</SelectItem>
+                  <SelectItem value="default">{t('settings:benchmarks.noBenchmarks')}</SelectItem>
                   {availableBreeds.map((breed) => (
                     <SelectItem key={breed} value={breed}>
                       {breed}
@@ -409,11 +409,11 @@ export const BenchmarkSettings = () => {
             <div className="flex gap-2">
               <Button type="submit" disabled={saving}>
                 <Save className="h-4 w-4 mr-2" />
-                {saving ? "Guardando..." : editingId ? "Actualizar" : "Guardar"}
+                {saving ? t('common:saving') : editingId ? t('settings:benchmarks.update') : t('settings:benchmarks.save')}
               </Button>
               {editingId && (
                 <Button type="button" variant="outline" onClick={resetForm}>
-                  Cancelar
+                  {t('settings:benchmarks.cancel')}
                 </Button>
               )}
             </div>

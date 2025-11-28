@@ -148,8 +148,8 @@ export default function FinancesRecurring() {
 
       <Card>
         <CardContent className="pt-6">
-          {isLoading && <div>Cargando...</div>}
-          {!isLoading && items.length === 0 && <div className="text-sm text-muted-foreground">No hay recurrentes aún.</div>}
+          {isLoading && <div>{t('summary.loading')}</div>}
+          {!isLoading && items.length === 0 && <div className="text-sm text-muted-foreground">{t('recurringDetails.noRecurring')}</div>}
           {!isLoading && items.length > 0 && (
             <div className="space-y-2">
               {items.map((r) => (
@@ -157,10 +157,10 @@ export default function FinancesRecurring() {
                   <div className="flex-1">
                     <div className="font-medium">{r.name} <span className="text-xs text-muted-foreground">({r.type})</span></div>
                     <div className="text-sm text-muted-foreground">
-                      ${r.amount.toLocaleString()} • {r.frequency} • Próxima: {r.next_run_date ? format(new Date(r.next_run_date), "dd/MM/yyyy") : "-"}
+                      ${r.amount.toLocaleString()} • {r.frequency} • {t('recurringDetails.nextRun')}: {r.next_run_date ? format(new Date(r.next_run_date), "dd/MM/yyyy") : "-"}
                     </div>
                   </div>
-                  <Button variant="destructive" size="sm" onClick={() => deleteMutation.mutate(r.id)}>Eliminar</Button>
+                  <Button variant="destructive" size="sm" onClick={() => deleteMutation.mutate(r.id)}>{t('recurringDetails.delete')}</Button>
                 </div>
               ))}
             </div>
