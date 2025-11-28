@@ -343,7 +343,7 @@
     "errorSaving": "Could not register vaccination",
     "registerButton": "Register Vaccination"
   },
-  "activityTypes": {
+  "managementActivityTypes": {
     "destete": {
       "label": "Weaning",
       "description": "Separation of calves from their mothers"

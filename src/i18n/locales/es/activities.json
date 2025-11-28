@@ -345,7 +345,7 @@
     "errorSaving": "No se pudo registrar la vacunación",
     "registerButton": "Registrar Vacunación"
   },
-  "activityTypes": {
+  "managementActivityTypes": {
     "destete": {
       "label": "Destete",
       "description": "Separación de crías de sus madres"
