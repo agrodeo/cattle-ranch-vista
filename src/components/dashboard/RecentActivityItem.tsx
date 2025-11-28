@@ -122,19 +122,19 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
                 </div>
                 {activity.details.lote && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Lote:</span>
+                    <span className="text-slate-500">{t('dashboard:activity.lot')}:</span>
                     <span className="font-medium text-slate-900">{activity.details.lote}</span>
                   </div>
                 )}
                 {activity.details.dosis && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Dosis:</span>
+                    <span className="text-slate-500">{t('dashboard:activity.dose')}:</span>
                     <span className="font-medium text-slate-900">{activity.details.dosis}</span>
                   </div>
                 )}
                 {activity.details.via && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Vía:</span>
+                    <span className="text-slate-500">{t('dashboard:activity.route')}:</span>
                     <span className="font-medium text-slate-900">{activity.details.via}</span>
                   </div>
                 )}
@@ -150,7 +150,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
                 </div>
                 {activity.details.raza_toro && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Raza:</span>
+                    <span className="text-slate-500">{t('dashboard:activity.breed')}:</span>
                     <span className="font-medium text-slate-900">{activity.details.raza_toro}</span>
                   </div>
                 )}
@@ -168,7 +168,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
                 )}
                 {activity.details.negativos !== undefined && (
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Vacías:</span>
+                    <span className="text-slate-500">{t('dashboard:activity.empty')}:</span>
                     <span className="font-medium text-slate-600">{activity.details.negativos}</span>
                   </div>
                 )}
@@ -186,7 +186,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
             {/* Notes */}
             {activity.details.notas && (
               <div className="mt-3 pt-2 border-t border-slate-100">
-                <p className="text-xs text-slate-500 mb-1">Notas:</p>
+                <p className="text-xs text-slate-500 mb-1">{t('dashboard:activity.notes')}:</p>
                 <p className="text-xs text-slate-700">{activity.details.notas}</p>
               </div>
             )}

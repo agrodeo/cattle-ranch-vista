@@ -364,7 +364,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
               <CardContent className="p-4 text-center">
                 <Users className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="text-2xl font-bold">{animals.length}</p>
-                <p className="text-sm text-muted-foreground">Total Animales</p>
+                <p className="text-sm text-muted-foreground">{t('corralDetail.totalAnimals')}</p>
               </CardContent>
             </Card>
             
@@ -380,7 +380,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
             <Card>
               <CardContent className="p-4 text-center">
                 <p className="text-2xl font-bold">{corral.hectareas || "—"}</p>
-                <p className="text-sm text-muted-foreground">Hectáreas</p>
+                <p className="text-sm text-muted-foreground">{t('corralDetail.hectares')}</p>
               </CardContent>
             </Card>
           </div>
@@ -575,7 +575,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                               
                               <div className="space-y-2">
                                 <p className="text-sm">
-                                  Animales involucrados: 
+                                  {t('corralDetail.animalsInvolved')}: 
                                   <button 
                                     onClick={() => handleAnimalClick(risk.animal1.id)}
                                     className="ml-2 text-primary hover:text-primary/80 underline font-medium"
@@ -595,12 +595,12 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                   <div className="break-words">
                                     <p className="font-medium">{animal1Name}</p>
                                     <p>Edad: {calculateAge(risk.animal1.birth_date)}</p>
-                                    <p>Estado: {(risk.animal1 as any).status || 'Sin especificar'}</p>
+                                    <p>{t('corralDetail.status')}: {(risk.animal1 as any).status || t('corralDetail.notSpecified')}</p>
                                   </div>
                                 <div className="break-words">
                                   <p className="font-medium">{animal2Name}</p>
                                     <p>Edad: {calculateAge(risk.animal2.birth_date)}</p>
-                                    <p>Estado: {(risk.animal2 as any).status || 'Sin especificar'}</p>
+                                    <p>{t('corralDetail.status')}: {(risk.animal2 as any).status || t('corralDetail.notSpecified')}</p>
                                   </div>
                                 </div>
                                 
@@ -660,7 +660,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
             <CardContent>
               {animals.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8 text-sm">
-                  No hay animales asignados a este corral
+                  {t('corralDetail.noAnimalsAssigned')}
                 </p>
               ) : (
                 <div className="space-y-2">

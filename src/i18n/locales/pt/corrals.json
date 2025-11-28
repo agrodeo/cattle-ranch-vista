@@ -175,7 +175,28 @@
       "title": "Atribuir Animais ao Curral",
       "availableAnimals": "Animais Disponíveis",
       "searchPlaceholder": "Pesquisar por nome ou identificador..."
-    }
+  },
+  "corralDetail": {
+    "totalAnimals": "Total de Animais",
+    "hectares": "Hectares",
+    "animalsInvolved": "Animais envolvidos",
+    "status": "Estado",
+    "notSpecified": "Não especificado",
+    "animalsInCorral": "Animais no Curral",
+    "assignAnimals": "Atribuir Animais",
+    "noAnimalsAssigned": "Não há animais atribuídos a este curral",
+    "healthStatus": "Estado Sanitário",
+    "generalStatus": "Estado Geral",
+    "animalsMonitored": "animais monitorados",
+    "consanguinityRisk": "Risco de Consanguinidade",
+    "whatIs": "O que é consanguinidade?",
+    "whatIsDescription": "A consanguinidade refere-se à reprodução entre animais que compartilham ancestrais comuns.",
+    "whyImportant": "Por que é importante?",
+    "whyImportantDescription": "Pode reduzir a diversidade genética e aumentar o risco de doenças hereditárias.",
+    "recommendedAction": "Ação recomendada",
+    "recommendedActionDescription": "Recomenda-se mover um dos animais para outro curral ou evitar que acasalem para manter a diversidade genética do rebanho.",
+    "suggestion": "Considere mover um dos animais para outro curral para reduzir o risco de consanguinidade"
+  }
   },
   "mobile": {
     "searchPlaceholder": "Pesquisar currais...",
