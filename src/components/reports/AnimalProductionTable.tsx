@@ -268,7 +268,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                         </div>
                       </div>
                       <Badge variant="outline" className="ml-2 flex-shrink-0">
-                        {animal.corral_name || 'Sin corral'}
+                        {animal.corral_name || t('reports:production.noCorral')}
                       </Badge>
                     </div>
 

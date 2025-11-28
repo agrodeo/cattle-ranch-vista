@@ -157,12 +157,12 @@ export function MobileReportsFilters({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('reports:filters.allCategories')}</SelectItem>
-                <SelectItem value="ternero">Ternero</SelectItem>
-                <SelectItem value="novillo">Novillo</SelectItem>
-                <SelectItem value="toro">Toro</SelectItem>
-                <SelectItem value="ternera">Ternera</SelectItem>
-                <SelectItem value="vaquillona">Vaquillona</SelectItem>
-                <SelectItem value="vaca">Vaca</SelectItem>
+                <SelectItem value="ternero">{t('reports:filters.ternero')}</SelectItem>
+                <SelectItem value="novillo">{t('reports:filters.novillo')}</SelectItem>
+                <SelectItem value="toro">{t('reports:filters.toro')}</SelectItem>
+                <SelectItem value="ternera">{t('reports:filters.ternera')}</SelectItem>
+                <SelectItem value="vaquillona">{t('reports:filters.vaquillona')}</SelectItem>
+                <SelectItem value="vaca">{t('reports:filters.vaca')}</SelectItem>
               </SelectContent>
             </Select>
           </div>

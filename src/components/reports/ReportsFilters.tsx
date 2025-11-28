@@ -228,12 +228,12 @@ export function ReportsFilters({ filters, onFiltersChange, onApplyFilters, class
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('reports:filters.all')}</SelectItem>
-                  <SelectItem value="Ternero">Ternero</SelectItem>
-                  <SelectItem value="Ternera">Ternera</SelectItem>
-                  <SelectItem value="Torete">Torete</SelectItem>
-                  <SelectItem value="Vaquillona">Vaquillona</SelectItem>
-                  <SelectItem value="Toro">Toro</SelectItem>
-                  <SelectItem value="Vaca">Vaca</SelectItem>
+                  <SelectItem value="Ternero">{t('reports:filters.Ternero')}</SelectItem>
+                  <SelectItem value="Ternera">{t('reports:filters.Ternera')}</SelectItem>
+                  <SelectItem value="Torete">{t('reports:filters.Torete')}</SelectItem>
+                  <SelectItem value="Vaquillona">{t('reports:filters.Vaquillona')}</SelectItem>
+                  <SelectItem value="Toro">{t('reports:filters.Toro')}</SelectItem>
+                  <SelectItem value="Vaca">{t('reports:filters.Vaca')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
