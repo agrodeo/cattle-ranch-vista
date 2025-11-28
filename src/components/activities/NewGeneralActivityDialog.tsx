@@ -428,7 +428,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
             </div>
 
             <div className="space-y-2">
-              <Label>Fecha *</Label>
+              <Label>{t('activities:common.dateRequired')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -439,7 +439,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : "Seleccionar fecha"}
+                    {selectedDate ? format(selectedDate, "dd/MM/yyyy") : t('activities:common.selectDate')}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -478,10 +478,10 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                   onClick={() => setSelectedAnimals(filteredAnimals.map(a => a.id))} 
                   className="flex-1 sm:flex-initial"
                 >
-                  Todos
+                  {t('activities:common.all')}
                 </Button>
                 <Button type="button" variant="outline" size="sm" onClick={clearSelection} className="flex-1 sm:flex-initial">
-                  Limpiar
+                  {t('activities:common.clear')}
                 </Button>
               </div>
             </div>
@@ -489,7 +489,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
             {/* Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg">
               <div className="space-y-2">
-                <Label className="text-xs">Buscar</Label>
+                <Label className="text-xs">{t('activities:common.search')}</Label>
                 <div className="relative">
                   <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -508,7 +508,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="all">{t('activities:common.all')}</SelectItem>
                     <SelectItem value="Macho">Machos</SelectItem>
                     <SelectItem value="Hembra">Hembras</SelectItem>
                   </SelectContent>
@@ -516,7 +516,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Categoría</Label>
+                <Label className="text-xs">{t('activities:common.category')}</Label>
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
                   <SelectTrigger className="h-9">
                     <SelectValue />
@@ -540,7 +540,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="all">{t('activities:common.all')}</SelectItem>
                     {corrales.map(corral => (
                       <SelectItem key={corral.id} value={corral.id}>
                         {corral.name}
@@ -569,7 +569,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     {filteredAnimals.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                          No se encontraron animales con los filtros seleccionados
+                          {t('activities:common.noAnimalsFound')}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -604,7 +604,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
             {selectedAnimals.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {selectedAnimals.length} animal(es) seleccionado(s)
+                {t('activities:common.animalsSelected', { count: selectedAnimals.length })}
               </div>
             )}
           </div>
@@ -613,7 +613,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           {renderActivitySpecificFields()}
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notas y Observaciones</Label>
+            <Label htmlFor="notes">{t('activities:common.notesAndObservations')}</Label>
             <Textarea
               id="notes"
               value={notes}
@@ -631,10 +631,10 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
               disabled={isLoading}
               className="w-full sm:w-auto"
             >
-              Cancelar
+              {t('activities:common.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
-              {isLoading ? "Guardando..." : "Registrar Actividad"}
+              {isLoading ? t('activities:common.saving') : t('activities:common.registerActivity')}
             </Button>
           </div>
         </form>

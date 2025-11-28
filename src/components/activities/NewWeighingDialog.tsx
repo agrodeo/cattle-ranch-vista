@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ interface WeighingDialogProps {
 }
 
 export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess }: WeighingDialogProps) {
+  const { t } = useTranslation(['activities']);
   const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
@@ -102,14 +104,14 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
 
   const handleSubmit = async () => {
     try {
-      if (selectedAnimals.length === 0) {
-        toast({
-          variant: "destructive",
-          title: "Error", 
-          description: "Debe seleccionar al menos un animal",
-        });
-        return;
-      }
+        if (selectedAnimals.length === 0) {
+          toast({
+            variant: "destructive",
+            title: "Error", 
+            description: t('activities:newGeneralActivity.errorSelectAnimal'),
+          });
+          return;
+        }
 
       // Validate that all selected animals have weights
       const invalidRecords = weighingRecords.filter(record => 
@@ -236,10 +238,10 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar Todos
+                  {t('activities:common.selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  Limpiar
+                  {t('activities:common.clear')}
                 </Button>
               </div>
             </div>
@@ -347,7 +349,7 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
 
             {selectedAnimals.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {selectedAnimals.length} animal(es) seleccionado(s)
+                {t('activities:common.animalsSelected', { count: selectedAnimals.length })}
               </div>
             )}
           </div>

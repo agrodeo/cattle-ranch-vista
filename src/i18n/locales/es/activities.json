@@ -202,7 +202,37 @@
   },
   "common": {
     "cancel": "Cancelar",
-    "save": "Guardar"
+    "save": "Guardar",
+    "selectAll": "Seleccionar Todos",
+    "selectAllFemale": "Seleccionar Todas",
+    "clear": "Limpiar",
+    "search": "Buscar",
+    "date": "Fecha",
+    "dateRequired": "Fecha *",
+    "selectDate": "Seleccionar fecha",
+    "notes": "Notas",
+    "notesAndObservations": "Notas y Observaciones",
+    "observations": "Observaciones",
+    "all": "Todos",
+    "none": "Ninguno",
+    "filters": "Filtros",
+    "category": "Categoría",
+    "sex": "Sexo",
+    "corral": "Corral",
+    "breed": "Raza",
+    "selectAnimal": "Seleccionar animal",
+    "selectBreed": "Seleccionar raza",
+    "animalsSelected": "{{count}} animal(es) seleccionado(s)",
+    "femalesSelected": "{{count}} hembra(s) seleccionada(s)",
+    "eligibleFemales": "Hembras Elegibles ({{count}} disponibles)",
+    "eligibleAnimals": "{{count}} disponibles",
+    "noAnimalsFound": "No se encontraron animales con los filtros seleccionados",
+    "registerActivity": "Registrar Actividad",
+    "saving": "Guardando...",
+    "required": "obligatorio",
+    "optional": "opcional",
+    "selectHornType": "Seleccionar tipo de cuernos",
+    "selectCoatColor": "Seleccionar color de pelaje"
   },
   "activityCreation": {
     "title": "Cargar Actividad",
@@ -767,5 +797,14 @@
     "noRecordsFound": "No se encontraron registros",
     "noCorral": "Sin corral",
     "showingRecords": "Mostrando {{filtered}} de {{total}} registros"
+  },
+  "newPregnancyLoss": {
+    "pregnantAnimal": "Animal Preñado *",
+    "selectPregnantAnimal": "Seleccionar animal preñado",
+    "lossType": "Tipo de Pérdida *",
+    "selectLossType": "Seleccionar tipo de pérdida",
+    "specificCause": "Causa Específica *",
+    "selectCause": "Seleccionar causa",
+    "errorRequired": "Debe completar todos los campos obligatorios"
   }
 }

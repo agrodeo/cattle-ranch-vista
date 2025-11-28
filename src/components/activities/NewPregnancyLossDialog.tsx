@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, AlertTriangle } from "lucide-react";
+import { useTranslation } from 'react-i18next';
 
 interface NewPregnancyLossDialogProps {
   open?: boolean;
@@ -153,7 +155,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Debe completar todos los campos obligatorios",
+        description: t('activities:newPregnancyLoss.errorRequired'),
       });
       return;
     }
@@ -305,10 +307,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
         <div className="space-y-4 lg:space-y-6">
           {/* Animal Selection */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">Animal Preñado *</Label>
+            <Label className="text-base font-medium">{t('activities:newPregnancyLoss.pregnantAnimal')}</Label>
             <Select value={selectedPregnancy} onValueChange={setSelectedPregnancy}>
               <SelectTrigger className="h-12">
-                <SelectValue placeholder="Seleccionar animal preñado" />
+                <SelectValue placeholder={t('activities:newPregnancyLoss.selectPregnantAnimal')} />
               </SelectTrigger>
               <SelectContent>
                 {pregnantAnimals.map((animal) => (
@@ -370,10 +372,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Loss Type */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">Tipo de Pérdida *</Label>
+            <Label className="text-base font-medium">{t('activities:newPregnancyLoss.lossType')}</Label>
             <Select value={lossType} onValueChange={setLossType}>
               <SelectTrigger className="h-12">
-                <SelectValue placeholder="Seleccionar tipo de pérdida" />
+                <SelectValue placeholder={t('activities:newPregnancyLoss.selectLossType')} />
               </SelectTrigger>
               <SelectContent>
                 {LOSS_TYPES.map((type) => (
@@ -391,10 +393,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
           {/* Specific Cause */}
           {lossType && (
             <div className="space-y-2">
-              <Label className="text-base font-medium">Causa Específica *</Label>
+              <Label className="text-base font-medium">{t('activities:newPregnancyLoss.specificCause')}</Label>
               <Select value={lossReason} onValueChange={setLossReason}>
                 <SelectTrigger className="h-12">
-                  <SelectValue placeholder="Seleccionar causa" />
+                  <SelectValue placeholder={t('activities:newPregnancyLoss.selectCause')} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCauses.map((cause) => (
