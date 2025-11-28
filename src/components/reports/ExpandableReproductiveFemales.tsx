@@ -133,24 +133,25 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                   <span className="hidden sm:inline">Detalle Hembras Reproductivas</span>
                 </span>
               </div>
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 md:gap-6 text-xs sm:text-sm">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 md:gap-6 text-xs sm:text-sm">
+                <div className="flex items-center gap-1.5">
                   <Baby className="h-4 w-4 text-blue-500 shrink-0" />
-                  <span className="text-muted-foreground whitespace-nowrap">
-                    {totalFemales} Total • {pregnantCount} Preñadas ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)
+                  <span className="text-muted-foreground">
+                    <span className="hidden sm:inline">{totalFemales} Total • {pregnantCount} Preñadas ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)</span>
+                    <span className="sm:hidden">{totalFemales} • {pregnantCount} ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)</span>
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <TrendingUp className="h-4 w-4 text-success shrink-0" />
-                  <span className="text-muted-foreground whitespace-nowrap">
-                    {avgPregnancyRate.toFixed(1)}% Promedio
+                  <span className="text-muted-foreground">
+                    {avgPregnancyRate.toFixed(1)}%
                   </span>
                 </div>
                 {totalAlerts > 0 && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
                     <Badge variant="destructive" className="h-5 text-xs">
-                      {totalAlerts} Alertas
+                      {totalAlerts}
                     </Badge>
                   </div>
                 )}
@@ -168,13 +169,13 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
           ) : (
             <>
               {/* Advanced Filters */}
-              <div className="mb-6 flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <div className="flex items-center gap-4">
+              <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full">
                   <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">Rendimiento:</label>
+                    <label className="text-sm font-medium whitespace-nowrap">Rendimiento:</label>
                     <Select value={performanceFilter || "all"} onValueChange={(value) => setPerformanceFilter(value === "all" ? "" : value)}>
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-28 sm:w-32">
                         <SelectValue placeholder="Todos" />
                       </SelectTrigger>
                       <SelectContent>
@@ -187,9 +188,9 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                     </Select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">Alertas:</label>
+                    <label className="text-sm font-medium whitespace-nowrap">Alertas:</label>
                     <Select value={alertFilter || "all"} onValueChange={(value) => setAlertFilter(value === "all" ? "" : value)}>
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-28 sm:w-32">
                         <SelectValue placeholder="Todas" />
                       </SelectTrigger>
                       <SelectContent>
@@ -203,31 +204,33 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                     variant="outline" 
                     size="sm" 
                     onClick={checkAndCreateAlerts}
-                    className="ml-auto"
+                    className="sm:ml-auto w-full sm:w-auto"
                   >
                     <AlertTriangle className="h-4 w-4 mr-2" />
-                    Verificar Alertas
+                    <span className="hidden sm:inline">Verificar Alertas</span>
+                    <span className="sm:hidden">Verificar</span>
                   </Button>
                 </div>
               </div>
 
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tag</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Edad</TableHead>
-                    <TableHead>Corral</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>% Preñez</TableHead>
-                    <TableHead>% Parición</TableHead>
-                    <TableHead>Años Reprod.</TableHead>
-                    <TableHead>Crías</TableHead>
-                    <TableHead>Días Abierta</TableHead>
-                    <TableHead>Alertas</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="whitespace-nowrap">Tag</TableHead>
+                      <TableHead className="whitespace-nowrap">Nombre</TableHead>
+                      <TableHead className="whitespace-nowrap">Edad</TableHead>
+                      <TableHead className="whitespace-nowrap">Corral</TableHead>
+                      <TableHead className="whitespace-nowrap">Estado</TableHead>
+                      <TableHead className="whitespace-nowrap">% Preñez</TableHead>
+                      <TableHead className="whitespace-nowrap">% Parición</TableHead>
+                      <TableHead className="whitespace-nowrap">Años Reprod.</TableHead>
+                      <TableHead className="whitespace-nowrap">Crías</TableHead>
+                      <TableHead className="whitespace-nowrap">Días Abierta</TableHead>
+                      <TableHead className="whitespace-nowrap">Alertas</TableHead>
+                      <TableHead className="whitespace-nowrap">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {animals.map((animal) => (
                     <TableRow key={animal.animal_id}>
@@ -288,7 +291,8 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+                </Table>
+              </div>
 
               <div className="mt-6 space-y-4 text-sm text-muted-foreground">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
