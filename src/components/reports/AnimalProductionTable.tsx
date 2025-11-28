@@ -33,6 +33,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatDateForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getTranslatedCategory } from "@/lib/translations";
 
 interface ProductionAnimal {
   animal_id: string;
@@ -58,7 +59,7 @@ interface AnimalProductionTableProps {
 }
 
 export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
-  const { t } = useTranslation(['reports', 'common']);
+  const { t } = useTranslation(['reports', 'common', 'animals']);
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
@@ -264,7 +265,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                           {animal.name || animal.tag}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {animal.tag} • {animal.category}
+                          {animal.tag} • {getTranslatedCategory(animal.category, t)}
                         </div>
                       </div>
                       <Badge variant="outline" className="ml-2 flex-shrink-0">
@@ -394,7 +395,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <TableCell className="font-medium">{animal.tag}</TableCell>
                       <TableCell>{animal.name || '-'}</TableCell>
                       <TableCell>
-                        <Badge variant="outline">{animal.category}</Badge>
+                        <Badge variant="outline">{getTranslatedCategory(animal.category, t)}</Badge>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{animal.corral_name || t('reports:production.noCorral')}</Badge>

@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
 import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
+import { getTranslatedCategory } from "@/lib/translations";
 import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
 
 interface ReportFilters {
@@ -65,7 +66,7 @@ interface ReproductiveAnalyticsProps {
 }
 
 const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => {
-  const { t } = useTranslation(['reports']);
+  const { t } = useTranslation(['reports', 'animals']);
   const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetrics>({
     totalFemales: 0,
     currentlyPregnant: 0,
@@ -495,7 +496,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                           <TableCell className="font-medium">{animal.id_tag}</TableCell>
                           <TableCell>{animal.name || '-'}</TableCell>
                           <TableCell>
-                            <Badge variant="outline">{animal.category}</Badge>
+                            <Badge variant="outline">{getTranslatedCategory(animal.category, t)}</Badge>
                           </TableCell>
                           <TableCell>{animal.corral_name || '-'}</TableCell>
                           <TableCell>
@@ -511,7 +512,9 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                                 'bg-gray-100 text-gray-800'
                               }
                             >
-                              {animal.current_state}
+                              {animal.current_state === 'Preñada' ? t('reports:reproductive.pregnant') :
+                               animal.current_state === 'Post-parto' ? t('reports:reproductive.postpartum') :
+                               t('reports:reproductive.empty')}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-center">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReportFilters } from "./ReportsFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateForDB } from "@/lib/dateFormatters";
+import { getTranslatedCategory } from "@/lib/translations";
 
 interface ReproductionAnimal {
   animal_id: string;
@@ -49,6 +51,7 @@ export function AnimalReproductionTable({ filters }: AnimalReproductionTableProp
   const [animals, setAnimals] = useState<ReproductionAnimal[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation(['animals']);
 
   useEffect(() => {
     fetchReproductionData();
@@ -194,7 +197,7 @@ export function AnimalReproductionTable({ filters }: AnimalReproductionTableProp
                             {animal.name || animal.tag}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {animal.tag} • {animal.category}
+                            {animal.tag} • {getTranslatedCategory(animal.category, t)}
                           </div>
                         </div>
                       </TableCell>
