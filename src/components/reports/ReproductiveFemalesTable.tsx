@@ -16,6 +16,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { ReportFilters } from "./ReportsFilters";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateForDB } from "@/lib/dateFormatters";
+import { useTranslation } from "react-i18next";
+import { getTranslatedCategory } from "@/lib/translations";
 
 interface ReproductiveFemale {
   animal_id: string;
@@ -43,6 +45,7 @@ export function ReproductiveFemalesTable({ filters }: ReproductiveFemalesTablePr
   const [animals, setAnimals] = useState<ReproductiveFemale[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation(['animals']);
 
   useEffect(() => {
     fetchReproductiveFemales();
@@ -164,7 +167,7 @@ export function ReproductiveFemalesTable({ filters }: ReproductiveFemalesTablePr
                     <TableCell className="font-medium">{animal.tag}</TableCell>
                     <TableCell>{animal.name || '-'}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{animal.category}</Badge>
+                      <Badge variant="outline">{getTranslatedCategory(animal.category, t)}</Badge>
                     </TableCell>
                     <TableCell>{animal.corral_name || '-'}</TableCell>
                     <TableCell className="text-center">{animal.exposures}</TableCell>
