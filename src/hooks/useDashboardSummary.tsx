@@ -226,22 +226,25 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw corralsError;
       }
 
-      // Count activities from last 30 days from all three sources
-      const { count: eventosCount, error: eventosError } = await supabase
+      // Count batch activities from last 30 days (grouped by batch characteristics)
+      // For eventos: count distinct batches by (tipo, fecha, creado_por)
+      const { data: eventosBatches, error: eventosError } = await supabase
         .from('eventos')
-        .select('id', { count: 'exact', head: true })
+        .select('tipo, fecha, creado_por')
         .eq('cabaña_id', cabanaId)
         .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0]);
 
-      const { count: vaccinesCount, error: vaccinesError } = await supabase
+      // For animal_vaccines: count distinct batches by (vaccine_code, DATE(date), created_by)
+      const { data: vaccinesBatches, error: vaccinesError } = await supabase
         .from('animal_vaccines')
-        .select('id', { count: 'exact', head: true })
+        .select('vaccine_code, date, created_by')
         .eq('cabaña_id', cabanaId)
         .gte('date', thirtyDaysAgo.toISOString().split('T')[0]);
 
-      const { count: inseminationsCount, error: inseminationsError } = await supabase
+      // For artificial_inseminations: count distinct batches by (insemination_date, bull_name, created_by)
+      const { data: inseminationsBatches, error: inseminationsError } = await supabase
         .from('artificial_inseminations')
-        .select('id', { count: 'exact', head: true })
+        .select('insemination_date, bull_name, created_by')
         .eq('cabaña_id', cabanaId)
         .gte('insemination_date', thirtyDaysAgo.toISOString().split('T')[0]);
 
@@ -249,7 +252,20 @@ export const useDashboardSummary = (): DashboardSummary => {
         console.error('Error counting activities:', { eventosError, vaccinesError, inseminationsError });
       }
 
-      const activitiesCount = (eventosCount || 0) + (vaccinesCount || 0) + (inseminationsCount || 0);
+      // Count unique batches
+      const countUniqueBatches = (batches: any[], keys: string[]) => {
+        if (!batches) return 0;
+        const uniqueSet = new Set(
+          batches.map(b => keys.map(k => b[k]).join('|'))
+        );
+        return uniqueSet.size;
+      };
+
+      const eventosCount = countUniqueBatches(eventosBatches || [], ['tipo', 'fecha', 'creado_por']);
+      const vaccinesCount = countUniqueBatches(vaccinesBatches || [], ['vaccine_code', 'date', 'created_by']);
+      const inseminationsCount = countUniqueBatches(inseminationsBatches || [], ['insemination_date', 'bull_name', 'created_by']);
+
+      const activitiesCount = eventosCount + vaccinesCount + inseminationsCount;
 
       // Count total AI services
       const { count: servicesCount, error: servicesError } = await supabase
@@ -292,10 +308,10 @@ export const useDashboardSummary = (): DashboardSummary => {
         ? Math.round((pregnantFemalesCount / reproductiveFemalesCount) * 100)
         : 0;
 
-      // Get recent activities from all three sources
-      console.log('🔍 Fetching recent activities from all sources');
+      // Get recent batch activities from all three sources (grouped)
+      console.log('🔍 Fetching recent batch activities from all sources');
       
-      // Fetch from eventos
+      // Fetch from eventos (already naturally batched by event)
       const { data: eventosData, error: eventosRecentError } = await supabase
         .from('eventos')
         .select(`
@@ -310,7 +326,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         .order('fecha', { ascending: false })
         .limit(10);
 
-      // Fetch from animal_vaccines
+      // Fetch from animal_vaccines and group by batch
       const { data: vaccinesData, error: vaccinesRecentError } = await supabase
         .from('animal_vaccines')
         .select(`
@@ -318,14 +334,17 @@ export const useDashboardSummary = (): DashboardSummary => {
           vaccine_code,
           date,
           created_by,
-          animal_id,
-          animals!inner(id, name, id_tag)
+          created_at,
+          lot,
+          dose,
+          route,
+          animal_id
         `)
         .eq('cabaña_id', cabanaId)
         .order('date', { ascending: false })
-        .limit(10);
+        .limit(50); // Fetch more to ensure we can group properly
 
-      // Fetch from artificial_inseminations
+      // Fetch from artificial_inseminations and group by batch
       const { data: inseminationsData, error: inseminationsRecentError } = await supabase
         .from('artificial_inseminations')
         .select(`
@@ -333,12 +352,12 @@ export const useDashboardSummary = (): DashboardSummary => {
           bull_name,
           insemination_date,
           created_by,
-          female_id,
-          animals!inner(id, name, id_tag)
+          created_at,
+          female_id
         `)
         .eq('cabaña_id', cabanaId)
         .order('insemination_date', { ascending: false })
-        .limit(10);
+        .limit(50);
 
       if (eventosRecentError || vaccinesRecentError || inseminationsRecentError) {
         console.error('Error fetching recent activities:', { 
@@ -348,48 +367,102 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       }
 
-      // Merge all activities with standardized format
+      // Group vaccinations by batch (vaccine_code, date, created_by)
+      const vaccineBatches = new Map<string, any>();
+      (vaccinesData || []).forEach(vaccine => {
+        const batchKey = `${vaccine.vaccine_code}|${vaccine.date}|${vaccine.created_by}`;
+        if (!vaccineBatches.has(batchKey)) {
+          vaccineBatches.set(batchKey, {
+            vaccine_code: vaccine.vaccine_code,
+            date: vaccine.date,
+            created_by: vaccine.created_by,
+            created_at: vaccine.created_at,
+            lot: vaccine.lot,
+            dose: vaccine.dose,
+            route: vaccine.route,
+            animal_ids: [],
+            count: 0
+          });
+        }
+        const batch = vaccineBatches.get(batchKey)!;
+        batch.animal_ids.push(vaccine.animal_id);
+        batch.count++;
+        // Keep the most recent created_at for sorting
+        if (new Date(vaccine.created_at) > new Date(batch.created_at)) {
+          batch.created_at = vaccine.created_at;
+        }
+      });
+
+      // Group inseminations by batch (insemination_date, bull_name, created_by)
+      const inseminationBatches = new Map<string, any>();
+      (inseminationsData || []).forEach(ia => {
+        const batchKey = `${ia.insemination_date}|${ia.bull_name}|${ia.created_by}`;
+        if (!inseminationBatches.has(batchKey)) {
+          inseminationBatches.set(batchKey, {
+            bull_name: ia.bull_name,
+            insemination_date: ia.insemination_date,
+            created_by: ia.created_by,
+            created_at: ia.created_at,
+            female_ids: [],
+            count: 0
+          });
+        }
+        const batch = inseminationBatches.get(batchKey)!;
+        batch.female_ids.push(ia.female_id);
+        batch.count++;
+        if (new Date(ia.created_at) > new Date(batch.created_at)) {
+          batch.created_at = ia.created_at;
+        }
+      });
+
+      // Merge all batch activities with standardized format
       const allActivities: any[] = [];
 
-      // Add eventos activities
+      // Add eventos activities (already batched)
       (eventosData || []).forEach(event => {
         allActivities.push({
           id: event.id,
           type: event.tipo || 'General',
           date: event.fecha,
+          sortDate: event.fecha,
           source: 'eventos',
+          animalCount: undefined,
           rawData: event,
         });
       });
 
-      // Add vaccination activities
-      (vaccinesData || []).forEach(vaccine => {
+      // Add vaccination batch activities
+      vaccineBatches.forEach((batch, key) => {
         allActivities.push({
-          id: vaccine.id,
+          id: key,
           type: 'Vacunación',
-          date: vaccine.date,
+          date: batch.date,
+          sortDate: batch.created_at,
           source: 'vaccination',
-          rawData: vaccine,
+          animalCount: batch.count,
+          rawData: batch,
         });
       });
 
-      // Add insemination activities
-      (inseminationsData || []).forEach(ia => {
+      // Add insemination batch activities
+      inseminationBatches.forEach((batch, key) => {
         allActivities.push({
-          id: ia.id,
+          id: key,
           type: 'IA',
-          date: ia.insemination_date,
+          date: batch.insemination_date,
+          sortDate: batch.created_at,
           source: 'insemination',
-          rawData: ia,
+          animalCount: batch.count,
+          rawData: batch,
         });
       });
 
-      // Sort by date descending and take top 5
+      // Sort by sortDate descending and take top 5
       const recentData = allActivities
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime())
         .slice(0, 5);
       
-      console.log('📊 Recent activities merged:', { count: recentData.length, data: recentData });
+      console.log('📊 Recent batch activities merged:', { count: recentData.length, data: recentData });
 
       // Get upcoming activities (next 7 days) - using eventos table
       const { data: upcomingData, error: upcomingError } = await supabase
@@ -653,19 +726,20 @@ export const useDashboardSummary = (): DashboardSummary => {
             details.notas = event.notas;
           }
         } else if (activity.source === 'vaccination') {
-          const vaccine = activity.rawData;
-          userId = vaccine.created_by;
-          details.vacuna = vaccine.vaccine_code;
-          animalName = vaccine.animals?.name || vaccine.animals?.id_tag;
-          description = `Vacunación: ${vaccine.vaccine_code}`;
-          animalCount = 1;
+          const batch = activity.rawData;
+          userId = batch.created_by;
+          details.vacuna = batch.vaccine_code;
+          if (batch.lot) details.lote = batch.lot;
+          if (batch.dose) details.dosis = batch.dose;
+          if (batch.route) details.via = batch.route;
+          description = `Vacunación: ${batch.vaccine_code}`;
+          animalCount = batch.count || activity.animalCount || 0;
         } else if (activity.source === 'insemination') {
-          const ia = activity.rawData;
-          userId = ia.created_by;
-          details.toro_nombre = ia.bull_name;
-          animalName = ia.animals?.name || ia.animals?.id_tag;
-          description = `IA con ${ia.bull_name}`;
-          animalCount = 1;
+          const batch = activity.rawData;
+          userId = batch.created_by;
+          details.toro_nombre = batch.bull_name;
+          description = `IA con ${batch.bull_name}`;
+          animalCount = batch.count || activity.animalCount || 0;
         }
 
         return {
