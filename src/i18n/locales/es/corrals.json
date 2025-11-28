@@ -172,6 +172,7 @@
       "title": "Asignar Animales al Corral",
       "availableAnimals": "Animales Disponibles",
       "searchPlaceholder": "Buscar por nombre o identificador..."
+    }
   },
   "corralDetail": {
     "totalAnimals": "Total Animales",
@@ -257,7 +258,6 @@
     "noData": "Sin datos",
     "basedOnAnimals": "Basado en {{count}} animales",
     "low": "Bajo"
-  }
   },
   "mobile": {
     "searchPlaceholder": "Buscar corrales...",
