@@ -7,6 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
 import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
@@ -67,6 +68,7 @@ interface ReproductiveAnalyticsProps {
 
 const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => {
   const { t } = useTranslation(['reports', 'animals']);
+  const isMobile = useIsMobile();
   const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetrics>({
     totalFemales: 0,
     currentlyPregnant: 0,
@@ -474,6 +476,84 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                   <p className="text-sm text-blue-600 mt-1">
                     {t('reports:reproductive.allFemalesUnder15')}
                   </p>
+                </div>
+              ) : isMobile ? (
+                <div className="space-y-3">
+                  {reproductiveFemales.map((animal) => (
+                    <Card 
+                      key={animal.animal_id}
+                      className="hover:bg-accent/50 transition-colors"
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-base truncate">
+                              {animal.name || animal.id_tag}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {animal.id_tag} • {getTranslatedCategory(animal.category, t)}
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="ml-2 flex-shrink-0">
+                            {animal.corral_name || '-'}
+                          </Badge>
+                        </div>
+
+                        <div className="space-y-2 mb-3">
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">{t('reports:reproductive.tableCurrentState')}</div>
+                            <Badge 
+                              variant={
+                                animal.current_state === 'Preñada' ? 'default' :
+                                animal.current_state === 'Post-parto' ? 'secondary' :
+                                'outline'
+                              }
+                              className={
+                                animal.current_state === 'Preñada' ? 'bg-emerald-100 text-emerald-800' :
+                                animal.current_state === 'Post-parto' ? 'bg-blue-100 text-blue-800' :
+                                'bg-gray-100 text-gray-800'
+                              }
+                            >
+                              {animal.current_state === 'Preñada' ? t('reports:reproductive.pregnant') :
+                               animal.current_state === 'Post-parto' ? t('reports:reproductive.postpartum') :
+                               t('reports:reproductive.empty')}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">{t('reports:reproductive.tablePregnancyPct')}</div>
+                            <span className={`font-medium text-sm ${
+                              animal.individual_pregnancy_rate >= 80 ? 'text-emerald-600' :
+                              animal.individual_pregnancy_rate >= 60 ? 'text-blue-600' :
+                              animal.individual_pregnancy_rate >= 40 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {animal.individual_pregnancy_rate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">{t('reports:reproductive.tableCalvingPct')}</div>
+                            <span className={`font-medium text-sm ${
+                              animal.individual_calving_rate >= 90 ? 'text-emerald-600' :
+                              animal.individual_calving_rate >= 75 ? 'text-blue-600' :
+                              animal.individual_calving_rate >= 60 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {animal.individual_calving_rate.toFixed(1)}%
+                            </span>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">{t('reports:reproductive.tableOffspring')}</div>
+                            <Badge variant="secondary">
+                              {animal.total_offspring}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 <div className="overflow-x-auto">
