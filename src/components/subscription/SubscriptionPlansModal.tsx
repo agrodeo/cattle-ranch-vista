@@ -14,51 +14,48 @@ interface SubscriptionPlansModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const plans = [
+const getPlansData = (t: any) => [
   {
     id: 'personal',
-    name: 'Personal',
+    name: t('plans.personal.name'),
     icon: Users,
     color: 'bg-blue-500',
     maxAnimals: 200,
     features: [
-      'Hasta 200 animales',
-      'Usuarios ilimitados',
-      'Reportes básicos',
-      'Soporte por email'
+      t('plansModal.unlimitedUsers'),
+      t('plansModal.basicReports'),
+      t('plansModal.emailSupport')
     ],
     monthly: 24900,
     annual: 249000
   },
   {
     id: 'avanzado',
-    name: 'Avanzado',
+    name: t('plans.avanzado.name'),
     icon: Zap,
     color: 'bg-indigo-500',
     maxAnimals: 600,
     features: [
-      'Hasta 600 animales',
-      'Usuarios ilimitados',
-      'Reportes intermedios',
-      'Exportación de datos',
-      'Soporte por email'
+      t('plansModal.unlimitedUsers'),
+      t('plansModal.intermediateReports'),
+      t('plansModal.dataExport'),
+      t('plansModal.emailSupport')
     ],
     monthly: 44900,
     annual: 449000
   },
   {
     id: 'productor',
-    name: 'Productor',
+    name: t('plans.productor.name'),
     icon: Crown,
     color: 'bg-green-500',
     maxAnimals: 1000,
     features: [
-      'Hasta 1,000 animales',
-      'Usuarios ilimitados',
-      'Reportes avanzados',
-      'Analytics en tiempo real',
-      'Exportación de datos',
-      'Soporte prioritario'
+      t('plansModal.unlimitedUsers'),
+      t('plansModal.advancedReports'),
+      t('plansModal.realtimeAnalytics'),
+      t('plansModal.dataExport'),
+      t('plansModal.prioritySupport')
     ],
     monthly: 69900,
     annual: 699000,
@@ -66,35 +63,34 @@ const plans = [
   },
   {
     id: 'cabana',
-    name: 'Cabaña',
+    name: t('plans.cabana.name'),
     icon: Building2,
     color: 'bg-purple-500',
     maxAnimals: 5000,
     features: [
-      'Hasta 5,000 animales',
-      'Usuarios ilimitados',
-      'Todos los reportes',
-      'Dashboard ejecutivo',
-      'API access',
-      'Integración con sistemas',
-      'Soporte telefónico'
+      t('plansModal.unlimitedUsers'),
+      t('plansModal.allReports'),
+      t('plansModal.executiveDashboard'),
+      t('plansModal.apiAccess'),
+      t('plansModal.systemIntegration'),
+      t('plansModal.phoneSupport')
     ],
     monthly: 149000,
     annual: 1490000
   },
   {
     id: 'corporativo',
-    name: 'Corporativo',
+    name: t('plans.corporativo.name'),
     icon: Briefcase,
     color: 'bg-orange-500',
-    maxAnimals: 'Ilimitado',
+    maxAnimals: 'unlimited',
     features: [
-      'Animales ilimitados',
-      'Usuarios ilimitados',
-      'Funcionalidades personalizadas',
-      'Servidor dedicado',
-      'Soporte 24/7',
-      'Implementación personalizada'
+      t('plansModal.unlimitedAnimals'),
+      t('plansModal.unlimitedUsers'),
+      t('plansModal.customFeatures'),
+      t('plansModal.dedicatedServer'),
+      t('plansModal.support24x7'),
+      t('plansModal.customImplementation')
     ],
     monthly: 159000,
     annual: 1590000
@@ -105,6 +101,8 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
   const { t } = useTranslation('subscription');
   const [isAnnual, setIsAnnual] = useState(false);
   const { subscriptionStatus, upgradePlan } = useSubscription();
+  
+  const plans = getPlansData(t);
 
   const handleSelectPlan = async (planId: string) => {
     if (planId === 'corporativo') {
@@ -225,7 +223,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   <CardDescription>
                     {typeof plan.maxAnimals === 'number' 
                       ? `${t('plansModal.upTo')} ${plan.maxAnimals.toLocaleString()} ${t('plansModal.animals')}`
-                      : `${plan.maxAnimals} ${t('plansModal.animals')}`}
+                      : t('plansModal.unlimitedAnimals')}
                   </CardDescription>
                 </CardHeader>
 
