@@ -452,14 +452,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           <CardHeader>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" className="w-full justify-between p-0 h-auto whitespace-normal">
-                <CardTitle className="flex items-center gap-2 flex-wrap">
-                  <Heart className="h-5 w-5 shrink-0" />
-                  <span className="break-words">{t('reports:reproductive.reproductiveFemales')}</span>
+                <CardTitle className="flex items-center gap-2">
+                  <Heart className="h-5 w-5" />
+                  {t('reports:reproductive.reproductiveFemales')}
                   <Badge variant="secondary" className="ml-2">
                     {reproductiveFemales.length} {t('reports:reproductive.animals')}
                   </Badge>
                 </CardTitle>
-                {isExpanded ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
+                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </Button>
             </CollapsibleTrigger>
           </CardHeader>
