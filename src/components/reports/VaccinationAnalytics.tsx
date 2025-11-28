@@ -84,11 +84,7 @@ interface ClassificationResult {
   vaccines?: any[];
 }
 
-  {
-    // ... keep existing code
-  }
-  
-  const classifyAnimal = (animal: any, statusData: any[] | null, error: any, t: any): ClassificationResult => {
+const classifyAnimal = (animal: any, statusData: any[] | null, error: any, t: any): ClassificationResult => {
   // Error category
   if (error || !statusData) {
     return { 
@@ -171,94 +167,6 @@ interface ClassificationResult {
     issues: mandatoryMissing.map(v => ({
       vaccine_name: v.vaccine_name,
       status: t('reports:vaccination.statusNotAppliedMandatory'),
-      is_mandatory: true
-    }))
-  };
-};
-  // Error category
-  if (error || !statusData) {
-    return { 
-      category: 'error', 
-      reason: error ? `Error al procesar: ${error.message || 'Desconocido'}` : 'Sin datos de estado'
-    };
-  }
-  
-  // No requirements category
-  if (statusData.length === 0) {
-    return { 
-      category: 'no_requirements', 
-      reason: 'Sin requisitos de vacunación aplicables'
-    };
-  }
-  
-  const mandatoryVaccines = statusData.filter(s => s.is_mandatory);
-  const overdueVaccines = statusData.filter(s => s.status === 'vencida');
-  const pendingVaccines = statusData.filter(s => s.status === 'pendiente');
-  const completeVaccines = statusData.filter(s => s.status === 'completa');
-  
-  // Priority 1: Overdue vaccines (requires immediate attention)
-  if (overdueVaccines.length > 0) {
-    return { 
-      category: 'overdue', 
-      reason: `${overdueVaccines.length} ${overdueVaccines.length === 1 ? 'vacuna vencida' : 'vacunas vencidas'}`,
-      issues: overdueVaccines.map(v => ({
-        vaccine_name: v.vaccine_name,
-        status: 'Vencida',
-        days_overdue: v.days_overdue
-      }))
-    };
-  }
-  
-  // Priority 2: Pending vaccines (due soon)
-  if (pendingVaccines.length > 0) {
-    return { 
-      category: 'pending', 
-      reason: `${pendingVaccines.length} ${pendingVaccines.length === 1 ? 'vacuna pendiente' : 'vacunas pendientes'}`,
-      issues: pendingVaccines.map(v => ({
-        vaccine_name: v.vaccine_name,
-        status: 'Pendiente',
-        next_due: v.next_due_date
-      }))
-    };
-  }
-  
-  // Priority 3: Check if all mandatory vaccines are complete
-  if (mandatoryVaccines.length === 0) {
-    // No mandatory vaccines, but animal is up-to-date with available vaccines
-    return { 
-      category: 'compliant', 
-      reason: 'Sin vacunas obligatorias aplicables',
-      vaccines: completeVaccines.map(v => ({
-        vaccine_name: v.vaccine_name,
-        last_date: v.last_vaccination_date,
-        next_due: v.next_due_date
-      }))
-    };
-  }
-  
-  const mandatoryComplete = mandatoryVaccines.filter(s => s.status === 'completa');
-  
-  if (mandatoryComplete.length === mandatoryVaccines.length) {
-    // All mandatory vaccines complete
-    return { 
-      category: 'compliant', 
-      reason: `Todas las vacunas obligatorias completas (${mandatoryComplete.length}/${mandatoryVaccines.length})`,
-      vaccines: completeVaccines.map(v => ({
-        vaccine_name: v.vaccine_name,
-        last_date: v.last_vaccination_date,
-        next_due: v.next_due_date
-      }))
-    };
-  }
-  
-  // Priority 4: Missing mandatory vaccines
-  const mandatoryMissing = mandatoryVaccines.filter(s => s.status === 'no_aplicada');
-  return { 
-    category: 'missing_mandatory', 
-    reason: `${mandatoryMissing.length} ${mandatoryMissing.length === 1 ? 'vacuna obligatoria no aplicada' : 'vacunas obligatorias no aplicadas'}`,
-    issues: mandatoryMissing.map(v => ({
-      vaccine_name: v.vaccine_name,
-      status: 'No aplicada',
       is_mandatory: true
     }))
   };
@@ -360,7 +268,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
       // Classify all animals
       const classified = results.map(result => {
-        const classification = classifyAnimal(result.animal, result.statusData, result.error);
+        const classification = classifyAnimal(result.animal, result.statusData, result.error, t);
         return {
           ...result,
           ...classification
