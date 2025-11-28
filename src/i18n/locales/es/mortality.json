@@ -46,5 +46,49 @@
     "title": "Gestión de Causas de Muerte",
     "noCauses": "No hay causas de muerte configuradas",
     "addFirst": "Agregar primera causa"
+  },
+  "reports": {
+    "totalDeaths": "Total de muertes",
+    "avgAgeAtDeath": "Edad promedio al morir",
+    "mainCause": "Causa principal",
+    "mortalityByAge": "Mortalidad por Edad",
+    "mortalityByCause": "Mortalidad por Causa",
+    "deathRegistry": "Registro de Defunciones",
+    "exportCSV": "Exportar CSV",
+    "loading": "Cargando datos...",
+    "noRecords": "No hay registros de mortalidad",
+    "notSpecified": "Sin especificar",
+    "noIdentifier": "Sin identificador",
+    "unknown": "Desconocida",
+    "days": "días",
+    "months": "meses",
+    "ageGroups": {
+      "0-30days": "0-30 días",
+      "1-6months": "1-6 meses",
+      "6-12months": "6-12 meses",
+      "12-24months": "12-24 meses",
+      "over24months": "> 24 meses",
+      "unknown": "Desconocido"
+    },
+    "table": {
+      "date": "Fecha",
+      "animal": "Animal",
+      "ageAtDeath": "Edad al Morir",
+      "cause": "Causa",
+      "sex": "Sexo",
+      "breed": "Raza"
+    },
+    "csvHeaders": {
+      "deathDate": "Fecha Defunción",
+      "mainIdentifier": "Identificador Principal",
+      "name": "Nombre",
+      "sex": "Sexo",
+      "breed": "Raza",
+      "ageDays": "Edad al Morir (días)",
+      "ageMonths": "Edad al Morir (meses)",
+      "cause": "Causa",
+      "notes": "Notas"
+    },
+    "errorLoading": "No se pudieron cargar los datos de mortalidad"
   }
 }

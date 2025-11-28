@@ -46,5 +46,49 @@
     "title": "Death Causes Management",
     "noCauses": "No death causes configured",
     "addFirst": "Add first cause"
+  },
+  "reports": {
+    "totalDeaths": "Total deaths",
+    "avgAgeAtDeath": "Average age at death",
+    "mainCause": "Main cause",
+    "mortalityByAge": "Mortality by Age",
+    "mortalityByCause": "Mortality by Cause",
+    "deathRegistry": "Death Registry",
+    "exportCSV": "Export CSV",
+    "loading": "Loading data...",
+    "noRecords": "No mortality records",
+    "notSpecified": "Not specified",
+    "noIdentifier": "No identifier",
+    "unknown": "Unknown",
+    "days": "days",
+    "months": "months",
+    "ageGroups": {
+      "0-30days": "0-30 days",
+      "1-6months": "1-6 months",
+      "6-12months": "6-12 months",
+      "12-24months": "12-24 months",
+      "over24months": "> 24 months",
+      "unknown": "Unknown"
+    },
+    "table": {
+      "date": "Date",
+      "animal": "Animal",
+      "ageAtDeath": "Age at Death",
+      "cause": "Cause",
+      "sex": "Sex",
+      "breed": "Breed"
+    },
+    "csvHeaders": {
+      "deathDate": "Death Date",
+      "mainIdentifier": "Main Identifier",
+      "name": "Name",
+      "sex": "Sex",
+      "breed": "Breed",
+      "ageDays": "Age at Death (days)",
+      "ageMonths": "Age at Death (months)",
+      "cause": "Cause",
+      "notes": "Notes"
+    },
+    "errorLoading": "Could not load mortality data"
   }
 }
