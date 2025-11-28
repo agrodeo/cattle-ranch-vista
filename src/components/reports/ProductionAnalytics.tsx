@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ interface ProductionAnalyticsProps {
 }
 
 export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyticsProps) => {
+  const { t } = useTranslation(['reports']);
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -216,11 +218,11 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
   };
 
   if (loading) {
-    return <div className="text-center p-8">Cargando análisis de producción...</div>;
+    return <div className="text-center p-8">{t('reports:production.loading')}</div>;
   }
 
   if (!stats) {
-    return <div className="text-center p-8">No se pudieron cargar las estadísticas de producción.</div>;
+    return <div className="text-center p-8">{t('reports:production.error')}</div>;
   }
 
   const handleViewCorralAnimals = (corralId: string, corralName: string) => {

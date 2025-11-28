@@ -196,5 +196,86 @@
     "moveAnimalsBetween": "Move animals between corrals",
     "newCorral": "New Corral",
     "createNewCorral": "Create a new corral"
+  },
+  "wizard": {
+    "title": "Optimize Corral Distribution",
+    "subtitle": "Use AI to organize animals optimally",
+    "loading": "Analyzing distribution...",
+    "steps": {
+      "config": "Configuration",
+      "preview": "Preview",
+      "confirm": "Confirm"
+    },
+    "objective": {
+      "title": "Optimization Objective",
+      "label": "What do you want to optimize?",
+      "consanguinity": "Minimize Inbreeding",
+      "consanguinityDesc": "Reduce risk of breeding between relatives",
+      "reproduction": "Maximize Reproduction",
+      "reproductionDesc": "Optimize breeder distribution",
+      "production": "Maximize Production",
+      "productionDesc": "Group by weight and daily gain",
+      "benchmarks": "Meet Standards",
+      "benchmarksDesc": "Achieve your herd goals"
+    },
+    "parameters": {
+      "title": "Parameters",
+      "bullsPerCorral": "Bulls per corral",
+      "densityPerHectare": "Density per hectare",
+      "animals": "animals/ha"
+    },
+    "howItWorks": {
+      "title": "How it works?",
+      "step1": "We analyze all your animals and corrals",
+      "step2": "We calculate optimal distribution based on your objectives",
+      "step3": "We show you proposed changes before applying them"
+    },
+    "preview": {
+      "title": "Preview Changes",
+      "currentRisks": "Current Risks",
+      "risksAfter": "Risks After",
+      "reduction": "Reduction",
+      "movements": "Proposed Movements",
+      "animal": "Animal",
+      "from": "From",
+      "to": "To",
+      "reason": "Reason"
+    },
+    "confirm": {
+      "title": "Confirm Changes",
+      "warning": "{{count}} animals will be moved. Continue?",
+      "applying": "Applying changes...",
+      "success": "Distribution optimized successfully!",
+      "error": "Error optimizing distribution"
+    },
+    "buttons": {
+      "analyze": "Analyze Distribution",
+      "back": "Back",
+      "next": "Next",
+      "apply": "Apply Changes",
+      "cancel": "Cancel"
+    }
+  },
+  "alerts": {
+    "vaccination": {
+      "title": "Vaccination Alerts",
+      "animalsNeedAttention": "{{count}} animal requires attention",
+      "animalsNeedAttention_plural": "{{count}} animals require attention",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "showDetails": "View details"
+    },
+    "consanguinity": {
+      "title": "Inbreeding Risk",
+      "detected": "Risk detected",
+      "highRisk": "High risk",
+      "mediumRisk": "Medium risk",
+      "lowRisk": "Low risk"
+    },
+    "severity": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    }
   }
 }

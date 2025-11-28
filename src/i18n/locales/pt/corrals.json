@@ -197,5 +197,86 @@
     "newCorral": "Novo Curral",
     "createNewCorral": "Criar um novo curral",
     "availableCorrals": "currais disponíveis"
+  },
+  "wizard": {
+    "title": "Otimizar Distribuição de Currais",
+    "subtitle": "Use IA para organizar os animais de forma ideal",
+    "loading": "Analisando distribuição...",
+    "steps": {
+      "config": "Configuração",
+      "preview": "Visualização",
+      "confirm": "Confirmar"
+    },
+    "objective": {
+      "title": "Objetivo de Otimização",
+      "label": "O que você quer otimizar?",
+      "consanguinity": "Minimizar Consanguinidade",
+      "consanguinityDesc": "Reduz o risco de cruzamentos entre parentes",
+      "reproduction": "Maximizar Reprodução",
+      "reproductionDesc": "Otimiza a distribuição de reprodutores",
+      "production": "Maximizar Produção",
+      "productionDesc": "Agrupa por peso e ganho diário",
+      "benchmarks": "Cumprir Padrões",
+      "benchmarksDesc": "Alcance os objetivos do seu rebanho"
+    },
+    "parameters": {
+      "title": "Parâmetros",
+      "bullsPerCorral": "Touros por curral",
+      "densityPerHectare": "Densidade por hectare",
+      "animals": "animais/ha"
+    },
+    "howItWorks": {
+      "title": "Como funciona?",
+      "step1": "Analisamos todos os seus animais e currais",
+      "step2": "Calculamos a distribuição ideal com base nos seus objetivos",
+      "step3": "Mostramos as mudanças propostas antes de aplicá-las"
+    },
+    "preview": {
+      "title": "Visualizar Mudanças",
+      "currentRisks": "Riscos Atuais",
+      "risksAfter": "Riscos Depois",
+      "reduction": "Redução",
+      "movements": "Movimentos Propostos",
+      "animal": "Animal",
+      "from": "De",
+      "to": "Para",
+      "reason": "Razão"
+    },
+    "confirm": {
+      "title": "Confirmar Mudanças",
+      "warning": "{{count}} animais serão movidos. Continuar?",
+      "applying": "Aplicando mudanças...",
+      "success": "Distribuição otimizada com sucesso!",
+      "error": "Erro ao otimizar distribuição"
+    },
+    "buttons": {
+      "analyze": "Analisar Distribuição",
+      "back": "Voltar",
+      "next": "Próximo",
+      "apply": "Aplicar Mudanças",
+      "cancel": "Cancelar"
+    }
+  },
+  "alerts": {
+    "vaccination": {
+      "title": "Alertas de Vacinação",
+      "animalsNeedAttention": "{{count}} animal requer atenção",
+      "animalsNeedAttention_plural": "{{count}} animais requerem atenção",
+      "overdue": "Vencidas",
+      "pending": "Pendentes",
+      "showDetails": "Ver detalhes"
+    },
+    "consanguinity": {
+      "title": "Risco de Consanguinidade",
+      "detected": "Risco detectado",
+      "highRisk": "Alto risco",
+      "mediumRisk": "Risco médio",
+      "lowRisk": "Baixo risco"
+    },
+    "severity": {
+      "high": "Alta",
+      "medium": "Média",
+      "low": "Baixa"
+    }
   }
 }

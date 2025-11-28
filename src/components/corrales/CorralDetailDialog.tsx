@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +50,7 @@ interface CorralDetailDialogProps {
 }
 
 export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: CorralDetailDialogProps) {
+  const { t } = useTranslation(['corrals']);
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
   const { kpis } = useCorralKPIs();
@@ -451,7 +453,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-red-600" />
                             <span className="text-sm text-red-700 dark:text-red-400">
-                              {vaccinationMetrics.animals_with_overdue} animal(es) con vacunas vencidas
+                              {t('corrals:alerts.vaccination.animalsNeedAttention', { 
+                                count: vaccinationMetrics.animals_with_overdue 
+                              })}
                             </span>
                           </div>
                           {vaccinationAlertsExpanded ? (
