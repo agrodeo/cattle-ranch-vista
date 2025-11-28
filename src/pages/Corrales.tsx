@@ -13,7 +13,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { 
   Eye, 
   Plus, 
-  Home, 
+  Fence, 
   Move, 
   Users, 
   MoreVertical, 
@@ -286,7 +286,7 @@ export default function Corrales() {
     {
       title: t('corrals:metrics.totalCorrals'),
       value: totalCorrales,
-      icon: Home,
+      icon: Fence,
     },
     {
       title: t('corrals:metrics.totalAnimals'),
@@ -419,7 +419,7 @@ export default function Corrales() {
 
               {corrales.length === 0 ? (
                 <EmptyState
-                  icon={<Home className="h-12 w-12" />}
+                  icon={<Fence className="h-12 w-12" />}
                   title={t('corrals:empty.noCorrals')}
                   description={t('corrals:empty.createFirst')}
                   action={{
@@ -443,7 +443,7 @@ export default function Corrales() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               <div className="p-2 rounded-lg bg-primary/10">
-                                <Home className="h-5 w-5 text-primary" />
+                                <Fence className="h-5 w-5 text-primary" />
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
