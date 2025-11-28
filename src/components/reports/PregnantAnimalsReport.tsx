@@ -147,6 +147,9 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
             {t('reports:reproductive.pregnantFemales')}
+            <Badge variant="secondary" className="ml-2">
+              <Skeleton className="h-4 w-8" />
+            </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -165,7 +168,10 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Heart className="h-5 w-5" />
-          {t('reports:reproductive.pregnantFemales')} ({pregnantAnimals.length})
+          {t('reports:reproductive.pregnantFemales')}
+          <Badge variant="secondary" className="ml-2">
+            {pregnantAnimals.length} {t('reports:reproductive.animals')}
+          </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
