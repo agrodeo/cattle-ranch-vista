@@ -18,12 +18,12 @@ export function NotificationBell() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="relative p-2 text-foreground hover:text-primary transition-colors"
+        className="relative p-2 text-primary hover:text-primary/80 transition-colors"
         aria-label="Notificaciones"
       >
         <Bell className="h-5 w-5" />
         {notificationCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground animate-pulse">
             {notificationCount > 9 ? '9+' : notificationCount}
           </span>
         )}
