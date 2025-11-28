@@ -135,7 +135,22 @@
     "deleteFailed": "Não foi possível excluir o animal"
   },
   "profile": {
+    "backToAnimals": "Voltar aos Animais",
+    "back": "Voltar",
+    "animalNotFound": "Animal não encontrado",
+    "animalNotFoundDesc": "O animal solicitado não existe ou você não tem permissão para visualizá-lo.",
+    "errorLoadingAnimal": "Erro ao carregar animal",
+    "errorLoadingDesc": "Não foi possível carregar as informações do animal",
+    "month": "mês",
+    "months": "meses",
+    "pregnant": "Prenha",
+    "expectedCalving": "DPP",
+    "deadReadOnly": "Animal falecido - Somente leitura",
+    "soldReadOnly": "Animal vendido - Somente leitura",
     "tabs": {
+      "summary": "Resumo",
+      "reproduction": "Reprodução",
+      "vaccines": "Vacinas",
       "production": "Produção",
       "genealogy": "Genealogia",
       "corrals": "Currais",

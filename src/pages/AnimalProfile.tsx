@@ -8,8 +8,10 @@ import { AnimalProfileTabs } from "@/components/animals/profile/AnimalProfileTab
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTranslation } from "react-i18next";
 
 export default function AnimalProfile() {
+  const { t } = useTranslation(['animals', 'common']);
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useSupabaseAuth();
   const [animal, setAnimal] = useState<Animal | null>(null);
@@ -38,12 +40,12 @@ export default function AnimalProfile() {
 
       if (error) {
         console.error('Error fetching animal:', error);
-        setError('Animal no encontrado');
+        setError(t('animals:profile.animalNotFound'));
         return;
       }
 
       if (!data) {
-        setError('Animal no encontrado');
+        setError(t('animals:profile.animalNotFound'));
         return;
       }
 
@@ -105,10 +107,10 @@ export default function AnimalProfile() {
       setAnimal(animalData as Animal);
     } catch (err) {
       console.error('Error:', err);
-      setError('Error al cargar el animal');
+      setError(t('animals:profile.errorLoadingAnimal'));
       toast({
-        title: "Error",
-        description: "No se pudo cargar la información del animal",
+        title: t('common:common.error'),
+        description: t('animals:profile.errorLoadingDesc'),
         variant: "destructive",
       });
     } finally {
@@ -154,10 +156,10 @@ export default function AnimalProfile() {
         <Card>
           <CardContent className="p-6 text-center">
             <h1 className="text-2xl font-bold text-muted-foreground mb-2">
-              {error || 'Animal no encontrado'}
+              {error || t('animals:profile.animalNotFound')}
             </h1>
             <p className="text-muted-foreground">
-              El animal solicitado no existe o no tienes permisos para verlo.
+              {t('animals:profile.animalNotFoundDesc')}
             </p>
           </CardContent>
         </Card>
