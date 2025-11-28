@@ -124,44 +124,43 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full">
-              <div className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-pink-500 shrink-0" />
-                <span className="text-sm sm:text-base md:text-lg font-semibold">
+          <Button variant="ghost" className="w-full justify-between p-3 md:p-6 min-h-0">
+            <div className="flex flex-col items-start gap-2 w-full min-w-0">
+              <div className="flex items-center gap-2 w-full">
+                <Heart className="h-4 w-4 text-pink-500 shrink-0" />
+                <span className="text-xs sm:text-sm md:text-base font-semibold truncate">
                   <span className="sm:hidden">Hembras Reprod.</span>
                   <span className="hidden sm:inline">Detalle Hembras Reproductivas</span>
                 </span>
+                {isOpen ? <ChevronDown className="h-4 w-4 shrink-0 ml-auto" /> : <ChevronRight className="h-4 w-4 shrink-0 ml-auto" />}
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 md:gap-6 text-xs sm:text-sm">
-                <div className="flex items-center gap-1.5">
-                  <Baby className="h-4 w-4 text-blue-500 shrink-0" />
-                  <span className="text-muted-foreground">
-                    <span className="hidden sm:inline">{totalFemales} Total • {pregnantCount} Preñadas ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)</span>
-                    <span className="sm:hidden">{totalFemales} • {pregnantCount} ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)</span>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs w-full">
+                <div className="flex items-center gap-1">
+                  <Baby className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500 shrink-0" />
+                  <span className="text-muted-foreground text-[10px] sm:text-xs">
+                    {totalFemales} • {pregnantCount} ({totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%)
                   </span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <TrendingUp className="h-4 w-4 text-success shrink-0" />
-                  <span className="text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-success shrink-0" />
+                  <span className="text-muted-foreground text-[10px] sm:text-xs">
                     {avgPregnancyRate.toFixed(1)}%
                   </span>
                 </div>
                 {totalAlerts > 0 && (
-                  <div className="flex items-center gap-1.5">
-                    <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
-                    <Badge variant="destructive" className="h-5 text-xs">
+                  <div className="flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-destructive shrink-0" />
+                    <Badge variant="destructive" className="h-4 text-[10px] px-1">
                       {totalAlerts}
                     </Badge>
                   </div>
                 )}
               </div>
             </div>
-            {isOpen ? <ChevronDown className="h-4 w-4 shrink-0" /> : <ChevronRight className="h-4 w-4 shrink-0" />}
           </Button>
         </CollapsibleTrigger>
 
-        <CollapsibleContent className="px-6 pb-6">
+        <CollapsibleContent className="px-3 sm:px-6 pb-6">
           {animals.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No se encontraron hembras reproductivas con los filtros aplicados.
