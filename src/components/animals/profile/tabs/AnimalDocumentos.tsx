@@ -114,8 +114,8 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="flex flex-col gap-4">
+              <div className="w-full">
                 <Label htmlFor="file-type">{t('animals:profile.documents.documentType')}</Label>
                 <Select value={selectedFileType} onValueChange={(value: AnimalDocument['file_type']) => setSelectedFileType(value)}>
                   <SelectTrigger>
@@ -129,13 +129,14 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <div>
+              <div className="w-full">
                 <Label htmlFor="file-upload">{t('animals:profile.documents.file')}</Label>
                 <Input
                   id="file-upload"
                   type="file"
                   onChange={handleFileUpload}
                   accept="image/*,.pdf,.doc,.docx,.txt"
+                  className="cursor-pointer"
                 />
               </div>
             </div>
@@ -164,11 +165,19 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">{t('animals:profile.documents.all')} ({documents.length})</TabsTrigger>
-              <TabsTrigger value="photos">{t('animals:profile.documents.photos')} ({filterDocuments('photos').length})</TabsTrigger>
-              <TabsTrigger value="certificate">{t('animals:profile.documents.certificates')} ({filterDocuments('certificate').length})</TabsTrigger>
-              <TabsTrigger value="medical">{t('animals:profile.documents.medicalTab')} ({filterDocuments('medical').length})</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-1">
+              <TabsTrigger value="all" className="text-xs md:text-sm whitespace-normal">
+                {t('animals:profile.documents.all')} ({documents.length})
+              </TabsTrigger>
+              <TabsTrigger value="photos" className="text-xs md:text-sm whitespace-normal">
+                {t('animals:profile.documents.photos')} ({filterDocuments('photos').length})
+              </TabsTrigger>
+              <TabsTrigger value="certificate" className="text-xs md:text-sm whitespace-normal">
+                {t('animals:profile.documents.certificates')} ({filterDocuments('certificate').length})
+              </TabsTrigger>
+              <TabsTrigger value="medical" className="text-xs md:text-sm whitespace-normal">
+                {t('animals:profile.documents.medicalTab')} ({filterDocuments('medical').length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
