@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface ArtificialInsemination {
   id: string;
@@ -33,6 +34,7 @@ interface ArtificialInseminationTableProps {
 }
 
 export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialInseminationTableProps) {
+  const { t } = useTranslation(['activities', 'common']);
   const [records, setRecords] = useState<ArtificialInsemination[]>([]);
   const [filteredRecords, setFilteredRecords] = useState<ArtificialInsemination[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -79,8 +81,8 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
     } catch (error) {
       console.error("Error fetching AI records:", error);
       toast({
-        title: "Error",
-        description: "Error al cargar los registros de inseminación",
+        title: t('common:status.error'),
+        description: t('artificialInsemination.errorLoadingRecords'),
         variant: "destructive",
       });
     } finally {
@@ -128,7 +130,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este registro?")) return;
+    if (!confirm(t('artificialInsemination.confirmDelete'))) return;
 
     try {
       const { error } = await supabase
@@ -139,16 +141,16 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: "Registro eliminado correctamente",
+        title: t('common:status.success'),
+        description: t('artificialInsemination.recordDeletedSuccess'),
       });
 
       fetchRecords();
     } catch (error) {
       console.error("Error deleting record:", error);
       toast({
-        title: "Error",
-        description: "Error al eliminar el registro",
+        title: t('common:status.error'),
+        description: t('artificialInsemination.errorDeletingRecord'),
         variant: "destructive",
       });
     }
@@ -156,12 +158,12 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
 
   const getResultBadge = (isPregnant: boolean | null) => {
     if (isPregnant === null) {
-      return <Badge variant="secondary">Pendiente</Badge>;
+      return <Badge variant="secondary">{t('artificialInsemination.pending')}</Badge>;
     }
     if (isPregnant) {
-      return <Badge variant="default" className="bg-green-500">Preñada</Badge>;
+      return <Badge variant="default" className="bg-green-500">{t('artificialInsemination.pregnant')}</Badge>;
     }
-    return <Badge variant="destructive">No Preñada</Badge>;
+    return <Badge variant="destructive">{t('artificialInsemination.notPregnant')}</Badge>;
   };
 
   const resetFilters = () => {
@@ -175,7 +177,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center p-8">Cargando...</div>;
+    return <div className="flex items-center justify-center p-8">{t('common:loading')}</div>;
   }
 
   return (
@@ -183,48 +185,48 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Filter className="h-5 w-5" />
-          Registros de Inseminación Artificial
+          {t('artificialInsemination.recordsTitle')}
         </CardTitle>
         
         {/* Filters */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
           <Input
             type="date"
-            placeholder="Fecha desde"
+            placeholder={t('artificialInsemination.dateFrom')}
             value={filters.dateFrom}
             onChange={(e) => setFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
           />
           <Input
             type="date"
-            placeholder="Fecha hasta"
+            placeholder={t('artificialInsemination.dateTo')}
             value={filters.dateTo}
             onChange={(e) => setFilters(prev => ({ ...prev, dateTo: e.target.value }))}
           />
           <Select value={filters.result} onValueChange={(value) => setFilters(prev => ({ ...prev, result: value }))}>
             <SelectTrigger>
-              <SelectValue placeholder="Resultado" />
+              <SelectValue placeholder={t('artificialInsemination.result')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="pending">Pendiente</SelectItem>
-              <SelectItem value="pregnant">Preñada</SelectItem>
-              <SelectItem value="not_pregnant">No Preñada</SelectItem>
+              <SelectItem value="all">{t('artificialInsemination.all')}</SelectItem>
+              <SelectItem value="pending">{t('artificialInsemination.pending')}</SelectItem>
+              <SelectItem value="pregnant">{t('artificialInsemination.pregnant')}</SelectItem>
+              <SelectItem value="not_pregnant">{t('artificialInsemination.notPregnant')}</SelectItem>
             </SelectContent>
           </Select>
           <Input
-            placeholder="Toro"
+            placeholder={t('artificialInsemination.bull')}
             value={filters.bull}
             onChange={(e) => setFilters(prev => ({ ...prev, bull: e.target.value }))}
           />
           <div className="flex gap-2">
             <Input
-              placeholder="Corral"
+              placeholder={t('artificialInsemination.corral')}
               value={filters.corral}
               onChange={(e) => setFilters(prev => ({ ...prev, corral: e.target.value }))}
               className="flex-1"
             />
             <Button variant="outline" onClick={resetFilters} size="sm">
-              Limpiar
+              {t('artificialInsemination.clear')}
             </Button>
           </div>
         </div>
@@ -235,34 +237,34 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Animal</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Toro</TableHead>
-                <TableHead>Corral</TableHead>
-                <TableHead>Resultado</TableHead>
-                <TableHead>Observaciones</TableHead>
-                <TableHead>Acciones</TableHead>
+                <TableHead>{t('common:animal')}</TableHead>
+                <TableHead>{t('artificialInsemination.date')}</TableHead>
+                <TableHead>{t('artificialInsemination.bull')}</TableHead>
+                <TableHead>{t('artificialInsemination.corral')}</TableHead>
+                <TableHead>{t('artificialInsemination.result')}</TableHead>
+                <TableHead>{t('artificialInsemination.observations')}</TableHead>
+                <TableHead>{t('common:actions.title')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredRecords.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                    No se encontraron registros
+                    {t('artificialInsemination.noRecordsFound')}
                   </TableCell>
                 </TableRow>
               ) : (
                 filteredRecords.map((record) => (
                   <TableRow key={record.id}>
                     <TableCell>
-                      {record.animals?.name || record.animals?.id_tag || "Sin nombre"}
+                      {record.animals?.name || record.animals?.id_tag || t('artificialInsemination.noName')}
                     </TableCell>
                     <TableCell>
                       {format(new Date(record.insemination_date), "dd/MM/yyyy")}
                     </TableCell>
                     <TableCell>{record.bull_name}</TableCell>
                     <TableCell>
-                      {record.animals?.corrales?.name || "Sin corral"}
+                      {record.animals?.corrales?.name || t('artificialInsemination.noCorral')}
                     </TableCell>
                     <TableCell>
                       {getResultBadge(record.is_pregnant)}
@@ -304,7 +306,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
         </div>
         
         <div className="mt-4 text-sm text-muted-foreground">
-          Mostrando {filteredRecords.length} de {records.length} registros
+          {t('artificialInsemination.showingRecords', { filtered: filteredRecords.length, total: records.length })}
         </div>
       </CardContent>
     </Card>

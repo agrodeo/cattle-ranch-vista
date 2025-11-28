@@ -1,7 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function ArtificialInseminationManager() {
+  const { t } = useTranslation('activities');
 
   return (
     <Card>
@@ -9,9 +11,9 @@ export function ArtificialInseminationManager() {
         <div className="text-center space-y-4">
           <Heart className="h-12 w-12 text-red-500 mx-auto" />
           <div>
-            <h4 className="text-lg font-medium">Sistema de IA</h4>
+            <h4 className="text-lg font-medium">{t('artificialInsemination.aiSystem')}</h4>
             <p className="text-muted-foreground">
-              Registro de servicios con hembras elegibles ≥15 meses, gestión de toros y seguimiento de preñeces
+              {t('artificialInsemination.aiSystemDescription')}
             </p>
           </div>
         </div>
