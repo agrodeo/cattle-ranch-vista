@@ -277,5 +277,141 @@
       "medium": "Medium",
       "low": "Low"
     }
+  },
+  "consanguinity": {
+    "title": "Consanguinity Details",
+    "loading": "Loading analysis...",
+    "noRisks": "No consanguinity risks found",
+    "pairsAtRisk": "pairs at risk",
+    "severity": {
+      "severe": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "unknown": "Unknown"
+    },
+    "coefficient": "Coef",
+    "description": "Desc",
+    "advice": "Advice: Avoid breeding animals with high coefficient"
+  },
+  "optimization": {
+    "title": "Corral Optimization Wizard",
+    "subtitle": "Optimize your animal distribution with AI",
+    "steps": {
+      "objective": "Objective",
+      "parameters": "Parameters",
+      "preview": "Preview",
+      "confirm": "Confirm"
+    },
+    "navigation": {
+      "next": "Next",
+      "back": "Back",
+      "cancel": "Cancel",
+      "analyze": "Analyze Distribution",
+      "apply": "Apply Changes"
+    },
+    "step1": {
+      "title": "Select Your Objective",
+      "subtitle": "What aspect do you want to optimize?",
+      "objectives": {
+        "consanguinity": {
+          "title": "Reduce Consanguinity",
+          "description": "Minimize the risk of breeding between related animals",
+          "howItWorks": "How it works",
+          "explanation": "AI analyzes genetic relationships between your animals and redistributes corrals to minimize consanguinity risk. It separates fathers from daughters, siblings, and other close relatives in breeding corrals."
+        },
+        "reproduction": {
+          "title": "Optimize Reproduction",
+          "description": "Maximize herd reproductive efficiency",
+          "howItWorks": "How it works",
+          "explanation": "AI groups females by reproductive status and age, and assigns bulls strategically to maximize pregnancy rate and improve herd genetics."
+        },
+        "production": {
+          "title": "Improve Production",
+          "description": "Optimize weight and daily gain by category",
+          "howItWorks": "How it works",
+          "explanation": "AI groups animals with similar weight, age, and daily gain to facilitate management and improve feed efficiency. Separates high and low performers for differentiated treatment."
+        },
+        "benchmarks": {
+          "title": "Meet Benchmarks",
+          "description": "Organize according to weight and performance targets",
+          "howItWorks": "How it works",
+          "explanation": "AI compares your animals to breed benchmarks and groups them by performance. Identifies animals needing special attention and separates them for focused management."
+        }
+      }
+    },
+    "step2": {
+      "title": "Configure Parameters",
+      "subtitle": "Adjust technical optimization parameters",
+      "maxBullsPerCorral": {
+        "label": "Max Bulls per Corral",
+        "description": "Maximum number of breeding bulls per corral"
+      },
+      "targetDensity": {
+        "label": "Target Density (animals/ha)",
+        "description": "Desired number of animals per hectare"
+      },
+      "minAnimalsPerCorral": {
+        "label": "Min Animals per Corral",
+        "description": "Minimum quantity to consider a viable corral"
+      },
+      "maxAnimalsPerCorral": {
+        "label": "Max Animals per Corral",
+        "description": "Maximum capacity based on infrastructure"
+      },
+      "allowMixedSex": {
+        "label": "Allow Mixed Sex",
+        "description": "Allow males and females in the same corral"
+      },
+      "prioritizeYoungFemales": {
+        "label": "Prioritize Young Females",
+        "description": "Give preference to heifers in breeding corrals"
+      }
+    },
+    "step3": {
+      "title": "Distribution Analysis",
+      "subtitle": "Review the proposed plan before applying",
+      "analyzing": "Analyzing optimal distribution...",
+      "summary": {
+        "title": "Plan Summary",
+        "animalsToMove": "Animals to move",
+        "corralsAffected": "Affected corrals",
+        "estimatedTime": "Estimated time"
+      },
+      "metrics": {
+        "title": "Improvement Metrics",
+        "consanguinity": {
+          "label": "Consanguinity Risk",
+          "current": "Current",
+          "after": "After",
+          "reduction": "Reduction"
+        },
+        "reproduction": {
+          "label": "Reproductive Efficiency",
+          "current": "Current",
+          "after": "After",
+          "improvement": "Improvement"
+        }
+      },
+      "movements": {
+        "title": "Proposed Movements",
+        "from": "From",
+        "to": "To",
+        "animals": "animals",
+        "reason": "Reason"
+      }
+    },
+    "step4": {
+      "title": "Confirm Changes",
+      "subtitle": "Review and confirm movements before applying",
+      "warning": "This action will move {{count}} animals between corrals. Are you sure?",
+      "success": "Distribution optimized successfully!",
+      "successDescription": "{{count}} animals were moved according to the optimization plan"
+    },
+    "toast": {
+      "analyzing": "Analyzing distribution...",
+      "success": "Distribution optimized successfully",
+      "error": "Error optimizing distribution",
+      "applying": "Applying changes..."
+    }
   }
 }

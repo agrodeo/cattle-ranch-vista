@@ -187,11 +187,11 @@
     "loading": "Carregando dados financeiros...",
     "error": "Erro ao carregar dados financeiros",
     "timeRange": {
-      "label": "Período",
-      "lastMonth": "Último Mês",
-      "last3Months": "Últimos 3 Meses",
-      "last6Months": "Últimos 6 Meses",
-      "lastYear": "Último Ano"
+      "last30Days": "Últimos 30 dias",
+      "last90Days": "Últimos 90 dias",
+      "last12Months": "Últimos 12 meses",
+      "thisYear": "Este ano",
+      "lastYear": "Ano passado"
     },
     "cards": {
       "totalRevenue": "Receita Total",
@@ -202,22 +202,149 @@
     "charts": {
       "monthlyPerformance": "Desempenho Mensal",
       "profitTrend": "Tendência de Lucro",
-      "topExpenses": "Principais Despesas",
-      "topRevenue": "Principais Receitas",
+      "expenseCategories": "Categorias de Despesas",
+      "revenueCategories": "Categorias de Receita",
       "breedProfitability": "Rentabilidade por Raça",
-      "yearlyComparison": "Comparação Anual",
-      "revenue": "Receita",
-      "expenses": "Despesas",
-      "profit": "Lucro"
-    },
-    "perAnimal": {
-      "cost": "Custo por Animal",
-      "revenue": "Receita por Animal"
+      "yearlyComparison": "Comparação Anual"
     },
     "status": {
       "profitable": "Rentável",
-      "breakeven": "Ponto de Equilíbrio",
       "loss": "Prejuízo"
+    },
+    "perAnimal": "Por Animal"
+  },
+  "herd": {
+    "title": "Visão Geral do Rebanho",
+    "loading": "Carregando estatísticas do rebanho...",
+    "error": "Erro ao carregar estatísticas do rebanho",
+    "cards": {
+      "totalAnimals": "Total de Animais",
+      "activeAnimals": "Animais Ativos",
+      "sales": "Vendas",
+      "mortality": "Mortalidade"
+    },
+    "status": {
+      "active": "Ativo",
+      "sold": "Vendido",
+      "dead": "Morto"
+    },
+    "ageGroups": {
+      "calves": "Bezerros",
+      "young": "Jovens",
+      "adults": "Adultos"
+    },
+    "charts": {
+      "statusDistribution": "Distribuição por Status",
+      "ageDistribution": "Distribuição por Idade",
+      "breedDistribution": "Distribuição por Raça"
+    }
+  },
+  "evolution": {
+    "title": "Evolução Temporal",
+    "subtitle": "Análise de produção ao longo do tempo",
+    "loading": "Carregando dados de evolução...",
+    "error": "Erro ao carregar dados de evolução",
+    "noData": "Sem dados disponíveis para o período selecionado",
+    "groupBy": {
+      "label": "Agrupar por",
+      "week": "Semana",
+      "month": "Mês",
+      "quarter": "Trimestre",
+      "year": "Ano"
+    },
+    "weightType": {
+      "label": "Tipo de Peso",
+      "birth": "Nascimento",
+      "weaning": "Desmame",
+      "final": "Final"
+    },
+    "chart": {
+      "title": "Peso Médio por Período",
+      "xAxis": "Período",
+      "yAxis": "Peso (kg)"
+    },
+    "kpis": {
+      "averageImprovement": "Melhoria Média",
+      "trend": "Tendência",
+      "bestPeriod": "Melhor Período",
+      "acceleration": "Aceleração"
+    },
+    "trends": {
+      "improving": "Melhorando",
+      "stable": "Estável",
+      "declining": "Declinando"
+    },
+    "insights": {
+      "title": "Insights",
+      "positive": "Tendência positiva detectada",
+      "negative": "Tendência negativa detectada",
+      "stable": "Desempenho estável"
+    },
+    "table": {
+      "title": "Dados Detalhados",
+      "period": "Período",
+      "averageWeight": "Peso Médio",
+      "animalCount": "Quantidade de Animais",
+      "performance": "Desempenho"
+    },
+    "performance": {
+      "excellent": "Excelente",
+      "good": "Bom",
+      "average": "Médio",
+      "needsImprovement": "Precisa Melhorar"
+    },
+    "export": {
+      "button": "Exportar Dados",
+      "downloading": "Baixando...",
+      "success": "Dados exportados com sucesso",
+      "error": "Erro ao exportar dados"
+    }
+  },
+  "vaccination": {
+    "title": "Análise de Vacinação",
+    "loading": "Carregando dados de vacinação...",
+    "error": "Erro ao carregar dados de vacinação",
+    "noData": "Sem dados de vacinação disponíveis",
+    "categories": {
+      "compliant": "Em Dia",
+      "requiresAttention": "Requer Atenção",
+      "total": "Total de Animais"
+    },
+    "status": {
+      "compliant": "Em Conformidade",
+      "overdue": "Vencida",
+      "pending": "Pendente",
+      "notApplied": "Não Aplicada"
+    },
+    "animalsList": {
+      "title": "Animais por Status",
+      "empty": "Sem animais nesta categoria"
+    }
+  },
+  "mortality": {
+    "title": "Análise de Mortalidade",
+    "loading": "Carregando dados de mortalidade...",
+    "error": "Erro ao carregar dados de mortalidade",
+    "cards": {
+      "totalDeaths": "Mortes Totais",
+      "mortalityRate": "Taxa de Mortalidade",
+      "averageAge": "Idade Média",
+      "mainCause": "Causa Principal"
+    },
+    "rate": {
+      "low": "Baixa",
+      "medium": "Média",
+      "high": "Alta"
+    },
+    "charts": {
+      "byCause": "Mortes por Causa",
+      "byAge": "Mortes por Idade",
+      "timeline": "Linha do Tempo de Mortalidade"
+    },
+    "ageGroups": {
+      "calves": "Bezerros (0-6 meses)",
+      "young": "Jovens (6-18 meses)",
+      "adults": "Adultos (18+ meses)"
     }
   }
 }

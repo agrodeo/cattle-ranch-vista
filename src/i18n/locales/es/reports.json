@@ -284,5 +284,139 @@
       "breakeven": "Punto de Equilibrio",
       "loss": "Pérdida"
     }
+  },
+  "herd": {
+    "title": "Resumen del Rodeo",
+    "loading": "Cargando estadísticas del rodeo...",
+    "error": "Error al cargar las estadísticas del rodeo",
+    "cards": {
+      "totalAnimals": "Total de Animales",
+      "activeAnimals": "Animales Activos",
+      "sales": "Ventas",
+      "mortality": "Mortalidad"
+    },
+    "status": {
+      "active": "Activo",
+      "sold": "Vendido",
+      "dead": "Muerto"
+    },
+    "ageGroups": {
+      "calves": "Terneros",
+      "young": "Jóvenes",
+      "adults": "Adultos"
+    },
+    "charts": {
+      "statusDistribution": "Distribución por Estado",
+      "ageDistribution": "Distribución por Edad",
+      "breedDistribution": "Distribución por Raza"
+    }
+  },
+  "temporalEvolution": {
+    "title": "Evolución Temporal",
+    "subtitle": "Análisis de producción a lo largo del tiempo",
+    "loading": "Cargando datos de evolución...",
+    "error": "Error al cargar datos de evolución",
+    "noData": "No hay datos disponibles para el período seleccionado",
+    "groupBy": {
+      "label": "Agrupar por",
+      "week": "Semana",
+      "month": "Mes",
+      "quarter": "Trimestre",
+      "year": "Año"
+    },
+    "weightType": {
+      "label": "Tipo de Peso",
+      "birth": "Nacimiento",
+      "weaning": "Destete",
+      "final": "Final"
+    },
+    "chart": {
+      "title": "Peso Promedio por Período",
+      "xAxis": "Período",
+      "yAxis": "Peso (kg)"
+    },
+    "kpis": {
+      "averageImprovement": "Mejora Promedio",
+      "trend": "Tendencia",
+      "bestPeriod": "Mejor Período",
+      "acceleration": "Aceleración"
+    },
+    "trends": {
+      "improving": "Mejorando",
+      "stable": "Estable",
+      "declining": "Declinando"
+    },
+    "insights": {
+      "title": "Insights",
+      "positive": "Tendencia positiva detectada",
+      "negative": "Tendencia negativa detectada",
+      "stable": "Rendimiento estable"
+    },
+    "table": {
+      "title": "Datos Detallados",
+      "period": "Período",
+      "averageWeight": "Peso Promedio",
+      "animalCount": "Cantidad de Animales",
+      "performance": "Rendimiento"
+    },
+    "performance": {
+      "excellent": "Excelente",
+      "good": "Bueno",
+      "average": "Promedio",
+      "needsImprovement": "Necesita Mejora"
+    },
+    "export": {
+      "button": "Exportar Datos",
+      "downloading": "Descargando...",
+      "success": "Datos exportados exitosamente",
+      "error": "Error al exportar datos"
+    }
+  },
+  "vaccinationAnalytics": {
+    "title": "Análisis de Vacunación",
+    "loading": "Cargando datos de vacunación...",
+    "error": "Error al cargar datos de vacunación",
+    "noData": "No hay datos de vacunación disponibles",
+    "categories": {
+      "compliant": "Al Día",
+      "requiresAttention": "Requiere Atención",
+      "total": "Total de Animales"
+    },
+    "status": {
+      "compliant": "Cumple",
+      "overdue": "Vencida",
+      "pending": "Pendiente",
+      "notApplied": "No Aplicada"
+    },
+    "animalsList": {
+      "title": "Animales por Estado",
+      "empty": "No hay animales en esta categoría"
+    }
+  },
+  "mortalityAnalytics": {
+    "title": "Análisis de Mortalidad",
+    "loading": "Cargando datos de mortalidad...",
+    "error": "Error al cargar datos de mortalidad",
+    "cards": {
+      "totalDeaths": "Muertes Totales",
+      "mortalityRate": "Tasa de Mortalidad",
+      "averageAge": "Edad Promedio",
+      "mainCause": "Causa Principal"
+    },
+    "rate": {
+      "low": "Baja",
+      "medium": "Media",
+      "high": "Alta"
+    },
+    "charts": {
+      "byCause": "Muertes por Causa",
+      "byAge": "Muertes por Edad",
+      "timeline": "Línea de Tiempo de Mortalidad"
+    },
+    "ageGroups": {
+      "calves": "Terneros (0-6 meses)",
+      "young": "Jóvenes (6-18 meses)",
+      "adults": "Adultos (18+ meses)"
+    }
   }
 }

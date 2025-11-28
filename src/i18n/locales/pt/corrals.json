@@ -278,5 +278,141 @@
       "medium": "Média",
       "low": "Baixa"
     }
+  },
+  "consanguinity": {
+    "title": "Detalhes de Consanguinidade",
+    "loading": "Carregando análise...",
+    "noRisks": "Nenhum risco de consanguinidade encontrado",
+    "pairsAtRisk": "pares em risco",
+    "severity": {
+      "severe": "Alto",
+      "medium": "Médio",
+      "low": "Baixo",
+      "unknown": "Desconhecido"
+    },
+    "coefficient": "Coef",
+    "description": "Desc",
+    "advice": "Conselho: Evite cruzar animais com alto coeficiente"
+  },
+  "optimization": {
+    "title": "Assistente de Otimização de Currais",
+    "subtitle": "Otimize a distribuição de seus animais com IA",
+    "steps": {
+      "objective": "Objetivo",
+      "parameters": "Parâmetros",
+      "preview": "Visualização",
+      "confirm": "Confirmar"
+    },
+    "navigation": {
+      "next": "Próximo",
+      "back": "Voltar",
+      "cancel": "Cancelar",
+      "analyze": "Analisar Distribuição",
+      "apply": "Aplicar Mudanças"
+    },
+    "step1": {
+      "title": "Selecione seu Objetivo",
+      "subtitle": "Qual aspecto você quer otimizar?",
+      "objectives": {
+        "consanguinity": {
+          "title": "Reduzir Consanguinidade",
+          "description": "Minimize o risco de cruzamentos entre animais aparentados",
+          "howItWorks": "Como funciona",
+          "explanation": "A IA analisa as relações genéticas entre seus animais e redistribui os currais para minimizar o risco de consanguinidade. Separa pais de filhas, irmãos e outros parentes próximos em currais reprodutivos."
+        },
+        "reproduction": {
+          "title": "Otimizar Reprodução",
+          "description": "Maximize a eficiência reprodutiva do rebanho",
+          "howItWorks": "Como funciona",
+          "explanation": "A IA agrupa fêmeas de acordo com seu status reprodutivo e idade, e designa touros estrategicamente para maximizar a taxa de prenhez e melhorar a genética do rebanho."
+        },
+        "production": {
+          "title": "Melhorar Produção",
+          "description": "Otimize peso e ganho diário por categoria",
+          "howItWorks": "Como funciona",
+          "explanation": "A IA agrupa animais com peso, idade e ganho diário semelhantes para facilitar o manejo e melhorar a eficiência alimentar. Separa animais de alto e baixo desempenho para tratamentos diferenciados."
+        },
+        "benchmarks": {
+          "title": "Atingir Benchmarks",
+          "description": "Organize de acordo com metas de peso e desempenho",
+          "howItWorks": "Como funciona",
+          "explanation": "A IA compara seus animais com benchmarks da raça e os agrupa de acordo com seu desempenho. Identifica animais que precisam de atenção especial e os separa para manejo focado."
+        }
+      }
+    },
+    "step2": {
+      "title": "Configure os Parâmetros",
+      "subtitle": "Ajuste os parâmetros técnicos de otimização",
+      "maxBullsPerCorral": {
+        "label": "Máximo de Touros por Curral",
+        "description": "Número máximo de touros reprodutores por curral"
+      },
+      "targetDensity": {
+        "label": "Densidade Alvo (animais/ha)",
+        "description": "Número desejado de animais por hectare"
+      },
+      "minAnimalsPerCorral": {
+        "label": "Mínimo de Animais por Curral",
+        "description": "Quantidade mínima para considerar um curral viável"
+      },
+      "maxAnimalsPerCorral": {
+        "label": "Máximo de Animais por Curral",
+        "description": "Capacidade máxima do curral segundo infraestrutura"
+      },
+      "allowMixedSex": {
+        "label": "Permitir Mistura de Sexos",
+        "description": "Permite machos e fêmeas no mesmo curral"
+      },
+      "prioritizeYoungFemales": {
+        "label": "Priorizar Fêmeas Jovens",
+        "description": "Dá preferência a novilhas em currais reprodutivos"
+      }
+    },
+    "step3": {
+      "title": "Análise de Distribuição",
+      "subtitle": "Revise o plano proposto antes de aplicar",
+      "analyzing": "Analisando distribuição ótima...",
+      "summary": {
+        "title": "Resumo do Plano",
+        "animalsToMove": "Animais a mover",
+        "corralsAffected": "Currais afetados",
+        "estimatedTime": "Tempo estimado"
+      },
+      "metrics": {
+        "title": "Métricas de Melhoria",
+        "consanguinity": {
+          "label": "Risco de Consanguinidade",
+          "current": "Atual",
+          "after": "Depois",
+          "reduction": "Redução"
+        },
+        "reproduction": {
+          "label": "Eficiência Reprodutiva",
+          "current": "Atual",
+          "after": "Depois",
+          "improvement": "Melhoria"
+        }
+      },
+      "movements": {
+        "title": "Movimentos Propostos",
+        "from": "De",
+        "to": "Para",
+        "animals": "animais",
+        "reason": "Razão"
+      }
+    },
+    "step4": {
+      "title": "Confirmar Mudanças",
+      "subtitle": "Revise e confirme os movimentos antes de aplicar",
+      "warning": "Esta ação moverá {{count}} animais entre currais. Tem certeza?",
+      "success": "Distribuição otimizada com sucesso!",
+      "successDescription": "{{count}} animais foram movidos de acordo com o plano de otimização"
+    },
+    "toast": {
+      "analyzing": "Analisando distribuição...",
+      "success": "Distribuição otimizada com sucesso",
+      "error": "Erro ao otimizar distribuição",
+      "applying": "Aplicando mudanças..."
+    }
   }
 }

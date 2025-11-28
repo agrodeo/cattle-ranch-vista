@@ -252,7 +252,7 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
         {/* Age Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribución por Edad</CardTitle>
+            <CardTitle>{t('herd.charts.ageDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
