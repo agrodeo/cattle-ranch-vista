@@ -77,6 +77,10 @@
     "vaccination": "Vacinação",
     "weighing": "Pesagem",
     "insemination": "Inseminação",
-    "tacto": "Verificação de Prenhez"
+    "tacto": "Verificação de Prenhez",
+    "birth": "Parto",
+    "death": "Morte",
+    "treatment": "Tratamento",
+    "movement": "Movimento"
   }
 }

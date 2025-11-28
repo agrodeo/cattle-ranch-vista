@@ -45,11 +45,15 @@ const getActivityIcon = (type: string) => {
 
 const getActivityColor = (type: string) => {
   const lowerType = type.toLowerCase();
-  if (lowerType.includes('vacun')) return 'text-blue-600';
-  if (lowerType.includes('inseminacion') || lowerType.includes('ia')) return 'text-pink-600';
-  if (lowerType.includes('tacto') || lowerType.includes('preñ')) return 'text-purple-600';
-  if (lowerType.includes('pesa')) return 'text-amber-600';
+  if (lowerType.includes('vacun') || lowerType === 'vaccination') return 'text-blue-600';
+  if (lowerType.includes('inseminacion') || lowerType.includes('ia') || lowerType === 'insemination') return 'text-pink-600';
+  if (lowerType.includes('tacto') || lowerType.includes('preñ') || lowerType === 'tacto') return 'text-purple-600';
+  if (lowerType.includes('pesa') || lowerType === 'weighing') return 'text-amber-600';
   return 'text-slate-600';
+};
+
+const getTranslatedActivityType = (type: string, t: any): string => {
+  return t(`dashboard:activityTypes.${type}`, { defaultValue: type });
 };
 
 export function RecentActivityItem({ activity }: RecentActivityItemProps) {
@@ -74,7 +78,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-sm font-medium text-slate-900 truncate">
-              {activity.type}
+              {getTranslatedActivityType(activity.type, t)}
             </p>
             <div className="flex items-center gap-2 mt-1">
               <p className="text-xs text-slate-500">
@@ -96,7 +100,7 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
           </div>
           <div className="flex items-center gap-2">
             <BadgePill variant="neutral">
-              {activity.type}
+              {getTranslatedActivityType(activity.type, t)}
             </BadgePill>
             {hasDetails && (
               <ChevronDown 
