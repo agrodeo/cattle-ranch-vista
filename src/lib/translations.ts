@@ -10,9 +10,14 @@ import { normalizeAnimalStatus, AnimalStatus } from './statusUtils';
  * Get translated animal category from Spanish category key
  */
 export function getTranslatedCategory(
-  categoryKey: string, 
+  categoryKey: string | null | undefined, 
   t: TFunction
 ): string {
+  // Handle null/undefined/empty
+  if (!categoryKey || categoryKey.trim() === '') {
+    return t('animals:categories.unknown');
+  }
+
   const categoryMap: Record<string, string> = {
     'Ternero': 'animals:categories.maleCalf',
     'Ternera': 'animals:categories.femaleCalf',
@@ -25,7 +30,14 @@ export function getTranslatedCategory(
     'Sin clasificar': 'animals:categories.unknown'
   };
   
-  return t(categoryMap[categoryKey] || 'animals:categories.unknown');
+  // If we have a translation key for this category, use it
+  if (categoryMap[categoryKey]) {
+    return t(categoryMap[categoryKey]);
+  }
+  
+  // Otherwise, return the original category value from database
+  // This helps identify categories that need to be added to the mapping
+  return categoryKey;
 }
 
 /**
