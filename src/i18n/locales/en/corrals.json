@@ -237,6 +237,29 @@
     "moderateRisk": "moderate",
     "noCoefficient": "No coefficient calculation available.",
     "recommendedToMove": "It is recommended to move one of the animals to another corral or prevent them from mating to maintain genetic diversity of the herd."
+  },
+  "health": {
+    "title": "Health Status",
+    "vaccinationCoverage": "Vaccination Coverage",
+    "generalStatus": "General Status",
+    "excellent": "Excellent",
+    "good": "Good",
+    "warning": "Warning",
+    "critical": "Critical",
+    "unknown": "Unknown",
+    "overdueVaccines": "Overdue Vaccines",
+    "animalsMonitored": "animals monitored"
+  },
+  "production": {
+    "title": "Production Performance",
+    "avgGDP": "Average ADG",
+    "perDay": "kg/day",
+    "avgWeight": "Average Weight",
+    "recentWeighings": "Recent Weighings (90d)",
+    "lastWeighing": "Last Weighing",
+    "noData": "No data",
+    "basedOnAnimals": "Based on {{count}} animals",
+    "low": "Low"
   }
   },
   "mobile": {

@@ -234,6 +234,29 @@
     "moderateRisk": "un riesgo moderado",
     "noCoefficient": "Sin coeficiente calculado disponible.",
     "recommendedToMove": "Se recomienda mover uno de los animales a otro corral o evitar que se apareen para mantener la diversidad genética del rebaño."
+  },
+  "health": {
+    "title": "Estado Sanitario",
+    "vaccinationCoverage": "Cobertura de Vacunación",
+    "generalStatus": "Estado General",
+    "excellent": "Excelente",
+    "good": "Bueno",
+    "warning": "Atención",
+    "critical": "Crítico",
+    "unknown": "Desconocido",
+    "overdueVaccines": "Vacunas Vencidas",
+    "animalsMonitored": "animales monitoreados"
+  },
+  "production": {
+    "title": "Rendimiento Productivo",
+    "avgGDP": "GDP Promedio",
+    "perDay": "kg/día",
+    "avgWeight": "Peso Promedio",
+    "recentWeighings": "Pesajes Recientes (90d)",
+    "lastWeighing": "Último Pesaje",
+    "noData": "Sin datos",
+    "basedOnAnimals": "Basado en {{count}} animales",
+    "low": "Bajo"
   }
   },
   "mobile": {

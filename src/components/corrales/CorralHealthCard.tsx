@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Syringe, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type { CorralKPI } from "@/hooks/useCorralKPIs";
 
 interface CorralHealthCardProps {
@@ -9,6 +10,7 @@ interface CorralHealthCardProps {
 }
 
 export function CorralHealthCard({ corral }: CorralHealthCardProps) {
+  const { t } = useTranslation(['corrals']);
   const getStatusIcon = () => {
     switch (corral.vaccination_status) {
       case 'excellent':
@@ -49,14 +51,14 @@ export function CorralHealthCard({ corral }: CorralHealthCardProps) {
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
           <Syringe className="h-4 w-4" />
-          Estado Sanitario
+          {t('health.title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Vaccination Coverage */}
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-slate-600">Cobertura de Vacunación</span>
+            <span className="text-slate-600">{t('health.vaccinationCoverage')}</span>
             <span className="font-medium">{corral.vaccination_percentage}%</span>
           </div>
           <Progress 
@@ -67,14 +69,14 @@ export function CorralHealthCard({ corral }: CorralHealthCardProps) {
 
         {/* Status Badge */}
         <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-600">Estado General</span>
+          <span className="text-sm text-slate-600">{t('health.generalStatus')}</span>
           <Badge variant={getStatusBadgeVariant()} className="flex items-center gap-1">
             {getStatusIcon()}
-            {corral.vaccination_status === 'excellent' && 'Excelente'}
-            {corral.vaccination_status === 'good' && 'Bueno'}
-            {corral.vaccination_status === 'warning' && 'Atención'}
-            {corral.vaccination_status === 'critical' && 'Crítico'}
-            {corral.vaccination_status === 'unknown' && 'Desconocido'}
+            {corral.vaccination_status === 'excellent' && t('health.excellent')}
+            {corral.vaccination_status === 'good' && t('health.good')}
+            {corral.vaccination_status === 'warning' && t('health.warning')}
+            {corral.vaccination_status === 'critical' && t('health.critical')}
+            {corral.vaccination_status === 'unknown' && t('health.unknown')}
           </Badge>
         </div>
 
@@ -83,7 +85,7 @@ export function CorralHealthCard({ corral }: CorralHealthCardProps) {
           <div className="flex items-center justify-between p-2 bg-red-50 rounded-lg">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600" />
-              <span className="text-sm text-red-700">Vacunas Vencidas</span>
+              <span className="text-sm text-red-700">{t('health.overdueVaccines')}</span>
             </div>
             <Badge variant="destructive">
               {corral.vaccination_alerts}
@@ -93,7 +95,7 @@ export function CorralHealthCard({ corral }: CorralHealthCardProps) {
 
         {/* Summary */}
         <div className="text-xs text-slate-500 pt-2 border-t">
-          {corral.animal_count} animales monitoreados
+          {corral.animal_count} {t('health.animalsMonitored')}
         </div>
       </CardContent>
     </Card>
