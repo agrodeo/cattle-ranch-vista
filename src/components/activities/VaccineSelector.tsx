@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,9 +19,10 @@ interface VaccineSelectorProps {
 export function VaccineSelector({ 
   value, 
   onChange, 
-  placeholder = "Seleccionar vacuna",
+  placeholder,
   selectedAnimals = []
 }: VaccineSelectorProps) {
+  const { t } = useTranslation(['activities', 'common']);
   const [showCustomDialog, setShowCustomDialog] = useState(false);
   const [customVaccineName, setCustomVaccineName] = useState("");
   const { toast } = useToast();
@@ -30,8 +32,8 @@ export function VaccineSelector({
     if (!customVaccineName.trim()) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "El nombre de la vacuna es requerido"
+        title: t('common:error'),
+        description: t('activities:vaccination.vaccineNameRequired')
       });
       return;
     }
@@ -41,24 +43,24 @@ export function VaccineSelector({
     setShowCustomDialog(false);
 
     toast({
-      title: "Vacuna seleccionada",
-      description: `Se usará "${customVaccineName.trim()}" como vacuna personalizada`
+      title: t('activities:vaccination.vaccineSelected'),
+      description: t('activities:vaccination.customVaccineMessage', { name: customVaccineName.trim() })
     });
   };
 
   return (
     <div className="space-y-2">
-      <Label>Vacuna *</Label>
+      <Label>{t('activities:vaccination.vaccineLabel')}</Label>
       <div className="flex gap-2">
         <Select value={value} onValueChange={onChange}>
           <SelectTrigger className="flex-1 bg-background">
-            <SelectValue placeholder={placeholder} />
+            <SelectValue placeholder={placeholder || t('activities:vaccination.selectVaccine')} />
           </SelectTrigger>
           <SelectContent className="bg-background border border-border z-50 max-h-[300px] overflow-y-auto">
             {requirements.length > 0 ? (
               <>
                 <div className="px-2 py-1 text-xs text-muted-foreground border-b">
-                  Vacunas Configuradas para tu Cabaña
+                  {t('activities:vaccination.configuredVaccines')}
                 </div>
                 {requirements.map((requirement) => (
                   <SelectItem 
@@ -78,14 +80,14 @@ export function VaccineSelector({
                           <div className="text-xs text-muted-foreground">
                             {requirement.vaccine_type}
                             {requirement.doses_required && requirement.doses_required > 1 && 
-                              ` • ${requirement.doses_required} dosis`
+                              ` • ${requirement.doses_required} ${t('activities:vaccination.doses')}`
                             }
                           </div>
                         </div>
                       </div>
                       {requirement.is_mandatory && (
                         <div className="text-xs text-red-600 font-medium">
-                          Obligatoria
+                          {t('activities:vaccination.mandatory')}
                         </div>
                       )}
                     </div>
@@ -95,8 +97,8 @@ export function VaccineSelector({
             ) : (
               <div className="px-2 py-4 text-center text-muted-foreground">
                 <AlertTriangle className="h-4 w-4 mx-auto mb-2" />
-                <div className="text-sm">No hay vacunas configuradas</div>
-                <div className="text-xs">Configura vacunas en Configuración</div>
+                <div className="text-sm">{t('activities:vaccination.noVaccinesConfigured')}</div>
+                <div className="text-xs">{t('activities:vaccination.configureInSettings')}</div>
               </div>
             )}
           </SelectContent>
@@ -104,22 +106,22 @@ export function VaccineSelector({
 
         <Dialog open={showCustomDialog} onOpenChange={setShowCustomDialog}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon" title="Agregar vacuna personalizada">
+            <Button variant="outline" size="icon" title={t('activities:vaccination.addCustomVaccine')}>
               <Plus className="h-4 w-4" />
             </Button>
           </DialogTrigger>
           <DialogContent className="bg-background">
             <DialogHeader>
-              <DialogTitle>Agregar Vacuna Personalizada</DialogTitle>
+              <DialogTitle>{t('activities:vaccination.customVaccineDialogTitle')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="customVaccine">Nombre de la Vacuna</Label>
+                <Label htmlFor="customVaccine">{t('activities:vaccination.vaccineNameLabel')}</Label>
                 <Input
                   id="customVaccine"
                   value={customVaccineName}
                   onChange={(e) => setCustomVaccineName(e.target.value)}
-                  placeholder="Ej: Vacuna Triple, Brucelosis, etc."
+                  placeholder={t('activities:vaccination.vaccineNamePlaceholder')}
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -130,14 +132,14 @@ export function VaccineSelector({
                     setShowCustomDialog(false);
                   }}
                 >
-                  Cancelar
+                  {t('common:cancel')}
                 </Button>
                 <Button 
                   onClick={handleAddCustomVaccine}
                   disabled={!customVaccineName.trim()}
                 >
                   <Check className="h-4 w-4 mr-2" />
-                  Agregar
+                  {t('common:add')}
                 </Button>
               </div>
             </div>
@@ -147,8 +149,8 @@ export function VaccineSelector({
       
       <p className="text-xs text-muted-foreground">
         {requirements.length > 0 
-          ? "Selecciona una vacuna de las configuradas en tu cabaña o agrega una personalizada"
-          : "Configura vacunas en Configuración o agrega una personalizada con el botón +"
+          ? t('activities:vaccination.selectConfiguredOrCustom')
+          : t('activities:vaccination.configureOrAddCustom')
         }
       </p>
     </div>
