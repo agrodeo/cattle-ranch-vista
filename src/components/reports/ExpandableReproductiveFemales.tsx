@@ -137,13 +137,13 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
               <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-0.5 sm:gap-2 text-[8px] sm:text-xs w-full overflow-hidden">
                 <div className="flex items-center gap-0.5 shrink-0">
                   <Baby className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-blue-500 shrink-0" />
-                  <span className="text-muted-foreground whitespace-nowrap">
+                  <span className="text-muted-foreground break-all">
                     {totalFemales}•{pregnantCount}•{totalFemales > 0 ? Math.round((pregnantCount / totalFemales) * 100) : 0}%
                   </span>
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
                   <TrendingUp className="h-2 w-2 sm:h-3.5 sm:w-3.5 text-success shrink-0" />
-                  <span className="text-muted-foreground whitespace-nowrap">
+                  <span className="text-muted-foreground break-all">
                     {avgPregnancyRate.toFixed(1)}%
                   </span>
                 </div>
