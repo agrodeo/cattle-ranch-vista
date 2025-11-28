@@ -258,7 +258,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reports:financial.totalRevenue')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -266,7 +266,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
               ${stats.totalRevenue.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              ${stats.revenuePerAnimal.toFixed(0)} por animal
+              ${stats.revenuePerAnimal.toFixed(0)} {t('reports:financial.perAnimal')}
             </p>
           </CardContent>
         </Card>
@@ -322,7 +322,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {/* Monthly Performance */}
         <Card>
           <CardHeader>
-            <CardTitle>Rendimiento Mensual</CardTitle>
+            <CardTitle>{t('reports:financial.monthlyPerformance')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -332,8 +332,8 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
                 <YAxis />
                 <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
                 <Legend />
-                <Bar dataKey="revenue" fill="#10b981" name="Ingresos" />
-                <Bar dataKey="expenses" fill="#ef4444" name="Egresos" />
+                <Bar dataKey="revenue" fill="#10b981" name={t('reports:financial.revenue')} />
+                <Bar dataKey="expenses" fill="#ef4444" name={t('reports:financial.expenses')} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -342,7 +342,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {/* Profit Trend */}
         <Card>
           <CardHeader>
-            <CardTitle>Tendencia de Ganancia</CardTitle>
+            <CardTitle>{t('reports:financial.profitTrend')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -361,7 +361,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {stats.topExpenseCategories.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Principales Categorías de Egresos</CardTitle>
+              <CardTitle>{t('reports:financial.topExpenseCategories')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -391,7 +391,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {stats.topRevenueCategories.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Principales Categorías de Ingresos</CardTitle>
+              <CardTitle>{t('reports:financial.topRevenueCategories')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -421,7 +421,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {stats.hasMultipleBreeds && stats.breedProfitability.length > 1 && (
           <Card>
             <CardHeader>
-              <CardTitle>Rentabilidad por Raza</CardTitle>
+              <CardTitle>{t('reports:financial.breedProfitability')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -431,8 +431,8 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
                   <YAxis />
                   <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
                   <Legend />
-                  <Bar dataKey="costPerAnimal" fill="#ef4444" name="Costo por Animal" />
-                  <Bar dataKey="profitPerAnimal" fill="#10b981" name="Ganancia por Animal" />
+                  <Bar dataKey="costPerAnimal" fill="#ef4444" name={t('reports:financial.costPerAnimal')} />
+                  <Bar dataKey="profitPerAnimal" fill="#10b981" name={t('reports:financial.profitPerAnimal')} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -443,7 +443,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {stats.yearlyComparison.length > 1 && (
           <Card className={stats.hasMultipleBreeds && stats.breedProfitability.length > 1 ? "lg:col-span-1" : "lg:col-span-2"}>
             <CardHeader>
-              <CardTitle>Comparación Anual</CardTitle>
+              <CardTitle>{t('reports:financial.yearlyComparison')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
