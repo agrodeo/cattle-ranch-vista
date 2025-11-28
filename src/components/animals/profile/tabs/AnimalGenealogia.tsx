@@ -21,7 +21,7 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
     switch (level?.toLowerCase()) {
       case 'po': return 'bg-yellow-500';
       case 'pc': return 'bg-blue-500';
-      case 'pura': return 'bg-green-500';
+      case 'pura': return 'bg-primary';
       default: return 'bg-gray-500';
     }
   };

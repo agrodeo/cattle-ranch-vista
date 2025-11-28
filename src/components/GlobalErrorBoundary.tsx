@@ -22,7 +22,7 @@ function Fallback({ error }: { error: Error }) {
       <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
       <div className="flex justify-center gap-2">
         <Button variant="outline" onClick={() => window.location.reload()}>Recargar</Button>
-        <Button className="bg-emerald-600 text-white" onClick={() => support.open({
+        <Button onClick={() => support.open({
           title: "Error inesperado (ErrorBoundary)",
           message: error?.stack?.slice(0, 500),
           errorCode: "UI_BOUNDARY"

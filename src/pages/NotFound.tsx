@@ -20,7 +20,7 @@ const NotFound = () => {
         <h1 className="text-4xl font-bold mb-4 text-foreground">404</h1>
         <p className="text-xl text-muted-foreground mb-6">Página no encontrada</p>
         <div className="space-y-4">
-          <Button onClick={() => window.location.href = "/"} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button onClick={() => window.location.href = "/"}>
             Volver al inicio
           </Button>
           <div className="pt-4">

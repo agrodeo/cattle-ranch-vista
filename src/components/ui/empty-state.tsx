@@ -31,7 +31,7 @@ export function EmptyState({ icon, title, description, action, className }: Empt
       {action && (
         <Button 
           onClick={action.onClick}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+          className=""
         >
           {action.label}
         </Button>

@@ -118,7 +118,7 @@ export function ReproductiveEventsTable({ animalId, animalSex, cabaña_id }: Rep
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pregnant":
-        return <Badge className="bg-green-500">✅ Preñada</Badge>;
+        return <Badge className="bg-primary">✅ Preñada</Badge>;
       case "not_pregnant":
         return <Badge variant="destructive">❌ No Preñada</Badge>;
       case "unknown":
@@ -133,7 +133,7 @@ export function ReproductiveEventsTable({ animalId, animalSex, cabaña_id }: Rep
     
     switch (outcome) {
       case "live_calf":
-        return <Badge className="bg-green-500">🟢 Ternero vivo</Badge>;
+        return <Badge className="bg-primary">🟢 Ternero vivo</Badge>;
       case "stillborn":
         return <Badge variant="destructive">🔴 Mortinato</Badge>;
       case "calf_died_shortly":

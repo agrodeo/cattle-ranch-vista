@@ -218,7 +218,7 @@ export function ArtificialInseminationStats({ refreshKey }: ArtificialInseminati
                       </span>
                       <Badge 
                         variant={yearStats.success_rate >= 50 ? "default" : "secondary"}
-                        className={yearStats.success_rate >= 50 ? "bg-green-500" : ""}
+                        className={yearStats.success_rate >= 50 ? "bg-primary" : ""}
                       >
                         {yearStats.success_rate}%
                       </Badge>

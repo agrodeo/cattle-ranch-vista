@@ -40,7 +40,6 @@ export default function Subscription() {
               )}
               <Button 
                 onClick={() => setShowPlansModal(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <CreditCard className="h-4 w-4 mr-2" />
                 {t('subscription:viewPlans', 'Ver Planes')}

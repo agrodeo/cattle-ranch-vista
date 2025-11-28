@@ -160,7 +160,7 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
   }
 
   const getPerformanceBadge = (percentage: number, type: "pregnancy" | "calving") => {
-    if (percentage >= 90) return <Badge className="bg-green-500">Excelente</Badge>;
+    if (percentage >= 90) return <Badge className="bg-primary">Excelente</Badge>;
     if (percentage >= 75) return <Badge className="bg-blue-500">Bueno</Badge>;
     if (percentage >= 50) return <Badge className="bg-yellow-500">Regular</Badge>;
     return <Badge variant="destructive">Bajo</Badge>;

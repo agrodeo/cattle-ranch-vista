@@ -197,7 +197,7 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
                 <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full ${
-                      record.tipo === 'ingreso' ? 'bg-green-500' : 'bg-red-500'
+                      record.tipo === 'ingreso' ? 'bg-primary' : 'bg-red-500'
                     }`} />
                     <div>
                       <p className="font-medium">{record.categoria}</p>

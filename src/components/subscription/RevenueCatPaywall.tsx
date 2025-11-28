@@ -93,7 +93,7 @@ export function RevenueCatPaywall({
         label: 'Anual', 
         icon: Star, 
         badge: '-20%',
-        color: 'bg-emerald-500' 
+        color: 'bg-primary' 
       };
     }
     return { 

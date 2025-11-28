@@ -40,7 +40,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'activo': return 'bg-green-500';
+      case 'activo': return 'bg-primary';
       case 'vendido': return 'bg-blue-500';
       case 'muerto': return 'bg-red-500';
       case 'transferido': return 'bg-yellow-500';

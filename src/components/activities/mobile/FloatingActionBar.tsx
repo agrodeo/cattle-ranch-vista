@@ -15,7 +15,7 @@ export function FloatingActionBar({ onRegisterActivity }: FloatingActionBarProps
       <div className="hidden lg:block">
         <Button 
           onClick={onRegisterActivity}
-          className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white"
+          className="w-full h-12"
         >
           <Plus className="h-4 w-4 mr-2" />
           {t('quickActions.register')}
@@ -28,7 +28,7 @@ export function FloatingActionBar({ onRegisterActivity }: FloatingActionBarProps
           <div className="rounded-full bg-white/95 shadow-lg backdrop-blur border border-slate-200 p-2 mb-3">
             <Button 
               onClick={onRegisterActivity}
-              className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white shadow-none focus:ring-2 focus:ring-emerald-600"
+              className="w-full h-11 shadow-none focus:ring-2 focus:ring-ring"
             >
               <Plus className="h-4 w-4 mr-1" />
               {t('quickActions.register')}

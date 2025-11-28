@@ -33,7 +33,7 @@ export function AnimalActivitiesHistory({ animalId, animalName }: AnimalActiviti
   const getActivityBadge = (type: string, details: Record<string, string>) => {
     if (type === "insemination" && details.estado) {
       if (details.estado === "Pendiente") return <Badge variant="secondary">{t('animals:profile.summary.statusPending')}</Badge>;
-      if (details.estado === "Preñada") return <Badge className="bg-green-500">{t('animals:profile.summary.statusPregnant')}</Badge>;
+      if (details.estado === "Preñada") return <Badge className="bg-primary">{t('animals:profile.summary.statusPregnant')}</Badge>;
       if (details.estado === "No preñada") return <Badge variant="destructive">{t('animals:profile.summary.statusNotPregnant')}</Badge>;
     }
     return null;

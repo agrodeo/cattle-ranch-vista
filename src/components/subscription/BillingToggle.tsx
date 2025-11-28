@@ -26,7 +26,7 @@ export function BillingToggle({ billingCycle, onToggle }: BillingToggleProps) {
           className="rounded-md px-4 py-2 text-sm font-medium transition-all relative"
         >
           Anual
-          <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+          <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full">
             -20%
           </span>
         </Button>

@@ -127,7 +127,7 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
       case "insemination":
         return "bg-purple-500";
       case "vaccination":
-        return "bg-green-500";
+        return "bg-primary";
       case "pesaje":
         return "bg-blue-500";
       case "reproductive":
@@ -143,7 +143,7 @@ export function AnimalActividades({ animal }: AnimalActividadesProps) {
       case "descorne":
         return "bg-amber-600";
       case "tratamiento":
-        return "bg-emerald-500";
+        return "bg-primary";
       case "apareamiento":
         return "bg-pink-600";
       case "parto":

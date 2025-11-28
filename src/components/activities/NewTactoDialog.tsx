@@ -529,7 +529,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     variant="outline" 
                     size="sm" 
                     onClick={() => markAllAs('preñada')}
-                    className="text-green-600 border-green-200 hover:bg-green-50"
+                    className="text-primary border-primary/20 hover:bg-primary/10"
                   >
                     <CheckCircle className="h-3 w-3 mr-1" />
                     {t('tacto.pregnant')}
