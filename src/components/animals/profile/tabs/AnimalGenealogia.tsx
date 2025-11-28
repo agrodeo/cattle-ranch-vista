@@ -14,7 +14,7 @@ interface AnimalGenealogiaProps {
 }
 
 export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
-  const { t } = useTranslation(['common', 'animals']);
+  const { t } = useTranslation(['animals', 'common']);
   const [showFullTree, setShowFullTree] = useState(false);
 
   const getRegistrationBadgeColor = (level?: string) => {
@@ -35,9 +35,9 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
             <div className="flex items-center space-x-2">
               <Award className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Nivel de Registro</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.genealogy.registrationLevel')}</p>
                 <Badge className={getRegistrationBadgeColor(animal.registration_level)}>
-                  {animal.registration_level || 'No definido'}
+                  {animal.registration_level || t('animals:profile.genealogy.notDefined')}
                 </Badge>
               </div>
             </div>
@@ -49,9 +49,9 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
             <div className="flex items-center space-x-2">
               <Users className="h-4 w-4 text-blue-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">ADN Verificado</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.genealogy.dnaVerified')}</p>
                 <p className="text-lg font-semibold">
-                  {animal.dna_verified ? 'Sí' : 'No'}
+                  {animal.dna_verified ? t('animals:profile.genealogy.yes') : t('animals:profile.genealogy.no')}
                 </p>
               </div>
             </div>
@@ -63,8 +63,8 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
             <div className="flex items-center space-x-2">
               <TreePine className="h-4 w-4 text-green-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Raza</p>
-                <p className="text-lg font-semibold">{animal.breed || 'No especificada'}</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.genealogy.breed')}</p>
+                <p className="text-lg font-semibold">{animal.breed || t('animals:profile.genealogy.notSpecified')}</p>
               </div>
             </div>
           </CardContent>
@@ -78,18 +78,18 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Padre
+              {t('animals:profile.genealogy.father')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {animal.father_name || animal.father_id ? (
               <div className="space-y-2">
-                <p className="font-semibold">{animal.father_name || 'Sin nombre'}</p>
+                <p className="font-semibold">{animal.father_name || t('animals:profile.genealogy.noName')}</p>
                 {animal.father_breed && (
-                  <p className="text-sm text-muted-foreground">Raza: {animal.father_breed}</p>
+                  <p className="text-sm text-muted-foreground">{t('animals:profile.genealogy.breedLabel')}: {animal.father_breed}</p>
                 )}
                 {animal.father_registration && (
-                  <p className="text-sm text-muted-foreground">Registro: {animal.father_registration}</p>
+                  <p className="text-sm text-muted-foreground">{t('animals:profile.genealogy.registrationLabel')}: {animal.father_registration}</p>
                 )}
                 {animal.registration_father_level && (
                   <Badge className={getRegistrationBadgeColor(animal.registration_father_level)}>
@@ -98,7 +98,7 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
                 )}
               </div>
             ) : (
-              <p className="text-muted-foreground">No registrado</p>
+              <p className="text-muted-foreground">{t('animals:profile.genealogy.notRegistered')}</p>
             )}
           </CardContent>
         </Card>
@@ -108,18 +108,18 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Madre
+              {t('animals:profile.genealogy.mother')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             {animal.mother_name || animal.mother_id ? (
               <div className="space-y-2">
-                <p className="font-semibold">{animal.mother_name || 'Sin nombre'}</p>
+                <p className="font-semibold">{animal.mother_name || t('animals:profile.genealogy.noName')}</p>
                 {animal.mother_breed && (
-                  <p className="text-sm text-muted-foreground">Raza: {animal.mother_breed}</p>
+                  <p className="text-sm text-muted-foreground">{t('animals:profile.genealogy.breedLabel')}: {animal.mother_breed}</p>
                 )}
                 {animal.mother_registration && (
-                  <p className="text-sm text-muted-foreground">Registro: {animal.mother_registration}</p>
+                  <p className="text-sm text-muted-foreground">{t('animals:profile.genealogy.registrationLabel')}: {animal.mother_registration}</p>
                 )}
                 {animal.registration_mother_level && (
                   <Badge className={getRegistrationBadgeColor(animal.registration_mother_level)}>
@@ -128,7 +128,7 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
                 )}
               </div>
             ) : (
-              <p className="text-muted-foreground">No registrada</p>
+              <p className="text-muted-foreground">{t('animals:profile.genealogy.notRegisteredFemale')}</p>
             )}
           </CardContent>
         </Card>
@@ -139,10 +139,10 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <GitBranch className="h-4 w-4" />
-            Árbol Genealógico
+            {t('animals:profile.genealogy.genealogyTree')}
           </CardTitle>
           <CardDescription>
-            Visualización completa del linaje del animal
+            {t('animals:profile.genealogy.fullLineageVisualization')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -151,13 +151,13 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
               <DialogTrigger asChild>
                 <Button variant="outline" className="w-full">
                   <TreePine className="h-4 w-4 mr-2" />
-                  Ver Árbol Genealógico Completo
+                  {t('animals:profile.genealogy.viewFullTree')}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-6xl max-h-[80vh] overflow-auto">
                 <DialogHeader>
                   <DialogTitle>
-                    Árbol Genealógico - {animal.name || animal.id_tag}
+                    {t('animals:profile.genealogy.genealogyTreeTitle')} - {animal.name || animal.id_tag}
                   </DialogTitle>
                 </DialogHeader>
                 <GenealogyTree 
@@ -177,15 +177,15 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium mb-1">Línea Paterna</p>
+                  <p className="font-medium mb-1">{t('animals:profile.genealogy.paternalLine')}</p>
                   <p className="text-muted-foreground">
-                    {animal.father_name || 'No registrado'}
+                    {animal.father_name || t('animals:profile.genealogy.notRegistered')}
                   </p>
                 </div>
                 <div>
-                  <p className="font-medium mb-1">Línea Materna</p>
+                  <p className="font-medium mb-1">{t('animals:profile.genealogy.maternalLine')}</p>
                   <p className="text-muted-foreground">
-                    {animal.mother_name || 'No registrada'}
+                    {animal.mother_name || t('animals:profile.genealogy.notRegisteredFemale')}
                   </p>
                 </div>
               </div>
@@ -200,15 +200,15 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-600">
               <Award className="h-4 w-4" />
-              Nivel de Registro Modificado
+              {t('animals:profile.genealogy.registrationOverride')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              <p><strong>Nivel Original:</strong> {animal.registration_level}</p>
-              <p><strong>Nivel Modificado:</strong> {animal.registration_level_override}</p>
+              <p><strong>{t('animals:profile.genealogy.originalLevel')}:</strong> {animal.registration_level}</p>
+              <p><strong>{t('animals:profile.genealogy.modifiedLevel')}:</strong> {animal.registration_level_override}</p>
               {animal.registration_override_reason && (
-                <p><strong>Razón:</strong> {animal.registration_override_reason}</p>
+                <p><strong>{t('animals:profile.genealogy.reason')}:</strong> {animal.registration_override_reason}</p>
               )}
             </div>
           </CardContent>

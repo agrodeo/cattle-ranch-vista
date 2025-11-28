@@ -15,14 +15,14 @@ interface AnimalFinanzasProps {
 }
 
 export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
-  const { t } = useTranslation(['common', 'finance']);
+  const { t } = useTranslation(['animals', 'common']);
   const { records, summary, isLoading } = useAnimalFinances(animal.id);
 
 
   const expenseData = [
-    { name: 'Veterinario', value: summary.gastosVeterinarios, color: '#ef4444' },
-    { name: 'Alimentación', value: summary.totalGastos * 0.6, color: '#f97316' },
-    { name: 'Otros', value: summary.totalGastos * 0.4, color: '#8b5cf6' }
+    { name: t('animals:profile.finances.veterinary'), value: summary.gastosVeterinarios, color: '#ef4444' },
+    { name: t('animals:profile.finances.feeding'), value: summary.totalGastos * 0.6, color: '#f97316' },
+    { name: t('animals:profile.finances.others'), value: summary.totalGastos * 0.4, color: '#8b5cf6' }
   ];
 
   if (isLoading) {
@@ -56,7 +56,7 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
             <div className="flex items-center space-x-2">
               <Calculator className="h-4 w-4 text-orange-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Costo Aproximado</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.finances.approximateCost')}</p>
                 <p className="text-2xl font-bold text-orange-600">
                   ${summary.costoAproximado.toFixed(0)}
                 </p>
@@ -70,7 +70,7 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
             <div className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4 text-blue-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Ingresos</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.finances.income')}</p>
                 <p className="text-2xl font-bold text-blue-600">
                   ${summary.totalIngresos.toFixed(0)}
                 </p>
@@ -84,7 +84,7 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
             <div className="flex items-center space-x-2">
               <TrendingDown className="h-4 w-4 text-red-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Gastos</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.finances.expenses')}</p>
                 <p className="text-2xl font-bold text-red-600">
                   ${summary.totalGastos.toFixed(0)}
                 </p>
@@ -98,7 +98,7 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
             <div className="flex items-center space-x-2">
               <Calculator className="h-4 w-4 text-purple-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">ROI</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.finances.roi')}</p>
                 <p className={`text-2xl font-bold ${summary.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {summary.roi.toFixed(1)}%
                 </p>
@@ -113,8 +113,8 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
         {/* Expense Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribución de Gastos</CardTitle>
-            <CardDescription>Desglose por categoría</CardDescription>
+            <CardTitle>{t('animals:profile.finances.expenseDistribution')}</CardTitle>
+            <CardDescription>{t('animals:profile.finances.breakdownByCategory')}</CardDescription>
           </CardHeader>
           <CardContent>
             {summary.totalGastos > 0 ? (
@@ -133,13 +133,13 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value: any) => [`$${value.toFixed(0)}`, 'Monto']} />
+                    <Tooltip formatter={(value: any) => [`$${value.toFixed(0)}`, t('animals:profile.finances.amount')]} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             ) : (
               <div className="h-64 flex items-center justify-center text-muted-foreground">
-                <p>No hay gastos registrados</p>
+                <p>{t('animals:profile.finances.noExpensesRecorded')}</p>
               </div>
             )}
           </CardContent>
@@ -148,30 +148,30 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
         {/* Profitability Analysis */}
         <Card>
           <CardHeader>
-            <CardTitle>Análisis de Rentabilidad</CardTitle>
-            <CardDescription>Comparación ingresos vs gastos</CardDescription>
+            <CardTitle>{t('animals:profile.finances.profitabilityAnalysis')}</CardTitle>
+            <CardDescription>{t('animals:profile.finances.incomeVsExpenses')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                <span className="text-sm font-medium">Ingresos Totales:</span>
+                <span className="text-sm font-medium">{t('animals:profile.finances.totalIncome')}:</span>
                 <span className="font-bold text-green-600">${summary.totalIngresos.toFixed(0)}</span>
               </div>
               
               <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                <span className="text-sm font-medium">Gastos Totales:</span>
+                <span className="text-sm font-medium">{t('animals:profile.finances.totalExpenses')}:</span>
                 <span className="font-bold text-red-600">${summary.totalGastos.toFixed(0)}</span>
               </div>
               
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="text-sm font-medium">Beneficio Neto:</span>
+                <span className="text-sm font-medium">{t('animals:profile.finances.netProfit')}:</span>
                 <span className={`font-bold ${(summary.totalIngresos - summary.totalGastos) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   ${(summary.totalIngresos - summary.totalGastos).toFixed(0)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-                <span className="text-sm font-medium">Costo Aproximado:</span>
+                <span className="text-sm font-medium">{t('animals:profile.finances.approximateCost')}:</span>
                 <span className="font-bold text-orange-600">${summary.costoAproximado.toFixed(0)}</span>
               </div>
             </div>
@@ -184,10 +184,10 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
-            Historial de Transacciones
+            {t('animals:profile.finances.transactionHistory')}
           </CardTitle>
           <CardDescription>
-            Registro de ingresos y gastos relacionados con este animal
+            {t('animals:profile.finances.transactionHistoryDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -226,9 +226,9 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
           ) : (
             <div className="text-center py-8">
               <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No hay transacciones registradas</p>
+              <p className="text-muted-foreground">{t('animals:profile.finances.noTransactionsRecorded')}</p>
               <p className="text-sm text-muted-foreground mt-2">
-                Las transacciones aparecerán cuando se registren ventas o gastos específicos de este animal
+                {t('animals:profile.finances.transactionsWillAppear')}
               </p>
             </div>
           )}
@@ -238,14 +238,14 @@ export function AnimalFinanzas({ animal }: AnimalFinanzasProps) {
       {/* Financial Notes */}
       <Card>
         <CardHeader>
-          <CardTitle>Notas Financieras</CardTitle>
+          <CardTitle>{t('animals:profile.finances.financialNotes')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>• El costo aproximado se calcula dividiendo los gastos totales de la cabaña entre todos los animales activos.</p>
-            <p>• Los gastos incluyen costos veterinarios, alimentación y otros gastos asociados.</p>
-            <p>• El ROI se calcula como (Ingresos - Gastos) / Gastos × 100.</p>
-            <p>• Para un análisis más detallado, consulte el módulo de Finanzas general.</p>
+            <p>• {t('animals:profile.finances.notes.0')}</p>
+            <p>• {t('animals:profile.finances.notes.1')}</p>
+            <p>• {t('animals:profile.finances.notes.2')}</p>
+            <p>• {t('animals:profile.finances.notes.3')}</p>
           </div>
         </CardContent>
       </Card>

@@ -241,10 +241,10 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-green-600" />
-                  Vacunas al Día
+                  {t('animals:profile.vaccines.vaccinesUpToDate')}
                 </CardTitle>
                 <CardDescription>
-                  Esquema de vacunación completo
+                  {t('animals:profile.vaccines.completeSchedule')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -258,20 +258,20 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                             <span className="font-medium">{vaccine.vaccine_name}</span>
                             <span className="text-xs text-muted-foreground">({vaccine.vaccine_type})</span>
                           </div>
-                          <div className="flex gap-3 text-sm mt-1">
+                           <div className="flex gap-3 text-sm mt-1">
                             <span className="text-muted-foreground">
-                              {vaccine.doses_given} / {vaccine.doses_required} dosis ({vaccine.compliance_percentage}%)
+                              {vaccine.doses_given} / {vaccine.doses_required} {t('animals:profile.vaccines.doses')} ({vaccine.compliance_percentage}%)
                             </span>
                             {vaccine.last_vaccination_date && (
                               <span className="text-muted-foreground">
-                                • Última: {format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}
+                                • {t('animals:profile.vaccines.lastApplied')}: {format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}
                               </span>
                             )}
                           </div>
                         </div>
                         <Badge variant="default" className="bg-green-600 hover:bg-green-700">
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          Completa
+                          {t('animals:profile.vaccines.completeVaccine')}
                         </Badge>
                       </div>
                     ))}
@@ -288,25 +288,24 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Shield className="h-4 w-4" />
-              Configurar Vacunación
+              {t('animals:profile.vaccines.configureVaccination')}
             </CardTitle>
             <CardDescription>
-              Configure los requisitos de vacunación específicos de su cabaña
+              {t('animals:profile.vaccines.configureVaccinationDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-center py-8">
               <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">
-                No hay requisitos de vacunación configurados
+                {t('animals:profile.vaccines.noRequirementsConfigured')}
               </h3>
               <p className="text-muted-foreground mb-4">
-                Configure los requisitos de vacunación específicos de su cabaña para hacer 
-                seguimiento automático del estado de vacunación de sus animales.
+                {t('animals:profile.vaccines.configureVaccinationFull')}
               </p>
               <Button asChild>
                 <Link to="/settings">
-                  Configurar Vacunas
+                  {t('animals:profile.vaccines.configureVaccines')}
                 </Link>
               </Button>
             </div>
@@ -319,10 +318,10 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Syringe className="h-4 w-4" />
-            Historial de Vacunaciones
+            {t('animals:profile.vaccines.vaccinationHistory')}
           </CardTitle>
           <CardDescription>
-            Todas las vacunas aplicadas a este animal
+            {t('animals:profile.vaccines.allVaccinesApplied')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -336,18 +335,18 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
             <div className="text-center py-8">
               <Syringe className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-muted-foreground">
-                No hay registros de vacunación para este animal
+                {t('animals:profile.vaccines.noVaccinationRecords')}
               </p>
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Vacuna</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Lote</TableHead>
-                  <TableHead>Dosis/Vía</TableHead>
-                  <TableHead>Próxima Dosis</TableHead>
+                  <TableHead>{t('animals:profile.vaccines.vaccine')}</TableHead>
+                  <TableHead>{t('animals:profile.vaccines.date')}</TableHead>
+                  <TableHead>{t('animals:profile.vaccines.lot')}</TableHead>
+                  <TableHead>{t('animals:profile.vaccines.doseRoute')}</TableHead>
+                  <TableHead>{t('animals:profile.vaccines.nextDose')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -381,7 +380,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                       ) : (
                         <Badge variant="outline" className="flex items-center gap-1 w-fit">
                           <CheckCircle className="h-3 w-3" />
-                          Única dosis
+                          {t('animals:profile.vaccines.uniqueDose')}
                         </Badge>
                       )}
                     </TableCell>

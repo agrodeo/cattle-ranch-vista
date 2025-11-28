@@ -29,7 +29,7 @@ interface AnimalDocumentosProps {
 }
 
 export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
-  const { t } = useTranslation(['common', 'animals']);
+  const { t } = useTranslation(['animals', 'common']);
   const { documents, isLoading, uploadProgress, uploadDocument, deleteDocument } = useAnimalDocuments(animal.id);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedFileType, setSelectedFileType] = useState<AnimalDocument['file_type']>('other');
@@ -60,13 +60,12 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
   };
 
   const getTypeLabel = (type: AnimalDocument['file_type']) => {
-    const labels = {
-      certificate: 'Certificado',
-      medical: 'Médico',
-      photo: 'Foto',
-      other: 'Otro'
-    };
-    return labels[type];
+    switch(type) {
+      case 'certificate': return t('animals:profile.documents.certificate');
+      case 'medical': return t('animals:profile.documents.medical');
+      case 'photo': return t('animals:profile.documents.photo');
+      default: return t('animals:profile.documents.other');
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -91,7 +90,7 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
             <div className="flex items-center justify-center h-32">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                <p className="text-sm text-muted-foreground">Cargando documentos...</p>
+                <p className="text-sm text-muted-foreground">{t('animals:profile.documents.loadingDocuments')}</p>
               </div>
             </div>
           </CardContent>
@@ -107,31 +106,31 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
-            Subir Documento
+            {t('animals:profile.documents.uploadDocument')}
           </CardTitle>
           <CardDescription>
-            Sube certificados, registros médicos, fotos y otros documentos del animal
+            {t('animals:profile.documents.uploadDocumentDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="file-type">Tipo de documento</Label>
+                <Label htmlFor="file-type">{t('animals:profile.documents.documentType')}</Label>
                 <Select value={selectedFileType} onValueChange={(value: AnimalDocument['file_type']) => setSelectedFileType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="certificate">Certificado</SelectItem>
-                    <SelectItem value="medical">Médico</SelectItem>
-                    <SelectItem value="photo">Foto</SelectItem>
-                    <SelectItem value="other">Otro</SelectItem>
+                    <SelectItem value="certificate">{t('animals:profile.documents.certificate')}</SelectItem>
+                    <SelectItem value="medical">{t('animals:profile.documents.medical')}</SelectItem>
+                    <SelectItem value="photo">{t('animals:profile.documents.photo')}</SelectItem>
+                    <SelectItem value="other">{t('animals:profile.documents.other')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="file-upload">Archivo</Label>
+                <Label htmlFor="file-upload">{t('animals:profile.documents.file')}</Label>
                 <Input
                   id="file-upload"
                   type="file"
@@ -160,16 +159,16 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Documentos ({documents.length})
+            {t('animals:profile.documents.documents')} ({documents.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="all">Todos ({documents.length})</TabsTrigger>
-              <TabsTrigger value="photos">Fotos ({filterDocuments('photos').length})</TabsTrigger>
-              <TabsTrigger value="certificate">Certificados ({filterDocuments('certificate').length})</TabsTrigger>
-              <TabsTrigger value="medical">Médicos ({filterDocuments('medical').length})</TabsTrigger>
+              <TabsTrigger value="all">{t('animals:profile.documents.all')} ({documents.length})</TabsTrigger>
+              <TabsTrigger value="photos">{t('animals:profile.documents.photos')} ({filterDocuments('photos').length})</TabsTrigger>
+              <TabsTrigger value="certificate">{t('animals:profile.documents.certificates')} ({filterDocuments('certificate').length})</TabsTrigger>
+              <TabsTrigger value="medical">{t('animals:profile.documents.medicalTab')} ({filterDocuments('medical').length})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="space-y-4">
@@ -222,16 +221,16 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Vista previa de imagen</DialogTitle>
+            <DialogTitle>{t('animals:profile.documents.imagePreview')}</DialogTitle>
             <DialogDescription>
-              Haz clic fuera de la imagen para cerrar
+              {t('animals:profile.documents.clickOutsideToClose')}
             </DialogDescription>
           </DialogHeader>
           {selectedImage && (
             <div className="flex justify-center">
               <img 
                 src={selectedImage} 
-                alt="Vista previa" 
+                alt={t('animals:profile.documents.preview')} 
                 className="max-w-full max-h-[70vh] object-contain rounded-lg"
               />
             </div>
@@ -262,11 +261,13 @@ function DocumentsList({
   getTypeLabel,
   formatFileSize
 }: DocumentsListProps) {
+  const { t } = useTranslation(['animals']);
+  
   if (documents.length === 0) {
     return (
       <div className="text-center py-8">
         <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">No hay documentos en esta categoría</p>
+        <p className="text-muted-foreground">{t('animals:profile.documents.noDocumentsInCategory')}</p>
       </div>
     );
   }
@@ -331,13 +332,14 @@ interface PhotoGalleryProps {
 }
 
 function PhotoGallery({ documents, onImageClick }: PhotoGalleryProps) {
+  const { t } = useTranslation(['animals']);
   const photos = documents.filter(doc => doc.file_type === 'photo');
   
   if (photos.length === 0) {
     return (
       <div className="text-center py-8">
         <Image className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-        <p className="text-muted-foreground">No hay fotos subidas</p>
+        <p className="text-muted-foreground">{t('animals:profile.documents.noPhotosUploaded')}</p>
       </div>
     );
   }

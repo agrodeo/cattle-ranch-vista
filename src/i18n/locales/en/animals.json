@@ -251,7 +251,7 @@
       "doses": "doses",
       "lastApplied": "Last applied",
       "nextDue": "Next due",
-      "overdueXdays": "days overdue",
+      "overdueXdays": "{{days}}d overdue",
       "upToDate": "Up to date",
       "uniqueDose": "Single dose",
       "dueInXdays": "Due in",

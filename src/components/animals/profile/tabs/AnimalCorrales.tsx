@@ -14,7 +14,7 @@ interface AnimalCorralesProps {
 }
 
 export function AnimalCorrales({ animal }: AnimalCorralesProps) {
-  const { t } = useTranslation(['common', 'corrals']);
+  const { t } = useTranslation(['animals', 'common']);
   const { movements, currentCorral, isLoading } = useAnimalCorralHistory(animal.id);
 
   if (isLoading) {
@@ -48,9 +48,9 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
             <div className="flex items-center space-x-2">
               <Home className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Corral Actual</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.corrals.currentCorral')}</p>
                 <p className="text-lg font-semibold">
-                  {currentCorral || 'Sin asignar'}
+                  {currentCorral || t('animals:profile.corrals.unassigned')}
                 </p>
               </div>
             </div>
@@ -62,7 +62,7 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
             <div className="flex items-center space-x-2">
               <MapPin className="h-4 w-4 text-blue-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Movimientos</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.corrals.totalMovements')}</p>
                 <p className="text-lg font-semibold">{movements.length}</p>
               </div>
             </div>
@@ -74,11 +74,11 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
             <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4 text-green-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Último Movimiento</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.corrals.lastMovement')}</p>
                 <p className="text-sm font-semibold">
                   {movements.length > 0 
                     ? format(new Date(movements[0].fecha_movimiento), 'dd/MM/yyyy', { locale: es })
-                    : 'No registrado'
+                    : t('animals:profile.corrals.notRecorded')
                   }
                 </p>
               </div>
@@ -93,24 +93,24 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Home className="h-4 w-4" />
-              Corral Actual
+              {t('animals:profile.corrals.currentCorral')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Nombre:</span>
+                <span className="text-sm font-medium">{t('animals:profile.corrals.name')}:</span>
                 <span>{animal.corral.name}</span>
               </div>
               {animal.corral.hectareas && (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Hectáreas:</span>
+                  <span className="text-sm font-medium">{t('animals:profile.corrals.hectares')}:</span>
                   <span>{animal.corral.hectareas} ha</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Estado:</span>
-                <Badge variant="secondary">Asignado</Badge>
+                <span className="text-sm font-medium">{t('animals:profile.corrals.status')}:</span>
+                <Badge variant="secondary">{t('animals:profile.corrals.assigned')}</Badge>
               </div>
             </div>
           </CardContent>
@@ -122,10 +122,10 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            Historial de Movimientos
+            {t('animals:profile.corrals.movementHistory')}
           </CardTitle>
           <CardDescription>
-            Registro de cambios de corral del animal
+            {t('animals:profile.corrals.movementHistoryDesc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -149,7 +149,7 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
                           <ArrowRight className="h-3 w-3 text-muted-foreground" />
                         </>
                       )}
-                      <span className="font-medium">{movement.corral_nuevo_nombre || 'Sin nombre'}</span>
+                      <span className="font-medium">{movement.corral_nuevo_nombre || t('animals:profile.genealogy.noName')}</span>
                     </div>
                     
                     <div className="flex items-center gap-4 mt-1">
@@ -158,7 +158,7 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
                       </span>
                       {movement.dias_en_corral && (
                         <Badge variant="outline" className="text-xs">
-                          {movement.dias_en_corral} días
+                          {movement.dias_en_corral} {t('animals:profile.corrals.days')}
                         </Badge>
                       )}
                     </div>
@@ -169,10 +169,10 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
           ) : (
             <div className="text-center py-8">
               <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No hay movimientos registrados</p>
+              <p className="text-muted-foreground">{t('animals:profile.corrals.noMovementsRecorded')}</p>
               {!currentCorral && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  Este animal no está asignado a ningún corral
+                  {t('animals:profile.corrals.animalNotAssigned')}
                 </p>
               )}
             </div>
@@ -183,13 +183,13 @@ export function AnimalCorrales({ animal }: AnimalCorralesProps) {
       {/* Notes */}
       <Card>
         <CardHeader>
-          <CardTitle>Información Adicional</CardTitle>
+          <CardTitle>{t('animals:profile.corrals.additionalInfo')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-muted-foreground">
-            <p>• Los movimientos de corrales se registran automáticamente cuando se asigna un animal a un nuevo corral.</p>
-            <p>• El historial completo de movimientos ayuda a rastrear el manejo del animal a lo largo del tiempo.</p>
-            <p>• Para mover el animal a otro corral, use la función "Mover Animal" en la sección de Corrales.</p>
+            <p>• {t('animals:profile.corrals.notes.0')}</p>
+            <p>• {t('animals:profile.corrals.notes.1')}</p>
+            <p>• {t('animals:profile.corrals.notes.2')}</p>
           </div>
         </CardContent>
       </Card>
