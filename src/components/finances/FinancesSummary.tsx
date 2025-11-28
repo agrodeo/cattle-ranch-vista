@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { format, parseISO } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
@@ -15,6 +16,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 export function FinancesSummary() {
+  const { t } = useTranslation('finance');
   const { currentUser } = useSupabaseAuth();
   const [selectedPeriod, setSelectedPeriod] = useState<string>("last6months");
   const [customFromDate, setCustomFromDate] = useState<Date | undefined>();
@@ -226,11 +228,11 @@ export function FinancesSummary() {
 
   const chartConfig = {
     ingresos: {
-      label: "Ingresos",
+      label: t('kpis.income'),
       color: "hsl(var(--primary))",
     },
     egresos: {
-      label: "Egresos",
+      label: t('kpis.expense'),
       color: "hsl(var(--destructive))",
     },
   };
@@ -241,28 +243,28 @@ export function FinancesSummary() {
       <div className="space-y-4">
         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Seleccionar período" />
+            <SelectValue placeholder={t('summary.period')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="currentMonth">Mes actual</SelectItem>
-            <SelectItem value="lastMonth">Mes pasado</SelectItem>
-            <SelectItem value="last3months">Últimos 3 meses</SelectItem>
-            <SelectItem value="last6months">Últimos 6 meses</SelectItem>
-            <SelectItem value="currentYear">Año actual</SelectItem>
-            <SelectItem value="lastYear">Año pasado</SelectItem>
-            <SelectItem value="custom">Personalizado</SelectItem>
+            <SelectItem value="currentMonth">{t('filters.thisYear')}</SelectItem>
+            <SelectItem value="lastMonth">{t('summary.lastMonth')}</SelectItem>
+            <SelectItem value="last3months">{t('summary.last3Months')}</SelectItem>
+            <SelectItem value="last6months">{t('summary.last6Months')}</SelectItem>
+            <SelectItem value="currentYear">{t('filters.thisYear')}</SelectItem>
+            <SelectItem value="lastYear">{t('summary.lastYear')}</SelectItem>
+            <SelectItem value="custom">{t('summary.customPeriod')}</SelectItem>
           </SelectContent>
         </Select>
 
         {/* Always visible custom date range */}
         <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">Rango personalizado:</p>
+          <p className="text-sm font-medium text-muted-foreground">{t('filters.customRange')}:</p>
           <div className="flex flex-wrap gap-3">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-[220px] justify-start">
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customFromDate ? format(customFromDate, "PPP") : "Desde"}
+                  {customFromDate ? format(customFromDate, "PPP") : t('filters.from')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -282,7 +284,7 @@ export function FinancesSummary() {
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-[220px] justify-start">
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {customToDate ? format(customToDate, "PPP") : "Hasta"}
+                  {customToDate ? format(customToDate, "PPP") : t('filters.to')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -306,19 +308,19 @@ export function FinancesSummary() {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Ingresos</p>
+            <p className="text-sm text-muted-foreground">{t('kpis.income')}</p>
             <p className="text-2xl font-semibold">${ingresos.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Egresos</p>
+            <p className="text-sm text-muted-foreground">{t('kpis.expense')}</p>
             <p className="text-2xl font-semibold">${egresos.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Balance</p>
+            <p className="text-sm text-muted-foreground">{t('kpis.balance')}</p>
             <p className="text-2xl font-semibold">${balance.toLocaleString()}</p>
           </CardContent>
         </Card>
@@ -328,7 +330,7 @@ export function FinancesSummary() {
       {/* Monthly Evolution Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Evolución mensual</CardTitle>
+          <CardTitle>{t('chart.monthlyEvolution')}</CardTitle>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig} className="h-[400px]">
@@ -354,7 +356,7 @@ export function FinancesSummary() {
         {/* Income by Category */}
         <Card>
           <CardHeader>
-            <CardTitle>Ingresos por categoría</CardTitle>
+            <CardTitle>{t('summary.incomeByCategory')}</CardTitle>
           </CardHeader>
           <CardContent>
             {incomeByCategory.length > 0 ? (
@@ -379,7 +381,7 @@ export function FinancesSummary() {
               </ResponsiveContainer>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                No hay datos de ingresos para mostrar
+                {t('summary.noData')}
               </div>
             )}
           </CardContent>
@@ -388,7 +390,7 @@ export function FinancesSummary() {
         {/* Expenses by Category */}
         <Card>
           <CardHeader>
-            <CardTitle>Egresos por categoría</CardTitle>
+            <CardTitle>{t('summary.expensesByCategory')}</CardTitle>
           </CardHeader>
           <CardContent>
             {expensesByCategory.length > 0 ? (
@@ -413,7 +415,7 @@ export function FinancesSummary() {
               </ResponsiveContainer>
             ) : (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-                No hay datos de egresos para mostrar
+                {t('summary.noData')}
               </div>
             )}
           </CardContent>
