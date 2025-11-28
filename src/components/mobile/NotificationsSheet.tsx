@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Bell, Calendar, AlertTriangle, Syringe, TrendingUp, TrendingDown } from "lucide-react";
+import { Bell, Calendar, AlertTriangle, Syringe, TrendingUp, TrendingDown, Baby, Heart } from "lucide-react";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +24,17 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
     onClose();
   };
 
-  const handleWarningClick = (warningType: string) => {
-    if (warningType === 'consanguinity') {
+  const handleWarningClick = (warning: any) => {
+    if (warning.type === 'consanguinity') {
       navigate('/corrales');
-    } else if (warningType === 'vaccination') {
+      onClose();
+    } else if (warning.animal_id) {
+      navigate(`/animales/${warning.animal_id}`);
+      onClose();
+    } else if (warning.type === 'vaccination') {
       navigate('/actividades');
+      onClose();
     }
-    onClose();
   };
 
   const handleLimitClick = () => {
@@ -91,35 +95,139 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
             </div>
           )}
 
-          {/* System Alerts */}
-          {warnings.alerts.length > 0 && (
+          {/* Vaccination Alerts */}
+          {warnings.alerts.filter(a => a.type === 'vaccination_due' || a.type === 'vaccination_overdue').length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Syringe className="h-4 w-4" />
+                {t('common:notifications.vaccinationAlerts')}
+              </h3>
+              {warnings.alerts
+                .filter(a => a.type === 'vaccination_due' || a.type === 'vaccination_overdue')
+                .map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() => handleWarningClick(alert)}
+                    className="p-4 rounded-lg bg-card border border-border cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Syringe className={`h-5 w-5 shrink-0 mt-0.5 ${alert.type === 'vaccination_overdue' ? 'text-destructive' : 'text-warning'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{alert.animal_name || alert.animal_tag}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {alert.vaccine_name}
+                        </p>
+                        <Badge variant={alert.type === 'vaccination_overdue' ? 'destructive' : 'secondary'} className="mt-2">
+                          {alert.type === 'vaccination_overdue' 
+                            ? t('common:notifications.overdueDays', { days: alert.days_overdue })
+                            : t('common:notifications.dueIn', { days: alert.days_until })
+                          }
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* Birth/Calving Alerts */}
+          {warnings.alerts.filter(a => a.type === 'birth_upcoming' || a.type === 'birth_overdue').length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Baby className="h-4 w-4" />
+                {t('common:notifications.birthAlerts')}
+              </h3>
+              {warnings.alerts
+                .filter(a => a.type === 'birth_upcoming' || a.type === 'birth_overdue')
+                .map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() => handleWarningClick(alert)}
+                    className="p-4 rounded-lg bg-card border border-border cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Baby className={`h-5 w-5 shrink-0 mt-0.5 ${alert.type === 'birth_overdue' ? 'text-destructive' : 'text-primary'}`} />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{alert.animal_name || alert.animal_tag}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('common:notifications.expectedBirth')}
+                        </p>
+                        <Badge variant={alert.type === 'birth_overdue' ? 'destructive' : 'default'} className="mt-2">
+                          {alert.type === 'birth_overdue'
+                            ? t('common:notifications.overdueBy', { days: alert.days_overdue })
+                            : t('common:notifications.expectedIn', { days: alert.days_until })
+                          }
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* Reproductive Alerts */}
+          {warnings.alerts.filter(a => a.type === 'reproductive').length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                {t('common:notifications.reproductiveAlerts')}
+              </h3>
+              {warnings.alerts
+                .filter(a => a.type === 'reproductive')
+                .map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() => handleWarningClick(alert)}
+                    className="p-4 rounded-lg bg-card border border-border cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <Heart className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{alert.animal_name || alert.animal_tag}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {alert.alert_type}
+                        </p>
+                        <Badge variant="destructive" className="mt-2">
+                          {t('common:notifications.requiresAttention')}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
+          {/* System Alerts (consanguinity) */}
+          {warnings.alerts.filter(a => a.type === 'consanguinity').length > 0 && (
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
                 {t('common:notifications.systemAlerts')}
               </h3>
-              {warnings.alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  onClick={() => handleWarningClick(alert.type)}
-                  className="p-4 rounded-lg bg-card border border-border cursor-pointer hover:bg-accent transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <Syringe className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{alert.title}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {alert.description}
-                      </p>
-                      {alert.affected_count && (
-                        <Badge variant="secondary" className="mt-2">
-                          {alert.affected_count} {t('common:notifications.affected')}
-                        </Badge>
-                      )}
+              {warnings.alerts
+                .filter(a => a.type === 'consanguinity')
+                .map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() => handleWarningClick(alert)}
+                    className="p-4 rounded-lg bg-card border border-border cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    <div className="flex items-start gap-3">
+                      <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm">{alert.title}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {alert.description}
+                        </p>
+                        {alert.affected_count && (
+                          <Badge variant="secondary" className="mt-2">
+                            {alert.affected_count} {t('common:notifications.affected')}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
 
