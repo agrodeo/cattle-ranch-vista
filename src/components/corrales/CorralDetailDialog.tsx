@@ -50,7 +50,7 @@ interface CorralDetailDialogProps {
 }
 
 export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: CorralDetailDialogProps) {
-  const { t } = useTranslation(['corrals']);
+  const { t } = useTranslation(['corrals', 'common']);
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
   const { kpis } = useCorralKPIs();
@@ -207,7 +207,8 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
         // Perform comprehensive consanguinity analysis
         const risks = await analyzeCorralConsanguinity(
           animalsData as ConsanguinityAnimal[], 
-          currentUser.cabañaId
+          currentUser.cabañaId,
+          t
         );
         setRelationshipRisks(risks);
       } else {
@@ -604,16 +605,16 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                   </button>
                                 </p>
                                 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs text-muted-foreground mt-3">
+                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs text-muted-foreground mt-3">
                                   <div className="break-words">
                                     <p className="font-medium">{animal1Name}</p>
                                     <p>{t('corralDetail.age')}: {calculateAge(risk.animal1.birth_date)}</p>
-                                    <p>{t('corralDetail.status')}: {(risk.animal1 as any).status || t('corralDetail.notSpecified')}</p>
+                                    <p>{t('corralDetail.status')}: {t(`common:status.${(risk.animal1 as any).status?.toLowerCase()}`, { defaultValue: (risk.animal1 as any).status || t('corralDetail.notSpecified') })}</p>
                                   </div>
                                 <div className="break-words">
                                   <p className="font-medium">{animal2Name}</p>
                                     <p>{t('corralDetail.age')}: {calculateAge(risk.animal2.birth_date)}</p>
-                                    <p>{t('corralDetail.status')}: {(risk.animal2 as any).status || t('corralDetail.notSpecified')}</p>
+                                    <p>{t('corralDetail.status')}: {t(`common:status.${(risk.animal2 as any).status?.toLowerCase()}`, { defaultValue: (risk.animal2 as any).status || t('corralDetail.notSpecified') })}</p>
                                   </div>
                                 </div>
                                 
@@ -635,7 +636,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                               variant={risk.severity === 'severe' ? 'destructive' : risk.severity === 'medium' ? 'secondary' : 'outline'} 
                               className={`${risk.severity === 'severe' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : display.color} font-medium text-xs`}
                             >
-                              {display.label}
+                              {getSeverityDisplay(risk.severity, t).label}
                             </Badge>
                             <Button 
                               size="sm" 
@@ -694,7 +695,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                           <div className="flex items-start sm:items-center gap-2 flex-1 min-w-0">
                             {highestSeverity && (
                               <span className="text-base sm:text-lg flex-shrink-0">
-                                {getSeverityDisplay(highestSeverity.severity).emoji}
+                                {getSeverityDisplay(highestSeverity.severity, t).emoji}
                               </span>
                             )}
                             <div className="min-w-0 flex-1">

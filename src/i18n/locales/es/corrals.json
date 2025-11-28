@@ -259,6 +259,20 @@
     "basedOnAnimals": "Basado en {{count}} animales",
     "low": "Bajo"
   },
+  "relationships": {
+    "fatherOf": "es el padre de",
+    "motherOf": "es la madre de",
+    "fullSiblings": "son hermanos completos (mismo padre y madre)",
+    "halfSiblingsPaternal": "son medio hermanos (mismo padre)",
+    "halfSiblingsMaternal": "son medio hermanos (misma madre)",
+    "grandparentOf": "es abuelo/a de",
+    "uncleAuntOf": "es tío/a de",
+    "cousins": "son primos (comparten ancestros)",
+    "highRisk": "Riesgo Alto",
+    "mediumRisk": "Riesgo Medio",
+    "lowRisk": "Riesgo Bajo",
+    "unknown": "Desconocido"
+  },
   "mobile": {
     "searchPlaceholder": "Buscar corrales...",
     "noCorrals": "No hay corrales",
