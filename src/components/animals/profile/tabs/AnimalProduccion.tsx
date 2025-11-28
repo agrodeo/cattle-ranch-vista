@@ -15,7 +15,7 @@ interface AnimalProduccionProps {
 }
 
 export function AnimalProduccion({ animal }: AnimalProduccionProps) {
-  const { t } = useTranslation(['common', 'activities']);
+  const { t } = useTranslation(['animals', 'common']);
   const { weights, isLoading } = useAnimalWeights(animal.id);
 
   // Calculate average daily gain (ADG)
@@ -72,7 +72,7 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
             <div className="flex items-center space-x-2">
               <Scale className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Peso Actual</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.production.currentWeight')}</p>
                 <p className="text-2xl font-bold">{currentWeight.toFixed(1)} kg</p>
               </div>
             </div>
@@ -84,7 +84,7 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
             <div className="flex items-center space-x-2">
               <TrendingUp className="h-4 w-4 text-green-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Ganancia Diaria</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.production.dailyGain')}</p>
                 <p className="text-2xl font-bold text-green-600">{adg.toFixed(3)} kg/día</p>
               </div>
             </div>
@@ -96,11 +96,11 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4 text-blue-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Último Pesaje</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.production.lastWeighing')}</p>
                 <p className="text-sm font-semibold">
                   {lastWeighingDate 
                     ? format(new Date(lastWeighingDate), 'dd/MM/yyyy', { locale: es })
-                    : 'No registrado'
+                    : t('animals:profile.production.notRegistered')
                   }
                 </p>
               </div>
@@ -113,7 +113,7 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
             <div className="flex items-center space-x-2">
               <Target className="h-4 w-4 text-orange-500" />
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Pesajes Totales</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('animals:profile.production.totalWeighings')}</p>
                 <p className="text-2xl font-bold">{weights.length}</p>
               </div>
             </div>
@@ -125,8 +125,8 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
       {chartData.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Evolución del Peso</CardTitle>
-            <CardDescription>Histórico de pesajes del animal</CardDescription>
+            <CardTitle>{t('animals:profile.production.weightEvolution')}</CardTitle>
+            <CardDescription>{t('animals:profile.production.weighingHistoryDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-64">
@@ -136,8 +136,8 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
                   <XAxis dataKey="fecha" />
                   <YAxis domain={['dataMin - 10', 'dataMax + 10']} />
                   <Tooltip 
-                    formatter={(value: any) => [`${value} kg`, 'Peso']}
-                    labelFormatter={(label) => `Fecha: ${label}`}
+                    formatter={(value: any) => [`${value} kg`, t('animals:profile.production.weight')]}
+                    labelFormatter={(label) => `${t('animals:profile.production.dateLabel')}: ${label}`}
                   />
                   <Area 
                     type="monotone" 
@@ -162,7 +162,7 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
         <Card>
           <CardContent className="p-6 text-center">
             <Scale className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No hay registros de pesajes para este animal</p>
+            <p className="text-muted-foreground">{t('animals:profile.production.noWeighingRecords')}</p>
           </CardContent>
         </Card>
       )}
@@ -171,7 +171,7 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
       {weights.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Historial de Pesajes</CardTitle>
+            <CardTitle>{t('animals:profile.production.weighingHistory')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -188,15 +188,15 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
                           weight.tipo_pesaje === 'destete' ? 'secondary' :
                           weight.tipo_pesaje === 'final' ? 'destructive' : 'outline'
                         } className="text-xs">
-                          {weight.tipo_pesaje === 'nacimiento' ? 'Nacimiento' :
-                           weight.tipo_pesaje === 'destete' ? 'Destete' :
-                           weight.tipo_pesaje === 'final' ? 'Final' : 'Control'}
+                          {weight.tipo_pesaje === 'nacimiento' ? t('animals:profile.production.birthType') :
+                           weight.tipo_pesaje === 'destete' ? t('animals:profile.production.weaningType') :
+                           weight.tipo_pesaje === 'final' ? t('animals:profile.production.finalType') : t('animals:profile.production.controlType')}
                         </Badge>
                       )}
                     </div>
                     {weight.edad_dias && (
                       <p className="text-sm text-muted-foreground">
-                        {weight.edad_dias} días de edad
+                        {weight.edad_dias} {t('animals:profile.production.daysOfAge')}
                       </p>
                     )}
                   </div>
@@ -209,7 +209,7 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
                     )}
                     {weight.dias_desde_ultimo && (
                       <p className="text-xs text-muted-foreground">
-                        {weight.dias_desde_ultimo} días desde anterior
+                        {weight.dias_desde_ultimo} {t('animals:profile.production.daysSincePrevious')}
                       </p>
                     )}
                   </div>
