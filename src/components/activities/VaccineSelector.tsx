@@ -32,7 +32,7 @@ export function VaccineSelector({
     if (!customVaccineName.trim()) {
       toast({
         variant: "destructive",
-        title: t('common:error'),
+        title: t('common:status.error'),
         description: t('activities:vaccination.vaccineNameRequired')
       });
       return;
@@ -132,14 +132,14 @@ export function VaccineSelector({
                     setShowCustomDialog(false);
                   }}
                 >
-                  {t('common:cancel')}
+                  {t('common:actions.cancel')}
                 </Button>
                 <Button 
                   onClick={handleAddCustomVaccine}
                   disabled={!customVaccineName.trim()}
                 >
                   <Check className="h-4 w-4 mr-2" />
-                  {t('common:add')}
+                  {t('common:actions.add')}
                 </Button>
               </div>
             </div>

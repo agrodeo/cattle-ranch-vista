@@ -68,7 +68,10 @@
     "help": "Help & Support",
     "operations": "Latest operation records",
     "requiresAttention": "Requires your attention",
-    "scheduledNext": "Scheduled for the next few days"
+    "scheduledNext": "Scheduled for the next few days",
+    "error": "Error",
+    "hide": "Hide",
+    "animals": "animals"
   },
   "validation": {
     "required": "This field is required",

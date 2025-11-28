@@ -82,7 +82,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
       console.error('Error parsing file:', error);
       toast({
         variant: "destructive",
-        title: t('common:error'),
+        title: t('common:status.error'),
         description: t('activities:bulkWeighing.errorProcessing'),
       });
     } finally {
@@ -197,7 +197,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     if (validData.length === 0) {
       toast({
         variant: "destructive",
-        title: t('common:error'),
+        title: t('common:status.error'),
         description: t('activities:bulkWeighing.noValidData'),
       });
       return;
@@ -242,7 +242,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
       console.error("Error uploading weighings:", error);
       toast({
         variant: "destructive",
-        title: t('common:error'),
+        title: t('common:status.error'),
         description: t('activities:bulkWeighing.errorUpload'),
       });
     } finally {
@@ -528,7 +528,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
                   onClick={resetForm}
                   className="h-12 lg:h-10 w-full lg:w-auto"
                 >
-                  {t('common:cancel')}
+                  {t('common:actions.cancel')}
                 </Button>
                 <Button 
                   onClick={handleUpload}

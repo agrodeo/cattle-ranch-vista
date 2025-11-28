@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,7 @@ export function ArtificialInseminationDialog({
   selectedAnimals,
   onSuccess,
 }: ArtificialInseminationDialogProps) {
+  const { t } = useTranslation(['activities', 'common']);
   const [date, setDate] = useState<Date>();
   const [bullName, setBullName] = useState("");
   const [bullId, setBullId] = useState("");
@@ -141,15 +143,24 @@ export function ArtificialInseminationDialog({
     if (!bullBreed) return null;
     
     if (bullBreed === "Braford" && bullHornStatus === "mocho_homocigota") {
-      return "📌 Genética esperada: Cría 100% mocha (por mocho homocigota).";
+      return `📌 ${t('activities:artificialInsemination.geneticPrediction', { 
+        prediction: t('activities:artificialInsemination.prediction100Polled'), 
+        reason: t('activities:artificialInsemination.reasonPolledHomozygous') 
+      })}`;
     }
     
     if (bullBreed === "Brangus" || bullBreed === "Angus") {
       if (bullCoatColor === "negro_homocigota") {
-        return "📌 Genética esperada: Cría 100% negra (por negro homocigota).";
+        return `📌 ${t('activities:artificialInsemination.geneticPrediction', { 
+          prediction: t('activities:artificialInsemination.prediction100Black'), 
+          reason: t('activities:artificialInsemination.reasonBlackHomozygous') 
+        })}`;
       }
       if (bullCoatColor === "colorado_homocigota") {
-        return "📌 Genética esperada: Cría 100% colorada (por colorado homocigota).";
+        return `📌 ${t('activities:artificialInsemination.geneticPrediction', { 
+          prediction: t('activities:artificialInsemination.prediction100Red'), 
+          reason: t('activities:artificialInsemination.reasonRedHomozygous') 
+        })}`;
       }
     }
     
@@ -177,8 +188,8 @@ export function ArtificialInseminationDialog({
     if (!date || !bullName || selectedAnimals.length === 0) {
       console.log("❌ Validación fallida:", { date: !!date, bullName: !!bullName, animalsCount: selectedAnimals.length });
       toast({
-        title: "Error",
-        description: "Por favor completa todos los campos requeridos",
+        title: t('activities:artificialInsemination.errorTitle'),
+        description: t('activities:artificialInsemination.completeRequiredFields'),
         variant: "destructive",
       });
       return;
@@ -279,8 +290,8 @@ export function ArtificialInseminationDialog({
       console.log("✅ Inseminaciones registradas exitosamente");
 
       toast({
-        title: "Éxito",
-        description: `Inseminación artificial registrada para ${selectedAnimals.length} animal(es)`,
+        title: t('activities:artificialInsemination.successTitle'),
+        description: t('activities:artificialInsemination.successDescription', { count: selectedAnimals.length }),
       });
 
       onSuccess();
@@ -291,8 +302,8 @@ export function ArtificialInseminationDialog({
       console.error("💥 Error message:", error.message);
       console.error("💥 Error details:", JSON.stringify(error, null, 2));
       toast({
-        title: "Error",
-        description: `Error al registrar la inseminación artificial: ${error.message || 'Error desconocido'}`,
+        title: t('activities:artificialInsemination.errorTitle'),
+        description: `${t('activities:artificialInsemination.errorDescription')}: ${error.message || 'Error desconocido'}`,
         variant: "destructive",
       });
     } finally {
@@ -392,8 +403,8 @@ export function ArtificialInseminationDialog({
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
-            Registrar Inseminación Artificial
-            {selectedAnimals.length > 1 && ` (${selectedAnimals.length} animales)`}
+            {t('activities:artificialInsemination.registerTitle')}
+            {selectedAnimals.length > 1 && ` (${selectedAnimals.length} ${t('common:common.animals')})`}
           </DialogTitle>
         </DialogHeader>
 
@@ -401,7 +412,7 @@ export function ArtificialInseminationDialog({
           {/* Validation Messages */}
           {validationErrors.length > 0 && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-lg animate-fade-in">
-              <h4 className="text-sm font-semibold text-red-800 mb-3">⚠️ Animales con problemas:</h4>
+              <h4 className="text-sm font-semibold text-red-800 mb-3">⚠️ {t('activities:artificialInsemination.validationProblems')}</h4>
               <ul className="text-sm text-red-700 space-y-2">
                 {validationErrors.map((error, index) => (
                   <li key={index} className="flex items-start gap-2">
@@ -417,10 +428,10 @@ export function ArtificialInseminationDialog({
           {selectedAnimals.length > 0 && validationErrors.length === selectedAnimals.length && (
             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <p className="text-sm text-yellow-800 font-medium">
-                ❌ No hay animales disponibles para inseminar
+                ❌ {t('activities:artificialInsemination.noAnimalsAvailable')}
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                Todos los animales seleccionados tienen restricciones.
+                {t('activities:artificialInsemination.allHaveRestrictions')}
               </p>
             </div>
           )}
@@ -428,7 +439,7 @@ export function ArtificialInseminationDialog({
           {/* Valid Animals List */}
           {selectedAnimals.length > 0 && (
             <div className="space-y-3">
-              <Label className="text-base font-medium">Animales para inseminar:</Label>
+              <Label className="text-base font-medium">{t('activities:artificialInsemination.animalsToInseminate')}</Label>
               <div className="p-3 bg-green-50 border border-green-200 rounded-lg max-h-24 overflow-y-auto">
                 <div className="space-y-1">
                   {selectedAnimals.map((animal) => (
@@ -444,7 +455,7 @@ export function ArtificialInseminationDialog({
           {/* Date Field */}
           <div className="space-y-3">
             <Label htmlFor="date" className="text-base font-medium">
-              Fecha de Inseminación *
+              {t('activities:artificialInsemination.dateLabel')}
             </Label>
             <Popover>
               <PopoverTrigger asChild>
@@ -456,7 +467,7 @@ export function ArtificialInseminationDialog({
                   )}
                 >
                   <CalendarIcon className="mr-3 h-4 w-4" />
-                  {date ? format(date, "dd/MM/yyyy") : "Seleccionar fecha"}
+                  {date ? format(date, "dd/MM/yyyy") : t('activities:artificialInsemination.selectDate')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -473,14 +484,14 @@ export function ArtificialInseminationDialog({
           {/* Bull Selection */}
           <div className="space-y-3">
             <Label htmlFor="bull" className="text-base font-medium">
-              Seleccionar Toro *
+              {t('activities:artificialInsemination.bullLabel')}
             </Label>
             <Select onValueChange={handleBullSelect}>
               <SelectTrigger className="w-full text-base h-11">
-                <SelectValue placeholder="Elegir toro de la lista o entrada manual" />
+                <SelectValue placeholder={t('activities:artificialInsemination.selectBull')} />
               </SelectTrigger>
               <SelectContent className="bg-background">
-                <SelectItem value="manual">✏️ Entrada manual</SelectItem>
+                <SelectItem value="manual">✏️ {t('activities:artificialInsemination.manualEntry')}</SelectItem>
                 {bulls.map((bull) => (
                   <SelectItem key={bull.id} value={bull.id}>
                     {bull.name || bull.id_tag} {bull.breed && `(${bull.breed})`}
@@ -494,14 +505,14 @@ export function ArtificialInseminationDialog({
           {(bullId === "" || bulls.find(b => b.id === bullId) === undefined) && (
             <div className="space-y-3">
               <Label htmlFor="bull-name" className="text-base font-medium">
-                Nombre del Toro *
+                {t('activities:artificialInsemination.bullName')} *
               </Label>
               <Input
                 id="bull-name"
                 value={bullName}
                 onChange={(e) => setBullName(e.target.value)}
                 className="w-full text-base h-11"
-                placeholder="Ej: Toro 925 - Brahman"
+                placeholder={t('activities:artificialInsemination.bullNamePlaceholder')}
               />
             </div>
           )}
@@ -517,19 +528,19 @@ export function ArtificialInseminationDialog({
                   {showBullDetails ? (
                     <>
                       <ChevronDown className="h-4 w-4" />
-                      Ocultar información detallada del toro
+                      {t('common:common.hide')} {t('activities:artificialInsemination.bullDetails').toLowerCase()}
                     </>
                   ) : (
                     <>
                       <Plus className="h-4 w-4" />
-                      Agregar más información del toro
+                      {t('activities:artificialInsemination.addBullDetails')}
                     </>
                   )}
                 </Button>
               </CollapsibleTrigger>
               
               <CollapsibleContent className="space-y-6 mt-4 p-6 border border-border rounded-lg bg-muted/30 animate-accordion-down">
-                <h3 className="text-lg font-semibold border-b pb-2">Información Detallada del Toro</h3>
+                <h3 className="text-lg font-semibold border-b pb-2">{t('activities:artificialInsemination.bullDetails')}</h3>
                 
                 {/* Basic Information */}
                   <div className="space-y-4">
