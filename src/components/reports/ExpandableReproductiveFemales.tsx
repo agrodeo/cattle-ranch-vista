@@ -124,7 +124,7 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
     <Card>
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" className="w-full justify-between p-1.5 sm:p-4 md:p-6 h-auto overflow-hidden">
+          <Button variant="ghost" className="w-full justify-between p-1.5 sm:p-4 md:p-6 h-auto overflow-hidden whitespace-normal">
             <div className="flex flex-col items-start gap-0.5 sm:gap-2 w-full overflow-hidden">
               <div className="flex items-center gap-1 w-full overflow-hidden">
                 <Heart className="h-3 w-3 sm:h-4 sm:w-4 md:h-5 md:w-5 text-pink-500 shrink-0" />
