@@ -49,24 +49,24 @@ export function MobileLayout() {
       <div className="flex-1 flex flex-col min-w-0 w-full">
         {/* Mobile header with hamburger menu, cabaña name, and notifications */}
         <header className="bg-background border-b border-border p-4 sticky top-0 z-30">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <SidebarTrigger className="text-ink-600 hover:text-ink-900 h-10 w-10 p-2 shrink-0">
-                <Menu className="h-5 w-5" />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <SidebarTrigger className="text-ink-600 hover:text-ink-900 h-9 w-9 p-2 shrink-0">
+                <Menu className="h-4 w-4" />
                 <span className="sr-only">Toggle sidebar</span>
               </SidebarTrigger>
               
-              {currentUser?.cabañaName && (
-                <div className="flex items-center gap-2 min-w-0">
-                  <Home className="h-4 w-4 text-primary shrink-0" />
-                  <span className="text-sm font-medium text-foreground truncate">
-                    {currentUser.cabañaName}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Home className="h-3.5 w-3.5 text-primary shrink-0" />
+                <span className="text-sm font-medium text-foreground truncate">
+                  {currentUser?.cabañaName || 'Mi Cabaña'}
+                </span>
+              </div>
             </div>
             
-            <NotificationBell />
+            <div className="shrink-0">
+              <NotificationBell />
+            </div>
           </div>
         </header>
         
