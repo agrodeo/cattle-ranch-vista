@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useTranslation } from 'react-i18next';
 
 interface Bull {
   id: string;
@@ -74,6 +75,7 @@ export function ImprovedArtificialInseminationDialog({
   onOpenChange,
   onSuccess
 }: ImprovedArtificialInseminationDialogProps) {
+  const { t } = useTranslation(['activities', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
 
@@ -149,8 +151,8 @@ export function ImprovedArtificialInseminationDialog({
   const loadEligibleFemales = async () => {
     if (!currentUser?.cabañaId) {
       toast({
-        title: "Error",
-        description: "Usuario sin cabaña asignada. Contacte al administrador.",
+        title: t('common:status.error'),
+        description: t('activities:artificialInsemination.noCabanaError'),
         variant: "destructive"
       });
       return;
@@ -266,16 +268,16 @@ export function ImprovedArtificialInseminationDialog({
       
       if (filteredData.length === 0) {
         toast({
-          title: "Sin hembras elegibles",
-          description: `No hay hembras elegibles con los filtros actuales. Total en cabaña: ${data?.length || 0}`,
+          title: t('activities:artificialInsemination.noEligibleFemales'),
+          description: t('activities:artificialInsemination.noFemalesWithFilters', { total: data?.length || 0 }),
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Error loading eligible females:', error);
       toast({
-        title: "Error",
-        description: "Error al cargar hembras elegibles: " + (error as Error).message,
+        title: t('common:status.error'),
+        description: t('activities:artificialInsemination.errorLoadingFemales') + ': ' + (error as Error).message,
         variant: "destructive"
       });
     } finally {
@@ -315,8 +317,8 @@ export function ImprovedArtificialInseminationDialog({
   const validateForm = () => {
     if (bullMode === 'catalog' && !selectedBull) {
       toast({
-        title: "Error",
-        description: "Debe seleccionar un toro del catálogo",
+        title: t('common:status.error'),
+        description: t('activities:artificialInsemination.selectBullFromCatalog'),
         variant: "destructive"
       });
       return false;
@@ -325,8 +327,8 @@ export function ImprovedArtificialInseminationDialog({
     if (bullMode === 'manual') {
       if (!manualBullData.nombre || !manualBullData.identificador || !manualBullData.raza) {
         toast({
-          title: "Error", 
-          description: "Debe completar nombre, identificador y raza del toro",
+          title: t('common:status.error'), 
+          description: t('activities:artificialInsemination.completeBullData'),
           variant: "destructive"
         });
         return false;
@@ -335,8 +337,8 @@ export function ImprovedArtificialInseminationDialog({
 
     if (selectedFemales.length === 0) {
       toast({
-        title: "Error",
-        description: "Debe seleccionar al menos una hembra",
+        title: t('common:status.error'),
+        description: t('activities:artificialInsemination.selectAtLeastOneFemale'),
         variant: "destructive"
       });
       return false;
@@ -349,8 +351,8 @@ export function ImprovedArtificialInseminationDialog({
     if (!validateForm() || !currentUser?.cabañaId) {
       if (!currentUser?.cabañaId) {
         toast({
-          title: "Error",
-          description: "Usuario sin cabaña asignada",
+          title: t('common:status.error'),
+          description: t('activities:artificialInsemination.noCabanaError'),
           variant: "destructive"
         });
       }
@@ -415,8 +417,12 @@ export function ImprovedArtificialInseminationDialog({
       }
 
       toast({
-        title: "Éxito",
-        description: `Servicio creado: ${selectedFemales.length} hembras · Control: ${format(fechaControl, 'dd/MM/yyyy', { locale: es })} · FPP estimada: ${format(fpp, 'dd/MM/yyyy', { locale: es })}`,
+        title: t('common:status.success'),
+        description: t('activities:artificialInsemination.serviceCreatedDetails', {
+          count: selectedFemales.length,
+          control: format(fechaControl, 'dd/MM/yyyy', { locale: es }),
+          fpp: format(fpp, 'dd/MM/yyyy', { locale: es })
+        }),
       });
 
       onOpenChange(false);
@@ -425,8 +431,8 @@ export function ImprovedArtificialInseminationDialog({
     } catch (error: any) {
       console.error('Error creating IA service:', error);
       toast({
-        title: "Error",
-        description: error.message || "Error al crear el servicio",
+        title: t('common:status.error'),
+        description: error.message || t('activities:artificialInsemination.errorCreatingService'),
         variant: "destructive"
       });
     } finally {
@@ -457,14 +463,14 @@ export function ImprovedArtificialInseminationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Inseminación Artificial</DialogTitle>
+          <DialogTitle>{t('activities:artificialInsemination.title')}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Basic Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Fecha del Servicio</Label>
+              <Label>{t('activities:artificialInsemination.serviceDate')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -485,11 +491,11 @@ export function ImprovedArtificialInseminationDialog({
             </div>
 
             <div className="space-y-2">
-              <Label>Veterinario</Label>
+              <Label>{t('activities:artificialInsemination.veterinarian')}</Label>
               <Input
                 value={veterinario}
                 onChange={(e) => setVeterinario(e.target.value)}
-                placeholder="Nombre del profesional"
+                placeholder={t('activities:artificialInsemination.veterinarianPlaceholder')}
               />
             </div>
           </div>
@@ -497,17 +503,17 @@ export function ImprovedArtificialInseminationDialog({
           {/* Bull Selection */}
           <Accordion type="single" defaultValue="bull-data" collapsible>
             <AccordionItem value="bull-data">
-              <AccordionTrigger>Datos del Toro (Obligatorio)</AccordionTrigger>
+              <AccordionTrigger>{t('activities:artificialInsemination.bullDataRequired')}</AccordionTrigger>
               <AccordionContent>
                 <Tabs value={bullMode} onValueChange={(value) => setBullMode(value as 'catalog' | 'manual')}>
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="catalog">Catálogo</TabsTrigger>
-                    <TabsTrigger value="manual">Manual</TabsTrigger>
+                    <TabsTrigger value="catalog">{t('activities:artificialInsemination.catalog')}</TabsTrigger>
+                    <TabsTrigger value="manual">{t('activities:artificialInsemination.manual')}</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="catalog" className="space-y-4">
                     <div className="space-y-2">
-                      <Label>Seleccionar Toro</Label>
+                      <Label>{t('activities:artificialInsemination.selectBull')}</Label>
                       <Select
                         value={selectedBull?.id || ""}
                         onValueChange={(value) => {
@@ -516,7 +522,7 @@ export function ImprovedArtificialInseminationDialog({
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Buscar y seleccionar toro..." />
+                          <SelectValue placeholder={t('activities:artificialInsemination.searchAndSelectBull')} />
                         </SelectTrigger>
                         <SelectContent>
                           {bulls.map((bull) => (
@@ -533,7 +539,7 @@ export function ImprovedArtificialInseminationDialog({
                       </Select>
                       {bulls.length === 0 && (
                         <p className="text-sm text-muted-foreground">
-                          No hay toros en el catálogo. Use la opción manual.
+                          {t('activities:artificialInsemination.noBullsInCatalog')}
                         </p>
                       )}
                     </div>
@@ -542,10 +548,10 @@ export function ImprovedArtificialInseminationDialog({
                       <div className="p-4 bg-muted rounded-lg">
                         <h4 className="font-medium mb-2">{selectedBull.name}</h4>
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                          <span>Raza: {selectedBull.breed}</span>
-                          <span>Registro: {selectedBull.registration_level || 'N/A'}</span>
-                          <span>CE: {selectedBull.scrotal_circumference}cm</span>
-                          <span>Peso Final: {selectedBull.final_weight}kg</span>
+                          <span>{t('activities:artificialInsemination.breed')}: {selectedBull.breed}</span>
+                          <span>{t('activities:artificialInsemination.registration')}: {selectedBull.registration_level || 'N/A'}</span>
+                          <span>{t('activities:artificialInsemination.ce')}: {selectedBull.scrotal_circumference}cm</span>
+                          <span>{t('activities:artificialInsemination.finalWeight')}: {selectedBull.final_weight}kg</span>
                         </div>
                       </div>
                     )}
@@ -554,31 +560,31 @@ export function ImprovedArtificialInseminationDialog({
                   <TabsContent value="manual" className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Nombre *</Label>
+                        <Label>{t('activities:artificialInsemination.nameRequired')}</Label>
                         <Input
                           value={manualBullData.nombre}
                           onChange={(e) => setManualBullData(prev => ({ ...prev, nombre: e.target.value }))}
-                          placeholder="Nombre del toro"
+                          placeholder={t('activities:artificialInsemination.bullNamePlaceholder')}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Identificador/RP *</Label>
+                        <Label>{t('activities:artificialInsemination.identifierRequired')}</Label>
                         <Input
                           value={manualBullData.identificador}
                           onChange={(e) => setManualBullData(prev => ({ ...prev, identificador: e.target.value }))}
-                          placeholder="RP o código de pajuela"
+                          placeholder={t('activities:artificialInsemination.identifierPlaceholder')}
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Raza *</Label>
+                        <Label>{t('activities:artificialInsemination.breedRequired')}</Label>
                         <Select
                           value={manualBullData.raza}
                           onValueChange={(value) => setManualBullData(prev => ({ ...prev, raza: value }))}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar raza" />
+                            <SelectValue placeholder={t('activities:artificialInsemination.selectBreed')} />
                           </SelectTrigger>
                           <SelectContent>
                             {BREEDS.map((breed) => (
@@ -589,13 +595,13 @@ export function ImprovedArtificialInseminationDialog({
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Registro</Label>
+                        <Label>{t('activities:artificialInsemination.registration')}</Label>
                         <Select
                           value={manualBullData.registro || ""}
                           onValueChange={(value) => setManualBullData(prev => ({ ...prev, registro: value }))}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Nivel de registro" />
+                            <SelectValue placeholder={t('activities:artificialInsemination.registrationLevel')} />
                           </SelectTrigger>
                           <SelectContent>
                             {REGISTRATION_LEVELS.map((level) => (
@@ -608,13 +614,13 @@ export function ImprovedArtificialInseminationDialog({
                       {/* Breed-specific fields */}
                       {manualBullData.raza === 'Braford' && (
                         <div className="space-y-2">
-                          <Label>Estado de Cuernos</Label>
+                          <Label>{t('activities:artificialInsemination.hornStatus')}</Label>
                           <Select
                             value={manualBullData.horn_status || ""}
                             onValueChange={(value) => setManualBullData(prev => ({ ...prev, horn_status: value }))}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Estado de cuernos" />
+                              <SelectValue placeholder={t('activities:artificialInsemination.hornStatusPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                               {HORN_STATUS_OPTIONS.map((status) => (
@@ -627,13 +633,13 @@ export function ImprovedArtificialInseminationDialog({
 
                       {(manualBullData.raza === 'Brangus' || manualBullData.raza === 'Angus') && (
                         <div className="space-y-2">
-                          <Label>Pelaje</Label>
+                          <Label>{t('activities:artificialInsemination.coatColor')}</Label>
                           <Select
                             value={manualBullData.pelaje || ""}
                             onValueChange={(value) => setManualBullData(prev => ({ ...prev, pelaje: value }))}
                           >
                             <SelectTrigger>
-                              <SelectValue placeholder="Color del pelaje" />
+                              <SelectValue placeholder={t('activities:artificialInsemination.coatColorPlaceholder')} />
                             </SelectTrigger>
                             <SelectContent>
                               {PELAJE_OPTIONS.map((color) => (
@@ -645,12 +651,12 @@ export function ImprovedArtificialInseminationDialog({
                       )}
 
                       <div className="space-y-2">
-                        <Label>CE (cm)</Label>
+                        <Label>{t('activities:artificialInsemination.ce')}</Label>
                         <Input
                           type="number"
                           value={manualBullData.ce_cm || ''}
                           onChange={(e) => setManualBullData(prev => ({ ...prev, ce_cm: Number(e.target.value) || undefined }))}
-                          placeholder="Circunferencia escrotal"
+                          placeholder={t('activities:artificialInsemination.scrotalCircumference')}
                         />
                       </div>
 
@@ -660,7 +666,7 @@ export function ImprovedArtificialInseminationDialog({
                           checked={manualBullData.adn_verificado}
                           onCheckedChange={(checked) => setManualBullData(prev => ({ ...prev, adn_verificado: checked as boolean }))}
                         />
-                        <Label htmlFor="adn_verificado">ADN Verificado</Label>
+                        <Label htmlFor="adn_verificado">{t('activities:artificialInsemination.dnaVerified')}</Label>
                       </div>
                     </div>
                   </TabsContent>
@@ -672,49 +678,52 @@ export function ImprovedArtificialInseminationDialog({
           {/* Female Selection */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Selección de Hembras Elegibles</h3>
+              <h3 className="text-lg font-medium">{t('activities:artificialInsemination.eligibleFemalesSelection')}</h3>
               <div className="text-sm text-muted-foreground">
-                {selectedFemales.length} seleccionadas de {eligibleFemales.length} elegibles
+                {t('activities:artificialInsemination.selectedOfEligible', {
+                  selected: selectedFemales.length,
+                  eligible: eligibleFemales.length
+                })}
               </div>
             </div>
 
             <div className="text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
-              <strong>Criterios automáticos:</strong> Solo hembras activas ≥15 meses y no preñadas
+              <strong>{t('activities:artificialInsemination.automaticCriteria')}:</strong> {t('activities:artificialInsemination.criteriaDescription')}
             </div>
 
             {/* Filters */}
             <div className="space-y-4 p-4 bg-muted rounded-lg">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Buscar por nombre/ID</Label>
+                  <Label>{t('activities:artificialInsemination.searchByNameId')}</Label>
                   <div className="relative">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder="Buscar hembra..."
+                      placeholder={t('activities:artificialInsemination.searchFemalePlaceholder')}
                       className="pl-8"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Categoría</Label>
+                  <Label>{t('activities:artificialInsemination.category')}</Label>
                   <Select value={filterCategory} onValueChange={setFilterCategory}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todas</SelectItem>
-                      <SelectItem value="Vaquillona">Vaquillonas (15-24m)</SelectItem>
-                      <SelectItem value="Vaca">Vacas (24m+)</SelectItem>
+                      <SelectItem value="all">{t('activities:artificialInsemination.all')}</SelectItem>
+                      <SelectItem value="Vaquillona">{t('activities:artificialInsemination.heifers')}</SelectItem>
+                      <SelectItem value="Vaca">{t('activities:artificialInsemination.cows')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Edad (meses): {ageRange[0]} - {ageRange[1]}</Label>
+                <Label>{t('activities:artificialInsemination.ageMonths', { min: ageRange[0], max: ageRange[1] })}</Label>
                 <Slider
                   value={ageRange}
                   onValueChange={setAgeRange}
@@ -752,14 +761,14 @@ export function ImprovedArtificialInseminationDialog({
                 disabled={eligibleFemales.length === 0}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Seleccionar todas las filtradas ({eligibleFemales.length})
+                {t('activities:artificialInsemination.selectAllFiltered', { count: eligibleFemales.length })}
               </Button>
             </div>
 
             {/* Selected Females */}
             {selectedFemales.length > 0 && (
               <div className="space-y-2">
-                <Label>Hembras Seleccionadas ({selectedFemales.length})</Label>
+                <Label>{t('activities:artificialInsemination.selectedFemales', { count: selectedFemales.length })}</Label>
                 <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border rounded-lg">
                   {selectedFemales.map((female) => (
                     <Badge key={female.id} variant="secondary" className="flex items-center gap-1">
@@ -776,15 +785,15 @@ export function ImprovedArtificialInseminationDialog({
 
             {/* Available Females */}
             <div className="space-y-2">
-              <Label>Hembras Disponibles</Label>
+              <Label>{t('activities:artificialInsemination.availableFemales')}</Label>
               <div className="border rounded-lg max-h-64 overflow-y-auto">
                 {loadingFemales ? (
                   <div className="p-4 text-center text-muted-foreground">
-                    Cargando hembras elegibles...
+                    {t('activities:artificialInsemination.loadingFemales')}
                   </div>
                 ) : eligibleFemales.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground">
-                    No hay hembras elegibles con los filtros actuales
+                    {t('activities:artificialInsemination.noEligibleWithFilters')}
                   </div>
                 ) : (
                   <div className="space-y-2 p-2">
@@ -818,11 +827,11 @@ export function ImprovedArtificialInseminationDialog({
 
           {/* Observations */}
           <div className="space-y-2">
-            <Label>Observaciones</Label>
+            <Label>{t('activities:artificialInsemination.observations')}</Label>
             <Textarea
               value={observaciones}
               onChange={(e) => setObservaciones(e.target.value)}
-              placeholder="Observaciones adicionales del servicio..."
+              placeholder={t('activities:artificialInsemination.observationsPlaceholder')}
               rows={3}
             />
           </div>
@@ -830,10 +839,10 @@ export function ImprovedArtificialInseminationDialog({
           {/* Actions */}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
+              {t('common:actions.cancel')}
             </Button>
             <Button onClick={handleSubmit} disabled={loading}>
-              {loading ? "Creando..." : "Crear Servicio"}
+              {loading ? t('activities:artificialInsemination.creating') : t('activities:artificialInsemination.createService')}
             </Button>
           </div>
         </div>
