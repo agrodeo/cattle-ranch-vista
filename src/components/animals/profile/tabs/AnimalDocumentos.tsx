@@ -136,7 +136,7 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
                   type="file"
                   onChange={handleFileUpload}
                   accept="image/*,.pdf,.doc,.docx,.txt"
-                  className="cursor-pointer"
+                  className="cursor-pointer text-xs md:text-sm w-full file:mr-2 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:md:text-sm file:font-medium"
                 />
               </div>
             </div>
