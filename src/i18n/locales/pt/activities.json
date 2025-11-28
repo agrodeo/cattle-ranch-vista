@@ -345,7 +345,7 @@
     "errorSaving": "Não foi possível registrar a vacinação",
     "registerButton": "Registrar Vacinação"
   },
-  "activityTypes": {
+  "managementActivityTypes": {
     "destete": {
       "label": "Desmame",
       "description": "Separação de bezerros de suas mães"

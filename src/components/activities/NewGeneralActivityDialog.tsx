@@ -41,65 +41,65 @@ interface Animal {
 const getActivityTypes = (t: any) => [
   { 
     value: "destete", 
-    label: t('activities:activityTypes.destete.label'),
+    label: t('activities:managementActivityTypes.destete.label'),
     icon: "🐄",
-    description: t('activities:activityTypes.destete.description'),
+    description: t('activities:managementActivityTypes.destete.description'),
     fields: ["peso_destete", "edad_destete", "metodo"]
   },
   { 
     value: "marcacion", 
-    label: t('activities:activityTypes.marcacion.label'),
+    label: t('activities:managementActivityTypes.marcacion.label'),
     icon: "🔥",
-    description: t('activities:activityTypes.marcacion.description'),
+    description: t('activities:managementActivityTypes.marcacion.description'),
     fields: ["ubicacion_marca", "tipo_hierro", "numero_marca"]
   },
   { 
     value: "castracion", 
-    label: t('activities:activityTypes.castracion.label'),
+    label: t('activities:managementActivityTypes.castracion.label'),
     icon: "✂️",
-    description: t('activities:activityTypes.castracion.description'),
+    description: t('activities:managementActivityTypes.castracion.description'),
     fields: ["metodo_castracion", "anestesia", "antibiotico"]
   },
   { 
     value: "descorne", 
-    label: t('activities:activityTypes.descorne.label'),
+    label: t('activities:managementActivityTypes.descorne.label'),
     icon: "🦏",
-    description: t('activities:activityTypes.descorne.description'),
+    description: t('activities:managementActivityTypes.descorne.description'),
     fields: ["metodo_descorne", "edad_animal", "cicatrizante"]
   },
   { 
     value: "traslado", 
-    label: t('activities:activityTypes.traslado.label'),
+    label: t('activities:managementActivityTypes.traslado.label'),
     icon: "📦",
-    description: t('activities:activityTypes.traslado.description'),
+    description: t('activities:managementActivityTypes.traslado.description'),
     fields: ["corral_origen", "corral_destino", "motivo_traslado"]
   },
   { 
     value: "tratamiento", 
-    label: t('activities:activityTypes.tratamiento.label'),
+    label: t('activities:managementActivityTypes.tratamiento.label'),
     icon: "💊",
-    description: t('activities:activityTypes.tratamiento.description'),
+    description: t('activities:managementActivityTypes.tratamiento.description'),
     fields: ["medicamento", "dosis", "via_administracion", "diagnostico"]
   },
   { 
     value: "revision", 
-    label: t('activities:activityTypes.revision.label'),
+    label: t('activities:managementActivityTypes.revision.label'),
     icon: "🔍",
-    description: t('activities:activityTypes.revision.description'),
+    description: t('activities:managementActivityTypes.revision.description'),
     fields: ["temperatura", "frecuencia_cardiaca", "estado_general", "hallazgos"]
   },
   { 
     value: "apareamiento", 
-    label: t('activities:activityTypes.apareamiento.label'),
+    label: t('activities:managementActivityTypes.apareamiento.label'),
     icon: "💕",
-    description: t('activities:activityTypes.apareamiento.description'),
+    description: t('activities:managementActivityTypes.apareamiento.description'),
     fields: ["toro_id", "toro_nombre", "metodo_monta"]
   },
   { 
     value: "parto", 
-    label: t('activities:activityTypes.parto.label'),
+    label: t('activities:managementActivityTypes.parto.label'),
     icon: "🐄",
-    description: t('activities:activityTypes.parto.description'),
+    description: t('activities:managementActivityTypes.parto.description'),
     fields: ["tipo_parto", "dificultad", "peso_cria", "sexo_cria", "vitalidad"]
   },
 ];
