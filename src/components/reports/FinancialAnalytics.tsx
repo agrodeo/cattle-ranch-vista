@@ -161,13 +161,13 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
       ...Object.entries(revenueByCategory).map(([category, amount]) => ({
         category,
         amount,
-        type: 'Ingreso',
+        type: t('reports:financial.revenue'),
         color: '#10b981'
       })),
       ...Object.entries(expensesByCategory).map(([category, amount]) => ({
         category,
         amount,
-        type: 'Egreso',
+        type: t('reports:financial.expenses'),
         color: '#ef4444'
       }))
     ];
@@ -455,9 +455,9 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
                   <YAxis />
                   <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
                   <Legend />
-                  <Bar dataKey="revenue" fill="#10b981" name="Ingresos" />
-                  <Bar dataKey="expenses" fill="#ef4444" name="Egresos" />
-                  <Bar dataKey="profit" fill="#3b82f6" name="Ganancia" />
+                  <Bar dataKey="revenue" fill="#10b981" name={t('reports:financial.revenue')} />
+                  <Bar dataKey="expenses" fill="#ef4444" name={t('reports:financial.expenses')} />
+                  <Bar dataKey="profit" fill="#3b82f6" name={t('reports:financial.netProfit')} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
