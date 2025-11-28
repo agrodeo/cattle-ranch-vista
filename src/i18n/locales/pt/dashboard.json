@@ -63,7 +63,8 @@
   },
   "warnings": {
     "consanguinityRisk": "Risco de Consanguinidade",
-    "corralsWithRisk": "curral(is) com possível consanguinidade detectada"
+    "corralsWithRisk_one": "{{count}} curral com possível consanguinidade detectada",
+    "corralsWithRisk_other": "{{count}} currais com possível consanguinidade detectada"
   },
   "activityTypes": {
     "general": "Geral",

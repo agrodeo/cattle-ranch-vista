@@ -496,7 +496,9 @@ export const useDashboardSummary = (): DashboardSummary => {
         .not('mother_id', 'is', null);
 
       if (!consanguinityError && consanguinityData) {
-        // Simple consanguinity check - animals in same corral with common parents
+        console.log('🧬 Checking consanguinity for', consanguinityData.length, 'animals');
+        
+        // Check for consanguinity - animals in same corral that share parents
         const corralGroups = new Map<string, any[]>();
         consanguinityData.forEach(animal => {
           if (animal.corrales?.name) {
@@ -508,27 +510,41 @@ export const useDashboardSummary = (): DashboardSummary => {
           }
         });
 
-        let consanguinityCount = 0;
+        console.log('🧬 Corral groups:', corralGroups.size);
+
+        const corralsWithRisk: string[] = [];
         corralGroups.forEach((animals, corralName) => {
           if (animals.length > 1) {
-            const parentPairs = new Set();
+            // Check if any animals share father or mother
+            const fathers = new Set();
+            const mothers = new Set();
+            let hasSharedParent = false;
+            
             animals.forEach(animal => {
-              parentPairs.add(`${animal.father_id}-${animal.mother_id}`);
+              if (fathers.has(animal.father_id) || mothers.has(animal.mother_id)) {
+                hasSharedParent = true;
+              }
+              fathers.add(animal.father_id);
+              mothers.add(animal.mother_id);
             });
-            if (parentPairs.size < animals.length) {
-              consanguinityCount++;
+            
+            if (hasSharedParent) {
+              corralsWithRisk.push(corralName);
             }
           }
         });
 
-        if (consanguinityCount > 0) {
+        console.log('🧬 Corrals with consanguinity risk:', corralsWithRisk.length, corralsWithRisk);
+
+        if (corralsWithRisk.length > 0) {
+          const count = corralsWithRisk.length;
           warnings.push({
             id: 'consanguinity',
             type: 'consanguinity',
             title: t('dashboard:warnings.consanguinityRisk'),
-            description: `${consanguinityCount} ${t('dashboard:warnings.corralsWithRisk')}`,
+            description: t('dashboard:warnings.corralsWithRisk', { count }),
             severity: 'high',
-            affected_count: consanguinityCount
+            affected_count: count
           });
         }
       }
