@@ -525,8 +525,8 @@ export const useDashboardSummary = (): DashboardSummary => {
           warnings.push({
             id: 'consanguinity',
             type: 'consanguinity',
-            title: 'Riesgo de Consanguinidad',
-            description: `${consanguinityCount} corral(es) con posible consanguinidad detectada`,
+            title: t('dashboard:warnings.consanguinityRisk'),
+            description: `${consanguinityCount} ${t('dashboard:warnings.corralsWithRisk')}`,
             severity: 'high',
             affected_count: consanguinityCount
           });
