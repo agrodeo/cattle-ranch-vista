@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +18,7 @@ interface ExportButtonProps {
 }
 
 export function ExportButton({ data, filename = 'analisis-temporal' }: ExportButtonProps) {
+  const { t } = useTranslation(['reports']);
   const [exporting, setExporting] = useState(false);
   const { toast } = useToast();
 
@@ -26,16 +28,16 @@ export function ExportButton({ data, filename = 'analisis-temporal' }: ExportBut
 
       // Prepare data for export
       const exportData = data.map(row => ({
-        'Período': row.periodo,
-        'Año': row.year,
-        'Peso Nacimiento (kg)': row.peso_nacimiento_promedio || '-',
-        'Peso Destete (kg)': row.peso_destete_promedio || '-',
-        'Peso Final (kg)': row.peso_final_promedio || '-',
-        'ADG (kg/día)': row.adg_promedio || '-',
-        'Cantidad Animales': row.cantidad_animales,
-        'Mejora vs Anterior (%)': row.mejora_vs_anterior !== null ? row.mejora_vs_anterior.toFixed(2) : '-',
-        'Percentil 25': row.percentil_25 || '-',
-        'Percentil 75': row.percentil_75 || '-'
+        [t('reports:export.columns.period')]: row.periodo,
+        [t('reports:export.columns.year')]: row.year,
+        [t('reports:export.columns.birthWeight')]: row.peso_nacimiento_promedio || '-',
+        [t('reports:export.columns.weaningWeight')]: row.peso_destete_promedio || '-',
+        [t('reports:export.columns.finalWeight')]: row.peso_final_promedio || '-',
+        [t('reports:export.columns.adg')]: row.adg_promedio || '-',
+        [t('reports:export.columns.animalCount')]: row.cantidad_animales,
+        [t('reports:export.columns.improvement')]: row.mejora_vs_anterior !== null ? row.mejora_vs_anterior.toFixed(2) : '-',
+        [t('reports:export.columns.percentile25')]: row.percentil_25 || '-',
+        [t('reports:export.columns.percentile75')]: row.percentil_75 || '-'
       }));
 
       // Create workbook
@@ -63,15 +65,15 @@ export function ExportButton({ data, filename = 'analisis-temporal' }: ExportBut
       XLSX.writeFile(wb, `${filename}.xlsx`);
 
       toast({
-        title: 'Exportación exitosa',
-        description: 'Los datos se han exportado a Excel correctamente'
+        title: t('reports:export.success'),
+        description: t('reports:export.successDesc')
       });
     } catch (error) {
       console.error('Error exporting to Excel:', error);
       toast({
         variant: 'destructive',
-        title: 'Error al exportar',
-        description: 'No se pudo exportar los datos a Excel'
+        title: t('reports:export.error'),
+        description: t('reports:export.errorDesc')
       });
     } finally {
       setExporting(false);
@@ -84,16 +86,16 @@ export function ExportButton({ data, filename = 'analisis-temporal' }: ExportBut
 
       // Prepare CSV content
       const headers = [
-        'Período',
-        'Año',
-        'Peso Nacimiento (kg)',
-        'Peso Destete (kg)',
-        'Peso Final (kg)',
-        'ADG (kg/día)',
-        'Cantidad Animales',
-        'Mejora vs Anterior (%)',
-        'Percentil 25',
-        'Percentil 75'
+        t('reports:export.columns.period'),
+        t('reports:export.columns.year'),
+        t('reports:export.columns.birthWeight'),
+        t('reports:export.columns.weaningWeight'),
+        t('reports:export.columns.finalWeight'),
+        t('reports:export.columns.adg'),
+        t('reports:export.columns.animalCount'),
+        t('reports:export.columns.improvement'),
+        t('reports:export.columns.percentile25'),
+        t('reports:export.columns.percentile75')
       ];
 
       const rows = data.map(row => [
@@ -122,15 +124,15 @@ export function ExportButton({ data, filename = 'analisis-temporal' }: ExportBut
       link.click();
 
       toast({
-        title: 'Exportación exitosa',
-        description: 'Los datos se han exportado a CSV correctamente'
+        title: t('reports:export.success'),
+        description: t('reports:export.successDesc')
       });
     } catch (error) {
       console.error('Error exporting to CSV:', error);
       toast({
         variant: 'destructive',
-        title: 'Error al exportar',
-        description: 'No se pudo exportar los datos a CSV'
+        title: t('reports:export.error'),
+        description: t('reports:export.errorDesc')
       });
     } finally {
       setExporting(false);
@@ -148,12 +150,12 @@ export function ExportButton({ data, filename = 'analisis-temporal' }: ExportBut
           {exporting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Exportando...
+              {t('reports:export.exporting')}
             </>
           ) : (
             <>
               <Download className="mr-2 h-4 w-4" />
-              Exportar
+              {t('reports:export.button')}
             </>
           )}
         </Button>
@@ -161,11 +163,11 @@ export function ExportButton({ data, filename = 'analisis-temporal' }: ExportBut
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={exportToExcel}>
           <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Exportar a Excel
+          {t('reports:export.toExcel')}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={exportToCSV}>
           <FileText className="mr-2 h-4 w-4" />
-          Exportar a CSV
+          {t('reports:export.toCSV')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

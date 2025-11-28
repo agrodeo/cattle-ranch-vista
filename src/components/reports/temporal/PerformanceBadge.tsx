@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -9,36 +10,37 @@ interface PerformanceBadgeProps {
   className?: string;
 }
 
-const levelConfig: Record<PerformanceLevel, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> = {
+const getlevelConfig = (t: any): Record<PerformanceLevel, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }> => ({
   excellent: {
-    label: 'Excelente',
+    label: t('reports:performanceBadge.excellent'),
     variant: 'default',
     className: 'bg-green-600 hover:bg-green-700 text-white'
   },
   good: {
-    label: 'Bueno',
+    label: t('reports:performanceBadge.good'),
     variant: 'secondary',
     className: 'bg-blue-600 hover:bg-blue-700 text-white'
   },
   average: {
-    label: 'Regular',
+    label: t('reports:performanceBadge.average'),
     variant: 'secondary',
     className: 'bg-yellow-600 hover:bg-yellow-700 text-white'
   },
   poor: {
-    label: 'Bajo',
+    label: t('reports:performanceBadge.poor'),
     variant: 'destructive',
     className: 'bg-red-600 hover:bg-red-700 text-white'
   },
   unknown: {
-    label: 'Sin datos',
+    label: t('reports:performanceBadge.unknown'),
     variant: 'outline',
     className: ''
   }
-};
+});
 
 export function PerformanceBadge({ level, value, className }: PerformanceBadgeProps) {
-  const config = levelConfig[level];
+  const { t } = useTranslation(['reports']);
+  const config = getlevelConfig(t)[level];
 
   return (
     <Badge 

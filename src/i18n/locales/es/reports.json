@@ -495,5 +495,226 @@
     "expenses": "Egresos",
     "loading": "Cargando análisis financiero...",
     "error": "Error al cargar análisis financiero"
+  },
+  "filters": {
+    "period": "Período",
+    "since": "Desde",
+    "until": "Hasta",
+    "corrals": "Corrales",
+    "category": "Categoría",
+    "breed": "Raza",
+    "all": "Todas",
+    "options": "Opciones",
+    "includeSoldDead": "Incluir vendidos/muertos",
+    "clear": "Limpiar",
+    "apply": "Aplicar Filtros",
+    "filter": "filtro",
+    "filters": "filtros",
+    "categories": {
+      "calf": "Ternero",
+      "heifer": "Ternera",
+      "youngBull": "Torete",
+      "heifer2": "Vaquillona",
+      "bull": "Toro",
+      "cow": "Vaca"
+    }
+  },
+  "export": {
+    "button": "Exportar",
+    "exporting": "Exportando...",
+    "toExcel": "Exportar a Excel",
+    "toCSV": "Exportar a CSV",
+    "success": "Exportación exitosa",
+    "successDesc": "Los datos se han exportado correctamente",
+    "error": "Error al exportar",
+    "errorDesc": "No se pudo exportar los datos",
+    "columns": {
+      "period": "Período",
+      "year": "Año",
+      "birthWeight": "Peso Nacimiento (kg)",
+      "weaningWeight": "Peso Destete (kg)",
+      "finalWeight": "Peso Final (kg)",
+      "adg": "ADG (kg/día)",
+      "animalCount": "Cantidad Animales",
+      "improvement": "Mejora vs Anterior (%)",
+      "percentile25": "Percentil 25",
+      "percentile75": "Percentil 75"
+    }
+  },
+  "performanceBadge": {
+    "excellent": "Excelente",
+    "good": "Bueno",
+    "average": "Regular",
+    "poor": "Bajo",
+    "unknown": "Sin datos"
+  },
+  "animalReproduction": {
+    "title": "Reproducción por Animal",
+    "subtitle": "hembras con actividad reproductiva",
+    "noData": "Sin datos de reproducción",
+    "noDataDesc": "No se encontraron hembras con actividad reproductiva en el período seleccionado",
+    "columns": {
+      "animal": "Animal",
+      "corral": "Corral",
+      "exposures": "Exp.",
+      "pregnancies": "Preñ.",
+      "pregnancyRate": "% Preñez",
+      "openDays": "D. Abiertos",
+      "repeater": "Repetidora",
+      "yes": "Sí",
+      "no": "No",
+      "noCorral": "Sin corral"
+    },
+    "tooltips": {
+      "exposures": "Exposiciones (servicios) en el período",
+      "pregnancies": "Preñeces confirmadas",
+      "openDays": "Días entre último parto y primer servicio",
+      "repeater": "≥2 servicios sin preñez confirmada"
+    }
+  },
+  "pregnantAnimals": {
+    "title": "Hembras Preñadas",
+    "noData": "No se encontraron hembras preñadas",
+    "noDataDesc": "No hay hembras con preñez activa en este momento",
+    "columns": {
+      "name": "Nombre",
+      "tag": "Caravana",
+      "status": "Estado",
+      "corral": "Corral",
+      "age": "Edad",
+      "dueDate": "Fecha Probable Parto"
+    },
+    "actions": {
+      "view": "Ver"
+    },
+    "status": {
+      "pregnant": "Preñada",
+      "confirmed": "Confirmada"
+    }
+  },
+  "reproductiveDetails": {
+    "totalFemales": "Hembras Reproductivas",
+    "ageRestriction": "≥15 meses de edad",
+    "pregnancyRate": "Tasa de Preñez",
+    "confirmedPregnancies": "Preñeces confirmadas",
+    "calvingRate": "Tasa de Parición",
+    "successfulBirths": "Partos exitosos",
+    "currentPregnant": "Preñadas Actuales",
+    "activePregnancies": "Hembras con preñez activa",
+    "femaleDetails": "Detalle Hembras Reproductivas",
+    "animals": "animales",
+    "noFemales": "No se encontraron hembras reproductivas",
+    "noFemalesDesc": "Las hembras deben tener al menos 15 meses de edad para aparecer en este reporte.",
+    "allYoung": "Actualmente todas las hembras son menores a 15 meses.",
+    "errorLoading": "Error al cargar datos",
+    "dataUpdated": "Datos actualizados",
+    "dataUpdatedDesc": "Los datos reproductivos han sido actualizados correctamente.",
+    "retry": "Reintentar",
+    "columns": {
+      "animal": "Animal",
+      "age": "Edad",
+      "state": "Estado",
+      "services": "Servicios",
+      "pregnancies": "Preñeces",
+      "calvings": "Partos",
+      "pregnancyRate": "% Preñez",
+      "calvingRate": "% Parición"
+    },
+    "states": {
+      "pregnant": "Preñada",
+      "empty": "Vacía",
+      "postpartum": "Post-parto"
+    }
+  },
+  "vaccinationDetails": {
+    "title": "Análisis de Vacunación",
+    "subtitle": "animales activos • requisitos configurados • obligatorios",
+    "loading": "Cargando datos de vacunación...",
+    "noData": "No hay datos de vacunación disponibles",
+    "totalAnimals": "Total Animales",
+    "compliant": "Al Día",
+    "overdue": "Vencidas",
+    "pending": "Pendientes",
+    "missingMandatory": "Falta Aplicar",
+    "missingMandatoryDesc": "Obligatorias no aplicadas",
+    "noRequirements": "Sin Requisitos",
+    "noRequirementsDesc": "Sin requisitos configurados",
+    "errors": "Errores",
+    "errorsDesc": "Procesamiento fallido",
+    "ofTotal": "del total",
+    "vaccines": "vacunas",
+    "sections": {
+      "compliant": "Animales al Día",
+      "requiresAttention": "Animales que Requieren Atención"
+    },
+    "empty": "No hay animales en esta categoría",
+    "columns": {
+      "animal": "Animal",
+      "tag": "Caravana",
+      "reason": "Motivo",
+      "details": "Detalles"
+    },
+    "statuses": {
+      "overdue": "Vencida",
+      "pending": "Pendiente",
+      "notApplied": "No aplicada",
+      "mandatory": "obligatoria"
+    },
+    "phrases": {
+      "vaccineOverdue": "vacuna vencida",
+      "vaccinesOverdue": "vacunas vencidas",
+      "vaccinePending": "vacuna pendiente",
+      "vaccinesPending": "vacunas pendientes",
+      "mandatoryNotApplied": "vacuna obligatoria no aplicada",
+      "mandatoriesNotApplied": "vacunas obligatorias no aplicadas",
+      "noMandatory": "Sin vacunas obligatorias aplicables",
+      "allMandatoryComplete": "Todas las vacunas obligatorias completas",
+      "noRequirementsApplicable": "Sin requisitos de vacunación aplicables",
+      "errorProcessing": "Error al procesar",
+      "noStatusData": "Sin datos de estado",
+      "unknown": "Desconocido"
+    },
+    "issues": {
+      "vaccine": "Vacuna",
+      "status": "Estado",
+      "daysOverdue": "Días vencido",
+      "nextDue": "Próxima dosis",
+      "isMandatory": "Es obligatoria"
+    }
+  },
+  "mortalityDetails": {
+    "title": "Análisis de Mortalidad",
+    "loading": "Cargando reportes de mortalidad...",
+    "errorLoading": "No se pudieron cargar las estadísticas de mortalidad.",
+    "totalDeaths": "Total de Muertes",
+    "totalDeathsDesc": "Registros totales",
+    "mortalityRate": "Tasa de Mortalidad",
+    "averageAge": "Edad Promedio de Muerte",
+    "averageAgeDesc": "días promedio",
+    "months": "meses",
+    "trend": "Tendencia",
+    "lastMonths": "Últimos 3 meses",
+    "rateLevel": {
+      "high": "Alta",
+      "moderate": "Moderada",
+      "low": "Baja"
+    },
+    "charts": {
+      "byAge": "Mortalidad por Grupo de Edad",
+      "byCause": "Principales Causas de Muerte",
+      "monthly": "Tendencia Mensual de Mortalidad",
+      "byBreed": "Mortalidad por Raza"
+    },
+    "ageGroups": {
+      "calves": "Terneros (0-12m)",
+      "young": "Jóvenes (1-2 años)",
+      "adults": "Adultos (2+ años)",
+      "unknown": "Edad desconocida"
+    },
+    "causeDetails": "Detalle de Causas de Muerte",
+    "cases": "casos",
+    "unknownCause": "Causa desconocida",
+    "deaths": "Muertes",
+    "rate": "Tasa %"
   }
 }

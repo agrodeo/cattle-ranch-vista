@@ -423,5 +423,226 @@
     "expenses": "Expenses",
     "loading": "Loading financial analysis...",
     "error": "Error loading financial analysis"
+  },
+  "filters": {
+    "period": "Period",
+    "since": "From",
+    "until": "To",
+    "corrals": "Corrals",
+    "category": "Category",
+    "breed": "Breed",
+    "all": "All",
+    "options": "Options",
+    "includeSoldDead": "Include sold/dead",
+    "clear": "Clear",
+    "apply": "Apply Filters",
+    "filter": "filter",
+    "filters": "filters",
+    "categories": {
+      "calf": "Calf",
+      "heifer": "Female Calf",
+      "youngBull": "Young Bull",
+      "heifer2": "Heifer",
+      "bull": "Bull",
+      "cow": "Cow"
+    }
+  },
+  "export": {
+    "button": "Export",
+    "exporting": "Exporting...",
+    "toExcel": "Export to Excel",
+    "toCSV": "Export to CSV",
+    "success": "Export successful",
+    "successDesc": "Data has been exported successfully",
+    "error": "Export error",
+    "errorDesc": "Failed to export data",
+    "columns": {
+      "period": "Period",
+      "year": "Year",
+      "birthWeight": "Birth Weight (kg)",
+      "weaningWeight": "Weaning Weight (kg)",
+      "finalWeight": "Final Weight (kg)",
+      "adg": "ADG (kg/day)",
+      "animalCount": "Animal Count",
+      "improvement": "Improvement vs Previous (%)",
+      "percentile25": "Percentile 25",
+      "percentile75": "Percentile 75"
+    }
+  },
+  "performanceBadge": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "average": "Average",
+    "poor": "Poor",
+    "unknown": "No data"
+  },
+  "animalReproduction": {
+    "title": "Animal Reproduction",
+    "subtitle": "females with reproductive activity",
+    "noData": "No reproduction data",
+    "noDataDesc": "No females with reproductive activity found in the selected period",
+    "columns": {
+      "animal": "Animal",
+      "corral": "Corral",
+      "exposures": "Exp.",
+      "pregnancies": "Preg.",
+      "pregnancyRate": "% Pregnancy",
+      "openDays": "Open Days",
+      "repeater": "Repeater",
+      "yes": "Yes",
+      "no": "No",
+      "noCorral": "No corral"
+    },
+    "tooltips": {
+      "exposures": "Exposures (services) in period",
+      "pregnancies": "Confirmed pregnancies",
+      "openDays": "Days between last calving and first service",
+      "repeater": "≥2 services without confirmed pregnancy"
+    }
+  },
+  "pregnantAnimals": {
+    "title": "Pregnant Females",
+    "noData": "No pregnant females found",
+    "noDataDesc": "No females with active pregnancy at this time",
+    "columns": {
+      "name": "Name",
+      "tag": "Tag",
+      "status": "Status",
+      "corral": "Corral",
+      "age": "Age",
+      "dueDate": "Expected Calving Date"
+    },
+    "actions": {
+      "view": "View"
+    },
+    "status": {
+      "pregnant": "Pregnant",
+      "confirmed": "Confirmed"
+    }
+  },
+  "reproductiveDetails": {
+    "totalFemales": "Reproductive Females",
+    "ageRestriction": "≥15 months old",
+    "pregnancyRate": "Pregnancy Rate",
+    "confirmedPregnancies": "Confirmed pregnancies",
+    "calvingRate": "Calving Rate",
+    "successfulBirths": "Successful calvings",
+    "currentPregnant": "Currently Pregnant",
+    "activePregnancies": "Females with active pregnancy",
+    "femaleDetails": "Reproductive Female Details",
+    "animals": "animals",
+    "noFemales": "No reproductive females found",
+    "noFemalesDesc": "Females must be at least 15 months old to appear in this report.",
+    "allYoung": "Currently all females are under 15 months old.",
+    "errorLoading": "Error loading data",
+    "dataUpdated": "Data updated",
+    "dataUpdatedDesc": "Reproductive data has been successfully updated.",
+    "retry": "Retry",
+    "columns": {
+      "animal": "Animal",
+      "age": "Age",
+      "state": "State",
+      "services": "Services",
+      "pregnancies": "Pregnancies",
+      "calvings": "Calvings",
+      "pregnancyRate": "% Pregnancy",
+      "calvingRate": "% Calving"
+    },
+    "states": {
+      "pregnant": "Pregnant",
+      "empty": "Empty",
+      "postpartum": "Post-partum"
+    }
+  },
+  "vaccinationDetails": {
+    "title": "Vaccination Analysis",
+    "subtitle": "active animals • configured requirements • mandatory",
+    "loading": "Loading vaccination data...",
+    "noData": "No vaccination data available",
+    "totalAnimals": "Total Animals",
+    "compliant": "Up to Date",
+    "overdue": "Overdue",
+    "pending": "Pending",
+    "missingMandatory": "Missing",
+    "missingMandatoryDesc": "Mandatory not applied",
+    "noRequirements": "No Requirements",
+    "noRequirementsDesc": "No requirements configured",
+    "errors": "Errors",
+    "errorsDesc": "Processing failed",
+    "ofTotal": "of total",
+    "vaccines": "vaccines",
+    "sections": {
+      "compliant": "Up-to-Date Animals",
+      "requiresAttention": "Animals Requiring Attention"
+    },
+    "empty": "No animals in this category",
+    "columns": {
+      "animal": "Animal",
+      "tag": "Tag",
+      "reason": "Reason",
+      "details": "Details"
+    },
+    "statuses": {
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "notApplied": "Not applied",
+      "mandatory": "mandatory"
+    },
+    "phrases": {
+      "vaccineOverdue": "overdue vaccine",
+      "vaccinesOverdue": "overdue vaccines",
+      "vaccinePending": "pending vaccine",
+      "vaccinesPending": "pending vaccines",
+      "mandatoryNotApplied": "mandatory vaccine not applied",
+      "mandatoriesNotApplied": "mandatory vaccines not applied",
+      "noMandatory": "No applicable mandatory vaccines",
+      "allMandatoryComplete": "All mandatory vaccines complete",
+      "noRequirementsApplicable": "No applicable vaccination requirements",
+      "errorProcessing": "Error processing",
+      "noStatusData": "No status data",
+      "unknown": "Unknown"
+    },
+    "issues": {
+      "vaccine": "Vaccine",
+      "status": "Status",
+      "daysOverdue": "Days overdue",
+      "nextDue": "Next due",
+      "isMandatory": "Is mandatory"
+    }
+  },
+  "mortalityDetails": {
+    "title": "Mortality Analysis",
+    "loading": "Loading mortality reports...",
+    "errorLoading": "Failed to load mortality statistics.",
+    "totalDeaths": "Total Deaths",
+    "totalDeathsDesc": "Total records",
+    "mortalityRate": "Mortality Rate",
+    "averageAge": "Average Death Age",
+    "averageAgeDesc": "average days",
+    "months": "months",
+    "trend": "Trend",
+    "lastMonths": "Last 3 months",
+    "rateLevel": {
+      "high": "High",
+      "moderate": "Moderate",
+      "low": "Low"
+    },
+    "charts": {
+      "byAge": "Mortality by Age Group",
+      "byCause": "Top Causes of Death",
+      "monthly": "Monthly Mortality Trend",
+      "byBreed": "Mortality by Breed"
+    },
+    "ageGroups": {
+      "calves": "Calves (0-12m)",
+      "young": "Young (1-2 years)",
+      "adults": "Adults (2+ years)",
+      "unknown": "Unknown age"
+    },
+    "causeDetails": "Detailed Causes of Death",
+    "cases": "cases",
+    "unknownCause": "Unknown cause",
+    "deaths": "Deaths",
+    "rate": "Rate %"
   }
 }
