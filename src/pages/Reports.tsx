@@ -66,12 +66,12 @@ const Reports = () => {
 
   // Tab configuration for mobile chips
   const tabs = [
-    { id: "reproductive", label: t('reports:tabs.reproduction'), shortLabel: t('reports:tabs.reproduction').substring(0, 6) + '.' },
+    { id: "reproductive", label: t('reports:tabs.reproductive'), shortLabel: t('reports:tabs.reproductive').substring(0, 6) + '.' },
     { id: "production", label: t('reports:tabs.production'), shortLabel: t('reports:tabs.production').substring(0, 4) + '.' },
     { id: "evolution", label: t('reports:tabs.evolution'), shortLabel: t('reports:tabs.evolution').substring(0, 4) + '.' },
     { id: "mortality", label: t('reports:tabs.mortality'), shortLabel: t('reports:tabs.mortality').substring(0, 4) + '.' },
     { id: "vaccines", label: t('reports:tabs.vaccines'), shortLabel: t('reports:tabs.vaccines').substring(0, 3) + '.' },
-    { id: "financial", label: t('reports:tabs.finance'), shortLabel: t('reports:tabs.finance').substring(0, 3) + '.' }
+    { id: "financial", label: t('reports:tabs.financial'), shortLabel: t('reports:tabs.financial').substring(0, 3) + '.' }
   ];
 
   // Memoize the formatted filters to prevent unnecessary re-renders
@@ -104,8 +104,8 @@ const Reports = () => {
         <div className="space-y-4">
           {/* Mobile Header with Filter */}
           <MobilePageHeader
-            title={t('reports:pageTitle')}
-            subtitle={t('reports:pageSubtitle')}
+            title={t('reports:title')}
+            subtitle={t('reports:subtitle')}
             action={
               <MobileReportsFilters
                 filters={pendingFilters}
@@ -152,7 +152,7 @@ const Reports = () => {
               {t('reports:globalFilters')}
               {getActiveFiltersCount(pendingFilters) > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {getActiveFiltersCount(pendingFilters)} {t('reports:filter')}{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
+                  {getActiveFiltersCount(pendingFilters)} {t('common:filter')}{getActiveFiltersCount(pendingFilters) > 1 ? 's' : ''}
                 </Badge>
               )}
               <div className="ml-auto">
