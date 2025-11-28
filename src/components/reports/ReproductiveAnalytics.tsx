@@ -26,6 +26,9 @@ interface ReportFilters {
   date_to?: string;
   corral_ids?: string[];
   include_sold_dead?: boolean;
+  category?: string;
+  breed?: string;
+  status?: string;
 }
 
 interface SummaryMetrics {
@@ -115,20 +118,30 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       const cabanaId = userInfo[0].cabana_id;
 
-      // Get all reproductive females (15+ months old)
+      // Fetch animals
       let animalsQuery = supabase
         .from('animals')
         .select('*')
         .eq('cabaña_id', cabanaId)
         .eq('sex', 'Hembra');
-
+      
+      // Apply corral filter
+      if (filters?.corral_ids?.length) {
+        animalsQuery = animalsQuery.in('corral_id', filters.corral_ids);
+      }
+      
+      // Apply breed filter
+      if (filters?.breed) {
+        animalsQuery = animalsQuery.eq('breed', filters.breed);
+      }
+      
       // Apply filter for sold/dead animals if needed
       if (!filters.include_sold_dead) {
         animalsQuery = animalsQuery
           .neq('status', 'vendido')
           .neq('status', 'muerto');
       }
-
+      
       const { data: animals, error: animalsError } = await animalsQuery;
 
       if (animalsError) throw animalsError;
@@ -175,7 +188,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const corralesMap = new Map(corrales?.map(c => [c.id, c.name]) || []);
 
       // Calculate metrics for each animal
-      const reproductiveData: ReproductiveFemale[] = reproductiveFemales.map(animal => {
+      let reproductiveData: ReproductiveFemale[] = reproductiveFemales.map(animal => {
         // Get data for this animal
         const animalPregnancies = (pregnancies || []).filter(p => p.animal_id === animal.id);
         const animalServices = (services || []).filter(s => s.animales_ids?.includes(animal.id));
@@ -273,6 +286,18 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           current_state: currentState
         };
       });
+      
+      // Apply category filter (client-side since category is computed from age)
+      if (filters?.category) {
+        reproductiveData = reproductiveData.filter(f => f.category === filters.category);
+      }
+      
+      // Apply reproductive status filter
+      if (filters?.status === 'pregnant') {
+        reproductiveData = reproductiveData.filter(f => f.is_pregnant);
+      } else if (filters?.status === 'open') {
+        reproductiveData = reproductiveData.filter(f => !f.is_pregnant);
+      }
 
       setReproductiveFemales(reproductiveData);
 

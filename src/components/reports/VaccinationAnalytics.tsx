@@ -8,6 +8,7 @@ import { Shield, AlertTriangle, CheckCircle, Clock, ChevronDown, ChevronRight, A
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
+import { categorizeAnimal } from "@/lib/animalCategories";
 
 interface VaccinationAnalyticsProps {
   filters?: any;
@@ -204,14 +205,26 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       console.log('🚀 Starting vaccination analytics fetch...');
       
       // Fetch active animals
-      const { data: animals, error: animalsError } = await supabase
+      let animalsQuery = supabase
         .from('animals')
-        .select('id, name, id_tag, sex, birth_date')
+        .select('id, name, id_tag, sex, birth_date, corral_id')
         .eq('cabaña_id', currentUser.cabañaId)
         .neq('status', 'vendido')
         .neq('status', 'muerto')
         .neq('status', 'Vendido')
         .neq('status', 'Muerto');
+      
+      // Apply corral filter
+      if (globalFilters?.corral_ids?.length) {
+        animalsQuery = animalsQuery.in('corral_id', globalFilters.corral_ids);
+      }
+      
+      // Apply breed filter
+      if (globalFilters?.breed) {
+        animalsQuery = animalsQuery.eq('breed', globalFilters.breed);
+      }
+      
+      const { data: animals, error: animalsError } = await animalsQuery;
 
       if (animalsError) {
         console.error('❌ Error fetching animals:', animalsError);
@@ -267,13 +280,31 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       console.log(`✅ Processed ${results.length} animals`);
 
       // Classify all animals
-      const classified = results.map(result => {
+      let classified = results.map(result => {
         const classification = classifyAnimal(result.animal, result.statusData, result.error, t);
         return {
           ...result,
           ...classification
         };
       });
+      
+      // Apply category filter (client-side)
+      if (globalFilters?.category) {
+        classified = classified.filter(item => {
+          if (!item.animal) return false;
+          const category = categorizeAnimal(item.animal, item.animal.is_castrated || false);
+          return category === globalFilters.category;
+        });
+      }
+      
+      // Apply vaccination status filter
+      if (globalFilters?.vaccination_status === 'compliant') {
+        classified = classified.filter(item => item.category === 'compliant');
+      } else if (globalFilters?.vaccination_status === 'needs_attention') {
+        classified = classified.filter(item => 
+          ['overdue', 'pending', 'missing_mandatory'].includes(item.category || '')
+        );
+      }
 
       // Separate by category
       const compliant: any[] = [];
