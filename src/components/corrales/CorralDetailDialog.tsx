@@ -219,8 +219,8 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     } catch (error) {
       console.error("Error fetching corral data:", error);
       toast({
-        title: "Error",
-        description: "No se pudo cargar la información del corral",
+        title: t('common:error'),
+        description: t('corralDetail.errorLoading'),
         variant: "destructive",
       });
     } finally {
@@ -259,16 +259,16 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
             )
             .map((status: any) => ({
               vaccine_name: status.vaccine_name,
-              status: status.status === 'vencida' ? 'Vencida' : 
-                      status.status === 'pendiente' ? 'Pendiente' : 
-                      `${status.compliance_percentage.toFixed(0)}% completada`
+              status: status.status === 'vencida' ? t('corralDetail.overdue') : 
+                      status.status === 'pendiente' ? t('corralDetail.pending') : 
+                      `${status.compliance_percentage.toFixed(0)}% ${t('corralDetail.completed')}`
             }));
 
           if (animalAlerts.length > 0) {
             alertsData.push({
               animal_id: animal.id,
-              animal_name: animal.name || animal.id_tag || 'Sin nombre',
-              animal_tag: animal.id_tag || 'Sin caravana',
+              animal_name: animal.name || animal.id_tag || t('corralDetail.noName'),
+              animal_tag: animal.id_tag || t('corralDetail.noTag'),
               alerts: animalAlerts
             });
           }
@@ -306,8 +306,8 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     // Move one of the animals to remove the risk
     // For now, we'll just show a toast - this could be enhanced with actual move functionality
     toast({
-      title: "Sugerencia",
-      description: "Considere mover uno de los animales a otro corral para reducir el riesgo de consanguinidad",
+      title: t('corralDetail.moveSuggestionTitle'),
+      description: t('corralDetail.moveSuggestionDesc'),
     });
   };
 
@@ -315,21 +315,34 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
     const animal1Name = risk.animal1.name || risk.animal1.id_tag || risk.animal1.id;
     const animal2Name = risk.animal2.name || risk.animal2.id_tag || risk.animal2.id;
     
+    const severityText = risk.inbreedingCoefficient 
+      ? (risk.inbreedingCoefficient > 0.25 ? t('corralDetail.veryHighRisk') : 
+         risk.inbreedingCoefficient > 0.125 ? t('corralDetail.highRisk') : 
+         t('corralDetail.moderateRisk'))
+      : '';
+    
     return {
-      what: "La consanguinidad se refiere a la reproducción entre animales que comparten ancestros comunes.",
-      why: `Este apareamiento es riesgoso porque ${animal1Name} y ${animal2Name} ${risk.description.toLowerCase()}`,
+      what: t('corralDetail.whatIsDescription'),
+      why: t('corralDetail.thisBreedingRisky', { 
+        animal1: animal1Name, 
+        animal2: animal2Name, 
+        relationship: risk.description.toLowerCase() 
+      }),
       coefficient: risk.inbreedingCoefficient 
-        ? `Un coeficiente del ${(risk.inbreedingCoefficient * 100).toFixed(1)}% indica ${risk.inbreedingCoefficient > 0.25 ? 'un riesgo muy alto' : risk.inbreedingCoefficient > 0.125 ? 'un riesgo alto' : 'un riesgo moderado'} de problemas genéticos en la descendencia.`
-        : "Sin coeficiente calculado disponible.",
-      action: "Se recomienda mover uno de los animales a otro corral o evitar que se apareen para mantener la diversidad genética del rebaño."
+        ? t('corralDetail.coefficientIndicates', { 
+            percent: (risk.inbreedingCoefficient * 100).toFixed(1),
+            severity: severityText
+          })
+        : t('corralDetail.noCoefficient'),
+      action: t('corralDetail.recommendedToMove')
     };
   };
 
   const handleAnimalClick = (animalId: string) => {
     // This could open an animal detail dialog or navigate to animal profile
     toast({
-      title: "Perfil del Animal",
-      description: "Funcionalidad de perfil del animal próximamente disponible",
+      title: t('corralDetail.animalProfileTitle'),
+      description: t('corralDetail.animalProfileDesc'),
     });
   };
 
@@ -373,7 +386,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                 <div className="text-lg font-semibold mb-2">
                   {animals.filter(a => a.sex === "Macho").length} / {animals.filter(a => a.sex === "Hembra").length}
                 </div>
-                <p className="text-sm text-muted-foreground">Machos / Hembras</p>
+                <p className="text-sm text-muted-foreground">{t('corralDetail.malesFemales')}</p>
               </CardContent>
             </Card>
             
@@ -399,7 +412,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Syringe className="h-5 w-5" />
-                  Métricas de Vacunación
+                  {t('corralDetail.vaccinationMetrics')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -409,13 +422,13 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                       <div className="text-2xl font-bold text-green-600">
                         {vaccinationMetrics.overall_compliance_percentage.toFixed(0)}%
                       </div>
-                      <div className="text-xs text-muted-foreground">Cumplimiento General</div>
+                      <div className="text-xs text-muted-foreground">{t('corralDetail.generalCompliance')}</div>
                     </div>
                     <div className="p-3 bg-muted/30 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">
                         {vaccinationMetrics.mandatory_compliance_percentage.toFixed(0)}%
                       </div>
-                      <div className="text-xs text-muted-foreground">Vacunas Obligatorias</div>
+                      <div className="text-xs text-muted-foreground">{t('corralDetail.mandatoryVaccines')}</div>
                     </div>
                   </div>
 
@@ -424,19 +437,19 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                       <div className="font-semibold text-green-700 dark:text-green-400">
                         {vaccinationMetrics.animals_fully_compliant}
                       </div>
-                      <div className="text-xs text-muted-foreground">Completos</div>
+                      <div className="text-xs text-muted-foreground">{t('corralDetail.complete')}</div>
                     </div>
                     <div className="p-2 bg-yellow-50 dark:bg-yellow-950/20 rounded">
                       <div className="font-semibold text-yellow-700 dark:text-yellow-400">
                         {vaccinationMetrics.animals_partially_compliant}
                       </div>
-                      <div className="text-xs text-muted-foreground">Parciales</div>
+                      <div className="text-xs text-muted-foreground">{t('corralDetail.partial')}</div>
                     </div>
                     <div className="p-2 bg-red-50 dark:bg-red-950/20 rounded">
                       <div className="font-semibold text-red-700 dark:text-red-400">
                         {vaccinationMetrics.animals_non_compliant}
                       </div>
-                      <div className="text-xs text-muted-foreground">Incompletos</div>
+                      <div className="text-xs text-muted-foreground">{t('corralDetail.incomplete')}</div>
                     </div>
                   </div>
 
@@ -477,7 +490,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                 <p className="text-xs text-muted-foreground truncate">{animalAlert.animal_tag}</p>
                               </div>
                               <Badge variant="destructive" className="text-xs flex-shrink-0">
-                                {animalAlert.alerts.length} alerta(s)
+                                {t('corralDetail.alerts', { count: animalAlert.alerts.length })}
                               </Badge>
                             </div>
                             <div className="space-y-1">
@@ -508,7 +521,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <CardTitle className="flex items-center space-x-2">
                     <AlertTriangle className="h-5 w-5 text-destructive" />
-                    <span className="text-sm sm:text-base">Alertas de Consanguinidad</span>
+                    <span className="text-sm sm:text-base">{t('corralDetail.consanguinityAlerts')}</span>
                   </CardTitle>
                   <div className="flex items-center space-x-2 w-full sm:w-auto">
                     <Filter className="h-4 w-4 flex-shrink-0" />
@@ -517,10 +530,10 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todos</SelectItem>
-                        <SelectItem value="severe">🔴 Alto</SelectItem>
-                        <SelectItem value="medium">🟠 Medio</SelectItem>
-                        <SelectItem value="low">🟡 Bajo</SelectItem>
+                        <SelectItem value="all">{t('corralDetail.all')}</SelectItem>
+                        <SelectItem value="severe">🔴 {t('corralDetail.high')}</SelectItem>
+                        <SelectItem value="medium">🟠 {t('corralDetail.medium')}</SelectItem>
+                        <SelectItem value="low">🟡 {t('corralDetail.low')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -542,7 +555,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                             <div className="space-y-2 sm:space-y-3 flex-1 min-w-0">
                               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                                 <p className="font-semibold text-sm sm:text-lg break-words">
-                                  ⚠️ Riesgo de consanguinidad
+                                  {t('corralDetail.consanguinityRiskLabel')}
                                 </p>
                                 <Popover>
                                   <PopoverTrigger asChild>
@@ -553,19 +566,19 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                   <PopoverContent className="w-[90vw] max-w-[320px] p-3 sm:p-4">
                                     <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                                       <div>
-                                        <h4 className="font-semibold text-sm mb-1">¿Qué es la consanguinidad?</h4>
+                                        <h4 className="font-semibold text-sm mb-1">{t('corralDetail.whatIsConsanguinity')}</h4>
                                         <p className="text-xs text-muted-foreground">{explanation.what}</p>
                                       </div>
                                       <div>
-                                        <h4 className="font-semibold text-sm mb-1">¿Por qué es riesgoso?</h4>
+                                        <h4 className="font-semibold text-sm mb-1">{t('corralDetail.whyRisky')}</h4>
                                         <p className="text-xs text-muted-foreground">{explanation.why}</p>
                                       </div>
                                       <div>
-                                        <h4 className="font-semibold text-sm mb-1">Coeficiente de endogamia</h4>
+                                        <h4 className="font-semibold text-sm mb-1">{t('corralDetail.inbreedingCoefficient')}</h4>
                                         <p className="text-xs text-muted-foreground">{explanation.coefficient}</p>
                                       </div>
                                       <div>
-                                        <h4 className="font-semibold text-sm mb-1">Acción recomendada</h4>
+                                        <h4 className="font-semibold text-sm mb-1">{t('corralDetail.recommendedAction')}</h4>
                                         <p className="text-xs text-muted-foreground">{explanation.action}</p>
                                       </div>
                                     </div>
@@ -582,7 +595,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                   >
                                     {animal1Name}
                                   </button>
-                                  <span className="mx-2">y</span>
+                                  <span className="mx-2">{t('corralDetail.and')}</span>
                                   <button 
                                     onClick={() => handleAnimalClick(risk.animal2.id)}
                                     className="text-primary hover:text-primary/80 underline font-medium"
@@ -594,12 +607,12 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs text-muted-foreground mt-3">
                                   <div className="break-words">
                                     <p className="font-medium">{animal1Name}</p>
-                                    <p>Edad: {calculateAge(risk.animal1.birth_date)}</p>
+                                    <p>{t('corralDetail.age')}: {calculateAge(risk.animal1.birth_date)}</p>
                                     <p>{t('corralDetail.status')}: {(risk.animal1 as any).status || t('corralDetail.notSpecified')}</p>
                                   </div>
                                 <div className="break-words">
                                   <p className="font-medium">{animal2Name}</p>
-                                    <p>Edad: {calculateAge(risk.animal2.birth_date)}</p>
+                                    <p>{t('corralDetail.age')}: {calculateAge(risk.animal2.birth_date)}</p>
                                     <p>{t('corralDetail.status')}: {(risk.animal2 as any).status || t('corralDetail.notSpecified')}</p>
                                   </div>
                                 </div>
@@ -610,7 +623,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                 
                                 {risk.inbreedingCoefficient && (
                                   <p className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                                    <strong>Coeficiente de endogamia:</strong> {(risk.inbreedingCoefficient * 100).toFixed(1)}%
+                                    <strong>{t('corralDetail.inbreedingCoefficient')}:</strong> {(risk.inbreedingCoefficient * 100).toFixed(1)}%
                                   </p>
                                 )}
                               </div>
@@ -631,7 +644,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                               className="hover:bg-muted text-xs"
                             >
                               <Move className="h-3 w-3 mr-1" />
-                              Mover
+                              {t('corralDetail.move')}
                             </Button>
                           </div>
                         </div>
@@ -642,7 +655,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                 
                 {relationshipRisks.length > filteredRisks.length && (
                   <p className="text-sm text-muted-foreground mt-3">
-                    Mostrando {filteredRisks.length} de {relationshipRisks.length} riesgos detectados
+                    {t('corralDetail.showing', { filtered: filteredRisks.length, total: relationshipRisks.length })}
                   </p>
                 )}
               </CardContent>
@@ -652,9 +665,9 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
           {/* Animals List */}
           <Card>
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <CardTitle className="text-base sm:text-lg">Animales en el Corral</CardTitle>
+              <CardTitle className="text-base sm:text-lg">{t('corralDetail.animalsInCorral')}</CardTitle>
               <Button onClick={() => setAssignmentDialogOpen(true)} size="sm" className="w-full sm:w-auto">
-                Asignar Animales
+                {t('corralDetail.assignAnimals')}
               </Button>
             </CardHeader>
             <CardContent>
@@ -690,7 +703,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
                                 {animal.breed} • {animal.sex}
                                 {involvedRisks.length > 0 && (
                                   <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded">
-                                    {involvedRisks.length} riesgo(s)
+                                    {t('corralDetail.risks', { count: involvedRisks.length })}
                                   </span>
                                 )}
                               </p>
