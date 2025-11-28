@@ -48,7 +48,7 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle>{t('notifications')}</SheetTitle>
+          <SheetTitle>{t('notifications.notifications')}</SheetTitle>
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
@@ -62,10 +62,10 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
                 <TrendingDown className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm text-destructive">
-                    {t('notifications.animalLimitExceeded')}
+                    {t('common:notifications.animalLimitExceeded')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('notifications.upgradeRequired')}
+                    {t('common:notifications.upgradeRequired')}
                   </p>
                 </div>
               </div>
@@ -81,10 +81,10 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
                 <TrendingUp className="h-5 w-5 text-warning mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm text-warning">
-                    {t('notifications.nearAnimalLimit')}
+                    {t('common:notifications.nearAnimalLimit')}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {t('notifications.considerUpgrade')}
+                    {t('common:notifications.considerUpgrade')}
                   </p>
                 </div>
               </div>
@@ -96,7 +96,7 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4" />
-                {t('notifications.systemAlerts')}
+                {t('common:notifications.systemAlerts')}
               </h3>
               {warnings.alerts.map((alert) => (
                 <div
@@ -113,7 +113,7 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
                       </p>
                       {alert.affected_count && (
                         <Badge variant="secondary" className="mt-2">
-                          {alert.affected_count} {t('notifications.affected')}
+                          {alert.affected_count} {t('common:notifications.affected')}
                         </Badge>
                       )}
                     </div>
@@ -128,7 +128,7 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                {t('notifications.upcomingActivities')}
+                {t('common:notifications.upcomingActivities')}
               </h3>
               {upcoming.activitiesNext7d.map((activity) => (
                 <div
@@ -157,7 +157,7 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Bell className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <p className="text-sm text-muted-foreground">
-                {t('notifications.noNotifications')}
+                {t('common:notifications.noNotifications')}
               </p>
             </div>
           )}
