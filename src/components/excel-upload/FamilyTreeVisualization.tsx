@@ -327,7 +327,7 @@ export const FamilyTreeVisualization = ({
             Volver
           </Button>
           
-          <Button onClick={onComplete} className="bg-green-600 hover:bg-green-700">
+          <Button onClick={onComplete}>
             <CheckCircle className="h-4 w-4 mr-2" />
             Completar Proceso
           </Button>

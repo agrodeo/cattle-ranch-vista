@@ -463,7 +463,7 @@ export function PregnancyDetectionManager() {
                         variant="outline" 
                         size="sm" 
                         onClick={() => markAllAs('yes')}
-                        className="text-green-600 border-green-200 hover:bg-green-50"
+                        className="text-primary border-primary/20 hover:bg-primary/10"
                       >
                         <CheckCircle className="h-3 w-3 mr-1" />
                         Todas Preñadas

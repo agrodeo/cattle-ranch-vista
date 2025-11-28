@@ -14,7 +14,7 @@ const getlevelConfig = (t: any): Record<PerformanceLevel, { label: string; varia
   excellent: {
     label: t('reports:performanceBadge.excellent'),
     variant: 'default',
-    className: 'bg-green-600 hover:bg-green-700 text-white'
+    className: ''
   },
   good: {
     label: t('reports:performanceBadge.good'),

@@ -95,8 +95,7 @@ export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: 
           }}
           disabled={loading}
           className={cn(
-            "w-full min-h-[44px] font-medium",
-            isSelected && "bg-green-600 hover:bg-green-700"
+            "w-full min-h-[44px] font-medium"
           )}
           variant={isSelected ? 'default' : 'outline'}
         >

@@ -33,7 +33,7 @@ export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps)
         <Card className="mx-0">
           <CardHeader className="px-3 py-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500 text-white">
+              <div className="p-2 rounded-lg bg-primary text-primary-foreground">
                 <FileSpreadsheet className="h-5 w-5" />
               </div>
               <div>

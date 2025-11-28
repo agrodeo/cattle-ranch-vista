@@ -41,7 +41,7 @@ export function AddOverlay({ isOpen, onClose, onSelectFlow, selectedFlow }: AddO
       title: t('activities:mobile.loadActivity'),
       description: t('activities:mobile.loadActivityDesc'),
       icon: Activity,
-      color: 'bg-green-500',
+      color: 'bg-primary',
     },
     {
       id: 'finance',

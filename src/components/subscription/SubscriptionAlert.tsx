@@ -29,7 +29,7 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
   const getPlanColor = (plan: string) => {
     switch (plan) {
       case 'personal': return 'bg-blue-500';
-      case 'productor': return 'bg-green-500';
+      case 'productor': return 'bg-primary';
       case 'cabana': return 'bg-purple-500';
       case 'corporativo': return 'bg-orange-500';
       default: return 'bg-gray-500';

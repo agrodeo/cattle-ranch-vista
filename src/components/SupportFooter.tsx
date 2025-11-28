@@ -25,7 +25,7 @@ export function SupportFooter() {
           variant="outline" 
           size="sm"
           onClick={() => support.open({ title: t('support.generalQuery') })}
-          className="bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+          className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
         >
           <Mail className="w-4 h-4 mr-2" />
           {t('support.contactSupport')}

@@ -269,7 +269,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                             )}
                           </div>
                         </div>
-                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                        <Badge variant="default">
                           <CheckCircle className="h-3 w-3 mr-1" />
                           {t('animals:profile.vaccines.completeVaccine')}
                         </Badge>

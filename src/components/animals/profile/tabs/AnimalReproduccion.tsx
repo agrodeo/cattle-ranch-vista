@@ -51,7 +51,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case 'confirmada': return 'bg-green-500';
+      case 'confirmada': return 'bg-primary';
       case 'pendiente': return 'bg-yellow-500';
       case 'paricion_viva': return 'bg-blue-500';
       case 'perdida': return 'bg-red-500';

@@ -253,7 +253,7 @@ export default function Corrales() {
     if (percentage >= 90) return 'bg-red-500';
     if (percentage >= 75) return 'bg-amber-500';
     if (percentage >= 50) return 'bg-blue-500';
-    return 'bg-emerald-500';
+    return 'bg-primary';
   };
 
   const getOccupancyStatus = (percentage: number) => {
@@ -352,7 +352,6 @@ export default function Corrales() {
               <ReadOnlyProtectedAction>
                 <Button 
                   onClick={() => setCreateDialogOpen(true)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   {t('corrals:buttons.newCorral')}
@@ -399,7 +398,7 @@ export default function Corrales() {
                 <ReadOnlyProtectedAction>
                   <Button 
                     onClick={() => setCreateDialogOpen(true)}
-                    className="flex-1 h-11 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="flex-1 h-11"
                   >
                     <Plus className="h-4 w-4 mr-1" />
                     {t('corrals:buttons.new')}
@@ -627,7 +626,7 @@ export default function Corrales() {
                                       <div className="w-20 bg-muted rounded-full h-1.5">
                                         <div 
                                           className={`h-1.5 rounded-full ${
-                                            corralKPI.vaccination_percentage >= 80 ? 'bg-emerald-500' :
+                                            corralKPI.vaccination_percentage >= 80 ? 'bg-primary' :
                                             corralKPI.vaccination_percentage >= 60 ? 'bg-blue-500' :
                                             corralKPI.vaccination_percentage >= 40 ? 'bg-amber-500' :
                                             'bg-destructive'

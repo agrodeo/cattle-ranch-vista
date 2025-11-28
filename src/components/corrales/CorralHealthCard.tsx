@@ -28,7 +28,7 @@ export function CorralHealthCard({ corral }: CorralHealthCardProps) {
 
   const getStatusColor = () => {
     switch (corral.vaccination_status) {
-      case 'excellent': return 'bg-emerald-500';
+      case 'excellent': return 'bg-primary';
       case 'good': return 'bg-blue-500';
       case 'warning': return 'bg-amber-500';
       case 'critical': return 'bg-red-500';

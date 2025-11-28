@@ -47,7 +47,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       title: t('activityCreation.general.title'),
       description: t('activityCreation.general.description'),
       icon: Activity,
-      color: "bg-green-500",
+      color: "bg-primary",
     },
     {
       id: "tacto" as ActivityType,

@@ -48,7 +48,7 @@ const getPlansData = (t: any) => [
     id: 'productor',
     name: t('plans.productor.name'),
     icon: Crown,
-    color: 'bg-green-500',
+    color: 'bg-primary',
     maxAnimals: 1000,
     features: [
       t('plansModal.unlimitedUsers'),

@@ -73,7 +73,7 @@ export function Header() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => support.open({ title: "Consulta desde menú de usuario" })} className="text-emerald-600 focus:text-emerald-600 focus:bg-emerald-50">
+              <DropdownMenuItem onClick={() => support.open({ title: "Consulta desde menú de usuario" })} className="text-primary focus:text-primary focus:bg-primary/10">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>{t('common:help')}</span>
               </DropdownMenuItem>

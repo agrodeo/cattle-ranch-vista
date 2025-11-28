@@ -161,7 +161,7 @@ export function ArtificialInseminationTable({ onEdit, refreshKey }: ArtificialIn
       return <Badge variant="secondary">{t('artificialInsemination.pending')}</Badge>;
     }
     if (isPregnant) {
-      return <Badge variant="default" className="bg-green-500">{t('artificialInsemination.pregnant')}</Badge>;
+      return <Badge variant="default" className="bg-primary">{t('artificialInsemination.pregnant')}</Badge>;
     }
     return <Badge variant="destructive">{t('artificialInsemination.notPregnant')}</Badge>;
   };

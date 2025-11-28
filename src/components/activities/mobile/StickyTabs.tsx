@@ -24,7 +24,7 @@ export function StickyTabs({ tabs, activeTab, onTabChange }: StickyTabsProps) {
               "px-3 py-2 rounded-full text-sm border font-medium transition-colors",
               "min-w-0 truncate text-center focus:outline-none focus:ring-2 focus:ring-emerald-600",
               activeTab === tab.id
-                ? "bg-emerald-600 text-white border-emerald-600"
+                ? "bg-primary text-primary-foreground border-primary"
                 : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
             )}
             aria-pressed={activeTab === tab.id}

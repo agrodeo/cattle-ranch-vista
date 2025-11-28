@@ -171,7 +171,7 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
 
   const getStatusBadgeColor = (estado: string) => {
     switch (estado) {
-      case 'preñada': return 'bg-green-500';
+      case 'preñada': return 'bg-primary';
       case 'vacía': return 'bg-red-500';
       case 'pendiente': return 'bg-yellow-500';
       default: return 'bg-gray-500';
@@ -300,7 +300,7 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
             <Button
               onClick={() => updatePregnancyStatus('preñada')}
               disabled={selectedAnimals.length === 0 || updating}
-              className="bg-green-600 hover:bg-green-700"
+              className=""
             >
               <CheckCircle className="h-4 w-4 mr-2" />
               Confirmar Preñez ({selectedAnimals.length})

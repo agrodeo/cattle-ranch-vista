@@ -107,7 +107,6 @@ const Dashboard = () => {
           action={
             <Button 
               onClick={handleRegisterActivity}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
               disabled={warnings.noCabana}
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -135,7 +134,7 @@ const Dashboard = () => {
             <StickyActionBar>
               <Button 
                 onClick={handleRegisterActivity}
-                className="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="w-full h-11"
                 disabled={warnings.noCabana}
               >
                 <Plus className="h-4 w-4 mr-1" />
@@ -267,7 +266,7 @@ const Dashboard = () => {
                           className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                           onClick={handleCreateCabana}
                         >
-                          <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                          <div className="h-2 w-2 rounded-full bg-primary"></div>
                           <span className="text-sm font-medium text-slate-900">{t('dashboard:actions.setupCabana')}</span>
                         </div>
                       </div>
@@ -291,7 +290,7 @@ const Dashboard = () => {
                                 className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                                 onClick={item.action}
                               >
-                                <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                                <div className="h-2 w-2 rounded-full bg-primary"></div>
                                 <span className="text-sm font-medium text-slate-900">{item.label}</span>
                               </div>
                             ))}

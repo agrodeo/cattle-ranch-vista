@@ -40,7 +40,7 @@ export default function SupportDialog({ open, onOpenChange, context = {} }: Prop
 
         <DialogFooter className="gap-2">
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cerrar</Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => window.location.href = mailto}>
+          <Button onClick={() => window.location.href = mailto}>
             <Mail className="w-4 h-4 mr-2" /> Contactar soporte
           </Button>
         </DialogFooter>

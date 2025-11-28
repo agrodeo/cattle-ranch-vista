@@ -34,7 +34,7 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
       title: t('mobile.incomeTitle'),
       description: t('mobile.incomeDesc'),
       icon: TrendingUp,
-      color: "bg-green-500",
+      color: "bg-primary",
     },
     {
       id: "expense" as MovementType,

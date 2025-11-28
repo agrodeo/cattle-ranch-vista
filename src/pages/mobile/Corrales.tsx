@@ -155,7 +155,7 @@ export function MobileCorrales() {
     if (percentage >= 90) return 'bg-red-500';
     if (percentage >= 75) return 'bg-amber-500';
     if (percentage >= 50) return 'bg-blue-500';
-    return 'bg-emerald-500';
+    return 'bg-primary';
   };
 
   const getOccupancyStatus = (percentage: number) => {
@@ -393,7 +393,7 @@ export function MobileCorrales() {
                               <span>Aftosa</span>
                               <div className="flex items-center gap-1">
                                 <div className="w-12 bg-muted rounded-full h-1">
-                                  <div className="w-3/5 bg-emerald-500 h-1 rounded-full"></div>
+                                  <div className="w-3/5 bg-primary h-1 rounded-full"></div>
                                 </div>
                                 <span className="text-xs">12/20</span>
                               </div>

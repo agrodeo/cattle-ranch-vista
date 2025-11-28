@@ -73,7 +73,7 @@ export function AnimalCreationFlow({ onClose }: AnimalCreationFlowProps) {
         >
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-lg bg-green-500 text-white">
+              <div className="p-3 rounded-lg bg-primary text-primary-foreground">
                 <FileSpreadsheet className="h-6 w-6" />
               </div>
               <div>
