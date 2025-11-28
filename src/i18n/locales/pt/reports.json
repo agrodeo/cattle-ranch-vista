@@ -301,7 +301,10 @@
     "mandatoryNotAppliedCount": "vacina obrigatória não aplicada",
     "mandatoryNotAppliedCountPlural": "vacinas obrigatórias não aplicadas",
     "noName": "Sem nome",
-    "noTag": "Sem brinco"
+    "noTag": "Sem brinco",
+    "day": "dia",
+    "days": "dias",
+    "noAnimalsActive": "Não há animais ativos no sistema"
   },
   "temporal": {
     "title": "Análise de Evolução Temporal",

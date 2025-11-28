@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
@@ -25,6 +26,7 @@ interface MortalityReportsProps {
 
 export const MortalityReports = ({ filters: globalFilters }: MortalityReportsProps) => {
   const { t } = useTranslation(['reports']);
+  const { lang } = useLanguage();
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,7 +110,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
     // Deaths by cause
     const causeCounts: { [key: string]: number } = {};
     deaths.forEach(death => {
-      const cause = death.catalogo_causas?.nombre || death.causa_texto || 'Unknown cause';
+      const cause = death.catalogo_causas?.nombre || death.causa_texto || t('common:unknown');
       causeCounts[cause] = (causeCounts[cause] || 0) + 1;
     });
 
@@ -130,7 +132,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
       const monthDeaths = deaths.filter(d => d.fecha_defuncion.startsWith(monthStr)).length;
       
       monthlyDeaths.push({
-        month: date.toLocaleString('es', { month: 'short', year: '2-digit' }),
+        month: date.toLocaleString(lang, { month: 'short', year: '2-digit' }),
         count: monthDeaths
       });
     }
