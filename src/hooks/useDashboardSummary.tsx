@@ -9,7 +9,7 @@ import { isValidUUID } from '@/lib/cabana';
 interface DashboardCounts {
   animalsActive: number;
   corrals: number;
-  activitiesLast7d: number;
+  activitiesLast30d: number;
   servicesTotal: number;
   pregnancyPercentage: number;
   reproductiveFemales: number;
@@ -101,7 +101,7 @@ export const useDashboardSummary = (): DashboardSummary => {
   const [counts, setCounts] = useState<DashboardCounts>({
     animalsActive: 0,
     corrals: 0,
-    activitiesLast7d: 0,
+    activitiesLast30d: 0,
     servicesTotal: 0,
     pregnancyPercentage: 0,
     reproductiveFemales: 0,
@@ -226,17 +226,30 @@ export const useDashboardSummary = (): DashboardSummary => {
         throw corralsError;
       }
 
-      // Count activities from last 7 days (using eventos table like in the app)
-      const { count: activitiesCount, error: activitiesError } = await supabase
+      // Count activities from last 30 days from all three sources
+      const { count: eventosCount, error: eventosError } = await supabase
         .from('eventos')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
         .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0]);
 
-      if (activitiesError) {
-        console.error('Error counting activities:', activitiesError);
-        throw activitiesError;
+      const { count: vaccinesCount, error: vaccinesError } = await supabase
+        .from('animal_vaccines')
+        .select('id', { count: 'exact', head: true })
+        .eq('cabaña_id', cabanaId)
+        .gte('date', thirtyDaysAgo.toISOString().split('T')[0]);
+
+      const { count: inseminationsCount, error: inseminationsError } = await supabase
+        .from('artificial_inseminations')
+        .select('id', { count: 'exact', head: true })
+        .eq('cabaña_id', cabanaId)
+        .gte('insemination_date', thirtyDaysAgo.toISOString().split('T')[0]);
+
+      if (eventosError || vaccinesError || inseminationsError) {
+        console.error('Error counting activities:', { eventosError, vaccinesError, inseminationsError });
       }
+
+      const activitiesCount = (eventosCount || 0) + (vaccinesCount || 0) + (inseminationsCount || 0);
 
       // Count total AI services
       const { count: servicesCount, error: servicesError } = await supabase
@@ -279,9 +292,11 @@ export const useDashboardSummary = (): DashboardSummary => {
         ? Math.round((pregnantFemalesCount / reproductiveFemalesCount) * 100)
         : 0;
 
-      // Get recent activities (últimas 5 actividades sin importar fecha)
-      console.log('🔍 Fetching recent activities');
-      const { data: recentData, error: recentError } = await supabase
+      // Get recent activities from all three sources
+      console.log('🔍 Fetching recent activities from all sources');
+      
+      // Fetch from eventos
+      const { data: eventosData, error: eventosRecentError } = await supabase
         .from('eventos')
         .select(`
           id, 
@@ -289,20 +304,92 @@ export const useDashboardSummary = (): DashboardSummary => {
           fecha, 
           notas,
           payload,
-          creado_por,
-          vacunaciones(vacuna, lote, dosis, via, animales_ids),
-          ia(toro_nombre, raza_toro, animales_ids),
-          tactos(resultados)
+          creado_por
         `)
         .eq('cabaña_id', cabanaId)
         .order('fecha', { ascending: false })
-        .limit(5);
-      
-      console.log('📊 Recent activities result:', { count: recentData?.length, error: recentError, data: recentData });
+        .limit(10);
 
-      if (recentError) {
-        console.error('Error fetching recent activities:', recentError);
+      // Fetch from animal_vaccines
+      const { data: vaccinesData, error: vaccinesRecentError } = await supabase
+        .from('animal_vaccines')
+        .select(`
+          id,
+          vaccine_code,
+          date,
+          created_by,
+          animal_id,
+          animals!inner(id, name, id_tag)
+        `)
+        .eq('cabaña_id', cabanaId)
+        .order('date', { ascending: false })
+        .limit(10);
+
+      // Fetch from artificial_inseminations
+      const { data: inseminationsData, error: inseminationsRecentError } = await supabase
+        .from('artificial_inseminations')
+        .select(`
+          id,
+          bull_name,
+          insemination_date,
+          created_by,
+          female_id,
+          animals!inner(id, name, id_tag)
+        `)
+        .eq('cabaña_id', cabanaId)
+        .order('insemination_date', { ascending: false })
+        .limit(10);
+
+      if (eventosRecentError || vaccinesRecentError || inseminationsRecentError) {
+        console.error('Error fetching recent activities:', { 
+          eventosRecentError, 
+          vaccinesRecentError, 
+          inseminationsRecentError 
+        });
       }
+
+      // Merge all activities with standardized format
+      const allActivities: any[] = [];
+
+      // Add eventos activities
+      (eventosData || []).forEach(event => {
+        allActivities.push({
+          id: event.id,
+          type: event.tipo || 'General',
+          date: event.fecha,
+          source: 'eventos',
+          rawData: event,
+        });
+      });
+
+      // Add vaccination activities
+      (vaccinesData || []).forEach(vaccine => {
+        allActivities.push({
+          id: vaccine.id,
+          type: 'Vacunación',
+          date: vaccine.date,
+          source: 'vaccination',
+          rawData: vaccine,
+        });
+      });
+
+      // Add insemination activities
+      (inseminationsData || []).forEach(ia => {
+        allActivities.push({
+          id: ia.id,
+          type: 'IA',
+          date: ia.insemination_date,
+          source: 'insemination',
+          rawData: ia,
+        });
+      });
+
+      // Sort by date descending and take top 5
+      const recentData = allActivities
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 5);
+      
+      console.log('📊 Recent activities merged:', { count: recentData.length, data: recentData });
 
       // Get upcoming activities (next 7 days) - using eventos table
       const { data: upcomingData, error: upcomingError } = await supabase
@@ -529,7 +616,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       setCounts({
         animalsActive: animalsCount || 0,
         corrals: corralsCount || 0,
-        activitiesLast7d: activitiesCount || 0,
+        activitiesLast30d: activitiesCount || 0,
         servicesTotal: servicesCount || 0,
         pregnancyPercentage,
         reproductiveFemales: reproductiveFemalesCount,
@@ -540,55 +627,55 @@ export const useDashboardSummary = (): DashboardSummary => {
       const enrichedActivities = (recentData || []).map(activity => {
         const details: any = {};
         let animalCount = 0;
+        let userId: string | undefined;
+        let description = '';
+        let animalName: string | undefined;
 
-        // Vaccination details no longer from old vacunaciones table
-        // Now handled through animal_vaccines table with activities
+        if (activity.source === 'eventos') {
+          const event = activity.rawData;
+          userId = event.creado_por;
+          description = event.notas || event.tipo || '';
 
-        // Extract AI details
-        if (activity.ia && activity.ia.length > 0) {
-          const ia = activity.ia[0];
-          details.toro_nombre = ia.toro_nombre;
-          details.raza_toro = ia.raza_toro;
-          animalCount = ia.animales_ids?.length || 0;
-        }
-
-        // Extract tacto details
-        if (activity.tactos && activity.tactos.length > 0) {
-          const tacto = activity.tactos[0];
-          if (tacto.resultados && Array.isArray(tacto.resultados)) {
-            const positivos = tacto.resultados.filter((r: any) => r.resultado === 'preñada').length;
-            const negativos = tacto.resultados.filter((r: any) => r.resultado === 'vacia').length;
-            details.positivos = positivos;
-            details.negativos = negativos;
-            animalCount = tacto.resultados.length;
-          }
-        }
-
-        // Extract payload details for weighing and other activities
-        if (activity.payload && typeof activity.payload === 'object') {
-          const payload = activity.payload as any;
-          if (activity.tipo.toLowerCase().includes('pesa') && payload.pesajes) {
-            const pesajes = payload.pesajes;
-            if (Array.isArray(pesajes) && pesajes.length > 0) {
-              const totalPeso = pesajes.reduce((sum: number, p: any) => sum + (p.peso_kg || 0), 0);
-              details.peso_promedio = Math.round(totalPeso / pesajes.length);
-              animalCount = pesajes.length;
+          // Extract payload details for weighing and other activities
+          if (event.payload && typeof event.payload === 'object') {
+            const payload = event.payload as any;
+            if (event.tipo.toLowerCase().includes('pesa') && payload.pesajes) {
+              const pesajes = payload.pesajes;
+              if (Array.isArray(pesajes) && pesajes.length > 0) {
+                const totalPeso = pesajes.reduce((sum: number, p: any) => sum + (p.peso_kg || 0), 0);
+                details.peso_promedio = Math.round(totalPeso / pesajes.length);
+                animalCount = pesajes.length;
+              }
             }
           }
-        }
 
-        // Add notes if available
-        if (activity.notas) {
-          details.notas = activity.notas;
+          if (event.notas) {
+            details.notas = event.notas;
+          }
+        } else if (activity.source === 'vaccination') {
+          const vaccine = activity.rawData;
+          userId = vaccine.created_by;
+          details.vacuna = vaccine.vaccine_code;
+          animalName = vaccine.animals?.name || vaccine.animals?.id_tag;
+          description = `Vacunación: ${vaccine.vaccine_code}`;
+          animalCount = 1;
+        } else if (activity.source === 'insemination') {
+          const ia = activity.rawData;
+          userId = ia.created_by;
+          details.toro_nombre = ia.bull_name;
+          animalName = ia.animals?.name || ia.animals?.id_tag;
+          description = `IA con ${ia.bull_name}`;
+          animalCount = 1;
         }
 
         return {
           id: activity.id,
-          type: activity.tipo || 'General',
-          date: activity.fecha || '',
-          description: activity.notas || activity.tipo || '',
+          type: activity.type,
+          date: activity.date || '',
+          description,
+          animal_name: animalName,
           user: undefined, // Will be populated below
-          user_id: activity.creado_por,
+          user_id: userId,
           animalCount,
           details: Object.keys(details).length > 0 ? details : undefined,
         };
@@ -679,6 +766,11 @@ export const useDashboardSummary = (): DashboardSummary => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'animal_vaccines' },
+        () => fetchDashboardData()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'artificial_inseminations' },
         () => fetchDashboardData()
       )
       .on(

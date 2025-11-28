@@ -54,7 +54,7 @@ const Dashboard = () => {
     },
     {
       title: t('dashboard:kpis.activitiesLast30Days'),
-      value: counts.activitiesLast7d,
+      value: counts.activitiesLast30d,
       icon: Activity,
     },
     {
