@@ -40,9 +40,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
       <Card>
         <CardContent className="p-6 text-center">
           <Heart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Solo para Hembras</h3>
+          <h3 className="text-lg font-medium mb-2">{t('animals:profile.reproduction.femalesOnly')}</h3>
           <p className="text-muted-foreground">
-            Los datos reproductivos solo están disponibles para animales hembra.
+            {t('animals:profile.reproduction.femalesOnlyDesc')}
           </p>
         </CardContent>
       </Card>
@@ -61,10 +61,10 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
 
   const getEstadoLabel = (estado: string) => {
     switch (estado) {
-      case 'confirmada': return 'Confirmada';
-      case 'pendiente': return 'Pendiente';
-      case 'paricion_viva': return 'Parición Viva';
-      case 'perdida': return 'Pérdida';
+      case 'confirmada': return t('animals:profile.reproduction.statusConfirmed');
+      case 'pendiente': return t('animals:profile.reproduction.statusPending');
+      case 'paricion_viva': return t('animals:profile.reproduction.statusLiveBirth');
+      case 'perdida': return t('animals:profile.reproduction.statusLoss');
       default: return estado;
     }
   };
@@ -88,7 +88,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Preñeces Totales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.reproduction.totalPregnancies')}</CardTitle>
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -96,27 +96,27 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
               {stateLoading ? '...' : pregnancyHistory.length}
             </div>
             <p className="text-xs text-muted-foreground">
-              {animal.esta_preñada ? 'Preñada actualmente' : 'Sin preñez actual'}
+              {animal.esta_preñada ? t('animals:profile.reproduction.currentlyPregnant') : t('animals:profile.reproduction.noCurrentPregnancy')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Crías</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.reproduction.totalOffspring')}</CardTitle>
             <Baby className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{offspringLoading ? '...' : totalCount}</div>
             <p className="text-xs text-muted-foreground">
-              {offspringLoading ? 'Cargando...' : `${liveCount} vivas de ${totalCount} total`}
+              {offspringLoading ? t('animals:profile.reproduction.loading') : `${liveCount} ${t('animals:profile.reproduction.liveOfTotal')} ${totalCount} total`}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">% Éxito</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.reproduction.successRate')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -124,7 +124,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
               {totalCount > 0 ? Math.round((liveCount / totalCount) * 100) + '%' : '-'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {totalCount > 0 ? 'Crías vivas vs total' : 'Sin datos disponibles'}
+              {totalCount > 0 ? t('animals:profile.reproduction.liveVsTotal') : t('animals:profile.reproduction.noDataAvailable')}
             </p>
           </CardContent>
         </Card>
@@ -137,10 +137,10 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
-                Historial de Preñeces
+                {t('animals:profile.reproduction.pregnancyHistory')}
               </CardTitle>
               <CardDescription>
-                Registro completo de preñeces y servicios
+                {t('animals:profile.reproduction.fullServiceRecord')}
               </CardDescription>
             </div>
             <Button 
@@ -148,7 +148,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
               onClick={() => setShowIADialog(true)}
             >
               <Plus className="h-4 w-4" />
-              Registrar Servicio IA
+              {t('animals:profile.reproduction.registerAI')}
             </Button>
           </div>
         </CardHeader>
@@ -156,19 +156,19 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Origen</TableHead>
-                <TableHead>Fecha Inicio</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>FPP/Parto</TableHead>
-                <TableHead>Toro</TableHead>
-                <TableHead>Acciones</TableHead>
+                <TableHead>{t('animals:profile.reproduction.origin')}</TableHead>
+                <TableHead>{t('animals:profile.reproduction.startDate')}</TableHead>
+                <TableHead>{t('animals:profile.reproduction.status')}</TableHead>
+                <TableHead>{t('animals:profile.reproduction.expectedDate')}</TableHead>
+                <TableHead>{t('animals:profile.reproduction.bull')}</TableHead>
+                <TableHead>{t('animals:profile.reproduction.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {stateLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                    Cargando historial...
+                    {t('animals:profile.reproduction.loadingHistory')}
                   </TableCell>
                 </TableRow>
               ) : pregnancyHistory.length > 0 ? (
@@ -187,8 +187,8 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
                         pregnancy.estado_final === 'exitosa' ? 'default' :
                         pregnancy.estado_final === 'fallida' ? 'destructive' : 'secondary'
                       }>
-                        {pregnancy.estado_final === 'exitosa' ? 'Exitosa' :
-                         pregnancy.estado_final === 'fallida' ? 'Fallida' : 'Activa'}
+                        {pregnancy.estado_final === 'exitosa' ? t('animals:profile.reproduction.successful') :
+                         pregnancy.estado_final === 'fallida' ? t('animals:profile.reproduction.failed') : t('animals:profile.reproduction.active')}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -200,7 +200,7 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
                     <TableCell>-</TableCell>
                     <TableCell>
                       <Button variant="ghost" size="sm">
-                        Ver detalles
+                        {t('animals:profile.reproduction.viewDetails')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -209,9 +209,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     <Heart className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    <div className="text-lg font-medium mb-2">Sin registros de preñeces</div>
+                    <div className="text-lg font-medium mb-2">{t('animals:profile.reproduction.noPregnancyRecords')}</div>
                     <div className="text-sm">
-                      Registre servicios de IA o monta natural para comenzar a rastrear preñeces
+                      {t('animals:profile.reproduction.registerServices')}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -228,15 +228,15 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Baby className="h-4 w-4" />
-                Descendencia ({offspringLoading ? '...' : totalCount})
+                {t('animals:profile.reproduction.offspringSection')} ({offspringLoading ? '...' : totalCount})
               </CardTitle>
               <CardDescription>
-                Crías registradas de esta hembra
+                {t('animals:profile.reproduction.registeredOffspringOf')} {animal.name || animal.id_tag}
               </CardDescription>
             </div>
             <Button className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
-              Registrar Cría
+              {t('animals:profile.reproduction.registerOffspring')}
             </Button>
           </div>
         </CardHeader>
@@ -244,29 +244,29 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
           {offspringLoading ? (
             <div className="text-center py-8 text-muted-foreground">
               <Baby className="h-12 w-12 mx-auto mb-4 opacity-20 animate-pulse" />
-              <div className="text-lg font-medium mb-2">Cargando descendencia...</div>
+              <div className="text-lg font-medium mb-2">{t('animals:profile.reproduction.loadingOffspring')}</div>
             </div>
           ) : totalCount > 0 ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <div className="text-2xl font-bold text-primary">{totalCount}</div>
-                  <div className="text-sm text-muted-foreground">Total crías</div>
+                  <div className="text-sm text-muted-foreground">{t('animals:profile.reproduction.totalOffspringCount')}</div>
                 </div>
                 <div className="text-center p-3 bg-muted rounded-lg">
                   <div className="text-2xl font-bold text-success">{liveCount}</div>
-                  <div className="text-sm text-muted-foreground">Vivas</div>
+                  <div className="text-sm text-muted-foreground">{t('animals:profile.reproduction.alive')}</div>
                 </div>
               </div>
               
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID/Tag</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Sexo</TableHead>
-                    <TableHead>Nacimiento</TableHead>
-                    <TableHead>Estado</TableHead>
+                    <TableHead>{t('animals:profile.reproduction.idTag')}</TableHead>
+                    <TableHead>{t('animals:profile.reproduction.name')}</TableHead>
+                    <TableHead>{t('animals:profile.reproduction.sex')}</TableHead>
+                    <TableHead>{t('animals:profile.reproduction.birthDate')}</TableHead>
+                    <TableHead>{t('animals:profile.reproduction.statusHeader')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -295,9 +295,9 @@ export function AnimalReproduccion({ animal }: AnimalReproduccionProps) {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Baby className="h-12 w-12 mx-auto mb-4 opacity-20" />
-              <div className="text-lg font-medium mb-2">Sin descendencia registrada</div>
+              <div className="text-lg font-medium mb-2">{t('animals:profile.reproduction.noOffspringRegistered')}</div>
               <div className="text-sm">
-                Las crías aparecerán aquí cuando se registren nacimientos
+                {t('animals:profile.reproduction.offspringWillAppear')}
               </div>
             </div>
           )}

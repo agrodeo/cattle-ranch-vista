@@ -1,4 +1,5 @@
 import { Animal } from "@/types/animal";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ interface AnimalVacunasProps {
 // Removed mock data - using real data only
 
 export function AnimalVacunas({ animal }: AnimalVacunasProps) {
+  const { t } = useTranslation(['animals', 'common']);
   const { status: vaccinationStatus, loading: statusLoading } = useAnimalVaccinationStatus(animal.id);
   const { history, loading } = useAnimalVaccinations(animal.id);
 
@@ -49,35 +51,35 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <AlertTriangle className="h-3 w-3" />
-            Vencida ({days}d)
+            {t('animals:profile.vaccines.overdue')} ({days}d)
           </Badge>
         );
       case 'due':
         return (
           <Badge variant="destructive" className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            Vence en {days}d
+            {t('animals:profile.vaccines.dueInXdays')} {days}{t('animals:profile.vaccines.inXdays')}
           </Badge>
         );
       case 'upcoming':
         return (
           <Badge variant="secondary" className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
-            En {days} días
+            {t('animals:profile.vaccines.dueInXdays')} {days} {t('animals:profile.vaccines.inXdays')}
           </Badge>
         );
       case 'unique':
         return (
           <Badge variant="outline" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
-            Única dosis
+            {t('animals:profile.vaccines.uniqueDose')}
           </Badge>
         );
       default:
         return (
           <Badge variant="default" className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3" />
-            Al día
+            {t('animals:profile.vaccines.upToDate')}
           </Badge>
         );
     }
@@ -115,7 +117,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                 </div>
                 <div className="text-xs text-green-600 dark:text-green-500 flex items-center gap-1 mt-1">
                   <CheckCircle className="h-3 w-3" />
-                  Completas
+                  {t('animals:profile.vaccines.complete')}
                 </div>
               </CardContent>
             </Card>
@@ -127,7 +129,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                 </div>
                 <div className="text-xs text-amber-600 dark:text-amber-500 flex items-center gap-1 mt-1">
                   <Clock className="h-3 w-3" />
-                  Pendientes
+                  {t('animals:profile.vaccines.pending')}
                 </div>
               </CardContent>
             </Card>
@@ -139,7 +141,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                 </div>
                 <div className="text-xs text-red-600 dark:text-red-500 flex items-center gap-1 mt-1">
                   <AlertTriangle className="h-3 w-3" />
-                  Vencidas
+                  {t('animals:profile.vaccines.overdue')}
                 </div>
               </CardContent>
             </Card>
@@ -151,7 +153,7 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-500 flex items-center gap-1 mt-1">
                   <Syringe className="h-3 w-3" />
-                  Sin Aplicar
+                  {t('animals:profile.vaccines.notApplied')}
                 </div>
               </CardContent>
             </Card>
@@ -163,10 +165,10 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2 text-amber-900 dark:text-amber-100">
                   <AlertTriangle className="h-5 w-5" />
-                  Vacunas Pendientes
+                  {t('animals:profile.vaccines.pendingVaccines')}
                 </CardTitle>
                 <CardDescription>
-                  Estas vacunas requieren atención
+                  {t('animals:profile.vaccines.requiresAttention')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -180,27 +182,27 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                             <span className="font-medium">{vaccine.vaccine_name}</span>
                             {vaccine.is_mandatory && (
                               <Badge variant="destructive" className="text-xs">
-                                Obligatoria
+                                {t('animals:profile.vaccines.mandatory')}
                               </Badge>
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground mb-2">
                             {vaccine.vaccine_type}
                           </div>
-                          <div className="flex flex-wrap gap-3 text-sm">
+                           <div className="flex flex-wrap gap-3 text-sm">
                             <div>
-                              <span className="text-muted-foreground">Dosis: </span>
+                              <span className="text-muted-foreground">{t('animals:profile.vaccines.doses')}: </span>
                               <span className="font-medium">{vaccine.doses_given} / {vaccine.doses_required}</span>
                             </div>
                             {vaccine.last_vaccination_date && (
                               <div>
-                                <span className="text-muted-foreground">Última: </span>
+                                <span className="text-muted-foreground">{t('animals:profile.vaccines.lastApplied')}: </span>
                                 <span>{format(new Date(vaccine.last_vaccination_date), 'dd/MM/yyyy', { locale: es })}</span>
                               </div>
                             )}
                             {vaccine.next_due_date && (
                               <div>
-                                <span className="text-muted-foreground">Próxima: </span>
+                                <span className="text-muted-foreground">{t('animals:profile.vaccines.nextDue')}: </span>
                                 <span>{format(new Date(vaccine.next_due_date), 'dd/MM/yyyy', { locale: es })}</span>
                               </div>
                             )}
@@ -210,19 +212,19 @@ export function AnimalVacunas({ animal }: AnimalVacunasProps) {
                           {vaccine.status === 'vencida' && vaccine.days_overdue && (
                             <Badge variant="destructive" className="flex items-center gap-1">
                               <AlertTriangle className="h-3 w-3" />
-                              Vencida {vaccine.days_overdue}d
+                              {t('animals:profile.vaccines.overdueXdays', { days: vaccine.days_overdue })}
                             </Badge>
                           )}
                           {vaccine.status === 'pendiente' && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              Pendiente
+                              {t('animals:profile.vaccines.pending')}
                             </Badge>
                           )}
                           {vaccine.status === 'no_aplicada' && (
                             <Badge variant="outline" className="flex items-center gap-1">
                               <Syringe className="h-3 w-3" />
-                              Sin Aplicar
+                              {t('animals:profile.vaccines.notApplied')}
                             </Badge>
                           )}
                         </div>

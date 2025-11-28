@@ -75,10 +75,10 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
   }, [animal.id, animal.sex]);
 
   const getVaccinationSummary = () => {
-    if (vaccinationLoading) return { text: 'Cargando...', color: 'text-muted-foreground' };
+    if (vaccinationLoading) return { text: t('animals:profile.summary.loading'), color: 'text-muted-foreground' };
     
     if (!vaccinationStatus || vaccinationStatus.length === 0) {
-      return { text: 'Sin esquema', color: 'text-muted-foreground' };
+      return { text: t('animals:profile.summary.noSchema'), color: 'text-muted-foreground' };
     }
 
     const overdue = vaccinationStatus.filter(v => v.status === 'vencida').length;
@@ -86,12 +86,12 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
     const complete = vaccinationStatus.filter(v => v.status === 'completa').length;
 
     if (overdue > 0) {
-      return { text: `${overdue} vencida${overdue > 1 ? 's' : ''}`, color: 'text-destructive' };
+      return { text: `${overdue} ${t('animals:profile.summary.overdueCount')}`, color: 'text-destructive' };
     }
     if (pending > 0) {
-      return { text: `${pending} pendiente${pending > 1 ? 's' : ''}`, color: 'text-warning' };
+      return { text: `${pending} ${t('animals:profile.summary.pendingCount')}`, color: 'text-warning' };
     }
-    return { text: 'Al día', color: 'text-success' };
+    return { text: t('animals:profile.summary.upToDate'), color: 'text-success' };
   };
 
   const vaccinationSummary = getVaccinationSummary();
@@ -103,16 +103,16 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         {/* Peso Actual */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Último Peso</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.summary.lastWeight')}</CardTitle>
             <Scale className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : 'Sin datos'}
+              {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : t('animals:profile.summary.noData')}
             </div>
             {animal.ganancia_diaria_kg && (
               <p className="text-xs text-muted-foreground">
-                GAN: +{animal.ganancia_diaria_kg.toFixed(2)} kg/día
+                {t('animals:profile.summary.dailyGainShort')}: +{animal.ganancia_diaria_kg.toFixed(2)} kg/día
               </p>
             )}
             {animal.fecha_ultimo_pesaje && (
@@ -126,17 +126,17 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         {/* Estado Reproductivo */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estado Reproductivo</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.summary.reproductiveStatus')}</CardTitle>
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {animal.esta_preñada ? 'Preñada' : 
-               animal.sex === 'Hembra' ? 'Vacía' : 'N/A'}
+              {animal.esta_preñada ? t('animals:profile.summary.pregnant') : 
+               animal.sex === 'Hembra' ? t('animals:profile.summary.open') : t('animals:profile.summary.notApplicable')}
             </div>
             {animal.fecha_probable_parto && (
               <p className="text-xs text-muted-foreground">
-                FPP: {format(new Date(animal.fecha_probable_parto), 'dd/MM/yyyy', { locale: es })}
+                {t('animals:profile.summary.expectedDueDate')}: {format(new Date(animal.fecha_probable_parto), 'dd/MM/yyyy', { locale: es })}
               </p>
             )}
           </CardContent>
@@ -145,7 +145,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         {/* Vacunas */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vacunas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.summary.vaccines')}</CardTitle>
             <Syringe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -153,7 +153,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
               {vaccinationSummary.text}
             </div>
             <p className="text-xs text-muted-foreground">
-              {vaccinationStatus.length} vacunas configuradas
+              {vaccinationStatus.length} {t('animals:profile.summary.vaccinesConfigured')}
             </p>
           </CardContent>
         </Card>
@@ -161,7 +161,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         {/* Hijos */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Descendencia</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('animals:profile.summary.offspring')}</CardTitle>
             <Baby className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -175,7 +175,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
               }
             </div>
             <p className="text-xs text-muted-foreground">
-              {animal.sex === 'Hembra' ? 'Vivos/Total' : 'Hijos registrados'}
+              {animal.sex === 'Hembra' ? t('animals:profile.summary.liveOfTotal') : t('animals:profile.summary.registeredOffspring')}
             </p>
           </CardContent>
         </Card>
@@ -186,12 +186,12 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">% Preñez</CardTitle>
+              <CardTitle className="text-sm">{t('animals:profile.summary.pregnancyRate')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm">Histórico</span>
+                  <span className="text-sm">{t('animals:profile.summary.historical')}</span>
                   <span className="text-sm font-medium">{reproductiveData.pregnancyPercentage}%</span>
                 </div>
                 <Progress value={reproductiveData.pregnancyPercentage} className="h-2" />
@@ -201,12 +201,12 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm">% Parición</CardTitle>
+              <CardTitle className="text-sm">{t('animals:profile.summary.calvingRate')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm">Histórico</span>
+                  <span className="text-sm">{t('animals:profile.summary.historical')}</span>
                   <span className="text-sm font-medium">{reproductiveData.calvingPercentage}%</span>
                 </div>
                 <Progress value={reproductiveData.calvingPercentage} className="h-2" />
@@ -224,8 +224,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         <Alert>
           <Calendar className="h-4 w-4" />
           <AlertDescription>
-            <strong>Animal joven:</strong> Menor a 12 meses. 
-            Seguimiento especial requerido.
+            <strong>{t('animals:profile.summary.youngAnimal')}:</strong> {t('animals:profile.summary.youngAnimalNote')}
           </AlertDescription>
         </Alert>
       )}
