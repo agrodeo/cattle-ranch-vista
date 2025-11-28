@@ -13,6 +13,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
+import { useTranslation } from "react-i18next";
+import { getCategoryOptions } from "@/lib/translations";
 
 interface Animal {
   id: string;
@@ -56,14 +58,6 @@ const DEFAULT_FILTERS: Filters = {
   search: ""
 };
 
-const CATEGORIES = [
-  { value: "ternero", label: "Ternero" },
-  { value: "ternera", label: "Ternera" },
-  { value: "vaquillona", label: "Vaquillona" },
-  { value: "vaca", label: "Vaca" },
-  { value: "novillo", label: "Novillo" },
-  { value: "toro", label: "Toro" }
-];
 
 const AGE_CHIPS = [
   { label: "0-12m", range: [0, 12] as [number, number] },
@@ -76,10 +70,11 @@ export function AnimalSelector({
   selectedAnimals,
   onSelectionChange,
   trigger,
-  title = "Seleccionar Animales",
-  description = "Selecciona los animales para la actividad",
+  title,
+  description,
   maxSelection
 }: AnimalSelectorProps) {
+  const { t } = useTranslation('activities');
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
@@ -91,6 +86,7 @@ export function AnimalSelector({
   const [selectAllMatching, setSelectAllMatching] = useState(false);
   
   const ITEMS_PER_PAGE = 25;
+  const CATEGORIES = getCategoryOptions(t);
 
   useEffect(() => {
     if (open && currentUser?.cabañaId) {
@@ -150,8 +146,8 @@ export function AnimalSelector({
       console.error("Error loading data:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los animales"
+        title: t('animalSelector.errorLoading'),
+        description: t('animalSelector.errorLoading')
       });
     } finally {
       setLoading(false);
@@ -229,8 +225,8 @@ export function AnimalSelector({
       if (maxSelection && selectedAnimals.length >= maxSelection) {
         toast({
           variant: "destructive",
-          title: "Límite alcanzado",
-          description: `Solo puedes seleccionar ${maxSelection} animales como máximo`
+          title: t('animalSelector.limitReached'),
+          description: t('animalSelector.limitDescription') + ` ${maxSelection} ` + t('animalSelector.animalsMax')
         });
         return;
       }
@@ -252,8 +248,8 @@ export function AnimalSelector({
       if (maxSelection && filteredAnimals.length > maxSelection) {
         toast({
           variant: "destructive",
-          title: "Límite excedido",
-          description: `Solo puedes seleccionar ${maxSelection} animales. Se encontraron ${filteredAnimals.length} que coinciden con los filtros.`
+          title: t('animalSelector.limitExceeded'),
+          description: t('animalSelector.limitExceededDescription') + ` ${maxSelection} ${t('animalSelector.animalsMax')}. ${t('animalSelector.matchingFilters')}`
         });
         return;
       }
@@ -296,7 +292,7 @@ export function AnimalSelector({
         {trigger || (
           <Button variant="outline" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
-            Seleccionar Animales ({selectedCount})
+            {t('animalSelector.title')} ({selectedCount})
           </Button>
         )}
       </SheetTrigger>
@@ -305,9 +301,9 @@ export function AnimalSelector({
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            {title}
+            {title || t('animalSelector.title')}
           </SheetTitle>
-          <p className="text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground">{description || t('animalSelector.description')}</p>
         </SheetHeader>
 
         <div className="space-y-6 mt-6">
@@ -317,19 +313,19 @@ export function AnimalSelector({
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <div className="text-sm">
-                    <span className="font-medium">{selectedCount}</span> seleccionados
+                    <span className="font-medium">{selectedCount}</span> {t('animalSelector.selected')}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {filteredCount} de {totalCount} mostrados
+                    {filteredCount} {t('animalSelector.of')} {totalCount} {t('animalSelector.shown')}
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" onClick={handleSelectAllPage}>
-                    Seleccionar página
+                    {t('animalSelector.selectPage')}
                   </Button>
                   <Button size="sm" variant="outline" onClick={handleDeselectAll}>
                     <X className="h-4 w-4 mr-1" />
-                    Limpiar
+                    {t('animalSelector.clear')}
                   </Button>
                 </div>
               </div>
@@ -348,14 +344,14 @@ export function AnimalSelector({
                         className="flex items-center gap-1 cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
                         onClick={() => removeSelectedAnimal(animalId)}
                       >
-                        {animal.name || animal.id_tag || 'Sin ID'}
+                        {animal.name || animal.id_tag || t('animalSelector.noId')}
                         <X className="h-3 w-3" />
                       </Badge>
                     );
                   })}
                   {selectedCount > 10 && (
                     <Badge variant="outline">
-                      +{selectedCount - 10} más
+                      +{selectedCount - 10} {t('animalSelector.more')}
                     </Badge>
                   )}
                 </div>
@@ -369,10 +365,10 @@ export function AnimalSelector({
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <Filter className="h-4 w-4" />
-                  Filtros
+                  {t('animalSelector.filters')}
                 </span>
                 <Button variant="ghost" size="sm" onClick={clearFilters}>
-                  Limpiar filtros
+                  {t('animalSelector.clearFilters')}
                 </Button>
               </CardTitle>
             </CardHeader>
@@ -382,7 +378,7 @@ export function AnimalSelector({
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar por nombre, ID o raza..."
+                    placeholder={t('animalSelector.searchPlaceholder')}
                     value={filters.search}
                     onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                     className="pl-10"
@@ -393,7 +389,7 @@ export function AnimalSelector({
               <div className="grid grid-cols-2 gap-4">
                 {/* Corral */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Corral</label>
+                  <label className="text-sm font-medium mb-2 block">{t('animalSelector.corral')}</label>
                   <Select 
                     value={filters.corrals[0] || "all"}
                     onValueChange={(value) => setFilters(prev => ({ 
@@ -402,10 +398,10 @@ export function AnimalSelector({
                     }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Todos los corrales" />
+                      <SelectValue placeholder={t('animalSelector.allCorrals')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos los corrales</SelectItem>
+                      <SelectItem value="all">{t('animalSelector.allCorrals')}</SelectItem>
                       {corrals.map(corral => (
                         <SelectItem key={corral.id} value={corral.id}>
                           {corral.name}
@@ -417,7 +413,7 @@ export function AnimalSelector({
 
                 {/* Sex */}
                 <div>
-                  <label className="text-sm font-medium mb-2 block">Sexo</label>
+                  <label className="text-sm font-medium mb-2 block">{t('animalSelector.sex')}</label>
                   <Select 
                     value={filters.sex[0] || "all"}
                     onValueChange={(value) => setFilters(prev => ({ 
@@ -426,12 +422,12 @@ export function AnimalSelector({
                     }))}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Todos" />
+                      <SelectValue placeholder={t('animalSelector.all')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Todos</SelectItem>
-                      <SelectItem value="Macho">Macho</SelectItem>
-                      <SelectItem value="Hembra">Hembra</SelectItem>
+                      <SelectItem value="all">{t('animalSelector.all')}</SelectItem>
+                      <SelectItem value="Macho">{t('animalSelector.male')}</SelectItem>
+                      <SelectItem value="Hembra">{t('animalSelector.female')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -440,7 +436,7 @@ export function AnimalSelector({
               {/* Age Range */}
               <div>
                 <label className="text-sm font-medium mb-2 block">
-                  Edad: {filters.ageRange[0]}-{filters.ageRange[1]} meses
+                  {t('animalSelector.age')}: {filters.ageRange[0]}-{filters.ageRange[1]} {t('animalSelector.ageMonths')}
                 </label>
                 <Slider
                   value={filters.ageRange}
@@ -471,7 +467,7 @@ export function AnimalSelector({
 
               {/* Category */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Categoría</label>
+                <label className="text-sm font-medium mb-2 block">{t('animalSelector.category')}</label>
                 <Select 
                   value={filters.categories[0] || "all"}
                   onValueChange={(value) => setFilters(prev => ({ 
@@ -480,10 +476,10 @@ export function AnimalSelector({
                   }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Todas las categorías" />
+                    <SelectValue placeholder={t('animalSelector.allCategories')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    <SelectItem value="all">{t('animalSelector.allCategories')}</SelectItem>
                     {CATEGORIES.map(cat => (
                       <SelectItem key={cat.value} value={cat.value}>
                         {cat.label}
@@ -501,7 +497,7 @@ export function AnimalSelector({
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">
-                    Se encontraron {filteredCount} animales que coinciden con los filtros
+                    {filteredCount} {t('animalSelector.matchingAnimals')}
                   </span>
                   <Button
                     variant={selectAllMatching ? "destructive" : "default"}
@@ -512,19 +508,19 @@ export function AnimalSelector({
                     {selectAllMatching ? (
                       <>
                         <X className="h-4 w-4 mr-2" />
-                        Deseleccionar todos
+                        {t('animalSelector.deselectAllMatching')}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="h-4 w-4 mr-2" />
-                        Seleccionar todos ({filteredCount})
+                        {t('animalSelector.selectAllMatching')} ({filteredCount})
                       </>
                     )}
                   </Button>
                 </div>
                 {maxSelection && filteredCount > maxSelection && (
                   <p className="text-sm text-muted-foreground mt-2">
-                    Límite: {maxSelection} animales máximo
+                    {t('animalSelector.limitReached')}: {maxSelection} {t('animalSelector.animalsMax')}
                   </p>
                 )}
               </CardContent>
@@ -535,13 +531,13 @@ export function AnimalSelector({
           <Card>
             <CardContent className="pt-6">
               {loading ? (
-                <div className="text-center py-8">Cargando animales...</div>
+                <div className="text-center py-8">{t('animalSelector.loading')}</div>
               ) : paginatedAnimals.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium mb-2">No se encontraron animales</h3>
+                  <h3 className="text-lg font-medium mb-2">{t('animalSelector.noAnimals')}</h3>
                   <p className="text-muted-foreground">
-                    Ajusta los filtros para encontrar animales elegibles
+                    {t('animalSelector.noAnimalsDescription')}
                   </p>
                 </div>
               ) : (
@@ -571,7 +567,7 @@ export function AnimalSelector({
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="font-medium truncate">
-                                      {animal.name || 'Sin nombre'}
+                                      {animal.name || t('animalSelector.noId')}
                                     </span>
                                     {animal.id_tag && (
                                       <Badge variant="outline" className="text-xs">
@@ -603,7 +599,7 @@ export function AnimalSelector({
                                     
                                     {animal.esta_preñada && (
                                       <Badge variant="destructive" className="text-xs">
-                                        Preñada
+                                        {t('tacto.pregnant')}
                                       </Badge>
                                     )}
                                   </div>
@@ -626,7 +622,7 @@ export function AnimalSelector({
                   {totalPages > 1 && (
                     <div className="flex items-center justify-between pt-4 border-t">
                       <div className="text-sm text-muted-foreground">
-                        Página {currentPage} de {totalPages}
+                        {t('animalSelector.page')} {currentPage} {t('animalSelector.of')} {totalPages}
                       </div>
                       <div className="flex gap-2">
                         <Button
@@ -635,7 +631,7 @@ export function AnimalSelector({
                           onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                           disabled={currentPage === 1}
                         >
-                          Anterior
+                          {t('common.previous')}
                         </Button>
                         <Button
                           variant="outline"
@@ -643,7 +639,7 @@ export function AnimalSelector({
                           onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                           disabled={currentPage === totalPages}
                         >
-                          Siguiente
+                          {t('common.next')}
                         </Button>
                       </div>
                     </div>
@@ -660,10 +656,10 @@ export function AnimalSelector({
               className="flex-1"
               disabled={selectedCount === 0}
             >
-              Confirmar Selección ({selectedCount})
+              {t('common.confirm')} ({selectedCount})
             </Button>
             <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancelar
+              {t('common.cancel')}
             </Button>
           </div>
         </div>

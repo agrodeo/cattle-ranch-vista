@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, Calendar as CalendarIcon, Stethoscope, CheckCircle, AlertTriangle, Users } from "lucide-react";
 import { format, differenceInMonths, addDays } from "date-fns";
 import { es } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface TactoRecord {
   animalId: string;
@@ -31,6 +32,7 @@ interface TactoDialogProps {
 }
 
 export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: TactoDialogProps) {
+  const { t } = useTranslation('activities');
   const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
@@ -177,8 +179,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       if (selectedAnimals.length === 0) {
         toast({
           variant: "destructive",
-          title: "Error", 
-          description: "Debe seleccionar al menos una hembra",
+          title: t('tacto.errorTitle'), 
+          description: t('tacto.errorSelectFemale'),
         });
         return;
       }
@@ -195,8 +197,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       if (invalidRecords.length > 0) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: `${invalidRecords.length} animal(es) sin resultado. Configure un resultado por defecto o márquelos individualmente.`,
+          title: t('tacto.errorTitle'),
+          description: `${invalidRecords.length} ${t('tacto.errorNoResults')}`,
         });
         return;
       }
@@ -256,8 +258,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       const emptyCount = finalRecords.filter(r => r.resultado === 'vacia').length;
 
       toast({
-        title: "Tacto registrado",
-        description: `${pregnantCount} preñada(s), ${emptyCount} vacía(s)`,
+        title: t('tacto.successTitle'),
+        description: t('tacto.successDescription', { pregnant: pregnantCount, empty: emptyCount }),
       });
 
       // Reset form
@@ -272,8 +274,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
       console.error("Error saving tacto:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo registrar el tacto",
+        title: t('tacto.errorTitle'),
+        description: t('tacto.errorDescription'),
       });
     } finally {
       setLoading(false);
@@ -287,7 +289,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Stethoscope className="h-5 w-5 text-brand-600" />
-            <h2 className="font-semibold text-lg">Detección de Preñez</h2>
+            <h2 className="font-semibold text-lg">{t('tacto.title')}</h2>
           </div>
           <Button 
             variant="ghost" 
@@ -303,19 +305,19 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         <div className="p-4 lg:p-0">
         {/* Desktop Header */}
         <DialogHeader className="hidden lg:block">
-          <DialogTitle>Registrar Detección de Preñez</DialogTitle>
+          <DialogTitle>{t('tacto.registerTitle')}</DialogTitle>
           <DialogDescription>
-            Registre el resultado del tacto rectal para detección de preñez
+            {t('tacto.description')}
           </DialogDescription>
         </DialogHeader>
         
         {animals.length === 0 && !loading && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-2">
-              No hay hembras elegibles para detección de preñez.
+              {t('tacto.noEligibleFemales')}
             </p>
             <p className="text-sm text-muted-foreground">
-              Se requieren hembras ≥15 meses que NO estén preñadas.
+              {t('tacto.requiresFemales')}
             </p>
           </div>
         )}
@@ -324,14 +326,14 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           {/* Filter by Corral */}
           {corrales.length > 0 && (
             <div className="space-y-2">
-              <Label>Filtrar por Corral</Label>
+              <Label>{t('tacto.filterByCorral')}</Label>
               <div className="flex gap-2">
                 <Select value={selectedCorral} onValueChange={setSelectedCorral}>
                   <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Todos los corrales" />
+                    <SelectValue placeholder={t('tacto.allCorrals')} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los corrales</SelectItem>
+                    <SelectItem value="all">{t('tacto.allCorrals')}</SelectItem>
                     {corrales.map((corral) => (
                       <SelectItem key={corral.id} value={corral.id}>
                         {corral.name}
@@ -346,7 +348,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     className="flex items-center gap-2"
                   >
                     <Users className="h-4 w-4" />
-                    Agregar Corral
+                    {t('tacto.addCorral')}
                   </Button>
                 )}
               </div>
@@ -356,7 +358,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           {/* Detection Details & Default Result */}
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label htmlFor="fecha">Fecha de Detección</Label>
+              <Label htmlFor="fecha">{t('tacto.detectionDate')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -377,38 +379,38 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
             </div>
 
             <div className="space-y-2">
-              <Label>Resultado Por Defecto</Label>
+              <Label>{t('tacto.defaultResult')}</Label>
               <RadioGroup
                 value={defaultResult || ""}
                 onValueChange={(value) => setDefaultResult(value as "preñada" | "vacia" | null)}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="preñada" id="default-pregnant" />
-                  <Label htmlFor="default-pregnant" className="text-sm">Preñada</Label>
+                  <Label htmlFor="default-pregnant" className="text-sm">{t('tacto.pregnant')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="vacia" id="default-empty" />
-                  <Label htmlFor="default-empty" className="text-sm">Vacía</Label>
+                  <Label htmlFor="default-empty" className="text-sm">{t('tacto.empty')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="" id="default-none" />
-                  <Label htmlFor="default-none" className="text-sm">Manual</Label>
+                  <Label htmlFor="default-none" className="text-sm">{t('tacto.manual')}</Label>
                 </div>
               </RadioGroup>
               {defaultResult && (
                 <p className="text-xs text-muted-foreground">
-                  Se aplicará automáticamente a animales seleccionados
+                  {t('tacto.autoApply')}
                 </p>
               )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notas">Observaciones Generales</Label>
+              <Label htmlFor="notas">{t('tacto.generalObservations')}</Label>
               <Textarea
                 id="notas"
                 value={notas}
                 onChange={(e) => setNotas(e.target.value)}
-                placeholder="Observaciones del tacto..."
+                placeholder={t('tacto.observationsPlaceholder')}
                 rows={3}
               />
             </div>
@@ -418,14 +420,14 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                Hembras Elegibles ({filteredAnimals.length} {selectedCorral !== "all" ? 'en corral seleccionado' : 'disponibles'})
+                {t('tacto.eligibleFemales')} ({filteredAnimals.length} {selectedCorral !== "all" ? t('tacto.inSelectedCorral') : t('tacto.available')})
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  Seleccionar {selectedCorral !== "all" ? 'Corral' : 'Todas'}
+                  {t('tacto.selectAll')} {selectedCorral !== "all" ? t('tacto.selectCorral') : t('tacto.selectAllFemales')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  Limpiar
+                  {t('tacto.clear')}
                 </Button>
               </div>
             </div>
@@ -442,19 +444,16 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     className="mt-1"
                   />
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{animal.name || "Sin nombre"}</div>
+                    <div className="font-medium truncate">{animal.name || t('tacto.noName')}</div>
                     <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
                     {animal.corral && (
-                      <div className="text-xs text-muted-foreground">Corral: {animal.corral.name}</div>
+                      <div className="text-xs text-muted-foreground">{t('animalSelector.corral')}: {animal.corral.name}</div>
                     )}
                     <div className="text-xs text-muted-foreground mt-1">
                       {animal.birth_date ? 
-                        `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
-                        : "No registrada"
-                      } • {animal.breed || "No especificada"}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {animal.esta_preñada ? 'Preñada' : 'No preñada'}
+                        `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('tacto.months')}`
+                        : t('tacto.notRegistered')
+                      } • {animal.breed || t('animalSelector.all')}
                     </div>
                   </div>
                 </div>
@@ -467,10 +466,10 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Animal</TableHead>
-                    <TableHead>Edad</TableHead>
-                    <TableHead>Raza</TableHead>
-                    <TableHead>Estado Actual</TableHead>
+                    <TableHead>{t('tacto.animal')}</TableHead>
+                    <TableHead>{t('tacto.age')}</TableHead>
+                    <TableHead>{t('tacto.breed')}</TableHead>
+                    <TableHead>{t('tacto.currentStatus')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -486,23 +485,23 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                          <div className="font-medium">{animal.name || t('tacto.noName')}</div>
                           <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
                           {animal.corral && (
-                            <div className="text-xs text-muted-foreground">Corral: {animal.corral.name}</div>
+                            <div className="text-xs text-muted-foreground">{t('animalSelector.corral')}: {animal.corral.name}</div>
                           )}
                         </div>
                       </TableCell>
                       <TableCell>
                         {animal.birth_date ? 
-                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
-                          : "No registrada"
+                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('tacto.months')}`
+                          : t('tacto.notRegistered')
                         }
                       </TableCell>
-                      <TableCell>{animal.breed || "No especificada"}</TableCell>
+                      <TableCell>{animal.breed || t('animalSelector.all')}</TableCell>
                       <TableCell>
                         <span className="text-sm">
-                          {animal.esta_preñada ? 'Preñada' : 'No preñada'}
+                          {animal.esta_preñada ? t('tacto.pregnant') : t('tacto.empty')}
                         </span>
                       </TableCell>
                     </TableRow>
@@ -513,7 +512,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
             {selectedAnimals.length > 0 && (
               <div className="text-sm text-muted-foreground">
-                {selectedAnimals.length} hembra(s) seleccionada(s)
+                {selectedAnimals.length} {t('tacto.animalsCount')}
               </div>
             )}
           </div>
@@ -523,7 +522,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">
-                  Resultados de Detección ({tactoRecords.length} animales)
+                  {t('tacto.result')} ({tactoRecords.length} {t('tacto.animalsCount')})
                 </Label>
                 <div className="flex gap-2">
                   <Button 
@@ -533,7 +532,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     className="text-green-600 border-green-200 hover:bg-green-50"
                   >
                     <CheckCircle className="h-3 w-3 mr-1" />
-                    Todas Preñadas
+                    {t('tacto.pregnant')}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -542,7 +541,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                     className="text-red-600 border-red-200 hover:bg-red-50"
                   >
                     <AlertTriangle className="h-3 w-3 mr-1" />
-                    Todas Vacías
+                    {t('tacto.empty')}
                   </Button>
                 </div>
               </div>
@@ -557,18 +556,18 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <div>
-                            <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                            <div className="font-medium">{animal.name || t('tacto.noName')}</div>
                             <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
                           </div>
                           {record.fechaEstimadaParto && (
                             <div className="text-sm text-green-600">
-                              Parto esperado: {format(record.fechaEstimadaParto, "dd/MM/yyyy")}
+                              {format(record.fechaEstimadaParto, "dd/MM/yyyy")}
                             </div>
                           )}
                         </div>
                         
                         <div className="space-y-2">
-                          <Label className="text-sm">¿Está preñada?</Label>
+                          <Label className="text-sm">{t('tacto.resultForAnimal')}</Label>
                           <RadioGroup
                             value={record.resultado || ""}
                             onValueChange={(value) => 
@@ -579,23 +578,23 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
                               <RadioGroupItem value="preñada" id={`preg-${record.animalId}`} />
                               <Label htmlFor={`preg-${record.animalId}`} className="flex items-center gap-2">
                                 <CheckCircle className="h-4 w-4 text-green-500" />
-                                Sí - Preñada
+                                {t('tacto.pregnant')}
                               </Label>
                             </div>
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value="vacia" id={`empty-${record.animalId}`} />
                               <Label htmlFor={`empty-${record.animalId}`} className="flex items-center gap-2">
                                 <AlertTriangle className="h-4 w-4 text-red-500" />
-                                No - Vacía
+                                {t('tacto.empty')}
                               </Label>
                             </div>
                           </RadioGroup>
                         </div>
 
                         <div className="space-y-2">
-                          <Label className="text-sm">Observaciones</Label>
+                          <Label className="text-sm">{t('tacto.observations')}</Label>
                           <Textarea
-                            placeholder="Observaciones específicas..."
+                            placeholder={t('tacto.observationsForAnimal')}
                             value={record.observaciones}
                             onChange={(e) => 
                               updateTactoRecord(record.animalId, 'observaciones', e.target.value)
@@ -613,13 +612,13 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancelar
+              {t('tacto.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={loading || (tactoRecords.length === 0)}
             >
-              {loading ? "Guardando..." : "Registrar Detecciones"}
+              {loading ? t('tacto.saving') : t('tacto.save')}
             </Button>
           </div>
         </div>
