@@ -172,7 +172,28 @@
       "title": "Asignar Animales al Corral",
       "availableAnimals": "Animales Disponibles",
       "searchPlaceholder": "Buscar por nombre o identificador..."
-    }
+  },
+  "corralDetail": {
+    "totalAnimals": "Total Animales",
+    "hectares": "Hectáreas",
+    "animalsInvolved": "Animales involucrados",
+    "status": "Estado",
+    "notSpecified": "Sin especificar",
+    "animalsInCorral": "Animales en el Corral",
+    "assignAnimals": "Asignar Animales",
+    "noAnimalsAssigned": "No hay animales asignados a este corral",
+    "healthStatus": "Estado Sanitario",
+    "generalStatus": "Estado General",
+    "animalsMonitored": "animales monitoreados",
+    "consanguinityRisk": "Riesgo de Consanguinidad",
+    "whatIs": "¿Qué es la consanguinidad?",
+    "whatIsDescription": "La consanguinidad se refiere a la reproducción entre animales que comparten ancestros comunes.",
+    "whyImportant": "¿Por qué es importante?",
+    "whyImportantDescription": "Puede reducir la diversidad genética y aumentar el riesgo de enfermedades hereditarias.",
+    "recommendedAction": "Acción recomendada",
+    "recommendedActionDescription": "Se recomienda mover uno de los animales a otro corral o evitar que se apareen para mantener la diversidad genética del rebaño.",
+    "suggestion": "Considere mover uno de los animales a otro corral para reducir el riesgo de consanguinidad"
+  }
   },
   "mobile": {
     "searchPlaceholder": "Buscar corrales...",

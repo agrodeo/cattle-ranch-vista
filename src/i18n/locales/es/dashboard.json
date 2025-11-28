@@ -59,7 +59,13 @@
     "tactileExam": "Tacto",
     "weighing": "Pesaje",
     "averageWeight": "Peso promedio",
-    "registeredBy": "Registrado por"
+    "registeredBy": "Registrado por",
+    "lot": "Lote",
+    "dose": "Dosis",
+    "route": "Vía",
+    "breed": "Raza",
+    "empty": "Vacías",
+    "notes": "Notas"
   },
   "warnings": {
     "consanguinityRisk": "Riesgo de Consanguinidad",
