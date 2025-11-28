@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -176,6 +177,7 @@ const classifyAnimal = (animal: any, statusData: any[] | null, error: any): Clas
 export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnalyticsProps) => {
   const { user, currentUser } = useSupabaseAuth();
   const { requirements } = useVaccinationRequirements();
+  const { t } = useTranslation('reports');
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<any>(null);
   
