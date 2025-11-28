@@ -175,6 +175,7 @@
       "title": "Atribuir Animais ao Curral",
       "availableAnimals": "Animais Disponíveis",
       "searchPlaceholder": "Pesquisar por nome ou identificador..."
+    }
   },
   "corralDetail": {
     "totalAnimals": "Total de Animais",
@@ -260,7 +261,6 @@
     "noData": "Sem dados",
     "basedOnAnimals": "Baseado em {{count}} animais",
     "low": "Baixo"
-  }
   },
   "mobile": {
     "searchPlaceholder": "Pesquisar currais...",
