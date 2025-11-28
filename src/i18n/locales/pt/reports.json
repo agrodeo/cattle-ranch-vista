@@ -361,5 +361,10 @@
       "change": "Mudança (%)",
       "performance": "Desempenho"
     }
+  },
+  "common": {
+    "current": "Atual",
+    "previous": "Anterior",
+    "change": "Mudança"
   }
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/useLanguage';
 import { analyzeTrend, calculateAcceleration, findBestPeriod, generateInsights, type TemporalDataPoint } from '@/lib/temporalAnalysis';
 
 export type GroupByPeriod = 'year' | 'semester' | 'quarter' | 'month';
@@ -32,6 +33,7 @@ export function useTemporalProductionData({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { lang } = useLanguage();
 
   useEffect(() => {
     if (!cabanaId) {
@@ -122,7 +124,7 @@ export function useTemporalProductionData({
     const trend = analyzeTrend(data, metric);
     const acceleration = calculateAcceleration(data);
     const bestPeriod = findBestPeriod(data, metric);
-    const insights = generateInsights(data, trend, acceleration);
+    const insights = generateInsights(data, trend, acceleration, lang);
 
     return {
       trend,
@@ -130,7 +132,7 @@ export function useTemporalProductionData({
       bestPeriod,
       insights
     };
-  }, [data, weightType]);
+  }, [data, weightType, lang]);
 
   // Average annual improvement
   const averageAnnualImprovement = useMemo(() => {
