@@ -91,6 +91,7 @@
     "offspring": "Crías",
     "tableOffspring": "Crías",
     "empty": "Vacía",
+    "open": "Vacía",
     "pregnant": "Preñada",
     "postpartum": "Post-parto"
   },
@@ -234,6 +235,7 @@
     "mandatory": "obligatorios",
     "totalAnimals": "Total Animales",
     "upToDate": "Al Día",
+    "needsAttention": "Requiere Atención",
     "expired": "Vencidas",
     "pending": "Pendientes",
     "notApplied": "No Aplicadas",

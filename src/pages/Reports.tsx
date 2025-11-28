@@ -42,6 +42,17 @@ const Reports = () => {
   // Collapsible filters state
   const [filtersExpanded, setFiltersExpanded] = useState(false);
 
+  // Handle tab change - clear quick filters when switching tabs
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    setActiveQuickFilters([]);
+    // Reset category filter when changing tabs
+    setAppliedFilters(prev => ({
+      ...prev,
+      category: undefined
+    }));
+  };
+
   // Separate state for pending (being edited) and applied filters (used by analytics)
   const [pendingFilters, setPendingFilters] = useState<ReportFilters>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>(defaultFilters);
@@ -139,9 +150,14 @@ const Reports = () => {
         .filter(f => f.type === 'corral')
         .map(f => f.value);
       
+      const categories = activeFiltersData
+        .filter(f => f.type === 'category')
+        .map(f => f.value);
+      
       setAppliedFilters(prev => ({
         ...prev,
-        corral_ids: corralIds.length > 0 ? corralIds : undefined
+        corral_ids: corralIds.length > 0 ? corralIds : undefined,
+        category: categories.length > 0 ? categories[0] : undefined
       }));
       
       return newActive;
@@ -204,7 +220,7 @@ const Reports = () => {
         <IconTabsBar 
           tabs={tabs} 
           activeTab={activeTab} 
-          onTabChange={setActiveTab} 
+          onTabChange={handleTabChange} 
         />
           </div>
 
@@ -271,7 +287,7 @@ const Reports = () => {
           title={t('reports:analysisPanel')}
           subtitle={t('reports:detailedReports')}
         >
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
             <TabsList className="grid w-full grid-cols-6 h-10">
               {tabs.map((tab) => (
                 <TabsTrigger key={tab.id} value={tab.id} className="text-sm px-2 py-2">

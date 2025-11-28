@@ -91,6 +91,7 @@
     "offspring": "Offspring",
     "tableOffspring": "Offspring",
     "empty": "Empty",
+    "open": "Open",
     "pregnant": "Pregnant",
     "postpartum": "Post-partum"
   },
@@ -234,6 +235,7 @@
     "mandatory": "mandatory",
     "totalAnimals": "Total Animals",
     "upToDate": "Up to Date",
+    "needsAttention": "Needs Attention",
     "expired": "Expired",
     "pending": "Pending",
     "notApplied": "Not Applied",
