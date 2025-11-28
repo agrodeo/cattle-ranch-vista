@@ -5,7 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,6 +76,7 @@ interface ReproductiveAnalyticsProps {
 const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => {
   const { t } = useTranslation(['reports', 'animals']);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
   const [summaryMetrics, setSummaryMetrics] = useState<SummaryMetrics>({
     totalFemales: 0,
     currentlyPregnant: 0,
@@ -83,6 +91,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<keyof ReproductiveFemale | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const fetchReproductiveData = async () => {
     try {
@@ -338,8 +348,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
     fetchReproductiveData();
   }, [filters]);
 
-  const { toast } = useToast();
-
   const handleRefresh = () => {
     fetchReproductiveData();
     toast({
@@ -347,6 +355,51 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       description: t('reports:reproductive.dataUpdatedDesc')
     });
   };
+
+  const handleSort = (column: keyof ReproductiveFemale) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('desc');
+    }
+  };
+
+  const sortedFemales = [...reproductiveFemales].sort((a, b) => {
+    if (!sortColumn) return 0;
+    
+    const aValue = a[sortColumn];
+    const bValue = b[sortColumn];
+    
+    if (aValue === null || aValue === undefined) return 1;
+    if (bValue === null || bValue === undefined) return -1;
+    
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+    
+    return 0;
+  });
+
+  const SortableHeader = ({ column, children }: { column: keyof ReproductiveFemale; children: React.ReactNode }) => (
+    <TableHead 
+      className="cursor-pointer hover:bg-accent/50 select-none"
+      onClick={() => handleSort(column)}
+    >
+      <div className="flex items-center gap-1">
+        {children}
+        {sortColumn === column && (
+          <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+        )}
+      </div>
+    </TableHead>
+  );
 
   if (loading) {
     return (
@@ -479,7 +532,42 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                 </div>
               ) : isMobile ? (
                 <div className="space-y-3">
-                  {reproductiveFemales.map((animal) => (
+                  <div className="flex items-center gap-2 mb-4">
+                    <ArrowUpDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <Select
+                      value={sortColumn || ""}
+                      onValueChange={(value) => {
+                        if (value) {
+                          handleSort(value as keyof ReproductiveFemale);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder={t('reports:production.sortBy')} />
+                      </SelectTrigger>
+                      <SelectContent className="bg-background z-50">
+                        <SelectItem value="id_tag">{t('reports:reproductive.tableTag')}</SelectItem>
+                        <SelectItem value="name">{t('reports:reproductive.tableName')}</SelectItem>
+                        <SelectItem value="category">{t('reports:reproductive.tableCategory')}</SelectItem>
+                        <SelectItem value="corral_name">{t('reports:reproductive.tableCorral')}</SelectItem>
+                        <SelectItem value="current_state">{t('reports:reproductive.tableCurrentState')}</SelectItem>
+                        <SelectItem value="individual_pregnancy_rate">{t('reports:reproductive.tablePregnancyPct')}</SelectItem>
+                        <SelectItem value="individual_calving_rate">{t('reports:reproductive.tableCalvingPct')}</SelectItem>
+                        <SelectItem value="total_offspring">{t('reports:reproductive.tableOffspring')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {sortColumn && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')}
+                        className="h-9 px-3"
+                      >
+                        {sortDirection === 'asc' ? '↑' : '↓'}
+                      </Button>
+                    )}
+                  </div>
+                  {sortedFemales.map((animal) => (
                     <Card 
                       key={animal.animal_id}
                       className="hover:bg-accent/50 transition-colors"
@@ -560,18 +648,18 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t('reports:reproductive.tableTag')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tableName')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tableCategory')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tableCorral')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tableCurrentState')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tablePregnancyPct')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tableCalvingPct')}</TableHead>
-                        <TableHead>{t('reports:reproductive.tableOffspring')}</TableHead>
+                        <SortableHeader column="id_tag">{t('reports:reproductive.tableTag')}</SortableHeader>
+                        <SortableHeader column="name">{t('reports:reproductive.tableName')}</SortableHeader>
+                        <SortableHeader column="category">{t('reports:reproductive.tableCategory')}</SortableHeader>
+                        <SortableHeader column="corral_name">{t('reports:reproductive.tableCorral')}</SortableHeader>
+                        <SortableHeader column="current_state">{t('reports:reproductive.tableCurrentState')}</SortableHeader>
+                        <SortableHeader column="individual_pregnancy_rate">{t('reports:reproductive.tablePregnancyPct')}</SortableHeader>
+                        <SortableHeader column="individual_calving_rate">{t('reports:reproductive.tableCalvingPct')}</SortableHeader>
+                        <SortableHeader column="total_offspring">{t('reports:reproductive.tableOffspring')}</SortableHeader>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {reproductiveFemales.map((animal) => (
+                      {sortedFemales.map((animal) => (
                         <TableRow key={animal.animal_id}>
                           <TableCell className="font-medium">{animal.id_tag}</TableCell>
                           <TableCell>{animal.name || '-'}</TableCell>
