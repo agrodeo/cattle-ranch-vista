@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -26,6 +27,7 @@ interface HerdOverviewProps {
 }
 
 export const HerdOverview = ({ filters }: HerdOverviewProps) => {
+  const { t } = useTranslation(['reports', 'common']);
   const { currentUser } = useSupabaseAuth();
   const [stats, setStats] = useState<HerdStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,9 +137,9 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
 
     // Status distribution with colors
     const statusDistribution = [
-      { status: 'Activos', count: activeAnimals, color: '#10b981' },
-      { status: 'Vendidos', count: soldAnimals, color: '#3b82f6' },
-      { status: 'Fallecidos', count: deadAnimals, color: '#ef4444' }
+      { status: t('herd.status.active'), count: activeAnimals, color: '#10b981' },
+      { status: t('herd.status.sold'), count: soldAnimals, color: '#3b82f6' },
+      { status: t('herd.status.dead'), count: deadAnimals, color: '#ef4444' }
     ].filter(item => item.count > 0);
 
     return {
@@ -154,11 +156,11 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
   };
 
   if (loading) {
-    return <div className="text-center p-8">Cargando estadísticas del rebaño...</div>;
+    return <div className="text-center p-8">{t('herd.loading')}</div>;
   }
 
   if (!stats) {
-    return <div className="text-center p-8">No se pudieron cargar las estadísticas.</div>;
+    return <div className="text-center p-8">{t('herd.error')}</div>;
   }
 
   return (
@@ -167,53 +169,53 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Animales</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('herd.cards.totalAnimals')}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalAnimals}</div>
             <div className="flex gap-2 mt-2">
-              <Badge variant="secondary">{stats.maleCount} Machos</Badge>
-              <Badge variant="outline">{stats.femaleCount} Hembras</Badge>
+              <Badge variant="secondary">{stats.maleCount} {t('common:sex.male')}</Badge>
+              <Badge variant="outline">{stats.femaleCount} {t('common:sex.female')}</Badge>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Animales Activos</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('herd.cards.activeAnimals')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">{stats.activeAnimals}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.activeAnimals / stats.totalAnimals) * 100).toFixed(1)}% del total
+              {((stats.activeAnimals / stats.totalAnimals) * 100).toFixed(1)}% {t('common:ofTotal')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ventas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('herd.cards.sales')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{stats.soldAnimals}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.soldAnimals / stats.totalAnimals) * 100).toFixed(1)}% del total
+              {((stats.soldAnimals / stats.totalAnimals) * 100).toFixed(1)}% {t('common:ofTotal')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Mortalidad</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('herd.cards.mortality')}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.deadAnimals}</div>
             <p className="text-xs text-muted-foreground">
-              {((stats.deadAnimals / stats.totalAnimals) * 100).toFixed(1)}% del total
+              {((stats.deadAnimals / stats.totalAnimals) * 100).toFixed(1)}% {t('common:ofTotal')}
             </p>
           </CardContent>
         </Card>
@@ -224,7 +226,7 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
         {/* Status Distribution */}
         <Card>
           <CardHeader>
-            <CardTitle>Distribución por Estado</CardTitle>
+            <CardTitle>{t('herd.charts.statusDistribution')}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -271,7 +273,7 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
         {stats.breedDistribution.length > 1 && stats.breedDistribution.filter(b => b.breed !== 'Sin especificar').length > 1 && (
           <Card className="lg:col-span-2">
             <CardHeader>
-              <CardTitle>Comparación por Raza</CardTitle>
+              <CardTitle>{t('herd.charts.breedDistribution')}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
