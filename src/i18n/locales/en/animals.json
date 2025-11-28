@@ -135,7 +135,22 @@
     "deleteFailed": "Could not delete animal"
   },
   "profile": {
+    "backToAnimals": "Back to Animals",
+    "back": "Back",
+    "animalNotFound": "Animal not found",
+    "animalNotFoundDesc": "The requested animal does not exist or you don't have permission to view it.",
+    "errorLoadingAnimal": "Error loading animal",
+    "errorLoadingDesc": "Could not load animal information",
+    "month": "month",
+    "months": "months",
+    "pregnant": "Pregnant",
+    "expectedCalving": "ECD",
+    "deadReadOnly": "Deceased animal - Read only",
+    "soldReadOnly": "Sold animal - Read only",
     "tabs": {
+      "summary": "Summary",
+      "reproduction": "Reproduction",
+      "vaccines": "Vaccines",
       "production": "Production",
       "genealogy": "Genealogy",
       "corrals": "Corrals", 

@@ -19,6 +19,8 @@ import { categorizeAnimal } from "@/lib/animalCategories";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { getTranslatedCategory, getTranslatedSex, getTranslatedStatus } from "@/lib/translations";
 
 interface AnimalProfileHeaderProps {
   animal: Animal;
@@ -26,6 +28,7 @@ interface AnimalProfileHeaderProps {
 }
 
 export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHeaderProps) {
+  const { t } = useTranslation(['animals', 'common']);
   const navigate = useNavigate();
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const isInactive = animal.status === 'vendido' || animal.status === 'muerto';
@@ -67,8 +70,8 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Volver a Animales</span>
-              <span className="sm:hidden">Volver</span>
+              <span className="hidden sm:inline">{t('animals:profile.backToAnimals')}</span>
+              <span className="sm:hidden">{t('animals:profile.back')}</span>
             </Button>
           </div>
           
@@ -83,7 +86,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
           {/* Badges */}
           <div className="flex flex-wrap gap-2">
             <Badge className={`text-white ${getSexColor(animal.sex)}`}>
-              {animal.sex}
+              {getTranslatedSex(animal.sex, t)}
             </Badge>
             
             <Badge variant="outline">
@@ -92,25 +95,25 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
             </Badge>
 
             <Badge variant="outline" className="bg-primary/10">
-              {category}
+              {getTranslatedCategory(category, t)}
             </Badge>
 
             {age && (
               <Badge variant="outline">
-                {age} {age === 1 ? 'mes' : 'meses'}
+                {age} {age === 1 ? t('animals:profile.month') : t('animals:profile.months')}
               </Badge>
             )}
 
             <Badge className={`text-white ${getStatusColor(animal.status)}`}>
-              {animal.status}
+              {getTranslatedStatus(animal.status, t)}
             </Badge>
 
             {animal.esta_preñada && (
               <Badge className="bg-orange-500 text-white">
-                Preñada
+                {t('animals:profile.pregnant')}
                 {animal.fecha_probable_parto && (
                   <span className="ml-1 hidden sm:inline">
-                    • FPP: {format(new Date(animal.fecha_probable_parto), 'dd/MM/yy')}
+                    • {t('animals:profile.expectedCalving')}: {format(new Date(animal.fecha_probable_parto), 'dd/MM/yy')}
                   </span>
                 )}
                 {animal.fecha_probable_parto && (
@@ -142,7 +145,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
 
             {animal.mocho && (
               <Badge variant="outline">
-                {animal.mocho === 'Si' ? 'Mocho' : 'Con cuernos'}
+                {animal.mocho === 'Si' ? t('animals:hornOptions.polled') : t('animals:hornOptions.horned')}
               </Badge>
             )}
           </div>
@@ -154,8 +157,8 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
                 {animal.status === 'muerto' && <Skull className="h-4 w-4 text-red-500 shrink-0" />}
                 {animal.status === 'vendido' && <Truck className="h-4 w-4 text-blue-500 shrink-0" />}
                 <span className="text-sm text-muted-foreground">
-                  {animal.status === 'muerto' && 'Animal fallecido - Solo lectura'}
-                  {animal.status === 'vendido' && 'Animal vendido - Solo lectura'}
+                  {animal.status === 'muerto' && t('animals:profile.deadReadOnly')}
+                  {animal.status === 'vendido' && t('animals:profile.soldReadOnly')}
                 </span>
               </div>
               {animal.fecha_muerte && (

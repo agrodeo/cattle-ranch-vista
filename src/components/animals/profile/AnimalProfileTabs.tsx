@@ -3,6 +3,7 @@ import { Animal } from "@/types/animal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useTranslation } from "react-i18next";
 import { 
   BarChart3, 
   Activity, 
@@ -31,20 +32,21 @@ interface AnimalProfileTabsProps {
   onAnimalUpdate: (animal: Animal) => void;
 }
 
-const tabs = [
-  { id: 'resumen', label: 'Resumen', icon: BarChart3 },
-  { id: 'reproduccion', label: 'Reproducción', icon: Heart },
-  { id: 'vacunas', label: 'Vacunas', icon: Syringe },
-  { id: 'produccion', label: 'Producción', icon: Scale },
-  { id: 'genealogia', label: 'Genealogía', icon: GitBranch },
-  { id: 'corrales', label: 'Corrales', icon: MapPin },
-  { id: 'documentos', label: 'Documentos', icon: FileText },
-  { id: 'finanzas', label: 'Finanzas', icon: DollarSign },
-];
-
 export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsProps) {
+  const { t } = useTranslation('animals');
   const [activeTab, setActiveTab] = useState('resumen');
   const isMobile = useIsMobile();
+
+  const tabs = [
+    { id: 'resumen', label: t('profile.tabs.summary'), icon: BarChart3 },
+    { id: 'reproduccion', label: t('profile.tabs.reproduction'), icon: Heart },
+    { id: 'vacunas', label: t('profile.tabs.vaccines'), icon: Syringe },
+    { id: 'produccion', label: t('profile.tabs.production'), icon: Scale },
+    { id: 'genealogia', label: t('profile.tabs.genealogy'), icon: GitBranch },
+    { id: 'corrales', label: t('profile.tabs.corrals'), icon: MapPin },
+    { id: 'documentos', label: t('profile.tabs.documents'), icon: FileText },
+    { id: 'finanzas', label: t('profile.tabs.finances'), icon: DollarSign },
+  ];
 
   const renderTabContent = () => {
     switch (activeTab) {
