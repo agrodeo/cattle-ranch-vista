@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface PregnantAnimalsReportProps {
 }
 
 export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
+  const { t } = useTranslation(['reports', 'animals']);
   const { currentUser } = useSupabaseAuth();
   const [pregnantAnimals, setPregnantAnimals] = useState<PregnantAnimal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,17 +75,17 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
           Math.floor((new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)) : 
           null;
 
-        let reproductiveStatus = "Desconocido";
+        let reproductiveStatus = "unknown";
         if (animal.birth_date) {
           if (new Date(animal.birth_date) > new Date()) {
-            reproductiveStatus = "Fecha futura";
+            reproductiveStatus = "future_date";
           } else if (ageMonths && ageMonths >= 15) {
-            reproductiveStatus = "Reproductiva";
+            reproductiveStatus = "reproductive";
           } else {
-            reproductiveStatus = "Joven";
+            reproductiveStatus = "young";
           }
         } else {
-          reproductiveStatus = "Sin fecha";
+          reproductiveStatus = "no_date";
         }
 
         return {
@@ -92,7 +94,7 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
           name: animal.name,
           birth_date: animal.birth_date,
           corral_id: animal.corral_id,
-          corral_name: animal.corrales?.name || 'Sin corral',
+          corral_name: animal.corrales?.name || null,
           fecha_ultima_preñez: animal.fecha_ultima_preñez,
           fecha_probable_parto: animal.fecha_probable_parto,
           age_months: ageMonths,
@@ -110,11 +112,21 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case 'Reproductiva': return 'bg-emerald-100 text-emerald-800';
-      case 'Joven': return 'bg-blue-100 text-blue-800';
-      case 'Sin fecha': return 'bg-gray-100 text-gray-800';
-      case 'Fecha futura': return 'bg-red-100 text-red-800';
+      case 'reproductive': return 'bg-emerald-100 text-emerald-800';
+      case 'young': return 'bg-blue-100 text-blue-800';
+      case 'no_date': return 'bg-gray-100 text-gray-800';
+      case 'future_date': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'reproductive': return t('reports:reproductive.reproductiveStatus');
+      case 'young': return t('reports:reproductive.young');
+      case 'no_date': return t('reports:reproductive.noDate');
+      case 'future_date': return t('reports:reproductive.futureDate');
+      default: return t('common:unknown');
     }
   };
 
@@ -134,7 +146,7 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
-            Hembras Preñadas
+            {t('reports:reproductive.pregnantFemales')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -153,13 +165,13 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Heart className="h-5 w-5" />
-          Hembras Preñadas ({pregnantAnimals.length})
+          {t('reports:reproductive.pregnantFemales')} ({pregnantAnimals.length})
         </CardTitle>
       </CardHeader>
       <CardContent>
         {pregnantAnimals.length === 0 ? (
           <div className="text-center text-muted-foreground py-8">
-            No se encontraron hembras preñadas.
+            {t('reports:reproductive.noPregnantFound')}
           </div>
         ) : (
           <div className="space-y-4">
@@ -179,22 +191,22 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
                       </p>
                     </div>
                     <Badge className={`text-xs ${getStatusBadgeColor(animal.reproductive_status)}`}>
-                      {animal.reproductive_status}
+                      {getStatusLabel(animal.reproductive_status)}
                     </Badge>
                   </div>
                   
                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      <span>{animal.corral_name}</span>
+                      <span>{animal.corral_name || t('reports:production.noCorral')}</span>
                     </div>
                     {animal.age_months && (
-                      <span>{animal.age_months} meses</span>
+                      <span>{animal.age_months} {t('common:months')}</span>
                     )}
                     {animal.fecha_probable_parto && (
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        <span>Parto: {formatDate(animal.fecha_probable_parto)}</span>
+                        <span>{t('reports:reproductive.calving')}: {formatDate(animal.fecha_probable_parto)}</span>
                       </div>
                     )}
                   </div>
@@ -204,7 +216,7 @@ export function PregnantAnimalsReport({ filters }: PregnantAnimalsReportProps) {
                   <div className="text-right text-sm">
                     {animal.fecha_ultima_preñez && (
                       <p className="text-muted-foreground">
-                        Preñez: {formatDate(animal.fecha_ultima_preñez)}
+                        {t('reports:reproductive.pregnancy')}: {formatDate(animal.fecha_ultima_preñez)}
                       </p>
                     )}
                   </div>
