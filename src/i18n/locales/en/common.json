@@ -71,7 +71,8 @@
     "scheduledNext": "Scheduled for the next few days",
     "error": "Error",
     "hide": "Hide",
-    "animals": "animals"
+    "animals": "animals",
+    "unknown": "Unknown"
   },
   "validation": {
     "required": "This field is required",

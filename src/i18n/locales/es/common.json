@@ -71,7 +71,8 @@
     "scheduledNext": "Programadas para los próximos días",
     "error": "Error",
     "hide": "Ocultar",
-    "animals": "animales"
+    "animals": "animales",
+    "unknown": "Desconocido"
   },
   "validation": {
     "required": "Este campo es requerido",
