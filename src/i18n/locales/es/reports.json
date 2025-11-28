@@ -1,5 +1,6 @@
 {
   "title": "Reportes y Análisis",
+  "quickFilters": "Filtros rápidos",
   "subtitle": "Visualiza y analiza el rendimiento de tu cabaña",
   "tabs": {
     "herd": "Rodeo",

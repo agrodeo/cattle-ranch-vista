@@ -16,11 +16,13 @@ import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
 import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
 import { TemporalEvolutionAnalytics } from "@/components/reports/TemporalEvolutionAnalytics";
+import { QuickFilterChips, QuickFilter } from "@/components/reports/QuickFilterChips";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Filter, ChevronDown, ChevronUp } from "lucide-react";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
 
 const Reports = () => {
   const isMobile = useIsMobile();
@@ -43,6 +45,27 @@ const Reports = () => {
   // Separate state for pending (being edited) and applied filters (used by analytics)
   const [pendingFilters, setPendingFilters] = useState<ReportFilters>(defaultFilters);
   const [appliedFilters, setAppliedFilters] = useState<ReportFilters>(defaultFilters);
+  
+  // Quick filters state
+  const [activeQuickFilters, setActiveQuickFilters] = useState<string[]>([]);
+  const [availableCorrales, setAvailableCorrales] = useState<{id: string; name: string}[]>([]);
+
+  // Fetch available corrales for quick filters
+  useEffect(() => {
+    const fetchCorrales = async () => {
+      if (!currentUser?.cabañaId) return;
+      
+      const { data } = await supabase
+        .from('corrales')
+        .select('id, name')
+        .eq('cabaña_id', currentUser.cabañaId)
+        .order('name');
+      
+      if (data) setAvailableCorrales(data);
+    };
+    
+    fetchCorrales();
+  }, [currentUser?.cabañaId]);
 
   useEffect(() => {
     document.title = `${t('reports:title')} | AgroDeo`;
@@ -62,6 +85,67 @@ const Reports = () => {
 
   const applyFilters = () => {
     setAppliedFilters({ ...pendingFilters });
+  };
+
+  // Quick filter configuration per tab
+  const getQuickFiltersForTab = (tabId: string): QuickFilter[] => {
+    const filters: QuickFilter[] = [];
+    
+    // Corrales available for all tabs
+    availableCorrales.forEach(corral => {
+      filters.push({
+        id: `corral-${corral.id}`,
+        label: corral.name,
+        type: 'corral',
+        value: corral.id
+      });
+    });
+
+    // Tab-specific status/category filters
+    if (tabId === 'reproductive') {
+      filters.push(
+        { id: 'status-pregnant', label: t('reports:reproductive.pregnant'), type: 'status', value: 'pregnant' },
+        { id: 'status-open', label: t('reports:reproductive.open'), type: 'status', value: 'open' },
+        { id: 'category-vaca', label: t('reports:filters.vaca'), type: 'category', value: 'Vaca' },
+        { id: 'category-vaquillona', label: t('reports:filters.vaquillona'), type: 'category', value: 'Vaquillona' }
+      );
+    } else if (tabId === 'vaccines') {
+      filters.push(
+        { id: 'status-compliant', label: t('reports:vaccination.upToDate'), type: 'status', value: 'compliant' },
+        { id: 'status-needs-attention', label: t('reports:vaccination.needsAttention'), type: 'status', value: 'needs_attention' }
+      );
+    } else if (tabId === 'mortality') {
+      filters.push(
+        { id: 'category-ternero', label: t('reports:filters.ternero'), type: 'category', value: 'Ternero' },
+        { id: 'category-ternera', label: t('reports:filters.ternera'), type: 'category', value: 'Ternera' }
+      );
+    }
+    
+    return filters;
+  };
+
+  const handleToggleQuickFilter = (filterId: string) => {
+    setActiveQuickFilters(prev => {
+      const isActive = prev.includes(filterId);
+      const newActive = isActive 
+        ? prev.filter(id => id !== filterId)
+        : [...prev, filterId];
+      
+      // Apply quick filters to appliedFilters
+      const quickFilters = getQuickFiltersForTab(activeTab);
+      const activeFiltersData = quickFilters.filter(f => newActive.includes(f.id));
+      
+      const corralIds = activeFiltersData
+        .filter(f => f.type === 'corral')
+        .map(f => f.value);
+      
+      setAppliedFilters(prev => ({
+        ...prev,
+        corral_ids: corralIds.length > 0 ? corralIds : undefined
+      }));
+      
+      return newActive;
+    });
   };
 
   // Tab configuration for mobile chips
@@ -123,6 +207,14 @@ const Reports = () => {
           onTabChange={setActiveTab} 
         />
           </div>
+
+          {/* Quick Filter Chips - Mobile */}
+          <QuickFilterChips
+            availableFilters={getQuickFiltersForTab(activeTab)}
+            activeFilters={activeQuickFilters}
+            onToggleFilter={handleToggleQuickFilter}
+            className="px-1"
+          />
 
           {/* Content */}
           <div className="space-y-4">
@@ -187,6 +279,14 @@ const Reports = () => {
                 </TabsTrigger>
               ))}
             </TabsList>
+            
+            {/* Quick Filter Chips */}
+            <QuickFilterChips
+              availableFilters={getQuickFiltersForTab(activeTab)}
+              activeFilters={activeQuickFilters}
+              onToggleFilter={handleToggleQuickFilter}
+              className="px-1"
+            />
             
             <div className="space-y-4">
               {renderTabContent()}

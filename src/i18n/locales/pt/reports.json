@@ -1,5 +1,6 @@
 {
   "title": "Relatórios e Análises",
+  "quickFilters": "Filtros rápidos",
   "subtitle": "Visualize e analise o desempenho da sua fazenda",
   "tabs": {
     "herd": "Rebanho",

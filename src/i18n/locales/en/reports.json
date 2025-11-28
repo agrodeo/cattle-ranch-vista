@@ -1,5 +1,6 @@
 {
   "title": "Reports and Analysis",
+  "quickFilters": "Quick filters",
   "subtitle": "View and analyze your farm's performance",
   "tabs": {
     "herd": "Herd",
