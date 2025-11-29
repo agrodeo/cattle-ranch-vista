@@ -12,11 +12,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
+import { useTranslation } from 'react-i18next';
 
 export function VaccinationManager() {
   const { user } = useSupabaseAuth();
   const { toast } = useToast();
   const { requirements, loading: loadingRequirements } = useVaccinationRequirements();
+  const { t } = useTranslation('activities');
   
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [selectedRequirementId, setSelectedRequirementId] = useState<string>("");
@@ -56,8 +58,8 @@ export function VaccinationManager() {
       console.log('⚠️ [VACCINATION] Validation failed - missing requirement or animals');
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Seleccione una vacuna y al menos un animal"
+        title: t('common:error'),
+        description: t('managers.vaccination.selectVaccineAndAnimals')
       });
       return;
     }
@@ -91,8 +93,8 @@ export function VaccinationManager() {
       console.log('✅ [VACCINATION] All vaccinations recorded successfully');
       
       toast({
-        title: "✅ Vacunación registrada",
-        description: `Se registró la vacunación para ${selectedAnimals.length} animales. Las métricas se actualizarán automáticamente.`
+        title: t('managers.vaccination.vaccinationRegistered'),
+        description: t('managers.vaccination.vaccinationSuccess', { count: selectedAnimals.length })
       });
       
       setSelectedAnimals([]);
@@ -111,8 +113,8 @@ export function VaccinationManager() {
       });
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error.message || "No se pudo registrar la vacunación"
+        title: t('common:error'),
+        description: error.message || t('managers.vaccination.vaccinationError')
       });
     } finally {
       setSubmitting(false);
@@ -126,22 +128,22 @@ export function VaccinationManager() {
         <div>
           <h3 className="text-xl font-semibold flex items-center gap-2">
             <Syringe className="h-5 w-5" />
-            Gestión de Vacunación
+            {t('managers.vaccination.title')}
           </h3>
           <p className="text-muted-foreground">
-            Control sanitario con reglas de cumplimiento por ubicación
+            {t('managers.vaccination.subtitle')}
           </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Nueva Vacunación</CardTitle>
+          <CardTitle>{t('managers.vaccination.newVaccination')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="date">Fecha</Label>
+              <Label htmlFor="date">{t('managers.vaccination.date')}</Label>
               <Input
                 id="date"
                 type="date"
@@ -150,15 +152,15 @@ export function VaccinationManager() {
               />
             </div>
             <div>
-              <Label htmlFor="vaccine">Vacuna</Label>
+              <Label htmlFor="vaccine">{t('managers.vaccination.vaccine')}</Label>
               <Select value={selectedRequirementId} onValueChange={setSelectedRequirementId} disabled={loadingRequirements}>
                 <SelectTrigger>
-                  <SelectValue placeholder={loadingRequirements ? "Cargando vacunas..." : "Seleccione una vacuna"} />
+                  <SelectValue placeholder={loadingRequirements ? t('managers.vaccination.loadingVaccines') : t('managers.vaccination.selectVaccine')} />
                 </SelectTrigger>
                 <SelectContent>
                   {requirements.length === 0 ? (
                     <div className="p-2 text-sm text-muted-foreground">
-                      No hay vacunas configuradas. Configure las vacunas en Configuración.
+                      {t('managers.vaccination.noVaccinesConfigured')}
                     </div>
                   ) : (
                     requirements.map(req => (
@@ -167,12 +169,12 @@ export function VaccinationManager() {
                           <span>{req.vaccine_name}</span>
                           {req.is_mandatory && (
                             <Badge variant="destructive" className="text-xs">
-                              Obligatoria
+                              {t('managers.vaccination.mandatory')}
                             </Badge>
                           )}
                           {req.doses_required && req.doses_required > 1 && (
                             <Badge variant="outline" className="text-xs">
-                              {req.doses_required} dosis
+                              {req.doses_required} {t('managers.vaccination.doses')}
                             </Badge>
                           )}
                         </div>
@@ -186,33 +188,33 @@ export function VaccinationManager() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="lot">Lote</Label>
+              <Label htmlFor="lot">{t('managers.vaccination.lot')}</Label>
               <Input
                 id="lot"
                 value={lot}
                 onChange={(e) => setLot(e.target.value)}
-                placeholder="Número de lote"
+                placeholder={t('managers.vaccination.lotNumber')}
               />
             </div>
             <div>
-              <Label htmlFor="dose">Dosis</Label>
+              <Label htmlFor="dose">{t('managers.vaccination.dose')}</Label>
               <Input
                 id="dose"
                 value={dose}
                 onChange={(e) => setDose(e.target.value)}
-                placeholder="ej. 2ml"
+                placeholder={t('managers.vaccination.dosePlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="route">Vía</Label>
+              <Label htmlFor="route">{t('managers.vaccination.route')}</Label>
               <Select value={route} onValueChange={setRoute}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Vía de administración" />
+                  <SelectValue placeholder={t('managers.vaccination.administrationRoute')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="subcutanea">Subcutánea</SelectItem>
-                  <SelectItem value="intramuscular">Intramuscular</SelectItem>
-                  <SelectItem value="intranasal">Intranasal</SelectItem>
+                  <SelectItem value="subcutanea">{t('managers.vaccination.subcutaneous')}</SelectItem>
+                  <SelectItem value="intramuscular">{t('managers.vaccination.intramuscular')}</SelectItem>
+                  <SelectItem value="intranasal">{t('managers.vaccination.intranasal')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -222,13 +224,13 @@ export function VaccinationManager() {
             eligibilityFilter={vaccinationEligibilityFilter}
             selectedAnimals={selectedAnimals}
             onSelectionChange={setSelectedAnimals}
-            title="Seleccionar Animales para Vacunación"
+            title={t('managers.vaccination.selectAnimalsTitle')}
             trigger={
               <Button variant="outline" className="w-full">
                 <Syringe className="h-4 w-4 mr-2" />
                 {selectedAnimals.length > 0 
-                  ? `${selectedAnimals.length} animales seleccionados`
-                  : "Seleccionar animales para vacunar"
+                  ? `${selectedAnimals.length} ${t('managers.vaccination.animalsSelected')}`
+                  : t('managers.vaccination.selectAnimalsButton')
                 }
               </Button>
             }
@@ -239,7 +241,7 @@ export function VaccinationManager() {
             className="w-full" 
             disabled={submitting || !selectedRequirementId || selectedAnimals.length === 0 || requirements.length === 0}
           >
-            {submitting ? "Registrando..." : "Registrar Vacunación"}
+            {submitting ? t('managers.vaccination.registering') : t('managers.vaccination.registerVaccination')}
           </Button>
         </CardContent>
       </Card>
