@@ -9,10 +9,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { NewWeighingDialog } from "./NewWeighingDialog";
 import { BulkWeighingUpload } from "./BulkWeighingUpload";
 import { WeighingMethodSelector } from "./WeighingMethodSelector";
+import { useTranslation } from 'react-i18next';
 
 export function WeighingManager() {
   const { stats } = useActivities();
   const { user } = useSupabaseAuth();
+  const { t } = useTranslation('activities');
   const [cabanaId, setCabanaId] = useState<string | null>(null);
   const [showMethodSelector, setShowMethodSelector] = useState(false);
   const [showWeighingDialog, setShowWeighingDialog] = useState(false);
@@ -58,7 +60,7 @@ export function WeighingManager() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Peso Promedio</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('managers.weighing.averageWeight')}</CardTitle>
             <Scale className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -66,14 +68,14 @@ export function WeighingManager() {
               {summaryLoading ? '...' : `${summary?.peso_promedio?.toFixed(1) || 0} kg`}
             </div>
             <p className="text-xs text-muted-foreground">
-              Del rodeo actual
+              {t('managers.weighing.currentHerd')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Ganancia Diaria Promedio</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('managers.weighing.averageDailyGain')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -81,14 +83,14 @@ export function WeighingManager() {
               {summaryLoading ? '...' : `${summary?.ganancia_diaria_promedio?.toFixed(3) || 0} kg/día`}
             </div>
             <p className="text-xs text-muted-foreground">
-              Últimos 90 días
+              {t('managers.weighing.last90Days')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Animales Pesados</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('managers.weighing.animalsWeighed')}</CardTitle>
             <Target className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
@@ -96,14 +98,14 @@ export function WeighingManager() {
               {summaryLoading ? '...' : summary?.animales_pesados || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              Últimos 90 días
+              {t('managers.weighing.last90Days')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pesajes</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('managers.weighing.totalWeighings')}</CardTitle>
             <div className="h-4 w-4 rounded-full bg-blue-500" />
           </CardHeader>
           <CardContent>
@@ -111,7 +113,7 @@ export function WeighingManager() {
               {summaryLoading ? '...' : summary?.total_weighings || 0}
             </div>
             <p className="text-xs text-muted-foreground">
-              Últimos 90 días
+              {t('managers.weighing.last90Days')}
             </p>
           </CardContent>
         </Card>
@@ -121,14 +123,14 @@ export function WeighingManager() {
         <CardContent className="pt-6">
           <div className="text-center py-8 text-muted-foreground">
             <Scale className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <h4 className="text-lg font-medium mb-2">Sistema de Pesajes</h4>
+            <h4 className="text-lg font-medium mb-2">{t('managers.weighing.systemTitle')}</h4>
             <p className="mb-4">
-              Registro y análisis del rendimiento de peso de tu ganado
+              {t('managers.weighing.systemDescription')}
             </p>
             <div className="flex gap-2 justify-center">
               <Button onClick={() => setShowMethodSelector(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Registrar Pesaje
+                {t('managers.weighing.registerWeighing')}
               </Button>
             </div>
           </div>

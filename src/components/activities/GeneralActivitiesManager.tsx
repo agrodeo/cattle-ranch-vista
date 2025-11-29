@@ -4,6 +4,7 @@ import { ClipboardList, Activity } from "lucide-react";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useTranslation } from 'react-i18next';
 
 export function GeneralActivitiesManager() {
   const [generalActivitiesCount, setGeneralActivitiesCount] = useState(0);
@@ -13,6 +14,7 @@ export function GeneralActivitiesManager() {
   
   const { stats } = useActivities();
   const { currentUser } = useSupabaseAuth();
+  const { t } = useTranslation('activities');
 
   useEffect(() => {
     fetchGeneralActivitiesStats();
@@ -68,26 +70,26 @@ export function GeneralActivitiesManager() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Actividades Registradas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('managers.general.activitiesRegistered')}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{generalActivitiesCount}</div>
             <p className="text-xs text-muted-foreground">
-              Total histórico
+              {t('managers.general.historicalTotal')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Este Mes</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('managers.general.thisMonth')}</CardTitle>
             <ClipboardList className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{monthlyGeneralActivitiesCount}</div>
             <p className="text-xs text-muted-foreground">
-              Actividades nuevas
+              {t('managers.general.newActivities')}
             </p>
           </CardContent>
         </Card>
@@ -96,7 +98,7 @@ export function GeneralActivitiesManager() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Actividades Recientes</CardTitle>
+          <CardTitle>{t('managers.general.recentActivities')}</CardTitle>
         </CardHeader>
         <CardContent>
           {recentActivities.length > 0 ? (
@@ -107,18 +109,18 @@ export function GeneralActivitiesManager() {
                     <p className="font-medium">
                       {activity.payload?.tipo_actividad ? 
                         activity.payload.tipo_actividad.charAt(0).toUpperCase() + activity.payload.tipo_actividad.slice(1) : 
-                        'Actividad General'
+                        t('managers.general.generalActivity')
                       }
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(activity.fecha).toLocaleDateString('es-ES')} - {activity.payload?.animales_ids?.length || 0} animal(es)
+                      {new Date(activity.fecha).toLocaleDateString('es-ES')} - {activity.payload?.animales_ids?.length || 0} {t('managers.general.animals')}
                     </p>
                     {activity.notas && (
                       <p className="text-xs text-muted-foreground mt-1">{activity.notas}</p>
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {activity.payload?.responsable || 'Sin responsable'}
+                    {activity.payload?.responsable || t('managers.general.noResponsible')}
                   </div>
                 </div>
               ))}
@@ -126,9 +128,9 @@ export function GeneralActivitiesManager() {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <ClipboardList className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-              <h4 className="text-lg font-medium mb-2">No hay actividades registradas</h4>
+              <h4 className="text-lg font-medium mb-2">{t('managers.general.noActivitiesRegistered')}</h4>
               <p className="mb-4">
-                Comienza registrando actividades de manejo ganadero haciendo clic en "Nueva Actividad" o en cualquier tipo de actividad específica.
+                {t('managers.general.startRegisteringActivities')}
               </p>
             </div>
           )}

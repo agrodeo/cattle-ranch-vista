@@ -8,18 +8,20 @@ import { WeighingManager } from "./WeighingManager";
 import { GeneralActivitiesManager } from "./GeneralActivitiesManager";
 import { ActivitiesCalendar } from "./ActivitiesCalendar";
 import { ActivitiesStats } from "./ActivitiesStats";
+import { useTranslation } from 'react-i18next';
 
 export function ActivitiesManager() {
   const [activeTab, setActiveTab] = useState("overview");
+  const { t } = useTranslation('activities');
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Gestión de Actividades</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{t('managers.overview.title')}</h2>
           <p className="text-muted-foreground">
-            Registra y gestiona todas las actividades de tu ganado
+            {t('managers.overview.subtitle')}
           </p>
         </div>
       </div>
@@ -32,27 +34,27 @@ export function ActivitiesManager() {
         <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            Resumen
+            {t('managers.overview.summary')}
           </TabsTrigger>
           <TabsTrigger value="insemination" className="flex items-center gap-2">
             <Heart className="h-4 w-4" />
-            Inseminación
+            {t('managers.overview.insemination')}
           </TabsTrigger>
           <TabsTrigger value="vaccination" className="flex items-center gap-2">
             <Syringe className="h-4 w-4" />
-            Vacunación
+            {t('managers.overview.vaccination')}
           </TabsTrigger>
           <TabsTrigger value="weighing" className="flex items-center gap-2">
             <Scale className="h-4 w-4" />
-            Pesaje
+            {t('managers.overview.weighing')}
           </TabsTrigger>
           <TabsTrigger value="general" className="flex items-center gap-2">
             <ClipboardList className="h-4 w-4" />
-            Generales
+            {t('managers.overview.general')}
           </TabsTrigger>
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Calendario
+            {t('managers.overview.calendar')}
           </TabsTrigger>
         </TabsList>
 
@@ -61,13 +63,13 @@ export function ActivitiesManager() {
             <Card className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setActiveTab("insemination")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Inseminación Artificial</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('managers.overview.artificialInsemination')}</CardTitle>
                 <Heart className="h-4 w-4 text-red-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">IA</div>
                 <p className="text-xs text-muted-foreground">
-                  Registro masivo de servicios
+                  {t('managers.overview.massiveServices')}
                 </p>
               </CardContent>
             </Card>
@@ -75,13 +77,13 @@ export function ActivitiesManager() {
             <Card className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setActiveTab("vaccination")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Vacunación</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('managers.overview.vaccination')}</CardTitle>
                 <Syringe className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">VAC</div>
                 <p className="text-xs text-muted-foreground">
-                  Control sanitario
+                  {t('managers.overview.healthControl')}
                 </p>
               </CardContent>
             </Card>
@@ -89,13 +91,13 @@ export function ActivitiesManager() {
             <Card className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setActiveTab("weighing")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pesaje</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('managers.overview.weighing')}</CardTitle>
                 <Scale className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">KG</div>
                 <p className="text-xs text-muted-foreground">
-                  Control de peso
+                  {t('managers.overview.weightControl')}
                 </p>
               </CardContent>
             </Card>
@@ -103,13 +105,13 @@ export function ActivitiesManager() {
             <Card className="cursor-pointer hover:shadow-md transition-shadow"
                   onClick={() => setActiveTab("general")}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Actividades Generales</CardTitle>
+                <CardTitle className="text-sm font-medium">{t('managers.overview.generalActivities')}</CardTitle>
                 <ClipboardList className="h-4 w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">+</div>
                 <p className="text-xs text-muted-foreground">
-                  Otras actividades
+                  {t('managers.overview.otherActivities')}
                 </p>
               </CardContent>
             </Card>
@@ -118,14 +120,14 @@ export function ActivitiesManager() {
           {/* Recent Activities Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Actividades Recientes</CardTitle>
+              <CardTitle>{t('managers.overview.recentActivitiesTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>Esta sección mostrará las últimas actividades registradas...</p>
-                <p>• Últimas inseminaciones</p>
-                <p>• Vacunaciones pendientes</p>
-                <p>• Pesajes programados</p>
+                <p>{t('managers.overview.recentActivitiesPlaceholder')}</p>
+                <p>{t('managers.overview.lastInseminations')}</p>
+                <p>{t('managers.overview.pendingVaccinations')}</p>
+                <p>{t('managers.overview.scheduledWeighings')}</p>
               </div>
             </CardContent>
           </Card>
