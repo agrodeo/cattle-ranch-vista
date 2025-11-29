@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, AlertTriangle } from "lucide-react";
-import { useTranslation } from 'react-i18next';
 
 interface NewPregnancyLossDialogProps {
   open?: boolean;
@@ -56,6 +55,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
   const [lossCauses, setLossCauses] = useState<LossCause[]>([]);
   
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (externalOpen !== undefined) {
