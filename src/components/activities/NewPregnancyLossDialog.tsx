@@ -35,14 +35,6 @@ interface LossCause {
   categoria: string;
 }
 
-const LOSS_TYPES = [
-  { value: 'aborto_temprano', label: 'Aborto Temprano (< 6 meses)', description: 'Pérdida antes de los 180 días' },
-  { value: 'aborto_tardio', label: 'Aborto Tardío (> 6 meses)', description: 'Pérdida después de los 180 días' },
-  { value: 'stillbirth', label: 'Mortinato', description: 'Cría nace muerta' },
-  { value: 'neonatal', label: 'Pérdida Neonatal', description: 'Cría muere en primeros días' },
-  { value: 'no_detectada', label: 'No Detectada/Falso Positivo', description: 'Error en detección inicial' }
-];
-
 export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuccess }: NewPregnancyLossDialogProps) {
   const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
@@ -55,7 +47,15 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
   const [lossCauses, setLossCauses] = useState<LossCause[]>([]);
   
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslation('activities');
+
+  const LOSS_TYPES = [
+    { value: 'aborto_temprano', label: t('newPregnancyLoss.lossTypes.early_abortion.label'), description: t('newPregnancyLoss.lossTypes.early_abortion.description') },
+    { value: 'aborto_tardio', label: t('newPregnancyLoss.lossTypes.late_abortion.label'), description: t('newPregnancyLoss.lossTypes.late_abortion.description') },
+    { value: 'stillbirth', label: t('newPregnancyLoss.lossTypes.stillbirth.label'), description: t('newPregnancyLoss.lossTypes.stillbirth.description') },
+    { value: 'neonatal', label: t('newPregnancyLoss.lossTypes.neonatal.label'), description: t('newPregnancyLoss.lossTypes.neonatal.description') },
+    { value: 'no_detectada', label: t('newPregnancyLoss.lossTypes.not_detected.label'), description: t('newPregnancyLoss.lossTypes.not_detected.description') }
+  ];
 
   useEffect(() => {
     if (externalOpen !== undefined) {
