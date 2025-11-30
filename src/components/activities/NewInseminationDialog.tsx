@@ -15,8 +15,9 @@ import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Calendar as CalendarIcon, Heart, Info, ArrowLeft } from "lucide-react";
 import { format, differenceInMonths } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, ptBR } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getCurrentLanguage } from "@/i18n";
 
 interface InseminationDialogProps {
   open?: boolean;
@@ -25,7 +26,7 @@ interface InseminationDialogProps {
 }
 
 export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSuccess }: InseminationDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['activities', 'common']);
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
@@ -186,8 +187,8 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
       console.error("Error saving insemination:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo registrar la inseminación",
+        title: t('activities:newInsemination.errorTitle'),
+        description: t('activities:newInsemination.errorSaving'),
       });
     } finally {
       setLoading(false);
@@ -198,7 +199,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
     if (razaToro === "Braford") {
       return (
         <div className="space-y-2">
-          <Label>Cuernos</Label>
+          <Label>{t('activities:newInsemination.horns')}</Label>
           <Select 
             value={extrasToro.cuernos} 
             onValueChange={(value) => setExtrasToro(prev => ({ ...prev, cuernos: value }))}
@@ -207,15 +208,15 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               <SelectValue placeholder={t('activities:common.selectHornType')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="astado">Astado</SelectItem>
-              <SelectItem value="mocho">Mocho</SelectItem>
-              <SelectItem value="mocho_homocigota">Mocho Homocigota</SelectItem>
+              <SelectItem value="astado">{t('activities:newInsemination.horned')}</SelectItem>
+              <SelectItem value="mocho">{t('activities:newInsemination.polled')}</SelectItem>
+              <SelectItem value="mocho_homocigota">{t('activities:newInsemination.homozygousPolled')}</SelectItem>
             </SelectContent>
           </Select>
           {extrasToro.cuernos === "mocho_homocigota" && (
             <div className="flex items-center gap-2 text-sm text-blue-600">
               <Info className="h-4 w-4" />
-              <span>La cría será 100% mocha si hay preñez</span>
+              <span>{t('activities:newInsemination.hornInfo')}</span>
             </div>
           )}
         </div>
@@ -225,7 +226,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
     if (["Brangus", "Angus"].includes(razaToro)) {
       return (
         <div className="space-y-2">
-          <Label>Pelaje</Label>
+          <Label>{t('activities:newInsemination.coat')}</Label>
           <Select 
             value={extrasToro.pelaje} 
             onValueChange={(value) => setExtrasToro(prev => ({ ...prev, pelaje: value }))}
@@ -234,16 +235,16 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               <SelectValue placeholder={t('activities:common.selectCoatColor')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="negro">Negro</SelectItem>
-              <SelectItem value="colorado">Colorado</SelectItem>
-              <SelectItem value="negro_homocigota">Negro Homocigota</SelectItem>
-              <SelectItem value="colorado_homocigota">Colorado Homocigota</SelectItem>
+              <SelectItem value="negro">{t('activities:newInsemination.black')}</SelectItem>
+              <SelectItem value="colorado">{t('activities:newInsemination.red')}</SelectItem>
+              <SelectItem value="negro_homocigota">{t('activities:newInsemination.homozygousBlack')}</SelectItem>
+              <SelectItem value="colorado_homocigota">{t('activities:newInsemination.homozygousRed')}</SelectItem>
             </SelectContent>
           </Select>
           {(extrasToro.pelaje === "negro_homocigota" || extrasToro.pelaje === "colorado_homocigota") && (
             <div className="flex items-center gap-2 text-sm text-blue-600">
               <Info className="h-4 w-4" />
-              <span>La cría será 100% del color del padre si hay preñez</span>
+              <span>{t('activities:newInsemination.coatInfo')}</span>
             </div>
           )}
         </div>
@@ -286,7 +287,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start text-left font-normal">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(fecha, "PPP", { locale: es })}
+                      {format(fecha, "PPP", { locale: getCurrentLanguage() === 'en' ? enUS : getCurrentLanguage() === 'pt' ? ptBR : es })}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -473,7 +474,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()}
               className="flex-1"
             >
-              {loading ? "Guardando..." : "Registrar"}
+              {loading ? t('activities:newInsemination.saving') : t('activities:newInsemination.registerButton')}
             </Button>
           </div>
         </div>
@@ -488,25 +489,25 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
         <DialogTrigger asChild>
           <Button className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Nueva Inseminación
+            {t('activities:newInsemination.newInsemination')}
           </Button>
         </DialogTrigger>
       )}
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Inseminación Artificial</DialogTitle>
+          <DialogTitle>{t('activities:newInsemination.title')}</DialogTitle>
           <DialogDescription>
-            Registre el servicio de inseminación artificial
+            {t('activities:newInsemination.description')}
           </DialogDescription>
         </DialogHeader>
         
         {animals.length === 0 && !loading && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-2">
-              No hay hembras elegibles para inseminación artificial.
+              {t('activities:newInsemination.noEligibleAnimals')}
             </p>
             <p className="text-sm text-muted-foreground">
-              Se requieren hembras ≥15 meses que no estén preñadas.
+              {t('activities:newInsemination.requiresFemales')}
             </p>
           </div>
         )}
@@ -520,7 +521,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(fecha, "PPP", { locale: es })}
+                    {format(fecha, "PPP", { locale: getCurrentLanguage() === 'en' ? enUS : getCurrentLanguage() === 'pt' ? ptBR : es })}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -536,12 +537,12 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="toro_nombre">Nombre del Toro *</Label>
+              <Label htmlFor="toro_nombre">{t('activities:newInsemination.bullNameLabel')}</Label>
               <Input
                 id="toro_nombre"
                 value={toroNombre}
                 onChange={(e) => setToroNombre(e.target.value)}
-                placeholder="Nombre o código del toro"
+                placeholder={t('activities:newInsemination.bullNamePlaceholder')}
               />
             </div>
 
@@ -568,10 +569,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
 
           {/* Bull Additional Details */}
           <div className="space-y-4">
-            <Label className="text-sm font-medium">Datos Adicionales del Toro</Label>
+            <Label className="text-sm font-medium">{t('activities:newInsemination.additionalData')}</Label>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label className="text-xs">Peso Nacimiento (kg)</Label>
+                <Label className="text-xs">{t('activities:newInsemination.birthWeight')}</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -582,7 +583,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Peso Destete (kg)</Label>
+                <Label className="text-xs">{t('activities:newInsemination.weaningWeight')}</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -593,7 +594,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Peso Final (kg)</Label>
+                <Label className="text-xs">{t('activities:newInsemination.finalWeight')}</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -604,7 +605,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">CE (cm)</Label>
+                <Label className="text-xs">{t('activities:newInsemination.ce')}</Label>
                 <Input
                   type="number"
                   step="0.1"
@@ -615,20 +616,20 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Registro Racial</Label>
+                <Label className="text-xs">{t('activities:newInsemination.registration')}</Label>
                 <Input
                   value={extrasToro.registro}
                   onChange={(e) => setExtrasToro(prev => ({ ...prev, registro: e.target.value }))}
-                  placeholder="Número de registro"
+                  placeholder={t('activities:newInsemination.registrationPlaceholder')}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Origen</Label>
+                <Label className="text-xs">{t('activities:newInsemination.origin')}</Label>
                 <Input
                   value={extrasToro.origen}
                   onChange={(e) => setExtrasToro(prev => ({ ...prev, origen: e.target.value }))}
-                  placeholder="País/región de origen"
+                  placeholder={t('activities:newInsemination.originPlaceholder')}
                 />
               </div>
             </div>
@@ -666,10 +667,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Animal</TableHead>
-                    <TableHead className="hidden sm:table-cell">Edad</TableHead>
-                    <TableHead className="hidden md:table-cell">Raza</TableHead>
-                    <TableHead className="hidden lg:table-cell">Estado</TableHead>
+                    <TableHead>{t('activities:newInsemination.tableHeaders.animal')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('activities:newInsemination.tableHeaders.age')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('activities:newInsemination.tableHeaders.breed')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{t('activities:newInsemination.tableHeaders.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -685,28 +686,28 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                          <div className="font-medium text-sm">{animal.name || t('activities:newInsemination.noName')}</div>
                           <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                           <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
                             {animal.birth_date ? 
-                              `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
-                              : "No registrada"
-                            } • {animal.breed || "No especificada"}
+                              `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('activities:newInsemination.months')}`
+                              : t('activities:newInsemination.notRecorded')
+                            } • {animal.breed || t('activities:newInsemination.notSpecified')}
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell text-sm">
                         {animal.birth_date ? 
-                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
-                          : "No registrada"
+                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('activities:newInsemination.months')}`
+                          : t('activities:newInsemination.notRecorded')
                         }
                       </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || "No especificada"}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('activities:newInsemination.notSpecified')}</TableCell>
                       <TableCell className="hidden lg:table-cell">
                         <div className="flex items-center gap-2">
                           <Heart className={`h-3 w-3 ${animal.esta_preñada ? 'text-red-500' : 'text-gray-400'}`} />
                           <span className="text-sm">
-                            {animal.esta_preñada ? 'Preñada' : 'Disponible'}
+                            {animal.esta_preñada ? t('activities:newInsemination.pregnant') : t('activities:newInsemination.available')}
                           </span>
                         </div>
                       </TableCell>
@@ -731,7 +732,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               onClick={handleSubmit} 
               disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()}
             >
-              {loading ? "Guardando..." : "Registrar Inseminación"}
+              {loading ? t('activities:newInsemination.saving') : t('activities:newInsemination.registerButton')}
             </Button>
           </div>
         </div>
