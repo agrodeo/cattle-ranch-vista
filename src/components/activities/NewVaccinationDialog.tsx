@@ -14,8 +14,9 @@ import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, ptBR } from "date-fns/locale";
 import { VaccineSelector } from "./VaccineSelector";
+import { getCurrentLanguage } from "@/i18n";
 
 interface VaccinationDialogProps {
   open?: boolean;
@@ -184,7 +185,7 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(fecha, "PPP", { locale: es })}
+                    {format(fecha, "PPP", { locale: getCurrentLanguage() === 'en' ? enUS : getCurrentLanguage() === 'pt' ? ptBR : es })}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
