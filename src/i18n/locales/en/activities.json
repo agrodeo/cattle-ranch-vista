@@ -580,6 +580,7 @@
   "vaccination": {
     "vaccineLabel": "Vaccine *",
     "selectVaccine": "Select vaccine",
+    "selectVaccineHelp": "Select a vaccine from those configured in your herd or add a custom one",
     "configuredVaccines": "Vaccines Configured for Your Herd",
     "mandatory": "Mandatory",
     "doses": "doses",
