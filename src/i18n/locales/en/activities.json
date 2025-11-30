@@ -399,6 +399,45 @@
       "age": "Age"
     }
   },
+  "newWeighing": {
+    "title": "Register Weighing",
+    "description": "Record the weight of animals",
+    "dateLabel": "Weighing Date",
+    "observations": "Observations",
+    "observationsPlaceholder": "Weighing observations...",
+    "animalsLabel": "Animals",
+    "animalsAvailable": "available",
+    "currentWeight": "Current Weight",
+    "newWeight": "New Weight (kg)",
+    "weightPlaceholder": "Weight in kg",
+    "noEligibleAnimals": "No eligible animals for weighing.",
+    "checkActiveAnimals": "Verify that you have active animals in your farm.",
+    "errorInvalidWeight": "All selected animals must have a valid weight",
+    "errorTitle": "Error",
+    "errorSaving": "Could not register weighing",
+    "success": "Weighing registered",
+    "successTitle": "Weighing registered",
+    "successDesc": "{{count}} weighings were recorded",
+    "registerButton": "Register Weighing",
+    "selectAll": "Select All",
+    "clear": "Clear",
+    "noName": "No name",
+    "notRecorded": "Not recorded",
+    "notSpecified": "Not specified",
+    "notSpecifiedShort": "Not spec.",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "tableHeaders": {
+      "animal": "Animal",
+      "tag": "Tag",
+      "sex": "Sex",
+      "category": "Category",
+      "corral": "Corral",
+      "age": "Age",
+      "currentWeight": "Current Weight",
+      "newWeight": "New Weight"
+    }
+  },
   "managementActivityTypes": {
     "destete": {
       "label": "Weaning",

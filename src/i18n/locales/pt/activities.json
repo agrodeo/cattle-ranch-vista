@@ -401,6 +401,45 @@
       "age": "Idade"
     }
   },
+  "newWeighing": {
+    "title": "Registrar Pesagem",
+    "description": "Registre o peso dos animais",
+    "dateLabel": "Data da Pesagem",
+    "observations": "Observações",
+    "observationsPlaceholder": "Observações da pesagem...",
+    "animalsLabel": "Animais",
+    "animalsAvailable": "disponíveis",
+    "currentWeight": "Peso Atual",
+    "newWeight": "Novo Peso (kg)",
+    "weightPlaceholder": "Peso em kg",
+    "noEligibleAnimals": "Não há animais elegíveis para pesagem.",
+    "checkActiveAnimals": "Verifique se você tem animais ativos em sua fazenda.",
+    "errorInvalidWeight": "Todos os animais selecionados devem ter um peso válido",
+    "errorTitle": "Erro",
+    "errorSaving": "Não foi possível registrar a pesagem",
+    "success": "Pesagem registrada",
+    "successTitle": "Pesagem registrada",
+    "successDesc": "{{count}} pesagens foram registradas",
+    "registerButton": "Registrar Pesagem",
+    "selectAll": "Selecionar Todos",
+    "clear": "Limpar",
+    "noName": "Sem nome",
+    "notRecorded": "Não registrado",
+    "notSpecified": "Não especificado",
+    "notSpecifiedShort": "Não esp.",
+    "cancel": "Cancelar",
+    "saving": "Salvando...",
+    "tableHeaders": {
+      "animal": "Animal",
+      "tag": "Etiqueta",
+      "sex": "Sexo",
+      "category": "Categoria",
+      "corral": "Curral",
+      "age": "Idade",
+      "currentWeight": "Peso Atual",
+      "newWeight": "Novo Peso"
+    }
+  },
   "managementActivityTypes": {
     "destete": {
       "label": "Desmame",
