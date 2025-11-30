@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { categorizeAnimal } from "@/lib/animalCategories";
+import { getTranslatedSex } from "@/lib/translations";
 
 interface NewGeneralActivityDialogProps {
   open?: boolean;
@@ -589,7 +590,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                               <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                             </div>
                           </TableCell>
-                          <TableCell className="hidden sm:table-cell text-sm">{animal.sex}</TableCell>
+                          <TableCell className="hidden sm:table-cell text-sm">{getTranslatedSex(animal.sex, t)}</TableCell>
                           <TableCell className="hidden md:table-cell text-sm">{animal.breed}</TableCell>
                           <TableCell className="hidden lg:table-cell text-sm">
                             {animal.corral?.name || t('newGeneralActivity.noCorral')}
