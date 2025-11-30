@@ -179,7 +179,7 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
           {/* Vaccination Details */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fecha">{t('activities:newVaccination.dateLabel')}</Label>
+              <Label htmlFor="fecha">{t('newVaccination.dateLabel')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -252,14 +252,14 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                {t('activities:newVaccination.animalsLabel')} ({animals.length} {t('activities:common.available')})
+                {t('newVaccination.animalsLabel')} ({animals.length} {t('common:available')})
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  {t('activities:newVaccination.selectAll')}
+                  {t('newVaccination.selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  {t('activities:newVaccination.clear')}
+                  {t('newVaccination.clear')}
                 </Button>
               </div>
             </div>
@@ -269,10 +269,10 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>{t('activities:newVaccination.tableHeaders.animal')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{t('activities:newVaccination.tableHeaders.sex')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{t('activities:newVaccination.tableHeaders.breed')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{t('activities:newVaccination.tableHeaders.corral')}</TableHead>
+                    <TableHead>{t('newVaccination.tableHeaders.animal')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('newVaccination.tableHeaders.sex')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('newVaccination.tableHeaders.breed')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{t('newVaccination.tableHeaders.corral')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,17 +288,17 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{animal.name || t('activities:newVaccination.noName')}</div>
+                          <div className="font-medium text-sm">{animal.name || t('common:noName')}</div>
                           <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                           <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
-                            {animal.sex || t('activities:newVaccination.notSpecifiedShort')} • {animal.breed || t('activities:newVaccination.notSpecifiedShort')}
+                            {animal.sex || t('newVaccination.notSpecifiedShort')} • {animal.breed || t('newVaccination.notSpecifiedShort')}
                           </div>
                         </div>
                       </TableCell>
-                       <TableCell className="hidden sm:table-cell text-sm">{animal.sex || t('activities:newVaccination.notSpecified')}</TableCell>
-                       <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('activities:newVaccination.notSpecified')}</TableCell>
+                       <TableCell className="hidden sm:table-cell text-sm">{animal.sex || t('newVaccination.notSpecified')}</TableCell>
+                       <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('newVaccination.notSpecified')}</TableCell>
                        <TableCell className="hidden lg:table-cell text-sm">
-                         {animal.corral_name || t('activities:newVaccination.notAssigned')}
+                         {animal.corral_name || t('newVaccination.notAssigned')}
                        </TableCell>
                     </TableRow>
                   ))}
@@ -315,13 +315,13 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              {t('activities:newVaccination.cancel')}
+              {t('common:cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={loading || selectedAnimals.length === 0 || !vacuna.trim()}
             >
-              {loading ? t('activities:newVaccination.saving') : t('activities:newVaccination.registerButton')}
+              {loading ? t('newVaccination.saving') : t('newVaccination.registerButton')}
             </Button>
           </div>
         </div>
