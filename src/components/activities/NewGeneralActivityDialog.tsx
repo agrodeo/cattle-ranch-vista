@@ -470,7 +470,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
               <Label className="text-sm font-medium">
                 {t('newGeneralActivity.animalsLabel')} ({filteredAnimals.length} {t('common.of')} {animals.length})
               </Label>
-              <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto">
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -478,10 +478,10 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                   onClick={() => setSelectedAnimals(filteredAnimals.map(a => a.id))} 
                   className="flex-1 sm:flex-initial"
                 >
-                  {t('activities:common.all')}
+                  {t('activities:newGeneralActivity.all')}
                 </Button>
                 <Button type="button" variant="outline" size="sm" onClick={clearSelection} className="flex-1 sm:flex-initial">
-                  {t('activities:common.clear')}
+                  {t('activities:newGeneralActivity.clear')}
                 </Button>
               </div>
             </div>
@@ -618,7 +618,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={`Describe los detalles de ${selectedActivityType?.label || 'la actividad'}...`}
+              placeholder={t('newGeneralActivity.notesPlaceholder')}
               rows={4}
             />
           </div>
