@@ -493,7 +493,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                 <div className="relative">
                   <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Nombre o ID..."
+                    placeholder={t('newGeneralActivity.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-8 h-9"
@@ -502,15 +502,15 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Sexo</Label>
+                <Label className="text-xs">{t('newGeneralActivity.sex')}</Label>
                 <Select value={filterSex} onValueChange={setFilterSex}>
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('activities:common.all')}</SelectItem>
-                    <SelectItem value="Macho">Machos</SelectItem>
-                    <SelectItem value="Hembra">Hembras</SelectItem>
+                    <SelectItem value="Macho">{t('newGeneralActivity.males')}</SelectItem>
+                    <SelectItem value="Hembra">{t('newGeneralActivity.females')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -522,19 +522,19 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="Ternero">Terneros</SelectItem>
-                    <SelectItem value="Ternera">Terneras</SelectItem>
-                    <SelectItem value="Novillo">Novillos</SelectItem>
-                    <SelectItem value="Vaquillona">Vaquillonas</SelectItem>
-                    <SelectItem value="Toro">Toros</SelectItem>
-                    <SelectItem value="Vaca">Vacas</SelectItem>
+                    <SelectItem value="all">{t('newGeneralActivity.allCategories')}</SelectItem>
+                    <SelectItem value="Ternero">{t('newGeneralActivity.calves')}</SelectItem>
+                    <SelectItem value="Ternera">{t('newGeneralActivity.heiferCalves')}</SelectItem>
+                    <SelectItem value="Novillo">{t('newGeneralActivity.steers')}</SelectItem>
+                    <SelectItem value="Vaquillona">{t('newGeneralActivity.heifers')}</SelectItem>
+                    <SelectItem value="Toro">{t('newGeneralActivity.bulls')}</SelectItem>
+                    <SelectItem value="Vaca">{t('newGeneralActivity.cows')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs">Corral</Label>
+                <Label className="text-xs">{t('newGeneralActivity.corral')}</Label>
                 <Select value={filterCorral} onValueChange={setFilterCorral}>
                   <SelectTrigger className="h-9">
                     <SelectValue />
