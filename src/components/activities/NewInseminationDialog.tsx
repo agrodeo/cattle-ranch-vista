@@ -261,7 +261,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Inseminación Artificial</h1>
+          <h1 className="text-xl font-semibold">{t('activities:newInsemination.mobileTitle')}</h1>
         </div>
 
         {/* Mobile Content */}
@@ -269,10 +269,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           {animals.length === 0 && !loading && (
             <div className="text-center py-8">
               <p className="text-muted-foreground mb-2">
-                No hay hembras elegibles para inseminación artificial.
+                {t('activities:newInsemination.noEligibleFemales')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Se requieren hembras ≥15 meses que no estén preñadas.
+                {t('activities:newInsemination.eligibilityRequirements')}
               </p>
             </div>
           )}
@@ -302,12 +302,12 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="toro_nombre">Nombre del Toro *</Label>
+                <Label htmlFor="toro_nombre">{t('activities:newInsemination.bullNameLabel')}</Label>
                 <Input
                   id="toro_nombre"
                   value={toroNombre}
                   onChange={(e) => setToroNombre(e.target.value)}
-                  placeholder="Nombre o código del toro"
+                  placeholder={t('activities:newInsemination.bullNamePlaceholder')}
                 />
               </div>
 
@@ -334,10 +334,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
 
             {/* Bull Additional Details */}
             <div className="space-y-4">
-              <Label className="text-sm font-medium">Datos Adicionales del Toro</Label>
+              <Label className="text-sm font-medium">{t('activities:newInsemination.additionalData')}</Label>
               <div className="grid gap-4 grid-cols-2">
                 <div className="space-y-2">
-                  <Label className="text-xs">Peso Nacimiento (kg)</Label>
+                  <Label className="text-xs">{t('activities:newInsemination.birthWeight')}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -348,7 +348,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Peso Destete (kg)</Label>
+                  <Label className="text-xs">{t('activities:newInsemination.weaningWeight')}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -359,7 +359,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Peso Final (kg)</Label>
+                  <Label className="text-xs">{t('activities:newInsemination.finalWeight')}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -370,7 +370,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">CE (cm)</Label>
+                  <Label className="text-xs">{t('activities:newInsemination.ce')}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -381,20 +381,20 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Registro Racial</Label>
+                  <Label className="text-xs">{t('activities:newInsemination.registration')}</Label>
                   <Input
                     value={extrasToro.registro}
                     onChange={(e) => setExtrasToro(prev => ({ ...prev, registro: e.target.value }))}
-                    placeholder="Número de registro"
+                    placeholder={t('activities:newInsemination.registrationPlaceholder')}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-xs">Origen</Label>
+                  <Label className="text-xs">{t('activities:newInsemination.origin')}</Label>
                   <Input
                     value={extrasToro.origen}
                     onChange={(e) => setExtrasToro(prev => ({ ...prev, origen: e.target.value }))}
-                    placeholder="País/región de origen"
+                    placeholder={t('activities:newInsemination.originPlaceholder')}
                   />
                 </div>
               </div>
@@ -415,14 +415,14 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium">
-                  Hembras Elegibles ({animals.length})
+                  {t('activities:newInsemination.eligibleFemalesCount', { count: animals.length })}
                 </Label>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                    Todas
+                    {t('activities:newInsemination.all')}
                   </Button>
                   <Button variant="outline" size="sm" onClick={clearSelection}>
-                    Limpiar
+                    {t('activities:newInsemination.clear')}
                   </Button>
                 </div>
               </div>
@@ -437,13 +437,13 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
                       }
                     />
                     <div className="flex-1">
-                      <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                      <div className="font-medium">{animal.name || t('activities:newInsemination.noName')}</div>
                       <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
                       <div className="text-xs text-muted-foreground">
                         {animal.birth_date ? 
-                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
-                          : "No registrada"
-                        } • {animal.breed || "No especificada"}
+                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('activities:newInsemination.months')}`
+                          : t('activities:newInsemination.notRecorded')
+                        } • {animal.breed || t('activities:newInsemination.notSpecified')}
                       </div>
                     </div>
                     <div className="flex items-center gap-1">

@@ -121,8 +121,8 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
       if (invalidRecords.length > 0) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Todos los animales seleccionados deben tener un peso válido",
+          title: t('activities:newWeighing.errorTitle'),
+          description: t('activities:newWeighing.errorInvalidWeight'),
         });
         return;
       }
@@ -149,8 +149,8 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
       if (error) throw error;
 
       toast({
-        title: "Pesaje registrado",
-        description: `Se registraron ${selectedAnimals.length} pesajes`,
+        title: t('activities:newWeighing.successTitle'),
+        description: t('activities:newWeighing.successDesc', { count: selectedAnimals.length }),
       });
 
       // Reset form
@@ -165,8 +165,8 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
       console.error("Error saving weighing:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo registrar el pesaje",
+        title: t('activities:newWeighing.errorTitle'),
+        description: t('activities:newWeighing.errorSaving'),
       });
     } finally {
       setLoading(false);
@@ -177,19 +177,19 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Registrar Pesaje</DialogTitle>
+          <DialogTitle>{t('activities:newWeighing.title')}</DialogTitle>
           <DialogDescription>
-            Registre el peso de los animales
+            {t('activities:newWeighing.description')}
           </DialogDescription>
         </DialogHeader>
         
         {animals.length === 0 && !loading && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-2">
-              No hay animales elegibles para pesaje.
+              {t('activities:newWeighing.noEligibleAnimals')}
             </p>
             <p className="text-sm text-muted-foreground">
-              Verifica que tengas animales activos en tu cabaña.
+              {t('activities:newWeighing.checkActiveAnimals')}
             </p>
           </div>
         )}
@@ -198,7 +198,7 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
           {/* Weighing Details */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fecha">Fecha de Pesaje</Label>
+              <Label htmlFor="fecha">{t('activities:newWeighing.dateLabel')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -219,12 +219,12 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notas">Observaciones</Label>
+              <Label htmlFor="notas">{t('activities:newWeighing.observations')}</Label>
               <Textarea
                 id="notas"
                 value={notas}
                 onChange={(e) => setNotas(e.target.value)}
-                placeholder="Observaciones del pesaje..."
+                placeholder={t('activities:newWeighing.observationsPlaceholder')}
                 rows={3}
               />
             </div>
@@ -234,14 +234,14 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                Animales ({animals.length} disponibles)
+                {t('activities:newWeighing.animalsLabel')} ({animals.length} {t('activities:common.available')})
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  {t('activities:common.selectAll')}
+                  {t('activities:newWeighing.selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  {t('activities:common.clear')}
+                  {t('activities:newWeighing.clear')}
                 </Button>
               </div>
             </div>
@@ -262,10 +262,10 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
                         className="mt-1"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm truncate">{animal.name || "Sin nombre"}</div>
+                        <div className="font-medium text-sm truncate">{animal.name || t('activities:newWeighing.noName')}</div>
                         <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          {animal.sex || "No esp."} • {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
+                          {animal.sex || t('activities:newWeighing.notSpecifiedShort')} • {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : t('activities:newWeighing.notRecorded')}
                         </div>
                       </div>
                     </div>
@@ -278,7 +278,7 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
                           inputMode="decimal"
                           value={record?.weight || ""}
                           onChange={(e) => updateWeight(animal.id, e.target.value)}
-                          placeholder="Peso en kg"
+                          placeholder={t('activities:newWeighing.weightPlaceholder')}
                           className="text-base h-12 flex-1"
                         />
                         <Scale className="h-5 w-5 text-muted-foreground" />
@@ -295,10 +295,10 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Animal</TableHead>
-                    <TableHead>Sexo</TableHead>
-                    <TableHead>Peso Actual</TableHead>
-                    <TableHead>Nuevo Peso (kg)</TableHead>
+                    <TableHead>{t('activities:newWeighing.tableHeaders.animal')}</TableHead>
+                    <TableHead>{t('activities:newWeighing.tableHeaders.sex')}</TableHead>
+                    <TableHead>{t('activities:newWeighing.tableHeaders.currentWeight')}</TableHead>
+                    <TableHead>{t('activities:newWeighing.tableHeaders.newWeight')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -316,13 +316,13 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                            <div className="font-medium text-sm">{animal.name || t('activities:newWeighing.noName')}</div>
                             <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                           </div>
                         </TableCell>
-                        <TableCell className="text-sm">{animal.sex || "No especificado"}</TableCell>
+                        <TableCell className="text-sm">{animal.sex || t('activities:newWeighing.notSpecified')}</TableCell>
                         <TableCell className="text-sm">
-                          {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : "No registrado"}
+                          {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : t('activities:newWeighing.notRecorded')}
                         </TableCell>
                         <TableCell>
                           {selectedAnimals.includes(animal.id) && (
@@ -333,7 +333,7 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
                                 min="0"
                                 value={record?.weight || ""}
                                 onChange={(e) => updateWeight(animal.id, e.target.value)}
-                                placeholder="Peso en kg"
+                                placeholder={t('activities:newWeighing.weightPlaceholder')}
                                 className="w-32"
                               />
                               <Scale className="h-4 w-4 text-muted-foreground" />
@@ -356,13 +356,13 @@ export function NewWeighingDialog({ open: externalOpen, onOpenChange, onSuccess 
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancelar
+              {t('activities:newWeighing.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={loading || selectedAnimals.length === 0}
             >
-              {loading ? "Guardando..." : "Registrar Pesaje"}
+              {loading ? t('activities:newWeighing.saving') : t('activities:newWeighing.registerButton')}
             </Button>
           </div>
         </div>

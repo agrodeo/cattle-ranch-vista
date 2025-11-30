@@ -179,7 +179,7 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
           {/* Vaccination Details */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="fecha">Fecha de Vacunación *</Label>
+              <Label htmlFor="fecha">{t('activities:newVaccination.dateLabel')}</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -207,43 +207,43 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
             />
 
             <div className="space-y-2">
-              <Label htmlFor="lote">Lote</Label>
+              <Label htmlFor="lote">{t('activities:newVaccination.lot')}</Label>
               <Input
                 id="lote"
                 value={lote}
                 onChange={(e) => setLote(e.target.value)}
-                placeholder="Número de lote"
+                placeholder={t('activities:newVaccination.lotNumber')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="dosis">Dosis</Label>
+              <Label htmlFor="dosis">{t('activities:newVaccination.dose')}</Label>
               <Input
                 id="dosis"
                 value={dosis}
                 onChange={(e) => setDosis(e.target.value)}
-                placeholder="Cantidad de dosis"
+                placeholder={t('activities:newVaccination.doseAmount')}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="via">Vía de Administración</Label>
+              <Label htmlFor="via">{t('activities:newVaccination.route')}</Label>
               <Input
                 id="via"
                 value={via}
                 onChange={(e) => setVia(e.target.value)}
-                placeholder="Intramuscular, subcutánea, etc."
+                placeholder={t('activities:newVaccination.routePlaceholder')}
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notas">Observaciones</Label>
+            <Label htmlFor="notas">{t('activities:newVaccination.observations')}</Label>
             <Textarea
               id="notas"
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
-              placeholder="Observaciones adicionales..."
+              placeholder={t('activities:newVaccination.additionalObservations')}
               rows={3}
             />
           </div>
@@ -252,14 +252,14 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label className="text-sm font-medium">
-                Animales ({animals.length} disponibles)
+                {t('activities:newVaccination.animalsLabel')} ({animals.length} {t('activities:common.available')})
               </Label>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  {t('activities:common.selectAll')}
+                  {t('activities:newVaccination.selectAll')}
                 </Button>
                 <Button variant="outline" size="sm" onClick={clearSelection}>
-                  {t('activities:common.clear')}
+                  {t('activities:newVaccination.clear')}
                 </Button>
               </div>
             </div>
@@ -269,10 +269,10 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Animal</TableHead>
-                    <TableHead className="hidden sm:table-cell">Sexo</TableHead>
-                    <TableHead className="hidden md:table-cell">Raza</TableHead>
-                    <TableHead className="hidden lg:table-cell">Corral</TableHead>
+                    <TableHead>{t('activities:newVaccination.tableHeaders.animal')}</TableHead>
+                    <TableHead className="hidden sm:table-cell">{t('activities:newVaccination.tableHeaders.sex')}</TableHead>
+                    <TableHead className="hidden md:table-cell">{t('activities:newVaccination.tableHeaders.breed')}</TableHead>
+                    <TableHead className="hidden lg:table-cell">{t('activities:newVaccination.tableHeaders.corral')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,16 +288,16 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                       </TableCell>
                       <TableCell>
                         <div>
-                          <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                          <div className="font-medium text-sm">{animal.name || t('activities:newVaccination.noName')}</div>
                           <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                           <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
-                            {animal.sex || "No esp."} • {animal.breed || "No esp."}
+                            {animal.sex || t('activities:newVaccination.notSpecifiedShort')} • {animal.breed || t('activities:newVaccination.notSpecifiedShort')}
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell text-sm">{animal.sex || "No especificado"}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || "No especificada"}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm">{animal.corral_id || "Sin asignar"}</TableCell>
+                      <TableCell className="hidden sm:table-cell text-sm">{animal.sex || t('activities:newVaccination.notSpecified')}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('activities:newVaccination.notSpecified')}</TableCell>
+                      <TableCell className="hidden lg:table-cell text-sm">{animal.corral_id || t('activities:newVaccination.notAssigned')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -313,13 +313,13 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
 
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              Cancelar
+              {t('activities:newVaccination.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={loading || selectedAnimals.length === 0 || !vacuna.trim()}
             >
-              {loading ? "Guardando..." : "Registrar Vacunación"}
+              {loading ? t('activities:newVaccination.saving') : t('activities:newVaccination.registerButton')}
             </Button>
           </div>
         </div>
