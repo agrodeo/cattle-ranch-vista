@@ -24,7 +24,7 @@ interface VaccinationDialogProps {
 }
 
 export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSuccess }: VaccinationDialogProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(['activities', 'common']);
   const [open, setOpen] = useState(externalOpen || false);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
@@ -295,9 +295,11 @@ export function NewVaccinationDialog({ open: externalOpen, onOpenChange, onSucce
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="hidden sm:table-cell text-sm">{animal.sex || t('activities:newVaccination.notSpecified')}</TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('activities:newVaccination.notSpecified')}</TableCell>
-                      <TableCell className="hidden lg:table-cell text-sm">{animal.corral_id || t('activities:newVaccination.notAssigned')}</TableCell>
+                       <TableCell className="hidden sm:table-cell text-sm">{animal.sex || t('activities:newVaccination.notSpecified')}</TableCell>
+                       <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('activities:newVaccination.notSpecified')}</TableCell>
+                       <TableCell className="hidden lg:table-cell text-sm">
+                         {animal.corral_name || t('activities:newVaccination.notAssigned')}
+                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
