@@ -455,12 +455,12 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="responsible">Responsable</Label>
+            <Label htmlFor="responsible">{t('newGeneralActivity.responsible')}</Label>
             <Input
               id="responsible"
               value={responsiblePerson}
               onChange={(e) => setResponsiblePerson(e.target.value)}
-              placeholder="Nombre del responsable"
+              placeholder={t('newGeneralActivity.responsiblePlaceholder')}
             />
           </div>
 
@@ -468,7 +468,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <Label className="text-sm font-medium">
-                Animales ({filteredAnimals.length} de {animals.length})
+                {t('newGeneralActivity.animalsLabel')} ({filteredAnimals.length} {t('common.of')} {animals.length})
               </Label>
               <div className="flex gap-2 w-full sm:w-auto">
                 <Button 
@@ -553,16 +553,16 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
             <div className="border rounded-lg max-h-60 overflow-y-auto">
               {loadingAnimals ? (
-                <div className="p-4 text-center">Cargando animales...</div>
+                <div className="p-4 text-center">{t('newGeneralActivity.loadingAnimals')}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-12"></TableHead>
-                      <TableHead>Animal</TableHead>
-                      <TableHead className="hidden sm:table-cell">Sexo</TableHead>
-                      <TableHead className="hidden md:table-cell">Raza</TableHead>
-                      <TableHead className="hidden lg:table-cell">Corral</TableHead>
+                      <TableHead>{t('newGeneralActivity.tableHeaders.animal')}</TableHead>
+                      <TableHead className="hidden sm:table-cell">{t('newGeneralActivity.tableHeaders.sex')}</TableHead>
+                      <TableHead className="hidden md:table-cell">{t('common.breed')}</TableHead>
+                      <TableHead className="hidden lg:table-cell">{t('newGeneralActivity.tableHeaders.corral')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -585,14 +585,14 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div className="font-medium text-sm">{animal.name || "Sin nombre"}</div>
+                              <div className="font-medium text-sm">{animal.name || t('newGeneralActivity.noName')}</div>
                               <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
                             </div>
                           </TableCell>
                           <TableCell className="hidden sm:table-cell text-sm">{animal.sex}</TableCell>
                           <TableCell className="hidden md:table-cell text-sm">{animal.breed}</TableCell>
                           <TableCell className="hidden lg:table-cell text-sm">
-                            {animal.corral?.name || "Sin corral"}
+                            {animal.corral?.name || t('newGeneralActivity.noCorral')}
                           </TableCell>
                         </TableRow>
                       ))

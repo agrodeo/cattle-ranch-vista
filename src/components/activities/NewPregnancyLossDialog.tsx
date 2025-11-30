@@ -108,8 +108,8 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
       console.error("Error loading pregnant animals:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los animales preñados",
+        title: t('common.error'),
+        description: t('newPregnancyLoss.errorLoading'),
       });
     } finally {
       setLoading(false);
@@ -154,8 +154,8 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
     if (!selectedPregnancy || !lossType || !lossReason) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: t('activities:newPregnancyLoss.errorRequired'),
+        title: t('common.error'),
+        description: t('newPregnancyLoss.errorRequired'),
       });
       return;
     }
@@ -163,7 +163,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
     setLoading(true);
     try {
       const pregnancy = pregnantAnimals.find(p => p.id === selectedPregnancy);
-      if (!pregnancy) throw new Error("Animal preñado no encontrado");
+      if (!pregnancy) throw new Error(t('newPregnancyLoss.errorAnimalNotFound'));
 
       const startDate = new Date(pregnancy.fecha_inicio);
       const gestationalDays = Math.floor((lossDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -226,8 +226,8 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
       if (animalError) throw animalError;
 
       toast({
-        title: "Pérdida registrada",
-        description: `Se registró la pérdida reproductiva para ${pregnancy.animal_name || pregnancy.animal_tag}`,
+        title: t('newPregnancyLoss.successTitle'),
+        description: t('newPregnancyLoss.successDesc'),
       });
 
       // Reset form
@@ -244,8 +244,8 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
       console.error('Error registering pregnancy loss:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudo registrar la pérdida reproductiva",
+        title: t('common.error'),
+        description: t('newPregnancyLoss.errorSaving'),
       });
     } finally {
       setLoading(false);
@@ -268,7 +268,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
         <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
-            <h2 className="font-semibold text-lg">Pérdida de Preñez</h2>
+            <h2 className="font-semibold text-lg">{t('newPregnancyLoss.mobileTitle')}</h2>
           </div>
           <Button 
             variant="ghost" 
@@ -286,20 +286,20 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
         <DialogHeader className="hidden lg:block">
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
-            Registrar Pérdida de Preñez
+            {t('newPregnancyLoss.dialogTitle')}
           </DialogTitle>
           <DialogDescription>
-            Registre una pérdida reproductiva para una hembra preñada
+            {t('newPregnancyLoss.dialogDescription')}
           </DialogDescription>
         </DialogHeader>
 
         {pregnantAnimals.length === 0 && !loading && (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-2">
-              No hay animales con preñeces activas.
+              {t('newPregnancyLoss.noActivePregnancies')}
             </p>
             <p className="text-sm text-muted-foreground">
-              Solo puedes registrar pérdidas para animales con preñeces confirmadas.
+              {t('newPregnancyLoss.onlyConfirmedPregnancies')}
             </p>
           </div>
         )}
@@ -317,10 +317,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
                   <SelectItem key={animal.id} value={animal.id}>
                     <div>
                       <div className="font-medium">
-                        {animal.animal_name || "Sin nombre"} - {animal.animal_tag}
+                        {animal.animal_name || t('newPregnancyLoss.noName')} - {animal.animal_tag}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Preñez desde: {format(new Date(animal.fecha_inicio), 'dd/MM/yyyy', { locale: es })}
+                        {t('newPregnancyLoss.pregnancySince')}: {format(new Date(animal.fecha_inicio), 'dd/MM/yyyy', { locale: es })}
                       </div>
                     </div>
                   </SelectItem>
@@ -332,13 +332,13 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
           {/* Pregnancy Info */}
           {selectedAnimal && (
             <div className="bg-muted p-4 rounded-lg">
-              <h4 className="font-medium mb-2">Información de la Preñez</h4>
+              <h4 className="font-medium mb-2">{t('newPregnancyLoss.pregnancyInfo')}</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-muted-foreground">Inicio:</span> {format(new Date(selectedAnimal.fecha_inicio), 'dd/MM/yyyy', { locale: es })}
+                  <span className="text-muted-foreground">{t('newPregnancyLoss.pregnancySince')}:</span> {format(new Date(selectedAnimal.fecha_inicio), 'dd/MM/yyyy', { locale: es })}
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Días de gestación:</span> {gestationalDays} días
+                  <span className="text-muted-foreground">{t('newPregnancyLoss.gestationDays')}:</span> {gestationalDays} {t('newPregnancyLoss.days')}
                 </div>
               </div>
             </div>
@@ -346,7 +346,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Loss Date */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">Fecha de Pérdida *</Label>
+            <Label className="text-base font-medium">{t('newPregnancyLoss.lossDate')} *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full h-12 justify-start text-left font-normal">
@@ -417,9 +417,9 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Observations */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">Observaciones</Label>
+            <Label className="text-base font-medium">{t('newPregnancyLoss.observations')}</Label>
             <Textarea
-              placeholder="Detalles adicionales sobre la pérdida reproductiva..."
+              placeholder={t('newPregnancyLoss.observationsPlaceholder')}
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
               rows={3}
@@ -434,14 +434,14 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
               onClick={() => handleOpenChange(false)}
               className="h-12 lg:h-10 w-full lg:w-auto"
             >
-              Cancelar
+              {t('newPregnancyLoss.cancel')}
             </Button>
             <Button 
               onClick={handleSubmit} 
               disabled={loading || !selectedPregnancy || !lossType || !lossReason}
               className="h-12 lg:h-10 w-full lg:w-auto bg-orange-600 hover:bg-orange-700"
             >
-              {loading ? "Registrando..." : "Registrar Pérdida"}
+              {loading ? t('newPregnancyLoss.registering') : t('newPregnancyLoss.registerButton')}
             </Button>
           </div>
         </div>
