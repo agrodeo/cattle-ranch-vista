@@ -20,6 +20,7 @@ interface EligibleAnimal {
   birth_date: string;
   breed: string;
   corral_id: string;
+  corral_name?: string;
   esta_preñada?: boolean;
   peso_actual_kg?: number;
 }
@@ -95,7 +96,12 @@ export function useActivities() {
       
       let query = supabase
         .from("animals")
-        .select("*")
+        .select(`
+          *,
+          corrales:corral_id (
+            name
+          )
+        `)
         .eq("cabaña_id", currentUser.cabañaId);
 
       // Apply specific filters based on activity type - exclude sold and dead animals
@@ -120,8 +126,14 @@ export function useActivities() {
 
       if (error) throw error;
 
+      // Map animals to include corral_name from the joined corrales table
+      const mappedAnimals = animals?.map(animal => ({
+        ...animal,
+        corral_name: animal.corrales?.name || null
+      })) || [];
+
       // Filter by age (>= 15 months for reproductive activities)
-      const eligibleAnimals = animals?.filter(animal => {
+      const eligibleAnimals = mappedAnimals.filter(animal => {
         if (['IA', 'TACTO'].includes(activityType) && animal.birth_date) {
           const ageInMonths = Math.floor(
             (new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
