@@ -582,6 +582,7 @@
   "vaccination": {
     "vaccineLabel": "Vacina *",
     "selectVaccine": "Selecionar vacina",
+    "selectVaccineHelp": "Selecione uma vacina das configuradas no seu rebanho ou adicione uma personalizada",
     "configuredVaccines": "Vacinas Configuradas para Seu Rebanho",
     "mandatory": "Obrigatória",
     "doses": "doses",

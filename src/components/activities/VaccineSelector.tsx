@@ -149,7 +149,7 @@ export function VaccineSelector({
       
       <p className="text-xs text-muted-foreground">
         {requirements.length > 0 
-          ? t('activities:vaccination.selectConfiguredOrCustom')
+          ? t('activities:vaccination.selectVaccineHelp')
           : t('activities:vaccination.configureOrAddCustom')
         }
       </p>

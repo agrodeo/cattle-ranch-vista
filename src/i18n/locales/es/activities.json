@@ -408,7 +408,7 @@
   },
   "newVaccination": {
     "title": "Registrar Vacunación",
-    "description": "Registre la aplicación de vacunas a los animales",
+    "description": "Registra la aplicación de vacunas a tus animales",
     "date": "Fecha de Vacunación",
     "dateLabel": "Fecha de Vacunación *",
     "vaccine": "Vacuna",
@@ -759,6 +759,7 @@
   "vaccination": {
     "vaccineLabel": "Vacuna *",
     "selectVaccine": "Seleccionar vacuna",
+    "selectVaccineHelp": "Selecciona una vacuna de las configuradas en tu cabaña o agrega una personalizada",
     "configuredVaccines": "Vacunas Configuradas para tu Cabaña",
     "mandatory": "Obligatoria",
     "doses": "dosis",
