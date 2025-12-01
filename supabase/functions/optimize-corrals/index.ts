@@ -120,7 +120,13 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { cabanaId, language = 'es', objective = 'consanguinity' } = await req.json();
+    const { 
+      cabanaId, 
+      language = 'es', 
+      objective = 'consanguinity',
+      sourceCorrals = [],
+      destinationCorrals = [],
+    } = await req.json();
 
     if (!cabanaId) {
       return new Response(JSON.stringify({ error: 'cabanaId is required' }), {
@@ -128,6 +134,8 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log(`Source corrals: ${sourceCorrals.length}, Destination corrals: ${destinationCorrals.length}`);
 
     const t = translations[language as LanguageType] || translations.es;
 
@@ -178,6 +186,13 @@ serve(async (req) => {
       animal_count: corralAnimals[corral.id]?.length || 0,
     }));
 
+    // Filter animals based on source corrals
+    const animalsToOptimize = sourceCorrals.length > 0
+      ? animals.filter((a: Animal) => a.corral_id && sourceCorrals.includes(a.corral_id))
+      : animals;
+
+    console.log(`Total animals: ${animals.length}, Animals to optimize: ${animalsToOptimize.length}`);
+
     // Initialize issues and moves
     const consanguinityRisks: any[] = [];
     const capacityIssues: any[] = [];
@@ -187,11 +202,16 @@ serve(async (req) => {
 
     // Helper function
     const findBestDestination = (animal: Animal, exclude: string[] = []): { corral: Corral; reason: string } | null => {
-      const availableCorrals = corralsWithCounts.filter(c => {
+      let availableCorrals = corralsWithCounts.filter(c => {
         if (exclude.includes(c.id)) return false;
         const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
         return c.animal_count < capacity;
       });
+
+      // Filter by destination corrals if specified
+      if (destinationCorrals.length > 0) {
+        availableCorrals = availableCorrals.filter(c => destinationCorrals.includes(c.id));
+      }
 
       if (availableCorrals.length === 0) return null;
 
@@ -208,7 +228,7 @@ serve(async (req) => {
 
     // Always detect separation issues (Priority 1)
     const MAX_CALF_AGE_MONTHS = 8;
-    for (const animal of animals) {
+    for (const animal of animalsToOptimize) {
       if (animal.mother_id && animal.birth_date) {
         const ageMonths = calculateAgeInMonths(animal.birth_date);
         if (ageMonths < MAX_CALF_AGE_MONTHS) {
@@ -330,7 +350,7 @@ serve(async (req) => {
       });
 
       // Group high fertility females together
-      const highFertilityFemales = animals.filter(a => 
+      const highFertilityFemales = animalsToOptimize.filter(a =>
         a.sex === 'Hembra' && 
         (fertilityScores[a.id] || 50) >= 70 &&
         !movedAnimals.has(a.id)
@@ -368,7 +388,7 @@ serve(async (req) => {
       // Calculate weight genetics scores
       const weightScores: Record<string, number> = {};
       
-      animals.forEach((animal: Animal) => {
+      animalsToOptimize.forEach((animal: Animal) => {
         let score = 0;
         if (animal.peso_actual_kg) score += animal.peso_actual_kg * 0.3;
         if (animal.ganancia_diaria_kg) score += animal.ganancia_diaria_kg * 100;
@@ -377,7 +397,7 @@ serve(async (req) => {
       });
 
       // Group high weight genetics animals
-      const highWeightAnimals = animals.filter(a => 
+      const highWeightAnimals = animalsToOptimize.filter(a =>
         (weightScores[a.id] || 0) >= 100 &&
         !movedAnimals.has(a.id)
       );
@@ -464,6 +484,44 @@ serve(async (req) => {
       expectedImprovement = t.expectedImprovementWeight.replace('{{count}}', count.toString());
     }
 
+    // Generate preview data (before and after states)
+    const beforeState = corralsWithCounts.map(corral => ({
+      corral_id: corral.id,
+      corral_name: corral.name,
+      count: corral.animal_count,
+      capacity: corral.capacity,
+      animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+    }));
+
+    // Calculate after state by applying suggested moves
+    const afterCounts: Record<string, number> = {};
+    corralsWithCounts.forEach(c => {
+      afterCounts[c.id] = c.animal_count;
+    });
+
+    suggestedMoves.forEach(move => {
+      if (move.from_corral_id && afterCounts[move.from_corral_id] !== undefined) {
+        afterCounts[move.from_corral_id]--;
+      }
+      if (afterCounts[move.to_corral_id] !== undefined) {
+        afterCounts[move.to_corral_id]++;
+      }
+    });
+
+    const afterState = corralsWithCounts.map(corral => ({
+      corral_id: corral.id,
+      corral_name: corral.name,
+      count: afterCounts[corral.id] || 0,
+      capacity: corral.capacity,
+      animals: [],
+    }));
+
+    const affectedCorrals = new Set<string>();
+    suggestedMoves.forEach(move => {
+      if (move.from_corral_id) affectedCorrals.add(move.from_corral_id);
+      affectedCorrals.add(move.to_corral_id);
+    });
+
     return new Response(
       JSON.stringify({
         objective,
@@ -476,6 +534,11 @@ serve(async (req) => {
         summary: {
           totalMoves: suggestedMoves.length,
           expectedImprovement,
+          affectedCorrals: affectedCorrals.size,
+        },
+        preview: {
+          before: beforeState,
+          after: afterState,
         },
         totalIssues: consanguinityRisks.length + capacityIssues.length + separationIssues.length,
       }),
