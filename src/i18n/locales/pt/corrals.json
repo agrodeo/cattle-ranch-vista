@@ -571,7 +571,7 @@
     "subtitle": "O sistema detectará problemas e sugerirá movimentos",
     "analyzeButton": "Analisar Distribuição",
     "analyzing": "Analisando...",
-    "noIssuesFound": "Nenhum problema encontrado. Sua distribuição é ideal.",
+    "noIssuesFound": "¡Excelente! Sua distribuição de currais é ideal. Não são necessárias mudanças.",
     "analyzeError": "Erro ao analisar currais",
     "issuesFound": "Problemas Encontrados",
     "consanguinityRisks": "Riscos de Consanguinidade",

@@ -570,7 +570,7 @@
     "subtitle": "The system will detect issues and suggest movements",
     "analyzeButton": "Analyze Distribution",
     "analyzing": "Analyzing...",
-    "noIssuesFound": "No issues found. Your distribution is optimal.",
+    "noIssuesFound": "Excellent! Your corral distribution is optimal. No changes needed.",
     "analyzeError": "Error analyzing corrals",
     "issuesFound": "Issues Found",
     "consanguinityRisks": "Consanguinity Risks",

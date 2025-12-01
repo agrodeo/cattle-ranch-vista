@@ -568,7 +568,7 @@
     "subtitle": "El sistema detectará problemas y sugerirá movimientos",
     "analyzeButton": "Analizar Distribución",
     "analyzing": "Analizando...",
-    "noIssuesFound": "No se encontraron problemas. Tu distribución es óptima.",
+    "noIssuesFound": "¡Excelente! Tu distribución de corrales es óptima. No se requieren cambios.",
     "analyzeError": "Error al analizar corrales",
     "issuesFound": "Problemas Encontrados",
     "consanguinityRisks": "Riesgos de Consanguinidad",
