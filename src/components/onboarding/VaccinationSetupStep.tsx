@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -88,6 +89,7 @@ interface VaccinationSetupStepProps {
 }
 
 export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupStepProps) => {
+  const { t } = useTranslation(['onboarding', 'common']);
   const [selectedVaccines, setSelectedVaccines] = useState<Set<number>>(new Set([0, 1])); // Aftosa and Brucelosis selected by default
   const [isLoading, setIsLoading] = useState(false);
   const { createRequirement } = useVaccinationRequirements();
@@ -104,7 +106,7 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
 
   const handleSetupVaccines = async () => {
     if (selectedVaccines.size === 0) {
-      toast.error("Selecciona al menos una vacuna o omite este paso");
+      toast.error(t('onboarding:selectVaccineOrSkip'));
       return;
     }
 
@@ -116,10 +118,10 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
       });
 
       await Promise.all(promises);
-      toast.success("Requisitos de vacunación configurados exitosamente");
+      toast.success(t('onboarding:vaccinationConfiguredSuccess'));
       onComplete();
     } catch (error) {
-      toast.error("Error al configurar las vacunas");
+      toast.error(t('onboarding:errorConfiguringVaccines'));
     } finally {
       setIsLoading(false);
     }

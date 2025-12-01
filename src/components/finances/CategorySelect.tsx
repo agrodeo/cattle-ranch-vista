@@ -77,7 +77,7 @@ export default function CategorySelect({
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Categoría creada");
+      toast.success(t('finance:categorySelect.categoryCreated'));
       queryClient.invalidateQueries({ queryKey: ["finance-categories"] });
       setOpen(false);
       setNewName("");
@@ -117,7 +117,7 @@ export default function CategorySelect({
       {allowCreate && currentUser?.id && (
         <>
           <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
-            + Nueva
+            + {t('common:actions.create')}
           </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent>

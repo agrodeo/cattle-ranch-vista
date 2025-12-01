@@ -1,0 +1,17 @@
+{
+  "selectVaccineOrSkip": "Selecciona al menos una vacuna o omite este paso",
+  "vaccinationConfiguredSuccess": "Requisitos de vacunación configurados exitosamente",
+  "errorConfiguringVaccines": "Error al configurar las vacunas",
+  "vaccinationConfiguration": "Configuración de Vacunas",
+  "selectVaccinesDescription": "Selecciona las vacunas que son obligatorias u opcionales para tu cabaña",
+  "mandatory": "Obligatoria",
+  "onlyGender": "Solo {{gender}}s",
+  "fromMonths": "Desde {{months}} meses",
+  "untilMonths": "Hasta {{months}} meses",
+  "everyMonths": "Cada {{months}} meses",
+  "doses": "{{count}} dosis",
+  "needOtherVaccines": "¿Necesitas otras vacunas específicas?",
+  "addLaterDescription": "Podrás agregarlas más tarde desde la configuración",
+  "configuring": "Configurando...",
+  "configureVaccines": "Configurar Vacunas"
+}

@@ -24,7 +24,11 @@
     "export": "Exportar",
     "import": "Importar",
     "refresh": "Actualizar",
-    "reset": "Restablecer"
+    "reset": "Restablecer",
+    "back": "Volver",
+    "selectAll": "Seleccionar Todos",
+    "deselectAll": "Deseleccionar Todos",
+    "skip": "Omitir"
   },
   "status": {
     "active": "Activo",
@@ -72,7 +76,17 @@
     "error": "Error",
     "hide": "Ocultar",
     "animals": "animales",
-    "unknown": "Desconocido"
+    "unknown": "Desconocido",
+    "ok": "OK",
+    "thinking": "Pensando...",
+    "from": "Desde",
+    "to": "Hasta",
+    "you": "Tú",
+    "howItWorks": "¿Cómo funciona?",
+    "noCorral": "Sin corral",
+    "imageDownloaded": "Imagen descargada",
+    "errorDownloadingImage": "Error al descargar la imagen",
+    "of": "de"
   },
   "validation": {
     "required": "Este campo es requerido",

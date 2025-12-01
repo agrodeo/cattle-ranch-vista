@@ -96,7 +96,8 @@
     "creating": "Criando...",
     "categoryCreated": "Categoria criada com sucesso",
     "categoryError": "Erro ao criar categoria",
-    "loading": "Carregando categorias..."
+    "loading": "Carregando categorias...",
+    "categoryPlaceholder": "Ex. Veterinário"
   },
   "movements": {
     "title": "Movimentos",
@@ -122,7 +123,11 @@
     "errorSaving": "Erro ao salvar movimento",
     "errorDeleting": "Erro ao excluir movimento",
     "confirmDeleteMovement": "Tem certeza de que deseja excluir este movimento?",
-    "requiredFields": "Por favor, preencha todos os campos obrigatórios"
+    "requiredFields": "Por favor, preencha todos os campos obrigatórios",
+    "movementUpdated": "Movimento atualizado",
+    "movementAdded": "Movimento adicionado",
+    "filterByCategory": "Filtrar por categoria",
+    "searchDescription": "Pesquisar descrição"
   },
   "recurringDetails": {
     "title": "Movimentos Recorrentes",
@@ -135,11 +140,14 @@
     "inactive": "Inativo",
     "delete": "Excluir",
     "noRecurring": "Nenhum movimento recorrente configurado",
-    "recurringCreated": "Movimento recorrente criado com sucesso",
-    "recurringDeleted": "Movimento recorrente excluído com sucesso",
+    "recurringCreated": "Recorrente criado",
+    "recurringDeleted": "Recorrente excluído",
     "errorCreating": "Erro ao criar movimento recorrente",
     "errorDeleting": "Erro ao excluir movimento recorrente",
-    "confirmDelete": "Tem certeza de que deseja excluir este movimento recorrente?"
+    "confirmDelete": "Tem certeza de que deseja excluir este movimento recorrente?",
+    "recurringNamePlaceholder": "Nome (ex. Salário)",
+    "descriptionOptional": "Descrição (opcional)",
+    "addRecurring": "Adicionar recorrente"
   },
   "summary": {
     "title": "Resumo Financeiro",

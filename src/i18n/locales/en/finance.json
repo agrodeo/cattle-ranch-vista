@@ -96,7 +96,8 @@
     "creating": "Creating...",
     "categoryCreated": "Category created successfully",
     "categoryError": "Error creating category",
-    "loading": "Loading categories..."
+    "loading": "Loading categories...",
+    "categoryPlaceholder": "E.g. Veterinary"
   },
   "movements": {
     "title": "Movements",
@@ -122,7 +123,11 @@
     "errorSaving": "Error saving movement",
     "errorDeleting": "Error deleting movement",
     "confirmDeleteMovement": "Are you sure you want to delete this movement?",
-    "requiredFields": "Please complete all required fields"
+    "requiredFields": "Please complete all required fields",
+    "movementUpdated": "Movement updated",
+    "movementAdded": "Movement added",
+    "filterByCategory": "Filter by category",
+    "searchDescription": "Search description"
   },
   "recurringDetails": {
     "title": "Recurring Movements",
@@ -135,11 +140,14 @@
     "inactive": "Inactive",
     "delete": "Delete",
     "noRecurring": "No recurring movements configured",
-    "recurringCreated": "Recurring movement created successfully",
-    "recurringDeleted": "Recurring movement deleted successfully",
+    "recurringCreated": "Recurring created",
+    "recurringDeleted": "Recurring deleted",
     "errorCreating": "Error creating recurring movement",
     "errorDeleting": "Error deleting recurring movement",
-    "confirmDelete": "Are you sure you want to delete this recurring movement?"
+    "confirmDelete": "Are you sure you want to delete this recurring movement?",
+    "recurringNamePlaceholder": "Name (e.g. Salary)",
+    "descriptionOptional": "Description (optional)",
+    "addRecurring": "Add recurring"
   },
   "summary": {
     "title": "Financial Summary",

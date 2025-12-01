@@ -173,7 +173,7 @@ export function FinancesMovements() {
       }
     },
     onSuccess: () => {
-      toast.success(editRow ? "Movimiento actualizado" : "Movimiento agregado");
+      toast.success(editRow ? t('finance:movements.movementUpdated') : t('finance:movements.movementAdded'));
       setOpen(false);
       setEditRow(null);
       resetForm();
@@ -197,7 +197,7 @@ export function FinancesMovements() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Movimiento eliminado");
+      toast.success(t('finance:movements.movementDeleted'));
       queryClient.invalidateQueries({ queryKey: ["finances","list"] });
       queryClient.invalidateQueries({ queryKey: ["finances","summary"] });
       queryClient.invalidateQueries({ queryKey: ["finances","reports"] });
