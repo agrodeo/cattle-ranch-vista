@@ -193,6 +193,43 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   };
 
   const handleContinueToPreview = () => {
+    // Generate client-side preview if not provided by API
+    if (!previewData && corrals.length > 0) {
+      const movesToApply = suggestedMoves.filter(m => selectedMoves.has(m.animal_id));
+      
+      const beforeState = corrals.map(c => ({
+        corral_id: c.id,
+        corral_name: c.name,
+        count: c.animal_count,
+        capacity: c.capacity,
+        animals: [],
+      }));
+
+      const afterCounts: Record<string, number> = {};
+      corrals.forEach(c => {
+        afterCounts[c.id] = c.animal_count;
+      });
+
+      movesToApply.forEach(move => {
+        if (move.from_corral_id && afterCounts[move.from_corral_id] !== undefined) {
+          afterCounts[move.from_corral_id]--;
+        }
+        if (afterCounts[move.to_corral_id] !== undefined) {
+          afterCounts[move.to_corral_id]++;
+        }
+      });
+
+      const afterState = corrals.map(c => ({
+        corral_id: c.id,
+        corral_name: c.name,
+        count: afterCounts[c.id] || 0,
+        capacity: c.capacity,
+        animals: [],
+      }));
+
+      setPreviewData({ before: beforeState, after: afterState });
+    }
+    
     setStep('preview');
   };
 
