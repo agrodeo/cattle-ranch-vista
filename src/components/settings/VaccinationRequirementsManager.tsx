@@ -107,7 +107,7 @@ export const VaccinationRequirementsManager = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm("¿Estás seguro de que quieres eliminar este requisito?")) {
+    if (window.confirm(t('settings:vaccines.deleteConfirm'))) {
       await deleteRequirement(id);
     }
   };
@@ -120,24 +120,24 @@ export const VaccinationRequirementsManager = () => {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div>
-          <CardTitle>Requisitos de Vacunación</CardTitle>
+          <CardTitle>{t('settings:vaccines.title')}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Configura las vacunas requeridas para tu cabaña
+            {t('settings:vaccines.subtitle')}
           </p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4 mr-2" />
-              Agregar Vacuna
+              {t('settings:vaccines.addVaccine')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                {editingRequirement ? "Editar Requisito" : "Nuevo Requisito de Vacunación"}
+                {editingRequirement ? t('settings:vaccines.editRequirement') : t('settings:vaccines.newRequirement')}
               </DialogTitle>
             </DialogHeader>
             <Form {...form}>
@@ -148,7 +148,7 @@ export const VaccinationRequirementsManager = () => {
                     name="vaccine_code"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Código de Vacuna</FormLabel>
+                        <FormLabel>{t('settings:vaccines.vaccineCode')}</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="Ej: AFTOSA" />
                         </FormControl>
@@ -161,7 +161,7 @@ export const VaccinationRequirementsManager = () => {
                     name="vaccine_name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nombre de la Vacuna</FormLabel>
+                        <FormLabel>{t('settings:vaccines.vaccineName')}</FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="Ej: Aftosa" />
                         </FormControl>
@@ -176,18 +176,18 @@ export const VaccinationRequirementsManager = () => {
                   name="vaccine_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de Vacuna</FormLabel>
+                      <FormLabel>{t('settings:vaccines.vaccineType')}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccione el tipo" />
+                            <SelectValue placeholder={t('settings:vaccines.selectType')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Viral">Viral</SelectItem>
-                          <SelectItem value="Bacterial">Bacteriana</SelectItem>
-                          <SelectItem value="Parasitic">Parasitaria</SelectItem>
-                          <SelectItem value="Other">Otra</SelectItem>
+                          <SelectItem value="Viral">{t('settings:vaccines.viral')}</SelectItem>
+                          <SelectItem value="Bacterial">{t('settings:vaccines.bacterial')}</SelectItem>
+                          <SelectItem value="Parasitic">{t('settings:vaccines.parasitic')}</SelectItem>
+                          <SelectItem value="Other">{t('settings:vaccines.other')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -200,9 +200,9 @@ export const VaccinationRequirementsManager = () => {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Descripción</FormLabel>
+                      <FormLabel>{t('settings:vaccines.description')}</FormLabel>
                       <FormControl>
-                        <Textarea {...field} placeholder="Descripción opcional" />
+                        <Textarea {...field} placeholder={t('settings:vaccines.optionalDescription')} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -216,9 +216,9 @@ export const VaccinationRequirementsManager = () => {
                     render={({ field }) => (
                       <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-base">Obligatoria</FormLabel>
+                          <FormLabel className="text-base">{t('settings:vaccines.mandatory')}</FormLabel>
                           <p className="text-sm text-muted-foreground">
-                            Esta vacuna es obligatoria
+                            {t('settings:vaccines.mandatoryDescription')}
                           </p>
                         </div>
                         <FormControl>
@@ -235,17 +235,17 @@ export const VaccinationRequirementsManager = () => {
                     name="sex_restriction"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Restricción de Sexo</FormLabel>
+                        <FormLabel>{t('settings:vaccines.sexRestriction')}</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Seleccionar sexo" />
+                              <SelectValue placeholder={t('settings:vaccines.selectSex')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="ninguno">Sin restricción</SelectItem>
-                            <SelectItem value="Macho">Solo Machos</SelectItem>
-                            <SelectItem value="Hembra">Solo Hembras</SelectItem>
+                            <SelectItem value="ninguno">{t('settings:vaccines.noRestriction')}</SelectItem>
+                            <SelectItem value="Macho">{t('settings:vaccines.malesOnly')}</SelectItem>
+                            <SelectItem value="Hembra">{t('settings:vaccines.femalesOnly')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -260,7 +260,7 @@ export const VaccinationRequirementsManager = () => {
                     name="min_age_months"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Edad Mín. (meses)</FormLabel>
+                        <FormLabel>{t('settings:vaccines.minAge')}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -278,13 +278,13 @@ export const VaccinationRequirementsManager = () => {
                     name="max_age_months"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Edad Máx. (meses)</FormLabel>
+                        <FormLabel>{t('settings:vaccines.maxAge')}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             {...field}
                             onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            placeholder="Sin límite"
+                            placeholder={t('settings:vaccines.noLimit')}
                           />
                         </FormControl>
                         <FormMessage />
@@ -296,13 +296,13 @@ export const VaccinationRequirementsManager = () => {
                     name="frequency_months"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Frecuencia (meses)</FormLabel>
+                        <FormLabel>{t('settings:vaccines.frequency')}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
                             {...field}
                             onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : undefined)}
-                            placeholder="Una vez"
+                            placeholder={t('settings:vaccines.onceOnly')}
                           />
                         </FormControl>
                         <FormMessage />
@@ -314,7 +314,7 @@ export const VaccinationRequirementsManager = () => {
                     name="doses_required"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Dosis Requeridas</FormLabel>
+                        <FormLabel>{t('settings:vaccines.dosesRequired')}</FormLabel>
                         <Select 
                           onValueChange={(value) => field.onChange(Number(value))} 
                           value={field.value?.toString() || "1"}
@@ -325,11 +325,11 @@ export const VaccinationRequirementsManager = () => {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="bg-background border z-50">
-                            <SelectItem value="1">1 dosis</SelectItem>
-                            <SelectItem value="2">2 dosis</SelectItem>
-                            <SelectItem value="3">3 dosis</SelectItem>
-                            <SelectItem value="4">4 dosis</SelectItem>
-                            <SelectItem value="5">5 dosis</SelectItem>
+                            <SelectItem value="1">1 {t('settings:vaccines.dose')}</SelectItem>
+                            <SelectItem value="2">2 {t('settings:vaccines.doses')}</SelectItem>
+                            <SelectItem value="3">3 {t('settings:vaccines.doses')}</SelectItem>
+                            <SelectItem value="4">4 {t('settings:vaccines.doses')}</SelectItem>
+                            <SelectItem value="5">5 {t('settings:vaccines.doses')}</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -345,7 +345,7 @@ export const VaccinationRequirementsManager = () => {
                     name="interval_between_doses_days"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Intervalo entre dosis (días)</FormLabel>
+                        <FormLabel>{t('settings:vaccines.intervalBetweenDoses')}</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -365,7 +365,7 @@ export const VaccinationRequirementsManager = () => {
                   name="country"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>País</FormLabel>
+                      <FormLabel>{t('settings:vaccines.country')}</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
@@ -384,12 +384,12 @@ export const VaccinationRequirementsManager = () => {
                   )}
                 />
 
-                <div className="flex justify-end space-x-2">
-                  <Button type="button" variant="outline" onClick={handleDialogClose}>
-                    Cancelar
+                <div className="flex flex-col sm:flex-row justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={handleDialogClose} className="w-full sm:w-auto">
+                    {t('settings:vaccines.cancel')}
                   </Button>
-                  <Button type="submit">
-                    {editingRequirement ? "Actualizar" : "Crear"}
+                  <Button type="submit" className="w-full sm:w-auto">
+                    {editingRequirement ? t('settings:vaccines.update') : t('settings:vaccines.create')}
                   </Button>
                 </div>
               </form>
@@ -399,9 +399,9 @@ export const VaccinationRequirementsManager = () => {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p>Cargando requisitos...</p>
+          <p>{t('settings:vaccines.loading')}</p>
         ) : requirements.length === 0 ? (
-          <p className="text-muted-foreground">No hay requisitos de vacunación configurados.</p>
+          <p className="text-muted-foreground">{t('settings:vaccines.noRequirements')}</p>
         ) : (
           <div className="space-y-4">
             {requirements.map((requirement) => (
@@ -410,35 +410,35 @@ export const VaccinationRequirementsManager = () => {
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-medium">{requirement.vaccine_name}</h3>
                     {requirement.is_mandatory && (
-                      <Badge variant="destructive">Obligatoria</Badge>
+                      <Badge variant="destructive">{t('settings:vaccines.mandatory')}</Badge>
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Tipo: {requirement.vaccine_type}
+                    {t('settings:vaccines.type')}: {requirement.vaccine_type}
                   </p>
                   {requirement.description && (
                     <p className="text-sm text-muted-foreground mb-2">
                       {requirement.description}
                     </p>
                   )}
-                  <div className="flex gap-4 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                     {requirement.sex_restriction && (
-                      <span>Sexo: {requirement.sex_restriction}</span>
+                      <span>{t('settings:vaccines.sex')}: {requirement.sex_restriction}</span>
                     )}
                     {requirement.min_age_months && (
-                      <span>Edad mín: {requirement.min_age_months} meses</span>
+                      <span>{t('settings:vaccines.minAgeMonths')}: {requirement.min_age_months} {t('settings:vaccines.months')}</span>
                     )}
                     {requirement.max_age_months && (
-                      <span>Edad máx: {requirement.max_age_months} meses</span>
+                      <span>{t('settings:vaccines.maxAgeMonths')}: {requirement.max_age_months} {t('settings:vaccines.months')}</span>
                     )}
                     {requirement.frequency_months && (
-                      <span>Cada {requirement.frequency_months} meses</span>
+                      <span>{t('settings:vaccines.everyMonths')} {requirement.frequency_months} {t('settings:vaccines.months')}</span>
                     )}
                     {requirement.doses_required && requirement.doses_required > 1 && (
-                      <span>{requirement.doses_required} dosis</span>
+                      <span>{requirement.doses_required} {t('settings:vaccines.doses')}</span>
                     )}
                     {requirement.interval_between_doses_days && (
-                      <span>Intervalo: {requirement.interval_between_doses_days} días</span>
+                      <span>{t('settings:vaccines.interval')}: {requirement.interval_between_doses_days} {t('settings:vaccines.days')}</span>
                     )}
                   </div>
                 </div>
