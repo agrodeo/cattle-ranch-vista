@@ -246,6 +246,14 @@
     "requiresAttention": "Requires immediate attention",
     "viewAnimal": "View animal"
   },
+  "success": {
+    "title": "Success",
+    "uploaded": "File uploaded successfully",
+    "deleted": "Deleted successfully",
+    "verified": "Verified successfully",
+    "migrated": "Migration completed",
+    "resolved": "Resolved successfully"
+  },
   "errors": {
     "unexpectedError": "Unexpected error",
     "reload": "Reload",
