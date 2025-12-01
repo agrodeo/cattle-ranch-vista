@@ -37,26 +37,28 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
   if (currentStep >= steps.length) {
     return (
-      <div className="gradient-mesh min-h-screen flex items-center justify-center p-4 animate-fade-in">
-        <Card className="w-full max-w-md glass card-modern">
-          <CardHeader className="text-center space-y-6">
+      <div className="gradient-mesh min-h-screen flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+        <Card className="w-full max-w-md mx-3 sm:mx-auto glass card-modern">
+          <CardHeader className="text-center space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="flex justify-center">
               <div className="relative">
                 <div className="absolute inset-0 bg-brand-gradient rounded-full blur-xl opacity-30 animate-pulse" />
-                <div className="relative bg-brand-gradient p-6 rounded-full shadow-lg">
-                  <CheckCircle className="h-16 w-16 text-white" />
+                <div className="relative bg-brand-gradient p-5 sm:p-6 rounded-full shadow-lg">
+                  <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
                 </div>
               </div>
             </div>
             <div className="space-y-2">
-              <CardTitle className="text-3xl text-brand-gradient">¡Configuración Completa!</CardTitle>
-              <CardDescription className="text-base">
+              <CardTitle className="text-2xl sm:text-3xl text-brand-gradient">
+                ¡Configuración Completa!
+              </CardTitle>
+              <CardDescription className="text-sm sm:text-base">
                 Tu cabaña está lista para comenzar
               </CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
-            <Button onClick={onComplete} className="w-full btn-primary hover-scale h-12 text-base">
+          <CardContent className="p-4 sm:p-6 pt-0">
+            <Button onClick={onComplete} className="w-full btn-primary hover-scale h-12 sm:h-12 text-base">
               <ArrowRight className="h-5 w-5 mr-2" />
               Ir al Dashboard
             </Button>
@@ -69,20 +71,22 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="min-h-screen gradient-mesh flex items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-4xl space-y-8">
+    <div className="min-h-screen gradient-mesh flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+      <div className="w-full max-w-4xl space-y-6 sm:space-y-8">
         {/* Header with brand logo */}
-        <div className="text-center space-y-4">
-          <div className="flex justify-center mb-4">
+        <div className="text-center space-y-3 sm:space-y-4 px-2">
+          <div className="flex justify-center mb-3 sm:mb-4">
             <div className="relative">
               <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-lg opacity-30" />
-              <div className="relative bg-brand-gradient p-4 rounded-2xl shadow-lg">
-                <Sparkles className="h-10 w-10 text-white" />
+              <div className="relative bg-brand-gradient p-3 sm:p-4 rounded-2xl shadow-lg">
+                <Sparkles className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
               </div>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-brand-gradient mb-2">¡Bienvenido a AgroDeo!</h1>
-          <p className="text-lg text-muted-foreground">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-gradient mb-2 px-4">
+            ¡Bienvenido a AgroDeo!
+          </h1>
+          <p className="text-base sm:text-lg text-muted-foreground px-4">
             Configuremos tu cabaña para comenzar a gestionar tu ganado
           </p>
         </div>
@@ -93,13 +97,13 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         />
 
         {/* Modern progress indicator */}
-        <div className="flex justify-center">
-          <div className="flex items-center gap-3">
+        <div className="flex justify-center px-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {steps.map((step, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="flex flex-col items-center gap-2">
+              <div key={index} className="flex items-center gap-2 sm:gap-3">
+                <div className="flex flex-col items-center gap-1.5 sm:gap-2">
                   <div
-                    className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
+                    className={`relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all duration-300 ${
                       index < currentStep
                         ? 'bg-brand-gradient shadow-lg'
                         : index === currentStep
@@ -108,9 +112,9 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                     }`}
                   >
                     {index < currentStep ? (
-                      <Check className="w-5 h-5 text-white" />
+                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     ) : (
-                      <span className={`text-sm font-semibold ${index === currentStep ? 'text-white' : 'text-muted-foreground'}`}>
+                      <span className={`text-xs sm:text-sm font-semibold ${index === currentStep ? 'text-white' : 'text-muted-foreground'}`}>
                         {index + 1}
                       </span>
                     )}
@@ -122,7 +126,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                   </span>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-12 h-0.5 transition-colors ${
+                  <div className={`w-8 sm:w-12 h-0.5 transition-colors ${
                     index < currentStep ? 'bg-primary' : 'bg-muted'
                   }`} />
                 )}
