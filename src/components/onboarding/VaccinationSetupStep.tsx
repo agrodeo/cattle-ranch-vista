@@ -130,8 +130,8 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
       <CardHeader className="space-y-4">
         <div className="flex items-center gap-4">
           <div className="relative">
-            <div className="absolute inset-0 bg-brand-gradient rounded-xl blur-md opacity-40" />
-            <div className="relative bg-brand-gradient p-3 rounded-xl glow-primary">
+            <div className="absolute inset-0 bg-brand-gradient rounded-xl blur-md opacity-30" />
+            <div className="relative bg-brand-gradient p-3 rounded-xl shadow-lg">
               <Syringe className="h-7 w-7 text-white" />
             </div>
           </div>
