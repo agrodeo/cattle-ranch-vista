@@ -114,8 +114,8 @@ export const BenchmarkSettings = () => {
 
         if (error) throw error;
         toast({
-          title: "Éxito",
-          description: "Benchmark actualizado correctamente",
+          title: t('common:success'),
+          description: t('settings:benchmarks.benchmarkUpdated'),
         });
       } else {
         const { error } = await supabase
@@ -124,8 +124,8 @@ export const BenchmarkSettings = () => {
 
         if (error) throw error;
         toast({
-          title: "Éxito",
-          description: "Benchmark creado correctamente",
+          title: t('common:success'),
+          description: t('settings:benchmarks.benchmarkSaved'),
         });
       }
 
@@ -134,8 +134,8 @@ export const BenchmarkSettings = () => {
     } catch (error: any) {
       console.error("Error saving benchmark:", error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo guardar el benchmark",
+        title: t('common:error.title'),
+        description: error.message || t('settings:benchmarks.errorSaving'),
         variant: "destructive",
       });
     } finally {
@@ -169,15 +169,15 @@ export const BenchmarkSettings = () => {
       if (error) throw error;
       
       toast({
-        title: "Éxito",
-        description: "Benchmark eliminado correctamente",
+        title: t('common:success'),
+        description: t('settings:benchmarks.benchmarkDeleted'),
       });
       fetchCustomBenchmarks();
     } catch (error: any) {
       console.error("Error deleting benchmark:", error);
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el benchmark",
+        title: t('common:error.title'),
+        description: t('settings:benchmarks.errorDeleting'),
         variant: "destructive",
       });
     }
@@ -203,9 +203,9 @@ export const BenchmarkSettings = () => {
           {customBenchmarks.length > 0 ? (
             <div className="space-y-4">
               {customBenchmarks.map((benchmark) => (
-                <div key={benchmark.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <div className="flex items-center gap-2">
+                <div key={benchmark.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h4 className="font-medium">
                         {benchmark.breed || t('settings:benchmarks.noBenchmarks')}
                       </h4>
@@ -213,17 +213,24 @@ export const BenchmarkSettings = () => {
                         <Badge variant="secondary">{t('common:default')}</Badge>
                       )}
                     </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      {t('settings:benchmarks.birthWeight')}: {benchmark.birth_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.birth_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()}) |
-                      {t('settings:benchmarks.weaningWeight')}: {benchmark.weaning_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.weaning_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()}) |
-                      {t('settings:benchmarks.dailyGain')}: {benchmark.daily_gain_excellent}kg/día ({t('settings:benchmarks.excellent').toLowerCase()})
+                    <div className="text-sm text-muted-foreground mt-2 space-y-1">
+                      <div>
+                        {t('settings:benchmarks.birthWeight')}: {benchmark.birth_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.birth_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()})
+                      </div>
+                      <div>
+                        {t('settings:benchmarks.weaningWeight')}: {benchmark.weaning_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.weaning_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()})
+                      </div>
+                      <div>
+                        {t('settings:benchmarks.dailyGain')}: {benchmark.daily_gain_excellent}kg/día ({t('settings:benchmarks.excellent').toLowerCase()})
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 sm:flex-col lg:flex-row">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleEdit(benchmark)}
+                      className="flex-1 sm:flex-none"
                     >
                       {t('settings:benchmarks.edit')}
                     </Button>
@@ -231,6 +238,7 @@ export const BenchmarkSettings = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(benchmark.id)}
+                      className="flex-1 sm:flex-none"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -278,9 +286,9 @@ export const BenchmarkSettings = () => {
             </div>
 
             {/* Birth Weight */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="birth_weight_excellent">Peso Nacer - Excelente (kg)</Label>
+                <Label htmlFor="birth_weight_excellent">{t('settings:benchmarks.birthWeightExcellent')}</Label>
                 <Input
                   id="birth_weight_excellent"
                   type="number"
@@ -293,7 +301,7 @@ export const BenchmarkSettings = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="birth_weight_good">Peso Nacer - Bueno (kg)</Label>
+                <Label htmlFor="birth_weight_good">{t('settings:benchmarks.birthWeightGood')}</Label>
                 <Input
                   id="birth_weight_good"
                   type="number"
@@ -306,7 +314,7 @@ export const BenchmarkSettings = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="birth_weight_poor">Peso Nacer - Mínimo (kg)</Label>
+                <Label htmlFor="birth_weight_poor">{t('settings:benchmarks.birthWeightPoor')}</Label>
                 <Input
                   id="birth_weight_poor"
                   type="number"
@@ -321,9 +329,9 @@ export const BenchmarkSettings = () => {
             </div>
 
             {/* Weaning Weight */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="weaning_weight_excellent">Peso Destete - Excelente (kg)</Label>
+                <Label htmlFor="weaning_weight_excellent">{t('settings:benchmarks.weaningWeightExcellent')}</Label>
                 <Input
                   id="weaning_weight_excellent"
                   type="number"
@@ -336,7 +344,7 @@ export const BenchmarkSettings = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="weaning_weight_good">Peso Destete - Bueno (kg)</Label>
+                <Label htmlFor="weaning_weight_good">{t('settings:benchmarks.weaningWeightGood')}</Label>
                 <Input
                   id="weaning_weight_good"
                   type="number"
@@ -349,7 +357,7 @@ export const BenchmarkSettings = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="weaning_weight_poor">Peso Destete - Mínimo (kg)</Label>
+                <Label htmlFor="weaning_weight_poor">{t('settings:benchmarks.weaningWeightPoor')}</Label>
                 <Input
                   id="weaning_weight_poor"
                   type="number"
@@ -364,9 +372,9 @@ export const BenchmarkSettings = () => {
             </div>
 
             {/* Daily Gain */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="daily_gain_excellent">Ganancia Diaria - Excelente (kg/día)</Label>
+                <Label htmlFor="daily_gain_excellent">{t('settings:benchmarks.dailyGainExcellent')}</Label>
                 <Input
                   id="daily_gain_excellent"
                   type="number"
@@ -379,7 +387,7 @@ export const BenchmarkSettings = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="daily_gain_good">Ganancia Diaria - Buena (kg/día)</Label>
+                <Label htmlFor="daily_gain_good">{t('settings:benchmarks.dailyGainGood')}</Label>
                 <Input
                   id="daily_gain_good"
                   type="number"
@@ -392,7 +400,7 @@ export const BenchmarkSettings = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="daily_gain_poor">Ganancia Diaria - Mínima (kg/día)</Label>
+                <Label htmlFor="daily_gain_poor">{t('settings:benchmarks.dailyGainPoor')}</Label>
                 <Input
                   id="daily_gain_poor"
                   type="number"
@@ -406,13 +414,13 @@ export const BenchmarkSettings = () => {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <Button type="submit" disabled={saving}>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button type="submit" disabled={saving} className="w-full sm:w-auto">
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? t('common:saving') : editingId ? t('settings:benchmarks.update') : t('settings:benchmarks.save')}
               </Button>
               {editingId && (
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button type="button" variant="outline" onClick={resetForm} className="w-full sm:w-auto">
                   {t('settings:benchmarks.cancel')}
                 </Button>
               )}
