@@ -35,7 +35,7 @@ import { CorralDetailDialog } from "@/components/corrales/CorralDetailDialog";
 import { EditCorralDialog } from "@/components/corrales/EditCorralDialog";
 import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
 import { DeleteCorralDialog } from "@/components/corrales/DeleteCorralDialog";
-import { CorralOptimizationWizard } from "@/components/corrales/CorralOptimizationWizard";
+import { CorralOptimizer } from "@/components/corrales/CorralOptimizer";
 import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
 import { CorralSuggestionsCard } from "@/components/corrales/CorralSuggestionsCard";
 
@@ -82,7 +82,7 @@ export default function Corrales() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [showCorralOptimization, setShowCorralOptimization] = useState(false);
+  const [showCorralOptimizer, setShowCorralOptimizer] = useState(false);
   const [showBulkMove, setShowBulkMove] = useState(false);
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
@@ -335,7 +335,7 @@ export default function Corrales() {
                 {t('corrals:buttons.bulkMove')}
               </Button>
               <Button
-                onClick={() => setShowCorralOptimization(true)}
+                onClick={() => setShowCorralOptimizer(true)}
                 variant="outline"
                 className="flex items-center gap-2"
               >
@@ -379,7 +379,7 @@ export default function Corrales() {
             {/* Optimization Suggestions - Prominently displayed */}
             <CorralSuggestionsCard
               totalRisks={totalRisks}
-              onOptimize={() => setShowCorralOptimization(true)}
+              onOptimize={() => setShowCorralOptimizer(true)}
               loading={loading}
             />
 
@@ -804,10 +804,10 @@ export default function Corrales() {
 
       {currentUser?.cabañaId && (
         <>
-          <CorralOptimizationWizard 
-            isOpen={showCorralOptimization}
-            onClose={() => setShowCorralOptimization(false)}
-            cabanaId={currentUser.cabañaId}
+          <CorralOptimizer 
+            open={showCorralOptimizer}
+            onOpenChange={setShowCorralOptimizer}
+            onSuccess={fetchCorrales}
           />
 
           <BulkMoveDialog 

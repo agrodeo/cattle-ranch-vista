@@ -28,6 +28,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
   const [formData, setFormData] = useState({
     name: "",
     hectareas: "",
+    capacity: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,6 +53,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
       const insertData: any = {
         name: formData.name,
         hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
+        capacity: formData.capacity ? parseInt(formData.capacity) : null,
         cabaña_id: cabanaId,
       };
 
@@ -69,7 +71,7 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
         description: t('corrals:dialogs.create.successMessage'),
       });
 
-      setFormData({ name: "", hectareas: "" });
+      setFormData({ name: "", hectareas: "", capacity: "" });
       onSuccess();
     } catch (error) {
       console.error("Error creating corral:", error);
@@ -115,6 +117,19 @@ export function CreateCorralDialog({ open, onOpenChange, onSuccess }: CreateCorr
                 placeholder={t('corrals:dialogs.create.hectaresPlaceholder')}
                 className="h-10 mt-1"
               />
+            </div>
+            
+            <div>
+              <Label htmlFor="capacity" className="text-sm font-medium">{t('corrals:dialogs.create.capacityLabel')}</Label>
+              <Input
+                id="capacity"
+                type="number"
+                value={formData.capacity}
+                onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                placeholder={t('corrals:dialogs.create.capacityPlaceholder')}
+                className="h-10 mt-1"
+              />
+              <p className="text-xs text-muted-foreground mt-1">{t('corrals:dialogs.create.capacityHelp')}</p>
             </div>
           </div>
 

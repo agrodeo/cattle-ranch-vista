@@ -975,6 +975,7 @@ export type Database = {
       corrales: {
         Row: {
           cabaña_id: string | null
+          capacity: number | null
           created_at: string
           hectareas: number | null
           id: string
@@ -984,6 +985,7 @@ export type Database = {
         }
         Insert: {
           cabaña_id?: string | null
+          capacity?: number | null
           created_at?: string
           hectareas?: number | null
           id?: string
@@ -993,6 +995,7 @@ export type Database = {
         }
         Update: {
           cabaña_id?: string | null
+          capacity?: number | null
           created_at?: string
           hectareas?: number | null
           id?: string

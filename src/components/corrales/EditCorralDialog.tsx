@@ -27,6 +27,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
   const [formData, setFormData] = useState({
     name: "",
     hectareas: "",
+    capacity: "",
   });
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
     try {
       const { data, error } = await supabase
         .from("corrales")
-        .select("name, hectareas")
+        .select("name, hectareas, capacity")
         .eq("id", corralId)
         .single();
 
@@ -50,6 +51,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
       setFormData({
         name: data.name || "",
         hectareas: data.hectareas?.toString() || "",
+        capacity: data.capacity?.toString() || "",
       });
     } catch (error) {
       console.error("Error fetching corral:", error);
@@ -73,6 +75,7 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
         .update({
           name: formData.name,
           hectareas: formData.hectareas ? parseFloat(formData.hectareas) : null,
+          capacity: formData.capacity ? parseInt(formData.capacity) : null,
         })
         .eq("id", corralId);
 
@@ -126,6 +129,18 @@ export function EditCorralDialog({ open, onOpenChange, corralId, onSuccess }: Ed
                 onChange={(e) => setFormData({ ...formData, hectareas: e.target.value })}
                 placeholder={t('corrals:dialogs.create.hectaresPlaceholder')}
               />
+            </div>
+            
+            <div>
+              <Label htmlFor="capacity">{t('corrals:dialogs.create.capacityLabel')}</Label>
+              <Input
+                id="capacity"
+                type="number"
+                value={formData.capacity}
+                onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                placeholder={t('corrals:dialogs.create.capacityPlaceholder')}
+              />
+              <p className="text-xs text-muted-foreground mt-1">{t('corrals:dialogs.create.capacityHelp')}</p>
             </div>
           </div>
 
