@@ -405,7 +405,7 @@ export const VaccinationRequirementsManager = () => {
         ) : (
           <div className="space-y-4">
             {requirements.map((requirement) => (
-              <div key={requirement.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={requirement.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 border rounded-lg">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <h3 className="font-medium">{requirement.vaccine_name}</h3>
@@ -442,7 +442,7 @@ export const VaccinationRequirementsManager = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto justify-end sm:justify-start flex-shrink-0">
                   <Button
                     variant="outline"
                     size="sm"
