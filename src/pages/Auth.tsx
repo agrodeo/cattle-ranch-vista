@@ -190,8 +190,8 @@ const Auth = () => {
         <CardHeader className="text-center space-y-6 pb-6">
           <div className="flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-50" />
-              <div className="relative bg-brand-gradient p-4 rounded-2xl glow-primary">
+              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-30" />
+              <div className="relative bg-brand-gradient p-4 rounded-2xl shadow-lg">
                 <Building2 className="h-10 w-10 text-white" />
               </div>
             </div>

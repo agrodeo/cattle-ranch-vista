@@ -42,8 +42,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
           <CardHeader className="text-center space-y-6">
             <div className="flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 bg-brand-gradient rounded-full blur-xl opacity-50 animate-pulse" />
-                <div className="relative bg-brand-gradient p-6 rounded-full glow-primary-strong">
+                <div className="absolute inset-0 bg-brand-gradient rounded-full blur-xl opacity-30 animate-pulse" />
+                <div className="relative bg-brand-gradient p-6 rounded-full shadow-lg">
                   <CheckCircle className="h-16 w-16 text-white" />
                 </div>
               </div>
@@ -75,8 +75,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
         <div className="text-center space-y-4">
           <div className="flex justify-center mb-4">
             <div className="relative">
-              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-lg opacity-50" />
-              <div className="relative bg-brand-gradient p-4 rounded-2xl glow-primary">
+              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-lg opacity-30" />
+              <div className="relative bg-brand-gradient p-4 rounded-2xl shadow-lg">
                 <Sparkles className="h-10 w-10 text-white" />
               </div>
             </div>
@@ -101,9 +101,9 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
                   <div
                     className={`relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
                       index < currentStep
-                        ? 'bg-brand-gradient glow-primary'
+                        ? 'bg-brand-gradient shadow-lg'
                         : index === currentStep
-                        ? 'bg-brand-gradient glow-primary ring-2 ring-primary ring-offset-2'
+                        ? 'bg-brand-gradient shadow-lg ring-2 ring-primary ring-offset-2'
                         : 'bg-muted'
                     }`}
                   >
