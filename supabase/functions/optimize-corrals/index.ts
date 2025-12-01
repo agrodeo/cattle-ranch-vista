@@ -200,12 +200,41 @@ serve(async (req) => {
     const suggestedMoves: SuggestedMove[] = [];
     const movedAnimals = new Set<string>();
 
-    // Helper function
-    const findBestDestination = (animal: Animal, exclude: string[] = []): { corral: Corral; reason: string } | null => {
+    // Helper function to find safe destination without creating new consanguinity risks
+    const findBestDestination = (animal: Animal, exclude: string[] = [], checkConsanguinity: boolean = true): { corral: Corral; reason: string } | null => {
+      const MAX_AGE_MONTHS = 15;
+      const animalAge = animal.birth_date ? calculateAgeInMonths(animal.birth_date) : 999;
+      const isReproductiveAge = animalAge >= MAX_AGE_MONTHS;
+
       let availableCorrals = corralsWithCounts.filter(c => {
         if (exclude.includes(c.id)) return false;
         const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
-        return c.animal_count < capacity;
+        if (c.animal_count >= capacity) return false;
+
+        // If consanguinity check is enabled and animal is of reproductive age
+        if (checkConsanguinity && isReproductiveAge && objective === 'consanguinity') {
+          const animalsInTarget = corralAnimals[c.id] || [];
+          
+          // Check if moving this animal would create new consanguinity risks
+          const wouldCreateRisk = animalsInTarget.some(targetAnimal => {
+            // Only check opposite sex combinations (M-F or F-M)
+            if (animal.sex === targetAnimal.sex) return false;
+            
+            // Only check with reproductive age animals
+            const targetAge = targetAnimal.birth_date ? calculateAgeInMonths(targetAnimal.birth_date) : 999;
+            if (targetAge < MAX_AGE_MONTHS) return false;
+            
+            // Check if there's a familial relationship
+            return checkRelationship(animal, targetAnimal) !== null;
+          });
+          
+          if (wouldCreateRisk) {
+            console.log(`Corral ${c.name} excluded - would create new consanguinity risk with animal ${animal.name || animal.id_tag}`);
+            return false;
+          }
+        }
+
+        return true;
       });
 
       // Filter by destination corrals if specified
@@ -213,7 +242,10 @@ serve(async (req) => {
         availableCorrals = availableCorrals.filter(c => destinationCorrals.includes(c.id));
       }
 
-      if (availableCorrals.length === 0) return null;
+      if (availableCorrals.length === 0) {
+        console.log(`No safe destination found for animal ${animal.name || animal.id_tag}`);
+        return null;
+      }
 
       availableCorrals.sort((a, b) => {
         const aCapacity = a.capacity || (a.hectareas ? Math.round(a.hectareas * 2) : 999);
@@ -301,7 +333,7 @@ serve(async (req) => {
 
               if (!movedAnimals.has(male.id) && !movedAnimals.has(female.id)) {
                 const animalToMove = male;
-                const destination = findBestDestination(animalToMove, [corral.id]);
+                const destination = findBestDestination(animalToMove, [corral.id], true);
                 if (destination) {
                   const relationshipText = getRelationshipText(relationship.type, t);
                   suggestedMoves.push({
@@ -451,7 +483,7 @@ serve(async (req) => {
           if (movedAnimals.has(animal.id)) continue;
           if (movedCount >= (corral.animal_count - capacity)) break;
 
-          const destination = findBestDestination(animal, [corral.id]);
+          const destination = findBestDestination(animal, [corral.id], false);
           if (destination) {
             suggestedMoves.push({
               animal_id: animal.id,
