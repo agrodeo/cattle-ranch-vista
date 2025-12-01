@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Syringe, Plus, ChevronRight, SkipForward } from "lucide-react";
+import { Syringe, Info, CheckCircle2 } from "lucide-react";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { toast } from "sonner";
 
@@ -126,121 +126,136 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader className="text-center px-4 sm:px-6">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 rounded-full bg-primary/10">
-            <Syringe className="h-8 w-8 text-primary" />
+    <Card className="w-full max-w-4xl mx-auto glass card-modern animate-scale-in">
+      <CardHeader className="space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <div className="absolute inset-0 bg-brand-gradient rounded-xl blur-md opacity-40" />
+            <div className="relative bg-brand-gradient p-3 rounded-xl glow-primary">
+              <Syringe className="h-7 w-7 text-white" />
+            </div>
+          </div>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl">Configuración de Vacunas</CardTitle>
+            <CardDescription className="text-base">
+              Selecciona las vacunas que son obligatorias u opcionales para tu cabaña
+            </CardDescription>
           </div>
         </div>
-        <CardTitle className="text-xl sm:text-2xl">Configurar Vacunas Requeridas</CardTitle>
-        <CardDescription className="text-sm">
-          Selecciona las vacunas que serán obligatorias en tu cabaña. Puedes modificar esto más tarde en configuración.
-        </CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-6 px-4 sm:px-6">
-        <div className="space-y-4">
-          {defaultVaccineTemplates.map((vaccine, index) => (
-            <div
-              key={index}
-              className={`border rounded-lg p-3 sm:p-4 transition-colors cursor-pointer ${
-                selectedVaccines.has(index) 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-border hover:border-primary/50'
-              }`}
-              onClick={() => handleVaccineToggle(index)}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-2 sm:space-x-3 flex-1 min-w-0">
-                  <Checkbox
-                    checked={selectedVaccines.has(index)}
-                    onChange={() => {}} // Handled by parent div click
-                    className="mt-1 flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2 mb-2 flex-wrap">
-                      <h3 className="font-medium text-sm break-words">{vaccine.vaccine_name}</h3>
-                      {vaccine.is_mandatory && (
-                        <Badge variant="destructive" className="text-xs whitespace-nowrap flex-shrink-0">Obligatoria</Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs whitespace-nowrap flex-shrink-0">{vaccine.vaccine_type}</Badge>
+      <CardContent className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-2">
+          {defaultVaccineTemplates.map((vaccine, index) => {
+            const isSelected = selectedVaccines.has(index);
+            
+            return (
+              <div
+                key={index}
+                className={`relative p-5 rounded-2xl space-y-3 transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:shadow-lg ${
+                  isSelected 
+                    ? 'ring-2 ring-primary bg-primary/5 shadow-md' 
+                    : 'border border-border bg-card hover:border-primary/50'
+                }`}
+                onClick={() => handleVaccineToggle(index)}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="mt-0.5">
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={() => {}}
+                        className="transition-transform data-[state=checked]:scale-110"
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {vaccine.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                      {vaccine.sex_restriction && (
-                        <span className="bg-muted px-2 py-1 rounded">
-                          Solo {vaccine.sex_restriction}s
-                        </span>
-                      )}
-                      {vaccine.min_age_months && (
-                        <span className="bg-muted px-2 py-1 rounded">
-                          Desde {vaccine.min_age_months} meses
-                        </span>
-                      )}
-                      {vaccine.max_age_months && (
-                        <span className="bg-muted px-2 py-1 rounded">
-                          Hasta {vaccine.max_age_months} meses
-                        </span>
-                      )}
-                      {vaccine.frequency_months && (
-                        <span className="bg-muted px-2 py-1 rounded">
-                          Cada {vaccine.frequency_months} meses
-                        </span>
-                      )}
-                      {vaccine.doses_required && vaccine.doses_required > 1 && (
-                        <span className="bg-muted px-2 py-1 rounded">
-                          {vaccine.doses_required} dosis
-                        </span>
-                      )}
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-start gap-2 flex-wrap">
+                        <h4 className="font-semibold text-base">{vaccine.vaccine_name}</h4>
+                        {vaccine.is_mandatory && (
+                          <Badge variant="default" className="text-xs bg-brand-gradient text-white border-0">
+                            Obligatoria
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {vaccine.description}
+                      </p>
                     </div>
                   </div>
+                  {isSelected && (
+                    <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" />
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <span className="px-3 py-1.5 bg-secondary/50 rounded-full font-medium">
+                    {vaccine.vaccine_type}
+                  </span>
+                  {vaccine.sex_restriction && (
+                    <span className="px-3 py-1.5 bg-secondary/50 rounded-full">
+                      Solo {vaccine.sex_restriction}s
+                    </span>
+                  )}
+                  {vaccine.min_age_months && (
+                    <span className="px-3 py-1.5 bg-secondary/50 rounded-full">
+                      Desde {vaccine.min_age_months} meses
+                    </span>
+                  )}
+                  {vaccine.max_age_months && (
+                    <span className="px-3 py-1.5 bg-secondary/50 rounded-full">
+                      Hasta {vaccine.max_age_months} meses
+                    </span>
+                  )}
+                  {vaccine.frequency_months && (
+                    <span className="px-3 py-1.5 bg-secondary/50 rounded-full">
+                      Cada {vaccine.frequency_months} meses
+                    </span>
+                  )}
+                  {vaccine.doses_required && vaccine.doses_required > 1 && (
+                    <span className="px-3 py-1.5 bg-secondary/50 rounded-full">
+                      {vaccine.doses_required} dosis
+                    </span>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <div className="bg-muted/50 rounded-lg p-4">
-          <div className="flex items-start gap-2">
-            <Plus className="h-4 w-4 text-muted-foreground mt-0.5" />
-            <div className="text-sm text-muted-foreground">
-              <p className="font-medium mb-1">¿Necesitas otras vacunas?</p>
-              <p>Puedes agregar vacunas personalizadas después en la sección de Configuración.</p>
+        <div className="relative p-5 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5">
+          <div className="flex items-start gap-3">
+            <div className="bg-primary/10 p-2 rounded-lg">
+              <Info className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground mb-1">
+                ¿Necesitas otras vacunas específicas?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Podrás agregarlas más tarde desde la configuración
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <div className="flex gap-3 justify-end pt-4">
           <Button
             variant="outline"
             onClick={onSkip}
-            className="w-full sm:flex-1"
+            disabled={isLoading}
+            className="btn-secondary h-11 px-6"
           >
-            <SkipForward className="h-4 w-4 mr-2" />
             Omitir
           </Button>
           <Button
             onClick={handleSetupVaccines}
-            disabled={isLoading}
-            className="w-full sm:flex-1"
+            disabled={selectedVaccines.size === 0 || isLoading}
+            className="btn-primary h-11 px-6 hover-scale"
           >
-            {isLoading ? (
-              "Configurando..."
-            ) : (
-              <>
-                <span className="truncate">Configurar Vacunas</span>
-                <ChevronRight className="h-4 w-4 ml-2 flex-shrink-0" />
-              </>
-            )}
+            <Syringe className="h-4 w-4 mr-2" />
+            {isLoading ? "Configurando..." : "Configurar Vacunas"}
           </Button>
         </div>
-
-        <p className="text-xs text-muted-foreground text-center">
-          Estas configuraciones se aplicarán para evaluar el estado de vacunación de tus animales
-        </p>
       </CardContent>
     </Card>
   );
