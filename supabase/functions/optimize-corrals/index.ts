@@ -6,6 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+type ObjectiveType = 'consanguinity' | 'fertility' | 'weight';
+type LanguageType = 'es' | 'en' | 'pt';
+
 interface Animal {
   id: string;
   name: string | null;
@@ -16,6 +19,9 @@ interface Animal {
   father_id: string | null;
   mother_id: string | null;
   status: string;
+  peso_actual_kg: number | null;
+  ganancia_diaria_kg: number | null;
+  peso_destete: number | null;
 }
 
 interface Corral {
@@ -26,35 +32,6 @@ interface Corral {
   animal_count: number;
 }
 
-interface ConsanguinityRisk {
-  animal1_id: string;
-  animal1_name: string;
-  animal2_id: string;
-  animal2_name: string;
-  relationship: string;
-  severity: 'severe' | 'medium' | 'low';
-  corral_id: string;
-  corral_name: string;
-}
-
-interface CapacityIssue {
-  corral_id: string;
-  corral_name: string;
-  current_count: number;
-  capacity: number;
-  overflow: number;
-}
-
-interface SeparationIssue {
-  calf_id: string;
-  calf_name: string;
-  mother_id: string;
-  mother_name: string;
-  calf_corral_id: string | null;
-  mother_corral_id: string | null;
-  age_months: number;
-}
-
 interface SuggestedMove {
   animal_id: string;
   animal_name: string;
@@ -63,9 +40,75 @@ interface SuggestedMove {
   to_corral_id: string;
   to_corral_name: string;
   reason: string;
-  issue_type: 'consanguinity' | 'capacity' | 'separation';
-  paired_with?: string; // For mother-calf pairs
+  issue_type: string;
+  expectedBenefit?: string;
 }
+
+const translations = {
+  es: {
+    reuniteWithMother: "Reunir con madre",
+    avoidConsanguinity: "Evitar consanguinidad",
+    reduceOvercrowding: "Reducir sobrecarga",
+    spaceAvailable: "Espacio disponible",
+    improveBreeding: "Mejorar potencial reproductivo",
+    optimizeWeight: "Optimizar genética de peso",
+    groupFertileFemales: "Agrupar hembras fértiles",
+    groupHighWeightAnimals: "Agrupar animales con buena genética de peso",
+    separateLowPerformers: "Separar bajo rendimiento reproductivo",
+    fertilityScore: "fertilidad",
+    weightScore: "puntos",
+    months: "meses",
+    parentChild: "padre-hijo",
+    fullSiblings: "hermanos completos",
+    halfSiblingsPaternal: "medio hermanos (padre)",
+    halfSiblingsMaternal: "medio hermanos (madre)",
+    expectedImprovementConsanguinity: "Se reducirán {{count}} riesgos de consanguinidad",
+    expectedImprovementFertility: "Se mejorará el potencial reproductivo en ~{{percent}}%",
+    expectedImprovementWeight: "Se optimizará la genética de peso en {{count}} animales",
+  },
+  en: {
+    reuniteWithMother: "Reunite with mother",
+    avoidConsanguinity: "Avoid consanguinity",
+    reduceOvercrowding: "Reduce overcrowding",
+    spaceAvailable: "Space available",
+    improveBreeding: "Improve reproductive potential",
+    optimizeWeight: "Optimize weight genetics",
+    groupFertileFemales: "Group fertile females",
+    groupHighWeightAnimals: "Group animals with good weight genetics",
+    separateLowPerformers: "Separate low reproductive performance",
+    fertilityScore: "fertility",
+    weightScore: "points",
+    months: "months",
+    parentChild: "parent-child",
+    fullSiblings: "full siblings",
+    halfSiblingsPaternal: "half siblings (father)",
+    halfSiblingsMaternal: "half siblings (mother)",
+    expectedImprovementConsanguinity: "{{count}} consanguinity risks will be reduced",
+    expectedImprovementFertility: "Reproductive potential will improve by ~{{percent}}%",
+    expectedImprovementWeight: "Weight genetics will be optimized in {{count}} animals",
+  },
+  pt: {
+    reuniteWithMother: "Reunir com mãe",
+    avoidConsanguinity: "Evitar consanguinidade",
+    reduceOvercrowding: "Reduzir superlotação",
+    spaceAvailable: "Espaço disponível",
+    improveBreeding: "Melhorar potencial reprodutivo",
+    optimizeWeight: "Otimizar genética de peso",
+    groupFertileFemales: "Agrupar fêmeas férteis",
+    groupHighWeightAnimals: "Agrupar animais com boa genética de peso",
+    separateLowPerformers: "Separar baixo desempenho reprodutivo",
+    fertilityScore: "fertilidade",
+    weightScore: "pontos",
+    months: "meses",
+    parentChild: "pai-filho",
+    fullSiblings: "irmãos completos",
+    halfSiblingsPaternal: "meio irmãos (pai)",
+    halfSiblingsMaternal: "meio irmãos (mãe)",
+    expectedImprovementConsanguinity: "{{count}} riscos de consanguinidade serão reduzidos",
+    expectedImprovementFertility: "O potencial reprodutivo melhorará em ~{{percent}}%",
+    expectedImprovementWeight: "A genética de peso será otimizada em {{count}} animais",
+  },
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -77,7 +120,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { cabanaId, language = 'es' } = await req.json();
+    const { cabanaId, language = 'es', objective = 'consanguinity' } = await req.json();
 
     if (!cabanaId) {
       return new Response(JSON.stringify({ error: 'cabanaId is required' }), {
@@ -86,18 +129,20 @@ serve(async (req) => {
       });
     }
 
-    console.log('Optimizing corrals for cabana:', cabanaId);
+    const t = translations[language as LanguageType] || translations.es;
 
-    // 1. Fetch all animals with genealogy
+    console.log(`Optimizing corrals for cabana: ${cabanaId}, objective: ${objective}, language: ${language}`);
+
+    // Fetch animals with additional data for fertility and weight analysis
     const { data: animals, error: animalsError } = await supabase
       .from('animals')
-      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status')
+      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, peso_actual_kg, ganancia_diaria_kg, peso_destete')
       .eq('cabaña_id', cabanaId)
       .eq('status', 'activo');
 
     if (animalsError) throw animalsError;
 
-    // 2. Fetch all corrals with capacity
+    // Fetch corrals
     const { data: corrals, error: corralsError } = await supabase
       .from('corrales')
       .select('id, name, capacity, hectareas')
@@ -117,7 +162,7 @@ serve(async (req) => {
       });
     }
 
-    // 3. Count animals per corral
+    // Count animals per corral
     const corralAnimals: Record<string, Animal[]> = {};
     animals.forEach((animal: Animal) => {
       if (animal.corral_id) {
@@ -133,60 +178,36 @@ serve(async (req) => {
       animal_count: corralAnimals[corral.id]?.length || 0,
     }));
 
-    // 4. Detect consanguinity risks
-    const consanguinityRisks: ConsanguinityRisk[] = [];
-    const MAX_AGE_MONTHS = 15;
+    // Initialize issues and moves
+    const consanguinityRisks: any[] = [];
+    const capacityIssues: any[] = [];
+    const separationIssues: any[] = [];
+    const suggestedMoves: SuggestedMove[] = [];
+    const movedAnimals = new Set<string>();
 
-    for (const corral of corralsWithCounts) {
-      const animalsInCorral = corralAnimals[corral.id] || [];
-      const reproductiveAgeMales = animalsInCorral.filter(a => {
-        const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
-        return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+    // Helper function
+    const findBestDestination = (animal: Animal, exclude: string[] = []): { corral: Corral; reason: string } | null => {
+      const availableCorrals = corralsWithCounts.filter(c => {
+        if (exclude.includes(c.id)) return false;
+        const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
+        return c.animal_count < capacity;
       });
-      const reproductiveAgeFemales = animalsInCorral.filter(a => {
-        const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
-        return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+
+      if (availableCorrals.length === 0) return null;
+
+      availableCorrals.sort((a, b) => {
+        const aCapacity = a.capacity || (a.hectareas ? Math.round(a.hectareas * 2) : 999);
+        const bCapacity = b.capacity || (b.hectareas ? Math.round(b.hectareas * 2) : 999);
+        const aSpace = aCapacity - a.animal_count;
+        const bSpace = bCapacity - b.animal_count;
+        return bSpace - aSpace;
       });
 
-      // Check all male-female pairs
-      for (const male of reproductiveAgeMales) {
-        for (const female of reproductiveAgeFemales) {
-          const relationship = checkRelationship(male, female);
-          if (relationship) {
-            consanguinityRisks.push({
-              animal1_id: male.id,
-              animal1_name: male.name || male.id_tag || 'Sin nombre',
-              animal2_id: female.id,
-              animal2_name: female.name || female.id_tag || 'Sin nombre',
-              relationship: relationship.type,
-              severity: relationship.severity,
-              corral_id: corral.id,
-              corral_name: corral.name,
-            });
-          }
-        }
-      }
-    }
+      return { corral: availableCorrals[0], reason: t.spaceAvailable };
+    };
 
-    // 5. Detect capacity issues
-    const capacityIssues: CapacityIssue[] = [];
-    for (const corral of corralsWithCounts) {
-      const capacity = corral.capacity || (corral.hectareas ? Math.round(corral.hectareas * 2) : null);
-      if (capacity && corral.animal_count > capacity) {
-        capacityIssues.push({
-          corral_id: corral.id,
-          corral_name: corral.name,
-          current_count: corral.animal_count,
-          capacity,
-          overflow: corral.animal_count - capacity,
-        });
-      }
-    }
-
-    // 6. Detect mother-calf separations
-    const separationIssues: SeparationIssue[] = [];
+    // Always detect separation issues (Priority 1)
     const MAX_CALF_AGE_MONTHS = 8;
-
     for (const animal of animals) {
       if (animal.mother_id && animal.birth_date) {
         const ageMonths = calculateAgeInMonths(animal.birth_date);
@@ -202,145 +223,261 @@ serve(async (req) => {
               mother_corral_id: mother.corral_id,
               age_months: ageMonths,
             });
+
+            if (!movedAnimals.has(animal.id)) {
+              const motherCorral = corralsWithCounts.find(c => c.id === mother.corral_id);
+              if (motherCorral) {
+                const capacity = motherCorral.capacity || (motherCorral.hectareas ? Math.round(motherCorral.hectareas * 2) : 999);
+                if (motherCorral.animal_count < capacity) {
+                  suggestedMoves.push({
+                    animal_id: animal.id,
+                    animal_name: animal.name || animal.id_tag || 'Sin nombre',
+                    from_corral_id: animal.corral_id,
+                    from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
+                    to_corral_id: motherCorral.id,
+                    to_corral_name: motherCorral.name,
+                    reason: `${t.reuniteWithMother} (${ageMonths} ${t.months})`,
+                    issue_type: 'separation',
+                  });
+                  movedAnimals.add(animal.id);
+                  motherCorral.animal_count++;
+                }
+              }
+            }
           }
         }
       }
     }
 
-    // 7. Generate suggested moves
-    const suggestedMoves: SuggestedMove[] = [];
-    const movedAnimals = new Set<string>();
-
-    // Helper to find best destination corral
-    const findBestDestination = (animal: Animal, exclude: string[] = []): { corral: Corral; reason: string } | null => {
-      const availableCorrals = corralsWithCounts.filter(c => {
-        if (exclude.includes(c.id)) return false;
-        const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
-        return c.animal_count < capacity;
-      });
-
-      if (availableCorrals.length === 0) return null;
-
-      // Sort by most space available
-      availableCorrals.sort((a, b) => {
-        const aCapacity = a.capacity || (a.hectareas ? Math.round(a.hectareas * 2) : 999);
-        const bCapacity = b.capacity || (b.hectareas ? Math.round(b.hectareas * 2) : 999);
-        const aSpace = aCapacity - a.animal_count;
-        const bSpace = bCapacity - b.animal_count;
-        return bSpace - aSpace;
-      });
-
-      const bestCorral = availableCorrals[0];
-      return { corral: bestCorral, reason: 'Espacio disponible' };
-    };
-
-    // Priority 1: Solve separation issues (mother-calf)
-    for (const issue of separationIssues) {
-      if (movedAnimals.has(issue.calf_id) || movedAnimals.has(issue.mother_id)) continue;
-
-      // Move calf to mother's corral if possible
-      const motherCorral = corralsWithCounts.find(c => c.id === issue.mother_corral_id);
-      if (motherCorral) {
-        const capacity = motherCorral.capacity || (motherCorral.hectareas ? Math.round(motherCorral.hectareas * 2) : 999);
-        if (motherCorral.animal_count < capacity) {
-          suggestedMoves.push({
-            animal_id: issue.calf_id,
-            animal_name: issue.calf_name,
-            from_corral_id: issue.calf_corral_id,
-            from_corral_name: corralsWithCounts.find(c => c.id === issue.calf_corral_id)?.name || null,
-            to_corral_id: motherCorral.id,
-            to_corral_name: motherCorral.name,
-            reason: `Reunir con madre (${issue.age_months} meses)`,
-            issue_type: 'separation',
-          });
-          movedAnimals.add(issue.calf_id);
-          motherCorral.animal_count++;
-        }
-      }
-    }
-
-    // Priority 2: Solve consanguinity risks
-    for (const risk of consanguinityRisks) {
-      if (movedAnimals.has(risk.animal1_id) || movedAnimals.has(risk.animal2_id)) continue;
-
-      // Move the animal that's easier to relocate (male first)
-      const animalToMove = animals.find((a: Animal) => a.id === risk.animal1_id);
-      if (!animalToMove) continue;
-
-      const destination = findBestDestination(animalToMove, [risk.corral_id]);
-      if (destination) {
-        suggestedMoves.push({
-          animal_id: animalToMove.id,
-          animal_name: risk.animal1_name,
-          from_corral_id: risk.corral_id,
-          from_corral_name: risk.corral_name,
-          to_corral_id: destination.corral.id,
-          to_corral_name: destination.corral.name,
-          reason: `Evitar consanguinidad: ${risk.relationship}`,
-          issue_type: 'consanguinity',
+    // Objective-specific optimization
+    if (objective === 'consanguinity') {
+      // Detect consanguinity risks
+      const MAX_AGE_MONTHS = 15;
+      for (const corral of corralsWithCounts) {
+        const animalsInCorral = corralAnimals[corral.id] || [];
+        const reproductiveAgeMales = animalsInCorral.filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
         });
-        movedAnimals.add(animalToMove.id);
-        destination.corral.animal_count++;
-        const fromCorral = corralsWithCounts.find(c => c.id === risk.corral_id);
-        if (fromCorral) fromCorral.animal_count--;
+        const reproductiveAgeFemales = animalsInCorral.filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+        });
+
+        for (const male of reproductiveAgeMales) {
+          for (const female of reproductiveAgeFemales) {
+            const relationship = checkRelationship(male, female);
+            if (relationship) {
+              consanguinityRisks.push({
+                animal1_id: male.id,
+                animal1_name: male.name || male.id_tag || 'Sin nombre',
+                animal2_id: female.id,
+                animal2_name: female.name || female.id_tag || 'Sin nombre',
+                relationship: relationship.type,
+                severity: relationship.severity,
+                corral_id: corral.id,
+                corral_name: corral.name,
+              });
+
+              if (!movedAnimals.has(male.id) && !movedAnimals.has(female.id)) {
+                const animalToMove = male;
+                const destination = findBestDestination(animalToMove, [corral.id]);
+                if (destination) {
+                  const relationshipText = getRelationshipText(relationship.type, t);
+                  suggestedMoves.push({
+                    animal_id: animalToMove.id,
+                    animal_name: male.name || male.id_tag || 'Sin nombre',
+                    from_corral_id: corral.id,
+                    from_corral_name: corral.name,
+                    to_corral_id: destination.corral.id,
+                    to_corral_name: destination.corral.name,
+                    reason: `${t.avoidConsanguinity}: ${relationshipText}`,
+                    issue_type: 'consanguinity',
+                  });
+                  movedAnimals.add(animalToMove.id);
+                  destination.corral.animal_count++;
+                  corral.animal_count--;
+                }
+              }
+            }
+          }
+        }
       }
-    }
+    } else if (objective === 'fertility') {
+      // Fetch insemination data for fertility analysis
+      const { data: inseminationsData } = await supabase
+        .from('artificial_inseminations')
+        .select('female_id, is_pregnant')
+        .eq('cabaña_id', cabanaId);
 
-    // Priority 3: Solve capacity issues
-    for (const issue of capacityIssues) {
-      const overcrowdedCorral = corralsWithCounts.find(c => c.id === issue.corral_id);
-      if (!overcrowdedCorral) continue;
+      // Calculate fertility scores
+      const fertilityScores: Record<string, number> = {};
+      const inseminationsByFemale: Record<string, any[]> = {};
+      
+      (inseminationsData || []).forEach((ins: any) => {
+        if (!inseminationsByFemale[ins.female_id]) {
+          inseminationsByFemale[ins.female_id] = [];
+        }
+        inseminationsByFemale[ins.female_id].push(ins);
+      });
 
-      const animalsInOvercrowded = corralAnimals[issue.corral_id] || [];
-      let movedCount = 0;
+      Object.entries(inseminationsByFemale).forEach(([femaleId, inseminations]) => {
+        const totalInseminations = inseminations.length;
+        const successfulPregnancies = inseminations.filter(i => i.is_pregnant).length;
+        fertilityScores[femaleId] = totalInseminations > 0 
+          ? Math.round((successfulPregnancies / totalInseminations) * 100)
+          : 50; // Default
+      });
 
-      for (const animal of animalsInOvercrowded) {
-        if (movedAnimals.has(animal.id)) continue;
-        if (movedCount >= issue.overflow) break;
+      // Group high fertility females together
+      const highFertilityFemales = animals.filter(a => 
+        a.sex === 'Hembra' && 
+        (fertilityScores[a.id] || 50) >= 70 &&
+        !movedAnimals.has(a.id)
+      );
 
-        const destination = findBestDestination(animal, [issue.corral_id]);
-        if (destination) {
-          suggestedMoves.push({
-            animal_id: animal.id,
-            animal_name: animal.name || animal.id_tag || 'Sin nombre',
-            from_corral_id: issue.corral_id,
-            from_corral_name: issue.corral_name,
-            to_corral_id: destination.corral.id,
-            to_corral_name: destination.corral.name,
-            reason: `Reducir sobrecarga (${issue.current_count}/${issue.capacity})`,
-            issue_type: 'capacity',
-          });
-          movedAnimals.add(animal.id);
-          destination.corral.animal_count++;
-          overcrowdedCorral.animal_count--;
-          movedCount++;
+      // Find best corral with space for high fertility females
+      const targetCorral = corralsWithCounts
+        .filter(c => {
+          const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
+          return c.animal_count < capacity - highFertilityFemales.length;
+        })
+        .sort((a, b) => b.animal_count - a.animal_count)[0];
+
+      if (targetCorral) {
+        for (const female of highFertilityFemales.slice(0, 5)) { // Max 5 moves
+          if (female.corral_id !== targetCorral.id) {
+            const score = fertilityScores[female.id] || 50;
+            suggestedMoves.push({
+              animal_id: female.id,
+              animal_name: female.name || female.id_tag || 'Sin nombre',
+              from_corral_id: female.corral_id,
+              from_corral_name: corralsWithCounts.find(c => c.id === female.corral_id)?.name || null,
+              to_corral_id: targetCorral.id,
+              to_corral_name: targetCorral.name,
+              reason: `${t.groupFertileFemales} (>${score}% ${t.fertilityScore})`,
+              issue_type: 'fertility',
+              expectedBenefit: `${score}% ${t.fertilityScore}`,
+            });
+            movedAnimals.add(female.id);
+            targetCorral.animal_count++;
+          }
+        }
+      }
+    } else if (objective === 'weight') {
+      // Calculate weight genetics scores
+      const weightScores: Record<string, number> = {};
+      
+      animals.forEach((animal: Animal) => {
+        let score = 0;
+        if (animal.peso_actual_kg) score += animal.peso_actual_kg * 0.3;
+        if (animal.ganancia_diaria_kg) score += animal.ganancia_diaria_kg * 100;
+        if (animal.peso_destete) score += animal.peso_destete * 0.2;
+        weightScores[animal.id] = Math.round(score);
+      });
+
+      // Group high weight genetics animals
+      const highWeightAnimals = animals.filter(a => 
+        (weightScores[a.id] || 0) >= 100 &&
+        !movedAnimals.has(a.id)
+      );
+
+      // Find best corral
+      const targetCorral = corralsWithCounts
+        .filter(c => {
+          const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
+          return c.animal_count < capacity - highWeightAnimals.length;
+        })
+        .sort((a, b) => b.animal_count - a.animal_count)[0];
+
+      if (targetCorral) {
+        for (const animal of highWeightAnimals.slice(0, 5)) {
+          if (animal.corral_id !== targetCorral.id) {
+            const score = weightScores[animal.id];
+            suggestedMoves.push({
+              animal_id: animal.id,
+              animal_name: animal.name || animal.id_tag || 'Sin nombre',
+              from_corral_id: animal.corral_id,
+              from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
+              to_corral_id: targetCorral.id,
+              to_corral_name: targetCorral.name,
+              reason: `${t.optimizeWeight} (${score} ${t.weightScore})`,
+              issue_type: 'weight',
+              expectedBenefit: `${score} ${t.weightScore}`,
+            });
+            movedAnimals.add(animal.id);
+            targetCorral.animal_count++;
+          }
         }
       }
     }
 
-    // 8. Calculate before/after metrics
-    const beforeCounts: Record<string, number> = {};
-    const afterCounts: Record<string, number> = {};
+    // Handle capacity issues (always)
+    for (const corral of corralsWithCounts) {
+      const capacity = corral.capacity || (corral.hectareas ? Math.round(corral.hectareas * 2) : null);
+      if (capacity && corral.animal_count > capacity) {
+        capacityIssues.push({
+          corral_id: corral.id,
+          corral_name: corral.name,
+          current_count: corral.animal_count,
+          capacity,
+          overflow: corral.animal_count - capacity,
+        });
 
-    corralsWithCounts.forEach(corral => {
-      beforeCounts[corral.id] = corralAnimals[corral.id]?.length || 0;
-      afterCounts[corral.id] = corral.animal_count;
-    });
+        const animalsInOvercrowded = corralAnimals[corral.id] || [];
+        let movedCount = 0;
+
+        for (const animal of animalsInOvercrowded) {
+          if (movedAnimals.has(animal.id)) continue;
+          if (movedCount >= (corral.animal_count - capacity)) break;
+
+          const destination = findBestDestination(animal, [corral.id]);
+          if (destination) {
+            suggestedMoves.push({
+              animal_id: animal.id,
+              animal_name: animal.name || animal.id_tag || 'Sin nombre',
+              from_corral_id: corral.id,
+              from_corral_name: corral.name,
+              to_corral_id: destination.corral.id,
+              to_corral_name: destination.corral.name,
+              reason: `${t.reduceOvercrowding} (${corral.animal_count}/${capacity})`,
+              issue_type: 'capacity',
+            });
+            movedAnimals.add(animal.id);
+            destination.corral.animal_count++;
+            corral.animal_count--;
+            movedCount++;
+          }
+        }
+      }
+    }
+
+    // Generate expected improvement message
+    let expectedImprovement = '';
+    if (objective === 'consanguinity') {
+      expectedImprovement = t.expectedImprovementConsanguinity.replace('{{count}}', consanguinityRisks.length.toString());
+    } else if (objective === 'fertility') {
+      const avgImprovement = 15; // Estimate
+      expectedImprovement = t.expectedImprovementFertility.replace('{{percent}}', avgImprovement.toString());
+    } else if (objective === 'weight') {
+      const count = suggestedMoves.filter(m => m.issue_type === 'weight').length;
+      expectedImprovement = t.expectedImprovementWeight.replace('{{count}}', count.toString());
+    }
 
     return new Response(
       JSON.stringify({
+        objective,
         issues: {
           consanguinity: consanguinityRisks,
           capacity: capacityIssues,
           separation: separationIssues,
         },
         suggestedMoves,
-        corralSummary: {
-          beforeCounts,
-          afterCounts,
+        summary: {
+          totalMoves: suggestedMoves.length,
+          expectedImprovement,
         },
         totalIssues: consanguinityRisks.length + capacityIssues.length + separationIssues.length,
-        totalMoves: suggestedMoves.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -361,7 +498,6 @@ function calculateAgeInMonths(birthDate: string): number {
 }
 
 function checkRelationship(animal1: Animal, animal2: Animal): { type: string; severity: 'severe' | 'medium' | 'low' } | null {
-  // Parent-child (severe)
   if (animal1.id === animal2.father_id || animal1.id === animal2.mother_id) {
     return { type: 'parent-child', severity: 'severe' };
   }
@@ -369,14 +505,12 @@ function checkRelationship(animal1: Animal, animal2: Animal): { type: string; se
     return { type: 'parent-child', severity: 'severe' };
   }
 
-  // Full siblings (severe)
   if (animal1.father_id && animal1.mother_id && animal2.father_id && animal2.mother_id) {
     if (animal1.father_id === animal2.father_id && animal1.mother_id === animal2.mother_id) {
       return { type: 'full-siblings', severity: 'severe' };
     }
   }
 
-  // Half siblings (medium)
   if (animal1.father_id && animal2.father_id && animal1.father_id === animal2.father_id) {
     return { type: 'half-siblings-paternal', severity: 'medium' };
   }
@@ -385,4 +519,14 @@ function checkRelationship(animal1: Animal, animal2: Animal): { type: string; se
   }
 
   return null;
+}
+
+function getRelationshipText(type: string, t: any): string {
+  switch (type) {
+    case 'parent-child': return t.parentChild;
+    case 'full-siblings': return t.fullSiblings;
+    case 'half-siblings-paternal': return t.halfSiblingsPaternal;
+    case 'half-siblings-maternal': return t.halfSiblingsMaternal;
+    default: return type;
+  }
 }

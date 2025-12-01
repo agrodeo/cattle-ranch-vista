@@ -567,23 +567,65 @@
   "optimizer": {
     "title": "Otimizador de Currais",
     "reviewTitle": "Revisar Movimentos",
-    "description": "Analise sua distribuição atual e obtenha soluções automáticas",
-    "subtitle": "Sistema determinístico sem IA - rápido e confiável",
-    "analyzing": "Analisando...",
+    "description": "Analise sua distribuição atual e obtenha sugestões",
+    "subtitle": "O sistema detectará problemas e sugerirá movimentos",
     "analyzeButton": "Analisar Distribuição",
-    "issuesFound": "Problemas Detectados",
+    "analyzing": "Analisando...",
+    "noIssuesFound": "Nenhum problema encontrado. Sua distribuição é ideal.",
+    "analyzeError": "Erro ao analisar currais",
+    "issuesFound": "Problemas Encontrados",
     "consanguinityRisks": "Riscos de Consanguinidade",
     "capacityIssues": "Sobrecarga de Capacidade",
-    "separationIssues": "Bezerros Separados das Mães",
+    "separationIssues": "Separações Mãe-Cria",
     "suggestedMoves": "Movimentos Sugeridos",
-    "unassigned": "Não atribuído",
     "selectedMoves": "Movimentos Selecionados",
+    "applyButton": "Aplicar {{count}} Movimento(s)",
     "applying": "Aplicando...",
-    "applyButton": "Aplicar {{count}} Movimentos",
-    "noIssuesFound": "Excelente! Nenhum problema encontrado em seus currais.",
-    "analyzeError": "Erro ao analisar currais",
+    "successMessage": "{{count}} movimento(s) aplicado(s) com sucesso",
     "applyError": "Erro ao aplicar movimentos",
-    "successMessage": "{{count}} animais movidos com sucesso"
+    "unassigned": "Não atribuído",
+    "selectObjectiveTitle": "O que você quer otimizar?",
+    "selectObjectiveSubtitle": "Escolha seu objetivo principal para reorganização",
+    "continueButton": "Continuar",
+    "selectedObjective": "Objetivo selecionado",
+    "objectives": {
+      "consanguinity": {
+        "title": "Menos Consanguinidade",
+        "description": "Reorganize animais para evitar cruzamentos entre parentes próximos e manter diversidade genética"
+      },
+      "fertility": {
+        "title": "Mais Fertilidade",
+        "description": "Agrupe fêmeas férteis com touros de alto desempenho reprodutivo para maximizar prenhez"
+      },
+      "weight": {
+        "title": "Mais Peso nas Crias",
+        "description": "Combine animais pela genética de peso para maximizar quilos nos descendentes"
+      }
+    },
+    "reasons": {
+      "reuniteWithMother": "Reunir com mãe ({{months}} meses)",
+      "avoidConsanguinity": "Evitar consanguinidade: {{relationship}}",
+      "reduceOvercrowding": "Reduzir superlotação ({{current}}/{{capacity}})",
+      "spaceAvailable": "Espaço disponível",
+      "improveBreeding": "Melhorar potencial reprodutivo ({{score}}% fertilidade)",
+      "optimizeWeight": "Otimizar genética de peso ({{score}} pontos)",
+      "groupFertileFemales": "Agrupar fêmeas férteis (>{{threshold}}% prenhez)",
+      "groupHighWeightAnimals": "Agrupar animais com boa genética de peso",
+      "separateLowPerformers": "Separar baixo desempenho reprodutivo",
+      "separatePoorWeightGenes": "Separar genética de peso deficiente"
+    },
+    "relationships": {
+      "parentChild": "pai-filho",
+      "fullSiblings": "irmãos completos",
+      "halfSiblingsPaternal": "meio irmãos (pai)",
+      "halfSiblingsMaternal": "meio irmãos (mãe)"
+    },
+    "expectedBenefit": "Benefício esperado",
+    "summary": {
+      "title": "Resumo de Melhoria Esperada",
+      "totalMoves": "Total de movimentos",
+      "expectedImprovement": "Melhoria esperada"
+    }
   },
   "aiAssistant": {
     "title": "Assistente IA de Currais",
