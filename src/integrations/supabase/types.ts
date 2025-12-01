@@ -2659,17 +2659,14 @@ export type Database = {
         Args: { _animal_id: string; _cabana_id: string }
         Returns: {
           compliance_percentage: number
-          days_overdue: number
           doses_given: number
           doses_required: number
           is_mandatory: boolean
-          last_vaccination_date: string
+          last_dose_date: string
           next_due_date: string
-          requirement_id: string
           status: string
           vaccine_code: string
           vaccine_name: string
-          vaccine_type: string
         }[]
       }
       can_add_animals: { Args: { user_uuid: string }; Returns: boolean }
