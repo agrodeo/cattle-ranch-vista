@@ -178,42 +178,53 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen gradient-mesh flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center space-y-4">
+    <div className="min-h-screen gradient-mesh flex items-center justify-center p-4 animate-fade-in">
+      <Card className="w-full max-w-md glass card-modern animate-scale-in">
+        <CardHeader className="text-center space-y-6 pb-6">
           <div className="flex justify-center">
-            <div className="p-3 rounded-full bg-primary/10">
-              <Building2 className="h-8 w-8 text-primary" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-50" />
+              <div className="relative bg-brand-gradient p-4 rounded-2xl glow-primary">
+                <Building2 className="h-10 w-10 text-white" />
+              </div>
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">AgroDeo</CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
-            {t('auth:appDescription', 'Sistema de Gestión Integral de Ganado')}
-          </CardDescription>
+          <div className="space-y-2">
+            <CardTitle className="text-3xl font-bold text-brand-gradient">AgroDeo</CardTitle>
+            <CardDescription className="text-base">
+              {t('auth:appDescription', 'Sistema de Gestión Integral de Ganado')}
+            </CardDescription>
+          </div>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="px-6 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin" className="flex items-center gap-2">
+            <TabsList className="grid w-full grid-cols-2 p-1 bg-muted/50 rounded-xl h-12">
+              <TabsTrigger 
+                value="signin" 
+                className="flex items-center gap-2 rounded-lg data-[state=active]:bg-brand-gradient data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              >
                 <Mail className="h-4 w-4" />
-                {t('auth:login.title')}
+                <span className="font-medium">{t('auth:login.title')}</span>
               </TabsTrigger>
-              <TabsTrigger value="register" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="register" 
+                className="flex items-center gap-2 rounded-lg data-[state=active]:bg-brand-gradient data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
+              >
                 <UserPlus className="h-4 w-4" />
-                {t('auth:register.title')}
+                <span className="font-medium">{t('auth:register.title')}</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="space-y-4 mt-6">
-              <div className="text-center text-sm text-muted-foreground mb-4">
+            <TabsContent value="signin" className="space-y-5 mt-8">
+              <div className="text-center text-sm text-muted-foreground">
                 {t('auth:login.subtitle')}
               </div>
               <Form {...signInForm}>
@@ -246,12 +257,15 @@ const Auth = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={signInLoading}>
+                  <Button type="submit" className="w-full btn-primary h-11 text-base hover-scale" disabled={signInLoading}>
                     {signInLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {t('auth:login.submit')}
                   </Button>
-                  <div className="mt-3 text-center text-sm">
-                    <Link to="/forgot-password" className="text-primary hover:underline">
+                  <div className="text-center">
+                    <Link 
+                      to="/forgot-password" 
+                      className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+                    >
                       {t('auth:login.forgotPassword')}
                     </Link>
                   </div>
@@ -259,8 +273,8 @@ const Auth = () => {
               </Form>
             </TabsContent>
 
-            <TabsContent value="register" className="space-y-4 mt-6">
-              <div className="text-center text-sm text-muted-foreground mb-4">
+            <TabsContent value="register" className="space-y-4 mt-8">
+              <div className="text-center text-sm text-muted-foreground">
                 {t('auth:register.subtitle')}
               </div>
               <Form {...signUpForm}>
@@ -409,7 +423,7 @@ const Auth = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full" disabled={signUpLoading}>
+                  <Button type="submit" className="w-full btn-primary h-11 text-base hover-scale" disabled={signUpLoading}>
                     {signUpLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     {signUpLoading ? t('common:status.loading') : t('auth:register.submit')}
                   </Button>
