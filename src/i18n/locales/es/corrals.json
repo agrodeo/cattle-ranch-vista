@@ -564,23 +564,65 @@
   "optimizer": {
     "title": "Optimizador de Corrales",
     "reviewTitle": "Revisar Movimientos",
-    "description": "Analiza tu distribución actual y obtén soluciones automáticas",
-    "subtitle": "Sistema determinístico sin IA - rápido y confiable",
-    "analyzing": "Analizando...",
+    "description": "Analiza tu distribución actual y obtén sugerencias",
+    "subtitle": "El sistema detectará problemas y sugerirá movimientos",
     "analyzeButton": "Analizar Distribución",
-    "issuesFound": "Problemas Detectados",
+    "analyzing": "Analizando...",
+    "noIssuesFound": "No se encontraron problemas. Tu distribución es óptima.",
+    "analyzeError": "Error al analizar corrales",
+    "issuesFound": "Problemas Encontrados",
     "consanguinityRisks": "Riesgos de Consanguinidad",
     "capacityIssues": "Sobrecarga de Capacidad",
-    "separationIssues": "Terneros Separados de Madres",
+    "separationIssues": "Separaciones Madre-Cría",
     "suggestedMoves": "Movimientos Sugeridos",
-    "unassigned": "Sin asignar",
     "selectedMoves": "Movimientos Seleccionados",
+    "applyButton": "Aplicar {{count}} Movimiento(s)",
     "applying": "Aplicando...",
-    "applyButton": "Aplicar {{count}} Movimientos",
-    "noIssuesFound": "¡Excelente! No se encontraron problemas en tus corrales.",
-    "analyzeError": "Error al analizar corrales",
+    "successMessage": "{{count}} movimiento(s) aplicado(s) exitosamente",
     "applyError": "Error al aplicar movimientos",
-    "successMessage": "{{count}} animales movidos exitosamente"
+    "unassigned": "Sin asignar",
+    "selectObjectiveTitle": "¿Qué quieres optimizar?",
+    "selectObjectiveSubtitle": "Elige tu objetivo principal para la reorganización",
+    "continueButton": "Continuar",
+    "selectedObjective": "Objetivo seleccionado",
+    "objectives": {
+      "consanguinity": {
+        "title": "Menos Consanguinidad",
+        "description": "Reorganiza animales para evitar cruces entre parientes cercanos y mantener diversidad genética"
+      },
+      "fertility": {
+        "title": "Más Fertilidad",
+        "description": "Agrupa hembras fértiles con toros de alto rendimiento reproductivo para maximizar preñez"
+      },
+      "weight": {
+        "title": "Más Peso en Crías",
+        "description": "Empareja animales según genética de peso para maximizar kilos en la descendencia"
+      }
+    },
+    "reasons": {
+      "reuniteWithMother": "Reunir con madre ({{months}} meses)",
+      "avoidConsanguinity": "Evitar consanguinidad: {{relationship}}",
+      "reduceOvercrowding": "Reducir sobrecarga ({{current}}/{{capacity}})",
+      "spaceAvailable": "Espacio disponible",
+      "improveBreeding": "Mejorar potencial reproductivo ({{score}}% fertilidad)",
+      "optimizeWeight": "Optimizar genética de peso ({{score}} puntos)",
+      "groupFertileFemales": "Agrupar hembras fértiles (>{{threshold}}% preñez)",
+      "groupHighWeightAnimals": "Agrupar animales con buena genética de peso",
+      "separateLowPerformers": "Separar bajo rendimiento reproductivo",
+      "separatePoorWeightGenes": "Separar genética de peso deficiente"
+    },
+    "relationships": {
+      "parentChild": "padre-hijo",
+      "fullSiblings": "hermanos completos",
+      "halfSiblingsPaternal": "medio hermanos (padre)",
+      "halfSiblingsMaternal": "medio hermanos (madre)"
+    },
+    "expectedBenefit": "Beneficio esperado",
+    "summary": {
+      "title": "Resumen de Mejora Esperada",
+      "totalMoves": "Total de movimientos",
+      "expectedImprovement": "Mejora esperada"
+    }
   },
   "aiAssistant": {
     "title": "Asistente IA de Corrales",

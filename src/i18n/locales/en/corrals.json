@@ -566,23 +566,65 @@
   "optimizer": {
     "title": "Corral Optimizer",
     "reviewTitle": "Review Movements",
-    "description": "Analyze your current distribution and get automatic solutions",
-    "subtitle": "Deterministic system without AI - fast and reliable",
-    "analyzing": "Analyzing...",
+    "description": "Analyze your current distribution and get suggestions",
+    "subtitle": "The system will detect issues and suggest movements",
     "analyzeButton": "Analyze Distribution",
+    "analyzing": "Analyzing...",
+    "noIssuesFound": "No issues found. Your distribution is optimal.",
+    "analyzeError": "Error analyzing corrals",
     "issuesFound": "Issues Found",
     "consanguinityRisks": "Consanguinity Risks",
     "capacityIssues": "Capacity Overload",
-    "separationIssues": "Calves Separated from Mothers",
-    "suggestedMoves": "Suggested Moves",
-    "unassigned": "Unassigned",
-    "selectedMoves": "Selected Moves",
+    "separationIssues": "Mother-Calf Separations",
+    "suggestedMoves": "Suggested Movements",
+    "selectedMoves": "Selected Movements",
+    "applyButton": "Apply {{count}} Movement(s)",
     "applying": "Applying...",
-    "applyButton": "Apply {{count}} Moves",
-    "noIssuesFound": "Excellent! No issues found in your corrals.",
-    "analyzeError": "Error analyzing corrals",
-    "applyError": "Error applying moves",
-    "successMessage": "{{count}} animals moved successfully"
+    "successMessage": "{{count}} movement(s) applied successfully",
+    "applyError": "Error applying movements",
+    "unassigned": "Unassigned",
+    "selectObjectiveTitle": "What do you want to optimize?",
+    "selectObjectiveSubtitle": "Choose your main objective for reorganization",
+    "continueButton": "Continue",
+    "selectedObjective": "Selected objective",
+    "objectives": {
+      "consanguinity": {
+        "title": "Less Consanguinity",
+        "description": "Reorganize animals to avoid breeding between close relatives and maintain genetic diversity"
+      },
+      "fertility": {
+        "title": "More Fertility",
+        "description": "Group fertile females with high reproductive performance bulls to maximize pregnancy"
+      },
+      "weight": {
+        "title": "More Weight in Offspring",
+        "description": "Match animals by weight genetics to maximize kilos in descendants"
+      }
+    },
+    "reasons": {
+      "reuniteWithMother": "Reunite with mother ({{months}} months)",
+      "avoidConsanguinity": "Avoid consanguinity: {{relationship}}",
+      "reduceOvercrowding": "Reduce overcrowding ({{current}}/{{capacity}})",
+      "spaceAvailable": "Space available",
+      "improveBreeding": "Improve reproductive potential ({{score}}% fertility)",
+      "optimizeWeight": "Optimize weight genetics ({{score}} points)",
+      "groupFertileFemales": "Group fertile females (>{{threshold}}% pregnancy)",
+      "groupHighWeightAnimals": "Group animals with good weight genetics",
+      "separateLowPerformers": "Separate low reproductive performance",
+      "separatePoorWeightGenes": "Separate poor weight genetics"
+    },
+    "relationships": {
+      "parentChild": "parent-child",
+      "fullSiblings": "full siblings",
+      "halfSiblingsPaternal": "half siblings (father)",
+      "halfSiblingsMaternal": "half siblings (mother)"
+    },
+    "expectedBenefit": "Expected benefit",
+    "summary": {
+      "title": "Expected Improvement Summary",
+      "totalMoves": "Total movements",
+      "expectedImprovement": "Expected improvement"
+    }
   },
   "aiAssistant": {
     "title": "Corral AI Assistant",

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertTriangle, Users, CheckCircle2, Loader2, ArrowRight, Baby } from "lucide-react";
+import { AlertTriangle, Users, CheckCircle2, Loader2, ArrowRight, Baby, Dna, Heart, Scale } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface CorralOptimizerProps {
@@ -21,6 +21,8 @@ interface CorralOptimizerProps {
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
+
+type ObjectiveType = 'consanguinity' | 'fertility' | 'weight';
 
 interface Issue {
   consanguinity: any[];
@@ -36,8 +38,9 @@ interface SuggestedMove {
   to_corral_id: string;
   to_corral_name: string;
   reason: string;
-  issue_type: 'consanguinity' | 'capacity' | 'separation';
+  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight';
   paired_with?: string;
+  expectedBenefit?: string;
 }
 
 export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimizerProps) {
@@ -45,16 +48,34 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   
-  const [step, setStep] = useState<'issues' | 'review'>("issues");
+  const [step, setStep] = useState<'objective' | 'analyzing' | 'review'>("objective");
+  const [selectedObjective, setSelectedObjective] = useState<ObjectiveType | null>(null);
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [issues, setIssues] = useState<Issue | null>(null);
   const [suggestedMoves, setSuggestedMoves] = useState<SuggestedMove[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<Set<string>>(new Set());
   const [totalIssues, setTotalIssues] = useState(0);
+  const [expectedImprovement, setExpectedImprovement] = useState<string>('');
+
+  const objectives: { id: ObjectiveType; icon: any; color: string }[] = [
+    { id: 'consanguinity', icon: Dna, color: 'text-purple-600' },
+    { id: 'fertility', icon: Heart, color: 'text-pink-600' },
+    { id: 'weight', icon: Scale, color: 'text-blue-600' },
+  ];
+
+  const handleObjectiveSelect = (objective: ObjectiveType) => {
+    setSelectedObjective(objective);
+  };
+
+  const handleContinue = async () => {
+    if (!selectedObjective) return;
+    setStep('analyzing');
+    await handleAnalyze();
+  };
 
   const handleAnalyze = async () => {
-    if (!currentUser?.cabañaId) return;
+    if (!currentUser?.cabañaId || !selectedObjective) return;
 
     try {
       setLoading(true);
@@ -63,6 +84,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
         body: {
           cabanaId: currentUser.cabañaId,
           language: localStorage.getItem('language') || 'es',
+          objective: selectedObjective,
         }
       });
 
@@ -71,6 +93,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
       setIssues(data.issues);
       setSuggestedMoves(data.suggestedMoves || []);
       setTotalIssues(data.totalIssues || 0);
+      setExpectedImprovement(data.summary?.expectedImprovement || '');
       
       // Select all moves by default
       const allMoveIds = new Set<string>((data.suggestedMoves || []).map((m: SuggestedMove) => m.animal_id));
@@ -83,6 +106,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
           title: t('common:success.title'),
           description: t('corrals:optimizer.noIssuesFound'),
         });
+        setStep('objective');
       }
     } catch (error: any) {
       console.error('Error analyzing corrals:', error);
@@ -91,6 +115,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
         description: error.message || t('corrals:optimizer.analyzeError'),
         variant: "destructive",
       });
+      setStep('objective');
     } finally {
       setLoading(false);
     }
@@ -134,11 +159,13 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   };
 
   const handleClose = () => {
-    setStep('issues');
+    setStep('objective');
+    setSelectedObjective(null);
     setIssues(null);
     setSuggestedMoves([]);
     setSelectedMoves(new Set());
     setTotalIssues(0);
+    setExpectedImprovement('');
     onOpenChange(false);
   };
 
@@ -152,20 +179,13 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     setSelectedMoves(newSelected);
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'severe': return 'destructive';
-      case 'medium': return 'warning';
-      case 'low': return 'secondary';
-      default: return 'secondary';
-    }
-  };
-
   const getIssueIcon = (type: string) => {
     switch (type) {
       case 'consanguinity': return <AlertTriangle className="h-5 w-5" />;
       case 'capacity': return <Users className="h-5 w-5" />;
       case 'separation': return <Baby className="h-5 w-5" />;
+      case 'fertility': return <Heart className="h-5 w-5" />;
+      case 'weight': return <Scale className="h-5 w-5" />;
       default: return <AlertTriangle className="h-5 w-5" />;
     }
   };
@@ -175,79 +195,101 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {step === 'issues' ? t('corrals:optimizer.title') : t('corrals:optimizer.reviewTitle')}
+            {step === 'objective' && t('corrals:optimizer.selectObjectiveTitle')}
+            {step === 'analyzing' && t('corrals:optimizer.title')}
+            {step === 'review' && t('corrals:optimizer.reviewTitle')}
           </DialogTitle>
         </DialogHeader>
 
-        {step === 'issues' && (
+        {/* Step 1: Select Objective */}
+        {step === 'objective' && (
           <div className="space-y-6">
-            <div className="text-center py-8">
-              <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle2 className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{t('corrals:optimizer.description')}</h3>
-              <p className="text-muted-foreground mb-6">{t('corrals:optimizer.subtitle')}</p>
-              
-              <Button
-                onClick={handleAnalyze}
-                disabled={loading}
-                size="lg"
-                className="min-w-[200px]"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    {t('corrals:optimizer.analyzing')}
-                  </>
-                ) : (
-                  t('corrals:optimizer.analyzeButton')
-                )}
-              </Button>
+            <p className="text-center text-muted-foreground">
+              {t('corrals:optimizer.selectObjectiveSubtitle')}
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {objectives.map(({ id, icon: Icon, color }) => (
+                <Card
+                  key={id}
+                  className={`cursor-pointer transition-all hover:shadow-lg ${
+                    selectedObjective === id ? 'ring-2 ring-primary' : ''
+                  }`}
+                  onClick={() => handleObjectiveSelect(id)}
+                >
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className={`p-3 rounded-lg bg-muted ${color}`}>
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <CardTitle className="text-lg">
+                        {t(`corrals:optimizer.objectives.${id}.title`)}
+                      </CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground">
+                      {t(`corrals:optimizer.objectives.${id}.description`)}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
 
-            {issues && totalIssues > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('corrals:optimizer.issuesFound')}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {issues.consanguinity.length > 0 && (
-                    <div className="flex items-center justify-between p-3 bg-destructive/10 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <AlertTriangle className="h-5 w-5 text-destructive" />
-                        <span className="font-medium">{t('corrals:optimizer.consanguinityRisks')}</span>
-                      </div>
-                      <Badge variant="destructive">{issues.consanguinity.length}</Badge>
-                    </div>
-                  )}
-                  
-                  {issues.capacity.length > 0 && (
-                    <div className="flex items-center justify-between p-3 bg-amber-500/10 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Users className="h-5 w-5 text-amber-600" />
-                        <span className="font-medium">{t('corrals:optimizer.capacityIssues')}</span>
-                      </div>
-                      <Badge variant="secondary" className="bg-amber-600 text-white">{issues.capacity.length}</Badge>
-                    </div>
-                  )}
-                  
-                  {issues.separation.length > 0 && (
-                    <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <Baby className="h-5 w-5 text-blue-600" />
-                        <span className="font-medium">{t('corrals:optimizer.separationIssues')}</span>
-                      </div>
-                      <Badge className="bg-blue-600">{issues.separation.length}</Badge>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+            <div className="flex justify-end">
+              <Button
+                onClick={handleContinue}
+                disabled={!selectedObjective}
+                size="lg"
+              >
+                {t('corrals:optimizer.continueButton')}
+              </Button>
+            </div>
           </div>
         )}
 
+        {/* Step 2: Analyzing */}
+        {step === 'analyzing' && (
+          <div className="space-y-6">
+            <div className="text-center py-12">
+              <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+              <h3 className="text-lg font-semibold mb-2">{t('corrals:optimizer.analyzing')}</h3>
+              <p className="text-muted-foreground">
+                {t('corrals:optimizer.subtitle')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Review Movements */}
         {step === 'review' && (
           <div className="space-y-6">
+            {/* Show selected objective */}
+            {selectedObjective && (
+              <div className="flex items-center gap-2 p-3 bg-muted rounded-lg">
+                <Badge variant="outline">
+                  {t('corrals:optimizer.selectedObjective')}
+                </Badge>
+                <span className="font-medium">
+                  {t(`corrals:optimizer.objectives.${selectedObjective}.title`)}
+                </span>
+              </div>
+            )}
+
+            {/* Expected improvement summary */}
+            {expectedImprovement && (
+              <Card className="bg-primary/5">
+                <CardHeader>
+                  <CardTitle className="text-sm">
+                    {t('corrals:optimizer.summary.title')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm">{expectedImprovement}</p>
+                </CardContent>
+              </Card>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle>{t('corrals:optimizer.suggestedMoves')}</CardTitle>
@@ -272,6 +314,11 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
                           <span>{move.to_corral_name}</span>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">{move.reason}</p>
+                        {move.expectedBenefit && (
+                          <p className="text-sm text-primary mt-1">
+                            {t('corrals:optimizer.expectedBenefit')}: {move.expectedBenefit}
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -290,7 +337,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setStep('issues')}
+                onClick={() => setStep('objective')}
                 className="flex-1"
                 disabled={applying}
               >
