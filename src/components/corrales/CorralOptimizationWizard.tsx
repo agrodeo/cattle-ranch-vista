@@ -470,21 +470,22 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         disabled={checkingBenchmarks}
                       />
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium text-sm sm:text-base">Seguir Estándares de la Cabaña</div>
+                        <div className="font-medium text-sm sm:text-base">{t('optimization.step1.objectives.benchmarks.title')}</div>
                         <div className="text-xs sm:text-sm text-muted-foreground break-words">
                           {checkingBenchmarks ? (
-                            "Verificando estándares configurados..."
+                            t('optimization.step1.objectives.benchmarks.checkingBenchmarks')
                           ) : hasCustomBenchmarks ? (
-                            "Usar los estándares personalizados configurados en tu cabaña"
+                            t('optimization.step1.objectives.benchmarks.hasCustomBenchmarks')
                           ) : (
                             <>
-                              Se usarán estándares por defecto. 
+                              {t('optimization.step1.objectives.benchmarks.noCustomBenchmarks')}
+                              {' '}
                               <Link 
                                 to="/settings?tab=benchmarks" 
                                 className="ml-1 underline text-primary hover:text-primary/80 break-words" 
                                 onClick={onClose}
                               >
-                                Configura estándares personalizados aquí
+                                {t('optimization.step1.objectives.benchmarks.configureCustomLink')}
                               </Link>
                             </>
                           )}
@@ -497,13 +498,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 {/* Parámetros de Peso (opcional) */}
                 {(config.objectives.includes('production') || config.objectives.includes('benchmarks')) && (
                   <div className="p-3 sm:p-4 bg-blue-50 rounded-lg space-y-3 min-w-0 overflow-hidden">
-                    <Label className="text-sm sm:text-base font-semibold">Objetivos de Peso (opcional)</Label>
+                    <Label className="text-sm sm:text-base font-semibold">{t('optimization.step1.weightObjectivesTitle')}</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 min-w-0">
                       <div className="min-w-0">
-                        <Label className="text-xs sm:text-sm">Peso al Nacer (kg)</Label>
+                        <Label className="text-xs sm:text-sm">{t('optimization.step1.birthWeightLabel')}</Label>
                         <Input
                           type="number"
-                          placeholder="ej: 35"
+                          placeholder={t('optimization.step1.birthWeightPlaceholder')}
                           value={config.targetWeights.birth || ''}
                           onChange={(e) => setConfig(prev => ({
                             ...prev,
@@ -513,10 +514,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         />
                       </div>
                       <div className="min-w-0">
-                        <Label className="text-xs sm:text-sm">Peso al Destete (kg)</Label>
+                        <Label className="text-xs sm:text-sm">{t('optimization.step1.weaningWeightLabel')}</Label>
                         <Input
                           type="number"
-                          placeholder="ej: 180"
+                          placeholder={t('optimization.step1.weaningWeightPlaceholder')}
                           value={config.targetWeights.weaning || ''}
                           onChange={(e) => setConfig(prev => ({
                             ...prev,
@@ -526,10 +527,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         />
                       </div>
                       <div className="min-w-0">
-                        <Label className="text-xs sm:text-sm">Peso Final (kg)</Label>
+                        <Label className="text-xs sm:text-sm">{t('optimization.step1.finalWeightLabel')}</Label>
                         <Input
                           type="number"
-                          placeholder="ej: 450"
+                          placeholder={t('optimization.step1.finalWeightPlaceholder')}
                           value={config.targetWeights.final || ''}
                           onChange={(e) => setConfig(prev => ({
                             ...prev,
@@ -544,10 +545,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                 {/* Parámetros Técnicos */}
                 <div className="min-w-0 overflow-hidden">
-                  <Label className="text-sm sm:text-base font-semibold mb-3 block">Parámetros Técnicos</Label>
+                  <Label className="text-sm sm:text-base font-semibold mb-3 block">{t('optimization.step1.technicalParametersTitle')}</Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 min-w-0">
                     <div className="min-w-0">
-                      <Label className="text-xs sm:text-sm break-words">Toros por Corral (máx)</Label>
+                      <Label className="text-xs sm:text-sm break-words">{t('optimization.step1.maxBullsPerCorralLabel')}</Label>
                       <Input
                         type="number"
                         value={config.max_bulls_per_corral}
@@ -559,7 +560,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       />
                     </div>
                     <div className="min-w-0">
-                      <Label className="text-xs sm:text-sm break-words">Edad máx. ternero con madre (meses)</Label>
+                      <Label className="text-xs sm:text-sm break-words">{t('optimization.step1.maxAgeWithMotherLabel')}</Label>
                       <Input
                         type="number"
                         value={config.max_age_months_with_mother}
@@ -571,7 +572,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       />
                     </div>
                     <div className="min-w-0">
-                      <Label className="text-xs sm:text-sm break-words">Densidad por Hectárea</Label>
+                      <Label className="text-xs sm:text-sm break-words">{t('optimization.step1.densityPerHectareLabel')}</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -584,7 +585,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       />
                     </div>
                     <div className="min-w-0">
-                      <Label className="text-xs sm:text-sm break-words">Factor espacio ternero (0-1)</Label>
+                      <Label className="text-xs sm:text-sm break-words">{t('optimization.step1.calfSpaceFactorLabel')}</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -602,12 +603,12 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </div>
                 
                 <div className="p-3 sm:p-4 bg-green-50 rounded-lg min-w-0 overflow-hidden">
-                  <h4 className="font-medium text-green-900 mb-2 text-sm sm:text-base">💡 Cómo funciona</h4>
+                  <h4 className="font-medium text-green-900 mb-2 text-sm sm:text-base">{t('optimization.step1.howItWorksTitle')}</h4>
                   <ul className="text-xs sm:text-sm text-green-700 space-y-1 break-words">
-                    <li>• Selecciona uno o más objetivos de optimización</li>
-                    <li>• La IA analizará tu rodeo y generará movimientos específicos</li>
-                    <li>• Los terneros se mueven automáticamente con sus madres</li>
-                    <li>• Puedes ajustar parámetros técnicos según tus necesidades</li>
+                    <li>• {t('optimization.step1.howItWorksSteps.step1')}</li>
+                    <li>• {t('optimization.step1.howItWorksSteps.step2')}</li>
+                    <li>• {t('optimization.step1.howItWorksSteps.step3')}</li>
+                    <li>• {t('optimization.step1.howItWorksSteps.step4')}</li>
                   </ul>
                 </div>
               </CardContent>
