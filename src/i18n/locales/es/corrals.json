@@ -391,124 +391,158 @@
     "advice": "Consejo: Evita cruzar animales con alto coeficiente"
   },
   "optimization": {
-    "title": "Asistente de Optimización de Corrales",
-    "subtitle": "Optimiza la distribución de tus animales con IA",
-    "steps": {
-      "objective": "Objetivo",
-      "parameters": "Parámetros",
-      "preview": "Vista Previa",
-      "confirm": "Confirmar"
-    },
-    "navigation": {
-      "next": "Siguiente",
-      "back": "Atrás",
-      "cancel": "Cancelar",
-      "analyze": "Analizar Distribución",
-      "apply": "Aplicar Cambios"
+    "title": "Optimización de Corrales",
+    "titleWithStep": "Optimización de Corrales - Paso {{step}} de 4",
+    "hideExplanation": "Ocultar",
+    "showExplanation": "¿Cómo funciona?",
+    "explanationTitle": "Cómo funciona la Optimización de Corrales",
+    "explanationSections": {
+      "consanguinityDetection": {
+        "title": "🧬 Detección de Consanguinidad",
+        "description": "El sistema analiza las relaciones familiares entre animales (padre-hijo, hermanos, medio-hermanos) que están en el mismo corral y tienen edad reproductiva (≥15 meses). Detecta parejas macho-hembra emparentadas que podrían cruzarse."
+      },
+      "productiveData": {
+        "title": "📊 Datos Productivos y Reproductivos",
+        "description": "El sistema recopila métricas clave de cada animal:",
+        "metrics": {
+          "item1": "Peso actual, ganancia diaria promedio (GDP), historial de pesajes",
+          "item2": "Tasas de preñez y parición (% de éxito reproductivo)",
+          "item3": "Nivel de rendimiento (Excelente, Bueno, Regular, Bajo)",
+          "item4": "Métricas agregadas por corral para análisis comparativo"
+        }
+      },
+      "aiAnalysis": {
+        "title": "🤖 Análisis con IA",
+        "description": "Usando GPT-4, el sistema:",
+        "steps": {
+          "item1": "Evalúa la distribución actual de animales con datos productivos",
+          "item2": "Identifica conflictos de consanguinidad y bajo rendimiento",
+          "item3": "Genera movimientos específicos con razones basadas en datos reales",
+          "item4": "Considera capacidad, edades, objetivos y métricas de performance",
+          "item5": "Prioriza animales de alto rendimiento para agrupación estratégica"
+        }
+      },
+      "customizableObjectives": {
+        "title": "🎯 Objetivos Personalizables",
+        "description": "Puedes elegir optimizar para:",
+        "objectives": {
+          "consanguinity": "Consanguinidad: Reduce cruces entre parientes",
+          "reproduction": "Reproducción: Agrupa hembras >70% preñez/parición, aísla bajo rendimiento",
+          "production": "Producción: Agrupa animales con GDP >0.7kg/d, separa bajo rendimiento",
+          "benchmarks": "Estándares: Sigue benchmarks específicos de tu cabaña"
+        }
+      },
+      "totalControl": {
+        "title": "✅ Control Total con Datos",
+        "description": "Puedes ver métricas de cada animal (peso, GDP, % preñez, % parición), revisar cada movimiento con razones basadas en datos reales, seleccionar cuáles aplicar y descartar los que no quieras. El sistema muestra el impacto esperado antes de aplicar cambios."
+      }
     },
     "step1": {
-      "title": "Selecciona tu Objetivo",
-      "subtitle": "¿Qué aspecto quieres optimizar?",
+      "cardTitle": "Configuración de Optimización",
+      "objectivesTitle": "Objetivos de Optimización",
       "objectives": {
         "consanguinity": {
           "title": "Reducir Consanguinidad",
-          "description": "Minimiza el riesgo de cruces entre animales emparentados",
-          "howItWorks": "Cómo funciona",
-          "explanation": "La IA analiza las relaciones genéticas entre tus animales y redistribuye los corrales para minimizar el riesgo de consanguinidad. Separa padres de hijas, hermanos, y otros parientes cercanos en corrales reproductivos."
+          "description": "Evitar cruces entre animales emparentados"
         },
         "reproduction": {
           "title": "Optimizar Reproducción",
-          "description": "Maximiza la eficiencia reproductiva del rodeo",
-          "howItWorks": "Cómo funciona",
-          "explanation": "La IA agrupa hembras según su estado reproductivo y edad, y asigna toros de manera estratégica para maximizar la tasa de preñez y mejorar la genética del rodeo."
+          "description": "Maximizar fertilidad y tasa de preñez"
         },
         "production": {
-          "title": "Mejorar Producción",
-          "description": "Optimiza peso y ganancia diaria por categoría",
-          "howItWorks": "Cómo funciona",
-          "explanation": "La IA agrupa animales según peso, edad y ganancia diaria similar para facilitar el manejo y mejorar la eficiencia alimenticia. Separa animales de alto y bajo rendimiento para tratamientos diferenciados."
+          "title": "Optimizar Producción",
+          "description": "Maximizar ganancia de peso y producción"
         },
         "benchmarks": {
-          "title": "Alcanzar Benchmarks",
-          "description": "Organiza según objetivos de peso y rendimiento",
-          "howItWorks": "Cómo funciona",
-          "explanation": "La IA compara tus animales con benchmarks de la raza y los agrupa según su desempeño. Identifica animales que necesitan atención especial y los separa para manejo focalizado."
+          "title": "Seguir Estándares de la Cabaña",
+          "checkingBenchmarks": "Verificando estándares configurados...",
+          "hasCustomBenchmarks": "Usar los estándares personalizados configurados en tu cabaña",
+          "noCustomBenchmarks": "Se usarán estándares por defecto.",
+          "configureCustomLink": "Configura estándares personalizados aquí"
         }
-      }
+      },
+      "weightObjectivesTitle": "Objetivos de Peso (opcional)",
+      "birthWeightLabel": "Peso al Nacer (kg)",
+      "birthWeightPlaceholder": "ej: 35",
+      "weaningWeightLabel": "Peso al Destete (kg)",
+      "weaningWeightPlaceholder": "ej: 180",
+      "finalWeightLabel": "Peso Final (kg)",
+      "finalWeightPlaceholder": "ej: 450",
+      "technicalParametersTitle": "Parámetros Técnicos",
+      "maxBullsPerCorralLabel": "Toros por Corral (máx)",
+      "maxAgeWithMotherLabel": "Edad máx. ternero con madre (meses)",
+      "densityPerHectareLabel": "Densidad por Hectárea",
+      "calfSpaceFactorLabel": "Factor espacio ternero (0-1)",
+      "howItWorksTitle": "💡 Cómo funciona",
+      "howItWorksSteps": {
+        "step1": "Selecciona uno o más objetivos de optimización",
+        "step2": "La IA analizará tu rodeo y generará movimientos específicos",
+        "step3": "Los terneros se mueven automáticamente con sus madres",
+        "step4": "Puedes ajustar parámetros técnicos según tus necesidades"
+      },
+      "cancelButton": "Cancelar",
+      "verifyingButton": "Verificando...",
+      "nextButton": "Siguiente: Seleccionar Animales",
+      "selectObjectiveError": "Selecciona al menos un objetivo"
     },
     "step2": {
-      "title": "Configura los Parámetros",
-      "subtitle": "Ajusta los parámetros técnicos de optimización",
-      "maxBullsPerCorral": {
-        "label": "Máximo de Toros por Corral",
-        "description": "Cantidad máxima de toros reproductores por corral"
-      },
-      "targetDensity": {
-        "label": "Densidad Objetivo (animales/ha)",
-        "description": "Cantidad deseada de animales por hectárea"
-      },
-      "minAnimalsPerCorral": {
-        "label": "Mínimo de Animales por Corral",
-        "description": "Cantidad mínima para considerar un corral viable"
-      },
-      "maxAnimalsPerCorral": {
-        "label": "Máximo de Animales por Corral",
-        "description": "Capacidad máxima del corral según infraestructura"
-      },
-      "allowMixedSex": {
-        "label": "Permitir Mezcla de Sexos",
-        "description": "Permite machos y hembras en el mismo corral"
-      },
-      "prioritizeYoungFemales": {
-        "label": "Priorizar Hembras Jóvenes",
-        "description": "Da preferencia a vaquillonas en corrales reproductivos"
-      }
+      "cardTitle": "Seleccionar Animales para Análisis (Opcional)",
+      "cardDescription": "Si no seleccionas ningún animal, se analizarán todos los animales activos. Puedes filtrar por corral o seleccionar individualmente.",
+      "searchLabel": "Buscar Animal",
+      "searchPlaceholder": "Nombre o tag...",
+      "filterByCorralLabel": "Filtrar por Corral",
+      "animalsCount": "Animales ({{count}})",
+      "selectVisibleButton": "Seleccionar Visibles",
+      "clearButton": "Limpiar",
+      "pregnantBadge": "PREÑADA",
+      "backButton": "Volver",
+      "analyzingButton": "Analizando...",
+      "generateButton": "Generar Optimización"
     },
     "step3": {
-      "title": "Análisis de Distribución",
-      "subtitle": "Revisa el plan propuesto antes de aplicarlo",
-      "analyzing": "Analizando distribución óptima...",
-      "summary": {
-        "title": "Resumen del Plan",
-        "animalsToMove": "Animales a mover",
-        "corralsAffected": "Corrales afectados",
-        "estimatedTime": "Tiempo estimado"
-      },
-      "metrics": {
-        "title": "Métricas de Mejora",
-        "consanguinity": {
-          "label": "Riesgo de Consanguinidad",
-          "current": "Actual",
-          "after": "Después",
-          "reduction": "Reducción"
-        },
-        "reproduction": {
-          "label": "Eficiencia Reproductiva",
-          "current": "Actual",
-          "after": "Después",
-          "improvement": "Mejora"
-        }
-      },
-      "movements": {
-        "title": "Movimientos Propuestos",
-        "from": "De",
-        "to": "A",
-        "animals": "animales",
-        "reason": "Razón"
-      }
+      "planTitle": "Plan de Optimización",
+      "movementsSuggested": "{{count}} movimientos sugeridos",
+      "metricsTitle": "Métricas de Reducción de Riesgo",
+      "currentRisks": "Riesgos Actuales",
+      "risksAfter": "Riesgos Después",
+      "reduction": "Reducción",
+      "movements": "Movimientos",
+      "calvesWithMother": "Terneros c/Madre",
+      "detailedPlanTitle": "Plan Detallado por Corral",
+      "corralAnimalsInfo": "{{count}} animales ({{adult}} adultos, {{calf}} terneros)",
+      "corralRisksMovesInfo": "{{risks}} riesgos • {{moves}} movimientos",
+      "riskReductionBadge": "-{{score}}% riesgo",
+      "capacityOkBadge": "Capacidad OK",
+      "overCapacityBadge": "Sobre capacidad",
+      "detectedRisksTitle": "Riesgos Detectados:",
+      "moreRisks": "... y {{count}} riesgos más",
+      "suggestedMovesTitle": "Movimientos Sugeridos:",
+      "calfLabel": "👶 Ternero",
+      "selectAllButton": "Seleccionar Todos",
+      "deselectAllButton": "Deseleccionar Todos",
+      "backButton": "Volver",
+      "applyingButton": "Aplicando...",
+      "applyMovementsButton": "Aplicar {{count}} Movimientos"
     },
     "step4": {
-      "title": "Confirmar Cambios",
-      "subtitle": "Revisa y confirma los movimientos antes de aplicarlos",
-      "warning": "Esta acción moverá {{count}} animales entre corrales. ¿Estás seguro?",
-      "success": "¡Distribución optimizada exitosamente!",
-      "successDescription": "Se movieron {{count}} animales según el plan de optimización"
+      "title": "Optimización Aplicada",
+      "description": "Los movimientos seleccionados han sido aplicados exitosamente.",
+      "closeButton": "Cerrar",
+      "newOptimizationButton": "Nueva Optimización"
     },
     "toast": {
-      "analyzing": "Analizando distribución...",
-      "success": "Distribución optimizada exitosamente",
-      "error": "Error al optimizar distribución",
-      "applying": "Aplicando cambios..."
+      "errorLoadingData": "Error al cargar datos",
+      "optimizationGenerated": "Optimización generada exitosamente",
+      "errorGenerating": "Error al generar la optimización",
+      "movementsApplied": "{{count}} movimientos aplicados exitosamente",
+      "movementsFailed": "{{count}} movimientos fallaron",
+      "noMovementsToApply": "No hay movimientos para aplicar",
+      "errorApplying": "Error al aplicar las sugerencias"
+    },
+    "severity": {
+      "highRisk": "Alto Riesgo",
+      "mediumRisk": "Riesgo Medio",
+      "lowRisk": "Riesgo Bajo"
     }
   },
   "suggestions": {
