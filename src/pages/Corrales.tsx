@@ -284,12 +284,12 @@ export default function Corrales() {
   const totalCorrales = corrales.length;
   const totalRisks = corrales.reduce((sum, corral) => sum + corral.risk_count, 0);
   
-  // Calculate aggregate KPIs
-  const avgVaccinationPercentage = corrales.length > 0 
-    ? corrales.reduce((sum, corral) => sum + (corral.vaccination_percentage || 0), 0) / corrales.length 
+  // Calculate aggregate KPIs - use corralKPIs directly to avoid race conditions
+  const avgVaccinationPercentage = corralKPIs.length > 0 
+    ? corralKPIs.reduce((sum, kpi) => sum + (kpi.vaccination_percentage || 0), 0) / corralKPIs.length 
     : 0;
-  const avgGDP = corrales.length > 0 
-    ? corrales.reduce((sum, corral) => sum + (corral.avg_daily_gain || 0), 0) / corrales.length 
+  const avgGDP = corralKPIs.length > 0 
+    ? corralKPIs.reduce((sum, kpi) => sum + (kpi.avg_daily_gain || 0), 0) / corralKPIs.length 
     : 0;
 
   const stats = [
