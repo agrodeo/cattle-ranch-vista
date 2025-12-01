@@ -246,6 +246,14 @@
     "requiresAttention": "Requiere atención inmediata",
     "viewAnimal": "Ver animal"
   },
+  "success": {
+    "title": "Éxito",
+    "uploaded": "Archivo subido correctamente",
+    "deleted": "Eliminado correctamente",
+    "verified": "Verificado correctamente",
+    "migrated": "Migración completada",
+    "resolved": "Resuelto correctamente"
+  },
   "errors": {
     "unexpectedError": "Error inesperado",
     "reload": "Recargar",
