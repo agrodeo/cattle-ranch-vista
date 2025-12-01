@@ -47,7 +47,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
   const [lossCauses, setLossCauses] = useState<LossCause[]>([]);
   
   const { toast } = useToast();
-  const { t } = useTranslation('activities');
+  const { t } = useTranslation(['activities', 'common']);
 
   const LOSS_TYPES = [
     { value: 'aborto_temprano', label: t('newPregnancyLoss.lossTypes.early_abortion.label'), description: t('newPregnancyLoss.lossTypes.early_abortion.description') },
