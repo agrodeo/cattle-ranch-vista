@@ -159,7 +159,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       const { data, error } = await supabase.functions.invoke('suggest-corral-distribution', {
         body: {
           cabanaId,
-          ...config
+          ...config,
+          language: localStorage.getItem('language') || 'es'
         }
       });
 

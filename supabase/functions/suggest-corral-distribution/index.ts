@@ -107,7 +107,8 @@ serve(async (req) => {
       max_bulls_per_corral = 1,
       max_age_months_with_mother = 8,
       density_per_hectare = 1.5,
-      calf_space_factor = 0.6
+      calf_space_factor = 0.6,
+      language = 'es'
     } = requestBody;
     
     console.log('Optimization objectives:', objectives);
@@ -183,7 +184,12 @@ serve(async (req) => {
     if (!corralsResponse.ok) {
       const error = await corralsResponse.text();
       console.error('Error fetching corrals:', error);
-      return new Response(JSON.stringify({ error: 'Error al obtener corrales' }), {
+      const errorMessages = {
+        es: 'Error al obtener corrales',
+        en: 'Error fetching corrals',
+        pt: 'Erro ao buscar currais'
+      };
+      return new Response(JSON.stringify({ error: errorMessages[language as keyof typeof errorMessages] || errorMessages.es }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -193,8 +199,13 @@ serve(async (req) => {
 
     if (!corrals || corrals.length === 0) {
       console.log('No corrals found');
+      const noCorrealMessages = {
+        es: 'No hay corrales configurados. Crea al menos un corral primero.',
+        en: 'No corrals configured. Create at least one corral first.',
+        pt: 'Nenhum curral configurado. Crie pelo menos um curral primeiro.'
+      };
       return new Response(JSON.stringify({ 
-        error: 'No hay corrales configurados. Crea al menos un corral primero.' 
+        error: noCorrealMessages[language as keyof typeof noCorrealMessages] || noCorrealMessages.es
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
