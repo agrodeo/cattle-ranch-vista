@@ -623,7 +623,43 @@
     "summary": {
       "title": "Expected Improvement Summary",
       "totalMoves": "Total movements",
-      "expectedImprovement": "Expected improvement"
+      "expectedImprovement": "Expected improvement",
+      "affectedCorrals": "Affected corrals"
+    },
+    "previewTitle": "Preview Changes",
+    "steps": {
+      "selectObjective": "Objective",
+      "selectScope": "Select Corrals",
+      "reviewMoves": "Review",
+      "preview": "Preview"
+    },
+    "scope": {
+      "title": "Which corrals do you want to optimize?",
+      "subtitle": "Select source and destination corrals",
+      "sourceCorrals": "Source Corrals",
+      "sourceDescription": "Animals will be moved FROM these corrals",
+      "destinationCorrals": "Destination Corrals",
+      "destinationDescription": "Animals can be moved TO these corrals",
+      "selectAll": "Select All",
+      "selectNone": "None",
+      "selectOvercrowded": "Overcrowded Only",
+      "selectWithSpace": "With Space Only",
+      "currentOccupancy": "{{count}} / {{capacity}}",
+      "noCapacity": "No limit",
+      "selected": "selected",
+      "source": "Source",
+      "destination": "Destination"
+    },
+    "preview": {
+      "title": "Preview Changes",
+      "before": "Before",
+      "after": "After",
+      "noChanges": "No changes to preview",
+      "willReceive": "Will receive:",
+      "willLose": "Will leave:",
+      "occupancy": "Occupancy",
+      "changesSummary": "{{count}} animals will be moved from {{source}} corrals to {{dest}} corrals",
+      "byDestination": "Movements by Destination"
     }
   },
   "aiAssistant": {

@@ -624,7 +624,43 @@
     "summary": {
       "title": "Resumo de Melhoria Esperada",
       "totalMoves": "Total de movimentos",
-      "expectedImprovement": "Melhoria esperada"
+      "expectedImprovement": "Melhoria esperada",
+      "affectedCorrals": "Currais afetados"
+    },
+    "previewTitle": "Visualização de Mudanças",
+    "steps": {
+      "selectObjective": "Objetivo",
+      "selectScope": "Selecionar Currais",
+      "reviewMoves": "Revisar",
+      "preview": "Visualizar"
+    },
+    "scope": {
+      "title": "Quais currais você quer otimizar?",
+      "subtitle": "Selecione currais de origem e destino",
+      "sourceCorrals": "Currais de Origem",
+      "sourceDescription": "Os animais serão movidos DESTES currais",
+      "destinationCorrals": "Currais de Destino",
+      "destinationDescription": "Os animais podem ser movidos PARA estes currais",
+      "selectAll": "Selecionar Todos",
+      "selectNone": "Nenhum",
+      "selectOvercrowded": "Apenas Superlotados",
+      "selectWithSpace": "Apenas com Espaço",
+      "currentOccupancy": "{{count}} / {{capacity}}",
+      "noCapacity": "Sem limite",
+      "selected": "selecionado",
+      "source": "Origem",
+      "destination": "Destino"
+    },
+    "preview": {
+      "title": "Visualizar Mudanças",
+      "before": "Antes",
+      "after": "Depois",
+      "noChanges": "Sem mudanças para visualizar",
+      "willReceive": "Receberá:",
+      "willLose": "Sairão:",
+      "occupancy": "Ocupação",
+      "changesSummary": "{{count}} animais serão movidos de {{source}} currais para {{dest}} currais",
+      "byDestination": "Movimentos por Destino"
     }
   },
   "aiAssistant": {

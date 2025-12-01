@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -13,8 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertTriangle, Users, CheckCircle2, Loader2, ArrowRight, Baby, Dna, Heart, Scale } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { 
+  AlertTriangle, Users, CheckCircle2, Loader2, ArrowRight, 
+  Baby, Dna, Heart, Scale, Home, ChevronRight 
+} from "lucide-react";
 
 interface CorralOptimizerProps {
   open: boolean;
@@ -23,11 +27,13 @@ interface CorralOptimizerProps {
 }
 
 type ObjectiveType = 'consanguinity' | 'fertility' | 'weight';
+type StepType = 'objective' | 'scope' | 'analyzing' | 'review' | 'preview';
 
-interface Issue {
-  consanguinity: any[];
-  capacity: any[];
-  separation: any[];
+interface Corral {
+  id: string;
+  name: string;
+  capacity: number | null;
+  animal_count: number;
 }
 
 interface SuggestedMove {
@@ -39,8 +45,15 @@ interface SuggestedMove {
   to_corral_name: string;
   reason: string;
   issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight';
-  paired_with?: string;
   expectedBenefit?: string;
+}
+
+interface PreviewCorral {
+  corral_id: string;
+  corral_name: string;
+  count: number;
+  capacity: number | null;
+  animals: string[];
 }
 
 export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimizerProps) {
@@ -48,15 +61,21 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   
-  const [step, setStep] = useState<'objective' | 'analyzing' | 'review'>("objective");
+  const [step, setStep] = useState<StepType>("objective");
   const [selectedObjective, setSelectedObjective] = useState<ObjectiveType | null>(null);
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
-  const [issues, setIssues] = useState<Issue | null>(null);
+  
+  // Corral selection state
+  const [corrals, setCorrals] = useState<Corral[]>([]);
+  const [sourceCorrals, setSourceCorrals] = useState<Set<string>>(new Set());
+  const [destinationCorrals, setDestinationCorrals] = useState<Set<string>>(new Set());
+  
+  // Results state
   const [suggestedMoves, setSuggestedMoves] = useState<SuggestedMove[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<Set<string>>(new Set());
-  const [totalIssues, setTotalIssues] = useState(0);
   const [expectedImprovement, setExpectedImprovement] = useState<string>('');
+  const [previewData, setPreviewData] = useState<{ before: PreviewCorral[]; after: PreviewCorral[] } | null>(null);
 
   const objectives: { id: ObjectiveType; icon: any; color: string }[] = [
     { id: 'consanguinity', icon: Dna, color: 'text-purple-600' },
@@ -64,12 +83,63 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     { id: 'weight', icon: Scale, color: 'text-blue-600' },
   ];
 
+  // Load corrals when dialog opens
+  useEffect(() => {
+    if (open && currentUser?.cabañaId) {
+      loadCorrals();
+    }
+  }, [open, currentUser?.cabañaId]);
+
+  const loadCorrals = async () => {
+    if (!currentUser?.cabañaId) return;
+
+    try {
+      const { data: corralsData, error } = await supabase
+        .from('corrales')
+        .select('id, name, capacity')
+        .eq('cabaña_id', currentUser.cabañaId);
+
+      if (error) throw error;
+
+      // Count animals per corral
+      const { data: animalsData } = await supabase
+        .from('animals')
+        .select('id, corral_id')
+        .eq('cabaña_id', currentUser.cabañaId)
+        .eq('status', 'activo');
+
+      const animalCounts: Record<string, number> = {};
+      (animalsData || []).forEach(animal => {
+        if (animal.corral_id) {
+          animalCounts[animal.corral_id] = (animalCounts[animal.corral_id] || 0) + 1;
+        }
+      });
+
+      const corralsWithCounts = (corralsData || []).map(corral => ({
+        ...corral,
+        animal_count: animalCounts[corral.id] || 0,
+      }));
+
+      setCorrals(corralsWithCounts);
+      // Initially select all corrals as both source and destination
+      const allIds = new Set(corralsWithCounts.map(c => c.id));
+      setSourceCorrals(allIds);
+      setDestinationCorrals(allIds);
+    } catch (error) {
+      console.error('Error loading corrals:', error);
+    }
+  };
+
   const handleObjectiveSelect = (objective: ObjectiveType) => {
     setSelectedObjective(objective);
   };
 
-  const handleContinue = async () => {
+  const handleContinueToScope = () => {
     if (!selectedObjective) return;
+    setStep('scope');
+  };
+
+  const handleContinueToAnalyze = async () => {
     setStep('analyzing');
     await handleAnalyze();
   };
@@ -85,15 +155,16 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
           cabanaId: currentUser.cabañaId,
           language: localStorage.getItem('language') || 'es',
           objective: selectedObjective,
+          sourceCorrals: Array.from(sourceCorrals),
+          destinationCorrals: Array.from(destinationCorrals),
         }
       });
 
       if (error) throw error;
 
-      setIssues(data.issues);
       setSuggestedMoves(data.suggestedMoves || []);
-      setTotalIssues(data.totalIssues || 0);
       setExpectedImprovement(data.summary?.expectedImprovement || '');
+      setPreviewData(data.preview || null);
       
       // Select all moves by default
       const allMoveIds = new Set<string>((data.suggestedMoves || []).map((m: SuggestedMove) => m.animal_id));
@@ -119,6 +190,10 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleContinueToPreview = () => {
+    setStep('preview');
   };
 
   const handleApply = async () => {
@@ -161,11 +236,12 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   const handleClose = () => {
     setStep('objective');
     setSelectedObjective(null);
-    setIssues(null);
     setSuggestedMoves([]);
     setSelectedMoves(new Set());
-    setTotalIssues(0);
     setExpectedImprovement('');
+    setPreviewData(null);
+    setSourceCorrals(new Set());
+    setDestinationCorrals(new Set());
     onOpenChange(false);
   };
 
@@ -179,6 +255,43 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     setSelectedMoves(newSelected);
   };
 
+  const toggleSourceCorral = (corralId: string) => {
+    const newSet = new Set(sourceCorrals);
+    if (newSet.has(corralId)) {
+      newSet.delete(corralId);
+    } else {
+      newSet.add(corralId);
+    }
+    setSourceCorrals(newSet);
+  };
+
+  const toggleDestinationCorral = (corralId: string) => {
+    const newSet = new Set(destinationCorrals);
+    if (newSet.has(corralId)) {
+      newSet.delete(corralId);
+    } else {
+      newSet.add(corralId);
+    }
+    setDestinationCorrals(newSet);
+  };
+
+  const selectAllCorrals = (type: 'source' | 'destination') => {
+    const allIds = new Set(corrals.map(c => c.id));
+    if (type === 'source') {
+      setSourceCorrals(allIds);
+    } else {
+      setDestinationCorrals(allIds);
+    }
+  };
+
+  const clearCorrals = (type: 'source' | 'destination') => {
+    if (type === 'source') {
+      setSourceCorrals(new Set());
+    } else {
+      setDestinationCorrals(new Set());
+    }
+  };
+
   const getIssueIcon = (type: string) => {
     switch (type) {
       case 'consanguinity': return <AlertTriangle className="h-5 w-5" />;
@@ -190,14 +303,38 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     }
   };
 
+  const getOccupancyColor = (count: number, capacity: number | null) => {
+    if (!capacity) return 'bg-blue-500';
+    const percentage = (count / capacity) * 100;
+    if (percentage >= 100) return 'bg-red-500';
+    if (percentage >= 80) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
+  // Group moves by destination corral
+  const movesByDestination = suggestedMoves
+    .filter(m => selectedMoves.has(m.animal_id))
+    .reduce((acc, move) => {
+      if (!acc[move.to_corral_id]) {
+        acc[move.to_corral_id] = {
+          corral_name: move.to_corral_name,
+          moves: [],
+        };
+      }
+      acc[move.to_corral_id].moves.push(move);
+      return acc;
+    }, {} as Record<string, { corral_name: string; moves: SuggestedMove[] }>);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {step === 'objective' && t('corrals:optimizer.selectObjectiveTitle')}
+            {step === 'scope' && t('corrals:optimizer.scope.title')}
             {step === 'analyzing' && t('corrals:optimizer.title')}
             {step === 'review' && t('corrals:optimizer.reviewTitle')}
+            {step === 'preview' && t('corrals:optimizer.previewTitle')}
           </DialogTitle>
         </DialogHeader>
 
@@ -238,17 +375,127 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
 
             <div className="flex justify-end">
               <Button
-                onClick={handleContinue}
+                onClick={handleContinueToScope}
                 disabled={!selectedObjective}
                 size="lg"
               >
                 {t('corrals:optimizer.continueButton')}
+                <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </div>
           </div>
         )}
 
-        {/* Step 2: Analyzing */}
+        {/* Step 2: Select Scope (Corrals) */}
+        {step === 'scope' && (
+          <div className="space-y-6">
+            <p className="text-center text-muted-foreground">
+              {t('corrals:optimizer.scope.subtitle')}
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Source Corrals */}
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold mb-1">{t('corrals:optimizer.scope.sourceCorrals')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('corrals:optimizer.scope.sourceDescription')}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => selectAllCorrals('source')}>
+                    {t('corrals:optimizer.scope.selectAll')}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => clearCorrals('source')}>
+                    {t('corrals:optimizer.scope.selectNone')}
+                  </Button>
+                </div>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto border rounded-lg p-3">
+                  {corrals.map(corral => (
+                    <div
+                      key={`source-${corral.id}`}
+                      className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                      onClick={() => toggleSourceCorral(corral.id)}
+                    >
+                      <Checkbox
+                        checked={sourceCorrals.has(corral.id)}
+                        onCheckedChange={() => toggleSourceCorral(corral.id)}
+                      />
+                      <Home className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="font-medium">{corral.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('corrals:optimizer.scope.currentOccupancy', {
+                            count: corral.animal_count,
+                            capacity: corral.capacity || t('corrals:optimizer.scope.noCapacity'),
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Destination Corrals */}
+              <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold mb-1">{t('corrals:optimizer.scope.destinationCorrals')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('corrals:optimizer.scope.destinationDescription')}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={() => selectAllCorrals('destination')}>
+                    {t('corrals:optimizer.scope.selectAll')}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => clearCorrals('destination')}>
+                    {t('corrals:optimizer.scope.selectNone')}
+                  </Button>
+                </div>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto border rounded-lg p-3">
+                  {corrals.map(corral => (
+                    <div
+                      key={`dest-${corral.id}`}
+                      className="flex items-center gap-3 p-2 rounded hover:bg-accent cursor-pointer"
+                      onClick={() => toggleDestinationCorral(corral.id)}
+                    >
+                      <Checkbox
+                        checked={destinationCorrals.has(corral.id)}
+                        onCheckedChange={() => toggleDestinationCorral(corral.id)}
+                      />
+                      <Home className="h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1">
+                        <p className="font-medium">{corral.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {t('corrals:optimizer.scope.currentOccupancy', {
+                            count: corral.animal_count,
+                            capacity: corral.capacity || t('corrals:optimizer.scope.noCapacity'),
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setStep('objective')}
+                className="flex-1"
+              >
+                {t('common:actions.back')}
+              </Button>
+              <Button
+                onClick={handleContinueToAnalyze}
+                disabled={sourceCorrals.size === 0 || destinationCorrals.size === 0}
+                className="flex-1"
+              >
+                {t('corrals:optimizer.continueButton')}
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Analyzing */}
         {step === 'analyzing' && (
           <div className="space-y-6">
             <div className="text-center py-12">
@@ -261,7 +508,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
           </div>
         )}
 
-        {/* Step 3: Review Movements */}
+        {/* Step 4: Review Movements */}
         {step === 'review' && (
           <div className="space-y-6">
             {/* Show selected objective */}
@@ -337,7 +584,132 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => setStep('objective')}
+                onClick={() => setStep('scope')}
+                className="flex-1"
+                disabled={applying}
+              >
+                {t('common:actions.back')}
+              </Button>
+              <Button
+                onClick={handleContinueToPreview}
+                disabled={selectedMoves.size === 0}
+                className="flex-1"
+              >
+                {t('corrals:optimizer.continueButton')}
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 5: Preview & Apply */}
+        {step === 'preview' && previewData && (
+          <div className="space-y-6">
+            {/* Summary */}
+            <Card className="bg-primary/5">
+              <CardContent className="pt-6">
+                <p className="text-sm text-center">
+                  {t('corrals:optimizer.preview.changesSummary', {
+                    count: selectedMoves.size,
+                    source: new Set(suggestedMoves.filter(m => selectedMoves.has(m.animal_id)).map(m => m.from_corral_id)).size,
+                    dest: new Set(suggestedMoves.filter(m => selectedMoves.has(m.animal_id)).map(m => m.to_corral_id)).size,
+                  })}
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Moves by Destination */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('corrals:optimizer.preview.byDestination')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {Object.entries(movesByDestination).map(([corralId, { corral_name, moves }]) => (
+                    <div key={corralId} className="border rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Home className="h-5 w-5 text-primary" />
+                        <h4 className="font-semibold">{corral_name}</h4>
+                        <Badge variant="secondary">{moves.length} {moves.length === 1 ? 'animal' : 'animales'}</Badge>
+                      </div>
+                      <div className="space-y-2">
+                        {moves.map(move => (
+                          <div key={move.animal_id} className="text-sm flex items-center gap-2 text-muted-foreground">
+                            <ChevronRight className="h-3 w-3" />
+                            <span>{move.animal_name}</span>
+                            <span className="text-xs">({move.from_corral_name || t('corrals:optimizer.unassigned')})</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Before/After Visual Preview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">{t('corrals:optimizer.preview.before')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {previewData.before.map(corral => (
+                      <div key={corral.corral_id}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">{corral.corral_name}</span>
+                          <span className="text-muted-foreground">
+                            {corral.count} / {corral.capacity || '∞'}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${getOccupancyColor(corral.count, corral.capacity)}`}
+                            style={{
+                              width: corral.capacity ? `${Math.min((corral.count / corral.capacity) * 100, 100)}%` : '50%',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">{t('corrals:optimizer.preview.after')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {previewData.after.map(corral => (
+                      <div key={corral.corral_id}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="font-medium">{corral.corral_name}</span>
+                          <span className="text-muted-foreground">
+                            {corral.count} / {corral.capacity || '∞'}
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all ${getOccupancyColor(corral.count, corral.capacity)}`}
+                            style={{
+                              width: corral.capacity ? `${Math.min((corral.count / corral.capacity) * 100, 100)}%` : '50%',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setStep('review')}
                 className="flex-1"
                 disabled={applying}
               >
