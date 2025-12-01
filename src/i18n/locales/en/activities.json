@@ -914,13 +914,66 @@
     "showingRecords": "Showing {{filtered}} of {{total}} records"
   },
   "newPregnancyLoss": {
+    "title": "Register Pregnancy Loss",
+    "mobileTitle": "Pregnancy Loss",
+    "dialogTitle": "Register Pregnancy Loss",
+    "dialogDescription": "Record a reproductive loss for a pregnant female",
+    "pregnantAnimalLabel": "Pregnant Animal *",
     "pregnantAnimal": "Pregnant Animal *",
     "selectPregnantAnimal": "Select pregnant animal",
+    "lossDateLabel": "Loss Date *",
+    "lossDate": "Loss Date *",
+    "lossTypeLabel": "Loss Type *",
     "lossType": "Loss Type *",
     "selectLossType": "Select loss type",
+    "specificCauseLabel": "Specific Cause",
     "specificCause": "Specific Cause *",
     "selectCause": "Select cause",
-    "errorRequired": "Please complete all required fields"
+    "pregnancyInfo": "Pregnancy Information",
+    "pregnancySince": "Pregnant since",
+    "gestationDays": "Gestation days",
+    "days": "days",
+    "noActivePregnancies": "No active pregnancies",
+    "onlyConfirmedPregnancies": "Only animals with confirmed pregnancy can register losses",
+    "observationsLabel": "Observations",
+    "observations": "Observations",
+    "observationsPlaceholder": "Additional details about the reproductive loss...",
+    "noName": "No name",
+    "success": "Loss registered",
+    "successDesc": "Reproductive loss was registered for",
+    "successTitle": "Loss registered",
+    "errorTitle": "Error",
+    "errorRequired": "Please complete all required fields",
+    "errorLoading": "Could not load pregnant animals",
+    "errorLoadingAnimals": "Could not load pregnant animals",
+    "errorAnimalNotFound": "Animal not found",
+    "errorSaving": "Could not register the reproductive loss",
+    "registerButton": "Register Loss",
+    "cancel": "Cancel",
+    "saving": "Saving...",
+    "registering": "Registering...",
+    "lossTypes": {
+      "early_abortion": {
+        "label": "Early Abortion (< 6 months)",
+        "description": "Loss before 180 days"
+      },
+      "late_abortion": {
+        "label": "Late Abortion (> 6 months)",
+        "description": "Loss after 180 days"
+      },
+      "stillbirth": {
+        "label": "Stillbirth",
+        "description": "Calf born dead"
+      },
+      "neonatal": {
+        "label": "Neonatal Loss",
+        "description": "Calf dies in first days"
+      },
+      "not_detected": {
+        "label": "Not Detected/False Positive",
+        "description": "Error in initial detection"
+      }
+    }
   },
   "managers": {
     "vaccination": {

@@ -999,15 +999,6 @@
     "noCorral": "Sin corral",
     "showingRecords": "Mostrando {{filtered}} de {{total}} registros"
   },
-  "newPregnancyLoss": {
-    "pregnantAnimal": "Animal Preñado *",
-    "selectPregnantAnimal": "Seleccionar animal preñado",
-    "lossType": "Tipo de Pérdida *",
-    "selectLossType": "Seleccionar tipo de pérdida",
-    "specificCause": "Causa Específica *",
-    "selectCause": "Seleccionar causa",
-    "errorRequired": "Debe completar todos los campos obligatorios"
-  },
   "managers": {
     "vaccination": {
       "title": "Gestión de Vacunación",

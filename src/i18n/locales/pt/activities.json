@@ -916,13 +916,66 @@
     "showingRecords": "Mostrando {{filtered}} de {{total}} registros"
   },
   "newPregnancyLoss": {
+    "title": "Registrar Perda de Prenhez",
+    "mobileTitle": "Perda de Prenhez",
+    "dialogTitle": "Registrar Perda de Prenhez",
+    "dialogDescription": "Registre uma perda reprodutiva para uma fêmea prenhe",
+    "pregnantAnimalLabel": "Animal Prenhe *",
     "pregnantAnimal": "Animal Prenhe *",
     "selectPregnantAnimal": "Selecionar animal prenhe",
+    "lossDateLabel": "Data da Perda *",
+    "lossDate": "Data da Perda *",
+    "lossTypeLabel": "Tipo de Perda *",
     "lossType": "Tipo de Perda *",
     "selectLossType": "Selecionar tipo de perda",
+    "specificCauseLabel": "Causa Específica",
     "specificCause": "Causa Específica *",
     "selectCause": "Selecionar causa",
-    "errorRequired": "Por favor preencha todos os campos obrigatórios"
+    "pregnancyInfo": "Informação de Prenhez",
+    "pregnancySince": "Prenhe desde",
+    "gestationDays": "Dias de gestação",
+    "days": "dias",
+    "noActivePregnancies": "Não há prenhezes ativas",
+    "onlyConfirmedPregnancies": "Apenas animais com prenhez confirmada podem registrar perdas",
+    "observationsLabel": "Observações",
+    "observations": "Observações",
+    "observationsPlaceholder": "Detalhes adicionais sobre a perda reprodutiva...",
+    "noName": "Sem nome",
+    "success": "Perda registrada",
+    "successDesc": "A perda reprodutiva foi registrada para",
+    "successTitle": "Perda registrada",
+    "errorTitle": "Erro",
+    "errorRequired": "Por favor preencha todos os campos obrigatórios",
+    "errorLoading": "Não foi possível carregar os animais prenhes",
+    "errorLoadingAnimals": "Não foi possível carregar os animais prenhes",
+    "errorAnimalNotFound": "Animal não encontrado",
+    "errorSaving": "Não foi possível registrar a perda reprodutiva",
+    "registerButton": "Registrar Perda",
+    "cancel": "Cancelar",
+    "saving": "Salvando...",
+    "registering": "Registrando...",
+    "lossTypes": {
+      "early_abortion": {
+        "label": "Aborto Precoce (< 6 meses)",
+        "description": "Perda antes dos 180 dias"
+      },
+      "late_abortion": {
+        "label": "Aborto Tardio (> 6 meses)",
+        "description": "Perda após os 180 dias"
+      },
+      "stillbirth": {
+        "label": "Natimorto",
+        "description": "Cria nasce morta"
+      },
+      "neonatal": {
+        "label": "Perda Neonatal",
+        "description": "Cria morre nos primeiros dias"
+      },
+      "not_detected": {
+        "label": "Não Detectada/Falso Positivo",
+        "description": "Erro na detecção inicial"
+      }
+    }
   },
   "managers": {
     "vaccination": {
