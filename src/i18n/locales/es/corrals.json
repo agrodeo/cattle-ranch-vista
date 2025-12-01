@@ -523,5 +523,18 @@
     "optimizing": "Optimizando...",
     "optimalDescription": "✓ Tus corrales están bien distribuidos sin riesgos de consanguinidad detectados. Puedes usar el asistente IA para obtener recomendaciones sobre mejoras adicionales.",
     "consultAI": "Consultar Asistente IA"
+  },
+  "aiAssistant": {
+    "title": "Asistente IA de Corrales",
+    "artificialIntelligence": "Inteligencia Artificial",
+    "description": "Pregúntame sobre estrategias de distribución, manejo estacional, objetivos productivos, o solicita recomendaciones personalizadas basadas en tus datos.",
+    "optimizeQuestion": "¿Cómo puedo optimizar mis corrales?",
+    "consanguinityQuestion": "¿Cuáles son las mejores prácticas para evitar consanguinidad?",
+    "consanguinityLabel": "Mejores prácticas para evitar consanguinidad",
+    "distributionQuestion": "¿Cómo debo distribuir animales según edad y categoría?",
+    "distributionLabel": "Distribución por edad y categoría",
+    "assistant": "Asistente IA",
+    "placeholder": "Pregunta algo sobre manejo de corrales...",
+    "errorGettingRecommendations": "Error al obtener recomendaciones de IA"
   }
 }

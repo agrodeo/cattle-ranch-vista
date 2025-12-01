@@ -83,7 +83,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
   const handleSubmit = async () => {
     if (!formData.id_tag || !formData.sex || !formData.breed) {
-      toast.error("Campos requeridos: Identificación, Sexo y Raza");
+      toast.error(t('animals:messages.requiredFields'));
       return;
     }
 
@@ -131,11 +131,11 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
       if (error) throw error;
 
-      toast.success("Animal creado exitosamente");
+      toast.success(t('animals:messages.createdSuccessfully'));
       onSuccess();
     } catch (error) {
       console.error("Error creating animal:", error);
-      toast.error("Error al crear el animal");
+      toast.error(t('animals:messages.errorCreating'));
     } finally {
       setLoading(false);
     }

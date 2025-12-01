@@ -87,7 +87,7 @@ export default function FinancesRecurring() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Recurrente creado");
+      toast.success(t('finance:recurringDetails.recurringCreated'));
       queryClient.invalidateQueries({ queryKey: ["finances","recurring"] });
       setForm({ name: "", type: "egreso", amount: "", categoryId: undefined, description: "", frequency: "monthly" });
     },
@@ -105,7 +105,7 @@ export default function FinancesRecurring() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Recurrente eliminado");
+      toast.success(t('finance:recurringDetails.recurringDeleted'));
       queryClient.invalidateQueries({ queryKey: ["finances","recurring"] });
     },
     onError: (e: any) => toast.error(e?.message || "Error al eliminar"),

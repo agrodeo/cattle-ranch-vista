@@ -46,9 +46,9 @@ export function AchievementCard({
       link.href = canvas.toDataURL();
       link.click();
       
-      toast.success('Imagen descargada');
+      toast.success(t('common:imageDownloaded'));
     } catch (error) {
-      toast.error('Error al descargar la imagen');
+      toast.error(t('common:errorDownloadingImage'));
     }
   };
 

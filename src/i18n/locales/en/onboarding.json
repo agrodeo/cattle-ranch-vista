@@ -1,0 +1,17 @@
+{
+  "selectVaccineOrSkip": "Select at least one vaccine or skip this step",
+  "vaccinationConfiguredSuccess": "Vaccination requirements configured successfully",
+  "errorConfiguringVaccines": "Error configuring vaccines",
+  "vaccinationConfiguration": "Vaccine Configuration",
+  "selectVaccinesDescription": "Select vaccines that are mandatory or optional for your herd",
+  "mandatory": "Mandatory",
+  "onlyGender": "Only {{gender}}s",
+  "fromMonths": "From {{months}} months",
+  "untilMonths": "Until {{months}} months",
+  "everyMonths": "Every {{months}} months",
+  "doses": "{{count}} doses",
+  "needOtherVaccines": "Need other specific vaccines?",
+  "addLaterDescription": "You can add them later from settings",
+  "configuring": "Configuring...",
+  "configureVaccines": "Configure Vaccines"
+}

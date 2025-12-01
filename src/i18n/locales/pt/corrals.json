@@ -526,5 +526,18 @@
     "optimizing": "Otimizando...",
     "optimalDescription": "✓ Seus currais estão bem distribuídos sem riscos de consanguinidade detectados. Você pode usar o assistente IA para obter recomendações sobre melhorias adicionais.",
     "consultAI": "Consultar Assistente IA"
+  },
+  "aiAssistant": {
+    "title": "Assistente IA de Currais",
+    "artificialIntelligence": "Inteligência Artificial",
+    "description": "Pergunte-me sobre estratégias de distribuição, manejo sazonal, objetivos produtivos, ou solicite recomendações personalizadas baseadas em seus dados.",
+    "optimizeQuestion": "Como posso otimizar meus currais?",
+    "consanguinityQuestion": "Quais são as melhores práticas para evitar consanguinidade?",
+    "consanguinityLabel": "Melhores práticas para evitar consanguinidade",
+    "distributionQuestion": "Como devo distribuir animais por idade e categoria?",
+    "distributionLabel": "Distribuição por idade e categoria",
+    "assistant": "Assistente IA",
+    "placeholder": "Pergunte algo sobre manejo de currais...",
+    "errorGettingRecommendations": "Erro ao obter recomendações de IA"
   }
 }

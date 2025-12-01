@@ -75,7 +75,7 @@ interface BreedingPlanWizardProps {
 }
 
 export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWizardProps) {
-  const { t } = useTranslation(['common', 'activities']);
+  const { t } = useTranslation(['common', 'activities', 'breeding']);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<BreedingPlan | null>(null);
@@ -144,17 +144,17 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
       setStep(3);
     } catch (error) {
       console.error('Error committing plan:', error);
-      toast.error("Error al ejecutar el plan");
+      toast.error(t('breeding:errorExecutingPlan'));
     } finally {
       setLoading(false);
     }
   };
 
   const getRiskBadge = (F: number) => {
-    if (F <= 0.015) return <Badge variant="default" className="bg-green-100 text-green-800">Bajo</Badge>;
-    if (F <= 0.03) return <Badge variant="default" className="bg-yellow-100 text-yellow-800">Moderado</Badge>;
-    if (F <= 0.0625) return <Badge variant="default" className="bg-orange-100 text-orange-800">Alto</Badge>;
-    return <Badge variant="destructive">Crítico</Badge>;
+    if (F <= 0.015) return <Badge variant="default" className="bg-green-100 text-green-800">{t('breeding:lowRisk')}</Badge>;
+    if (F <= 0.03) return <Badge variant="default" className="bg-yellow-100 text-yellow-800">{t('breeding:moderateRisk')}</Badge>;
+    if (F <= 0.0625) return <Badge variant="default" className="bg-orange-100 text-orange-800">{t('breeding:highRisk')}</Badge>;
+    return <Badge variant="destructive">{t('breeding:criticalRisk')}</Badge>;
   };
 
   const resetWizard = () => {
@@ -168,7 +168,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5" />
-            Planificación IA - Paso {step} de 3
+            {t('breeding:planningStepTitle', { step })}
           </DialogTitle>
         </DialogHeader>
 
@@ -178,7 +178,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  Benchmarks y Objetivos
+                  {t('breeding:benchmarksTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">

@@ -97,7 +97,7 @@ export function AICorralAssistant({ corralesData, currentRisks, cabanaId }: AICo
       }]);
     } catch (error) {
       console.error('Error getting AI recommendations:', error);
-      toast.error('Error al obtener recomendaciones de IA');
+      toast.error(t('corrals:aiAssistant.errorGettingRecommendations'));
     } finally {
       setLoading(false);
     }

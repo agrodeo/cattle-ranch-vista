@@ -525,5 +525,18 @@
     "optimizing": "Optimizing...",
     "optimalDescription": "✓ Your corrals are well distributed without detected consanguinity risks. You can use the AI assistant to get recommendations on additional improvements.",
     "consultAI": "Consult AI Assistant"
+  },
+  "aiAssistant": {
+    "title": "Corral AI Assistant",
+    "artificialIntelligence": "Artificial Intelligence",
+    "description": "Ask me about distribution strategies, seasonal management, production goals, or request personalized recommendations based on your data.",
+    "optimizeQuestion": "How can I optimize my corrals?",
+    "consanguinityQuestion": "What are the best practices to avoid consanguinity?",
+    "consanguinityLabel": "Best practices to avoid consanguinity",
+    "distributionQuestion": "How should I distribute animals by age and category?",
+    "distributionLabel": "Distribution by age and category",
+    "assistant": "AI Assistant",
+    "placeholder": "Ask something about corral management...",
+    "errorGettingRecommendations": "Error getting AI recommendations"
   }
 }

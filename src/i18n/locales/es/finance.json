@@ -96,7 +96,8 @@
     "creating": "Creando...",
     "categoryCreated": "Categoría creada correctamente",
     "categoryError": "Error al crear la categoría",
-    "loading": "Cargando categorías..."
+    "loading": "Cargando categorías...",
+    "categoryPlaceholder": "Ej. Veterinaria"
   },
   "movements": {
     "title": "Movimientos",
@@ -110,7 +111,7 @@
     "actions": "Acciones",
     "edit": "Editar",
     "delete": "Eliminar",
-    "animalSale": "Venta de Animal",
+    "animalSale": "Venta de animales",
     "buyerName": "Nombre del Comprador",
     "buyerDocument": "Documento del Comprador",
     "buyerDestination": "Destino",
@@ -122,7 +123,11 @@
     "errorSaving": "Error al guardar el movimiento",
     "errorDeleting": "Error al eliminar el movimiento",
     "confirmDeleteMovement": "¿Estás seguro de que deseas eliminar este movimiento?",
-    "requiredFields": "Por favor completa todos los campos requeridos"
+    "requiredFields": "Por favor completa todos los campos requeridos",
+    "movementUpdated": "Movimiento actualizado",
+    "movementAdded": "Movimiento agregado",
+    "filterByCategory": "Filtrar por categoría",
+    "searchDescription": "Buscar descripción"
   },
   "recurringDetails": {
     "title": "Movimientos Recurrentes",
@@ -135,11 +140,14 @@
     "inactive": "Inactivo",
     "delete": "Eliminar",
     "noRecurring": "No hay movimientos recurrentes configurados",
-    "recurringCreated": "Movimiento recurrente creado correctamente",
-    "recurringDeleted": "Movimiento recurrente eliminado correctamente",
+    "recurringCreated": "Recurrente creado",
+    "recurringDeleted": "Recurrente eliminado",
     "errorCreating": "Error al crear el movimiento recurrente",
     "errorDeleting": "Error al eliminar el movimiento recurrente",
-    "confirmDelete": "¿Estás seguro de que deseas eliminar este movimiento recurrente?"
+    "confirmDelete": "¿Estás seguro de que deseas eliminar este movimiento recurrente?",
+    "recurringNamePlaceholder": "Nombre (ej. Sueldo)",
+    "descriptionOptional": "Descripción (opcional)",
+    "addRecurring": "Agregar recurrente"
   },
   "summary": {
     "title": "Resumen Financiero",

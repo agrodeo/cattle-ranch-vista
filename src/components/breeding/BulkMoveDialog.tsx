@@ -40,7 +40,7 @@ interface MovePreview {
 }
 
 export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProps) {
-  const { t } = useTranslation(['common', 'corrals']);
+  const { t } = useTranslation(['common', 'corrals', 'bulkMove', 'animals']);
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: filters, 2: preview, 3: result
   const [corrals, setCorrales] = useState<any[]>([]);
@@ -82,7 +82,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
 
   const generatePreview = async () => {
     if (!targetCorralId) {
-      toast.error("Selecciona un corral destino");
+      toast.error(t('bulkMove:selectTargetCorral'));
       return;
     }
 
@@ -112,7 +112,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
       setStep(2);
     } catch (error) {
       console.error('Error generating preview:', error);
-      toast.error("Error al generar vista previa");
+      toast.error(t('bulkMove:errorGeneratingPreview'));
     } finally {
       setLoading(false);
     }
@@ -146,7 +146,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
       setStep(3);
     } catch (error) {
       console.error('Error executing move:', error);
-      toast.error("Error al ejecutar movimiento");
+      toast.error(t('bulkMove:errorExecutingMove'));
     } finally {
       setLoading(false);
     }

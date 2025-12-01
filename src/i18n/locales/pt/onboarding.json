@@ -1,0 +1,17 @@
+{
+  "selectVaccineOrSkip": "Selecione pelo menos uma vacina ou pule esta etapa",
+  "vaccinationConfiguredSuccess": "Requisitos de vacinação configurados com sucesso",
+  "errorConfiguringVaccines": "Erro ao configurar as vacinas",
+  "vaccinationConfiguration": "Configuração de Vacinas",
+  "selectVaccinesDescription": "Selecione as vacinas obrigatórias ou opcionais para seu rebanho",
+  "mandatory": "Obrigatória",
+  "onlyGender": "Apenas {{gender}}s",
+  "fromMonths": "A partir de {{months}} meses",
+  "untilMonths": "Até {{months}} meses",
+  "everyMonths": "A cada {{months}} meses",
+  "doses": "{{count}} doses",
+  "needOtherVaccines": "Precisa de outras vacinas específicas?",
+  "addLaterDescription": "Você poderá adicioná-las mais tarde nas configurações",
+  "configuring": "Configurando...",
+  "configureVaccines": "Configurar Vacinas"
+}
