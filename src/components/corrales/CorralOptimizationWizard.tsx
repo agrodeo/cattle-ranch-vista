@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,6 +60,7 @@ interface CorralOptimizationWizardProps {
 }
 
 export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOptimizationWizardProps) {
+  const { t } = useTranslation('corrals');
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<CorralOptimizationPlan | null>(null);
@@ -143,10 +145,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
           setReproMetrics(metricsMap);
         }
       }
-    } catch (error) {
-      console.error('Error loading data:', error);
-      toast.error("Error al cargar datos");
-    }
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toast.error(t('optimization.toast.errorLoadingData'));
+      }
   };
 
   const generateOptimization = async () => {
@@ -185,10 +187,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       
       setPlan(data);
       setStep(3);
-      toast.success("Optimización generada exitosamente");
+      toast.success(t('optimization.toast.optimizationGenerated'));
     } catch (error) {
       console.error('Error generating optimization:', error);
-      const errorMessage = error?.message || "Error al generar la optimización";
+      const errorMessage = error?.message || t('optimization.toast.errorGenerating');
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -237,19 +239,19 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
           console.warn('Some moves failed:', errors);
         }
 
-        toast.success(`${successfulMoves} movimientos aplicados exitosamente`);
+        toast.success(t('optimization.toast.movementsApplied', { count: successfulMoves }));
         
         if (errors.length > 0) {
-          toast.error(`${errors.length} movimientos fallaron`);
+          toast.error(t('optimization.toast.movementsFailed', { count: errors.length }));
         }
       } else {
-        toast.info("No hay movimientos para aplicar");
+        toast.info(t('optimization.toast.noMovementsToApply'));
       }
 
       setStep(4);
     } catch (error) {
       console.error('Error applying suggestions:', error);
-      toast.error("Error al aplicar las sugerencias");
+      toast.error(t('optimization.toast.errorApplying'));
     } finally {
       setLoading(false);
     }
@@ -257,9 +259,9 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
   const getSeverityBadge = (severity: 'severe' | 'medium' | 'low') => {
     const severityConfig = {
-      severe: { label: 'Alto Riesgo', variant: 'destructive' as const, emoji: '🔴' },
-      medium: { label: 'Riesgo Medio', variant: 'secondary' as const, emoji: '🟠' },
-      low: { label: 'Riesgo Bajo', variant: 'outline' as const, emoji: '🟡' }
+      severe: { label: t('optimization.severity.highRisk'), variant: 'destructive' as const, emoji: '🔴' },
+      medium: { label: t('optimization.severity.mediumRisk'), variant: 'secondary' as const, emoji: '🟠' },
+      low: { label: t('optimization.severity.lowRisk'), variant: 'outline' as const, emoji: '🟡' }
     };
     
     const config = severityConfig[severity];
@@ -311,7 +313,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 flex-wrap min-w-0 text-sm sm:text-base">
             <Shuffle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
-            <span className="break-words min-w-0">Optimización de Corrales - Paso {step} de 4</span>
+            <span className="break-words min-w-0">{t('optimization.titleWithStep', { step })}</span>
           </DialogTitle>
           <Button
             variant="ghost"
@@ -320,7 +322,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
             className="mt-2"
           >
             <HelpCircle className="h-4 w-4 mr-2" />
-            {showExplanation ? "Ocultar" : "¿Cómo funciona?"}
+            {showExplanation ? t('optimization.hideExplanation') : t('optimization.showExplanation')}
           </Button>
         </DialogHeader>
 
@@ -329,62 +331,57 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
                 <HelpCircle className="h-4 w-4" />
-                Cómo funciona la Optimización de Corrales
+                {t('optimization.explanationTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div>
-                <h4 className="font-semibold mb-1">🧬 Detección de Consanguinidad</h4>
+                <h4 className="font-semibold mb-1">{t('optimization.explanationSections.consanguinityDetection.title')}</h4>
                 <p className="text-muted-foreground">
-                  El sistema analiza las relaciones familiares entre animales (padre-hijo, hermanos, medio-hermanos) 
-                  que están en el mismo corral y tienen edad reproductiva (≥15 meses). 
-                  Detecta parejas macho-hembra emparentadas que podrían cruzarse.
+                  {t('optimization.explanationSections.consanguinityDetection.description')}
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">📊 Datos Productivos y Reproductivos</h4>
+                <h4 className="font-semibold mb-1">{t('optimization.explanationSections.productiveData.title')}</h4>
                 <p className="text-muted-foreground">
-                  El sistema recopila métricas clave de cada animal:
+                  {t('optimization.explanationSections.productiveData.description')}
                   <ul className="list-disc ml-5 mt-1">
-                    <li>Peso actual, ganancia diaria promedio (GDP), historial de pesajes</li>
-                    <li>Tasas de preñez y parición (% de éxito reproductivo)</li>
-                    <li>Nivel de rendimiento (Excelente, Bueno, Regular, Bajo)</li>
-                    <li>Métricas agregadas por corral para análisis comparativo</li>
+                    <li>{t('optimization.explanationSections.productiveData.metrics.item1')}</li>
+                    <li>{t('optimization.explanationSections.productiveData.metrics.item2')}</li>
+                    <li>{t('optimization.explanationSections.productiveData.metrics.item3')}</li>
+                    <li>{t('optimization.explanationSections.productiveData.metrics.item4')}</li>
                   </ul>
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">🤖 Análisis con IA</h4>
+                <h4 className="font-semibold mb-1">{t('optimization.explanationSections.aiAnalysis.title')}</h4>
                 <p className="text-muted-foreground">
-                  Usando GPT-4, el sistema:
+                  {t('optimization.explanationSections.aiAnalysis.description')}
                   <ul className="list-disc ml-5 mt-1">
-                    <li>Evalúa la distribución actual de animales con datos productivos</li>
-                    <li>Identifica conflictos de consanguinidad y bajo rendimiento</li>
-                    <li>Genera movimientos específicos con razones basadas en datos reales</li>
-                    <li>Considera capacidad, edades, objetivos y métricas de performance</li>
-                    <li>Prioriza animales de alto rendimiento para agrupación estratégica</li>
+                    <li>{t('optimization.explanationSections.aiAnalysis.steps.item1')}</li>
+                    <li>{t('optimization.explanationSections.aiAnalysis.steps.item2')}</li>
+                    <li>{t('optimization.explanationSections.aiAnalysis.steps.item3')}</li>
+                    <li>{t('optimization.explanationSections.aiAnalysis.steps.item4')}</li>
+                    <li>{t('optimization.explanationSections.aiAnalysis.steps.item5')}</li>
                   </ul>
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">🎯 Objetivos Personalizables</h4>
+                <h4 className="font-semibold mb-1">{t('optimization.explanationSections.customizableObjectives.title')}</h4>
                 <p className="text-muted-foreground">
-                  Puedes elegir optimizar para:
+                  {t('optimization.explanationSections.customizableObjectives.description')}
                   <ul className="list-disc ml-5 mt-1">
-                    <li><strong>Consanguinidad:</strong> Reduce cruces entre parientes</li>
-                    <li><strong>Reproducción:</strong> Agrupa hembras &gt;70% preñez/parición, aísla bajo rendimiento</li>
-                    <li><strong>Producción:</strong> Agrupa animales con GDP &gt;0.7kg/d, separa bajo rendimiento</li>
-                    <li><strong>Estándares:</strong> Sigue benchmarks específicos de tu cabaña</li>
+                    <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.consanguinity')}</strong></li>
+                    <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.reproduction')}</strong></li>
+                    <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.production')}</strong></li>
+                    <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.benchmarks')}</strong></li>
                   </ul>
                 </p>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">✅ Control Total con Datos</h4>
+                <h4 className="font-semibold mb-1">{t('optimization.explanationSections.totalControl.title')}</h4>
                 <p className="text-muted-foreground">
-                  Puedes ver métricas de cada animal (peso, GDP, % preñez, % parición), 
-                  revisar cada movimiento con razones basadas en datos reales, 
-                  seleccionar cuáles aplicar y descartar los que no quieras. 
-                  El sistema muestra el impacto esperado antes de aplicar cambios.
+                  {t('optimization.explanationSections.totalControl.description')}
                 </p>
               </div>
             </CardContent>
@@ -397,13 +394,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  Configuración de Optimización
+                  {t('optimization.step1.cardTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                  {/* Objetivos de Optimización */}
                 <div className="min-w-0 overflow-hidden">
-                  <Label className="text-sm sm:text-base font-semibold mb-3 block">Objetivos de Optimización</Label>
+                  <Label className="text-sm sm:text-base font-semibold mb-3 block">{t('optimization.step1.objectivesTitle')}</Label>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
@@ -418,8 +415,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         className="w-4 h-4 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium text-sm sm:text-base">Reducir Consanguinidad</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground break-words">Evitar cruces entre animales emparentados</div>
+                        <div className="font-medium text-sm sm:text-base">{t('optimization.step1.objectives.consanguinity.title')}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">{t('optimization.step1.objectives.consanguinity.description')}</div>
                       </div>
                     </label>
                     
@@ -436,8 +433,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         className="w-4 h-4 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium text-sm sm:text-base">Optimizar Reproducción</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground break-words">Maximizar fertilidad y tasa de preñez</div>
+                        <div className="font-medium text-sm sm:text-base">{t('optimization.step1.objectives.reproduction.title')}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">{t('optimization.step1.objectives.reproduction.description')}</div>
                       </div>
                     </label>
                     
@@ -454,8 +451,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         className="w-4 h-4 flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium text-sm sm:text-base">Optimizar Producción</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground break-words">Maximizar ganancia de peso y producción</div>
+                        <div className="font-medium text-sm sm:text-base">{t('optimization.step1.objectives.production.title')}</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">{t('optimization.step1.objectives.production.description')}</div>
                       </div>
                     </label>
                     
@@ -618,7 +615,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
               <Button onClick={onClose} variant="outline">
-                Cancelar
+                {t('optimization.step1.cancelButton')}
               </Button>
               <Button 
                 onClick={() => {
@@ -627,10 +624,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 }} 
                 disabled={config.objectives.length === 0 || checkingBenchmarks}
               >
-                {checkingBenchmarks ? "Verificando..." : "Siguiente: Seleccionar Animales"}
+                {checkingBenchmarks ? t('optimization.step1.verifyingButton') : t('optimization.step1.nextButton')}
               </Button>
               {config.objectives.length === 0 && (
-                <p className="text-sm text-red-600">Selecciona al menos un objetivo</p>
+                <p className="text-sm text-red-600">{t('optimization.step1.selectObjectiveError')}</p>
               )}
             </div>
           </div>
@@ -640,17 +637,16 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
           <div className="space-y-4 min-w-0 overflow-hidden">
             <Card className="min-w-0 overflow-hidden">
               <CardHeader>
-                <CardTitle className="text-sm sm:text-base break-words">Seleccionar Animales para Análisis (Opcional)</CardTitle>
+                <CardTitle className="text-sm sm:text-base break-words">{t('optimization.step2.cardTitle')}</CardTitle>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">
-                  Si no seleccionas ningún animal, se analizarán todos los animales activos.
-                  Puedes filtrar por corral o seleccionar individualmente.
+                  {t('optimization.step2.cardDescription')}
                 </p>
               </CardHeader>
               <CardContent className="space-y-4 min-w-0 overflow-hidden">
                 <div className="min-w-0">
-                  <Label className="text-xs sm:text-sm">Buscar Animal</Label>
+                  <Label className="text-xs sm:text-sm">{t('optimization.step2.searchLabel')}</Label>
                   <Input
-                    placeholder="Nombre o tag..."
+                    placeholder={t('optimization.step2.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full"
@@ -658,7 +654,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </div>
 
                 <div className="min-w-0 overflow-hidden">
-                  <Label className="mb-2 block text-xs sm:text-sm">Filtrar por Corral</Label>
+                  <Label className="mb-2 block text-xs sm:text-sm">{t('optimization.step2.filterByCorralLabel')}</Label>
                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 min-w-0">
                      {allCorrals.map(corral => (
                        <label key={corral.id} className="flex items-center gap-2 p-2 border rounded cursor-pointer hover:bg-accent min-w-0 overflow-hidden w-full">
@@ -684,12 +680,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
                 <div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
-                    <Label>Animales ({
-                      allAnimals.filter(a => 
+                    <Label>{t('optimization.step2.animalsCount', { count: allAnimals.filter(a => 
                         (!searchTerm || a.id_tag?.includes(searchTerm) || a.name?.toLowerCase().includes(searchTerm.toLowerCase())) &&
                         (selectedCorralIds.size === 0 || selectedCorralIds.has(a.corral_id))
-                      ).length
-                    })</Label>
+                      ).length })}</Label>
                     <div className="flex gap-1 sm:gap-2 flex-wrap">
                       <Button size="sm" variant="outline" onClick={() => {
                         const filtered = allAnimals.filter(a => 
@@ -698,10 +692,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         );
                         setSelectedAnimalIds(new Set(filtered.map(a => a.id)));
                       }} className="text-xs sm:text-sm">
-                        Seleccionar Visibles
+                        {t('optimization.step2.selectVisibleButton')}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setSelectedAnimalIds(new Set())} className="text-xs sm:text-sm">
-                        Limpiar
+                        {t('optimization.step2.clearButton')}
                       </Button>
                     </div>
                   </div>
@@ -740,9 +734,9 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                  <span className="text-muted-foreground whitespace-nowrap text-xs sm:text-sm flex-shrink-0">
                                    {animal.sex === 'Hembra' ? '♀' : '♂'} {ageMonths}m
                                  </span>
-                                {animal.esta_preñada && (
-                                  <Badge variant="secondary" className="text-xs whitespace-nowrap">PREÑADA</Badge>
-                                 )}
+                                 {animal.esta_preñada && (
+                                   <Badge variant="secondary" className="text-xs whitespace-nowrap">{t('optimization.step2.pregnantBadge')}</Badge>
+                                  )}
                                  {corral && (
                                    <span className="text-xs text-muted-foreground truncate min-w-0">• {corral.name}</span>
                                  )}
@@ -781,14 +775,14 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
 
             <div className="flex gap-2 flex-wrap sm:flex-nowrap">
               <Button onClick={resetWizard} variant="outline" className="flex-1 sm:flex-initial">
-                Volver
+                {t('optimization.step2.backButton')}
               </Button>
               <Button 
                 onClick={generateOptimization} 
                 disabled={loading}
                 className="flex-1"
               >
-                {loading ? "Analizando..." : "Generar Optimización"}
+                {loading ? t('optimization.step2.analyzingButton') : t('optimization.step2.generateButton')}
               </Button>
             </div>
           </div>
@@ -798,9 +792,9 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold break-words">Plan de Optimización</h3>
+                <h3 className="text-lg font-semibold break-words">{t('optimization.step3.planTitle')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {plan.summary.total_moves_suggested} movimientos sugeridos
+                  {t('optimization.step3.movementsSuggested', { count: plan.summary.total_moves_suggested })}
                 </p>
               </div>
               <div className="flex gap-1 sm:gap-2 flex-wrap min-w-0">
@@ -818,30 +812,30 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingDown className="h-4 w-4" />
-                  Métricas de Reducción de Riesgo
+                  {t('optimization.step3.metricsTitle')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 min-w-0">
                   <div className="text-center p-2 sm:p-3 bg-red-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-red-600">{plan.summary.total_risks_before}</div>
-                    <div className="text-xs sm:text-sm text-red-600 break-words">Riesgos Actuales</div>
+                    <div className="text-xs sm:text-sm text-red-600 break-words">{t('optimization.step3.currentRisks')}</div>
                   </div>
                   <div className="text-center p-2 sm:p-3 bg-green-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-green-600">{plan.summary.total_risks_after}</div>
-                    <div className="text-xs sm:text-sm text-green-600 break-words">Riesgos Después</div>
+                    <div className="text-xs sm:text-sm text-green-600 break-words">{t('optimization.step3.risksAfter')}</div>
                   </div>
                   <div className="text-center p-2 sm:p-3 bg-blue-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-blue-600">{plan.summary.risk_reduction_percentage}%</div>
-                    <div className="text-xs sm:text-sm text-blue-600 break-words">Reducción</div>
+                    <div className="text-xs sm:text-sm text-blue-600 break-words">{t('optimization.step3.reduction')}</div>
                   </div>
                   <div className="text-center p-2 sm:p-3 bg-orange-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-orange-600">{plan.summary.total_moves_suggested}</div>
-                    <div className="text-xs sm:text-sm text-orange-600 break-words">Movimientos</div>
+                    <div className="text-xs sm:text-sm text-orange-600 break-words">{t('optimization.step3.movements')}</div>
                   </div>
                   <div className="text-center p-2 sm:p-3 bg-purple-50 rounded-lg min-w-0">
                     <div className="text-xl sm:text-2xl font-bold text-purple-600">{plan.summary.calves_moved_with_mothers}</div>
-                    <div className="text-xs sm:text-sm text-purple-600 break-words">Terneros c/Madre</div>
+                    <div className="text-xs sm:text-sm text-purple-600 break-words">{t('optimization.step3.calvesWithMother')}</div>
                   </div>
                 </div>
               </CardContent>
@@ -981,16 +975,16 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         {step === 4 && (
           <div className="text-center space-y-4 min-w-0 overflow-hidden px-2">
             <CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-green-600 mx-auto" />
-            <h3 className="text-lg sm:text-xl font-semibold break-words">Optimización Aplicada</h3>
+            <h3 className="text-lg sm:text-xl font-semibold break-words">{t('optimization.step4.title')}</h3>
             <p className="text-sm sm:text-base text-muted-foreground break-words">
-              Los movimientos seleccionados han sido aplicados exitosamente.
+              {t('optimization.step4.description')}
             </p>
             <div className="flex gap-2 justify-center flex-wrap sm:flex-nowrap">
               <Button onClick={onClose} variant="outline" className="flex-1 sm:flex-initial">
-                Cerrar
+                {t('optimization.step4.closeButton')}
               </Button>
               <Button onClick={resetWizard} className="flex-1 sm:flex-initial">
-                Nueva Optimización
+                {t('optimization.step4.newOptimizationButton')}
               </Button>
             </div>
           </div>
