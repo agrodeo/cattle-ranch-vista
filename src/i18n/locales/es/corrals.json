@@ -624,6 +624,13 @@
       "expectedImprovement": "Mejora esperada",
       "affectedCorrals": "Corrales afectados"
     },
+    "metrics": {
+      "riskBefore": "Riesgo actual",
+      "riskAfter": "Riesgo proyectado",
+      "riskReduction": "Reducción de riesgo",
+      "risksResolved": "Riesgos resueltos",
+      "risksRemaining": "Riesgos restantes"
+    },
     "previewTitle": "Vista Previa de Cambios",
     "steps": {
       "selectObjective": "Objetivo",

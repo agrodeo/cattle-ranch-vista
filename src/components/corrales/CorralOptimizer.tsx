@@ -75,6 +75,13 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   const [suggestedMoves, setSuggestedMoves] = useState<SuggestedMove[]>([]);
   const [selectedMoves, setSelectedMoves] = useState<Set<string>>(new Set());
   const [expectedImprovement, setExpectedImprovement] = useState<string>('');
+  const [riskMetrics, setRiskMetrics] = useState<{
+    riskBefore?: string;
+    riskAfter?: string;
+    riskReduction?: string;
+    risksResolved?: string;
+    risksRemaining?: string;
+  }>({});
   const [previewData, setPreviewData] = useState<{ before: PreviewCorral[]; after: PreviewCorral[] } | null>(null);
 
   const objectives: { id: ObjectiveType; icon: any; color: string }[] = [
@@ -164,6 +171,13 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
 
       setSuggestedMoves(data.suggestedMoves || []);
       setExpectedImprovement(data.summary?.expectedImprovement || '');
+      setRiskMetrics({
+        riskBefore: data.summary?.riskBefore,
+        riskAfter: data.summary?.riskAfter,
+        riskReduction: data.summary?.riskReduction,
+        risksResolved: data.summary?.risksResolved,
+        risksRemaining: data.summary?.risksRemaining,
+      });
       setPreviewData(data.preview || null);
       
       // Select all moves by default
@@ -276,6 +290,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     setSuggestedMoves([]);
     setSelectedMoves(new Set());
     setExpectedImprovement('');
+    setRiskMetrics({});
     setPreviewData(null);
     setSourceCorrals(new Set());
     setDestinationCorrals(new Set());
@@ -568,8 +583,52 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
                     {t('corrals:optimizer.summary.title')}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <p className="text-sm">{expectedImprovement}</p>
+                  
+                  {/* Risk metrics for consanguinity objective */}
+                  {selectedObjective === 'consanguinity' && (riskMetrics.riskBefore || riskMetrics.riskAfter) && (
+                    <div className="mt-4 pt-4 border-t space-y-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        {riskMetrics.riskBefore && (
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">{t('corrals:optimizer.metrics.riskBefore')}</p>
+                            <p className="text-lg font-bold text-red-600">{riskMetrics.riskBefore}</p>
+                          </div>
+                        )}
+                        {riskMetrics.riskAfter && (
+                          <div className="space-y-1">
+                            <p className="text-xs text-muted-foreground">{t('corrals:optimizer.metrics.riskAfter')}</p>
+                            <p className="text-lg font-bold text-green-600">{riskMetrics.riskAfter}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {riskMetrics.riskReduction && (
+                        <div className="space-y-1 pt-2">
+                          <p className="text-xs text-muted-foreground">{t('corrals:optimizer.metrics.riskReduction')}</p>
+                          <p className="text-2xl font-bold text-primary">{riskMetrics.riskReduction}</p>
+                        </div>
+                      )}
+                      
+                      {(riskMetrics.risksResolved || riskMetrics.risksRemaining) && (
+                        <div className="grid grid-cols-2 gap-4 pt-2">
+                          {riskMetrics.risksResolved && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-muted-foreground">{t('corrals:optimizer.metrics.risksResolved')}</p>
+                              <p className="text-sm font-medium">{riskMetrics.risksResolved}</p>
+                            </div>
+                          )}
+                          {riskMetrics.risksRemaining && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-muted-foreground">{t('corrals:optimizer.metrics.risksRemaining')}</p>
+                              <p className="text-sm font-medium">{riskMetrics.risksRemaining}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}

@@ -32,6 +32,18 @@ interface Corral {
   animal_count: number;
 }
 
+interface ConsanguinityRisk {
+  animal1_id: string;
+  animal1_name: string;
+  animal2_id: string;
+  animal2_name: string;
+  relationship: string;
+  severity: 'severe' | 'medium' | 'low';
+  coefficient: number;
+  corral_id: string;
+  corral_name: string;
+}
+
 interface SuggestedMove {
   animal_id: string;
   animal_name: string;
@@ -42,6 +54,7 @@ interface SuggestedMove {
   reason: string;
   issue_type: string;
   expectedBenefit?: string;
+  riskReduction?: number;
 }
 
 const translations = {
@@ -62,7 +75,18 @@ const translations = {
     fullSiblings: "hermanos completos",
     halfSiblingsPaternal: "medio hermanos (padre)",
     halfSiblingsMaternal: "medio hermanos (madre)",
+    grandparentGrandchild: "abuelo-nieto",
+    uncleNieceNephew: "tío-sobrino",
+    firstCousins: "primos hermanos",
     expectedImprovementConsanguinity: "Se reducirán {{count}} riesgos de consanguinidad",
+    riskBefore: "Riesgo actual",
+    riskAfter: "Riesgo proyectado",
+    riskReduction: "Reducción de riesgo",
+    risksResolved: "Riesgos resueltos",
+    risksRemaining: "Riesgos restantes",
+    severe: "severos",
+    medium: "medianos",
+    low: "bajos",
     expectedImprovementFertility: "Se mejorará el potencial reproductivo en ~{{percent}}%",
     expectedImprovementWeight: "Se optimizará la genética de peso en {{count}} animales",
   },
@@ -83,7 +107,18 @@ const translations = {
     fullSiblings: "full siblings",
     halfSiblingsPaternal: "half siblings (father)",
     halfSiblingsMaternal: "half siblings (mother)",
+    grandparentGrandchild: "grandparent-grandchild",
+    uncleNieceNephew: "uncle-niece-nephew",
+    firstCousins: "first cousins",
     expectedImprovementConsanguinity: "{{count}} consanguinity risks will be reduced",
+    riskBefore: "Current risk",
+    riskAfter: "Projected risk",
+    riskReduction: "Risk reduction",
+    risksResolved: "Risks resolved",
+    risksRemaining: "Risks remaining",
+    severe: "severe",
+    medium: "medium",
+    low: "low",
     expectedImprovementFertility: "Reproductive potential will improve by ~{{percent}}%",
     expectedImprovementWeight: "Weight genetics will be optimized in {{count}} animals",
   },
@@ -104,7 +139,18 @@ const translations = {
     fullSiblings: "irmãos completos",
     halfSiblingsPaternal: "meio irmãos (pai)",
     halfSiblingsMaternal: "meio irmãos (mãe)",
+    grandparentGrandchild: "avô-neto",
+    uncleNieceNephew: "tio-sobrinho",
+    firstCousins: "primos irmãos",
     expectedImprovementConsanguinity: "{{count}} riscos de consanguinidade serão reduzidos",
+    riskBefore: "Risco atual",
+    riskAfter: "Risco projetado",
+    riskReduction: "Redução de risco",
+    risksResolved: "Riscos resolvidos",
+    risksRemaining: "Riscos restantes",
+    severe: "graves",
+    medium: "médios",
+    low: "baixos",
     expectedImprovementFertility: "O potencial reprodutivo melhorará em ~{{percent}}%",
     expectedImprovementWeight: "A genética de peso será otimizada em {{count}} animais",
   },
@@ -194,11 +240,82 @@ serve(async (req) => {
     console.log(`Total animals: ${animals.length}, Animals to optimize: ${animalsToOptimize.length}`);
 
     // Initialize issues and moves
-    const consanguinityRisks: any[] = [];
+    const consanguinityRisks: ConsanguinityRisk[] = [];
     const capacityIssues: any[] = [];
     const separationIssues: any[] = [];
     const suggestedMoves: SuggestedMove[] = [];
     const movedAnimals = new Set<string>();
+
+    // Helper function to calculate risk score for a corral
+    const calculateCorralRiskScore = (animalsInCorral: Animal[]): { totalScore: number; risks: ConsanguinityRisk[] } => {
+      const MAX_AGE_MONTHS = 15;
+      const risks: ConsanguinityRisk[] = [];
+      let totalScore = 0;
+
+      const reproductiveAgeMales = animalsInCorral.filter(a => {
+        const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+        return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+      });
+      const reproductiveAgeFemales = animalsInCorral.filter(a => {
+        const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+        return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+      });
+
+      for (const male of reproductiveAgeMales) {
+        for (const female of reproductiveAgeFemales) {
+          const relationship = checkRelationship(male, female);
+          if (relationship) {
+            totalScore += relationship.coefficient;
+            risks.push({
+              animal1_id: male.id,
+              animal1_name: male.name || male.id_tag || 'Sin nombre',
+              animal2_id: female.id,
+              animal2_name: female.name || female.id_tag || 'Sin nombre',
+              relationship: relationship.type,
+              severity: relationship.severity,
+              coefficient: relationship.coefficient,
+              corral_id: '',
+              corral_name: '',
+            });
+          }
+        }
+      }
+
+      return { totalScore, risks };
+    };
+
+    // Helper function to calculate total risk score for entire distribution
+    const calculateDistributionRiskScore = (distribution: Record<string, Animal[]>): number => {
+      let totalScore = 0;
+      for (const corralId in distribution) {
+        const { totalScore: corralScore } = calculateCorralRiskScore(distribution[corralId]);
+        totalScore += corralScore;
+      }
+      return totalScore;
+    };
+
+    // Helper function to simulate a move and calculate new risk score
+    const simulateMove = (animal: Animal, targetCorralId: string): number => {
+      const simulatedDistribution: Record<string, Animal[]> = {};
+      
+      // Copy current distribution
+      for (const corralId in corralAnimals) {
+        simulatedDistribution[corralId] = [...corralAnimals[corralId]];
+      }
+      
+      // Remove animal from source corral
+      if (animal.corral_id) {
+        simulatedDistribution[animal.corral_id] = simulatedDistribution[animal.corral_id].filter(a => a.id !== animal.id);
+      }
+      
+      // Add animal to target corral
+      if (!simulatedDistribution[targetCorralId]) {
+        simulatedDistribution[targetCorralId] = [];
+      }
+      simulatedDistribution[targetCorralId].push({ ...animal, corral_id: targetCorralId });
+      
+      return calculateDistributionRiskScore(simulatedDistribution);
+    };
 
     // Helper function to find safe destination without creating new consanguinity risks
     const findBestDestination = (animal: Animal, exclude: string[] = [], checkConsanguinity: boolean = true): { corral: Corral; reason: string } | null => {
@@ -303,56 +420,128 @@ serve(async (req) => {
 
     // Objective-specific optimization
     if (objective === 'consanguinity') {
-      // Detect consanguinity risks
+      // Calculate initial risk score
+      const initialRiskScore = calculateDistributionRiskScore(corralAnimals);
+      console.log(`Initial risk score: ${initialRiskScore.toFixed(3)}`);
+
+      // Detect all consanguinity risks across all corrals
       const MAX_AGE_MONTHS = 15;
       for (const corral of corralsWithCounts) {
         const animalsInCorral = corralAnimals[corral.id] || [];
-        const reproductiveAgeMales = animalsInCorral.filter(a => {
-          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
-          return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+        const { risks } = calculateCorralRiskScore(animalsInCorral);
+        
+        risks.forEach(risk => {
+          consanguinityRisks.push({
+            ...risk,
+            corral_id: corral.id,
+            corral_name: corral.name,
+          });
         });
-        const reproductiveAgeFemales = animalsInCorral.filter(a => {
-          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
-          return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
-        });
+      }
 
-        for (const male of reproductiveAgeMales) {
-          for (const female of reproductiveAgeFemales) {
-            const relationship = checkRelationship(male, female);
-            if (relationship) {
-              consanguinityRisks.push({
-                animal1_id: male.id,
-                animal1_name: male.name || male.id_tag || 'Sin nombre',
-                animal2_id: female.id,
-                animal2_name: female.name || female.id_tag || 'Sin nombre',
-                relationship: relationship.type,
-                severity: relationship.severity,
-                corral_id: corral.id,
-                corral_name: corral.name,
-              });
+      // Sort risks by coefficient (most severe first)
+      consanguinityRisks.sort((a, b) => b.coefficient - a.coefficient);
+      
+      console.log(`Found ${consanguinityRisks.length} consanguinity risks`);
 
-              if (!movedAnimals.has(male.id) && !movedAnimals.has(female.id)) {
-                const animalToMove = male;
-                const destination = findBestDestination(animalToMove, [corral.id], true);
-                if (destination) {
-                  const relationshipText = getRelationshipText(relationship.type, t);
-                  suggestedMoves.push({
-                    animal_id: animalToMove.id,
-                    animal_name: male.name || male.id_tag || 'Sin nombre',
-                    from_corral_id: corral.id,
-                    from_corral_name: corral.name,
-                    to_corral_id: destination.corral.id,
-                    to_corral_name: destination.corral.name,
-                    reason: `${t.avoidConsanguinity}: ${relationshipText}`,
-                    issue_type: 'consanguinity',
-                  });
-                  movedAnimals.add(animalToMove.id);
-                  destination.corral.animal_count++;
-                  corral.animal_count--;
-                }
-              }
+      // Track risk resolution attempts
+      const resolvedRisks = new Set<string>();
+      
+      // Optimize by finding best moves to minimize global risk
+      for (const risk of consanguinityRisks) {
+        const riskKey = `${risk.animal1_id}-${risk.animal2_id}`;
+        if (resolvedRisks.has(riskKey)) continue;
+        
+        // Don't move if either animal was already moved
+        if (movedAnimals.has(risk.animal1_id) || movedAnimals.has(risk.animal2_id)) continue;
+
+        const animal1 = animals.find((a: Animal) => a.id === risk.animal1_id);
+        const animal2 = animals.find((a: Animal) => a.id === risk.animal2_id);
+        
+        if (!animal1 || !animal2) continue;
+
+        let bestMove: { animal: Animal; targetCorralId: string; newRisk: number; corral: Corral } | null = null;
+        const currentRisk = calculateDistributionRiskScore(corralAnimals);
+
+        // Evaluate moving animal1 to all available corrals
+        for (const targetCorral of corralsWithCounts) {
+          if (targetCorral.id === risk.corral_id) continue;
+          
+          const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
+          if (targetCorral.animal_count >= capacity) continue;
+          
+          // Filter by destination corrals if specified
+          if (destinationCorrals.length > 0 && !destinationCorrals.includes(targetCorral.id)) continue;
+
+          const newRisk = simulateMove(animal1, targetCorral.id);
+          const riskReduction = currentRisk - newRisk;
+          
+          // Only consider moves that reduce risk
+          if (riskReduction > 0) {
+            if (!bestMove || newRisk < bestMove.newRisk) {
+              bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral };
             }
           }
+        }
+
+        // Evaluate moving animal2 to all available corrals
+        for (const targetCorral of corralsWithCounts) {
+          if (targetCorral.id === risk.corral_id) continue;
+          
+          const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
+          if (targetCorral.animal_count >= capacity) continue;
+          
+          // Filter by destination corrals if specified
+          if (destinationCorrals.length > 0 && !destinationCorrals.includes(targetCorral.id)) continue;
+
+          const newRisk = simulateMove(animal2, targetCorral.id);
+          const riskReduction = currentRisk - newRisk;
+          
+          // Only consider moves that reduce risk
+          if (riskReduction > 0) {
+            if (!bestMove || newRisk < bestMove.newRisk) {
+              bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral };
+            }
+          }
+        }
+
+        // Apply the best move found
+        if (bestMove) {
+          const riskReduction = currentRisk - bestMove.newRisk;
+          const relationshipText = getRelationshipText(risk.relationship, t);
+          
+          suggestedMoves.push({
+            animal_id: bestMove.animal.id,
+            animal_name: bestMove.animal.name || bestMove.animal.id_tag || 'Sin nombre',
+            from_corral_id: bestMove.animal.corral_id,
+            from_corral_name: corralsWithCounts.find(c => c.id === bestMove.animal.corral_id)?.name || null,
+            to_corral_id: bestMove.targetCorralId,
+            to_corral_name: bestMove.corral.name,
+            reason: `${t.avoidConsanguinity}: ${relationshipText} (${risk.coefficient})`,
+            issue_type: 'consanguinity',
+            riskReduction: riskReduction,
+          });
+          
+          movedAnimals.add(bestMove.animal.id);
+          resolvedRisks.add(riskKey);
+          
+          // Update distribution for next iteration
+          if (bestMove.animal.corral_id && corralAnimals[bestMove.animal.corral_id]) {
+            corralAnimals[bestMove.animal.corral_id] = corralAnimals[bestMove.animal.corral_id].filter(a => a.id !== bestMove.animal.id);
+          }
+          if (!corralAnimals[bestMove.targetCorralId]) {
+            corralAnimals[bestMove.targetCorralId] = [];
+          }
+          corralAnimals[bestMove.targetCorralId].push({ ...bestMove.animal, corral_id: bestMove.targetCorralId });
+          
+          // Update corral counts
+          bestMove.corral.animal_count++;
+          const sourceCorral = corralsWithCounts.find(c => c.id === bestMove.animal.corral_id);
+          if (sourceCorral) {
+            sourceCorral.animal_count--;
+          }
+          
+          console.log(`Move suggested: ${bestMove.animal.name || bestMove.animal.id_tag} → ${bestMove.corral.name}, risk reduction: ${riskReduction.toFixed(3)}`);
         }
       }
     } else if (objective === 'fertility') {
@@ -504,6 +693,52 @@ serve(async (req) => {
       }
     }
 
+    // Calculate final risk metrics for consanguinity
+    let riskMetrics: any = {};
+    if (objective === 'consanguinity') {
+      const finalRiskScore = calculateDistributionRiskScore(corralAnimals);
+      const initialRiskScore = consanguinityRisks.reduce((sum, r) => sum + r.coefficient, 0);
+      
+      // Count risks by severity before and after
+      const risksBySeverity = { severe: 0, medium: 0, low: 0 };
+      consanguinityRisks.forEach(r => risksBySeverity[r.severity]++);
+      
+      // Recalculate remaining risks after optimization
+      const remainingRisks: ConsanguinityRisk[] = [];
+      for (const corral of corralsWithCounts) {
+        const animalsInCorral = corralAnimals[corral.id] || [];
+        const { risks } = calculateCorralRiskScore(animalsInCorral);
+        risks.forEach(risk => {
+          remainingRisks.push({
+            ...risk,
+            corral_id: corral.id,
+            corral_name: corral.name,
+          });
+        });
+      }
+      
+      const remainingBySeverity = { severe: 0, medium: 0, low: 0 };
+      remainingRisks.forEach(r => remainingBySeverity[r.severity]++);
+      
+      const resolvedBySeverity = {
+        severe: risksBySeverity.severe - remainingBySeverity.severe,
+        medium: risksBySeverity.medium - remainingBySeverity.medium,
+        low: risksBySeverity.low - remainingBySeverity.low,
+      };
+
+      const reductionPercentage = initialRiskScore > 0 
+        ? Math.round(((initialRiskScore - finalRiskScore) / initialRiskScore) * 100)
+        : 0;
+
+      riskMetrics = {
+        riskBefore: initialRiskScore.toFixed(3),
+        riskAfter: finalRiskScore.toFixed(3),
+        riskReduction: `${reductionPercentage}%`,
+        risksResolved: `${resolvedBySeverity.severe} ${t.severe}, ${resolvedBySeverity.medium} ${t.medium}, ${resolvedBySeverity.low} ${t.low}`,
+        risksRemaining: `${remainingBySeverity.severe} ${t.severe}, ${remainingBySeverity.medium} ${t.medium}, ${remainingBySeverity.low} ${t.low}`,
+      };
+    }
+
     // Generate expected improvement message
     let expectedImprovement = '';
     if (objective === 'consanguinity') {
@@ -567,6 +802,7 @@ serve(async (req) => {
           totalMoves: suggestedMoves.length,
           expectedImprovement,
           affectedCorrals: affectedCorrals.size,
+          ...riskMetrics,
         },
         preview: {
           before: beforeState,
@@ -592,26 +828,48 @@ function calculateAgeInMonths(birthDate: string): number {
   return months;
 }
 
-function checkRelationship(animal1: Animal, animal2: Animal): { type: string; severity: 'severe' | 'medium' | 'low' } | null {
+function checkRelationship(animal1: Animal, animal2: Animal): { type: string; severity: 'severe' | 'medium' | 'low'; coefficient: number } | null {
+  // Parent-child relationship (coefficient: 0.25)
   if (animal1.id === animal2.father_id || animal1.id === animal2.mother_id) {
-    return { type: 'parent-child', severity: 'severe' };
+    return { type: 'parent-child', severity: 'severe', coefficient: 0.25 };
   }
   if (animal2.id === animal1.father_id || animal2.id === animal1.mother_id) {
-    return { type: 'parent-child', severity: 'severe' };
+    return { type: 'parent-child', severity: 'severe', coefficient: 0.25 };
   }
 
+  // Full siblings (coefficient: 0.25)
   if (animal1.father_id && animal1.mother_id && animal2.father_id && animal2.mother_id) {
     if (animal1.father_id === animal2.father_id && animal1.mother_id === animal2.mother_id) {
-      return { type: 'full-siblings', severity: 'severe' };
+      return { type: 'full-siblings', severity: 'severe', coefficient: 0.25 };
     }
   }
 
+  // Grandparent-grandchild (coefficient: 0.125)
+  // Check if animal1 is grandparent of animal2
+  if (animal1.id === animal2.father_id || animal1.id === animal2.mother_id) {
+    // Already covered in parent-child
+  } else if (animal2.father_id || animal2.mother_id) {
+    // Need to fetch parent data to check grandparent relationship - skip for now (would require additional queries)
+    // This is a limitation of the current implementation
+  }
+
+  // Half siblings - paternal (coefficient: 0.125)
   if (animal1.father_id && animal2.father_id && animal1.father_id === animal2.father_id) {
-    return { type: 'half-siblings-paternal', severity: 'medium' };
+    if (!animal1.mother_id || !animal2.mother_id || animal1.mother_id !== animal2.mother_id) {
+      return { type: 'half-siblings-paternal', severity: 'medium', coefficient: 0.125 };
+    }
   }
+  
+  // Half siblings - maternal (coefficient: 0.125)
   if (animal1.mother_id && animal2.mother_id && animal1.mother_id === animal2.mother_id) {
-    return { type: 'half-siblings-maternal', severity: 'medium' };
+    if (!animal1.father_id || !animal2.father_id || animal1.father_id !== animal2.father_id) {
+      return { type: 'half-siblings-maternal', severity: 'medium', coefficient: 0.125 };
+    }
   }
+
+  // Uncle-niece-nephew and first cousins would require fetching extended family data
+  // These are not implemented in this version to avoid additional database queries
+  // Could be added in future by building a complete ancestry map
 
   return null;
 }
@@ -622,6 +880,9 @@ function getRelationshipText(type: string, t: any): string {
     case 'full-siblings': return t.fullSiblings;
     case 'half-siblings-paternal': return t.halfSiblingsPaternal;
     case 'half-siblings-maternal': return t.halfSiblingsMaternal;
+    case 'grandparent-grandchild': return t.grandparentGrandchild;
+    case 'uncle-niece-nephew': return t.uncleNieceNephew;
+    case 'first-cousins': return t.firstCousins;
     default: return type;
   }
 }
