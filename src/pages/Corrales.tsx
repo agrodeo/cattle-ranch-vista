@@ -77,6 +77,7 @@ export default function Corrales() {
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalActiveAnimals, setTotalActiveAnimals] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -93,6 +94,16 @@ export default function Corrales() {
 
     try {
       setLoading(true);
+
+      // Fetch total active animals count (including those without corral assignment)
+      const { count: activeCount, error: countError } = await supabase
+        .from('animals')
+        .select('*', { count: 'exact', head: true })
+        .eq('cabaña_id', currentUser.cabañaId)
+        .eq('status', 'activo');
+
+      if (countError) throw countError;
+      setTotalActiveAnimals(activeCount || 0);
 
       // Fetch corrales with all animals, then filter active ones
       const { data: corralesData, error } = await supabase
@@ -270,7 +281,6 @@ export default function Corrales() {
   }, []);
 
   // Calculate metrics
-  const totalAnimals = corrales.reduce((sum, corral) => sum + corral.animal_count, 0);
   const totalCorrales = corrales.length;
   const totalRisks = corrales.reduce((sum, corral) => sum + corral.risk_count, 0);
   
@@ -290,7 +300,7 @@ export default function Corrales() {
     },
     {
       title: t('corrals:metrics.totalAnimals'),
-      value: totalAnimals,
+      value: totalActiveAnimals,
       icon: Users,
     },
     {
