@@ -621,7 +621,43 @@
     "summary": {
       "title": "Resumen de Mejora Esperada",
       "totalMoves": "Total de movimientos",
-      "expectedImprovement": "Mejora esperada"
+      "expectedImprovement": "Mejora esperada",
+      "affectedCorrals": "Corrales afectados"
+    },
+    "previewTitle": "Vista Previa de Cambios",
+    "steps": {
+      "selectObjective": "Objetivo",
+      "selectScope": "Seleccionar Corrales",
+      "reviewMoves": "Revisar",
+      "preview": "Vista Previa"
+    },
+    "scope": {
+      "title": "¿Qué corrales quieres optimizar?",
+      "subtitle": "Selecciona los corrales de origen y destino",
+      "sourceCorrals": "Corrales de Origen",
+      "sourceDescription": "Los animales se moverán DESDE estos corrales",
+      "destinationCorrals": "Corrales de Destino",
+      "destinationDescription": "Los animales pueden moverse A estos corrales",
+      "selectAll": "Seleccionar Todos",
+      "selectNone": "Ninguno",
+      "selectOvercrowded": "Solo Sobrecargados",
+      "selectWithSpace": "Solo con Espacio",
+      "currentOccupancy": "{{count}} / {{capacity}}",
+      "noCapacity": "Sin límite",
+      "selected": "seleccionado",
+      "source": "Origen",
+      "destination": "Destino"
+    },
+    "preview": {
+      "title": "Vista Previa de Cambios",
+      "before": "Antes",
+      "after": "Después",
+      "noChanges": "Sin cambios para visualizar",
+      "willReceive": "Recibirá:",
+      "willLose": "Saldrán:",
+      "occupancy": "Ocupación",
+      "changesSummary": "Se moverán {{count}} animales desde {{source}} corrales hacia {{dest}} corrales",
+      "byDestination": "Movimientos por Destino"
     }
   },
   "aiAssistant": {
