@@ -472,7 +472,21 @@
           "hasCustomBenchmarks": "Use custom standards configured for your ranch",
           "noCustomBenchmarks": "Default standards will be used.",
           "configureCustomLink": "Configure custom standards here"
+        },
+        "breedingRatio": {
+          "title": "Distribute for Breeding",
+          "description": "Create functional breeding corrals with optimal female:male ratio",
+          "recommended": "Recommended"
         }
+      },
+      "breedingRatioConfig": {
+        "title": "Breeding Ratio Configuration",
+        "femalesPerBullLabel": "Females per bull",
+        "femalesPerBullHint": "Recommended: 20-30 females per bull for optimal breeding",
+        "minBullsPerCorralLabel": "Minimum bulls per corral",
+        "minBullsPerCorralHint": "Minimum number of bulls in each breeding corral",
+        "exampleTitle": "Example",
+        "exampleText": "With {{ratio}}:1 ratio, a corral with {{females}} females will need {{bulls}} bulls"
       },
       "weightObjectivesTitle": "Weight Objectives (optional)",
       "birthWeightLabel": "Birth Weight (kg)",

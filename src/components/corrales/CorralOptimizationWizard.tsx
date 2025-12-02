@@ -79,7 +79,10 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       birth: 0,
       weaning: 0,
       final: 0
-    }
+    },
+    // Breeding ratio distribution
+    females_per_bull: 25,
+    min_bulls_per_corral: 1,
   });
 
   // Step 1.5: Animal selection with productive/reproductive data
@@ -154,12 +157,26 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
   const generateOptimization = async () => {
     setLoading(true);
     try {
-      console.log('Invoking suggest-corral-distribution with cabanaId:', cabanaId);
+      // Determine primary objective - breeding_ratio takes priority if selected
+      const primaryObjective = config.objectives.includes('breeding_ratio') 
+        ? 'breeding_ratio'
+        : config.objectives.includes('consanguinity')
+        ? 'consanguinity'
+        : config.objectives.includes('reproduction')
+        ? 'fertility'
+        : config.objectives.includes('production')
+        ? 'weight'
+        : 'consanguinity';
+      
+      console.log('Invoking suggest-corral-distribution with cabanaId:', cabanaId, 'objective:', primaryObjective);
       
       const { data, error } = await supabase.functions.invoke('suggest-corral-distribution', {
         body: {
           cabanaId,
           ...config,
+          objective: primaryObjective,
+          females_per_bull: config.females_per_bull,
+          min_bulls_per_corral: config.min_bulls_per_corral,
           language: localStorage.getItem('language') || 'es'
         }
       });
@@ -493,8 +510,85 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         </div>
                       </div>
                     </label>
+                    
+                    {/* Breeding Ratio Distribution - NEW */}
+                    <label className="flex items-center gap-2 p-2 sm:p-3 border-2 border-primary/30 rounded-lg cursor-pointer hover:bg-accent min-w-0 bg-primary/5">
+                      <input
+                        type="checkbox"
+                        checked={config.objectives.includes('breeding_ratio')}
+                        onChange={(e) => {
+                          const objectives = e.target.checked
+                            ? [...config.objectives, 'breeding_ratio']
+                            : config.objectives.filter(o => o !== 'breeding_ratio');
+                          setConfig(prev => ({ ...prev, objectives }));
+                        }}
+                        className="w-4 h-4 flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium text-sm sm:text-base flex items-center gap-2">
+                          {t('optimization.step1.objectives.breedingRatio.title')}
+                          <Badge variant="secondary" className="text-xs">
+                            {t('optimization.step1.objectives.breedingRatio.recommended')}
+                          </Badge>
+                        </div>
+                        <div className="text-xs sm:text-sm text-muted-foreground break-words">
+                          {t('optimization.step1.objectives.breedingRatio.description')}
+                        </div>
+                      </div>
+                    </label>
                   </div>
                 </div>
+
+                {/* Breeding Ratio Configuration */}
+                {config.objectives.includes('breeding_ratio') && (
+                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg space-y-3 min-w-0 overflow-hidden border border-primary/20">
+                    <Label className="text-sm sm:text-base font-semibold">{t('optimization.step1.breedingRatioConfig.title')}</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.femalesPerBullLabel')}</Label>
+                        <Input
+                          type="number"
+                          min={10}
+                          max={50}
+                          value={config.females_per_bull}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            females_per_bull: Number(e.target.value)
+                          }))}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('optimization.step1.breedingRatioConfig.femalesPerBullHint')}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.minBullsPerCorralLabel')}</Label>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={5}
+                          value={config.min_bulls_per_corral}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            min_bulls_per_corral: Number(e.target.value)
+                          }))}
+                          className="w-full"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('optimization.step1.breedingRatioConfig.minBullsPerCorralHint')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-2 bg-background/50 rounded text-xs text-muted-foreground">
+                      <strong>{t('optimization.step1.breedingRatioConfig.exampleTitle')}:</strong>{' '}
+                      {t('optimization.step1.breedingRatioConfig.exampleText', { 
+                        ratio: config.females_per_bull, 
+                        females: config.females_per_bull * 2, 
+                        bulls: 2 
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Parámetros de Peso (opcional) */}
                 {(config.objectives.includes('production') || config.objectives.includes('benchmarks')) && (
