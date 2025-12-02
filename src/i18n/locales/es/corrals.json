@@ -470,7 +470,21 @@
           "hasCustomBenchmarks": "Usar los estándares personalizados configurados en tu cabaña",
           "noCustomBenchmarks": "Se usarán estándares por defecto.",
           "configureCustomLink": "Configura estándares personalizados aquí"
+        },
+        "breedingRatio": {
+          "title": "Distribuir para Reproducción",
+          "description": "Crear corrales reproductivos funcionales con ratio óptimo hembra:macho",
+          "recommended": "Recomendado"
         }
+      },
+      "breedingRatioConfig": {
+        "title": "Configuración de Ratio de Cría",
+        "femalesPerBullLabel": "Hembras por toro",
+        "femalesPerBullHint": "Recomendado: 20-30 hembras por toro para reproducción óptima",
+        "minBullsPerCorralLabel": "Mínimo de toros por corral",
+        "minBullsPerCorralHint": "Número mínimo de toros en cada corral reproductivo",
+        "exampleTitle": "Ejemplo",
+        "exampleText": "Con ratio {{ratio}}:1, un corral con {{females}} hembras necesitará {{bulls}} toros"
       },
       "weightObjectivesTitle": "Objetivos de Peso (opcional)",
       "birthWeightLabel": "Peso al Nacer (kg)",

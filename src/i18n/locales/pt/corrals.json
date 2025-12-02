@@ -473,7 +473,21 @@
           "hasCustomBenchmarks": "Usar padrões personalizados configurados para sua fazenda",
           "noCustomBenchmarks": "Padrões padrão serão usados.",
           "configureCustomLink": "Configure padrões personalizados aqui"
+        },
+        "breedingRatio": {
+          "title": "Distribuir para Reprodução",
+          "description": "Criar currais reprodutivos funcionais com proporção fêmea:macho ideal",
+          "recommended": "Recomendado"
         }
+      },
+      "breedingRatioConfig": {
+        "title": "Configuração de Proporção de Reprodução",
+        "femalesPerBullLabel": "Fêmeas por touro",
+        "femalesPerBullHint": "Recomendado: 20-30 fêmeas por touro para reprodução ideal",
+        "minBullsPerCorralLabel": "Mínimo de touros por curral",
+        "minBullsPerCorralHint": "Número mínimo de touros em cada curral reprodutivo",
+        "exampleTitle": "Exemplo",
+        "exampleText": "Com proporção {{ratio}}:1, um curral com {{females}} fêmeas precisará de {{bulls}} touros"
       },
       "weightObjectivesTitle": "Objetivos de Peso (opcional)",
       "birthWeightLabel": "Peso ao Nascer (kg)",

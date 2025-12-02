@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type ObjectiveType = 'consanguinity' | 'fertility' | 'weight';
+type ObjectiveType = 'consanguinity' | 'fertility' | 'weight' | 'breeding_ratio';
 type LanguageType = 'es' | 'en' | 'pt';
 
 interface Animal {
@@ -111,6 +111,21 @@ const translations = {
     expectedImprovementWeight: "Se optimizará la genética de peso en {{count}} animales",
     moreCorralasNeeded: "Se requieren más corrales para eliminar todos los riesgos",
     maxReductionAchieved: "Máxima reducción posible con los corrales disponibles",
+    // Breeding ratio translations
+    breedingRatioOptimization: "Optimización de ratio de cría",
+    distributeForBreeding: "Distribuir para reproducción",
+    femalesPerBull: "hembras por toro",
+    createBreedingCorral: "Crear corral reproductivo funcional",
+    assignBullToCorral: "Asignar toro a corral con hembras",
+    noRelatedFemales: "Sin hembras relacionadas en destino",
+    lowRiskRelationships: "relaciones de bajo riesgo con hembras en destino",
+    currentRatio: "Ratio actual",
+    targetRatio: "Ratio objetivo",
+    bullsNeeded: "toros necesarios",
+    corralsWithoutBulls: "corrales sin toros",
+    breedingDistributionComplete: "Distribución reproductiva completada",
+    expectedBreedingImprovement: "Se crearán {{count}} corrales reproductivos funcionales con ratio ~{{ratio}}:1",
+    consanguinityWarning: "⚠️ Este toro tiene {{count}} relaciones de bajo riesgo con hembras en el corral destino",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -152,6 +167,21 @@ const translations = {
     expectedImprovementWeight: "Weight genetics will be optimized in {{count}} animals",
     moreCorralasNeeded: "More corrals are needed to eliminate all risks",
     maxReductionAchieved: "Maximum reduction achieved with available corrals",
+    // Breeding ratio translations
+    breedingRatioOptimization: "Breeding ratio optimization",
+    distributeForBreeding: "Distribute for breeding",
+    femalesPerBull: "females per bull",
+    createBreedingCorral: "Create functional breeding corral",
+    assignBullToCorral: "Assign bull to corral with females",
+    noRelatedFemales: "No related females in destination",
+    lowRiskRelationships: "low-risk relationships with females in destination",
+    currentRatio: "Current ratio",
+    targetRatio: "Target ratio",
+    bullsNeeded: "bulls needed",
+    corralsWithoutBulls: "corrals without bulls",
+    breedingDistributionComplete: "Breeding distribution completed",
+    expectedBreedingImprovement: "{{count}} functional breeding corrals will be created with ~{{ratio}}:1 ratio",
+    consanguinityWarning: "⚠️ This bull has {{count}} low-risk relationships with females in the destination corral",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -193,6 +223,21 @@ const translations = {
     expectedImprovementWeight: "A genética de peso será otimizada em {{count}} animais",
     moreCorralasNeeded: "São necessários mais currais para eliminar todos os riscos",
     maxReductionAchieved: "Redução máxima alcançada com os currais disponíveis",
+    // Breeding ratio translations
+    breedingRatioOptimization: "Otimização de proporção de reprodução",
+    distributeForBreeding: "Distribuir para reprodução",
+    femalesPerBull: "fêmeas por touro",
+    createBreedingCorral: "Criar curral reprodutivo funcional",
+    assignBullToCorral: "Atribuir touro ao curral com fêmeas",
+    noRelatedFemales: "Sem fêmeas relacionadas no destino",
+    lowRiskRelationships: "relações de baixo risco com fêmeas no destino",
+    currentRatio: "Proporção atual",
+    targetRatio: "Proporção alvo",
+    bullsNeeded: "touros necessários",
+    corralsWithoutBulls: "currais sem touros",
+    breedingDistributionComplete: "Distribuição reprodutiva concluída",
+    expectedBreedingImprovement: "{{count}} currais reprodutivos funcionais serão criados com proporção ~{{ratio}}:1",
+    consanguinityWarning: "⚠️ Este touro tem {{count}} relações de baixo risco com fêmeas no curral de destino",
   },
 };
 
@@ -488,6 +533,8 @@ serve(async (req) => {
       objective = 'consanguinity',
       sourceCorrals = [],
       destinationCorrals = [],
+      females_per_bull = 25,
+      min_bulls_per_corral = 1,
     } = await req.json();
 
     if (!cabanaId) {
@@ -956,6 +1003,303 @@ serve(async (req) => {
             after: afterState,
           },
           totalIssues: consanguinityRisks.length + capacityIssues.length + separationIssues.length,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // BREEDING RATIO OPTIMIZATION - Create functional breeding corrals
+    if (objective === 'breeding_ratio') {
+      console.log(`Starting breeding ratio optimization: ${females_per_bull} females per bull, min ${min_bulls_per_corral} bulls per corral`);
+      
+      const MAX_AGE_MONTHS = 15;
+      
+      // Get breeding-age animals
+      const breedingAgeFemales = animals.filter((a: Animal) => {
+        const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+        return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+      });
+      
+      const breedingAgeBulls = animals.filter((a: Animal) => {
+        const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+        return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+      });
+      
+      console.log(`Breeding-age females: ${breedingAgeFemales.length}, Bulls: ${breedingAgeBulls.length}`);
+      
+      // Calculate current distribution stats per corral
+      const corralStats: Record<string, { females: number; bulls: number; ratio: string; animalsF: Animal[]; animalsM: Animal[] }> = {};
+      
+      corralsWithCounts.forEach(corral => {
+        const animalsInCorral = corralAnimals[corral.id] || [];
+        const females = animalsInCorral.filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+        });
+        const bulls = animalsInCorral.filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+        });
+        
+        corralStats[corral.id] = {
+          females: females.length,
+          bulls: bulls.length,
+          ratio: bulls.length > 0 ? `${Math.round(females.length / bulls.length)}:1` : `${females.length}:0`,
+          animalsF: females,
+          animalsM: bulls,
+        };
+      });
+      
+      // Track working distribution
+      const workingDistribution: Record<string, Animal[]> = {};
+      for (const corralId in corralAnimals) {
+        workingDistribution[corralId] = [...corralAnimals[corralId]];
+      }
+      
+      // Helper: count bulls assigned to a corral in working distribution
+      const countBullsInCorral = (corralId: string): number => {
+        return (workingDistribution[corralId] || []).filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+        }).length;
+      };
+      
+      const countFemalesInCorral = (corralId: string): number => {
+        return (workingDistribution[corralId] || []).filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+        }).length;
+      };
+      
+      // Helper: check consanguinity risks between a bull and females in a corral
+      const checkBullConsanguinityInCorral = (bull: Animal, corralId: string): { safe: boolean; lowRiskCount: number } => {
+        const femalesInCorral = (workingDistribution[corralId] || []).filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Hembra' && ageMonths >= MAX_AGE_MONTHS;
+        });
+        
+        let lowRiskCount = 0;
+        for (const female of femalesInCorral) {
+          const relationship = findRelationship(bull, female, ancestryMap);
+          if (relationship) {
+            if (relationship.severity === 'severe' || relationship.severity === 'medium') {
+              return { safe: false, lowRiskCount: 0 }; // Has severe/medium risk, not safe
+            }
+            if (relationship.severity === 'low') {
+              lowRiskCount++;
+            }
+          }
+        }
+        return { safe: true, lowRiskCount };
+      };
+      
+      // Identify corrals that need bulls (have females but insufficient bulls)
+      const corralsNeedingBulls: Array<{ corral: Corral; females: number; currentBulls: number; neededBulls: number }> = [];
+      
+      for (const corral of corralsWithCounts) {
+        const femaleCount = countFemalesInCorral(corral.id);
+        const bullCount = countBullsInCorral(corral.id);
+        
+        if (femaleCount > 0) {
+          const neededBulls = Math.max(min_bulls_per_corral, Math.ceil(femaleCount / females_per_bull));
+          if (bullCount < neededBulls) {
+            corralsNeedingBulls.push({
+              corral,
+              females: femaleCount,
+              currentBulls: bullCount,
+              neededBulls: neededBulls - bullCount,
+            });
+          }
+        }
+      }
+      
+      console.log(`Corrals needing bulls: ${corralsNeedingBulls.length}`);
+      corralsNeedingBulls.forEach(c => {
+        console.log(`  - ${c.corral.name}: ${c.females} females, has ${c.currentBulls} bulls, needs ${c.neededBulls} more`);
+      });
+      
+      // Find bulls that can be moved (in corrals with excess bulls or no females)
+      const availableBulls: Animal[] = [];
+      
+      for (const corral of corralsWithCounts) {
+        const femaleCount = countFemalesInCorral(corral.id);
+        const bullCount = countBullsInCorral(corral.id);
+        const bullsInCorral = (workingDistribution[corral.id] || []).filter(a => {
+          const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Macho' && ageMonths >= MAX_AGE_MONTHS;
+        });
+        
+        // If corral has no females, all bulls can be moved
+        if (femaleCount === 0) {
+          availableBulls.push(...bullsInCorral);
+        } else {
+          // Keep minimum bulls needed, rest can be moved
+          const minBullsToKeep = Math.max(min_bulls_per_corral, Math.ceil(femaleCount / females_per_bull));
+          const excessBulls = bullCount - minBullsToKeep;
+          if (excessBulls > 0) {
+            availableBulls.push(...bullsInCorral.slice(0, excessBulls));
+          }
+        }
+      }
+      
+      console.log(`Available bulls to move: ${availableBulls.length}`);
+      
+      // Sort corrals needing bulls by number of females (prioritize corrals with more females)
+      corralsNeedingBulls.sort((a, b) => b.females - a.females);
+      
+      // Assign bulls to corrals
+      let functionalCorralsCreated = 0;
+      
+      for (const target of corralsNeedingBulls) {
+        let bullsAssigned = 0;
+        
+        while (bullsAssigned < target.neededBulls && availableBulls.length > 0) {
+          // Find the best bull (no severe/medium consanguinity risks)
+          let bestBullIndex = -1;
+          let bestBullLowRiskCount = Infinity;
+          
+          for (let i = 0; i < availableBulls.length; i++) {
+            const bull = availableBulls[i];
+            if (movedAnimals.has(bull.id)) continue;
+            
+            const { safe, lowRiskCount } = checkBullConsanguinityInCorral(bull, target.corral.id);
+            if (safe && lowRiskCount < bestBullLowRiskCount) {
+              bestBullIndex = i;
+              bestBullLowRiskCount = lowRiskCount;
+            }
+          }
+          
+          if (bestBullIndex === -1) {
+            // No safe bull found, try to find one with only low risks
+            for (let i = 0; i < availableBulls.length; i++) {
+              const bull = availableBulls[i];
+              if (movedAnimals.has(bull.id)) continue;
+              
+              const { safe, lowRiskCount } = checkBullConsanguinityInCorral(bull, target.corral.id);
+              if (safe) {
+                bestBullIndex = i;
+                bestBullLowRiskCount = lowRiskCount;
+                break;
+              }
+            }
+          }
+          
+          if (bestBullIndex === -1) {
+            console.log(`No safe bull found for ${target.corral.name}`);
+            break;
+          }
+          
+          const bull = availableBulls[bestBullIndex];
+          const currentCorralId = bull.corral_id;
+          const currentCorralName = corralsWithCounts.find(c => c.id === currentCorralId)?.name || null;
+          
+          // Skip if bull is already in target corral
+          if (currentCorralId === target.corral.id) {
+            availableBulls.splice(bestBullIndex, 1);
+            continue;
+          }
+          
+          // Create move suggestion
+          let reason = `${t.assignBullToCorral} (${target.females} ${t.femalesPerBull})`;
+          let warning = '';
+          
+          if (bestBullLowRiskCount > 0) {
+            warning = t.consanguinityWarning.replace('{{count}}', String(bestBullLowRiskCount));
+          }
+          
+          suggestedMoves.push({
+            animal_id: bull.id,
+            animal_name: bull.name || bull.id_tag || 'Sin nombre',
+            from_corral_id: currentCorralId,
+            from_corral_name: currentCorralName,
+            to_corral_id: target.corral.id,
+            to_corral_name: target.corral.name,
+            reason,
+            issue_type: 'breeding_ratio',
+            expectedBenefit: warning || t.noRelatedFemales,
+          });
+          
+          // Update working distribution
+          if (currentCorralId && workingDistribution[currentCorralId]) {
+            workingDistribution[currentCorralId] = workingDistribution[currentCorralId].filter(a => a.id !== bull.id);
+          }
+          if (!workingDistribution[target.corral.id]) {
+            workingDistribution[target.corral.id] = [];
+          }
+          workingDistribution[target.corral.id].push({ ...bull, corral_id: target.corral.id });
+          
+          movedAnimals.add(bull.id);
+          availableBulls.splice(bestBullIndex, 1);
+          bullsAssigned++;
+        }
+        
+        if (bullsAssigned > 0 || target.currentBulls > 0) {
+          functionalCorralsCreated++;
+        }
+      }
+      
+      // Calculate before/after stats
+      const beforeStats = corralsWithCounts.map(corral => {
+        const stats = corralStats[corral.id];
+        return {
+          corral_id: corral.id,
+          corral_name: corral.name,
+          females: stats?.females || 0,
+          bulls: stats?.bulls || 0,
+          ratio: stats?.ratio || '0:0',
+          count: corralAnimals[corral.id]?.length || 0,
+          capacity: corral.capacity,
+        };
+      });
+      
+      const afterStats = corralsWithCounts.map(corral => {
+        const females = countFemalesInCorral(corral.id);
+        const bulls = countBullsInCorral(corral.id);
+        return {
+          corral_id: corral.id,
+          corral_name: corral.name,
+          females,
+          bulls,
+          ratio: bulls > 0 ? `${Math.round(females / bulls)}:1` : `${females}:0`,
+          count: workingDistribution[corral.id]?.length || 0,
+          capacity: corral.capacity,
+        };
+      });
+      
+      const corralsWithoutBullsBefore = beforeStats.filter(s => s.females > 0 && s.bulls === 0).length;
+      const corralsWithoutBullsAfter = afterStats.filter(s => s.females > 0 && s.bulls === 0).length;
+      
+      return new Response(
+        JSON.stringify({
+          objective: 'breeding_ratio',
+          issues: {
+            consanguinity: [],
+            capacity: capacityIssues,
+            separation: separationIssues,
+          },
+          suggestedMoves,
+          summary: {
+            totalMoves: suggestedMoves.length,
+            expectedImprovement: t.expectedBreedingImprovement
+              .replace('{{count}}', String(functionalCorralsCreated))
+              .replace('{{ratio}}', String(females_per_bull)),
+            affectedCorrals: new Set(suggestedMoves.flatMap(m => [m.from_corral_id, m.to_corral_id].filter(Boolean))).size,
+            targetRatio: `${females_per_bull}:1`,
+            corralsWithoutBullsBefore,
+            corralsWithoutBullsAfter,
+            functionalCorralsCreated,
+          },
+          preview: {
+            before: beforeStats,
+            after: afterStats,
+          },
+          breedingStats: {
+            totalFemales: breedingAgeFemales.length,
+            totalBulls: breedingAgeBulls.length,
+            targetRatio: females_per_bull,
+            minBullsPerCorral: min_bulls_per_corral,
+          },
+          totalIssues: capacityIssues.length + separationIssues.length,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
