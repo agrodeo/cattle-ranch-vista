@@ -619,7 +619,19 @@
       "weight": {
         "title": "Más Peso en Crías",
         "description": "Empareja animales según genética de peso para maximizar kilos en la descendencia"
+      },
+      "breeding_ratio": {
+        "title": "Distribución para Servicio",
+        "description": "Organiza toros y hembras según la proporción macho/hembra configurada para optimizar el servicio"
       }
+    },
+    "breedingConfig": {
+      "title": "Configuración de Proporción",
+      "hint": "Configura la relación toro/hembra deseada para la optimización",
+      "femalesPerBull": "Hembras por toro",
+      "femalesPerBullHint": "Número de hembras asignadas a cada toro (10-50)",
+      "minBullsPerCorral": "Mínimo de toros por corral",
+      "minBullsHint": "Cantidad mínima de toros en cada corral reproductivo (1-5)"
     },
     "reasons": {
       "reuniteWithMother": "Reunir con madre ({{months}} meses)",
