@@ -38,7 +38,11 @@ interface AncestryNode {
   motherId: string | null;
   paternalGrandparents: string[];
   maternalGrandparents: string[];
+  greatGrandparents: string[];
+  greatGreatGrandparents: string[];
+  greatGreatGreatGrandparents: string[];
   allAncestors: Set<string>;
+  ancestorGenerations: Map<string, number>;
 }
 
 interface ConsanguinityRisk {
@@ -88,6 +92,12 @@ const translations = {
     uncleNieceNephew: "tío-sobrino",
     firstCousins: "primos hermanos",
     halfUncleAunt: "medio tío-sobrino",
+    greatGrandparentGrandchild: "bisabuelo-bisnieto",
+    greatGreatGrandparentGrandchild: "tatarabuelo-tataranieto",
+    greatGreatGreatGrandparentGrandchild: "trastatarabuelo-trastataranieto",
+    secondCousins: "primos segundos",
+    thirdCousins: "primos terceros",
+    firstCousinsOnceRemoved: "primos en primer grado una vez removidos",
     expectedImprovementConsanguinity: "Se reducirán {{count}} riesgos de consanguinidad",
     riskBefore: "Riesgo actual",
     riskAfter: "Riesgo proyectado",
@@ -123,6 +133,12 @@ const translations = {
     uncleNieceNephew: "uncle-niece-nephew",
     firstCousins: "first cousins",
     halfUncleAunt: "half uncle-niece-nephew",
+    greatGrandparentGrandchild: "great-grandparent-great-grandchild",
+    greatGreatGrandparentGrandchild: "great-great-grandparent-great-great-grandchild",
+    greatGreatGreatGrandparentGrandchild: "great-great-great-grandparent",
+    secondCousins: "second cousins",
+    thirdCousins: "third cousins",
+    firstCousinsOnceRemoved: "first cousins once removed",
     expectedImprovementConsanguinity: "{{count}} consanguinity risks will be reduced",
     riskBefore: "Current risk",
     riskAfter: "Projected risk",
@@ -158,6 +174,12 @@ const translations = {
     uncleNieceNephew: "tio-sobrinho",
     firstCousins: "primos irmãos",
     halfUncleAunt: "meio tio-sobrinho",
+    greatGrandparentGrandchild: "bisavô-bisneto",
+    greatGreatGrandparentGrandchild: "tataravô-tataraneto",
+    greatGreatGreatGrandparentGrandchild: "trastataravô-trastataranetor",
+    secondCousins: "primos segundos",
+    thirdCousins: "primos terceiros",
+    firstCousinsOnceRemoved: "primos em primeiro grau uma vez removidos",
     expectedImprovementConsanguinity: "{{count}} riscos de consanguinidade serão reduzidos",
     riskBefore: "Risco atual",
     riskAfter: "Risco projetado",
@@ -174,7 +196,7 @@ const translations = {
   },
 };
 
-// Build ancestry map for all animals with up to 3 generations
+// Build ancestry map for all animals with up to 5 generations
 function buildAncestryMap(animals: Animal[]): Map<string, AncestryNode> {
   const ancestryMap = new Map<string, AncestryNode>();
   const animalMap = new Map<string, Animal>();
@@ -182,57 +204,111 @@ function buildAncestryMap(animals: Animal[]): Map<string, AncestryNode> {
   // First pass: create map of all animals by ID
   animals.forEach(a => animalMap.set(a.id, a));
   
-  // Second pass: build ancestry nodes
-  animals.forEach(animal => {
-    const node: AncestryNode = {
-      id: animal.id,
-      fatherId: animal.father_id,
-      motherId: animal.mother_id,
-      paternalGrandparents: [],
-      maternalGrandparents: [],
-      allAncestors: new Set<string>(),
-    };
+  // Helper function to get ancestors at a specific generation
+  function getAncestorsAtGeneration(animalId: string, targetGen: number, currentGen: number = 0): string[] {
+    if (currentGen === targetGen) return [animalId];
     
-    // Add direct parents to ancestors
+    const animal = animalMap.get(animalId);
+    if (!animal) return [];
+    
+    const ancestors: string[] = [];
     if (animal.father_id) {
-      node.allAncestors.add(animal.father_id);
+      ancestors.push(...getAncestorsAtGeneration(animal.father_id, targetGen, currentGen + 1));
+    }
+    if (animal.mother_id) {
+      ancestors.push(...getAncestorsAtGeneration(animal.mother_id, targetGen, currentGen + 1));
+    }
+    return ancestors;
+  }
+  
+  // Second pass: build ancestry nodes with up to 5 generations
+  animals.forEach(animal => {
+    const allAncestors = new Set<string>();
+    const ancestorGenerations = new Map<string, number>();
+    const paternalGrandparents: string[] = [];
+    const maternalGrandparents: string[] = [];
+    
+    // Generation 1 - Direct parents
+    if (animal.father_id) {
+      allAncestors.add(animal.father_id);
+      ancestorGenerations.set(animal.father_id, 1);
+      
       const father = animalMap.get(animal.father_id);
       if (father) {
-        // Add paternal grandparents
         if (father.father_id) {
-          node.paternalGrandparents.push(father.father_id);
-          node.allAncestors.add(father.father_id);
+          paternalGrandparents.push(father.father_id);
+          allAncestors.add(father.father_id);
+          ancestorGenerations.set(father.father_id, 2);
         }
         if (father.mother_id) {
-          node.paternalGrandparents.push(father.mother_id);
-          node.allAncestors.add(father.mother_id);
+          paternalGrandparents.push(father.mother_id);
+          allAncestors.add(father.mother_id);
+          ancestorGenerations.set(father.mother_id, 2);
         }
       }
     }
     
     if (animal.mother_id) {
-      node.allAncestors.add(animal.mother_id);
+      allAncestors.add(animal.mother_id);
+      ancestorGenerations.set(animal.mother_id, 1);
+      
       const mother = animalMap.get(animal.mother_id);
       if (mother) {
-        // Add maternal grandparents
         if (mother.father_id) {
-          node.maternalGrandparents.push(mother.father_id);
-          node.allAncestors.add(mother.father_id);
+          maternalGrandparents.push(mother.father_id);
+          allAncestors.add(mother.father_id);
+          ancestorGenerations.set(mother.father_id, 2);
         }
         if (mother.mother_id) {
-          node.maternalGrandparents.push(mother.mother_id);
-          node.allAncestors.add(mother.mother_id);
+          maternalGrandparents.push(mother.mother_id);
+          allAncestors.add(mother.mother_id);
+          ancestorGenerations.set(mother.mother_id, 2);
         }
       }
     }
     
+    // Generation 3 - Great-grandparents
+    const greatGrandparents = getAncestorsAtGeneration(animal.id, 3);
+    greatGrandparents.forEach(id => {
+      allAncestors.add(id);
+      if (!ancestorGenerations.has(id)) ancestorGenerations.set(id, 3);
+    });
+    
+    // Generation 4 - Great-great-grandparents
+    const greatGreatGrandparents = getAncestorsAtGeneration(animal.id, 4);
+    greatGreatGrandparents.forEach(id => {
+      allAncestors.add(id);
+      if (!ancestorGenerations.has(id)) ancestorGenerations.set(id, 4);
+    });
+    
+    // Generation 5 - Great-great-great-grandparents
+    const greatGreatGreatGrandparents = getAncestorsAtGeneration(animal.id, 5);
+    greatGreatGreatGrandparents.forEach(id => {
+      allAncestors.add(id);
+      if (!ancestorGenerations.has(id)) ancestorGenerations.set(id, 5);
+    });
+
+    const node: AncestryNode = {
+      id: animal.id,
+      fatherId: animal.father_id,
+      motherId: animal.mother_id,
+      paternalGrandparents,
+      maternalGrandparents,
+      greatGrandparents,
+      greatGreatGrandparents,
+      greatGreatGreatGrandparents,
+      allAncestors,
+      ancestorGenerations,
+    };
+    
     ancestryMap.set(animal.id, node);
   });
   
+  console.log(`Built ancestry map for ${ancestryMap.size} animals with up to 5 generations`);
   return ancestryMap;
 }
 
-// Find relationship between two animals using ancestry map
+// Find relationship between two animals using ancestry map (supports up to 5 generations)
 function findRelationship(
   animal1: Animal,
   animal2: Animal,
@@ -241,7 +317,7 @@ function findRelationship(
   const node1 = ancestryMap.get(animal1.id);
   const node2 = ancestryMap.get(animal2.id);
   
-  // 1. Parent-child (coefficient: 0.25)
+  // 1. Parent-child (coefficient: 0.25, SEVERE)
   if (animal1.id === animal2.father_id || animal1.id === animal2.mother_id) {
     return { type: 'parent-child', severity: 'severe', coefficient: 0.25 };
   }
@@ -249,54 +325,62 @@ function findRelationship(
     return { type: 'parent-child', severity: 'severe', coefficient: 0.25 };
   }
 
-  // 2. Full siblings (coefficient: 0.25)
+  // 2. Full siblings (coefficient: 0.25, SEVERE)
   if (animal1.father_id && animal1.mother_id && animal2.father_id && animal2.mother_id) {
     if (animal1.father_id === animal2.father_id && animal1.mother_id === animal2.mother_id) {
       return { type: 'full-siblings', severity: 'severe', coefficient: 0.25 };
     }
   }
 
-  // 3. Grandparent-grandchild (coefficient: 0.125)
+  // 3. Grandparent-grandchild (coefficient: 0.125, SEVERE)
   if (node1 && node2) {
-    // Check if animal1 is grandparent of animal2
-    if (node2.paternalGrandparents.includes(animal1.id) || node2.maternalGrandparents.includes(animal1.id)) {
-      return { type: 'grandparent-grandchild', severity: 'medium', coefficient: 0.125 };
+    const allGrandparents1 = [...node1.paternalGrandparents, ...node1.maternalGrandparents];
+    const allGrandparents2 = [...node2.paternalGrandparents, ...node2.maternalGrandparents];
+    
+    if (allGrandparents2.includes(animal1.id)) {
+      return { type: 'grandparent-grandchild', severity: 'severe', coefficient: 0.125 };
     }
-    // Check if animal2 is grandparent of animal1
-    if (node1.paternalGrandparents.includes(animal2.id) || node1.maternalGrandparents.includes(animal2.id)) {
-      return { type: 'grandparent-grandchild', severity: 'medium', coefficient: 0.125 };
+    if (allGrandparents1.includes(animal2.id)) {
+      return { type: 'grandparent-grandchild', severity: 'severe', coefficient: 0.125 };
     }
   }
 
-  // 4. Half siblings (coefficient: 0.125)
+  // 4. Half siblings (coefficient: 0.125, SEVERE)
   if (animal1.father_id && animal2.father_id && animal1.father_id === animal2.father_id) {
     if (!animal1.mother_id || !animal2.mother_id || animal1.mother_id !== animal2.mother_id) {
-      return { type: 'half-siblings-paternal', severity: 'medium', coefficient: 0.125 };
+      return { type: 'half-siblings-paternal', severity: 'severe', coefficient: 0.125 };
     }
   }
   if (animal1.mother_id && animal2.mother_id && animal1.mother_id === animal2.mother_id) {
     if (!animal1.father_id || !animal2.father_id || animal1.father_id !== animal2.father_id) {
-      return { type: 'half-siblings-maternal', severity: 'medium', coefficient: 0.125 };
+      return { type: 'half-siblings-maternal', severity: 'severe', coefficient: 0.125 };
     }
   }
 
-  // 5. Uncle/Aunt-Niece/Nephew (coefficient: 0.0625)
-  // Animal1 is uncle/aunt of animal2 (animal1 is sibling of animal2's parent)
+  // 5. Great-grandparent ↔ Great-grandchild (coefficient: 0.0625, MEDIUM)
+  if (node1 && node2) {
+    if (node2.greatGrandparents && node2.greatGrandparents.includes(animal1.id)) {
+      return { type: 'great-grandparent-great-grandchild', severity: 'medium', coefficient: 0.0625 };
+    }
+    if (node1.greatGrandparents && node1.greatGrandparents.includes(animal2.id)) {
+      return { type: 'great-grandparent-great-grandchild', severity: 'medium', coefficient: 0.0625 };
+    }
+  }
+
+  // 6. Uncle/Aunt-Niece/Nephew (coefficient: 0.0625, MEDIUM)
   if (node2) {
     const animal2Parents = [animal2.father_id, animal2.mother_id].filter(Boolean);
     for (const parentId of animal2Parents) {
       const parent = ancestryMap.get(parentId!);
       if (parent) {
-        // Check if animal1 shares a parent with animal2's parent (making animal1 an uncle/aunt)
         const sharedFather = animal1.father_id && parent.fatherId && animal1.father_id === parent.fatherId;
         const sharedMother = animal1.mother_id && parent.motherId && animal1.mother_id === parent.motherId;
         if ((sharedFather || sharedMother) && animal1.id !== parentId) {
-          return { type: 'uncle-niece-nephew', severity: 'low', coefficient: 0.0625 };
+          return { type: 'uncle-niece-nephew', severity: 'medium', coefficient: 0.0625 };
         }
       }
     }
   }
-  // Animal2 is uncle/aunt of animal1
   if (node1) {
     const animal1Parents = [animal1.father_id, animal1.mother_id].filter(Boolean);
     for (const parentId of animal1Parents) {
@@ -305,23 +389,81 @@ function findRelationship(
         const sharedFather = animal2.father_id && parent.fatherId && animal2.father_id === parent.fatherId;
         const sharedMother = animal2.mother_id && parent.motherId && animal2.mother_id === parent.motherId;
         if ((sharedFather || sharedMother) && animal2.id !== parentId) {
-          return { type: 'uncle-niece-nephew', severity: 'low', coefficient: 0.0625 };
+          return { type: 'uncle-niece-nephew', severity: 'medium', coefficient: 0.0625 };
         }
       }
     }
   }
 
-  // 6. First cousins (coefficient: 0.0625) - share at least one grandparent
+  // 7. First cousins (coefficient: 0.0625, MEDIUM) - share grandparents
   if (node1 && node2) {
     const allGrandparents1 = [...node1.paternalGrandparents, ...node1.maternalGrandparents];
     const allGrandparents2 = [...node2.paternalGrandparents, ...node2.maternalGrandparents];
     
-    // Check if they share any grandparent (but are not siblings)
     const notSiblings = animal1.father_id !== animal2.father_id || animal1.mother_id !== animal2.mother_id;
     if (notSiblings && allGrandparents1.length > 0 && allGrandparents2.length > 0) {
       for (const gp1 of allGrandparents1) {
         if (allGrandparents2.includes(gp1)) {
-          return { type: 'first-cousins', severity: 'low', coefficient: 0.0625 };
+          return { type: 'first-cousins', severity: 'medium', coefficient: 0.0625 };
+        }
+      }
+    }
+  }
+
+  // 8. Great-great-grandparent ↔ Great-great-grandchild (coefficient: 0.03125, LOW)
+  if (node1 && node2) {
+    if (node2.greatGreatGrandparents && node2.greatGreatGrandparents.includes(animal1.id)) {
+      return { type: 'great-great-grandparent', severity: 'low', coefficient: 0.03125 };
+    }
+    if (node1.greatGreatGrandparents && node1.greatGreatGrandparents.includes(animal2.id)) {
+      return { type: 'great-great-grandparent', severity: 'low', coefficient: 0.03125 };
+    }
+  }
+
+  // 9. First Cousins Once Removed (coefficient: 0.03125, LOW)
+  if (node1 && node2) {
+    const allGrandparents1 = [...node1.paternalGrandparents, ...node1.maternalGrandparents];
+    const allGrandparents2 = [...node2.paternalGrandparents, ...node2.maternalGrandparents];
+    
+    for (const gp of allGrandparents1) {
+      if (node2.greatGrandparents && node2.greatGrandparents.includes(gp)) {
+        return { type: 'first-cousins-once-removed', severity: 'low', coefficient: 0.03125 };
+      }
+    }
+    for (const gp of allGrandparents2) {
+      if (node1.greatGrandparents && node1.greatGrandparents.includes(gp)) {
+        return { type: 'first-cousins-once-removed', severity: 'low', coefficient: 0.03125 };
+      }
+    }
+  }
+
+  // 10. Second cousins (coefficient: 0.03125, LOW) - share great-grandparents
+  if (node1 && node2 && node1.greatGrandparents && node2.greatGrandparents) {
+    if (node1.greatGrandparents.length > 0 && node2.greatGrandparents.length > 0) {
+      for (const ggp1 of node1.greatGrandparents) {
+        if (node2.greatGrandparents.includes(ggp1)) {
+          return { type: 'second-cousins', severity: 'low', coefficient: 0.03125 };
+        }
+      }
+    }
+  }
+
+  // 11. Great-great-great-grandparent (coefficient: 0.015625, LOW)
+  if (node1 && node2) {
+    if (node2.greatGreatGreatGrandparents && node2.greatGreatGreatGrandparents.includes(animal1.id)) {
+      return { type: 'great-great-great-grandparent', severity: 'low', coefficient: 0.015625 };
+    }
+    if (node1.greatGreatGreatGrandparents && node1.greatGreatGreatGrandparents.includes(animal2.id)) {
+      return { type: 'great-great-great-grandparent', severity: 'low', coefficient: 0.015625 };
+    }
+  }
+
+  // 12. Third cousins (coefficient: 0.015625, LOW) - share great-great-grandparents
+  if (node1 && node2 && node1.greatGreatGrandparents && node2.greatGreatGrandparents) {
+    if (node1.greatGreatGrandparents.length > 0 && node2.greatGreatGrandparents.length > 0) {
+      for (const gggp1 of node1.greatGreatGrandparents) {
+        if (node2.greatGreatGrandparents.includes(gggp1)) {
+          return { type: 'third-cousins', severity: 'low', coefficient: 0.015625 };
         }
       }
     }
