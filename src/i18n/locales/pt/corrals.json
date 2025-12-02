@@ -622,7 +622,19 @@
       "weight": {
         "title": "Mais Peso nas Crias",
         "description": "Combine animais pela genética de peso para maximizar quilos nos descendentes"
+      },
+      "breeding_ratio": {
+        "title": "Distribuição para Serviço",
+        "description": "Organize touros e fêmeas de acordo com a proporção macho/fêmea configurada para otimizar o serviço"
       }
+    },
+    "breedingConfig": {
+      "title": "Configuração de Proporção",
+      "hint": "Configure a relação touro/fêmea desejada para otimização",
+      "femalesPerBull": "Fêmeas por touro",
+      "femalesPerBullHint": "Número de fêmeas atribuídas a cada touro (10-50)",
+      "minBullsPerCorral": "Mínimo de touros por curral",
+      "minBullsHint": "Quantidade mínima de touros em cada curral reprodutivo (1-5)"
     },
     "reasons": {
       "reuniteWithMother": "Reunir com mãe ({{months}} meses)",

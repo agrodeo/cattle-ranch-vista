@@ -621,7 +621,19 @@
       "weight": {
         "title": "More Weight in Offspring",
         "description": "Match animals by weight genetics to maximize kilos in descendants"
+      },
+      "breeding_ratio": {
+        "title": "Breeding Distribution",
+        "description": "Organize bulls and females according to configured male/female ratio to optimize breeding"
       }
+    },
+    "breedingConfig": {
+      "title": "Ratio Configuration",
+      "hint": "Configure the desired bull/female ratio for optimization",
+      "femalesPerBull": "Females per bull",
+      "femalesPerBullHint": "Number of females assigned to each bull (10-50)",
+      "minBullsPerCorral": "Minimum bulls per corral",
+      "minBullsHint": "Minimum number of bulls in each breeding corral (1-5)"
     },
     "reasons": {
       "reuniteWithMother": "Reunite with mother ({{months}} months)",
