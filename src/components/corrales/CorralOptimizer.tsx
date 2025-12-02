@@ -26,7 +26,7 @@ interface CorralOptimizerProps {
   onSuccess: () => void;
 }
 
-type ObjectiveType = 'consanguinity' | 'fertility' | 'weight' | 'breeding_ratio';
+type ObjectiveType = 'consanguinity' | 'fertility' | 'weight';
 type StepType = 'objective' | 'scope' | 'analyzing' | 'review' | 'preview';
 
 interface Corral {
@@ -92,7 +92,6 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     { id: 'consanguinity', icon: Dna, color: 'text-purple-600' },
     { id: 'fertility', icon: Heart, color: 'text-pink-600' },
     { id: 'weight', icon: Scale, color: 'text-blue-600' },
-    { id: 'breeding_ratio', icon: Users, color: 'text-green-600' },
   ];
 
   // Load corrals when dialog opens
@@ -404,7 +403,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
               {t('corrals:optimizer.selectObjectiveSubtitle')}
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {objectives.map(({ id, icon: Icon, color }) => (
                 <Card
                   key={id}
@@ -432,41 +431,43 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
               ))}
             </div>
 
-            {/* Breeding Ratio Configuration */}
-            <Card className="mt-4">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">{t('corrals:optimizer.breedingConfig.title')}</CardTitle>
-                <p className="text-sm text-muted-foreground">{t('corrals:optimizer.breedingConfig.hint')}</p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.femalesPerBull')}</label>
-                    <input
-                      type="number"
-                      min={10}
-                      max={50}
-                      value={femalesPerBull}
-                      onChange={(e) => setFemalesPerBull(Math.max(10, Math.min(50, parseInt(e.target.value) || 25)))}
-                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
-                    />
-                    <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.femalesPerBullHint')}</p>
+            {/* Breeding Ratio Configuration - shown after selecting objective */}
+            {selectedObjective && (
+              <Card className="mt-4 border-primary/20">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{t('corrals:optimizer.breedingConfig.title')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('corrals:optimizer.breedingConfig.hint')}</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.femalesPerBull')}</label>
+                      <input
+                        type="number"
+                        min={10}
+                        max={50}
+                        value={femalesPerBull}
+                        onChange={(e) => setFemalesPerBull(Math.max(10, Math.min(50, parseInt(e.target.value) || 25)))}
+                        className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.femalesPerBullHint')}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.minBullsPerCorral')}</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={minBullsPerCorral}
+                        onChange={(e) => setMinBullsPerCorral(Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
+                        className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
+                      />
+                      <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.minBullsHint')}</p>
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.minBullsPerCorral')}</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={5}
-                      value={minBullsPerCorral}
-                      onChange={(e) => setMinBullsPerCorral(Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
-                      className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
-                    />
-                    <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.minBullsHint')}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             <div className="flex justify-end">
               <Button
