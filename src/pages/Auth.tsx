@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Building2, Mail, UserPlus } from "lucide-react";
+import { Loader2, Mail, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Form,
@@ -187,21 +187,11 @@ const Auth = () => {
   return (
     <div className="min-h-screen gradient-mesh flex items-center justify-center p-4 animate-fade-in">
       <Card className="w-full max-w-md glass card-modern animate-scale-in">
-        <CardHeader className="text-center space-y-6 pb-6">
-          <div className="flex justify-center">
-            <div className="relative">
-              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-xl opacity-30" />
-              <div className="relative bg-brand-gradient p-4 rounded-2xl shadow-lg">
-                <Building2 className="h-10 w-10 text-white" />
-              </div>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <CardTitle className="text-3xl font-bold text-brand-gradient">AgroDeo</CardTitle>
-            <CardDescription className="text-base">
-              {t('auth:appDescription', 'Sistema de Gestión Integral de Ganado')}
-            </CardDescription>
-          </div>
+        <CardHeader className="text-center space-y-2 pb-6">
+          <CardTitle className="text-3xl font-bold text-brand-gradient">agrodeo</CardTitle>
+          <CardDescription className="text-base">
+            {t('auth:appDescription', 'Sistema de Gestión Integral de Ganado')}
+          </CardDescription>
         </CardHeader>
         
         <CardContent className="px-6 pb-8">
