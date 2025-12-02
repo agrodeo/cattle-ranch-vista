@@ -168,9 +168,14 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         ? 'weight'
         : 'consanguinity';
       
-      console.log('Invoking suggest-corral-distribution with cabanaId:', cabanaId, 'objective:', primaryObjective);
+      // Use optimize-corrals for breeding_ratio, consanguinity, fertility, weight
+      // Use suggest-corral-distribution for AI-based optimization (benchmarks, etc.)
+      const useOptimizeCorrals = ['breeding_ratio', 'consanguinity', 'fertility', 'weight'].includes(primaryObjective);
+      const functionName = useOptimizeCorrals ? 'optimize-corrals' : 'suggest-corral-distribution';
       
-      const { data, error } = await supabase.functions.invoke('suggest-corral-distribution', {
+      console.log('Invoking', functionName, 'with cabanaId:', cabanaId, 'objective:', primaryObjective);
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: {
           cabanaId,
           ...config,
