@@ -114,6 +114,8 @@ export default function Corrales() {
           hectareas,
           animals (
             id,
+            name,
+            id_tag,
             sex,
             birth_date,
             father_id,
