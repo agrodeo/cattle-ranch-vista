@@ -544,56 +544,54 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                   </div>
                 </div>
 
-                {/* Breeding Ratio Configuration */}
-                {config.objectives.includes('breeding_ratio') && (
-                  <div className="p-3 sm:p-4 bg-primary/10 rounded-lg space-y-3 min-w-0 overflow-hidden border border-primary/20">
-                    <Label className="text-sm sm:text-base font-semibold">{t('optimization.step1.breedingRatioConfig.title')}</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
-                      <div className="min-w-0">
-                        <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.femalesPerBullLabel')}</Label>
-                        <Input
-                          type="number"
-                          min={10}
-                          max={50}
-                          value={config.females_per_bull}
-                          onChange={(e) => setConfig(prev => ({
-                            ...prev,
-                            females_per_bull: Number(e.target.value)
-                          }))}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t('optimization.step1.breedingRatioConfig.femalesPerBullHint')}
-                        </p>
-                      </div>
-                      <div className="min-w-0">
-                        <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.minBullsPerCorralLabel')}</Label>
-                        <Input
-                          type="number"
-                          min={1}
-                          max={5}
-                          value={config.min_bulls_per_corral}
-                          onChange={(e) => setConfig(prev => ({
-                            ...prev,
-                            min_bulls_per_corral: Number(e.target.value)
-                          }))}
-                          className="w-full"
-                        />
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {t('optimization.step1.breedingRatioConfig.minBullsPerCorralHint')}
-                        </p>
-                      </div>
+                {/* Breeding Ratio Configuration - Always visible */}
+                <div className="p-3 sm:p-4 bg-primary/10 rounded-lg space-y-3 min-w-0 overflow-hidden border border-primary/20">
+                  <Label className="text-sm sm:text-base font-semibold">{t('optimization.step1.breedingRatioConfig.title')}</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
+                    <div className="min-w-0">
+                      <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.femalesPerBullLabel')}</Label>
+                      <Input
+                        type="number"
+                        min={10}
+                        max={50}
+                        value={config.females_per_bull}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          females_per_bull: Number(e.target.value)
+                        }))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('optimization.step1.breedingRatioConfig.femalesPerBullHint')}
+                      </p>
                     </div>
-                    <div className="p-2 bg-background/50 rounded text-xs text-muted-foreground">
-                      <strong>{t('optimization.step1.breedingRatioConfig.exampleTitle')}:</strong>{' '}
-                      {t('optimization.step1.breedingRatioConfig.exampleText', { 
-                        ratio: config.females_per_bull, 
-                        females: config.females_per_bull * 2, 
-                        bulls: 2 
-                      })}
+                    <div className="min-w-0">
+                      <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.minBullsPerCorralLabel')}</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={config.min_bulls_per_corral}
+                        onChange={(e) => setConfig(prev => ({
+                          ...prev,
+                          min_bulls_per_corral: Number(e.target.value)
+                        }))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('optimization.step1.breedingRatioConfig.minBullsPerCorralHint')}
+                      </p>
                     </div>
                   </div>
-                )}
+                  <div className="p-2 bg-background/50 rounded text-xs text-muted-foreground">
+                    <strong>{t('optimization.step1.breedingRatioConfig.exampleTitle')}:</strong>{' '}
+                    {t('optimization.step1.breedingRatioConfig.exampleText', { 
+                      ratio: config.females_per_bull, 
+                      females: config.females_per_bull * 2, 
+                      bulls: 2 
+                    })}
+                  </div>
+                </div>
 
                 {/* Parámetros de Peso (opcional) */}
                 {(config.objectives.includes('production') || config.objectives.includes('benchmarks')) && (
