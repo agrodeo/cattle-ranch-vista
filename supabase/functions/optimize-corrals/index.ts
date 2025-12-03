@@ -768,13 +768,20 @@ function redistributeForOptimalBreeding(
   const femalesPerGroup = targetRatio;
   let emptyCorralIndex = 0;
   
+  // FIXED: Allow creating groups with as few as 1 female when ratio is low (e.g., 2:1)
+  const minFemalesForGroup = Math.max(1, Math.min(femalesPerGroup, 2));
+  
+  console.log(`[Phase 2] Creating breeding groups. Target ratio: ${targetRatio}:1, min females per group: ${minFemalesForGroup}`);
+  console.log(`[Phase 2] Empty corrals: ${emptyCorrals.length}, Available bulls: ${availableBulls.length}, Movable females: ${movableFemales.length}`);
+  
   while (emptyCorralIndex < emptyCorrals.length && availableBulls.length > 0 && movableFemales.length > 0) {
     const targetCorral = emptyCorrals[emptyCorralIndex];
     const capacity = getCorralCapacity(targetCorral.corralId);
     const currentCount = getCorralCount(targetCorral.corralId);
     
-    // Skip if not enough capacity
-    if (currentCount + 1 + femalesPerGroup > capacity) {
+    // Skip if not enough capacity for at least 1 bull + 1 female
+    if (currentCount + 2 > capacity) {
+      console.log(`[Phase 2] Skipping ${targetCorral.corralName}: not enough capacity`);
       emptyCorralIndex++;
       continue;
     }
@@ -800,6 +807,7 @@ function redistributeForOptimalBreeding(
           compatibleFemales.push(femaleInfo);
           totalLowRisk += lowRiskCount;
           
+          // Collect up to femalesPerGroup compatible females
           if (compatibleFemales.length >= femalesPerGroup) break;
         }
       }
@@ -813,8 +821,12 @@ function redistributeForOptimalBreeding(
       }
     }
     
-    // If we found a good match, create the breeding group
-    if (bestBullIndex >= 0 && bestCompatibleFemales.length >= Math.min(3, movableFemales.length)) {
+    // FIXED: Allow groups with at least 1 female (important for low ratios like 2:1)
+    const requiredFemales = Math.max(1, Math.min(minFemalesForGroup, movableFemales.filter(f => !movedAnimals.has(f.female.id)).length));
+    
+    console.log(`[Phase 2] Best match for ${targetCorral.corralName}: bull index ${bestBullIndex}, ${bestCompatibleFemales.length} compatible females (need ${requiredFemales})`);
+    
+    if (bestBullIndex >= 0 && bestCompatibleFemales.length >= requiredFemales) {
       const { bull, fromCorralId: bullFromCorral, fromCorralName: bullFromCorralName } = availableBulls[bestBullIndex];
       
       // Move bull to new corral
@@ -856,7 +868,9 @@ function redistributeForOptimalBreeding(
         if (idx >= 0) movableFemales.splice(idx, 1);
       }
       
-      console.log(`[Redistribution] Created breeding group in ${targetCorral.corralName}: 1 bull + ${bestCompatibleFemales.length} females`);
+      console.log(`[Phase 2] Created breeding group in ${targetCorral.corralName}: 1 bull + ${bestCompatibleFemales.length} females`);
+    } else {
+      console.log(`[Phase 2] Could not create group in ${targetCorral.corralName}: no compatible bull/females found`);
     }
     
     emptyCorralIndex++;
@@ -977,9 +991,149 @@ function redistributeForOptimalBreeding(
       refreshedAvailableBulls.splice(bestBullIndex, 1);
       bullsAssigned++;
       
-      console.log(`[Redistribution] Assigned ${bull.name || bull.id_tag} to ${target.corralName}`);
+      console.log(`[Phase 3] Assigned ${bull.name || bull.id_tag} to ${target.corralName}`);
     }
   }
+  
+  // =========================================================================
+  // PHASE 4: Move excess females to corrals with compatible bulls
+  // =========================================================================
+  // For corrals that still have too many females relative to their bulls,
+  // move excess females to other corrals that have available bulls with space
+  
+  console.log(`[Phase 4] Redistributing excess females to corrals with compatible bulls`);
+  
+  // Recalculate corral status
+  const corralsWithSpace: { corralId: string; corralName: string; bulls: Animal[]; femaleCount: number; spaceForFemales: number }[] = [];
+  
+  for (const corral of corralsWithCounts) {
+    const animalsInCorral = workingDistribution[corral.id] || [];
+    const bulls = animalsInCorral.filter(a => {
+      const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+      return a.sex === 'Macho' && ageMonths >= MIN_AGE_MONTHS;
+    });
+    const females = animalsInCorral.filter(a => {
+      const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+      return a.sex === 'Hembra' && ageMonths >= MIN_AGE_MONTHS;
+    });
+    
+    if (bulls.length > 0) {
+      const maxFemales = bulls.length * targetRatio;
+      const spaceForFemales = maxFemales - females.length;
+      
+      if (spaceForFemales > 0) {
+        const capacity = corral.capacity || (corral.hectareas ? Math.round(corral.hectareas * 2) : 999);
+        const totalSpaceInCorral = capacity - animalsInCorral.length;
+        const actualSpace = Math.min(spaceForFemales, totalSpaceInCorral);
+        
+        if (actualSpace > 0) {
+          corralsWithSpace.push({
+            corralId: corral.id,
+            corralName: corral.name,
+            bulls: bulls.filter(b => !movedAnimals.has(b.id)),
+            femaleCount: females.length,
+            spaceForFemales: actualSpace,
+          });
+        }
+      }
+    }
+  }
+  
+  console.log(`[Phase 4] Corrals with space for females: ${corralsWithSpace.length}`);
+  
+  // Recalculate excess females (from corrals with no bulls or too many females per bull)
+  const excessFemalesList: { female: Animal; fromCorralId: string; fromCorralName: string }[] = [];
+  
+  for (const corral of corralsWithCounts) {
+    const animalsInCorral = workingDistribution[corral.id] || [];
+    const bulls = animalsInCorral.filter(a => {
+      const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+      return a.sex === 'Macho' && ageMonths >= MIN_AGE_MONTHS;
+    });
+    const females = animalsInCorral.filter(a => {
+      const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 999;
+      return a.sex === 'Hembra' && ageMonths >= MIN_AGE_MONTHS;
+    });
+    
+    if (bulls.length === 0 && females.length > 0) {
+      // All females in corral without bulls are excess
+      for (const f of females) {
+        if (!movedAnimals.has(f.id)) {
+          excessFemalesList.push({ female: f, fromCorralId: corral.id, fromCorralName: corral.name });
+        }
+      }
+    } else if (bulls.length > 0) {
+      const maxFemales = bulls.length * targetRatio;
+      const excessCount = females.length - maxFemales;
+      
+      if (excessCount > 0) {
+        // Take females that haven't been moved yet
+        const femalesToMove = females.filter(f => !movedAnimals.has(f.id)).slice(0, excessCount);
+        for (const f of femalesToMove) {
+          excessFemalesList.push({ female: f, fromCorralId: corral.id, fromCorralName: corral.name });
+        }
+      }
+    }
+  }
+  
+  console.log(`[Phase 4] Excess females to redistribute: ${excessFemalesList.length}`);
+  
+  // Move excess females to corrals with compatible bulls
+  for (const { female, fromCorralId, fromCorralName } of excessFemalesList) {
+    if (movedAnimals.has(female.id)) continue;
+    
+    // Find best destination - corral with compatible bulls and space
+    let bestDestination: typeof corralsWithSpace[0] | null = null;
+    let bestLowRiskCount = Infinity;
+    
+    for (const dest of corralsWithSpace) {
+      if (dest.spaceForFemales <= 0) continue;
+      if (dest.corralId === fromCorralId) continue;
+      
+      // Check compatibility with ALL bulls in destination
+      let isCompatible = true;
+      let totalLowRisk = 0;
+      
+      for (const bull of dest.bulls) {
+        const { safe, lowRiskCount } = checkBullCompatibility(bull, [female]);
+        if (!safe) {
+          isCompatible = false;
+          break;
+        }
+        totalLowRisk += lowRiskCount;
+      }
+      
+      if (isCompatible && totalLowRisk < bestLowRiskCount) {
+        bestDestination = dest;
+        bestLowRiskCount = totalLowRisk;
+      }
+    }
+    
+    if (bestDestination) {
+      suggestedMoves.push({
+        animal_id: female.id,
+        animal_name: female.name || female.id_tag || 'Sin nombre',
+        from_corral_id: fromCorralId,
+        from_corral_name: fromCorralName,
+        to_corral_id: bestDestination.corralId,
+        to_corral_name: bestDestination.corralName,
+        reason: t.moveFemaleToBreedingGroup,
+        issue_type: 'breeding_redistribution',
+        expectedBenefit: `${t.movingToBalanceRatio} (${targetRatio}:1)`,
+      });
+      
+      moveAnimal(female, fromCorralId, bestDestination.corralId);
+      movedAnimals.add(female.id);
+      bestDestination.spaceForFemales--;
+      bestDestination.femaleCount++;
+      
+      console.log(`[Phase 4] Moved ${female.name || female.id_tag} from ${fromCorralName} to ${bestDestination.corralName}`);
+    } else {
+      console.log(`[Phase 4] No compatible destination found for ${female.name || female.id_tag}`);
+    }
+  }
+  
+  console.log(`[Redistribution] Complete. Total moves: ${suggestedMoves.length}`);
   
   return suggestedMoves;
 }
