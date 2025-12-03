@@ -444,10 +444,10 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
                       <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.femalesPerBull')}</label>
                       <input
                         type="number"
-                        min={10}
+                        min={1}
                         max={50}
                         value={femalesPerBull}
-                        onChange={(e) => setFemalesPerBull(Math.max(10, Math.min(50, parseInt(e.target.value) || 25)))}
+                        onChange={(e) => setFemalesPerBull(Math.max(1, Math.min(50, parseInt(e.target.value) || 25)))}
                         className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
                       />
                       <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.femalesPerBullHint')}</p>
