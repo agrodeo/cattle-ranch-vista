@@ -241,6 +241,15 @@ const translations = {
   },
 };
 
+// Calculate age in months from birth date
+function calculateAgeInMonths(birthDate: string): number {
+  const birth = new Date(birthDate);
+  const now = new Date();
+  const yearsDiff = now.getFullYear() - birth.getFullYear();
+  const monthsDiff = now.getMonth() - birth.getMonth();
+  return yearsDiff * 12 + monthsDiff;
+}
+
 // Build ancestry map for all animals with up to 5 generations
 function buildAncestryMap(animals: Animal[]): Map<string, AncestryNode> {
   const ancestryMap = new Map<string, AncestryNode>();
