@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { getCurrentLanguage } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -182,7 +183,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
       const { data, error } = await supabase.functions.invoke('optimize-corrals', {
         body: {
           cabanaId: currentUser.cabañaId,
-          language: localStorage.getItem('language') || 'es',
+          language: getCurrentLanguage(),
           objective: selectedObjective,
           sourceCorrals: Array.from(sourceCorrals),
           destinationCorrals: Array.from(destinationCorrals),
