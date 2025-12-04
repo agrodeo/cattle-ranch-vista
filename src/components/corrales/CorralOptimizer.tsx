@@ -107,6 +107,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   const [femalesPerBull, setFemalesPerBull] = useState(25);
   const [minBullsPerCorral, setMinBullsPerCorral] = useState(1);
   const [applyBreedingRatioPass, setApplyBreedingRatioPass] = useState(false);
+  const [includeSeparationMoves, setIncludeSeparationMoves] = useState(false);
 
   const objectives: { id: ObjectiveType; icon: any; color: string }[] = [
     { id: 'consanguinity', icon: Dna, color: 'text-purple-600' },
@@ -114,10 +115,24 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     { id: 'weight', icon: Scale, color: 'text-blue-600' },
   ];
 
-  // Load corrals when dialog opens
+  // Reset state when dialog opens
   useEffect(() => {
-    if (open && currentUser?.cabañaId) {
-      loadCorrals();
+    if (open) {
+      // Reset all state to ensure clean start
+      setApplyBreedingRatioPass(false);
+      setIncludeSeparationMoves(false);
+      setSelectedMoves(new Set());
+      setSuggestedMoves([]);
+      setExpectedImprovement('');
+      setRiskMetrics({});
+      setFutureRisks([]);
+      setPreviewData(null);
+      setStep('objective');
+      setSelectedObjective(null);
+      
+      if (currentUser?.cabañaId) {
+        loadCorrals();
+      }
     }
   }, [open, currentUser?.cabañaId]);
 
@@ -191,6 +206,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
           females_per_bull: femalesPerBull,
           min_bulls_per_corral: minBullsPerCorral,
           applyBreedingRatioPass: applyBreedingRatioPass,
+          includeSeparationMoves: includeSeparationMoves,
         }
       });
 
@@ -460,7 +476,27 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
             {/* Optional: Breeding Ratio Pass - shown after selecting objective */}
             {selectedObjective && (
               <Card className="mt-4 border-muted">
-                <CardContent className="pt-4">
+                <CardContent className="pt-4 space-y-4">
+                  {/* Separation moves option */}
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="includeSeparationMoves"
+                      checked={includeSeparationMoves}
+                      onCheckedChange={(checked) => setIncludeSeparationMoves(checked === true)}
+                    />
+                    <div className="space-y-1">
+                      <label htmlFor="includeSeparationMoves" className="text-sm font-medium cursor-pointer">
+                        {t('corrals:optimizer.breedingConfig.includeSeparationMoves')}
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        {t('corrals:optimizer.breedingConfig.includeSeparationMovesHint')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Breeding ratio option */}
                   <div className="flex items-start gap-3">
                     <Checkbox
                       id="breedingRatioPass"
@@ -479,7 +515,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
                   
                   {/* Show breeding config only if enabled */}
                   {applyBreedingRatioPass && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
                       <div className="space-y-2">
                         <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.femalesPerBull')}</label>
                         <input

@@ -636,8 +636,12 @@
       "minBullsPerCorral": "Mínimo de touros por curral",
       "minBullsHint": "Quantidade mínima de touros em cada curral reprodutivo (1-5)",
       "alsoOptimizeBreeding": "Também otimizar distribuição de touros",
-      "alsoOptimizeBreedingHint": "Além do objetivo principal, redistribuir touros de acordo com a proporção configurada (pode gerar movimentos adicionais)"
+      "alsoOptimizeBreedingHint": "Além do objetivo principal, redistribuir touros de acordo com a proporção configurada (pode gerar movimentos adicionais)",
+      "includeSeparationMoves": "Incluir reunificação de bezerros com mães",
+      "includeSeparationMovesHint": "Gerar movimentos para reunir bezerros com menos de 8 meses com suas mães"
     },
+    "alreadyOptimized": "O sistema já está otimizado. Não foram encontrados movimentos que melhorem a distribuição.",
+    "noFurtherOptimizationPossible": "Não é possível reduzir mais riscos com os currais disponíveis.",
     "reasons": {
       "reuniteWithMother": "Reunir com mãe ({{months}} meses)",
       "avoidConsanguinity": "Evitar consanguinidade: {{relationship}}",

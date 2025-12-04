@@ -155,6 +155,8 @@ const translations = {
     futureRiskDetectedPlural: "{{count}} riesgos futuros de consanguinidad detectados",
     proactiveMoveSuggestion: "Mover proactivamente antes de que alcance edad reproductiva",
     monthsUntilBreedingAge: "meses hasta edad reproductiva",
+    alreadyOptimized: "El sistema ya está optimizado. No se encontraron movimientos que mejoren la distribución.",
+    noFurtherOptimizationPossible: "No se pueden reducir más los riesgos con los corrales disponibles.",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -224,6 +226,8 @@ const translations = {
     futureRiskDetectedPlural: "{{count}} future consanguinity risks detected",
     proactiveMoveSuggestion: "Move proactively before reaching breeding age",
     monthsUntilBreedingAge: "months until breeding age",
+    alreadyOptimized: "The system is already optimized. No moves were found that improve the distribution.",
+    noFurtherOptimizationPossible: "No further risk reduction is possible with the available corrals.",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -293,6 +297,8 @@ const translations = {
     futureRiskDetectedPlural: "{{count}} riscos futuros de consanguinidade detectados",
     proactiveMoveSuggestion: "Mover proativamente antes de atingir idade reprodutiva",
     monthsUntilBreedingAge: "meses até idade reprodutiva",
+    alreadyOptimized: "O sistema já está otimizado. Não foram encontrados movimentos que melhorem a distribuição.",
+    noFurtherOptimizationPossible: "Não é possível reduzir mais riscos com os currais disponíveis.",
   },
 };
 
@@ -1195,6 +1201,7 @@ serve(async (req) => {
       females_per_bull = 25,
       min_bulls_per_corral = 1,
       applyBreedingRatioPass = false,
+      includeSeparationMoves = false,
     } = await req.json();
 
     if (!cabanaId) {
@@ -1286,55 +1293,60 @@ serve(async (req) => {
       return (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
     };
 
-    // Always detect separation issues (Priority 1)
+    // Detect separation issues (only if explicitly requested)
     const MAX_CALF_AGE_MONTHS = 8;
-    for (const animal of animals) {
-      if (animal.mother_id && animal.birth_date) {
-        const ageMonths = calcAgeInMonths(animal.birth_date);
-        if (ageMonths < MAX_CALF_AGE_MONTHS) {
-          const mother = animals.find((a: Animal) => a.id === animal.mother_id);
-          if (mother && animal.corral_id !== mother.corral_id) {
-            separationIssues.push({
-              calf_id: animal.id,
-              calf_name: animal.name || animal.id_tag || 'Sin nombre',
-              mother_id: mother.id,
-              mother_name: mother.name || mother.id_tag || 'Sin nombre',
-              calf_corral_id: animal.corral_id,
-              mother_corral_id: mother.corral_id,
-              age_months: ageMonths,
-            });
+    if (includeSeparationMoves) {
+      console.log('Including separation moves (explicitly requested)');
+      for (const animal of animals) {
+        if (animal.mother_id && animal.birth_date) {
+          const ageMonths = calcAgeInMonths(animal.birth_date);
+          if (ageMonths < MAX_CALF_AGE_MONTHS) {
+            const mother = animals.find((a: Animal) => a.id === animal.mother_id);
+            if (mother && animal.corral_id !== mother.corral_id) {
+              separationIssues.push({
+                calf_id: animal.id,
+                calf_name: animal.name || animal.id_tag || 'Sin nombre',
+                mother_id: mother.id,
+                mother_name: mother.name || mother.id_tag || 'Sin nombre',
+                calf_corral_id: animal.corral_id,
+                mother_corral_id: mother.corral_id,
+                age_months: ageMonths,
+              });
 
-            if (!movedAnimals.has(animal.id)) {
-              const motherCorral = corralsWithCounts.find(c => c.id === mother.corral_id);
-              if (motherCorral) {
-                const capacity = motherCorral.capacity || (motherCorral.hectareas ? Math.round(motherCorral.hectareas * 2) : 999);
-                if (motherCorral.animal_count < capacity) {
-                  suggestedMoves.push({
-                    animal_id: animal.id,
-                    animal_name: animal.name || animal.id_tag || 'Sin nombre',
-                    from_corral_id: animal.corral_id,
-                    from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
-                    to_corral_id: motherCorral.id,
-                    to_corral_name: motherCorral.name,
-                    reason: `${t.reuniteWithMother} (${ageMonths} ${t.months})`,
-                    issue_type: 'separation',
-                  });
-                  movedAnimals.add(animal.id);
-                  
-                  // Update working distribution
-                  if (animal.corral_id && workingDistribution[animal.corral_id]) {
-                    workingDistribution[animal.corral_id] = workingDistribution[animal.corral_id].filter(a => a.id !== animal.id);
+              if (!movedAnimals.has(animal.id)) {
+                const motherCorral = corralsWithCounts.find(c => c.id === mother.corral_id);
+                if (motherCorral) {
+                  const capacity = motherCorral.capacity || (motherCorral.hectareas ? Math.round(motherCorral.hectareas * 2) : 999);
+                  if (motherCorral.animal_count < capacity) {
+                    suggestedMoves.push({
+                      animal_id: animal.id,
+                      animal_name: animal.name || animal.id_tag || 'Sin nombre',
+                      from_corral_id: animal.corral_id,
+                      from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
+                      to_corral_id: motherCorral.id,
+                      to_corral_name: motherCorral.name,
+                      reason: `${t.reuniteWithMother} (${ageMonths} ${t.months})`,
+                      issue_type: 'separation',
+                    });
+                    movedAnimals.add(animal.id);
+                    
+                    // Update working distribution
+                    if (animal.corral_id && workingDistribution[animal.corral_id]) {
+                      workingDistribution[animal.corral_id] = workingDistribution[animal.corral_id].filter(a => a.id !== animal.id);
+                    }
+                    if (!workingDistribution[motherCorral.id]) {
+                      workingDistribution[motherCorral.id] = [];
+                    }
+                    workingDistribution[motherCorral.id].push({ ...animal, corral_id: motherCorral.id });
                   }
-                  if (!workingDistribution[motherCorral.id]) {
-                    workingDistribution[motherCorral.id] = [];
-                  }
-                  workingDistribution[motherCorral.id].push({ ...animal, corral_id: motherCorral.id });
                 }
               }
             }
           }
         }
       }
+    } else {
+      console.log('Skipping separation moves (not requested)');
     }
 
     // =========================================================================
@@ -1937,6 +1949,51 @@ serve(async (req) => {
         affectedCorrals.add(move.to_corral_id);
       });
 
+      // Filter moves by objective - only include consanguinity-related moves for consanguinity objective
+      const filteredMoves = suggestedMoves.filter(m => 
+        m.issue_type === 'consanguinity' || m.issue_type === 'future_consanguinity'
+      );
+      
+      console.log(`Filtered ${suggestedMoves.length} moves to ${filteredMoves.length} consanguinity-related moves`);
+
+      // Check if already optimized (no moves can help but risks remain)
+      if (filteredMoves.length === 0 && consanguinityRisks.length > 0) {
+        console.log('Already optimized - no further moves can reduce consanguinity risks');
+        return new Response(
+          JSON.stringify({
+            objective,
+            issues: {
+              consanguinity: consanguinityRisks,
+              futureConsanguinity: futureConsanguinityRisks,
+              capacity: capacityIssues,
+              separation: separationIssues,
+            },
+            suggestedMoves: [],
+            summary: {
+              totalMoves: 0,
+              expectedImprovement: t.alreadyOptimized || 'El sistema ya está optimizado. No se pueden reducir más los riesgos con los corrales disponibles.',
+              affectedCorrals: 0,
+              ...riskMetrics,
+              message: t.noFurtherOptimizationPossible || 'No se encontraron movimientos adicionales que mejoren la distribución.',
+            },
+            preview: {
+              before: beforeState,
+              after: beforeState, // No changes
+            },
+            totalIssues: consanguinityRisks.length + futureConsanguinityRisks.length,
+            alreadyOptimized: true,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Recalculate affected corrals based on filtered moves
+      const filteredAffectedCorrals = new Set<string>();
+      filteredMoves.forEach(move => {
+        if (move.from_corral_id) filteredAffectedCorrals.add(move.from_corral_id);
+        filteredAffectedCorrals.add(move.to_corral_id);
+      });
+
       return new Response(
         JSON.stringify({
           objective,
@@ -1946,11 +2003,11 @@ serve(async (req) => {
             capacity: capacityIssues,
             separation: separationIssues,
           },
-          suggestedMoves,
+          suggestedMoves: filteredMoves,
           summary: {
-            totalMoves: suggestedMoves.length,
+            totalMoves: filteredMoves.length,
             expectedImprovement: t.expectedImprovementConsanguinity.replace('{{count}}', String(consanguinityRisks.length - remainingRisksTotal)),
-            affectedCorrals: affectedCorrals.size,
+            affectedCorrals: filteredAffectedCorrals.size,
             ...riskMetrics,
           },
           preview: {
