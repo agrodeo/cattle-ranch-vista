@@ -45,7 +45,7 @@ interface SuggestedMove {
   to_corral_id: string;
   to_corral_name: string;
   reason: string;
-  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight' | 'future_consanguinity';
+  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight' | 'future_consanguinity' | 'consolidation';
   expectedBenefit?: string;
 }
 
@@ -395,6 +395,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     switch (type) {
       case 'consanguinity': return <AlertTriangle className="h-5 w-5 text-red-500" />;
       case 'future_consanguinity': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
+      case 'consolidation': return <Home className="h-5 w-5 text-blue-500" />;
       case 'capacity': return <Users className="h-5 w-5" />;
       case 'separation': return <Baby className="h-5 w-5" />;
       case 'fertility': return <Heart className="h-5 w-5" />;
