@@ -544,6 +544,7 @@ export function detectRelationship(
 /**
  * Analyzes all animals in a corral for consanguinity risks
  * Only considers animals 15+ months old (breeding age)
+ * Only checks male-female pairs within the original corral
  */
 export async function analyzeCorralConsanguinity(
   animals: Animal[], 
@@ -557,19 +558,34 @@ export async function analyzeCorralConsanguinity(
       (new Date().getTime() - new Date(animal.birth_date).getTime()) / 
       (1000 * 60 * 60 * 24 * 30.44)
     );
-    return ageMonths >= 15; // Changed from 18 to 15 months
+    return ageMonths >= 15;
   });
 
   if (eligibleAnimals.length < 2) return [];
 
-  const ancestryMap = await buildAncestryMap(eligibleAnimals, userCabañaId);
+  // Store original corral animal IDs before buildAncestryMap mutates the array
+  const corralAnimalIds = new Set(eligibleAnimals.map(a => a.id));
+  
+  // Create a copy for ancestry building (buildAncestryMap mutates its input)
+  const animalsForAncestry = [...eligibleAnimals];
+  const ancestryMap = await buildAncestryMap(animalsForAncestry, userCabañaId);
+  
   const risks: RelationshipRisk[] = [];
+  const checkedPairs = new Set<string>(); // Prevent duplicate pairs
+
+  // Only iterate over ORIGINAL corral animals (not ancestors added by buildAncestryMap)
+  const corralAnimals = eligibleAnimals.filter(a => corralAnimalIds.has(a.id));
 
   // Check each pair of animals
-  for (let i = 0; i < eligibleAnimals.length; i++) {
-    for (let j = i + 1; j < eligibleAnimals.length; j++) {
-      const animal1 = eligibleAnimals[i];
-      const animal2 = eligibleAnimals[j];
+  for (let i = 0; i < corralAnimals.length; i++) {
+    for (let j = i + 1; j < corralAnimals.length; j++) {
+      const animal1 = corralAnimals[i];
+      const animal2 = corralAnimals[j];
+      
+      // Create unique pair key to prevent duplicates
+      const pairKey = [animal1.id, animal2.id].sort().join('-');
+      if (checkedPairs.has(pairKey)) continue;
+      checkedPairs.add(pairKey);
       
       // Only check male-female pairs for breeding risks
       if ((animal1.sex === 'Macho' && animal2.sex === 'Hembra') || 

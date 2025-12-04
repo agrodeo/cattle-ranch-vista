@@ -701,7 +701,7 @@ export default function Corrales() {
                                 </span>
                               </div>
                               <p className="text-xs text-destructive/80 mt-1">
-                                {corral.risk_count} {corral.risk_count === 1 ? t('corrals:risks.animalPresents') : t('corrals:risks.animalsPresent')} {t('corrals:risks.consanguinityRiskText')} ({corral.highest_severity})
+                                {corral.risk_count} {corral.risk_count === 1 ? t('corrals:risks.pairPresents') : t('corrals:risks.pairsPresent')} {t('corrals:risks.consanguinityRiskText')} ({corral.highest_severity})
                               </p>
                             </div>
                           )}

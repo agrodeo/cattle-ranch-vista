@@ -83,6 +83,8 @@
     "consanguinityRisk": "Risco de Consanguinidade Detectado",
     "animalPresents": "animal apresenta",
     "animalsPresent": "animais apresentam",
+    "pairPresents": "par apresenta",
+    "pairsPresent": "pares apresentam",
     "consanguinityRiskText": "risco de consanguinidade",
     "riskAlerts": "Alertas de Risco",
     "risksDetected": "riscos detectados",

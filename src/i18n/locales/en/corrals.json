@@ -83,6 +83,8 @@
     "consanguinityRisk": "Consanguinity Risk Detected",
     "animalPresents": "animal presents",
     "animalsPresent": "animals present",
+    "pairPresents": "pair presents",
+    "pairsPresent": "pairs present",
     "consanguinityRiskText": "consanguinity risk",
     "riskAlerts": "Risk Alerts",
     "risksDetected": "risks detected",
