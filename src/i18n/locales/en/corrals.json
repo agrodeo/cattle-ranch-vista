@@ -667,6 +667,14 @@
       "risksResolved": "Risks resolved",
       "risksRemaining": "Risks remaining"
     },
+    "futureRisks": {
+      "title": "Future Risks Detected",
+      "description": "These animals are not yet of breeding age, but will soon be able to breed with relatives in the same corral.",
+      "monthsLeft": "months left",
+      "andMore": "and {{count}} more...",
+      "proactiveMove": "Proactive Move",
+      "willReachBreedingAge": "will reach breeding age"
+    },
     "previewTitle": "Preview Changes",
     "steps": {
       "selectObjective": "Objective",

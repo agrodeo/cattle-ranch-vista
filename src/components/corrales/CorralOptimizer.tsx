@@ -44,8 +44,23 @@ interface SuggestedMove {
   to_corral_id: string;
   to_corral_name: string;
   reason: string;
-  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight';
+  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight' | 'future_consanguinity';
   expectedBenefit?: string;
+}
+
+interface FutureRisk {
+  animal1_id: string;
+  animal1_name: string;
+  animal1_age_months: number;
+  animal2_id: string;
+  animal2_name: string;
+  animal2_age_months: number;
+  relationship: string;
+  corral_id: string;
+  corral_name: string;
+  months_until_active: number;
+  warning: string;
+  severity: 'severe' | 'medium' | 'low';
 }
 
 interface PreviewCorral {
@@ -81,7 +96,10 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     riskReduction?: string;
     risksResolved?: string;
     risksRemaining?: string;
+    futureRisksDetected?: number;
+    futureRisksMessage?: string;
   }>({});
+  const [futureRisks, setFutureRisks] = useState<FutureRisk[]>([]);
   const [previewData, setPreviewData] = useState<{ before: PreviewCorral[]; after: PreviewCorral[] } | null>(null);
   
   // Breeding ratio configuration
@@ -183,7 +201,10 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
         riskReduction: data.summary?.riskReduction,
         risksResolved: data.summary?.risksResolved,
         risksRemaining: data.summary?.risksRemaining,
+        futureRisksDetected: data.summary?.futureRisksDetected,
+        futureRisksMessage: data.summary?.futureRisksMessage,
       });
+      setFutureRisks(data.issues?.futureConsanguinity || []);
       setPreviewData(data.preview || null);
       
       // Select all moves by default
@@ -297,6 +318,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     setSelectedMoves(new Set());
     setExpectedImprovement('');
     setRiskMetrics({});
+    setFutureRisks([]);
     setPreviewData(null);
     setSourceCorrals(new Set());
     setDestinationCorrals(new Set());
@@ -352,7 +374,8 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
 
   const getIssueIcon = (type: string) => {
     switch (type) {
-      case 'consanguinity': return <AlertTriangle className="h-5 w-5" />;
+      case 'consanguinity': return <AlertTriangle className="h-5 w-5 text-red-500" />;
+      case 'future_consanguinity': return <AlertTriangle className="h-5 w-5 text-amber-500" />;
       case 'capacity': return <Users className="h-5 w-5" />;
       case 'separation': return <Baby className="h-5 w-5" />;
       case 'fertility': return <Heart className="h-5 w-5" />;
@@ -672,6 +695,54 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
                         </div>
                       )}
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Future Risks Warning */}
+            {futureRisks.length > 0 && (
+              <Card className="border-amber-500/50 bg-amber-500/5">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-amber-500" />
+                    <CardTitle className="text-sm text-amber-600">
+                      {t('corrals:optimizer.futureRisks.title')}
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {t('corrals:optimizer.futureRisks.description')}
+                  </p>
+                  <div className="space-y-2">
+                    {futureRisks.slice(0, 5).map((risk, idx) => (
+                      <div key={idx} className="flex items-center justify-between text-sm p-2 bg-amber-500/10 rounded">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{risk.animal1_name}</span>
+                          <span className="text-muted-foreground">↔</span>
+                          <span className="font-medium">{risk.animal2_name}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-amber-600 border-amber-500/50">
+                            {risk.months_until_active} {t('corrals:optimizer.futureRisks.monthsLeft')}
+                          </Badge>
+                          <Badge variant="secondary" className="text-xs">
+                            {risk.corral_name}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                    {futureRisks.length > 5 && (
+                      <p className="text-xs text-muted-foreground text-center">
+                        {t('corrals:optimizer.futureRisks.andMore', { count: futureRisks.length - 5 })}
+                      </p>
+                    )}
+                  </div>
+                  {riskMetrics.futureRisksMessage && (
+                    <p className="text-sm text-amber-600 mt-3 font-medium">
+                      {riskMetrics.futureRisksMessage}
+                    </p>
                   )}
                 </CardContent>
               </Card>

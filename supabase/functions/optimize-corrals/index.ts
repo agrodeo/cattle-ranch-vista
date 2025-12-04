@@ -57,6 +57,22 @@ interface ConsanguinityRisk {
   corral_name: string;
 }
 
+interface FutureConsanguinityRisk {
+  animal1_id: string;
+  animal1_name: string;
+  animal1_age_months: number;
+  animal2_id: string;
+  animal2_name: string;
+  animal2_age_months: number;
+  relationship: string;
+  severity: 'severe' | 'medium' | 'low';
+  coefficient: number;
+  corral_id: string;
+  corral_name: string;
+  months_until_active: number;
+  warning: string;
+}
+
 interface SuggestedMove {
   animal_id: string;
   animal_name: string;
@@ -133,6 +149,11 @@ const translations = {
     compatibleBull: "Toro compatible sin riesgo severo",
     redistributionNeeded: "Se requiere redistribución",
     movingToBalanceRatio: "Mover para balancear ratio reproductivo",
+    futureRisk: "Riesgo futuro",
+    futureRiskWarning: "Este animal alcanzará edad reproductiva en {{months}} meses",
+    futureRiskDetected: "{{count}} riesgo(s) futuro(s) de consanguinidad detectado(s)",
+    proactiveMoveSuggestion: "Mover proactivamente antes de que alcance edad reproductiva",
+    monthsUntilBreedingAge: "meses hasta edad reproductiva",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -196,6 +217,11 @@ const translations = {
     compatibleBull: "Compatible bull without severe risk",
     redistributionNeeded: "Redistribution needed",
     movingToBalanceRatio: "Move to balance breeding ratio",
+    futureRisk: "Future risk",
+    futureRiskWarning: "This animal will reach breeding age in {{months}} months",
+    futureRiskDetected: "{{count}} future consanguinity risk(s) detected",
+    proactiveMoveSuggestion: "Move proactively before reaching breeding age",
+    monthsUntilBreedingAge: "months until breeding age",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -259,6 +285,11 @@ const translations = {
     compatibleBull: "Touro compatível sem risco grave",
     redistributionNeeded: "Redistribuição necessária",
     movingToBalanceRatio: "Mover para equilibrar proporção reprodutiva",
+    futureRisk: "Risco futuro",
+    futureRiskWarning: "Este animal atingirá idade reprodutiva em {{months}} meses",
+    futureRiskDetected: "{{count}} risco(s) futuro(s) de consanguinidade detectado(s)",
+    proactiveMoveSuggestion: "Mover proativamente antes de atingir idade reprodutiva",
+    monthsUntilBreedingAge: "meses até idade reprodutiva",
   },
 };
 
@@ -1536,15 +1567,174 @@ serve(async (req) => {
 
       console.log(`Found ${consanguinityRisks.length} consanguinity risks`);
 
+      // =========================================================================
+      // FUTURE RISK DETECTION (animals 12-14 months that will soon be breeding age)
+      // =========================================================================
+      const FUTURE_RISK_MIN_AGE = 12;
+      const futureConsanguinityRisks: FutureConsanguinityRisk[] = [];
+      
+      for (const corral of corralsWithCounts) {
+        const animalsInCorral = workingDistribution[corral.id] || [];
+        
+        // Get animals approaching breeding age (12-14 months)
+        const nearBreedingAge = animalsInCorral.filter(a => {
+          if (!a.birth_date) return false;
+          const ageMonths = calcAgeInMonths(a.birth_date);
+          return ageMonths >= FUTURE_RISK_MIN_AGE && ageMonths < MIN_AGE_MONTHS;
+        });
+        
+        // Get breeding-age animals of opposite sex
+        const breedingAgeMales = animalsInCorral.filter(a => {
+          const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Macho' && ageMonths >= MIN_AGE_MONTHS;
+        });
+        
+        const breedingAgeFemales = animalsInCorral.filter(a => {
+          const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
+          return a.sex === 'Hembra' && ageMonths >= MIN_AGE_MONTHS;
+        });
+        
+        // Check young animals approaching breeding age against existing breeding-age animals
+        for (const youngAnimal of nearBreedingAge) {
+          const youngAgeMonths = calcAgeInMonths(youngAnimal.birth_date!);
+          const monthsUntilActive = MIN_AGE_MONTHS - youngAgeMonths;
+          
+          // Check against opposite sex breeding-age animals
+          const potentialMates = youngAnimal.sex === 'Macho' ? breedingAgeFemales : breedingAgeMales;
+          
+          for (const mateAnimal of potentialMates) {
+            const mateAgeMonths = mateAnimal.birth_date ? calcAgeInMonths(mateAnimal.birth_date) : 999;
+            const relationship = findRelationship(youngAnimal, mateAnimal, ancestryMap);
+            
+            if (relationship && (relationship.severity === 'severe' || relationship.severity === 'medium')) {
+              const relationshipText = getRelationshipText(relationship.type, t);
+              futureConsanguinityRisks.push({
+                animal1_id: youngAnimal.id,
+                animal1_name: youngAnimal.name || youngAnimal.id_tag || 'Sin nombre',
+                animal1_age_months: youngAgeMonths,
+                animal2_id: mateAnimal.id,
+                animal2_name: mateAnimal.name || mateAnimal.id_tag || 'Sin nombre',
+                animal2_age_months: mateAgeMonths,
+                relationship: relationship.type,
+                severity: relationship.severity,
+                coefficient: relationship.coefficient,
+                corral_id: corral.id,
+                corral_name: corral.name,
+                months_until_active: monthsUntilActive,
+                warning: t.futureRiskWarning.replace('{{months}}', String(monthsUntilActive)),
+              });
+            }
+          }
+        }
+        
+        // Also check young animals against each other (if both are near breeding age and opposite sex)
+        for (let i = 0; i < nearBreedingAge.length; i++) {
+          for (let j = i + 1; j < nearBreedingAge.length; j++) {
+            const animal1 = nearBreedingAge[i];
+            const animal2 = nearBreedingAge[j];
+            
+            // Only check opposite sex pairs
+            if (animal1.sex === animal2.sex) continue;
+            
+            const age1 = calcAgeInMonths(animal1.birth_date!);
+            const age2 = calcAgeInMonths(animal2.birth_date!);
+            const monthsUntilBothActive = Math.max(MIN_AGE_MONTHS - age1, MIN_AGE_MONTHS - age2);
+            
+            const relationship = findRelationship(animal1, animal2, ancestryMap);
+            
+            if (relationship && (relationship.severity === 'severe' || relationship.severity === 'medium')) {
+              futureConsanguinityRisks.push({
+                animal1_id: animal1.id,
+                animal1_name: animal1.name || animal1.id_tag || 'Sin nombre',
+                animal1_age_months: age1,
+                animal2_id: animal2.id,
+                animal2_name: animal2.name || animal2.id_tag || 'Sin nombre',
+                animal2_age_months: age2,
+                relationship: relationship.type,
+                severity: relationship.severity,
+                coefficient: relationship.coefficient,
+                corral_id: corral.id,
+                corral_name: corral.name,
+                months_until_active: monthsUntilBothActive,
+                warning: t.futureRiskWarning.replace('{{months}}', String(monthsUntilBothActive)),
+              });
+            }
+          }
+        }
+      }
+      
+      console.log(`Found ${futureConsanguinityRisks.length} future consanguinity risks`);
+
+      // Define available destinations for moves
+      const availableDestinations = destinationCorrals.length > 0
+        ? corralsWithCounts.filter(c => destinationCorrals.includes(c.id))
+        : corralsWithCounts;
+
+      // Generate proactive move suggestions for future risks
+      const proactiveMoves: SuggestedMove[] = [];
+      
+      for (const futureRisk of futureConsanguinityRisks) {
+        // Skip if already moved
+        if (movedAnimals.has(futureRisk.animal1_id) || movedAnimals.has(futureRisk.animal2_id)) continue;
+        
+        // Prefer moving the younger animal
+        const animalToMove = futureRisk.animal1_age_months < futureRisk.animal2_age_months
+          ? animals.find((a: Animal) => a.id === futureRisk.animal1_id)
+          : animals.find((a: Animal) => a.id === futureRisk.animal2_id);
+        
+        if (!animalToMove) continue;
+        
+        // Find best destination
+        let bestDestination: Corral | null = null;
+        
+        for (const targetCorral of availableDestinations) {
+          if (targetCorral.id === futureRisk.corral_id) continue;
+          
+          const capacity = targetCorral.capacity || 999;
+          const currentCount = workingDistribution[targetCorral.id]?.length || 0;
+          if (currentCount >= capacity) continue;
+          
+          // Check if moving there creates new risks
+          const animalsInTarget = workingDistribution[targetCorral.id] || [];
+          let createsNewRisk = false;
+          
+          for (const targetAnimal of animalsInTarget) {
+            if (targetAnimal.sex === animalToMove.sex) continue;
+            const relationship = findRelationship(animalToMove, targetAnimal, ancestryMap);
+            if (relationship && (relationship.severity === 'severe' || relationship.severity === 'medium')) {
+              createsNewRisk = true;
+              break;
+            }
+          }
+          
+          if (!createsNewRisk) {
+            bestDestination = targetCorral;
+            break;
+          }
+        }
+        
+        if (bestDestination) {
+          const relationshipText = getRelationshipText(futureRisk.relationship, t);
+          proactiveMoves.push({
+            animal_id: animalToMove.id,
+            animal_name: animalToMove.name || animalToMove.id_tag || 'Sin nombre',
+            from_corral_id: futureRisk.corral_id,
+            from_corral_name: futureRisk.corral_name,
+            to_corral_id: bestDestination.id,
+            to_corral_name: bestDestination.name,
+            reason: `${t.futureRisk}: ${relationshipText} (${futureRisk.months_until_active} ${t.monthsUntilBreedingAge})`,
+            issue_type: 'future_consanguinity',
+            expectedBenefit: t.proactiveMoveSuggestion,
+          });
+          movedAnimals.add(animalToMove.id);
+        }
+      }
+
       // Optimize by finding best moves
       const sortedRisks = [...consanguinityRisks].sort((a, b) => b.coefficient - a.coefficient);
       const resolvedRisks = new Set<string>();
       let noImprovementCount = 0;
       const MAX_NO_IMPROVEMENT = 10;
-      
-      const availableDestinations = destinationCorrals.length > 0
-        ? corralsWithCounts.filter(c => destinationCorrals.includes(c.id))
-        : corralsWithCounts;
       
       for (const risk of sortedRisks) {
         if (noImprovementCount >= MAX_NO_IMPROVEMENT) break;
@@ -1693,6 +1883,10 @@ serve(async (req) => {
         suggestedMoves.push(...breedingMoves);
       }
 
+      // Add proactive moves for future risks
+      suggestedMoves.push(...proactiveMoves);
+      console.log(`Added ${proactiveMoves.length} proactive moves for future risks`);
+
       const riskMetrics = {
         riskBefore: initialRiskScore.toFixed(3),
         riskAfter: finalRiskScore.toFixed(3),
@@ -1701,6 +1895,10 @@ serve(async (req) => {
         risksRemaining: `${remainingRisksBySeverity.severe} ${t.severe}, ${remainingRisksBySeverity.medium} ${t.medium}, ${remainingRisksBySeverity.low} ${t.low}`,
         totalRisksInitial: consanguinityRisks.length,
         totalRisksRemaining: remainingRisksTotal,
+        futureRisksDetected: futureConsanguinityRisks.length,
+        futureRisksMessage: futureConsanguinityRisks.length > 0 
+          ? t.futureRiskDetected.replace('{{count}}', String(futureConsanguinityRisks.length))
+          : undefined,
         initialBySeverity: initialRisksBySeverity,
         remainingBySeverity: remainingRisksBySeverity,
         warning: remainingRisksTotal > 0 && suggestedMoves.filter(m => m.issue_type === 'consanguinity').length === 0 
@@ -1735,6 +1933,7 @@ serve(async (req) => {
           objective,
           issues: {
             consanguinity: consanguinityRisks,
+            futureConsanguinity: futureConsanguinityRisks,
             capacity: capacityIssues,
             separation: separationIssues,
           },
@@ -1749,7 +1948,7 @@ serve(async (req) => {
             before: beforeState,
             after: afterState,
           },
-          totalIssues: consanguinityRisks.length + capacityIssues.length + separationIssues.length,
+          totalIssues: consanguinityRisks.length + futureConsanguinityRisks.length + capacityIssues.length + separationIssues.length,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
