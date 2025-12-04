@@ -665,6 +665,14 @@
       "risksResolved": "Riesgos resueltos",
       "risksRemaining": "Riesgos restantes"
     },
+    "futureRisks": {
+      "title": "Riesgos Futuros Detectados",
+      "description": "Estos animales aún no están en edad reproductiva, pero pronto podrán reproducirse con parientes en el mismo corral.",
+      "monthsLeft": "meses restantes",
+      "andMore": "y {{count}} más...",
+      "proactiveMove": "Movimiento Proactivo",
+      "willReachBreedingAge": "alcanzará edad reproductiva"
+    },
     "previewTitle": "Vista Previa de Cambios",
     "steps": {
       "selectObjective": "Objetivo",
