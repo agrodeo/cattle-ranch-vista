@@ -1194,6 +1194,7 @@ serve(async (req) => {
       destinationCorrals = [],
       females_per_bull = 25,
       min_bulls_per_corral = 1,
+      applyBreedingRatioPass = false,
     } = await req.json();
 
     if (!cabanaId) {
@@ -1871,7 +1872,6 @@ serve(async (req) => {
         : 0;
 
       // Secondary pass: breeding ratio (only if explicitly requested)
-      const applyBreedingRatioPass = body.applyBreedingRatioPass === true;
       if (applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
         console.log(`Applying breeding ratio secondary pass (explicitly requested)`);
         const corralAnalysis = analyzeCorralDistribution(corralsWithCounts, workingDistribution, females_per_bull);
@@ -1886,7 +1886,7 @@ serve(async (req) => {
           t
         );
         suggestedMoves.push(...breedingMoves);
-      } else if (!applyBreedingRatioPass) {
+      } else {
         console.log(`Skipping breeding ratio pass (not requested for consanguinity objective)`);
       }
 
@@ -2067,7 +2067,6 @@ serve(async (req) => {
     }
 
     // Secondary breeding ratio pass for fertility/weight (only if explicitly requested)
-    const applyBreedingRatioPass = body.applyBreedingRatioPass === true;
     if ((objective === 'fertility' || objective === 'weight') && applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
       console.log(`Applying breeding ratio secondary pass for ${objective} (explicitly requested)`);
       const corralAnalysis = analyzeCorralDistribution(corralsWithCounts, workingDistribution, females_per_bull);
