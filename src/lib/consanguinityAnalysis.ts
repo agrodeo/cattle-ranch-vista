@@ -587,9 +587,11 @@ export async function analyzeCorralConsanguinity(
       if (checkedPairs.has(pairKey)) continue;
       checkedPairs.add(pairKey);
       
-      // Only check male-female pairs for breeding risks
-      if ((animal1.sex === 'Macho' && animal2.sex === 'Hembra') || 
-          (animal1.sex === 'Hembra' && animal2.sex === 'Macho')) {
+      // Only check male-female pairs for breeding risks (case-insensitive)
+      const sex1 = animal1.sex?.toLowerCase();
+      const sex2 = animal2.sex?.toLowerCase();
+      if ((sex1 === 'macho' && sex2 === 'hembra') || 
+          (sex1 === 'hembra' && sex2 === 'macho')) {
         
         const risk = detectRelationship(animal1, animal2, ancestryMap, t);
         if (risk) {
