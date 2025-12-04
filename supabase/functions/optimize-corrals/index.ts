@@ -1462,9 +1462,10 @@ serve(async (req) => {
     // CONSANGUINITY OPTIMIZATION
     // =========================================================================
     if (objective === 'consanguinity') {
+      const MIN_AGE_MONTHS = 15; // Define at section scope for use in all consanguinity code
+      
       // Calculate risk score for a corral
       const calculateCorralRiskScore = (animalsInCorral: Animal[]): { totalScore: number; risks: ConsanguinityRisk[] } => {
-        const MIN_AGE_MONTHS = 15;
         const risks: ConsanguinityRisk[] = [];
         let totalScore = 0;
 
