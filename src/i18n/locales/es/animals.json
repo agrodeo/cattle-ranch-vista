@@ -24,7 +24,9 @@
   },
   "sex": {
     "male": "Macho",
-    "female": "Hembra"
+    "female": "Hembra",
+    "maleAbbrev": "M",
+    "femaleAbbrev": "H"
   },
   "status": {
     "active": "Activo",

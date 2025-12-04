@@ -24,7 +24,9 @@
   },
   "sex": {
     "male": "Macho",
-    "female": "Fêmea"
+    "female": "Fêmea",
+    "maleAbbrev": "M",
+    "femaleAbbrev": "F"
   },
   "status": {
     "active": "Ativo",

@@ -71,7 +71,7 @@ interface Corral {
 }
 
 export default function Corrales() {
-  const { t } = useTranslation(['corrals', 'common']);
+  const { t } = useTranslation(['corrals', 'common', 'animals']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
@@ -471,7 +471,7 @@ export default function Corrales() {
                                     <Users className="h-3 w-3" />
                                     {corral.animal_count} {t('corrals:metrics.animals')}
                                   </span>
-                                  <span>{corral.male_count}M / {corral.female_count}H</span>
+                                  <span>{corral.male_count}{t('animals:sex.maleAbbrev')} / {corral.female_count}{t('animals:sex.femaleAbbrev')}</span>
                                   {corral.hectareas && (
                                     <span className="text-xs bg-muted px-2 py-1 rounded">
                                       {corral.hectareas} {t('corrals:metrics.hectares')}

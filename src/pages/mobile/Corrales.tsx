@@ -50,7 +50,7 @@ interface Corral {
 }
 
 export function MobileCorrales() {
-  const { t } = useTranslation(['corrals', 'common']);
+  const { t } = useTranslation(['corrals', 'common', 'animals']);
   const { currentUser } = useSupabaseAuth();
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
   const [corrales, setCorrales] = useState<Corral[]>([]);
@@ -268,7 +268,7 @@ export function MobileCorrales() {
                               <Users className="h-3 w-3" />
                               {corral.animal_count}
                             </span>
-                            <span className="text-xs flex-shrink-0">{corral.male_count}M/{corral.female_count}H</span>
+                            <span className="text-xs flex-shrink-0">{corral.male_count}{t('animals:sex.maleAbbrev')}/{corral.female_count}{t('animals:sex.femaleAbbrev')}</span>
                             {corral.hectareas && (
                               <span className="text-xs bg-muted px-1.5 py-0.5 rounded flex-shrink-0">
                                 {corral.hectareas}ha
