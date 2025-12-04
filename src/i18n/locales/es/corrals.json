@@ -631,7 +631,9 @@
       "femalesPerBull": "Hembras por toro",
       "femalesPerBullHint": "Número de hembras asignadas a cada toro (10-50)",
       "minBullsPerCorral": "Mínimo de toros por corral",
-      "minBullsHint": "Cantidad mínima de toros en cada corral reproductivo (1-5)"
+      "minBullsHint": "Cantidad mínima de toros en cada corral reproductivo (1-5)",
+      "alsoOptimizeBreeding": "También optimizar distribución de toros",
+      "alsoOptimizeBreedingHint": "Además del objetivo principal, redistribuir toros según el ratio configurado (puede generar movimientos adicionales)"
     },
     "reasons": {
       "reuniteWithMother": "Reunir con madre ({{months}} meses)",

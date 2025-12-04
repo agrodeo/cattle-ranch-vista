@@ -633,7 +633,9 @@
       "femalesPerBull": "Females per bull",
       "femalesPerBullHint": "Number of females assigned to each bull (10-50)",
       "minBullsPerCorral": "Minimum bulls per corral",
-      "minBullsHint": "Minimum number of bulls in each breeding corral (1-5)"
+      "minBullsHint": "Minimum number of bulls in each breeding corral (1-5)",
+      "alsoOptimizeBreeding": "Also optimize bull distribution",
+      "alsoOptimizeBreedingHint": "In addition to the main objective, redistribute bulls according to the configured ratio (may generate additional moves)"
     },
     "reasons": {
       "reuniteWithMother": "Reunite with mother ({{months}} months)",

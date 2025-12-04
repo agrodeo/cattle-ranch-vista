@@ -634,7 +634,9 @@
       "femalesPerBull": "Fêmeas por touro",
       "femalesPerBullHint": "Número de fêmeas atribuídas a cada touro (10-50)",
       "minBullsPerCorral": "Mínimo de touros por curral",
-      "minBullsHint": "Quantidade mínima de touros em cada curral reprodutivo (1-5)"
+      "minBullsHint": "Quantidade mínima de touros em cada curral reprodutivo (1-5)",
+      "alsoOptimizeBreeding": "Também otimizar distribuição de touros",
+      "alsoOptimizeBreedingHint": "Além do objetivo principal, redistribuir touros de acordo com a proporção configurada (pode gerar movimentos adicionais)"
     },
     "reasons": {
       "reuniteWithMother": "Reunir com mãe ({{months}} meses)",
