@@ -1870,9 +1870,10 @@ serve(async (req) => {
         ? Math.round(((initialRiskScore - finalRiskScore) / initialRiskScore) * 100)
         : 0;
 
-      // Secondary pass: breeding ratio
-      if (females_per_bull > 0 && min_bulls_per_corral > 0) {
-        console.log(`Applying breeding ratio secondary pass`);
+      // Secondary pass: breeding ratio (only if explicitly requested)
+      const applyBreedingRatioPass = body.applyBreedingRatioPass === true;
+      if (applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
+        console.log(`Applying breeding ratio secondary pass (explicitly requested)`);
         const corralAnalysis = analyzeCorralDistribution(corralsWithCounts, workingDistribution, females_per_bull);
         const breedingMoves = redistributeForOptimalBreeding(
           corralAnalysis,
@@ -1885,6 +1886,8 @@ serve(async (req) => {
           t
         );
         suggestedMoves.push(...breedingMoves);
+      } else if (!applyBreedingRatioPass) {
+        console.log(`Skipping breeding ratio pass (not requested for consanguinity objective)`);
       }
 
       // Add proactive moves for future risks
@@ -2063,8 +2066,10 @@ serve(async (req) => {
       }
     }
 
-    // Secondary breeding ratio pass for fertility/weight
-    if ((objective === 'fertility' || objective === 'weight') && females_per_bull > 0 && min_bulls_per_corral > 0) {
+    // Secondary breeding ratio pass for fertility/weight (only if explicitly requested)
+    const applyBreedingRatioPass = body.applyBreedingRatioPass === true;
+    if ((objective === 'fertility' || objective === 'weight') && applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
+      console.log(`Applying breeding ratio secondary pass for ${objective} (explicitly requested)`);
       const corralAnalysis = analyzeCorralDistribution(corralsWithCounts, workingDistribution, females_per_bull);
       const breedingMoves = redistributeForOptimalBreeding(
         corralAnalysis,

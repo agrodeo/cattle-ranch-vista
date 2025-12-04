@@ -106,6 +106,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   // Breeding ratio configuration
   const [femalesPerBull, setFemalesPerBull] = useState(25);
   const [minBullsPerCorral, setMinBullsPerCorral] = useState(1);
+  const [applyBreedingRatioPass, setApplyBreedingRatioPass] = useState(false);
 
   const objectives: { id: ObjectiveType; icon: any; color: string }[] = [
     { id: 'consanguinity', icon: Dna, color: 'text-purple-600' },
@@ -189,6 +190,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
           destinationCorrals: Array.from(destinationCorrals),
           females_per_bull: femalesPerBull,
           min_bulls_per_corral: minBullsPerCorral,
+          applyBreedingRatioPass: applyBreedingRatioPass,
         }
       });
 
@@ -455,40 +457,55 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
               ))}
             </div>
 
-            {/* Breeding Ratio Configuration - shown after selecting objective */}
+            {/* Optional: Breeding Ratio Pass - shown after selecting objective */}
             {selectedObjective && (
-              <Card className="mt-4 border-primary/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-base">{t('corrals:optimizer.breedingConfig.title')}</CardTitle>
-                  <p className="text-sm text-muted-foreground">{t('corrals:optimizer.breedingConfig.hint')}</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.femalesPerBull')}</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={50}
-                        value={femalesPerBull}
-                        onChange={(e) => setFemalesPerBull(Math.max(1, Math.min(50, parseInt(e.target.value) || 25)))}
-                        className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
-                      />
-                      <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.femalesPerBullHint')}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.minBullsPerCorral')}</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={5}
-                        value={minBullsPerCorral}
-                        onChange={(e) => setMinBullsPerCorral(Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
-                        className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
-                      />
-                      <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.minBullsHint')}</p>
+              <Card className="mt-4 border-muted">
+                <CardContent className="pt-4">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="breedingRatioPass"
+                      checked={applyBreedingRatioPass}
+                      onCheckedChange={(checked) => setApplyBreedingRatioPass(checked === true)}
+                    />
+                    <div className="space-y-1">
+                      <label htmlFor="breedingRatioPass" className="text-sm font-medium cursor-pointer">
+                        {t('corrals:optimizer.breedingConfig.alsoOptimizeBreeding')}
+                      </label>
+                      <p className="text-xs text-muted-foreground">
+                        {t('corrals:optimizer.breedingConfig.alsoOptimizeBreedingHint')}
+                      </p>
                     </div>
                   </div>
+                  
+                  {/* Show breeding config only if enabled */}
+                  {applyBreedingRatioPass && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.femalesPerBull')}</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={femalesPerBull}
+                          onChange={(e) => setFemalesPerBull(Math.max(1, Math.min(50, parseInt(e.target.value) || 25)))}
+                          className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
+                        />
+                        <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.femalesPerBullHint')}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.minBullsPerCorral')}</label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={5}
+                          value={minBullsPerCorral}
+                          onChange={(e) => setMinBullsPerCorral(Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
+                          className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
+                        />
+                        <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.minBullsHint')}</p>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
