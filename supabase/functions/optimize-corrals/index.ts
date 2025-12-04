@@ -151,7 +151,8 @@ const translations = {
     movingToBalanceRatio: "Mover para balancear ratio reproductivo",
     futureRisk: "Riesgo futuro",
     futureRiskWarning: "Este animal alcanzará edad reproductiva en {{months}} meses",
-    futureRiskDetected: "{{count}} riesgo(s) futuro(s) de consanguinidad detectado(s)",
+    futureRiskDetectedSingular: "1 riesgo futuro de consanguinidad detectado",
+    futureRiskDetectedPlural: "{{count}} riesgos futuros de consanguinidad detectados",
     proactiveMoveSuggestion: "Mover proactivamente antes de que alcance edad reproductiva",
     monthsUntilBreedingAge: "meses hasta edad reproductiva",
   },
@@ -219,7 +220,8 @@ const translations = {
     movingToBalanceRatio: "Move to balance breeding ratio",
     futureRisk: "Future risk",
     futureRiskWarning: "This animal will reach breeding age in {{months}} months",
-    futureRiskDetected: "{{count}} future consanguinity risk(s) detected",
+    futureRiskDetectedSingular: "1 future consanguinity risk detected",
+    futureRiskDetectedPlural: "{{count}} future consanguinity risks detected",
     proactiveMoveSuggestion: "Move proactively before reaching breeding age",
     monthsUntilBreedingAge: "months until breeding age",
   },
@@ -287,7 +289,8 @@ const translations = {
     movingToBalanceRatio: "Mover para equilibrar proporção reprodutiva",
     futureRisk: "Risco futuro",
     futureRiskWarning: "Este animal atingirá idade reprodutiva em {{months}} meses",
-    futureRiskDetected: "{{count}} risco(s) futuro(s) de consanguinidade detectado(s)",
+    futureRiskDetectedSingular: "1 risco futuro de consanguinidade detectado",
+    futureRiskDetectedPlural: "{{count}} riscos futuros de consanguinidade detectados",
     proactiveMoveSuggestion: "Mover proativamente antes de atingir idade reprodutiva",
     monthsUntilBreedingAge: "meses até idade reprodutiva",
   },
@@ -1898,7 +1901,9 @@ serve(async (req) => {
         totalRisksRemaining: remainingRisksTotal,
         futureRisksDetected: futureConsanguinityRisks.length,
         futureRisksMessage: futureConsanguinityRisks.length > 0 
-          ? t.futureRiskDetected.replace('{{count}}', String(futureConsanguinityRisks.length))
+          ? (futureConsanguinityRisks.length === 1 
+              ? t.futureRiskDetectedSingular
+              : t.futureRiskDetectedPlural.replace('{{count}}', String(futureConsanguinityRisks.length)))
           : undefined,
         initialBySeverity: initialRisksBySeverity,
         remainingBySeverity: remainingRisksBySeverity,
