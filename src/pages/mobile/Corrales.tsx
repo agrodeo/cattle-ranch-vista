@@ -89,10 +89,10 @@ export function MobileCorrales() {
       // Process data to include counts and consanguinity risk
       const processedCorrales = await Promise.all(corralesData?.map(async (corral: any) => {
         const allAnimals = corral.animals || [];
-        // Filter only active animals for counting and analysis
-        const activeAnimals = allAnimals.filter((a: any) => a.status === "activo");
-        const maleCount = activeAnimals.filter((a: any) => a.sex === "Macho").length;
-        const femaleCount = activeAnimals.filter((a: any) => a.sex === "Hembra").length;
+        // Filter only active animals for counting and analysis (case-insensitive)
+        const activeAnimals = allAnimals.filter((a: any) => a.status?.toLowerCase() === "activo");
+        const maleCount = activeAnimals.filter((a: any) => a.sex?.toLowerCase() === "macho").length;
+        const femaleCount = activeAnimals.filter((a: any) => a.sex?.toLowerCase() === "hembra").length;
         
         // Perform comprehensive consanguinity analysis (only on active animals)
         let riskCount = 0;
