@@ -455,13 +455,13 @@ export function MobileCorrales() {
                               <div className="flex items-center gap-2">
                                 <AlertTriangle className="h-3 w-3 text-destructive" />
                                 <span className="text-xs font-medium text-destructive">
-                                  Riesgo de Consanguinidad
+                                  {t('corrals:risks.consanguinityRisk')}
                                 </span>
                               </div>
                               <ChevronDown className="h-3 w-3 text-destructive" />
                             </div>
                             <p className="text-xs text-destructive/80 mt-1">
-                              {corral.risk_count} animales con riesgo ({corral.highest_severity})
+                              {corral.risk_count} {corral.risk_count === 1 ? t('corrals:risks.pairPresents') : t('corrals:risks.pairsPresent')} {t('corrals:risks.consanguinityRiskText')} ({corral.highest_severity})
                             </p>
                           </div>
                         </CollapsibleTrigger>
