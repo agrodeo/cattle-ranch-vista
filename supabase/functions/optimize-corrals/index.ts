@@ -156,6 +156,11 @@ const translations = {
     proactiveMoveSuggestion: "Mover proactivamente antes de que alcance edad reproductiva",
     monthsUntilBreedingAge: "meses hasta edad reproductiva",
     alreadyOptimized: "El sistema ya está optimizado. No se encontraron movimientos que mejoren la distribución.",
+    consolidationMode: "Modo consolidación",
+    consolidatingAnimals: "Consolidando {{count}} animales en {{corrals}} corrales",
+    minimizingRisks: "Minimizando riesgos de consanguinidad durante la redistribución",
+    consolidationComplete: "Consolidación completada con mínimo riesgo de consanguinidad",
+    capacityExceeded: "La capacidad de los corrales destino es insuficiente para {{count}} animales",
     noFurtherOptimizationPossible: "No se pueden reducir más los riesgos con los corrales disponibles.",
   },
   en: {
@@ -227,7 +232,11 @@ const translations = {
     proactiveMoveSuggestion: "Move proactively before reaching breeding age",
     monthsUntilBreedingAge: "months until breeding age",
     alreadyOptimized: "The system is already optimized. No moves were found that improve the distribution.",
-    noFurtherOptimizationPossible: "No further risk reduction is possible with the available corrals.",
+    consolidationMode: "Consolidation mode",
+    consolidatingAnimals: "Consolidating {{count}} animals into {{corrals}} corrals",
+    minimizingRisks: "Minimizing consanguinity risks during redistribution",
+    consolidationComplete: "Consolidation completed with minimum consanguinity risk",
+    capacityExceeded: "Destination corrals capacity is insufficient for {{count}} animals",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -298,7 +307,11 @@ const translations = {
     proactiveMoveSuggestion: "Mover proativamente antes de atingir idade reprodutiva",
     monthsUntilBreedingAge: "meses até idade reprodutiva",
     alreadyOptimized: "O sistema já está otimizado. Não foram encontrados movimentos que melhorem a distribuição.",
-    noFurtherOptimizationPossible: "Não é possível reduzir mais riscos com os currais disponíveis.",
+    consolidationMode: "Modo consolidação",
+    consolidatingAnimals: "Consolidando {{count}} animais em {{corrals}} currais",
+    minimizingRisks: "Minimizando riscos de consanguinidade durante a redistribuição",
+    consolidationComplete: "Consolidação concluída com mínimo risco de consanguinidade",
+    capacityExceeded: "A capacidade dos currais destino é insuficiente para {{count}} animais",
   },
 };
 
@@ -1560,6 +1573,230 @@ serve(async (req) => {
         };
         return map[relationship] || relationship;
       };
+
+      // =========================================================================
+      // CONSOLIDATION MODE - When user selects specific destination corrals
+      // Move ALL animals from source corrals INTO destination corrals
+      // while minimizing consanguinity risks
+      // =========================================================================
+      const isConsolidationMode = destinationCorrals.length > 0 && destinationCorrals.length < corralsWithCounts.length;
+      
+      if (isConsolidationMode) {
+        console.log(`CONSOLIDATION MODE: Redistributing animals into ${destinationCorrals.length} destination corrals`);
+        
+        // Get target corrals with their capacities
+        const targetCorrals = corralsWithCounts.filter(c => destinationCorrals.includes(c.id));
+        
+        // Get animals to redistribute (from source corrals, or all if no source specified)
+        const animalsToRedistribute: Animal[] = [];
+        const sourceCorralSet = new Set(sourceCorrals.length > 0 ? sourceCorrals : corralsWithCounts.map(c => c.id));
+        
+        for (const animal of animals) {
+          if (animal.corral_id && sourceCorralSet.has(animal.corral_id)) {
+            animalsToRedistribute.push(animal);
+          }
+        }
+        
+        console.log(`Consolidating ${animalsToRedistribute.length} animals from ${sourceCorralSet.size} source corrals`);
+        
+        // Calculate total available capacity in destination corrals
+        const totalDestinationCapacity = targetCorrals.reduce((sum, c) => {
+          const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
+          return sum + capacity;
+        }, 0);
+        
+        // Count animals already in destination corrals that don't need to move
+        const animalsAlreadyInDestination = animalsToRedistribute.filter(a => 
+          a.corral_id && destinationCorrals.includes(a.corral_id)
+        );
+        
+        console.log(`${animalsAlreadyInDestination.length} animals already in destination corrals`);
+        
+        if (animalsToRedistribute.length > totalDestinationCapacity) {
+          console.log(`WARNING: Not enough capacity (${totalDestinationCapacity}) for ${animalsToRedistribute.length} animals`);
+          return new Response(
+            JSON.stringify({
+              objective: 'consanguinity',
+              error: t.capacityExceeded.replace('{{count}}', String(animalsToRedistribute.length)),
+              issues: { consanguinity: [], capacity: [], separation: [] },
+              suggestedMoves: [],
+              summary: {
+                totalMoves: 0,
+                expectedImprovement: t.capacityExceeded.replace('{{count}}', String(animalsToRedistribute.length)),
+                affectedCorrals: 0,
+                capacityNeeded: animalsToRedistribute.length,
+                capacityAvailable: totalDestinationCapacity,
+              },
+              preview: { before: [], after: [] },
+              totalIssues: 0,
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Initialize consolidation distribution - start with empty destination corrals
+        const consolidationDistribution: Record<string, Animal[]> = {};
+        for (const corral of targetCorrals) {
+          consolidationDistribution[corral.id] = [];
+        }
+        
+        // Calculate risk score when adding an animal to a corral
+        const calculatePlacementRisk = (animal: Animal, targetAnimals: Animal[]): number => {
+          let riskScore = 0;
+          const animalAge = animal.birth_date ? calcAgeInMonths(animal.birth_date) : 999;
+          const isAnimalBreedingAge = animalAge >= MIN_AGE_MONTHS;
+          
+          for (const existing of targetAnimals) {
+            // Only check opposite sex and breeding-age pairs
+            if (animal.sex === existing.sex) continue;
+            
+            const existingAge = existing.birth_date ? calcAgeInMonths(existing.birth_date) : 999;
+            const isExistingBreedingAge = existingAge >= MIN_AGE_MONTHS;
+            
+            if (!isAnimalBreedingAge || !isExistingBreedingAge) continue;
+            
+            const relationship = findRelationship(animal, existing, ancestryMap);
+            if (relationship) {
+              riskScore += relationship.coefficient;
+            }
+          }
+          
+          return riskScore;
+        };
+        
+        // Sort animals: process bulls first for better distribution, then females
+        const sortedAnimals = [...animalsToRedistribute].sort((a, b) => {
+          // Males first
+          if (a.sex === 'Macho' && b.sex !== 'Macho') return -1;
+          if (a.sex !== 'Macho' && b.sex === 'Macho') return 1;
+          // Then by age (older first)
+          const ageA = a.birth_date ? calcAgeInMonths(a.birth_date) : 0;
+          const ageB = b.birth_date ? calcAgeInMonths(b.birth_date) : 0;
+          return ageB - ageA;
+        });
+        
+        // Assign each animal to the best destination corral
+        const consolidationMoves: SuggestedMove[] = [];
+        
+        for (const animal of sortedAnimals) {
+          let bestCorral: Corral | null = null;
+          let bestRiskScore = Infinity;
+          
+          for (const targetCorral of targetCorrals) {
+            const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
+            const currentCount = consolidationDistribution[targetCorral.id].length;
+            
+            // Skip if full
+            if (currentCount >= capacity) continue;
+            
+            // Calculate risk if placing animal here
+            const riskScore = calculatePlacementRisk(animal, consolidationDistribution[targetCorral.id]);
+            
+            // Prefer corral with lowest risk score, tie-break by current count (spread evenly)
+            if (riskScore < bestRiskScore || (riskScore === bestRiskScore && (!bestCorral || currentCount < consolidationDistribution[bestCorral.id].length))) {
+              bestRiskScore = riskScore;
+              bestCorral = targetCorral;
+            }
+          }
+          
+          if (bestCorral) {
+            // Add to distribution
+            consolidationDistribution[bestCorral.id].push({ ...animal, corral_id: bestCorral.id });
+            
+            // Generate move suggestion if animal is changing corrals
+            if (animal.corral_id !== bestCorral.id) {
+              const fromCorral = corralsWithCounts.find(c => c.id === animal.corral_id);
+              consolidationMoves.push({
+                animal_id: animal.id,
+                animal_name: animal.name || animal.id_tag || 'Sin nombre',
+                from_corral_id: animal.corral_id,
+                from_corral_name: fromCorral?.name || null,
+                to_corral_id: bestCorral.id,
+                to_corral_name: bestCorral.name,
+                reason: bestRiskScore > 0 
+                  ? `${t.consolidationMode}: ${t.minimizingRisks}`
+                  : t.consolidationMode,
+                issue_type: 'consolidation',
+                expectedBenefit: t.consolidationComplete,
+              });
+              movedAnimals.add(animal.id);
+            }
+          }
+        }
+        
+        console.log(`Generated ${consolidationMoves.length} consolidation moves`);
+        
+        // Calculate risk metrics for the new distribution
+        const finalRiskScore = calculateDistributionRiskScore(consolidationDistribution);
+        
+        const finalRisksBySeverity = { severe: 0, medium: 0, low: 0 };
+        let finalRisksTotal = 0;
+        
+        for (const corral of targetCorrals) {
+          const animalsInCorral = consolidationDistribution[corral.id] || [];
+          const { risks } = calculateCorralRiskScore(animalsInCorral);
+          risks.forEach(r => {
+            finalRisksBySeverity[r.severity]++;
+            finalRisksTotal++;
+          });
+        }
+        
+        // Build before/after preview
+        const beforeState = corralsWithCounts.map(corral => ({
+          corral_id: corral.id,
+          corral_name: corral.name,
+          count: corralAnimals[corral.id]?.length || 0,
+          capacity: corral.capacity,
+          animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+        }));
+        
+        const afterState = corralsWithCounts.map(corral => ({
+          corral_id: corral.id,
+          corral_name: corral.name,
+          count: consolidationDistribution[corral.id]?.length || 0,
+          capacity: corral.capacity,
+          animals: (consolidationDistribution[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+        }));
+        
+        return new Response(
+          JSON.stringify({
+            objective: 'consanguinity',
+            mode: 'consolidation',
+            issues: {
+              consanguinity: [],
+              futureConsanguinity: [],
+              capacity: [],
+              separation: [],
+            },
+            suggestedMoves: consolidationMoves,
+            summary: {
+              totalMoves: consolidationMoves.length,
+              expectedImprovement: t.consolidatingAnimals
+                .replace('{{count}}', String(animalsToRedistribute.length))
+                .replace('{{corrals}}', String(targetCorrals.length)),
+              affectedCorrals: targetCorrals.length + (sourceCorrals.length > 0 ? sourceCorrals.length : corralsWithCounts.length),
+              riskAfter: finalRiskScore.toFixed(3),
+              risksAfterByServerity: finalRisksBySeverity,
+              totalRisksAfter: finalRisksTotal,
+              consolidationStats: {
+                animalsRedistributed: animalsToRedistribute.length,
+                movesGenerated: consolidationMoves.length,
+                destinationCorrals: targetCorrals.length,
+              },
+            },
+            preview: {
+              before: beforeState,
+              after: afterState,
+            },
+            totalIssues: finalRisksTotal,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // =========================================================================
+      // STANDARD CONSANGUINITY OPTIMIZATION (no consolidation)
+      // =========================================================================
 
       // Calculate initial risk score
       const initialRiskScore = calculateDistributionRiskScore(workingDistribution);
