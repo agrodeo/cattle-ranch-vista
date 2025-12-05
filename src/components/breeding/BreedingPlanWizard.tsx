@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, Target, Eye, CheckCircle, AlertTriangle, Info, HelpCircle } from "lucide-react";
+import { Brain, Target, CheckCircle, AlertTriangle, HelpCircle, Settings, Info } from "lucide-react";
 import { toast } from "sonner";
+import { useBenchmarks } from "@/hooks/useBenchmarks";
 
 interface Pairing {
   cow_id: string;
@@ -75,12 +76,13 @@ interface BreedingPlanWizardProps {
 }
 
 export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWizardProps) {
-  const { t } = useTranslation(['common', 'activities', 'breeding']);
+  const { t } = useTranslation(['common', 'breeding']);
+  const { hasBenchmarks, getBreedingTargets, loading: benchmarksLoading } = useBenchmarks();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<BreedingPlan | null>(null);
 
-  // Step 1: Configuration
+  // Step 1: Configuration - load from settings
   const [config, setConfig] = useState({
     mode: 'BOTH',
     targets: {
@@ -102,6 +104,25 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
     density_per_hectare: 1.5
   });
 
+  // Load targets from settings when dialog opens
+  useEffect(() => {
+    if (isOpen && !benchmarksLoading) {
+      const targets = getBreedingTargets();
+      setConfig(prev => ({
+        ...prev,
+        targets
+      }));
+    }
+  }, [isOpen, benchmarksLoading, getBreedingTargets]);
+
+  // Reset state when dialog closes
+  useEffect(() => {
+    if (!isOpen) {
+      setStep(1);
+      setPlan(null);
+    }
+  }, [isOpen]);
+
   const generatePlan = async () => {
     setLoading(true);
     try {
@@ -119,7 +140,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
       toast.success(t('common:success.created'));
     } catch (error) {
       console.error('Error generating plan:', error);
-      toast.error(t('common:error.failed'));
+      toast.error(t('breeding:errorGeneratingPlan'));
     } finally {
       setLoading(false);
     }
@@ -174,6 +195,31 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
 
         {step === 1 && (
           <div className="space-y-6">
+            {/* Benchmark Settings Notice */}
+            {!hasBenchmarks && (
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span>{t('breeding:noBenchmarksConfigured')}</span>
+                  <Button variant="link" asChild className="p-0 h-auto">
+                    <Link to="/settings?tab=benchmarks" onClick={onClose}>
+                      <Settings className="h-4 w-4 mr-1" />
+                      {t('breeding:configureBenchmarks')}
+                    </Link>
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {hasBenchmarks && (
+              <Alert className="bg-green-50 border-green-200">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <AlertDescription className="text-green-800">
+                  {t('breeding:benchmarksLoaded')}
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -184,7 +230,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <Label>Peso Nacimiento (kg)</Label>
+                    <Label>{t('breeding:birthWeight')}</Label>
                     <Input
                       type="number"
                       value={config.targets.birth_weight}
@@ -195,7 +241,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                     />
                   </div>
                   <div>
-                    <Label>Peso Destete (kg)</Label>
+                    <Label>{t('breeding:weaningWeight')}</Label>
                     <Input
                       type="number"
                       value={config.targets.weaning_weight}
@@ -206,7 +252,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                     />
                   </div>
                   <div>
-                    <Label>Peso Final (kg)</Label>
+                    <Label>{t('breeding:finalWeight')}</Label>
                     <Input
                       type="number"
                       value={config.targets.final_weight}
@@ -217,7 +263,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                     />
                   </div>
                   <div>
-                    <Label>CE (cm)</Label>
+                    <Label>{t('breeding:scrotalCircumference')}</Label>
                     <Input
                       type="number"
                       value={config.targets.ce_cm}
@@ -233,12 +279,12 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
 
             <Card>
               <CardHeader>
-                <CardTitle>Restricciones</CardTitle>
+                <CardTitle>{t('breeding:constraints')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <Label>Vacas por Toro (máx)</Label>
+                    <Label>{t('breeding:cowsPerBull')}</Label>
                     <Input
                       type="number"
                       value={config.cow_per_bull_max}
@@ -249,7 +295,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                     />
                   </div>
                   <div>
-                    <Label>Toros por Corral (máx)</Label>
+                    <Label>{t('breeding:bullsPerCorral')}</Label>
                     <Input
                       type="number"
                       value={config.max_bulls_per_corral}
@@ -260,7 +306,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                     />
                   </div>
                   <div>
-                    <Label>Edad Min. Vacas (meses)</Label>
+                    <Label>{t('breeding:minCowAge')}</Label>
                     <Input
                       type="number"
                       value={config.min_cow_age_months}
@@ -271,7 +317,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                     />
                   </div>
                   <div>
-                    <Label>Edad Min. Toros (meses)</Label>
+                    <Label>{t('breeding:minBullAge')}</Label>
                     <Input
                       type="number"
                       value={config.min_bull_age_months}
@@ -287,10 +333,10 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
 
             <div className="flex gap-2">
               <Button onClick={onClose} variant="outline">
-                Cancelar
+                {t('common:cancel')}
               </Button>
               <Button onClick={generatePlan} disabled={loading}>
-                {loading ? "Generando..." : "Generar Plan"}
+                {loading ? t('breeding:generating') : t('breeding:generatePlan')}
               </Button>
             </div>
           </div>
@@ -300,9 +346,9 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-semibold">Preview del Plan - {plan.season}</h3>
+                <h3 className="text-lg font-semibold">{t('breeding:planPreview', { season: plan.season })}</h3>
                 <p className="text-sm text-muted-foreground">
-                  {plan.pairings.length} cruces sugeridos
+                  {t('breeding:suggestedPairingsCount', { count: plan.pairings.length })}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -318,7 +364,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
             {/* Pairings Table */}
             <Card>
               <CardHeader>
-                <CardTitle>Cruces Sugeridos</CardTitle>
+                <CardTitle>{t('breeding:suggestedPairings')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -335,7 +381,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline">
-                            Score: {(pairing.score * 100).toFixed(0)}%
+                            {t('breeding:score', { score: (pairing.score * 100).toFixed(0) })}
                           </Badge>
                           <Tooltip>
                             <TooltipTrigger>
@@ -356,7 +402,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                   </TooltipProvider>
                   {plan.pairings.length > 10 && (
                     <p className="text-sm text-muted-foreground text-center">
-                      ... y {plan.pairings.length - 10} cruces más
+                      {t('breeding:morePairings', { count: plan.pairings.length - 10 })}
                     </p>
                   )}
                 </div>
@@ -366,7 +412,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
             {/* Corral Plan */}
             <Card>
               <CardHeader>
-                <CardTitle>Plan de Corrales</CardTitle>
+                <CardTitle>{t('breeding:corralPlan')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3">
@@ -375,7 +421,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                       <div className="flex-1">
                         <span className="font-medium">{corral.corral_name}</span>
                         <div className="text-sm text-muted-foreground">
-                          Toros asignados: {corral.bulls_assigned.map(b => b.name).join(", ") || "Ninguno"}
+                          {t('breeding:bullsAssigned')}: {corral.bulls_assigned.map(b => b.name).join(", ") || t('breeding:noBulls')}
                         </div>
                         <div className="text-xs text-blue-600 mt-1">
                           💡 {corral.suggestion}
@@ -384,20 +430,20 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                       <div className="flex gap-2">
                         {corral.capacity_ok ? (
                           <Badge variant="default" className="bg-green-100 text-green-800">
-                            Capacidad OK
+                            {t('breeding:capacityOk')}
                           </Badge>
                         ) : (
                           <Badge variant="destructive">
-                            Sobre capacidad
+                            {t('breeding:overCapacity')}
                           </Badge>
                         )}
                         {corral.ratio_ok ? (
                           <Badge variant="default" className="bg-blue-100 text-blue-800">
-                            Ratio OK
+                            {t('breeding:ratioOk')}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
-                            Revisar toros
+                            {t('breeding:reviewBulls')}
                           </Badge>
                         )}
                       </div>
@@ -407,30 +453,30 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
               </CardContent>
             </Card>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button onClick={resetWizard} variant="outline">
-                Volver
+                {t('breeding:back')}
               </Button>
               <Button
                 onClick={() => commitPlan({ createServices: true, createMoves: true })}
                 disabled={loading}
                 className="flex-1"
               >
-                {loading ? "Ejecutando..." : "Confirmar Plan Completo"}
+                {loading ? t('breeding:executing') : t('breeding:confirmFullPlan')}
               </Button>
               <Button
                 onClick={() => commitPlan({ createServices: true, createMoves: false })}
                 disabled={loading}
                 variant="outline"
               >
-                Solo Cruces
+                {t('breeding:onlyPairings')}
               </Button>
               <Button
                 onClick={() => commitPlan({ createServices: false, createMoves: true })}
                 disabled={loading}
                 variant="outline"
               >
-                Solo Movimientos
+                {t('breeding:onlyMoves')}
               </Button>
             </div>
           </div>
@@ -439,11 +485,11 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
         {step === 3 && (
           <div className="text-center space-y-4">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
-            <h3 className="text-xl font-semibold">Plan Ejecutado Exitosamente</h3>
+            <h3 className="text-xl font-semibold">{t('breeding:planCompletedTitle')}</h3>
             <p className="text-muted-foreground">
-              Las actividades de servicio/IA y movimientos han sido creadas según el plan.
+              {t('breeding:planCompletedDesc')}
             </p>
-            <Button onClick={onClose}>Cerrar</Button>
+            <Button onClick={onClose}>{t('breeding:close')}</Button>
           </div>
         )}
       </DialogContent>
