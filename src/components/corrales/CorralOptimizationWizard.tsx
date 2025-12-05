@@ -21,6 +21,26 @@ interface ConsanguinityRisk {
   inbreeding_coefficient: number;
 }
 
+interface BreedingPairing {
+  cow_id: string;
+  bull_id: string;
+  cow_name: string;
+  bull_name: string;
+  cow_tag?: string;
+  bull_tag?: string;
+  score: number;
+  inbreeding_coefficient: number;
+  blocked: boolean;
+  predicted: {
+    birth_weight?: number;
+    weaning_weight?: number;
+    final_weight?: number;
+    daily_gain?: number;
+  };
+  match_quality: 'excellent' | 'good' | 'acceptable' | 'poor';
+  explanation: string;
+}
+
 interface CorralOptimizationPlan {
   corral_plan: Array<{
     corral_id: string;
@@ -51,6 +71,14 @@ interface CorralOptimizationPlan {
     calves_moved_with_mothers: number;
   };
   warnings: string[];
+  breedingPairings?: {
+    totalPairings: number;
+    excellentMatches: number;
+    goodMatches: number;
+    acceptableMatches: number;
+    blockedCombinations: number;
+    topPairings: BreedingPairing[];
+  };
 }
 
 interface CorralOptimizationWizardProps {
@@ -941,6 +969,69 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 ))}
               </div>
             </div>
+
+            {/* Breeding Pairings Analysis - shown for standards objective */}
+            {plan.breedingPairings && plan.breedingPairings.topPairings?.length > 0 && (
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                    <Target className="h-4 w-4 text-primary" />
+                    {t('optimization.step3.breedingPairings', 'Análisis de Parejas Reproductivas')}
+                  </CardTitle>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {t('optimization.step3.breedingPairingsDesc', 'Mejores combinaciones según estándares de la cabaña')}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                    <div className="text-center p-2 bg-green-50 rounded-lg">
+                      <div className="text-lg font-bold text-green-600">{plan.breedingPairings.excellentMatches}</div>
+                      <div className="text-xs text-green-600">{t('optimization.step3.excellentMatches', 'Excelentes')}</div>
+                    </div>
+                    <div className="text-center p-2 bg-blue-50 rounded-lg">
+                      <div className="text-lg font-bold text-blue-600">{plan.breedingPairings.goodMatches}</div>
+                      <div className="text-xs text-blue-600">{t('optimization.step3.goodMatches', 'Buenos')}</div>
+                    </div>
+                    <div className="text-center p-2 bg-yellow-50 rounded-lg">
+                      <div className="text-lg font-bold text-yellow-600">{plan.breedingPairings.acceptableMatches}</div>
+                      <div className="text-xs text-yellow-600">{t('optimization.step3.acceptableMatches', 'Aceptables')}</div>
+                    </div>
+                    <div className="text-center p-2 bg-red-50 rounded-lg">
+                      <div className="text-lg font-bold text-red-600">{plan.breedingPairings.blockedCombinations}</div>
+                      <div className="text-xs text-red-600">{t('optimization.step3.blockedMatches', 'Bloqueados')}</div>
+                    </div>
+                  </div>
+                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {plan.breedingPairings.topPairings.slice(0, 10).map((pairing, i) => (
+                      <div key={i} className="flex items-center justify-between p-2 border rounded-lg hover:bg-muted/50">
+                        <div className="flex items-center gap-2 flex-wrap min-w-0">
+                          <span className="font-medium text-sm">{pairing.cow_name}</span>
+                          <span className="text-muted-foreground">×</span>
+                          <span className="font-medium text-sm">{pairing.bull_name}</span>
+                          <Badge variant={
+                            pairing.match_quality === 'excellent' ? 'default' :
+                            pairing.match_quality === 'good' ? 'secondary' :
+                            pairing.match_quality === 'acceptable' ? 'outline' : 'destructive'
+                          } className="text-xs">
+                            {pairing.match_quality === 'excellent' ? '⭐' : 
+                             pairing.match_quality === 'good' ? '👍' : 
+                             pairing.match_quality === 'acceptable' ? '✓' : '⚠️'} {pairing.score}pts
+                          </Badge>
+                        </div>
+                        <div className="text-xs text-muted-foreground flex gap-2">
+                          {pairing.predicted.weaning_weight && <span>Destete: ~{Math.round(pairing.predicted.weaning_weight)}kg</span>}
+                          {pairing.inbreeding_coefficient > 0 && (
+                            <Badge variant="outline" className="text-xs bg-orange-50">
+                              F: {(pairing.inbreeding_coefficient * 100).toFixed(1)}%
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Summary Metrics */}
             <Card>
