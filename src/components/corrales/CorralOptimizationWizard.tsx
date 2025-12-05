@@ -1080,14 +1080,28 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                           <span className="text-purple-600 text-xs whitespace-nowrap flex-shrink-0">👶 Ternero</span>
                                         )}
                                         {moveData.secondaryCriterionApplied && (
-                                          <Badge variant="outline" className="bg-amber-50 text-amber-700 text-xs whitespace-nowrap flex-shrink-0">
+                                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 text-xs whitespace-nowrap flex-shrink-0">
                                             ⭐ {t('optimization.step3.secondaryCriterionBadge')}
+                                          </Badge>
+                                        )}
+                                        {moveData.equalOptionsCount > 1 && (
+                                          <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 text-xs whitespace-nowrap flex-shrink-0">
+                                            🔀 {moveData.equalOptionsCount} {t('optimization.step3.equalOptions')}
                                           </Badge>
                                         )}
                                       </div>
                                       <div className="text-xs text-muted-foreground mt-1 line-clamp-2 overflow-hidden min-w-0">
                                         {move.reason}
                                       </div>
+                                      {moveData.secondaryCriterionApplied && moveData.alternativeOptions?.length > 0 && (
+                                        <div className="text-xs text-amber-600 mt-1 bg-amber-50/50 rounded px-2 py-1">
+                                          <span className="font-medium">{t('optimization.step3.whyThisCorral')}:</span>{' '}
+                                          {t('optimization.step3.bestSecondaryScore', { score: Math.round(moveData.secondaryScore || 0) })}
+                                          <span className="text-muted-foreground ml-1">
+                                            ({t('optimization.step3.vsAlternatives')}: {moveData.alternativeOptions.map(a => `${a.corralName}: ${a.secondaryScore}`).join(', ')})
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
                                   </label>
                                 );

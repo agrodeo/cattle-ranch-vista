@@ -563,7 +563,11 @@
       "deselectAllButton": "Deselect All",
       "backButton": "Back",
       "applyingButton": "Applying...",
-      "applyMovementsButton": "Apply {{count}} Movements"
+      "applyMovementsButton": "Apply {{count}} Movements",
+      "equalOptions": "equal options",
+      "whyThisCorral": "Why this corral?",
+      "bestSecondaryScore": "Best secondary score ({{score}})",
+      "vsAlternatives": "vs alternatives"
     },
     "step4": {
       "title": "Optimization Applied",
