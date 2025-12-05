@@ -23,6 +23,7 @@ interface Animal {
   name?: string;
   id_tag?: string;
   cabaña_id: string;
+  mocho?: string;
 }
 
 interface Corral {
@@ -33,11 +34,32 @@ interface Corral {
   cabaña_id: string;
 }
 
+interface Benchmark {
+  birth_weight_excellent: number;
+  birth_weight_good: number;
+  birth_weight_poor: number;
+  weaning_weight_excellent: number;
+  weaning_weight_good: number;
+  weaning_weight_poor: number;
+  final_weight_excellent: number;
+  final_weight_good: number;
+  final_weight_poor: number;
+  daily_gain_excellent: number;
+  daily_gain_good: number;
+  daily_gain_poor: number;
+  scrotal_circumference_excellent: number;
+  scrotal_circumference_good: number;
+  scrotal_circumference_poor: number;
+  horn_preference: string;
+}
+
 interface Pairing {
   cow_id: string;
   bull_id: string;
   cow_name: string;
   bull_name: string;
+  cow_tag?: string;
+  bull_tag?: string;
   score: number;
   inbreeding_F: number;
   blocked: boolean;
@@ -47,12 +69,20 @@ interface Pairing {
     final_weight?: number;
     ce_cm?: number;
   };
+  match_quality: 'excellent' | 'good' | 'acceptable' | 'poor';
   explain: string;
   detailed_explanation: {
     genetic_merit: string;
     inbreeding_risk: string;
     predicted_performance: string;
     recommendation: string;
+    scores: {
+      birth_weight_score: number;
+      weaning_weight_score: number;
+      final_weight_score: number;
+      ce_score: number;
+      horn_match: boolean;
+    };
   };
 }
 
@@ -64,6 +94,15 @@ interface BreedingPlan {
     capacity_respected: boolean;
   };
   pairings: Pairing[];
+  summary: {
+    total_eligible_cows: number;
+    total_eligible_bulls: number;
+    total_pairings: number;
+    excellent_matches: number;
+    good_matches: number;
+    acceptable_matches: number;
+    blocked_combinations: number;
+  };
   corral_plan: Array<{
     corral_id: string;
     corral_name: string;
@@ -87,6 +126,25 @@ interface BreedingPlan {
   }>;
   warnings: string[];
 }
+
+const DEFAULT_BENCHMARKS: Benchmark = {
+  birth_weight_excellent: 35,
+  birth_weight_good: 30,
+  birth_weight_poor: 28,
+  weaning_weight_excellent: 200,
+  weaning_weight_good: 180,
+  weaning_weight_poor: 160,
+  final_weight_excellent: 450,
+  final_weight_good: 420,
+  final_weight_poor: 380,
+  daily_gain_excellent: 0.8,
+  daily_gain_good: 0.7,
+  daily_gain_poor: 0.6,
+  scrotal_circumference_excellent: 38,
+  scrotal_circumference_good: 35,
+  scrotal_circumference_poor: 32,
+  horn_preference: 'any',
+};
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -114,6 +172,36 @@ serve(async (req) => {
     } = await req.json();
 
     console.log(`Processing breeding plan for cabana ${cabanaId}, mode: ${mode}`);
+
+    // Fetch custom benchmarks from database
+    const { data: benchmarkData } = await supabaseClient
+      .from('custom_benchmarks')
+      .select('*')
+      .eq('cabaña_id', cabanaId)
+      .is('breed', null)
+      .limit(1)
+      .single();
+
+    const benchmarks: Benchmark = benchmarkData ? {
+      birth_weight_excellent: benchmarkData.birth_weight_excellent ?? DEFAULT_BENCHMARKS.birth_weight_excellent,
+      birth_weight_good: benchmarkData.birth_weight_good ?? DEFAULT_BENCHMARKS.birth_weight_good,
+      birth_weight_poor: benchmarkData.birth_weight_poor ?? DEFAULT_BENCHMARKS.birth_weight_poor,
+      weaning_weight_excellent: benchmarkData.weaning_weight_excellent ?? DEFAULT_BENCHMARKS.weaning_weight_excellent,
+      weaning_weight_good: benchmarkData.weaning_weight_good ?? DEFAULT_BENCHMARKS.weaning_weight_good,
+      weaning_weight_poor: benchmarkData.weaning_weight_poor ?? DEFAULT_BENCHMARKS.weaning_weight_poor,
+      final_weight_excellent: benchmarkData.final_weight_excellent ?? DEFAULT_BENCHMARKS.final_weight_excellent,
+      final_weight_good: benchmarkData.final_weight_good ?? DEFAULT_BENCHMARKS.final_weight_good,
+      final_weight_poor: benchmarkData.final_weight_poor ?? DEFAULT_BENCHMARKS.final_weight_poor,
+      daily_gain_excellent: benchmarkData.daily_gain_excellent ?? DEFAULT_BENCHMARKS.daily_gain_excellent,
+      daily_gain_good: benchmarkData.daily_gain_good ?? DEFAULT_BENCHMARKS.daily_gain_good,
+      daily_gain_poor: benchmarkData.daily_gain_poor ?? DEFAULT_BENCHMARKS.daily_gain_poor,
+      scrotal_circumference_excellent: benchmarkData.scrotal_circumference_excellent ?? DEFAULT_BENCHMARKS.scrotal_circumference_excellent,
+      scrotal_circumference_good: benchmarkData.scrotal_circumference_good ?? DEFAULT_BENCHMARKS.scrotal_circumference_good,
+      scrotal_circumference_poor: benchmarkData.scrotal_circumference_poor ?? DEFAULT_BENCHMARKS.scrotal_circumference_poor,
+      horn_preference: benchmarkData.horn_preference ?? DEFAULT_BENCHMARKS.horn_preference,
+    } : DEFAULT_BENCHMARKS;
+
+    console.log('Using benchmarks:', benchmarks);
 
     // Get animals
     let animalsQuery = supabaseClient
@@ -154,14 +242,30 @@ serve(async (req) => {
 
     console.log(`Found ${eligibleCows.length} eligible cows and ${eligibleBulls.length} eligible bulls`);
 
-    // Only calculate corral distribution to minimize consanguinity risks
+    // Calculate ALL possible pairings and score them
+    const { pairings, blockedCount } = calculateAllPairings(eligibleCows, eligibleBulls, benchmarks, weights);
+
+    console.log(`Generated ${pairings.length} pairings, ${blockedCount} blocked`);
+
+    // Calculate corral distribution
     const corralPlan = calculateCorralPlan(
       eligibleCows,
       eligibleBulls,
       corrals || [],
-      [],
+      pairings,
       { cow_per_bull_max, max_bulls_per_corral, density_per_hectare }
     );
+
+    // Calculate summary
+    const summary = {
+      total_eligible_cows: eligibleCows.length,
+      total_eligible_bulls: eligibleBulls.length,
+      total_pairings: pairings.length,
+      excellent_matches: pairings.filter(p => p.match_quality === 'excellent').length,
+      good_matches: pairings.filter(p => p.match_quality === 'good').length,
+      acceptable_matches: pairings.filter(p => p.match_quality === 'acceptable').length,
+      blocked_combinations: blockedCount,
+    };
 
     const plan: BreedingPlan = {
       season: season || detectSeason(),
@@ -170,9 +274,10 @@ serve(async (req) => {
         max_bulls_per_corral,
         capacity_respected: corralPlan.every(c => c.capacity_ok)
       },
-      pairings: [], // Solo recomendaciones de corrales, no servicios de IA
+      pairings: pairings.slice(0, 100), // Return top 100 pairings
+      summary,
       corral_plan: corralPlan,
-      warnings: generateWarnings([], corralPlan, eligibleCows, eligibleBulls)
+      warnings: generateWarnings(pairings, corralPlan, eligibleCows, eligibleBulls)
     };
 
     return new Response(JSON.stringify(plan), {
@@ -194,13 +299,10 @@ function calculateAgeMonths(birthDate: string, currentDate: Date): number {
   if (isNaN(birth.getTime())) return 0;
   const diffTime = currentDate.getTime() - birth.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  return Math.floor(diffDays / 30.44); // Average days per month
+  return Math.floor(diffDays / 30.44);
 }
 
 function calculateInbreedingCoefficient(cow: Animal, bull: Animal): { F: number; blocked: boolean } {
-  // Simplified inbreeding calculation
-  // In a real implementation, this would involve complex pedigree analysis
-  
   if (!cow.father_id && !cow.mother_id && !bull.father_id && !bull.mother_id) {
     return { F: 0, blocked: false };
   }
@@ -208,124 +310,109 @@ function calculateInbreedingCoefficient(cow: Animal, bull: Animal): { F: number;
   // Direct parent-offspring relationships (blocked)
   if (cow.father_id === bull.id || cow.mother_id === bull.id || 
       bull.father_id === cow.id || bull.mother_id === cow.id) {
-    return { F: 0.25, blocked: true }; // 25% - parent-offspring
+    return { F: 0.25, blocked: true };
   }
 
   // Full siblings (blocked)
   if (cow.father_id && bull.father_id && cow.father_id === bull.father_id &&
       cow.mother_id && bull.mother_id && cow.mother_id === bull.mother_id) {
-    return { F: 0.25, blocked: true }; // 25% - full siblings
+    return { F: 0.25, blocked: true };
   }
 
-  // Half siblings (blocked if > 6.25%)
+  // Half siblings (blocked)
   if ((cow.father_id && bull.father_id && cow.father_id === bull.father_id) ||
       (cow.mother_id && bull.mother_id && cow.mother_id === bull.mother_id)) {
-    return { F: 0.125, blocked: true }; // 12.5% - half siblings
+    return { F: 0.125, blocked: true };
   }
 
-  // Estimate cousin relationships (simplified)
+  // Estimate cousin relationships
   let estimatedF = 0;
   if (cow.father_id === bull.father_id || cow.mother_id === bull.mother_id) {
-    estimatedF = 0.0625; // 6.25% - first cousins
+    estimatedF = 0.0625;
   }
 
   return { F: estimatedF, blocked: estimatedF >= 0.0625 };
 }
 
-function calculatePairings(
+function calculateAllPairings(
   cows: Animal[], 
   bulls: Animal[], 
-  targets: any, 
+  benchmarks: Benchmark,
   weights: any
-): Pairing[] {
+): { pairings: Pairing[]; blockedCount: number } {
   const pairings: Pairing[] = [];
+  let blockedCount = 0;
 
+  // Analyze ALL possible cow × bull combinations
   for (const cow of cows) {
-    let bestPairing: Pairing | null = null;
-    let bestScore = -Infinity;
-
     for (const bull of bulls) {
       const { F, blocked } = calculateInbreedingCoefficient(cow, bull);
       
-      if (blocked) continue;
-
-      const fitScore = calculateBenchmarkFit(cow, bull, targets, weights);
-      const riskPenalty = F > 0 ? 1 - (F * 2) : 1; // Scale down based on inbreeding
-      const finalScore = 0.7 * fitScore + 0.3 * riskPenalty;
-
-      if (finalScore > bestScore) {
-        bestScore = finalScore;
-        bestPairing = {
-          cow_id: cow.id,
-          bull_id: bull.id,
-          cow_name: cow.name || cow.id_tag || `V-${cow.id.slice(0, 6)}`,
-          bull_name: bull.name || bull.id_tag || `T-${bull.id.slice(0, 6)}`,
-          score: finalScore,
-          inbreeding_F: F,
-          blocked: false,
-          predicted: predictOffspringTraits(cow, bull),
-          explain: generateExplanation(cow, bull, F, fitScore),
-          detailed_explanation: generateDetailedExplanation(cow, bull, F, fitScore, targets)
-        };
+      if (blocked) {
+        blockedCount++;
+        continue;
       }
+
+      const predicted = predictOffspringTraits(cow, bull);
+      const scores = calculateDetailedScores(predicted, benchmarks, bull);
+      const hornMatch = checkHornCompatibility(cow, bull, benchmarks.horn_preference);
+      
+      // Calculate weighted score
+      const weightedScore = calculateWeightedScore(scores, weights, hornMatch);
+      const matchQuality = getMatchQuality(weightedScore);
+
+      const pairing: Pairing = {
+        cow_id: cow.id,
+        bull_id: bull.id,
+        cow_name: cow.name || `Vaca ${cow.id_tag || cow.id.slice(0, 6)}`,
+        bull_name: bull.name || `Toro ${bull.id_tag || bull.id.slice(0, 6)}`,
+        cow_tag: cow.id_tag,
+        bull_tag: bull.id_tag,
+        score: weightedScore,
+        inbreeding_F: F,
+        blocked: false,
+        predicted,
+        match_quality: matchQuality,
+        explain: generateExplanation(cow, bull, F, weightedScore, matchQuality),
+        detailed_explanation: generateDetailedExplanation(cow, bull, F, weightedScore, benchmarks, predicted, scores, hornMatch)
+      };
+
+      pairings.push(pairing);
     }
-
-    if (bestPairing) {
-      pairings.push(bestPairing);
-    }
   }
 
-  return pairings.sort((a, b) => b.score - a.score);
-}
-
-function calculateBenchmarkFit(cow: Animal, bull: Animal, targets: any, weights: any): number {
-  const predicted = predictOffspringTraits(cow, bull);
-  let totalFit = 0;
-  let totalWeight = 0;
-
-  if (targets.birth_weight && predicted.birth_weight) {
-    const error = Math.abs(targets.birth_weight - predicted.birth_weight) / targets.birth_weight;
-    totalFit += weights.birth * (1 - Math.min(error, 1));
-    totalWeight += weights.birth;
-  }
-
-  if (targets.weaning_weight && predicted.weaning_weight) {
-    const error = Math.abs(targets.weaning_weight - predicted.weaning_weight) / targets.weaning_weight;
-    totalFit += weights.weaning * (1 - Math.min(error, 1));
-    totalWeight += weights.weaning;
-  }
-
-  if (targets.final_weight && predicted.final_weight) {
-    const error = Math.abs(targets.final_weight - predicted.final_weight) / targets.final_weight;
-    totalFit += weights.final * (1 - Math.min(error, 1));
-    totalWeight += weights.final;
-  }
-
-  if (targets.ce_cm && predicted.ce_cm) {
-    const error = Math.abs(targets.ce_cm - predicted.ce_cm) / targets.ce_cm;
-    totalFit += weights.ce * (1 - Math.min(error, 1));
-    totalWeight += weights.ce;
-  }
-
-  return totalWeight > 0 ? totalFit / totalWeight : 0.5; // Default neutral fit
+  // Sort by score descending
+  return { 
+    pairings: pairings.sort((a, b) => b.score - a.score),
+    blockedCount 
+  };
 }
 
 function predictOffspringTraits(cow: Animal, bull: Animal): any {
-  // Simple averaging of parental traits
   const prediction: any = {};
 
-  if (cow.peso_nacimiento && bull.peso_nacimiento) {
-    prediction.birth_weight = (cow.peso_nacimiento + bull.peso_nacimiento) / 2;
+  // Birth weight prediction (weighted: 60% bull, 40% cow for heritability)
+  if (cow.peso_nacimiento || bull.peso_nacimiento) {
+    const cowWeight = cow.peso_nacimiento || 32;
+    const bullWeight = bull.peso_nacimiento || 35;
+    prediction.birth_weight = cowWeight * 0.4 + bullWeight * 0.6;
   }
 
-  if (cow.peso_destete && bull.peso_destete) {
-    prediction.weaning_weight = (cow.peso_destete + bull.peso_destete) / 2;
+  // Weaning weight prediction (50/50 split)
+  if (cow.peso_destete || bull.peso_destete) {
+    const cowWeight = cow.peso_destete || 180;
+    const bullWeight = bull.peso_destete || 200;
+    prediction.weaning_weight = (cowWeight + bullWeight) / 2;
   }
 
-  if (cow.peso_final && bull.peso_final) {
-    prediction.final_weight = (cow.peso_final + bull.peso_final) / 2;
+  // Final weight prediction (55% bull genetic influence)
+  if (cow.peso_final || bull.peso_final) {
+    const cowWeight = cow.peso_final || 400;
+    const bullWeight = bull.peso_final || 500;
+    prediction.final_weight = cowWeight * 0.45 + bullWeight * 0.55;
   }
 
+  // CE prediction (direct from bull for male offspring potential)
   if (bull.circunferencia_escrotal) {
     prediction.ce_cm = bull.circunferencia_escrotal;
   }
@@ -333,67 +420,204 @@ function predictOffspringTraits(cow: Animal, bull: Animal): any {
   return prediction;
 }
 
-function generateExplanation(cow: Animal, bull: Animal, F: number, fitScore: number): string {
+function calculateDetailedScores(predicted: any, benchmarks: Benchmark, bull: Animal): any {
+  const scores: any = {
+    birth_weight_score: 0,
+    weaning_weight_score: 0,
+    final_weight_score: 0,
+    ce_score: 0
+  };
+
+  // Birth weight score - penalize if too high (calving difficulty) or too low
+  if (predicted.birth_weight) {
+    const bw = predicted.birth_weight;
+    if (bw >= benchmarks.birth_weight_good && bw <= benchmarks.birth_weight_excellent) {
+      scores.birth_weight_score = 100;
+    } else if (bw < benchmarks.birth_weight_poor) {
+      scores.birth_weight_score = 40;
+    } else if (bw > benchmarks.birth_weight_excellent * 1.1) {
+      scores.birth_weight_score = 50; // Too heavy - calving risk
+    } else {
+      scores.birth_weight_score = 70;
+    }
+  }
+
+  // Weaning weight score - higher is better
+  if (predicted.weaning_weight) {
+    const ww = predicted.weaning_weight;
+    if (ww >= benchmarks.weaning_weight_excellent) {
+      scores.weaning_weight_score = 100;
+    } else if (ww >= benchmarks.weaning_weight_good) {
+      scores.weaning_weight_score = 80;
+    } else if (ww >= benchmarks.weaning_weight_poor) {
+      scores.weaning_weight_score = 60;
+    } else {
+      scores.weaning_weight_score = 40;
+    }
+  }
+
+  // Final weight score - higher is better
+  if (predicted.final_weight) {
+    const fw = predicted.final_weight;
+    if (fw >= benchmarks.final_weight_excellent) {
+      scores.final_weight_score = 100;
+    } else if (fw >= benchmarks.final_weight_good) {
+      scores.final_weight_score = 80;
+    } else if (fw >= benchmarks.final_weight_poor) {
+      scores.final_weight_score = 60;
+    } else {
+      scores.final_weight_score = 40;
+    }
+  }
+
+  // CE score - higher is better (indicates better fertility in male offspring)
+  if (predicted.ce_cm) {
+    const ce = predicted.ce_cm;
+    if (ce >= benchmarks.scrotal_circumference_excellent) {
+      scores.ce_score = 100;
+    } else if (ce >= benchmarks.scrotal_circumference_good) {
+      scores.ce_score = 80;
+    } else if (ce >= benchmarks.scrotal_circumference_poor) {
+      scores.ce_score = 60;
+    } else {
+      scores.ce_score = 40;
+    }
+  }
+
+  return scores;
+}
+
+function checkHornCompatibility(cow: Animal, bull: Animal, preference: string): boolean {
+  if (preference === 'any') return true;
+  
+  // Polled is dominant over horned
+  const cowPolled = cow.mocho === 'Si' || cow.mocho === 'Mocho';
+  const bullPolled = bull.mocho === 'Si' || bull.mocho === 'Mocho';
+
+  if (preference === 'polled') {
+    // At least one parent should be polled for polled offspring likelihood
+    return cowPolled || bullPolled;
+  } else if (preference === 'horned') {
+    // Both parents should be horned for horned offspring
+    return !cowPolled && !bullPolled;
+  }
+
+  return true;
+}
+
+function calculateWeightedScore(scores: any, weights: any, hornMatch: boolean): number {
+  let total = 0;
+  let totalWeight = 0;
+
+  if (scores.birth_weight_score > 0) {
+    total += scores.birth_weight_score * (weights.birth || 0.2);
+    totalWeight += weights.birth || 0.2;
+  }
+  if (scores.weaning_weight_score > 0) {
+    total += scores.weaning_weight_score * (weights.weaning || 0.3);
+    totalWeight += weights.weaning || 0.3;
+  }
+  if (scores.final_weight_score > 0) {
+    total += scores.final_weight_score * (weights.final || 0.3);
+    totalWeight += weights.final || 0.3;
+  }
+  if (scores.ce_score > 0) {
+    total += scores.ce_score * (weights.ce || 0.2);
+    totalWeight += weights.ce || 0.2;
+  }
+
+  let score = totalWeight > 0 ? total / totalWeight : 50;
+  
+  // Apply horn preference bonus/penalty
+  if (!hornMatch) {
+    score *= 0.9; // 10% penalty for horn mismatch
+  }
+
+  return Math.round(score);
+}
+
+function getMatchQuality(score: number): 'excellent' | 'good' | 'acceptable' | 'poor' {
+  if (score >= 85) return 'excellent';
+  if (score >= 70) return 'good';
+  if (score >= 55) return 'acceptable';
+  return 'poor';
+}
+
+function generateExplanation(cow: Animal, bull: Animal, F: number, score: number, quality: string): string {
   const parts: string[] = [];
 
   if (F === 0) {
-    parts.push("Sin parentesco directo");
+    parts.push("Sin parentesco");
   } else if (F < 0.03) {
     parts.push("Parentesco bajo");
   } else {
-    parts.push(`Parentesco moderado (F=${(F * 100).toFixed(1)}%)`);
+    parts.push(`Parentesco ${(F * 100).toFixed(1)}%`);
   }
 
-  if (fitScore > 0.8) {
-    parts.push("Excelente ajuste a benchmarks");
-  } else if (fitScore > 0.6) {
-    parts.push("Buen ajuste a benchmarks");
+  if (quality === 'excellent') {
+    parts.push("⭐ Excelente ajuste");
+  } else if (quality === 'good') {
+    parts.push("✓ Buen ajuste");
+  } else if (quality === 'acceptable') {
+    parts.push("Ajuste aceptable");
   } else {
-    parts.push("Ajuste moderado a benchmarks");
+    parts.push("Ajuste bajo");
   }
 
-  return parts.join("; ");
+  return parts.join(" • ");
 }
 
-function generateDetailedExplanation(cow: Animal, bull: Animal, F: number, fitScore: number, targets: any): any {
-  const predicted = predictOffspringTraits(cow, bull);
-  
-  const genetic_merit = `Mérito genético combinado basado en pesos parentales: Vaca (${cow.peso_final || 'N/A'}kg) × Toro (${bull.peso_final || 'N/A'}kg)`;
+function generateDetailedExplanation(
+  cow: Animal, 
+  bull: Animal, 
+  F: number, 
+  score: number, 
+  benchmarks: Benchmark,
+  predicted: any,
+  scores: any,
+  hornMatch: boolean
+): any {
+  const genetic_merit = `Vaca: ${cow.peso_final || 'N/A'}kg final • Toro: ${bull.peso_final || 'N/A'}kg final, CE: ${bull.circunferencia_escrotal || 'N/A'}cm`;
   
   let inbreeding_risk = "";
   if (F === 0) {
-    inbreeding_risk = "Riesgo nulo - No hay parentesco conocido entre los reproductores";
+    inbreeding_risk = "✓ Sin parentesco conocido - Cruce seguro";
   } else if (F < 0.03) {
-    inbreeding_risk = `Riesgo bajo (${(F * 100).toFixed(1)}%) - Parentesco distante, seguro para el cruce`;
+    inbreeding_risk = `Parentesco bajo (${(F * 100).toFixed(1)}%) - Seguro`;
   } else if (F < 0.0625) {
-    inbreeding_risk = `Riesgo moderado (${(F * 100).toFixed(1)}%) - Requiere monitoreo de la descendencia`;
+    inbreeding_risk = `⚠️ Parentesco moderado (${(F * 100).toFixed(1)}%) - Monitorear`;
   } else {
-    inbreeding_risk = `Riesgo alto (${(F * 100).toFixed(1)}%) - Cruce no recomendado`;
+    inbreeding_risk = `❌ Parentesco alto (${(F * 100).toFixed(1)}%) - No recomendado`;
   }
 
   const predicted_performance = [
-    predicted.birth_weight ? `Peso nacimiento esperado: ${predicted.birth_weight.toFixed(1)}kg` : null,
-    predicted.weaning_weight ? `Peso destete esperado: ${predicted.weaning_weight.toFixed(1)}kg` : null,
-    predicted.final_weight ? `Peso final esperado: ${predicted.final_weight.toFixed(1)}kg` : null,
-    predicted.ce_cm ? `CE esperada: ${predicted.ce_cm.toFixed(1)}cm` : null
-  ].filter(Boolean).join(", ");
+    predicted.birth_weight ? `Peso nacer: ${predicted.birth_weight.toFixed(1)}kg (${scores.birth_weight_score}pts)` : null,
+    predicted.weaning_weight ? `Peso destete: ${predicted.weaning_weight.toFixed(1)}kg (${scores.weaning_weight_score}pts)` : null,
+    predicted.final_weight ? `Peso final: ${predicted.final_weight.toFixed(1)}kg (${scores.final_weight_score}pts)` : null,
+    predicted.ce_cm ? `CE: ${predicted.ce_cm.toFixed(1)}cm (${scores.ce_score}pts)` : null,
+    !hornMatch ? `⚠️ Cuernos no coincide con preferencia` : null
+  ].filter(Boolean).join(" | ");
 
   let recommendation = "";
-  if (fitScore > 0.8 && F < 0.03) {
-    recommendation = "⭐ Cruce altamente recomendado - Excelente potencial genético con riesgo mínimo";
-  } else if (fitScore > 0.6 && F < 0.0625) {
-    recommendation = "✓ Cruce recomendado - Buen balance entre mejora genética y seguridad";
-  } else if (F >= 0.0625) {
-    recommendation = "⚠️ Evaluar alternativas - Riesgo de consanguinidad elevado";
+  if (score >= 85 && F < 0.03) {
+    recommendation = "⭐ Altamente recomendado - Excelente potencial genético";
+  } else if (score >= 70 && F < 0.0625) {
+    recommendation = "✓ Recomendado - Buen balance genético";
+  } else if (score >= 55) {
+    recommendation = "➡️ Aceptable - Cumple objetivos básicos";
   } else {
-    recommendation = "➡️ Cruce aceptable - Cumple objetivos básicos";
+    recommendation = "⚠️ Evaluar alternativas - Bajo potencial";
   }
 
   return {
     genetic_merit,
     inbreeding_risk,
     predicted_performance,
-    recommendation
+    recommendation,
+    scores: {
+      ...scores,
+      horn_match: hornMatch
+    }
   };
 }
 
@@ -404,9 +628,6 @@ function calculateCorralPlan(
   pairings: Pairing[],
   constraints: any
 ): any[] {
-  console.log("Starting intelligent corral redistribution");
-  
-  // Step 1: Build current state analysis
   const corralStats = corrals.map(corral => {
     const currentAnimals = [...cows, ...bulls].filter(a => a.corral_id === corral.id);
     const capacity = corral.capacity || Math.round((corral.hectareas || 0) * constraints.density_per_hectare);
@@ -427,24 +648,18 @@ function calculateCorralPlan(
     };
   });
 
-  // Step 2: Identify redistribution needs
   const corralsWithExcessBulls = corralStats.filter(stats => stats.hasExcessBulls);
   const corralsNeedingBulls = corralStats.filter(stats => stats.needsBull && stats.hasSpace);
   
-  console.log(`Found ${corralsWithExcessBulls.length} corrals with excess bulls, ${corralsNeedingBulls.length} corrals needing bulls`);
-
-  // Step 3: Calculate intelligent moves
   const moves: { bull: Animal, from: string, to: string }[] = [];
   
-  // Redistribute excess bulls to corrals that need them
   for (const sourceStats of corralsWithExcessBulls) {
     const excessBulls = sourceStats.currentBulls.slice(constraints.max_bulls_per_corral);
     
     for (const bull of excessBulls) {
-      // Find best destination corral
       const targetCorral = corralsNeedingBulls
-        .filter(stats => !moves.some(m => m.to === stats.corral.id)) // Not already receiving a bull
-        .sort((a, b) => b.eligibleCows.length - a.eligibleCows.length)[0]; // Prioritize corrals with more eligible cows
+        .filter(stats => !moves.some(m => m.to === stats.corral.id))
+        .sort((a, b) => b.eligibleCows.length - a.eligibleCows.length)[0];
       
       if (targetCorral) {
         moves.push({
@@ -453,42 +668,38 @@ function calculateCorralPlan(
           to: targetCorral.corral.id
         });
         
-        // Update tracking
         const targetIndex = corralsNeedingBulls.findIndex(s => s.corral.id === targetCorral.corral.id);
         if (targetIndex !== -1) {
-          corralsNeedingBulls.splice(targetIndex, 1); // Remove from needing bulls list
+          corralsNeedingBulls.splice(targetIndex, 1);
         }
       }
     }
   }
 
-  // Step 4: Build final plan with specific moves
-  const plan = corralStats.map(stats => {
+  return corralStats.map(stats => {
     const movesOut = moves.filter(m => m.from === stats.corral.id);
     const movesIn = moves.filter(m => m.to === stats.corral.id);
     
-    // Calculate final bull assignment after moves
     const finalBulls = [
       ...stats.currentBulls.filter(b => !movesOut.some(m => m.bull.id === b.id)),
       ...movesIn.map(m => m.bull)
     ];
 
-    // Generate intelligent suggestions
     let suggestion = "";
     const finalAnimalsCount = stats.currentAnimals.length - movesOut.length + movesIn.length;
     
     if (finalAnimalsCount > stats.capacity) {
-      suggestion = `Reducir ${finalAnimalsCount - stats.capacity} animales para optimizar densidad`;
+      suggestion = `Reducir ${finalAnimalsCount - stats.capacity} animales`;
     } else if (finalBulls.length === 0 && stats.eligibleCows.length > 0) {
-      suggestion = "Requiere asignación de toro reproductor";
+      suggestion = "Requiere toro reproductor";
     } else if (movesIn.length > 0) {
-      suggestion = `Recibiendo ${movesIn.length} toro(s) para optimizar servicio`;
+      suggestion = `Recibiendo ${movesIn.length} toro(s)`;
     } else if (movesOut.length > 0) {
-      suggestion = `Liberando ${movesOut.length} toro(s) para mejor distribución`;
+      suggestion = `Liberando ${movesOut.length} toro(s)`;
     } else if (finalAnimalsCount < stats.capacity * 0.7) {
-      suggestion = `Capacidad disponible para ${Math.floor(stats.capacity - finalAnimalsCount)} animales adicionales`;
+      suggestion = `Capacidad: ${Math.floor(stats.capacity - finalAnimalsCount)} lugares`;
     } else {
-      suggestion = "Distribución óptima - No requiere cambios";
+      suggestion = "Distribución óptima";
     }
     
     return {
@@ -497,53 +708,56 @@ function calculateCorralPlan(
       moves_in: movesIn.map(m => ({
         animal_id: m.bull.id,
         animal_name: m.bull.name || m.bull.id_tag || `T-${m.bull.id.slice(0, 6)}`,
-        animal_type: 'Toro',
-        reason: `Optimizar servicio (${stats.eligibleCows.length} vacas elegibles)`
+        from_corral: corrals.find(c => c.id === m.from)?.name
       })),
       moves_out: movesOut.map(m => ({
         animal_id: m.bull.id,
         animal_name: m.bull.name || m.bull.id_tag || `T-${m.bull.id.slice(0, 6)}`,
-        animal_type: 'Toro',
-        reason: 'Redistribuir para equilibrar corrales'
+        to_corral: corrals.find(c => c.id === m.to)?.name
       })),
       bulls_assigned: finalBulls.map(b => ({
         id: b.id,
         name: b.name || b.id_tag || `T-${b.id.slice(0, 6)}`
       })),
-      eligible_cows_count: stats.eligibleCows.length,
-      current_capacity: finalAnimalsCount,
-      max_capacity: stats.capacity,
       capacity_ok: finalAnimalsCount <= stats.capacity,
-      ratio_ok: finalBulls.length <= constraints.max_bulls_per_corral,
-      has_breeding_potential: finalBulls.length > 0 && stats.eligibleCows.length > 0,
+      ratio_ok: stats.eligibleCows.length === 0 || 
+                (finalBulls.length > 0 && stats.eligibleCows.length / finalBulls.length <= constraints.cow_per_bull_max),
       suggestion
     };
   });
-
-  console.log(`Generated ${moves.length} bull movements for optimal distribution`);
-  return plan;
 }
 
 function generateWarnings(pairings: Pairing[], corralPlan: any[], cows: Animal[], bulls: Animal[]): string[] {
   const warnings: string[] = [];
 
-  const unpairedCows = cows.length - pairings.length;
-  if (unpairedCows > 0) {
-    warnings.push(`${unpairedCows} vacas sin asignación de cruce`);
+  if (bulls.length === 0) {
+    warnings.push("No hay toros elegibles para servicio");
   }
 
-  const overCapacityCorrals = corralPlan.filter(c => !c.capacity_ok);
-  if (overCapacityCorrals.length > 0) {
-    warnings.push(`${overCapacityCorrals.length} corrales sobre capacidad`);
+  if (cows.length === 0) {
+    warnings.push("No hay vacas elegibles para servicio");
+  }
+
+  const poorMatches = pairings.filter(p => p.match_quality === 'poor').length;
+  if (poorMatches > pairings.length * 0.3) {
+    warnings.push(`${poorMatches} cruces con bajo potencial genético`);
+  }
+
+  const overCapacity = corralPlan.filter(c => !c.capacity_ok);
+  if (overCapacity.length > 0) {
+    warnings.push(`${overCapacity.length} corrales sobre capacidad`);
+  }
+
+  const needBulls = corralPlan.filter(c => c.suggestion.includes("Requiere toro"));
+  if (needBulls.length > 0) {
+    warnings.push(`${needBulls.length} corrales sin toro asignado`);
   }
 
   return warnings;
 }
 
 function detectSeason(): string {
-  const month = new Date().getMonth() + 1; // 1-12
-  if (month >= 3 && month <= 5) return "Otoño";
-  if (month >= 6 && month <= 8) return "Invierno";
-  if (month >= 9 && month <= 11) return "Primavera";
-  return "Verano";
+  const month = new Date().getMonth() + 1;
+  if (month >= 9 || month <= 2) return "Primavera/Verano";
+  return "Otoño/Invierno";
 }

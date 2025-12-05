@@ -1024,7 +1024,14 @@ export type Database = {
           daily_gain_excellent: number
           daily_gain_good: number
           daily_gain_poor: number
+          final_weight_excellent: number | null
+          final_weight_good: number | null
+          final_weight_poor: number | null
+          horn_preference: string | null
           id: string
+          scrotal_circumference_excellent: number | null
+          scrotal_circumference_good: number | null
+          scrotal_circumference_poor: number | null
           updated_at: string
           weaning_weight_excellent: number
           weaning_weight_good: number
@@ -1040,7 +1047,14 @@ export type Database = {
           daily_gain_excellent?: number
           daily_gain_good?: number
           daily_gain_poor?: number
+          final_weight_excellent?: number | null
+          final_weight_good?: number | null
+          final_weight_poor?: number | null
+          horn_preference?: string | null
           id?: string
+          scrotal_circumference_excellent?: number | null
+          scrotal_circumference_good?: number | null
+          scrotal_circumference_poor?: number | null
           updated_at?: string
           weaning_weight_excellent?: number
           weaning_weight_good?: number
@@ -1056,7 +1070,14 @@ export type Database = {
           daily_gain_excellent?: number
           daily_gain_good?: number
           daily_gain_poor?: number
+          final_weight_excellent?: number | null
+          final_weight_good?: number | null
+          final_weight_poor?: number | null
+          horn_preference?: string | null
           id?: string
+          scrotal_circumference_excellent?: number | null
+          scrotal_circumference_good?: number | null
+          scrotal_circumference_poor?: number | null
           updated_at?: string
           weaning_weight_excellent?: number
           weaning_weight_good?: number
