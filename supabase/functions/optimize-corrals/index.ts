@@ -6,8 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type ObjectiveType = 'consanguinity' | 'fertility' | 'weight' | 'standards' | 'breeding_ratio';
-type SecondaryObjectiveType = 'none' | 'fertility' | 'weight' | 'standards';
+type ObjectiveType = 'consanguinity' | 'fertility' | 'standards' | 'benchmarks' | 'breeding_ratio';
+type SecondaryObjectiveType = 'none' | 'fertility' | 'standards';
 
 interface CustomBenchmark {
   breed: string | null;
@@ -2151,7 +2151,7 @@ serve(async (req) => {
               count++;
             }
             return count > 0 ? totalScore / count : 50;
-          } else if (secondaryObj === 'weight' || secondaryObj === 'standards') {
+          } else if (secondaryObj === 'standards') {
             // Calculate average benchmark-based score using cabaña standards
             let totalScore = 0;
             let count = 0;
@@ -2302,7 +2302,7 @@ serve(async (req) => {
             }));
           
           const secondaryLabel = secondaryObjective === 'fertility' ? t.fertilityOptimized : 
-                                secondaryObjective === 'weight' ? t.weightOptimized : '';
+                                secondaryObjective === 'standards' ? t.weightOptimized : '';
           
           suggestedMoves.push({
             animal_id: bestMove.animal.id,
@@ -3038,7 +3038,7 @@ serve(async (req) => {
       console.log(`Breeding pairs: ${breedingPairsBefore} -> ${breedingPairsAfter} (${pairsImprovement}% improvement)`);
       console.log(`Avg fertility of moved animals: ${avgFertilityMoved}%`);
       
-    } else if (objective === 'weight' || objective === 'standards') {
+    } else if (objective === 'standards' || objective === 'benchmarks') {
       // =========================================================================
       // STANDARDS OBJECTIVE (benchmark-based scoring using cabaña standards)
       // =========================================================================
@@ -3096,8 +3096,8 @@ serve(async (req) => {
       }
     }
 
-    // Secondary breeding ratio pass for fertility/weight/standards (only if explicitly requested)
-    if ((objective === 'fertility' || objective === 'weight' || objective === 'standards') && applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
+    // Secondary breeding ratio pass for fertility/standards (only if explicitly requested)
+    if ((objective === 'fertility' || objective === 'standards' || objective === 'benchmarks') && applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
       console.log(`Applying breeding ratio secondary pass for ${objective} (explicitly requested)`);
       const corralAnalysis = analyzeCorralDistribution(corralsWithCounts, workingDistribution, females_per_bull);
       const breedingMoves = redistributeForOptimalBreeding(
@@ -3166,8 +3166,8 @@ serve(async (req) => {
       } else {
         expectedImprovement = t.alreadyOptimal || 'Distribution is already optimal';
       }
-    } else if (objective === 'weight' || objective === 'standards') {
-      const count = suggestedMoves.filter(m => m.issue_type === 'weight' || m.issue_type === 'standards').length;
+    } else if (objective === 'standards' || objective === 'benchmarks') {
+      const count = suggestedMoves.filter(m => m.issue_type === 'standards').length;
       expectedImprovement = t.expectedImprovementWeight.replace('{{count}}', count.toString());
     }
 
