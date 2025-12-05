@@ -3095,8 +3095,12 @@ serve(async (req) => {
       console.log(`Generated ${suggestedMoves.length} fertility moves`);
       console.log(`Breeding pairs: ${breedingPairsBefore} -> ${breedingPairsAfter} (${pairsImprovement}% improvement)`);
       console.log(`Avg fertility of moved animals: ${avgFertilityMoved}%`);
-      
-    } else if (objective === 'standards' || objective === 'benchmarks') {
+    }
+    
+    // Declare breedingPairings at higher scope so it's accessible for response building
+    let breedingPairingsResults: BreedingPairing[] = [];
+    
+    if (objective === 'standards' || objective === 'benchmarks') {
       // =========================================================================
       // STANDARDS OBJECTIVE - COMPREHENSIVE BREEDING PAIR ANALYSIS
       // Analyzes ALL possible breeding pairs and scores them against ranch benchmarks
@@ -3308,10 +3312,14 @@ serve(async (req) => {
               issue_type: 'standards',
               expectedBenefit: `${t.meetsExcellent} (${pairing?.match_quality || 'good'})`,
             });
-            movedAnimals.add(cow.id);
-          }
+          movedAnimals.add(cow.id);
         }
       }
+      
+      // Store breedingPairings in higher-scope variable before block closes
+      breedingPairingsResults = breedingPairings;
+      console.log(`Breeding pair analysis complete: ${breedingPairings.length} total pairings analyzed`);
+    }
     }
 
     // Secondary breeding ratio pass for fertility/standards (only if explicitly requested)
@@ -3390,16 +3398,17 @@ serve(async (req) => {
       const count = suggestedMoves.filter(m => m.issue_type === 'standards').length;
       expectedImprovement = t.expectedImprovementStandards.replace('{{count}}', count.toString());
       
-      // Include breeding pairings summary for standards objective
-      if (typeof breedingPairings !== 'undefined' && breedingPairings.length > 0) {
+      // Include breeding pairings summary for standards objective (use higher-scope variable)
+      if (breedingPairingsResults.length > 0) {
         breedingPairingsSummary = {
-          totalPairings: breedingPairings.length,
-          excellentMatches: breedingPairings.filter(p => p.match_quality === 'excellent' && !p.blocked).length,
-          goodMatches: breedingPairings.filter(p => p.match_quality === 'good' && !p.blocked).length,
-          acceptableMatches: breedingPairings.filter(p => p.match_quality === 'acceptable' && !p.blocked).length,
-          blockedCombinations: breedingPairings.filter(p => p.blocked).length,
-          topPairings: breedingPairings.filter(p => !p.blocked).slice(0, 20),
+          totalPairings: breedingPairingsResults.length,
+          excellentMatches: breedingPairingsResults.filter(p => p.match_quality === 'excellent' && !p.blocked).length,
+          goodMatches: breedingPairingsResults.filter(p => p.match_quality === 'good' && !p.blocked).length,
+          acceptableMatches: breedingPairingsResults.filter(p => p.match_quality === 'acceptable' && !p.blocked).length,
+          blockedCombinations: breedingPairingsResults.filter(p => p.blocked).length,
+          topPairings: breedingPairingsResults.filter(p => !p.blocked).slice(0, 20),
         };
+        console.log(`Breeding pairings summary: ${breedingPairingsSummary.totalPairings} total, ${breedingPairingsSummary.excellentMatches} excellent, ${breedingPairingsSummary.goodMatches} good`);
       }
     }
 
