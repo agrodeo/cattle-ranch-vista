@@ -234,7 +234,7 @@ export function FinancesMovements() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-[160px] justify-start">
-              <CalendarIcon className="mr-2 h-4 w-4" /> {from ? format(from, "P") : "Desde"}
+              <CalendarIcon className="mr-2 h-4 w-4" /> {from ? format(from, "P") : t('finance:filters.from')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -244,7 +244,7 @@ export function FinancesMovements() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-[160px] justify-start">
-              <CalendarIcon className="mr-2 h-4 w-4" /> {to ? format(to, "P") : "Hasta"}
+              <CalendarIcon className="mr-2 h-4 w-4" /> {to ? format(to, "P") : t('finance:filters.to')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -252,10 +252,10 @@ export function FinancesMovements() {
           </PopoverContent>
         </Popover>
         <Select value={type} onValueChange={setType}>
-          <SelectTrigger className="w-[150px]"><SelectValue placeholder="Tipo" /></SelectTrigger>
+          <SelectTrigger className="w-[150px]"><SelectValue placeholder={t('finance:movements.typePlaceholder')} /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="ingreso">Ingreso</SelectItem>
-            <SelectItem value="egreso">Egreso</SelectItem>
+            <SelectItem value="ingreso">{t('finance:types.income')}</SelectItem>
+            <SelectItem value="egreso">{t('finance:types.expense')}</SelectItem>
           </SelectContent>
         </Select>
         <CategorySelect
@@ -264,12 +264,12 @@ export function FinancesMovements() {
           onChange={(id) => setCategoryFilter(id === "__none__" ? undefined : id)}
           className="w-[220px]"
           allowCreate={false}
-          placeholder="Filtrar por categoría"
+          placeholder={t('finance:movements.filterByCategory')}
         />
-        <Input placeholder="Buscar descripción" value={search} onChange={(e) => setSearch(e.target.value)} className="w-[220px]" />
+        <Input placeholder={t('finance:movements.searchDescription')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-[220px]" />
         <div className="ml-auto">
           <Button onClick={onCreate} disabled={!canEdit}>
-            <Plus className="mr-2 h-4 w-4" /> Agregar
+            <Plus className="mr-2 h-4 w-4" /> {t('common:actions.add')}
           </Button>
         </div>
       </div>
@@ -278,22 +278,22 @@ export function FinancesMovements() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Fecha</TableHead>
-              <TableHead>Tipo</TableHead>
-              <TableHead>Categoría</TableHead>
-              <TableHead className="text-right">Monto</TableHead>
-              <TableHead>Descripción</TableHead>
+              <TableHead>{t('finance:movements.tableHeaders.date')}</TableHead>
+              <TableHead>{t('finance:movements.tableHeaders.type')}</TableHead>
+              <TableHead>{t('finance:movements.tableHeaders.category')}</TableHead>
+              <TableHead className="text-right">{t('finance:movements.tableHeaders.amount')}</TableHead>
+              <TableHead>{t('finance:movements.tableHeaders.description')}</TableHead>
               <TableHead className="w-[110px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading && (
-              <TableRow><TableCell colSpan={6}>Cargando...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6}>{t('finance:movements.loading')}</TableCell></TableRow>
             )}
             {!isLoading && (data || []).map((row: any) => (
               <TableRow key={row.id}>
                 <TableCell>{row.date ? format(new Date(row.date), "dd/MM/yyyy") : "-"}</TableCell>
-                <TableCell className={row.type === 'ingreso' ? 'text-primary' : 'text-destructive'}>{row.type}</TableCell>
+                <TableCell className={row.type === 'ingreso' ? 'text-primary' : 'text-destructive'}>{row.type === 'ingreso' ? t('finance:types.income') : t('finance:types.expense')}</TableCell>
                 <TableCell>
                   {row.category_name || row.category?.name || "-"}
                 </TableCell>
@@ -312,13 +312,13 @@ export function FinancesMovements() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editRow ? "Editar movimiento" : "Nuevo movimiento"}</DialogTitle>
+            <DialogTitle>{editRow ? t('finance:movements.editMovement') : t('finance:movements.newMovement')}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3">
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="justify-start">
-                  <CalendarIcon className="mr-2 h-4 w-4" /> {form.date ? format(form.date, "PPP") : "Fecha"}
+                  <CalendarIcon className="mr-2 h-4 w-4" /> {form.date ? format(form.date, "PPP") : t('finance:movements.datePlaceholder')}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -327,10 +327,10 @@ export function FinancesMovements() {
             </Popover>
 
             <Select value={form.type} onValueChange={(v) => setForm(f => ({...f, type: v}))}>
-              <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('finance:movements.typePlaceholder')} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="ingreso">Ingreso</SelectItem>
-                <SelectItem value="egreso">Egreso</SelectItem>
+                <SelectItem value="ingreso">{t('finance:types.income')}</SelectItem>
+                <SelectItem value="egreso">{t('finance:types.expense')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -356,7 +356,7 @@ export function FinancesMovements() {
                     }));
                   }}
                 />
-                <Label htmlFor="animal-sale">Venta de animales</Label>
+                <Label htmlFor="animal-sale">{t('finance:movements.animalSale')}</Label>
               </div>
             )}
 
@@ -367,19 +367,19 @@ export function FinancesMovements() {
                   onChange={(ids) => setForm(f => ({...f, animalIds: ids}))}
                 />
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <Input placeholder="Comprador (opcional)" value={form.buyerName} onChange={(e) => setForm(f => ({...f, buyerName: e.target.value}))} />
-                  <Input placeholder="Documento (opcional)" value={form.buyerDocument} onChange={(e) => setForm(f => ({...f, buyerDocument: e.target.value}))} />
-                  <Input placeholder="Destino (opcional)" value={form.buyerDestination} onChange={(e) => setForm(f => ({...f, buyerDestination: e.target.value}))} />
+                  <Input placeholder={t('finance:movements.buyerName')} value={form.buyerName} onChange={(e) => setForm(f => ({...f, buyerName: e.target.value}))} />
+                  <Input placeholder={t('finance:movements.buyerDocument')} value={form.buyerDocument} onChange={(e) => setForm(f => ({...f, buyerDocument: e.target.value}))} />
+                  <Input placeholder={t('finance:movements.buyerDestination')} value={form.buyerDestination} onChange={(e) => setForm(f => ({...f, buyerDestination: e.target.value}))} />
                 </div>
               </div>
             )}
 
-            <Input type="number" placeholder="Monto" value={form.amount} onChange={(e) => setForm(f => ({...f, amount: e.target.value}))} />
-            <Textarea placeholder="Descripción" value={form.description} onChange={(e) => setForm(f => ({...f, description: e.target.value}))} />
+            <Input type="number" placeholder={t('finance:movements.amountPlaceholder')} value={form.amount} onChange={(e) => setForm(f => ({...f, amount: e.target.value}))} />
+            <Textarea placeholder={t('finance:movements.descriptionPlaceholder')} value={form.description} onChange={(e) => setForm(f => ({...f, description: e.target.value}))} />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-            <Button onClick={() => upsertMutation.mutate()} disabled={!canEdit}>{editRow ? "Guardar" : "Crear"}</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>{t('common:actions.cancel')}</Button>
+            <Button onClick={() => upsertMutation.mutate()} disabled={!canEdit}>{editRow ? t('common:actions.save') : t('common:actions.create')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
