@@ -73,7 +73,7 @@ export default function FinancesRecurring() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!currentUser?.id) throw new Error("Usuario no autenticado");
+      if (!currentUser?.id) throw new Error(t('common:errors.notAuthenticated'));
 
       const { error } = await supabaseAny.rpc('create_finance_recurring', {
         _user_id: currentUser.id,
@@ -91,12 +91,12 @@ export default function FinancesRecurring() {
       queryClient.invalidateQueries({ queryKey: ["finances","recurring"] });
       setForm({ name: "", type: "egreso", amount: "", categoryId: undefined, description: "", frequency: "monthly" });
     },
-    onError: (e: any) => toast.error(e?.message || "Error al crear recurrente"),
+    onError: (e: any) => toast.error(e?.message || t('finance:recurringDetails.errorCreating')),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      if (!currentUser?.id) throw new Error("Usuario no autenticado");
+      if (!currentUser?.id) throw new Error(t('common:errors.notAuthenticated'));
 
       const { error } = await supabaseAny.rpc('delete_finance_recurring', {
         _user_id: currentUser.id,
@@ -108,7 +108,7 @@ export default function FinancesRecurring() {
       toast.success(t('finance:recurringDetails.recurringDeleted'));
       queryClient.invalidateQueries({ queryKey: ["finances","recurring"] });
     },
-    onError: (e: any) => toast.error(e?.message || "Error al eliminar"),
+    onError: (e: any) => toast.error(e?.message || t('finance:recurringDetails.errorDeleting')),
   });
 
   return (
@@ -116,31 +116,31 @@ export default function FinancesRecurring() {
       <Card>
         <CardContent className="pt-6 grid gap-3">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            <Input placeholder="Nombre (ej. Sueldo)" value={form.name} onChange={(e) => setForm(f => ({...f, name: e.target.value}))} />
+            <Input placeholder={t('finance:recurringDetails.recurringNamePlaceholder')} value={form.name} onChange={(e) => setForm(f => ({...f, name: e.target.value}))} />
             <Select value={form.type} onValueChange={(v: FinanceType) => setForm(f => ({...f, type: v}))}>
-              <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('finance:movements.typePlaceholder')} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="ingreso">Ingreso</SelectItem>
-                <SelectItem value="egreso">Egreso</SelectItem>
+                <SelectItem value="ingreso">{t('finance:types.income')}</SelectItem>
+                <SelectItem value="egreso">{t('finance:types.expense')}</SelectItem>
               </SelectContent>
             </Select>
-            <Input type="number" placeholder="Monto" value={form.amount} onChange={(e) => setForm(f => ({...f, amount: e.target.value}))} />
+            <Input type="number" placeholder={t('finance:movements.amountPlaceholder')} value={form.amount} onChange={(e) => setForm(f => ({...f, amount: e.target.value}))} />
             <CategorySelect type={form.type} value={form.categoryId} onChange={(id) => setForm(f => ({...f, categoryId: id === "__none__" ? undefined : id}))} />
             <Select value={form.frequency} onValueChange={(v: Frequency) => setForm(f => ({...f, frequency: v}))}>
-              <SelectTrigger><SelectValue placeholder="Frecuencia" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder={t('finance:recurringDetails.frequencyPlaceholder')} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="monthly">Mensual</SelectItem>
-                <SelectItem value="weekly">Semanal</SelectItem>
-                <SelectItem value="quarterly">Trimestral</SelectItem>
-                <SelectItem value="yearly">Anual</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
+                <SelectItem value="monthly">{t('finance:recurringDetails.frequency.monthly')}</SelectItem>
+                <SelectItem value="weekly">{t('finance:recurringDetails.frequency.weekly')}</SelectItem>
+                <SelectItem value="quarterly">{t('finance:recurringDetails.frequency.quarterly')}</SelectItem>
+                <SelectItem value="yearly">{t('finance:recurringDetails.frequency.yearly')}</SelectItem>
+                <SelectItem value="custom">{t('finance:recurringDetails.frequency.custom')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="flex gap-2">
-            <Input placeholder="Descripción (opcional)" value={form.description} onChange={(e) => setForm(f => ({...f, description: e.target.value}))} />
+            <Input placeholder={t('finance:recurringDetails.descriptionOptional')} value={form.description} onChange={(e) => setForm(f => ({...f, description: e.target.value}))} />
             <Button onClick={() => createMutation.mutate()} disabled={!form.name.trim() || !form.amount || !currentUser?.id}>
-              Agregar recurrente
+              {t('finance:recurringDetails.addRecurring')}
             </Button>
           </div>
         </CardContent>
@@ -148,19 +148,19 @@ export default function FinancesRecurring() {
 
       <Card>
         <CardContent className="pt-6">
-          {isLoading && <div>{t('summary.loading')}</div>}
-          {!isLoading && items.length === 0 && <div className="text-sm text-muted-foreground">{t('recurringDetails.noRecurring')}</div>}
+          {isLoading && <div>{t('finance:summary.loading')}</div>}
+          {!isLoading && items.length === 0 && <div className="text-sm text-muted-foreground">{t('finance:recurringDetails.noRecurring')}</div>}
           {!isLoading && items.length > 0 && (
             <div className="space-y-2">
               {items.map((r) => (
                 <div key={r.id} className="flex items-center gap-3 rounded border px-3 py-2">
                   <div className="flex-1">
-                    <div className="font-medium">{r.name} <span className="text-xs text-muted-foreground">({r.type})</span></div>
+                    <div className="font-medium">{r.name} <span className="text-xs text-muted-foreground">({r.type === 'ingreso' ? t('finance:types.income') : t('finance:types.expense')})</span></div>
                     <div className="text-sm text-muted-foreground">
-                      ${r.amount.toLocaleString()} • {r.frequency} • {t('recurringDetails.nextRun')}: {r.next_run_date ? format(new Date(r.next_run_date), "dd/MM/yyyy") : "-"}
+                      ${r.amount.toLocaleString()} • {t(`finance:recurringDetails.frequency.${r.frequency}`)} • {t('finance:recurringDetails.nextRun')}: {r.next_run_date ? format(new Date(r.next_run_date), "dd/MM/yyyy") : "-"}
                     </div>
                   </div>
-                  <Button variant="destructive" size="sm" onClick={() => deleteMutation.mutate(r.id)}>{t('recurringDetails.delete')}</Button>
+                  <Button variant="destructive" size="sm" onClick={() => deleteMutation.mutate(r.id)}>{t('finance:recurringDetails.delete')}</Button>
                 </div>
               ))}
             </div>

@@ -260,7 +260,8 @@
     "reload": "Recarregar",
     "errorProcessing": "Erro ao processar",
     "loadError": "Erro ao carregar",
-    "saveError": "Erro ao salvar"
+    "saveError": "Erro ao salvar",
+    "notAuthenticated": "Usuário não autenticado"
   },
   "forms": {
     "select": "Selecionar",

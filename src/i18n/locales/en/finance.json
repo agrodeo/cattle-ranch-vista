@@ -167,7 +167,15 @@
     "confirmDelete": "Are you sure you want to delete this recurring movement?",
     "recurringNamePlaceholder": "Name (e.g. Salary)",
     "descriptionOptional": "Description (optional)",
-    "addRecurring": "Add recurring"
+    "addRecurring": "Add recurring",
+    "frequencyPlaceholder": "Frequency",
+    "frequency": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly",
+      "custom": "Custom"
+    }
   },
   "summary": {
     "title": "Financial Summary",

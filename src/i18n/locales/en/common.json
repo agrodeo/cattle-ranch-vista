@@ -260,7 +260,8 @@
     "reload": "Reload",
     "errorProcessing": "Error processing",
     "loadError": "Error loading",
-    "saveError": "Error saving"
+    "saveError": "Error saving",
+    "notAuthenticated": "User not authenticated"
   },
   "forms": {
     "select": "Select",
