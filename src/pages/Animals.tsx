@@ -1177,7 +1177,7 @@ const Animals = () => {
                       <TableHead>{t('animals:fields.breed')}</TableHead>
                       <TableHead>{t('animals:fields.birthDate')}</TableHead>
                       <TableHead>{t('animals:fields.status')}</TableHead>
-                      <TableHead>{t('common:actions')}</TableHead>
+                      <TableHead>{t('common:actions.title')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
