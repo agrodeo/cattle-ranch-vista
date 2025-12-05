@@ -486,8 +486,8 @@
           "none": "Ninguno (solo minimizar riesgo)",
           "fertility": "Maximizar fertilidad",
           "fertilityDesc": "Preferir corrales con mejor potencial reproductivo",
-          "weight": "Maximizar genética de peso",
-          "weightDesc": "Preferir corrales con mejor genética de peso"
+          "standards": "Seguir estándares de la cabaña",
+          "standardsDesc": "Preferir corrales con animales que cumplen estándares configurados"
         }
       },
       "breedingRatioConfig": {

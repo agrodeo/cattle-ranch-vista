@@ -488,8 +488,8 @@
           "none": "None (minimize risk only)",
           "fertility": "Maximize fertility",
           "fertilityDesc": "Prefer corrals with better reproductive potential",
-          "weight": "Maximize weight genetics",
-          "weightDesc": "Prefer corrals with better weight genetics"
+          "standards": "Follow ranch standards",
+          "standardsDesc": "Prefer corrals with animals meeting configured standards"
         }
       },
       "breedingRatioConfig": {
