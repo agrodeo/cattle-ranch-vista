@@ -167,7 +167,15 @@
     "confirmDelete": "Tem certeza de que deseja excluir este movimento recorrente?",
     "recurringNamePlaceholder": "Nome (ex. Salário)",
     "descriptionOptional": "Descrição (opcional)",
-    "addRecurring": "Adicionar recorrente"
+    "addRecurring": "Adicionar recorrente",
+    "frequencyPlaceholder": "Frequência",
+    "frequency": {
+      "monthly": "Mensal",
+      "weekly": "Semanal",
+      "quarterly": "Trimestral",
+      "yearly": "Anual",
+      "custom": "Personalizado"
+    }
   },
   "summary": {
     "title": "Resumo Financeiro",
