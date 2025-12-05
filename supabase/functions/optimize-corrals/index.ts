@@ -3296,27 +3296,57 @@ serve(async (req) => {
       // -------------------------------------------------------------------------
       
       // Get destination corrals (user-selected or all)
-      const destinationCorralsList = corralsWithCounts.filter(c => 
+      const allDestinationCorrals = corralsWithCounts.filter(c => 
         destinationCorrals.length === 0 || destinationCorrals.includes(c.id)
       );
       
-      if (destinationCorralsList.length === 0) {
+      if (allDestinationCorrals.length === 0) {
         console.log('No destination corrals available');
       } else {
-        // Initialize corral assignments
+        // -------------------------------------------------------------------------
+        // CALCULATE OPTIMAL CONFIGURATION
+        // Don't spread bulls across all corrals - concentrate them!
+        // -------------------------------------------------------------------------
+        const totalFemales = breedingAgeFemales.length;
+        const totalBulls = breedingAgeMales.length;
+        
+        // How many bulls do we actually NEED to service all females?
+        const bullsNeeded = Math.min(
+          totalBulls,
+          Math.max(1, Math.ceil(totalFemales / females_per_bull))
+        );
+        
+        // How many corrals do we need? Aim for min_bulls_per_corral per corral
+        const minBullsTarget = Math.max(1, min_bulls_per_corral || 1);
+        const corralsNeeded = Math.max(1, Math.ceil(bullsNeeded / minBullsTarget));
+        
+        console.log(`=== OPTIMAL CONFIGURATION ===`);
+        console.log(`Total females: ${totalFemales}, Total bulls: ${totalBulls}`);
+        console.log(`Females per bull ratio: ${females_per_bull}`);
+        console.log(`Bulls needed: ${bullsNeeded} (to service ${totalFemales} females)`);
+        console.log(`Min bulls per corral: ${minBullsTarget}`);
+        console.log(`Corrals needed: ${corralsNeeded} (of ${allDestinationCorrals.length} available)`);
+        
+        // Select only the needed corrals (prioritize by capacity)
+        const selectedCorrals = allDestinationCorrals
+          .sort((a, b) => (b.capacity || 100) - (a.capacity || 100))
+          .slice(0, Math.min(corralsNeeded, allDestinationCorrals.length));
+        
+        console.log(`Selected corrals: ${selectedCorrals.map(c => c.name).join(', ')}`);
+        
+        // Initialize corral assignments ONLY for selected corrals
         const corralAssignments: Record<string, { 
           bulls: Animal[]; 
           cows: Animal[];
           expectedScore: number;
         }> = {};
         
-        for (const corral of destinationCorralsList) {
+        for (const corral of selectedCorrals) {
           corralAssignments[corral.id] = { bulls: [], cows: [], expectedScore: 0 };
         }
         
-        // Step 3a: Assign bulls to corrals (distribute evenly, respecting max per corral)
-        const bullsToAssign = [...breedingAgeMales];
-        const maxBullsPerCorral = min_bulls_per_corral || 1;
+        // Step 3a: Assign ONLY the needed bulls to selected corrals
+        const bullsToAssign = [...breedingAgeMales].slice(0, bullsNeeded);
         
         // Sort bulls by average score (bulls with higher avg score across all cows first)
         bullsToAssign.sort((a, b) => {
@@ -3333,29 +3363,14 @@ serve(async (req) => {
           return avgB - avgA;
         });
         
-        // Distribute bulls round-robin to corrals
+        // Distribute bulls round-robin to SELECTED corrals only
         let corralIndex = 0;
+        const selectedCorralIds = selectedCorrals.map(c => c.id);
+        
         for (const bull of bullsToAssign) {
-          const corralIds = destinationCorralsList.map(c => c.id);
-          let assigned = false;
-          
-          for (let i = 0; i < corralIds.length; i++) {
-            const targetCorralId = corralIds[(corralIndex + i) % corralIds.length];
-            if (corralAssignments[targetCorralId].bulls.length < maxBullsPerCorral) {
-              corralAssignments[targetCorralId].bulls.push(bull);
-              assigned = true;
-              corralIndex = (corralIndex + 1) % corralIds.length;
-              break;
-            }
-          }
-          
-          if (!assigned) {
-            // All corrals at max bulls, assign to first corral with least bulls
-            const leastBullsCorral = corralIds.reduce((min, id) => 
-              corralAssignments[id].bulls.length < corralAssignments[min].bulls.length ? id : min
-            , corralIds[0]);
-            corralAssignments[leastBullsCorral].bulls.push(bull);
-          }
+          const targetCorralId = selectedCorralIds[corralIndex % selectedCorralIds.length];
+          corralAssignments[targetCorralId].bulls.push(bull);
+          corralIndex++;
         }
         
         console.log('Bull distribution:', Object.entries(corralAssignments).map(([id, a]) => 
@@ -3394,7 +3409,7 @@ serve(async (req) => {
           let bestCorralId = '';
           let bestScore = -Infinity;
           
-          for (const corral of destinationCorralsList) {
+          for (const corral of selectedCorrals) {
             // Check capacity (females_per_bull ratio)
             const currentCows = corralAssignments[corral.id].cows.length;
             const numBulls = corralAssignments[corral.id].bulls.length;
