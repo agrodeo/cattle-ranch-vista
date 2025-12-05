@@ -208,7 +208,7 @@ const translations = {
     reduceOvercrowding: "Reduce overcrowding",
     spaceAvailable: "Space available",
     improveBreeding: "Improve reproductive potential",
-    optimizeStandards: "Optimize by cabaña standards",
+    optimizeStandards: "Optimize by ranch standards",
     groupFertileFemales: "Group fertile females",
     groupHighStandardAnimals: "Group animals meeting standards",
     meetsExcellent: "Meets excellent standards",

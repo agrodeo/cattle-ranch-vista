@@ -126,7 +126,7 @@
       "successTitle": "Success",
       "successMessage": "Corral created successfully",
       "errorMessage": "Could not create corral",
-      "noCabanaError": "User's cabaña not found"
+      "noCabanaError": "User's ranch not found"
     },
     "edit": {
       "title": "Edit Corral",
@@ -637,8 +637,8 @@
         "description": "Group fertile females with high reproductive performance bulls to maximize pregnancy"
       },
       "benchmarks": {
-        "title": "Cabaña Standards",
-        "description": "Group animals that meet your configured cabaña benchmarks (birth weight, weaning weight, daily gain)"
+        "title": "Ranch Standards",
+        "description": "Group animals that meet your configured ranch benchmarks (birth weight, weaning weight, daily gain)"
       },
       "breeding_ratio": {
         "title": "Breeding Distribution",
@@ -665,7 +665,7 @@
       "reduceOvercrowding": "Reduce overcrowding ({{current}}/{{capacity}})",
       "spaceAvailable": "Space available",
       "improveBreeding": "Improve reproductive potential ({{score}}% fertility)",
-      "optimizeBenchmarks": "Meets cabaña standards ({{tier}})",
+      "optimizeBenchmarks": "Meets ranch standards ({{tier}})",
       "groupFertileFemales": "Group fertile females (>{{threshold}}% pregnancy)",
       "groupHighStandardAnimals": "Group animals meeting standards",
       "separateLowPerformers": "Separate low reproductive performance",
