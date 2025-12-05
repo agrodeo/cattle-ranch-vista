@@ -636,9 +636,9 @@
         "title": "More Fertility",
         "description": "Group fertile females with high reproductive performance bulls to maximize pregnancy"
       },
-      "weight": {
-        "title": "More Weight in Offspring",
-        "description": "Match animals by weight genetics to maximize kilos in descendants"
+      "benchmarks": {
+        "title": "Cabaña Standards",
+        "description": "Group animals that meet your configured cabaña benchmarks (birth weight, weaning weight, daily gain)"
       },
       "breeding_ratio": {
         "title": "Breeding Distribution",
@@ -665,11 +665,11 @@
       "reduceOvercrowding": "Reduce overcrowding ({{current}}/{{capacity}})",
       "spaceAvailable": "Space available",
       "improveBreeding": "Improve reproductive potential ({{score}}% fertility)",
-      "optimizeWeight": "Optimize weight genetics ({{score}} points)",
+      "optimizeBenchmarks": "Meets cabaña standards ({{tier}})",
       "groupFertileFemales": "Group fertile females (>{{threshold}}% pregnancy)",
-      "groupHighWeightAnimals": "Group animals with good weight genetics",
+      "groupHighStandardAnimals": "Group animals meeting standards",
       "separateLowPerformers": "Separate low reproductive performance",
-      "separatePoorWeightGenes": "Separate poor weight genetics"
+      "separateBelowStandard": "Separate below-standard animals"
     },
     "relationships": {
       "parentChild": "parent-child",

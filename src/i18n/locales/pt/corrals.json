@@ -637,9 +637,9 @@
         "title": "Mais Fertilidade",
         "description": "Agrupe fêmeas férteis com touros de alto desempenho reprodutivo para maximizar prenhez"
       },
-      "weight": {
-        "title": "Mais Peso nas Crias",
-        "description": "Combine animais pela genética de peso para maximizar quilos nos descendentes"
+      "benchmarks": {
+        "title": "Padrões da Cabanha",
+        "description": "Agrupe animais que atendem aos benchmarks configurados da sua cabanha (peso ao nascer, desmame, ganho diário)"
       },
       "breeding_ratio": {
         "title": "Distribuição para Serviço",
@@ -666,11 +666,11 @@
       "reduceOvercrowding": "Reduzir superlotação ({{current}}/{{capacity}})",
       "spaceAvailable": "Espaço disponível",
       "improveBreeding": "Melhorar potencial reprodutivo ({{score}}% fertilidade)",
-      "optimizeWeight": "Otimizar genética de peso ({{score}} pontos)",
+      "optimizeBenchmarks": "Atende padrões da cabanha ({{tier}})",
       "groupFertileFemales": "Agrupar fêmeas férteis (>{{threshold}}% prenhez)",
-      "groupHighWeightAnimals": "Agrupar animais com boa genética de peso",
+      "groupHighStandardAnimals": "Agrupar animais que atendem padrões",
       "separateLowPerformers": "Separar baixo desempenho reprodutivo",
-      "separatePoorWeightGenes": "Separar genética de peso deficiente"
+      "separateBelowStandard": "Separar animais abaixo do padrão"
     },
     "relationships": {
       "parentChild": "pai-filho",
