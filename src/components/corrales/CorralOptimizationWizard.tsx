@@ -489,8 +489,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                               className="w-4 h-4"
                             />
                             <div className="flex-1">
-                              <div className="font-medium text-sm">{t('optimization.step1.secondaryObjective.options.weight')}</div>
-                              <div className="text-xs text-muted-foreground">{t('optimization.step1.secondaryObjective.options.weightDesc')}</div>
+                              <div className="font-medium text-sm">{t('optimization.step1.secondaryObjective.options.standards')}</div>
+                              <div className="text-xs text-muted-foreground">{t('optimization.step1.secondaryObjective.options.standardsDesc')}</div>
                             </div>
                           </label>
                         </div>

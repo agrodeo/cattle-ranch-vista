@@ -6,8 +6,35 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-type ObjectiveType = 'consanguinity' | 'fertility' | 'weight' | 'breeding_ratio';
-type SecondaryObjectiveType = 'none' | 'fertility' | 'weight';
+type ObjectiveType = 'consanguinity' | 'fertility' | 'weight' | 'standards' | 'breeding_ratio';
+type SecondaryObjectiveType = 'none' | 'fertility' | 'weight' | 'standards';
+
+interface CustomBenchmark {
+  breed: string | null;
+  birth_weight_excellent: number;
+  birth_weight_good: number;
+  birth_weight_poor: number;
+  weaning_weight_excellent: number;
+  weaning_weight_good: number;
+  weaning_weight_poor: number;
+  daily_gain_excellent: number;
+  daily_gain_good: number;
+  daily_gain_poor: number;
+}
+
+// Default benchmarks if none configured
+const DEFAULT_BENCHMARKS: CustomBenchmark = {
+  breed: null,
+  birth_weight_excellent: 38,
+  birth_weight_good: 34,
+  birth_weight_poor: 28,
+  weaning_weight_excellent: 220,
+  weaning_weight_good: 190,
+  weaning_weight_poor: 160,
+  daily_gain_excellent: 0.9,
+  daily_gain_good: 0.7,
+  daily_gain_poor: 0.5,
+};
 type LanguageType = 'es' | 'en' | 'pt';
 
 interface Animal {
@@ -98,9 +125,13 @@ const translations = {
     reduceOvercrowding: "Reducir sobrecarga",
     spaceAvailable: "Espacio disponible",
     improveBreeding: "Mejorar potencial reproductivo",
-    optimizeWeight: "Optimizar genética de peso",
+    optimizeWeight: "Optimizar según estándares de la cabaña",
     groupFertileFemales: "Agrupar hembras fértiles",
-    groupHighWeightAnimals: "Agrupar animales con buena genética de peso",
+    groupHighWeightAnimals: "Agrupar animales que cumplen estándares",
+    meetsExcellent: "Cumple estándares de excelencia",
+    meetsGood: "Cumple estándares buenos",
+    meetsPoor: "Por debajo de estándares",
+    standardsScore: "puntos estándares",
     separateLowPerformers: "Separar bajo rendimiento reproductivo",
     fertilityScore: "fertilidad",
     weightScore: "puntos",
@@ -129,7 +160,7 @@ const translations = {
     medium: "medianos",
     low: "bajos",
     expectedImprovementFertility: "Se mejorará el potencial reproductivo en ~{{percent}}%",
-    expectedImprovementWeight: "Se optimizará la genética de peso en {{count}} animales",
+    expectedImprovementWeight: "Se agruparán {{count}} animales que cumplen los estándares de la cabaña",
     moreCorralasNeeded: "Se requieren más corrales para eliminar todos los riesgos",
     maxReductionAchieved: "Máxima reducción posible con los corrales disponibles",
     breedingRatioOptimization: "Optimización de ratio de cría",
@@ -169,7 +200,7 @@ const translations = {
     noFurtherOptimizationPossible: "No se pueden reducir más los riesgos con los corrales disponibles.",
     secondaryApplied: "Seleccionado por mejor",
     fertilityOptimized: "fertilidad",
-    weightOptimized: "genética de peso",
+    weightOptimized: "estándares",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -177,9 +208,13 @@ const translations = {
     reduceOvercrowding: "Reduce overcrowding",
     spaceAvailable: "Space available",
     improveBreeding: "Improve reproductive potential",
-    optimizeWeight: "Optimize weight genetics",
+    optimizeWeight: "Optimize by cabaña standards",
     groupFertileFemales: "Group fertile females",
-    groupHighWeightAnimals: "Group animals with good weight genetics",
+    groupHighWeightAnimals: "Group animals meeting standards",
+    meetsExcellent: "Meets excellent standards",
+    meetsGood: "Meets good standards",
+    meetsPoor: "Below standards",
+    standardsScore: "standards score",
     separateLowPerformers: "Separate low reproductive performance",
     fertilityScore: "fertility",
     weightScore: "points",
@@ -208,7 +243,7 @@ const translations = {
     medium: "medium",
     low: "low",
     expectedImprovementFertility: "Reproductive potential will improve by ~{{percent}}%",
-    expectedImprovementWeight: "Weight genetics will be optimized in {{count}} animals",
+    expectedImprovementWeight: "{{count}} animals meeting ranch standards will be grouped",
     moreCorralasNeeded: "More corrals are needed to eliminate all risks",
     maxReductionAchieved: "Maximum reduction achieved with available corrals",
     breedingRatioOptimization: "Breeding ratio optimization",
@@ -248,7 +283,7 @@ const translations = {
     noFurtherOptimizationPossible: "No further optimization possible with available corrals.",
     secondaryApplied: "Selected by better",
     fertilityOptimized: "fertility",
-    weightOptimized: "weight genetics",
+    weightOptimized: "standards",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -256,9 +291,13 @@ const translations = {
     reduceOvercrowding: "Reduzir superlotação",
     spaceAvailable: "Espaço disponível",
     improveBreeding: "Melhorar potencial reprodutivo",
-    optimizeWeight: "Otimizar genética de peso",
+    optimizeWeight: "Otimizar por padrões da cabana",
     groupFertileFemales: "Agrupar fêmeas férteis",
-    groupHighWeightAnimals: "Agrupar animais com boa genética de peso",
+    groupHighWeightAnimals: "Agrupar animais que cumprem padrões",
+    meetsExcellent: "Cumpre padrões de excelência",
+    meetsGood: "Cumpre padrões bons",
+    meetsPoor: "Abaixo dos padrões",
+    standardsScore: "pontos padrões",
     separateLowPerformers: "Separar baixo desempenho reprodutivo",
     fertilityScore: "fertilidade",
     weightScore: "pontos",
@@ -287,7 +326,7 @@ const translations = {
     medium: "médios",
     low: "baixos",
     expectedImprovementFertility: "O potencial reprodutivo melhorará em ~{{percent}}%",
-    expectedImprovementWeight: "A genética de peso será otimizada em {{count}} animais",
+    expectedImprovementWeight: "{{count}} animais que cumprem os padrões da cabana serão agrupados",
     moreCorralasNeeded: "São necessários mais currais para eliminar todos os riscos",
     maxReductionAchieved: "Redução máxima alcançada com os currais disponíveis",
     breedingRatioOptimization: "Otimização de proporção de reprodução",
@@ -327,7 +366,7 @@ const translations = {
     noFurtherOptimizationPossible: "Não é possível otimizar mais com os currais disponíveis.",
     secondaryApplied: "Selecionado por melhor",
     fertilityOptimized: "fertilidade",
-    weightOptimized: "genética de peso",
+    weightOptimized: "padrões",
   },
 };
 
@@ -1271,6 +1310,78 @@ serve(async (req) => {
 
     if (corralsError) throw corralsError;
 
+    // Fetch custom benchmarks for cabaña (for standards-based optimization)
+    const { data: customBenchmarks } = await supabase
+      .from('custom_benchmarks')
+      .select('*')
+      .eq('cabaña_id', cabanaId);
+    
+    // Use custom benchmarks if available, otherwise use defaults
+    const benchmarks: CustomBenchmark = customBenchmarks && customBenchmarks.length > 0
+      ? customBenchmarks[0]
+      : DEFAULT_BENCHMARKS;
+    
+    console.log(`Using benchmarks: ${customBenchmarks?.length ? 'custom' : 'default'}`);
+
+    // Helper: Calculate benchmark-based score for an animal
+    const calculateAnimalBenchmarkScore = (animal: Animal): number => {
+      let score = 0;
+      let metrics = 0;
+      
+      // Daily gain scoring (most important)
+      if (animal.ganancia_diaria_kg !== null && animal.ganancia_diaria_kg > 0) {
+        metrics++;
+        if (animal.ganancia_diaria_kg >= benchmarks.daily_gain_excellent) {
+          score += 100;
+        } else if (animal.ganancia_diaria_kg >= benchmarks.daily_gain_good) {
+          score += 70;
+        } else if (animal.ganancia_diaria_kg >= benchmarks.daily_gain_poor) {
+          score += 40;
+        } else {
+          score += 20;
+        }
+      }
+      
+      // Weaning weight scoring
+      if (animal.peso_destete !== null && animal.peso_destete > 0) {
+        metrics++;
+        if (animal.peso_destete >= benchmarks.weaning_weight_excellent) {
+          score += 100;
+        } else if (animal.peso_destete >= benchmarks.weaning_weight_good) {
+          score += 70;
+        } else if (animal.peso_destete >= benchmarks.weaning_weight_poor) {
+          score += 40;
+        } else {
+          score += 20;
+        }
+      }
+      
+      // Current weight as supplemental (less weight in scoring)
+      if (animal.peso_actual_kg !== null && animal.peso_actual_kg > 0) {
+        metrics++;
+        // Estimate expected weight based on weaning standards (rough approximation)
+        const expectedWeight = benchmarks.weaning_weight_good * 1.5; // Adult should be ~1.5x weaning
+        if (animal.peso_actual_kg >= expectedWeight * 1.1) {
+          score += 80;
+        } else if (animal.peso_actual_kg >= expectedWeight) {
+          score += 60;
+        } else if (animal.peso_actual_kg >= expectedWeight * 0.8) {
+          score += 40;
+        } else {
+          score += 20;
+        }
+      }
+      
+      return metrics > 0 ? Math.round(score / metrics) : 50;
+    };
+
+    // Helper: Get tier label for an animal's benchmark score
+    const getBenchmarkTier = (score: number, t: typeof translations.es): string => {
+      if (score >= 85) return t.meetsExcellent;
+      if (score >= 55) return t.meetsGood;
+      return t.meetsPoor;
+    };
+
     if (!corrals || corrals.length === 0) {
       const messages = {
         es: 'No hay corrales configurados. Crea al menos un corral primero.',
@@ -2040,22 +2151,13 @@ serve(async (req) => {
               count++;
             }
             return count > 0 ? totalScore / count : 50;
-          } else if (secondaryObj === 'weight') {
-            // Calculate average weight metrics
+          } else if (secondaryObj === 'weight' || secondaryObj === 'standards') {
+            // Calculate average benchmark-based score using cabaña standards
             let totalScore = 0;
             let count = 0;
             for (const animal of animalsInCorral) {
-              let score = 50; // Base
-              if (animal.peso_actual_kg && animal.peso_actual_kg > 0) {
-                score += Math.min(animal.peso_actual_kg / 10, 30);
-              }
-              if (animal.ganancia_diaria_kg && animal.ganancia_diaria_kg > 0) {
-                score += Math.min(animal.ganancia_diaria_kg * 20, 20);
-              }
-              if (animal.peso_destete && animal.peso_destete > 0) {
-                score += Math.min(animal.peso_destete / 10, 10);
-              }
-              totalScore += score;
+              const benchmarkScore = calculateAnimalBenchmarkScore(animal);
+              totalScore += benchmarkScore;
               count++;
             }
             return count > 0 ? totalScore / count : 50;
@@ -2936,22 +3038,19 @@ serve(async (req) => {
       console.log(`Breeding pairs: ${breedingPairsBefore} -> ${breedingPairsAfter} (${pairsImprovement}% improvement)`);
       console.log(`Avg fertility of moved animals: ${avgFertilityMoved}%`);
       
-    } else if (objective === 'weight') {
+    } else if (objective === 'weight' || objective === 'standards') {
       // =========================================================================
-      // WEIGHT OBJECTIVE (improved with consanguinity checking)
+      // STANDARDS OBJECTIVE (benchmark-based scoring using cabaña standards)
       // =========================================================================
-      const weightScores: Record<string, number> = {};
+      const benchmarkScores: Record<string, number> = {};
       
       animals.forEach((animal: Animal) => {
-        let score = 0;
-        if (animal.peso_actual_kg) score += animal.peso_actual_kg * 0.3;
-        if (animal.ganancia_diaria_kg) score += animal.ganancia_diaria_kg * 100;
-        if (animal.peso_destete) score += animal.peso_destete * 0.2;
-        weightScores[animal.id] = Math.round(score);
+        benchmarkScores[animal.id] = calculateAnimalBenchmarkScore(animal);
       });
 
-      const highWeightAnimals = animals.filter((a: Animal) =>
-        (weightScores[a.id] || 0) >= 100 &&
+      // Animals that meet at least "good" standards (score >= 55)
+      const highStandardAnimals = animals.filter((a: Animal) =>
+        (benchmarkScores[a.id] || 0) >= 55 &&
         !movedAnimals.has(a.id)
       );
 
@@ -2961,14 +3060,14 @@ serve(async (req) => {
       const isConsolidationMode = destinationCorrals.length > 0;
       
       const animalsToMove = isConsolidationMode && sourceCorrals.length > 0
-        ? highWeightAnimals.filter(a => a.corral_id && sourceCorralSet.has(a.corral_id))
-        : highWeightAnimals;
+        ? highStandardAnimals.filter(a => a.corral_id && sourceCorralSet.has(a.corral_id))
+        : highStandardAnimals;
       
-      let targetCorralsForWeight = isConsolidationMode
+      let targetCorralsForStandards = isConsolidationMode
         ? corralsWithCounts.filter(c => destCorralSet.has(c.id))
         : corralsWithCounts;
       
-      const targetCorral = targetCorralsForWeight
+      const targetCorral = targetCorralsForStandards
         .filter(c => {
           const capacity = c.capacity || (c.hectareas ? Math.round(c.hectareas * 2) : 999);
           return c.animal_count < capacity - animalsToMove.length;
@@ -2978,7 +3077,8 @@ serve(async (req) => {
       if (targetCorral) {
         for (const animal of animalsToMove.slice(0, 10)) {
           if (animal.corral_id !== targetCorral.id) {
-            const score = weightScores[animal.id];
+            const score = benchmarkScores[animal.id];
+            const tier = getBenchmarkTier(score, t);
             suggestedMoves.push({
               animal_id: animal.id,
               animal_name: animal.name || animal.id_tag || 'Sin nombre',
@@ -2986,9 +3086,9 @@ serve(async (req) => {
               from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
               to_corral_id: targetCorral.id,
               to_corral_name: targetCorral.name,
-              reason: `${t.optimizeWeight} (${score} ${t.weightScore})`,
-              issue_type: 'weight',
-              expectedBenefit: `${score} ${t.weightScore}`,
+              reason: `${t.optimizeWeight} - ${tier} (${score} ${t.standardsScore})`,
+              issue_type: 'standards',
+              expectedBenefit: `${tier} (${score} ${t.standardsScore})`,
             });
             movedAnimals.add(animal.id);
           }
@@ -2996,8 +3096,8 @@ serve(async (req) => {
       }
     }
 
-    // Secondary breeding ratio pass for fertility/weight (only if explicitly requested)
-    if ((objective === 'fertility' || objective === 'weight') && applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
+    // Secondary breeding ratio pass for fertility/weight/standards (only if explicitly requested)
+    if ((objective === 'fertility' || objective === 'weight' || objective === 'standards') && applyBreedingRatioPass && females_per_bull > 0 && min_bulls_per_corral > 0) {
       console.log(`Applying breeding ratio secondary pass for ${objective} (explicitly requested)`);
       const corralAnalysis = analyzeCorralDistribution(corralsWithCounts, workingDistribution, females_per_bull);
       const breedingMoves = redistributeForOptimalBreeding(
@@ -3066,8 +3166,8 @@ serve(async (req) => {
       } else {
         expectedImprovement = t.alreadyOptimal || 'Distribution is already optimal';
       }
-    } else if (objective === 'weight') {
-      const count = suggestedMoves.filter(m => m.issue_type === 'weight').length;
+    } else if (objective === 'weight' || objective === 'standards') {
+      const count = suggestedMoves.filter(m => m.issue_type === 'weight' || m.issue_type === 'standards').length;
       expectedImprovement = t.expectedImprovementWeight.replace('{{count}}', count.toString());
     }
 

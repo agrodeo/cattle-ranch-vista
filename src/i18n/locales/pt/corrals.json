@@ -489,8 +489,8 @@
           "none": "Nenhum (apenas minimizar risco)",
           "fertility": "Maximizar fertilidade",
           "fertilityDesc": "Preferir currais com melhor potencial reprodutivo",
-          "weight": "Maximizar genética de peso",
-          "weightDesc": "Preferir currais com melhor genética de peso"
+          "standards": "Seguir padrões da cabana",
+          "standardsDesc": "Preferir currais com animais que cumprem os padrões configurados"
         }
       },
       "breedingRatioConfig": {
