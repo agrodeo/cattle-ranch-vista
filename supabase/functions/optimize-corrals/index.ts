@@ -3316,7 +3316,7 @@ serve(async (req) => {
         
         // Step 3a: Assign bulls to corrals (distribute evenly, respecting max per corral)
         const bullsToAssign = [...breedingAgeMales];
-        const maxBullsPerCorral = bulls_per_corral || 1;
+        const maxBullsPerCorral = min_bulls_per_corral || 1;
         
         // Sort bulls by average score (bulls with higher avg score across all cows first)
         bullsToAssign.sort((a, b) => {
