@@ -286,12 +286,21 @@ export default function Corrales() {
   const totalCorrales = corrales.length;
   const totalRisks = corrales.reduce((sum, corral) => sum + corral.risk_count, 0);
   
-  // Calculate aggregate KPIs - use corralKPIs directly to avoid race conditions
-  const avgVaccinationPercentage = corralKPIs.length > 0 
-    ? corralKPIs.reduce((sum, kpi) => sum + (kpi.vaccination_percentage || 0), 0) / corralKPIs.length 
+  // Calculate weighted average KPIs by animal count (so empty corrals don't drag down averages)
+  const totalAnimalsInKPIs = corralKPIs.reduce((sum, kpi) => sum + (kpi.animal_count || 0), 0);
+  const avgVaccinationPercentage = totalAnimalsInKPIs > 0 
+    ? corralKPIs.reduce((sum, kpi) => {
+        const animals = kpi.animal_count || 0;
+        const percentage = kpi.vaccination_percentage || 0;
+        return sum + (animals * percentage);
+      }, 0) / totalAnimalsInKPIs
     : 0;
-  const avgGDP = corralKPIs.length > 0 
-    ? corralKPIs.reduce((sum, kpi) => sum + (kpi.avg_daily_gain || 0), 0) / corralKPIs.length 
+  const avgGDP = totalAnimalsInKPIs > 0 
+    ? corralKPIs.reduce((sum, kpi) => {
+        const animals = kpi.animal_count || 0;
+        const gdp = kpi.avg_daily_gain || 0;
+        return sum + (animals * gdp);
+      }, 0) / totalAnimalsInKPIs
     : 0;
 
   const stats = [
