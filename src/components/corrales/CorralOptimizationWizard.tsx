@@ -75,6 +75,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
     density_per_hectare: 1.5,
     calf_space_factor: 0.6,
     objectives: ['consanguinity'] as string[],
+    secondaryObjective: 'none' as 'none' | 'fertility' | 'weight',
     targetWeights: {
       birth: 0,
       weaning: 0,
@@ -180,6 +181,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
           cabanaId,
           ...config,
           objective: primaryObjective,
+          secondaryObjective: config.objectives.includes('consanguinity') ? config.secondaryObjective : 'none',
           females_per_bull: config.females_per_bull,
           min_bulls_per_corral: config.min_bulls_per_corral,
           language: localStorage.getItem('language') || 'es'
@@ -443,6 +445,58 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       </div>
                     </label>
                     
+                    {/* Secondary Objective Selector - only shown when consanguinity is selected */}
+                    {config.objectives.includes('consanguinity') && (
+                      <div className="mt-4 p-3 sm:p-4 border rounded-lg bg-muted/50">
+                        <Label className="text-sm font-semibold mb-2 block">
+                          {t('optimization.step1.secondaryObjective.title')}
+                        </Label>
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+                          {t('optimization.step1.secondaryObjective.description')}
+                        </p>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-accent">
+                            <input
+                              type="radio"
+                              name="secondaryObjective"
+                              checked={config.secondaryObjective === 'none'}
+                              onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'none' }))}
+                              className="w-4 h-4"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{t('optimization.step1.secondaryObjective.options.none')}</div>
+                            </div>
+                          </label>
+                          <label className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-accent">
+                            <input
+                              type="radio"
+                              name="secondaryObjective"
+                              checked={config.secondaryObjective === 'fertility'}
+                              onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'fertility' }))}
+                              className="w-4 h-4"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{t('optimization.step1.secondaryObjective.options.fertility')}</div>
+                              <div className="text-xs text-muted-foreground">{t('optimization.step1.secondaryObjective.options.fertilityDesc')}</div>
+                            </div>
+                          </label>
+                          <label className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-accent">
+                            <input
+                              type="radio"
+                              name="secondaryObjective"
+                              checked={config.secondaryObjective === 'weight'}
+                              onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'weight' }))}
+                              className="w-4 h-4"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-sm">{t('optimization.step1.secondaryObjective.options.weight')}</div>
+                              <div className="text-xs text-muted-foreground">{t('optimization.step1.secondaryObjective.options.weightDesc')}</div>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    )}
+
                     <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
                         type="checkbox"
@@ -993,7 +1047,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                   ... y {corral.current_risks.length - 3} riesgos más
                                 </div>
                               )}
-                            </div>
+                             </div>
                           </div>
                         )}
 
@@ -1005,6 +1059,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                               {corral.moves_suggested.map((move, j) => {
                                 const moveId = `${move.animal_id}-${move.from_corral}-${move.to_corral}`;
                                 const isSelected = selectedMoves.has(moveId);
+                                const moveData = move as any;
                                 return (
                                   <label 
                                     key={j} 
@@ -1023,6 +1078,11 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                                         <span className="font-medium truncate min-w-0 text-xs sm:text-sm">{move.animal_name}</span>
                                         {move.type === 'mother_calf' && (
                                           <span className="text-purple-600 text-xs whitespace-nowrap flex-shrink-0">👶 Ternero</span>
+                                        )}
+                                        {moveData.secondaryCriterionApplied && (
+                                          <Badge variant="outline" className="bg-amber-50 text-amber-700 text-xs whitespace-nowrap flex-shrink-0">
+                                            ⭐ {t('optimization.step3.secondaryCriterionBadge')}
+                                          </Badge>
                                         )}
                                       </div>
                                       <div className="text-xs text-muted-foreground mt-1 line-clamp-2 overflow-hidden min-w-0">

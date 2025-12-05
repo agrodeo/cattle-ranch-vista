@@ -481,6 +481,17 @@
           "recommended": "Recommended"
         }
       },
+      "secondaryObjective": {
+        "title": "Secondary Objective (optional)",
+        "description": "When multiple moves reduce risk similarly, use this criterion to choose between them.",
+        "options": {
+          "none": "None (minimize risk only)",
+          "fertility": "Maximize fertility",
+          "fertilityDesc": "Prefer corrals with better reproductive potential",
+          "weight": "Maximize weight genetics",
+          "weightDesc": "Prefer corrals with better weight genetics"
+        }
+      },
       "breedingRatioConfig": {
         "title": "Breeding Ratio Configuration",
         "femalesPerBullLabel": "Females per bull",
@@ -540,6 +551,7 @@
       "detailedPlanTitle": "Detailed Plan by Corral",
       "corralAnimalsInfo": "{{count}} animals ({{adult}} adults, {{calf}} calves)",
       "corralRisksMovesInfo": "{{risks}} risks • {{moves}} movements",
+      "secondaryCriterionBadge": "Optimized",
       "riskReductionBadge": "-{{score}}% risk",
       "capacityOkBadge": "Capacity OK",
       "overCapacityBadge": "Over capacity",

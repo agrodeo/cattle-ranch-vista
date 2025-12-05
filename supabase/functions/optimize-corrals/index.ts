@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 type ObjectiveType = 'consanguinity' | 'fertility' | 'weight' | 'breeding_ratio';
+type SecondaryObjectiveType = 'none' | 'fertility' | 'weight';
 type LanguageType = 'es' | 'en' | 'pt';
 
 interface Animal {
@@ -84,6 +85,8 @@ interface SuggestedMove {
   issue_type: string;
   expectedBenefit?: string;
   riskReduction?: number;
+  secondaryCriterionApplied?: boolean;
+  secondaryScore?: number;
 }
 
 const translations = {
@@ -162,6 +165,9 @@ const translations = {
     consolidationComplete: "Consolidación completada con mínimo riesgo de consanguinidad",
     capacityExceeded: "La capacidad de los corrales destino es insuficiente para {{count}} animales",
     noFurtherOptimizationPossible: "No se pueden reducir más los riesgos con los corrales disponibles.",
+    secondaryApplied: "Seleccionado por mejor",
+    fertilityOptimized: "fertilidad",
+    weightOptimized: "genética de peso",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -237,6 +243,10 @@ const translations = {
     minimizingRisks: "Minimizing consanguinity risks during redistribution",
     consolidationComplete: "Consolidation completed with minimum consanguinity risk",
     capacityExceeded: "Destination corrals capacity is insufficient for {{count}} animals",
+    noFurtherOptimizationPossible: "No further optimization possible with available corrals.",
+    secondaryApplied: "Selected by better",
+    fertilityOptimized: "fertility",
+    weightOptimized: "weight genetics",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -312,6 +322,10 @@ const translations = {
     minimizingRisks: "Minimizando riscos de consanguinidade durante a redistribuição",
     consolidationComplete: "Consolidação concluída com mínimo risco de consanguinidade",
     capacityExceeded: "A capacidade dos currais destino é insuficiente para {{count}} animais",
+    noFurtherOptimizationPossible: "Não é possível otimizar mais com os currais disponíveis.",
+    secondaryApplied: "Selecionado por melhor",
+    fertilityOptimized: "fertilidade",
+    weightOptimized: "genética de peso",
   },
 };
 
@@ -1209,6 +1223,7 @@ serve(async (req) => {
       cabanaId, 
       language = 'es', 
       objective = 'consanguinity', 
+      secondaryObjective = 'none' as SecondaryObjectiveType,
       sourceCorrals = [],
       destinationCorrals = [],
       females_per_bull = 25,
@@ -1216,6 +1231,8 @@ serve(async (req) => {
       applyBreedingRatioPass = false,
       includeSeparationMoves = false,
     } = await req.json();
+    
+    console.log(`[Config] Objective: ${objective}, Secondary: ${secondaryObjective}, Language: ${language}`);
 
     if (!cabanaId) {
       return new Response(JSON.stringify({ error: 'cabanaId is required' }), {
@@ -2001,7 +2018,61 @@ serve(async (req) => {
         const animal2 = animals.find((a: Animal) => a.id === risk.animal2_id);
         if (!animal1 || !animal2) continue;
 
-        let bestMove: { animal: Animal; targetCorralId: string; newRisk: number; corral: Corral } | null = null;
+        // Helper: Calculate secondary score for a corral
+        const calculateSecondaryScore = (corralId: string, secondaryObj: SecondaryObjectiveType): number => {
+          const animalsInCorral = workingDistribution[corralId] || [];
+          if (animalsInCorral.length === 0) return 50; // Neutral score for empty corrals
+          
+          if (secondaryObj === 'fertility') {
+            // Calculate average fertility metrics
+            let totalScore = 0;
+            let count = 0;
+            for (const animal of animalsInCorral) {
+              // Use reproductive data if available
+              const hasOffspring = animals.some((a: Animal) => a.father_id === animal.id || a.mother_id === animal.id);
+              let score = 50; // Base
+              if (hasOffspring) score += 30;
+              // Check if animal was pregnant
+              if ((animal as any).esta_preñada) score += 20;
+              totalScore += score;
+              count++;
+            }
+            return count > 0 ? totalScore / count : 50;
+          } else if (secondaryObj === 'weight') {
+            // Calculate average weight metrics
+            let totalScore = 0;
+            let count = 0;
+            for (const animal of animalsInCorral) {
+              let score = 50; // Base
+              if (animal.peso_actual_kg && animal.peso_actual_kg > 0) {
+                score += Math.min(animal.peso_actual_kg / 10, 30);
+              }
+              if (animal.ganancia_diaria_kg && animal.ganancia_diaria_kg > 0) {
+                score += Math.min(animal.ganancia_diaria_kg * 20, 20);
+              }
+              if (animal.peso_destete && animal.peso_destete > 0) {
+                score += Math.min(animal.peso_destete / 10, 10);
+              }
+              totalScore += score;
+              count++;
+            }
+            return count > 0 ? totalScore / count : 50;
+          }
+          return 50;
+        };
+
+        const RISK_SIMILARITY_THRESHOLD = 0.01; // Moves are "similar" if risk difference < 1%
+        
+        interface MoveCandidate {
+          animal: Animal;
+          targetCorralId: string;
+          newRisk: number;
+          corral: Corral;
+          secondaryScore: number;
+          secondaryCriterionApplied: boolean;
+        }
+        
+        let bestMove: MoveCandidate | null = null;
         const currentRisk = calculateDistributionRiskScore(workingDistribution);
 
         // Try moving animal1
@@ -2022,8 +2093,22 @@ serve(async (req) => {
 
           const newRisk = simulateMove(animal1, targetCorral.id, workingDistribution);
           if (currentRisk - newRisk > 0.001) {
-            if (!bestMove || newRisk < bestMove.newRisk) {
-              bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral };
+            const secondaryScore = secondaryObjective !== 'none' 
+              ? calculateSecondaryScore(targetCorral.id, secondaryObjective as SecondaryObjectiveType) 
+              : 0;
+            
+            if (!bestMove) {
+              bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
+            } else {
+              const riskDiff = Math.abs(newRisk - bestMove.newRisk);
+              
+              if (newRisk < bestMove.newRisk - RISK_SIMILARITY_THRESHOLD) {
+                // Significantly better risk - use this move
+                bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
+              } else if (riskDiff <= RISK_SIMILARITY_THRESHOLD && secondaryObjective !== 'none' && secondaryScore > bestMove.secondaryScore) {
+                // Similar risk but better secondary score - use this move
+                bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: true };
+              }
             }
           }
         }
@@ -2046,8 +2131,22 @@ serve(async (req) => {
 
           const newRisk = simulateMove(animal2, targetCorral.id, workingDistribution);
           if (currentRisk - newRisk > 0.001) {
-            if (!bestMove || newRisk < bestMove.newRisk) {
-              bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral };
+            const secondaryScore = secondaryObjective !== 'none' 
+              ? calculateSecondaryScore(targetCorral.id, secondaryObjective as SecondaryObjectiveType) 
+              : 0;
+            
+            if (!bestMove) {
+              bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
+            } else {
+              const riskDiff = Math.abs(newRisk - bestMove.newRisk);
+              
+              if (newRisk < bestMove.newRisk - RISK_SIMILARITY_THRESHOLD) {
+                // Significantly better risk - use this move
+                bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
+              } else if (riskDiff <= RISK_SIMILARITY_THRESHOLD && secondaryObjective !== 'none' && secondaryScore > bestMove.secondaryScore) {
+                // Similar risk but better secondary score - use this move
+                bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: true };
+              }
             }
           }
         }
@@ -2066,6 +2165,9 @@ serve(async (req) => {
             }
           }
           
+          const secondaryLabel = secondaryObjective === 'fertility' ? t.fertilityOptimized : 
+                                secondaryObjective === 'weight' ? t.weightOptimized : '';
+          
           suggestedMoves.push({
             animal_id: bestMove.animal.id,
             animal_name: bestMove.animal.name || bestMove.animal.id_tag || 'Sin nombre',
@@ -2073,9 +2175,13 @@ serve(async (req) => {
             from_corral_name: fromCorralName,
             to_corral_id: bestMove.targetCorralId,
             to_corral_name: bestMove.corral.name,
-            reason: `${t.avoidConsanguinity}: ${relationshipText}`,
+            reason: bestMove.secondaryCriterionApplied 
+              ? `${t.avoidConsanguinity}: ${relationshipText} (${t.secondaryApplied} ${secondaryLabel})`
+              : `${t.avoidConsanguinity}: ${relationshipText}`,
             issue_type: 'consanguinity',
             riskReduction: Math.round(riskReduction * 1000) / 1000,
+            secondaryCriterionApplied: bestMove.secondaryCriterionApplied,
+            secondaryScore: bestMove.secondaryScore,
           });
           
           movedAnimals.add(bestMove.animal.id);

@@ -482,6 +482,17 @@
           "recommended": "Recomendado"
         }
       },
+      "secondaryObjective": {
+        "title": "Objetivo Secundário (opcional)",
+        "description": "Quando múltiplos movimentos reduzem o risco de forma similar, usar este critério para escolher entre eles.",
+        "options": {
+          "none": "Nenhum (apenas minimizar risco)",
+          "fertility": "Maximizar fertilidade",
+          "fertilityDesc": "Preferir currais com melhor potencial reprodutivo",
+          "weight": "Maximizar genética de peso",
+          "weightDesc": "Preferir currais com melhor genética de peso"
+        }
+      },
       "breedingRatioConfig": {
         "title": "Configuração de Proporção de Reprodução",
         "femalesPerBullLabel": "Fêmeas por touro",
@@ -541,6 +552,7 @@
       "detailedPlanTitle": "Plano Detalhado por Curral",
       "corralAnimalsInfo": "{{count}} animais ({{adult}} adultos, {{calf}} bezerros)",
       "corralRisksMovesInfo": "{{risks}} riscos • {{moves}} movimentos",
+      "secondaryCriterionBadge": "Otimizado",
       "riskReductionBadge": "-{{score}}% risco",
       "capacityOkBadge": "Capacidade OK",
       "overCapacityBadge": "Sobre capacidade",
