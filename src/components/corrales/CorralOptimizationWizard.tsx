@@ -41,6 +41,17 @@ interface BreedingPairing {
   explanation: string;
 }
 
+interface CorralConfiguration {
+  corral_id: string;
+  corral_name: string;
+  bulls: Array<{ id: string; name: string; tag?: string; score: number }>;
+  cows: Array<{ id: string; name: string; tag?: string; assignedScore: number }>;
+  expectedScore: number;
+  allPairings: Array<{ cow_name: string; bull_name: string; score: number }>;
+  blockedPairings: number;
+  matchQuality: 'excellent' | 'good' | 'acceptable' | 'poor';
+}
+
 interface CorralOptimizationPlan {
   corral_plan: Array<{
     corral_id: string;
@@ -78,6 +89,9 @@ interface CorralOptimizationPlan {
     acceptableMatches: number;
     blockedCombinations: number;
     topPairings: BreedingPairing[];
+    corralConfigurations?: CorralConfiguration[];
+    overallExpectedScore?: number;
+    currentDistributionScore?: number;
   };
 }
 
@@ -970,20 +984,45 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
               </div>
             </div>
 
-            {/* Breeding Pairings Analysis - shown for standards objective */}
-            {plan.breedingPairings && plan.breedingPairings.topPairings?.length > 0 && (
+            {/* Corral Composition Optimization - shown for standards objective */}
+            {plan.breedingPairings && (
               <Card className="border-primary/20">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
                     <Target className="h-4 w-4 text-primary" />
-                    {t('optimization.step3.breedingPairings', 'Análisis de Parejas Reproductivas')}
+                    {t('optimization.step3.corralComposition', 'Composición Óptima de Corrales')}
                   </CardTitle>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    {t('optimization.step3.breedingPairingsDesc', 'Mejores combinaciones según estándares de la cabaña')}
+                    {t('optimization.step3.corralCompositionDesc', 'Distribución optimizada para maximizar la calidad esperada de crías')}
                   </p>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                <CardContent className="space-y-4">
+                  {/* Overall Score Comparison */}
+                  {plan.breedingPairings.overallExpectedScore !== undefined && (
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">{t('optimization.step3.expectedImprovement', 'Mejora Esperada')}</span>
+                        {plan.breedingPairings.currentDistributionScore > 0 && (
+                          <Badge variant="default" className="bg-green-600">
+                            +{Math.round(((plan.breedingPairings.overallExpectedScore - plan.breedingPairings.currentDistributionScore) / plan.breedingPairings.currentDistributionScore) * 100)}%
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-muted-foreground">{plan.breedingPairings.currentDistributionScore || 0}</div>
+                          <div className="text-xs text-muted-foreground">{t('optimization.step3.currentScore', 'Puntaje Actual')}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">{plan.breedingPairings.overallExpectedScore}</div>
+                          <div className="text-xs text-green-600">{t('optimization.step3.optimizedScore', 'Puntaje Optimizado')}</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Match Quality Summary */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <div className="text-center p-2 bg-green-50 rounded-lg">
                       <div className="text-lg font-bold text-green-600">{plan.breedingPairings.excellentMatches}</div>
                       <div className="text-xs text-green-600">{t('optimization.step3.excellentMatches', 'Excelentes')}</div>
@@ -1001,34 +1040,85 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       <div className="text-xs text-red-600">{t('optimization.step3.blockedMatches', 'Bloqueados')}</div>
                     </div>
                   </div>
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                    {plan.breedingPairings.topPairings.slice(0, 10).map((pairing, i) => (
-                      <div key={i} className="flex items-center justify-between p-2 border rounded-lg hover:bg-muted/50">
-                        <div className="flex items-center gap-2 flex-wrap min-w-0">
-                          <span className="font-medium text-sm">{pairing.cow_name}</span>
-                          <span className="text-muted-foreground">×</span>
-                          <span className="font-medium text-sm">{pairing.bull_name}</span>
-                          <Badge variant={
-                            pairing.match_quality === 'excellent' ? 'default' :
-                            pairing.match_quality === 'good' ? 'secondary' :
-                            pairing.match_quality === 'acceptable' ? 'outline' : 'destructive'
-                          } className="text-xs">
-                            {pairing.match_quality === 'excellent' ? '⭐' : 
-                             pairing.match_quality === 'good' ? '👍' : 
-                             pairing.match_quality === 'acceptable' ? '✓' : '⚠️'} {pairing.score}pts
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground flex gap-2">
-                          {pairing.predicted.weaning_weight && <span>Destete: ~{Math.round(pairing.predicted.weaning_weight)}kg</span>}
-                          {pairing.inbreeding_coefficient > 0 && (
-                            <Badge variant="outline" className="text-xs bg-orange-50">
-                              F: {(pairing.inbreeding_coefficient * 100).toFixed(1)}%
-                            </Badge>
+
+                  {/* Corral Configurations */}
+                  {plan.breedingPairings.corralConfigurations && plan.breedingPairings.corralConfigurations.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm">{t('optimization.step3.corralDistribution', 'Distribución por Corral')}</h4>
+                      {plan.breedingPairings.corralConfigurations.map((corralConfig: any, i: number) => (
+                        <div key={i} className="p-3 border rounded-lg bg-card">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{corralConfig.corral_name}</span>
+                              <Badge variant={
+                                corralConfig.matchQuality === 'excellent' ? 'default' :
+                                corralConfig.matchQuality === 'good' ? 'secondary' :
+                                corralConfig.matchQuality === 'acceptable' ? 'outline' : 'destructive'
+                              } className={
+                                corralConfig.matchQuality === 'excellent' ? 'bg-green-600' :
+                                corralConfig.matchQuality === 'good' ? 'bg-blue-600' :
+                                corralConfig.matchQuality === 'acceptable' ? '' : ''
+                              }>
+                                {corralConfig.expectedScore} pts
+                              </Badge>
+                            </div>
+                            {corralConfig.blockedPairings > 0 && (
+                              <Badge variant="destructive" className="text-xs">
+                                ⚠️ {corralConfig.blockedPairings} {t('optimization.step3.blocked', 'bloqueados')}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">♂ {t('optimization.step3.bulls', 'Toros')}:</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {corralConfig.bulls.map((bull: any, j: number) => (
+                                  <Badge key={j} variant="outline" className="text-xs">
+                                    {bull.name} ({bull.score}pts)
+                                  </Badge>
+                                ))}
+                                {corralConfig.bulls.length === 0 && (
+                                  <span className="text-xs text-muted-foreground italic">{t('optimization.step3.noBulls', 'Sin toros')}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">♀ {t('optimization.step3.cows', 'Vacas')}:</span>
+                              <span className="ml-1 font-medium">{corralConfig.cows.length}</span>
+                              {corralConfig.cows.length > 0 && corralConfig.bulls.length > 0 && (
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  (ratio {Math.round(corralConfig.cows.length / corralConfig.bulls.length)}:1)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Expandable pairings preview */}
+                          {corralConfig.allPairings && corralConfig.allPairings.length > 0 && (
+                            <details className="mt-2">
+                              <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
+                                {t('optimization.step3.viewPairings', 'Ver combinaciones')} ({corralConfig.allPairings.length})
+                              </summary>
+                              <div className="mt-2 space-y-1 max-h-32 overflow-y-auto">
+                                {corralConfig.allPairings.slice(0, 10).map((pair: any, j: number) => (
+                                  <div key={j} className="flex items-center justify-between text-xs p-1 bg-muted/50 rounded">
+                                    <span>{pair.cow_name} × {pair.bull_name}</span>
+                                    <Badge variant="outline" className="text-xs">{pair.score}pts</Badge>
+                                  </div>
+                                ))}
+                                {corralConfig.allPairings.length > 10 && (
+                                  <div className="text-xs text-muted-foreground text-center">
+                                    +{corralConfig.allPairings.length - 10} más...
+                                  </div>
+                                )}
+                              </div>
+                            </details>
                           )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
