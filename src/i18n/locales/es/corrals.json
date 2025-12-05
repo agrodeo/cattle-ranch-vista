@@ -634,9 +634,9 @@
         "title": "Más Fertilidad",
         "description": "Agrupa hembras fértiles con toros de alto rendimiento reproductivo para maximizar preñez"
       },
-      "weight": {
-        "title": "Más Peso en Crías",
-        "description": "Empareja animales según genética de peso para maximizar kilos en la descendencia"
+      "benchmarks": {
+        "title": "Estándares de Cabaña",
+        "description": "Agrupa animales que cumplen con los benchmarks configurados de tu cabaña (peso al nacer, destete, ganancia diaria)"
       },
       "breeding_ratio": {
         "title": "Distribución para Servicio",
@@ -663,11 +663,11 @@
       "reduceOvercrowding": "Reducir sobrecarga ({{current}}/{{capacity}})",
       "spaceAvailable": "Espacio disponible",
       "improveBreeding": "Mejorar potencial reproductivo ({{score}}% fertilidad)",
-      "optimizeWeight": "Optimizar genética de peso ({{score}} puntos)",
+      "optimizeBenchmarks": "Cumple estándares de cabaña ({{tier}})",
       "groupFertileFemales": "Agrupar hembras fértiles (>{{threshold}}% preñez)",
-      "groupHighWeightAnimals": "Agrupar animales con buena genética de peso",
+      "groupHighStandardAnimals": "Agrupar animales que cumplen estándares",
       "separateLowPerformers": "Separar bajo rendimiento reproductivo",
-      "separatePoorWeightGenes": "Separar genética de peso deficiente"
+      "separateBelowStandard": "Separar animales bajo estándar"
     },
     "relationships": {
       "parentChild": "padre-hijo",
