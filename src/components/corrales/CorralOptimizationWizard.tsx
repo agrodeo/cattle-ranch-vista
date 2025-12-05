@@ -75,7 +75,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
     density_per_hectare: 1.5,
     calf_space_factor: 0.6,
     objectives: ['consanguinity'] as string[],
-    secondaryObjective: 'none' as 'none' | 'fertility' | 'weight',
+    secondaryObjective: 'none' as 'none' | 'fertility' | 'standards',
     targetWeights: {
       birth: 0,
       weaning: 0,
@@ -139,7 +139,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       if (corralsRes.data) setAllCorrals(corralsRes.data);
       
       // Load reproductive metrics if reproduction objective is selected
-      if (config.objectives.includes('reproduction') || config.objectives.includes('production')) {
+      if (config.objectives.includes('reproduction') || config.objectives.includes('benchmarks')) {
         const { data: metrics } = await supabase.rpc('calculate_reproductive_kpis', {
           _cabana_id: cabanaId
         });
@@ -165,13 +165,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         ? 'consanguinity'
         : config.objectives.includes('reproduction')
         ? 'fertility'
-        : config.objectives.includes('production')
-        ? 'weight'
+        : config.objectives.includes('benchmarks')
+        ? 'standards'
         : 'consanguinity';
       
-      // Use optimize-corrals for breeding_ratio, consanguinity, fertility, weight
-      // Use suggest-corral-distribution for AI-based optimization (benchmarks, etc.)
-      const useOptimizeCorrals = ['breeding_ratio', 'consanguinity', 'fertility', 'weight'].includes(primaryObjective);
+      // Use optimize-corrals for breeding_ratio, consanguinity, fertility, standards
+      // Use suggest-corral-distribution for AI-based optimization
+      const useOptimizeCorrals = ['breeding_ratio', 'consanguinity', 'fertility', 'standards'].includes(primaryObjective);
       const functionName = useOptimizeCorrals ? 'optimize-corrals' : 'suggest-corral-distribution';
       
       console.log('Invoking', functionName, 'with cabanaId:', cabanaId, 'objective:', primaryObjective);
@@ -398,7 +398,6 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                   <ul className="list-disc ml-5 mt-1">
                     <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.consanguinity')}</strong></li>
                     <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.reproduction')}</strong></li>
-                    <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.production')}</strong></li>
                     <li><strong>{t('optimization.explanationSections.customizableObjectives.objectives.benchmarks')}</strong></li>
                   </ul>
                 </p>
@@ -484,8 +483,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             <input
                               type="radio"
                               name="secondaryObjective"
-                              checked={config.secondaryObjective === 'weight'}
-                              onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'weight' }))}
+                              checked={config.secondaryObjective === 'standards'}
+                              onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'standards' }))}
                               className="w-4 h-4"
                             />
                             <div className="flex-1">
@@ -515,23 +514,6 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       </div>
                     </label>
                     
-                    <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
-                      <input
-                        type="checkbox"
-                        checked={config.objectives.includes('production')}
-                        onChange={(e) => {
-                          const objectives = e.target.checked
-                            ? [...config.objectives, 'production']
-                            : config.objectives.filter(o => o !== 'production');
-                          setConfig(prev => ({ ...prev, objectives }));
-                        }}
-                        className="w-4 h-4 flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium text-sm sm:text-base">{t('optimization.step1.objectives.production.title')}</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground break-words">{t('optimization.step1.objectives.production.description')}</div>
-                      </div>
-                    </label>
                     
                     <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
                       <input
@@ -648,7 +630,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                 </div>
 
                 {/* Parámetros de Peso (opcional) */}
-                {(config.objectives.includes('production') || config.objectives.includes('benchmarks')) && (
+                {config.objectives.includes('benchmarks') && (
                   <div className="p-3 sm:p-4 bg-blue-50 rounded-lg space-y-3 min-w-0 overflow-hidden">
                     <Label className="text-sm sm:text-base font-semibold">{t('optimization.step1.weightObjectivesTitle')}</Label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 min-w-0">
