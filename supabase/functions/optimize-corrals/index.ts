@@ -3296,11 +3296,11 @@ serve(async (req) => {
       // -------------------------------------------------------------------------
       
       // Get destination corrals (user-selected or all)
-      const destinationCorrals = corralsWithCounts.filter(c => 
-        destinationCorralIds.length === 0 || destinationCorralIds.includes(c.id)
+      const destinationCorralsList = corralsWithCounts.filter(c => 
+        destinationCorrals.length === 0 || destinationCorrals.includes(c.id)
       );
       
-      if (destinationCorrals.length === 0) {
+      if (destinationCorralsList.length === 0) {
         console.log('No destination corrals available');
       } else {
         // Initialize corral assignments
@@ -3310,7 +3310,7 @@ serve(async (req) => {
           expectedScore: number;
         }> = {};
         
-        for (const corral of destinationCorrals) {
+        for (const corral of destinationCorralsList) {
           corralAssignments[corral.id] = { bulls: [], cows: [], expectedScore: 0 };
         }
         
@@ -3336,7 +3336,7 @@ serve(async (req) => {
         // Distribute bulls round-robin to corrals
         let corralIndex = 0;
         for (const bull of bullsToAssign) {
-          const corralIds = destinationCorrals.map(c => c.id);
+          const corralIds = destinationCorralsList.map(c => c.id);
           let assigned = false;
           
           for (let i = 0; i < corralIds.length; i++) {
@@ -3394,7 +3394,7 @@ serve(async (req) => {
           let bestCorralId = '';
           let bestScore = -Infinity;
           
-          for (const corral of destinationCorrals) {
+          for (const corral of destinationCorralsList) {
             // Check capacity (females_per_bull ratio)
             const currentCows = corralAssignments[corral.id].cows.length;
             const numBulls = corralAssignments[corral.id].bulls.length;
