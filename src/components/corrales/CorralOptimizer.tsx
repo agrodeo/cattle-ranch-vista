@@ -27,7 +27,7 @@ interface CorralOptimizerProps {
   onSuccess: () => void;
 }
 
-type ObjectiveType = 'consanguinity' | 'fertility' | 'weight';
+type ObjectiveType = 'consanguinity' | 'fertility' | 'benchmarks';
 type StepType = 'objective' | 'scope' | 'analyzing' | 'review' | 'preview';
 
 interface Corral {
@@ -45,7 +45,7 @@ interface SuggestedMove {
   to_corral_id: string;
   to_corral_name: string;
   reason: string;
-  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'weight' | 'future_consanguinity' | 'consolidation';
+  issue_type: 'consanguinity' | 'capacity' | 'separation' | 'fertility' | 'benchmarks' | 'future_consanguinity' | 'consolidation';
   expectedBenefit?: string;
 }
 
@@ -112,7 +112,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
   const objectives: { id: ObjectiveType; icon: any; color: string }[] = [
     { id: 'consanguinity', icon: Dna, color: 'text-purple-600' },
     { id: 'fertility', icon: Heart, color: 'text-pink-600' },
-    { id: 'weight', icon: Scale, color: 'text-blue-600' },
+    { id: 'benchmarks', icon: Scale, color: 'text-blue-600' },
   ];
 
   // Reset state when dialog opens
@@ -399,7 +399,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
       case 'capacity': return <Users className="h-5 w-5" />;
       case 'separation': return <Baby className="h-5 w-5" />;
       case 'fertility': return <Heart className="h-5 w-5" />;
-      case 'weight': return <Scale className="h-5 w-5" />;
+      case 'benchmarks': return <Scale className="h-5 w-5" />;
       default: return <AlertTriangle className="h-5 w-5" />;
     }
   };
