@@ -1,5 +1,13 @@
 {
   "title": "Finance",
+  "subtitle": "Movement tracking and economic analysis",
+  "sectionTitle": "Financial Management",
+  "sectionSubtitle": "Movement tracking and economic analysis",
+  "tabs": {
+    "summary": "Summary",
+    "movements": "Movements",
+    "recurring": "Recurring"
+  },
   "nav": {
     "summary": "Summary",
     "movements": "Movements",
@@ -112,9 +120,9 @@
     "edit": "Edit",
     "delete": "Delete",
     "animalSale": "Animal Sale",
-    "buyerName": "Buyer Name",
-    "buyerDocument": "Buyer Document",
-    "buyerDestination": "Destination",
+    "buyerName": "Buyer (optional)",
+    "buyerDocument": "Document (optional)",
+    "buyerDestination": "Destination (optional)",
     "selectAnimals": "Select Animals",
     "save": "Save",
     "saving": "Saving...",
@@ -127,7 +135,19 @@
     "movementUpdated": "Movement updated",
     "movementAdded": "Movement added",
     "filterByCategory": "Filter by category",
-    "searchDescription": "Search description"
+    "searchDescription": "Search description",
+    "tableHeaders": {
+      "date": "Date",
+      "type": "Type",
+      "category": "Category",
+      "amount": "Amount",
+      "description": "Description"
+    },
+    "typePlaceholder": "Type",
+    "amountPlaceholder": "Amount",
+    "descriptionPlaceholder": "Description",
+    "datePlaceholder": "Date",
+    "loading": "Loading..."
   },
   "recurringDetails": {
     "title": "Recurring Movements",

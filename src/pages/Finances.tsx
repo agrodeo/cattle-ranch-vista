@@ -69,8 +69,8 @@ const Finances = () => {
       />
 
       <SectionCard
-        title="Gestión Financiera"
-        subtitle="Seguimiento de movimientos y análisis económico"
+        title={t('finance:sectionTitle')}
+        subtitle={t('finance:sectionSubtitle')}
       >
         <Tabs defaultValue="summary" className="w-full">
           <TabsList className="grid w-full grid-cols-3">

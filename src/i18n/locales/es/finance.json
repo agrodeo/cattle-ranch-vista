@@ -1,5 +1,13 @@
 {
   "title": "Finanzas",
+  "subtitle": "Seguimiento de movimientos y análisis económico",
+  "sectionTitle": "Gestión Financiera",
+  "sectionSubtitle": "Seguimiento de movimientos y análisis económico",
+  "tabs": {
+    "summary": "Resumen",
+    "movements": "Movimientos",
+    "recurring": "Recurrentes"
+  },
   "nav": {
     "summary": "Resumen",
     "movements": "Movimientos",
@@ -112,9 +120,9 @@
     "edit": "Editar",
     "delete": "Eliminar",
     "animalSale": "Venta de animales",
-    "buyerName": "Nombre del Comprador",
-    "buyerDocument": "Documento del Comprador",
-    "buyerDestination": "Destino",
+    "buyerName": "Comprador (opcional)",
+    "buyerDocument": "Documento (opcional)",
+    "buyerDestination": "Destino (opcional)",
     "selectAnimals": "Seleccionar Animales",
     "save": "Guardar",
     "saving": "Guardando...",
@@ -127,7 +135,19 @@
     "movementUpdated": "Movimiento actualizado",
     "movementAdded": "Movimiento agregado",
     "filterByCategory": "Filtrar por categoría",
-    "searchDescription": "Buscar descripción"
+    "searchDescription": "Buscar descripción",
+    "tableHeaders": {
+      "date": "Fecha",
+      "type": "Tipo",
+      "category": "Categoría",
+      "amount": "Monto",
+      "description": "Descripción"
+    },
+    "typePlaceholder": "Tipo",
+    "amountPlaceholder": "Monto",
+    "descriptionPlaceholder": "Descripción",
+    "datePlaceholder": "Fecha",
+    "loading": "Cargando..."
   },
   "recurringDetails": {
     "title": "Movimientos Recurrentes",
