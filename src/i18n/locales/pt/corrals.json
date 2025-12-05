@@ -564,7 +564,11 @@
       "deselectAllButton": "Desselecionar Todos",
       "backButton": "Voltar",
       "applyingButton": "Aplicando...",
-      "applyMovementsButton": "Aplicar {{count}} Movimentos"
+      "applyMovementsButton": "Aplicar {{count}} Movimentos",
+      "equalOptions": "opções iguais",
+      "whyThisCorral": "Por que este curral?",
+      "bestSecondaryScore": "Maior pontuação secundária ({{score}})",
+      "vsAlternatives": "vs alternativas"
     },
     "step4": {
       "title": "Otimização Aplicada",

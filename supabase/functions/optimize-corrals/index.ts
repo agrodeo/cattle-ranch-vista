@@ -87,6 +87,8 @@ interface SuggestedMove {
   riskReduction?: number;
   secondaryCriterionApplied?: boolean;
   secondaryScore?: number;
+  equalOptionsCount?: number;
+  alternativeOptions?: { corralName: string; secondaryScore: number }[];
 }
 
 const translations = {
@@ -2066,11 +2068,15 @@ serve(async (req) => {
         interface MoveCandidate {
           animal: Animal;
           targetCorralId: string;
+          targetCorralName: string;
           newRisk: number;
           corral: Corral;
           secondaryScore: number;
           secondaryCriterionApplied: boolean;
         }
+        
+        // Track all candidates within threshold for transparency
+        const allCandidates: MoveCandidate[] = [];
         
         let bestMove: MoveCandidate | null = null;
         const currentRisk = calculateDistributionRiskScore(workingDistribution);
@@ -2097,19 +2103,15 @@ serve(async (req) => {
               ? calculateSecondaryScore(targetCorral.id, secondaryObjective as SecondaryObjectiveType) 
               : 0;
             
-            if (!bestMove) {
-              bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
-            } else {
-              const riskDiff = Math.abs(newRisk - bestMove.newRisk);
-              
-              if (newRisk < bestMove.newRisk - RISK_SIMILARITY_THRESHOLD) {
-                // Significantly better risk - use this move
-                bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
-              } else if (riskDiff <= RISK_SIMILARITY_THRESHOLD && secondaryObjective !== 'none' && secondaryScore > bestMove.secondaryScore) {
-                // Similar risk but better secondary score - use this move
-                bestMove = { animal: animal1, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: true };
-              }
-            }
+            allCandidates.push({ 
+              animal: animal1, 
+              targetCorralId: targetCorral.id, 
+              targetCorralName: targetCorral.name,
+              newRisk, 
+              corral: targetCorral, 
+              secondaryScore, 
+              secondaryCriterionApplied: false 
+            });
           }
         }
 
@@ -2135,19 +2137,35 @@ serve(async (req) => {
               ? calculateSecondaryScore(targetCorral.id, secondaryObjective as SecondaryObjectiveType) 
               : 0;
             
-            if (!bestMove) {
-              bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
-            } else {
-              const riskDiff = Math.abs(newRisk - bestMove.newRisk);
-              
-              if (newRisk < bestMove.newRisk - RISK_SIMILARITY_THRESHOLD) {
-                // Significantly better risk - use this move
-                bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: false };
-              } else if (riskDiff <= RISK_SIMILARITY_THRESHOLD && secondaryObjective !== 'none' && secondaryScore > bestMove.secondaryScore) {
-                // Similar risk but better secondary score - use this move
-                bestMove = { animal: animal2, targetCorralId: targetCorral.id, newRisk, corral: targetCorral, secondaryScore, secondaryCriterionApplied: true };
-              }
-            }
+            allCandidates.push({ 
+              animal: animal2, 
+              targetCorralId: targetCorral.id, 
+              targetCorralName: targetCorral.name,
+              newRisk, 
+              corral: targetCorral, 
+              secondaryScore, 
+              secondaryCriterionApplied: false 
+            });
+          }
+        }
+        
+        // Find best move considering secondary objective
+        if (allCandidates.length > 0) {
+          // Sort by risk (lowest first)
+          allCandidates.sort((a, b) => a.newRisk - b.newRisk);
+          const lowestRisk = allCandidates[0].newRisk;
+          
+          // Find all candidates within threshold of best risk
+          const similarCandidates = allCandidates.filter(c => 
+            Math.abs(c.newRisk - lowestRisk) <= RISK_SIMILARITY_THRESHOLD
+          );
+          
+          if (similarCandidates.length > 1 && secondaryObjective !== 'none') {
+            // Multiple options with similar risk - use secondary criterion
+            similarCandidates.sort((a, b) => b.secondaryScore - a.secondaryScore);
+            bestMove = { ...similarCandidates[0], secondaryCriterionApplied: true };
+          } else {
+            bestMove = { ...allCandidates[0], secondaryCriterionApplied: false };
           }
         }
 
@@ -2164,6 +2182,22 @@ serve(async (req) => {
               break;
             }
           }
+          
+          // Calculate similar options for transparency
+          const lowestRisk = allCandidates.length > 0 ? allCandidates[0].newRisk : bestMove.newRisk;
+          const similarOptions = allCandidates.filter(c => 
+            Math.abs(c.newRisk - lowestRisk) <= RISK_SIMILARITY_THRESHOLD
+          );
+          const equalOptionsCount = similarOptions.length;
+          
+          // Get alternative corral names for display
+          const alternativeOptions = similarOptions
+            .filter(c => c.targetCorralId !== bestMove!.targetCorralId)
+            .slice(0, 3)
+            .map(c => ({
+              corralName: c.targetCorralName,
+              secondaryScore: Math.round(c.secondaryScore)
+            }));
           
           const secondaryLabel = secondaryObjective === 'fertility' ? t.fertilityOptimized : 
                                 secondaryObjective === 'weight' ? t.weightOptimized : '';
@@ -2182,6 +2216,8 @@ serve(async (req) => {
             riskReduction: Math.round(riskReduction * 1000) / 1000,
             secondaryCriterionApplied: bestMove.secondaryCriterionApplied,
             secondaryScore: bestMove.secondaryScore,
+            equalOptionsCount,
+            alternativeOptions,
           });
           
           movedAnimals.add(bestMove.animal.id);
