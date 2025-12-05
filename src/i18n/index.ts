@@ -25,6 +25,7 @@ import formsEs from './locales/es/forms.json';
 import settingsEs from './locales/es/settings.json';
 import subscriptionEs from './locales/es/subscription.json';
 import reproductiveEs from './locales/es/reproductive.json';
+import breedingEs from './locales/es/breeding.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
@@ -41,6 +42,7 @@ import formsEn from './locales/en/forms.json';
 import settingsEn from './locales/en/settings.json';
 import subscriptionEn from './locales/en/subscription.json';
 import reproductiveEn from './locales/en/reproductive.json';
+import breedingEn from './locales/en/breeding.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -57,6 +59,7 @@ import formsPt from './locales/pt/forms.json';
 import settingsPt from './locales/pt/settings.json';
 import subscriptionPt from './locales/pt/subscription.json';
 import reproductivePt from './locales/pt/reproductive.json';
+import breedingPt from './locales/pt/breeding.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -103,6 +106,7 @@ const resources = {
     settings: settingsEs,
     subscription: subscriptionEs,
     reproductive: reproductiveEs,
+    breeding: breedingEs,
   },
   en: {
     common: commonEn,
@@ -120,6 +124,7 @@ const resources = {
     settings: settingsEn,
     subscription: subscriptionEn,
     reproductive: reproductiveEn,
+    breeding: breedingEn,
   },
   pt: {
     common: commonPt,
@@ -137,6 +142,7 @@ const resources = {
     settings: settingsPt,
     subscription: subscriptionPt,
     reproductive: reproductivePt,
+    breeding: breedingPt,
   },
 };
 
@@ -147,7 +153,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],
