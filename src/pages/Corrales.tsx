@@ -27,8 +27,7 @@ import {
   ChevronRight,
   TrendingUp,
   Activity,
-  AlertTriangle,
-  Brain
+  AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
@@ -38,7 +37,6 @@ import { MoveAnimalDialog } from "@/components/corrales/MoveAnimalDialog";
 import { DeleteCorralDialog } from "@/components/corrales/DeleteCorralDialog";
 import { CorralOptimizer } from "@/components/corrales/CorralOptimizer";
 import { BulkMoveDialog } from "@/components/breeding/BulkMoveDialog";
-import { BreedingPlanWizard } from "@/components/breeding/BreedingPlanWizard";
 import { CorralSuggestionsCard } from "@/components/corrales/CorralSuggestionsCard";
 
 import {
@@ -87,7 +85,6 @@ export default function Corrales() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showCorralOptimizer, setShowCorralOptimizer] = useState(false);
   const [showBulkMove, setShowBulkMove] = useState(false);
-  const [showBreedingPlanner, setShowBreedingPlanner] = useState(false);
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
   const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
@@ -350,14 +347,6 @@ export default function Corrales() {
           subtitle={t('corrals:subtitle')}
           action={
             <div className="flex gap-2">
-              <Button
-                onClick={() => setShowBreedingPlanner(true)}
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Brain className="h-4 w-4" />
-                {t('corrals:buttons.breedingPlan')}
-              </Button>
               <Button
                 onClick={() => setShowBulkMove(true)}
                 variant="outline"
@@ -848,11 +837,6 @@ export default function Corrales() {
             cabanaId={currentUser.cabañaId}
           />
 
-          <BreedingPlanWizard
-            isOpen={showBreedingPlanner}
-            onClose={() => setShowBreedingPlanner(false)}
-            cabanaId={currentUser.cabañaId}
-          />
         </>
       )}
     </div>
