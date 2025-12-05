@@ -92,6 +92,7 @@
     "noRisksDetected": "No se detectaron riesgos de consanguinidad"
   },
   "buttons": {
+    "breedingPlan": "Plan Reproductivo",
     "bulkMove": "Mover en Masa",
     "optimize": "Optimizar Corrales",
     "moveAnimals": "Mover Animales",
