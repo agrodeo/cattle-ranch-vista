@@ -479,6 +479,17 @@
           "recommended": "Recomendado"
         }
       },
+      "secondaryObjective": {
+        "title": "Objetivo Secundario (opcional)",
+        "description": "Cuando múltiples movimientos reducen el riesgo de forma similar, usar este criterio para elegir entre ellos.",
+        "options": {
+          "none": "Ninguno (solo minimizar riesgo)",
+          "fertility": "Maximizar fertilidad",
+          "fertilityDesc": "Preferir corrales con mejor potencial reproductivo",
+          "weight": "Maximizar genética de peso",
+          "weightDesc": "Preferir corrales con mejor genética de peso"
+        }
+      },
       "breedingRatioConfig": {
         "title": "Configuración de Ratio de Cría",
         "femalesPerBullLabel": "Hembras por toro",
@@ -538,6 +549,7 @@
       "detailedPlanTitle": "Plan Detallado por Corral",
       "corralAnimalsInfo": "{{count}} animales ({{adult}} adultos, {{calf}} terneros)",
       "corralRisksMovesInfo": "{{risks}} riesgos • {{moves}} movimientos",
+      "secondaryCriterionBadge": "Optimizado",
       "riskReductionBadge": "-{{score}}% riesgo",
       "capacityOkBadge": "Capacidad OK",
       "overCapacityBadge": "Sobre capacidad",
