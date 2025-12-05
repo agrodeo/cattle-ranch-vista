@@ -6,11 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Plus, Save } from "lucide-react";
+import { Trash2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
-import { type CustomBenchmark } from "@/lib/breedBenchmarks";
 
 interface BenchmarkFormData {
   breed: string | null;
@@ -23,6 +22,18 @@ interface BenchmarkFormData {
   daily_gain_excellent: number;
   daily_gain_good: number;
   daily_gain_poor: number;
+  final_weight_excellent: number;
+  final_weight_good: number;
+  final_weight_poor: number;
+  scrotal_circumference_excellent: number;
+  scrotal_circumference_good: number;
+  scrotal_circumference_poor: number;
+  horn_preference: string;
+}
+
+interface CustomBenchmark extends BenchmarkFormData {
+  id: string;
+  cabaña_id: string;
 }
 
 const DEFAULT_FORM_DATA: BenchmarkFormData = {
@@ -36,6 +47,13 @@ const DEFAULT_FORM_DATA: BenchmarkFormData = {
   daily_gain_excellent: 0.8,
   daily_gain_good: 0.7,
   daily_gain_poor: 0.6,
+  final_weight_excellent: 450,
+  final_weight_good: 420,
+  final_weight_poor: 380,
+  scrotal_circumference_excellent: 38,
+  scrotal_circumference_good: 35,
+  scrotal_circumference_poor: 32,
+  horn_preference: 'any',
 };
 
 export const BenchmarkSettings = () => {
@@ -155,6 +173,13 @@ export const BenchmarkSettings = () => {
       daily_gain_excellent: benchmark.daily_gain_excellent,
       daily_gain_good: benchmark.daily_gain_good,
       daily_gain_poor: benchmark.daily_gain_poor,
+      final_weight_excellent: benchmark.final_weight_excellent ?? 450,
+      final_weight_good: benchmark.final_weight_good ?? 420,
+      final_weight_poor: benchmark.final_weight_poor ?? 380,
+      scrotal_circumference_excellent: benchmark.scrotal_circumference_excellent ?? 38,
+      scrotal_circumference_good: benchmark.scrotal_circumference_good ?? 35,
+      scrotal_circumference_poor: benchmark.scrotal_circumference_poor ?? 32,
+      horn_preference: benchmark.horn_preference ?? 'any',
     });
     setEditingId(benchmark.id);
   };
@@ -221,7 +246,16 @@ export const BenchmarkSettings = () => {
                         {t('settings:benchmarks.weaningWeight')}: {benchmark.weaning_weight_excellent}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.weaning_weight_good}kg ({t('settings:benchmarks.good').toLowerCase()})
                       </div>
                       <div>
+                        {t('settings:benchmarks.finalWeight')}: {benchmark.final_weight_excellent ?? 450}kg ({t('settings:benchmarks.excellent').toLowerCase()}) / {benchmark.final_weight_good ?? 420}kg ({t('settings:benchmarks.good').toLowerCase()})
+                      </div>
+                      <div>
                         {t('settings:benchmarks.dailyGain')}: {benchmark.daily_gain_excellent}kg/día ({t('settings:benchmarks.excellent').toLowerCase()})
+                      </div>
+                      <div>
+                        {t('settings:benchmarks.scrotalCircumference')}: {benchmark.scrotal_circumference_excellent ?? 38}cm ({t('settings:benchmarks.excellent').toLowerCase()})
+                      </div>
+                      <div>
+                        {t('settings:benchmarks.hornPreference')}: {t(`settings:benchmarks.horn_${benchmark.horn_preference ?? 'any'}`)}
                       </div>
                     </div>
                   </div>
@@ -262,7 +296,8 @@ export const BenchmarkSettings = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Breed Selection */}
             <div>
               <Label htmlFor="breed">{t('settings:benchmarks.breed')}</Label>
               <Select
@@ -286,132 +321,221 @@ export const BenchmarkSettings = () => {
             </div>
 
             {/* Birth Weight */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="birth_weight_excellent">{t('settings:benchmarks.birthWeightExcellent')}</Label>
-                <Input
-                  id="birth_weight_excellent"
-                  type="number"
-                  step="0.1"
-                  value={formData.birth_weight_excellent}
-                  onChange={(e) => 
-                    setFormData({ ...formData, birth_weight_excellent: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="birth_weight_good">{t('settings:benchmarks.birthWeightGood')}</Label>
-                <Input
-                  id="birth_weight_good"
-                  type="number"
-                  step="0.1"
-                  value={formData.birth_weight_good}
-                  onChange={(e) => 
-                    setFormData({ ...formData, birth_weight_good: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="birth_weight_poor">{t('settings:benchmarks.birthWeightPoor')}</Label>
-                <Input
-                  id="birth_weight_poor"
-                  type="number"
-                  step="0.1"
-                  value={formData.birth_weight_poor}
-                  onChange={(e) => 
-                    setFormData({ ...formData, birth_weight_poor: Number(e.target.value) })
-                  }
-                  required
-                />
+            <div>
+              <Label className="text-base font-semibold">{t('settings:benchmarks.birthWeight')} (kg)</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                <div>
+                  <Label htmlFor="birth_weight_excellent" className="text-sm text-muted-foreground">{t('settings:benchmarks.excellent')}</Label>
+                  <Input
+                    id="birth_weight_excellent"
+                    type="number"
+                    step="0.1"
+                    value={formData.birth_weight_excellent}
+                    onChange={(e) => setFormData({ ...formData, birth_weight_excellent: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="birth_weight_good" className="text-sm text-muted-foreground">{t('settings:benchmarks.good')}</Label>
+                  <Input
+                    id="birth_weight_good"
+                    type="number"
+                    step="0.1"
+                    value={formData.birth_weight_good}
+                    onChange={(e) => setFormData({ ...formData, birth_weight_good: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="birth_weight_poor" className="text-sm text-muted-foreground">{t('settings:benchmarks.poor')}</Label>
+                  <Input
+                    id="birth_weight_poor"
+                    type="number"
+                    step="0.1"
+                    value={formData.birth_weight_poor}
+                    onChange={(e) => setFormData({ ...formData, birth_weight_poor: Number(e.target.value) })}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
             {/* Weaning Weight */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="weaning_weight_excellent">{t('settings:benchmarks.weaningWeightExcellent')}</Label>
-                <Input
-                  id="weaning_weight_excellent"
-                  type="number"
-                  step="0.1"
-                  value={formData.weaning_weight_excellent}
-                  onChange={(e) => 
-                    setFormData({ ...formData, weaning_weight_excellent: Number(e.target.value) })
-                  }
-                  required
-                />
+            <div>
+              <Label className="text-base font-semibold">{t('settings:benchmarks.weaningWeight')} (kg)</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                <div>
+                  <Label htmlFor="weaning_weight_excellent" className="text-sm text-muted-foreground">{t('settings:benchmarks.excellent')}</Label>
+                  <Input
+                    id="weaning_weight_excellent"
+                    type="number"
+                    step="0.1"
+                    value={formData.weaning_weight_excellent}
+                    onChange={(e) => setFormData({ ...formData, weaning_weight_excellent: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="weaning_weight_good" className="text-sm text-muted-foreground">{t('settings:benchmarks.good')}</Label>
+                  <Input
+                    id="weaning_weight_good"
+                    type="number"
+                    step="0.1"
+                    value={formData.weaning_weight_good}
+                    onChange={(e) => setFormData({ ...formData, weaning_weight_good: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="weaning_weight_poor" className="text-sm text-muted-foreground">{t('settings:benchmarks.poor')}</Label>
+                  <Input
+                    id="weaning_weight_poor"
+                    type="number"
+                    step="0.1"
+                    value={formData.weaning_weight_poor}
+                    onChange={(e) => setFormData({ ...formData, weaning_weight_poor: Number(e.target.value) })}
+                    required
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="weaning_weight_good">{t('settings:benchmarks.weaningWeightGood')}</Label>
-                <Input
-                  id="weaning_weight_good"
-                  type="number"
-                  step="0.1"
-                  value={formData.weaning_weight_good}
-                  onChange={(e) => 
-                    setFormData({ ...formData, weaning_weight_good: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="weaning_weight_poor">{t('settings:benchmarks.weaningWeightPoor')}</Label>
-                <Input
-                  id="weaning_weight_poor"
-                  type="number"
-                  step="0.1"
-                  value={formData.weaning_weight_poor}
-                  onChange={(e) => 
-                    setFormData({ ...formData, weaning_weight_poor: Number(e.target.value) })
-                  }
-                  required
-                />
+            </div>
+
+            {/* Final Weight */}
+            <div>
+              <Label className="text-base font-semibold">{t('settings:benchmarks.finalWeight')} (kg)</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                <div>
+                  <Label htmlFor="final_weight_excellent" className="text-sm text-muted-foreground">{t('settings:benchmarks.excellent')}</Label>
+                  <Input
+                    id="final_weight_excellent"
+                    type="number"
+                    step="0.1"
+                    value={formData.final_weight_excellent}
+                    onChange={(e) => setFormData({ ...formData, final_weight_excellent: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="final_weight_good" className="text-sm text-muted-foreground">{t('settings:benchmarks.good')}</Label>
+                  <Input
+                    id="final_weight_good"
+                    type="number"
+                    step="0.1"
+                    value={formData.final_weight_good}
+                    onChange={(e) => setFormData({ ...formData, final_weight_good: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="final_weight_poor" className="text-sm text-muted-foreground">{t('settings:benchmarks.poor')}</Label>
+                  <Input
+                    id="final_weight_poor"
+                    type="number"
+                    step="0.1"
+                    value={formData.final_weight_poor}
+                    onChange={(e) => setFormData({ ...formData, final_weight_poor: Number(e.target.value) })}
+                    required
+                  />
+                </div>
               </div>
             </div>
 
             {/* Daily Gain */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="daily_gain_excellent">{t('settings:benchmarks.dailyGainExcellent')}</Label>
-                <Input
-                  id="daily_gain_excellent"
-                  type="number"
-                  step="0.01"
-                  value={formData.daily_gain_excellent}
-                  onChange={(e) => 
-                    setFormData({ ...formData, daily_gain_excellent: Number(e.target.value) })
-                  }
-                  required
-                />
+            <div>
+              <Label className="text-base font-semibold">{t('settings:benchmarks.dailyGain')} (kg/día)</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                <div>
+                  <Label htmlFor="daily_gain_excellent" className="text-sm text-muted-foreground">{t('settings:benchmarks.excellent')}</Label>
+                  <Input
+                    id="daily_gain_excellent"
+                    type="number"
+                    step="0.01"
+                    value={formData.daily_gain_excellent}
+                    onChange={(e) => setFormData({ ...formData, daily_gain_excellent: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="daily_gain_good" className="text-sm text-muted-foreground">{t('settings:benchmarks.good')}</Label>
+                  <Input
+                    id="daily_gain_good"
+                    type="number"
+                    step="0.01"
+                    value={formData.daily_gain_good}
+                    onChange={(e) => setFormData({ ...formData, daily_gain_good: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="daily_gain_poor" className="text-sm text-muted-foreground">{t('settings:benchmarks.poor')}</Label>
+                  <Input
+                    id="daily_gain_poor"
+                    type="number"
+                    step="0.01"
+                    value={formData.daily_gain_poor}
+                    onChange={(e) => setFormData({ ...formData, daily_gain_poor: Number(e.target.value) })}
+                    required
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="daily_gain_good">{t('settings:benchmarks.dailyGainGood')}</Label>
-                <Input
-                  id="daily_gain_good"
-                  type="number"
-                  step="0.01"
-                  value={formData.daily_gain_good}
-                  onChange={(e) => 
-                    setFormData({ ...formData, daily_gain_good: Number(e.target.value) })
-                  }
-                  required
-                />
+            </div>
+
+            {/* Scrotal Circumference */}
+            <div>
+              <Label className="text-base font-semibold">{t('settings:benchmarks.scrotalCircumference')} (cm)</Label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                <div>
+                  <Label htmlFor="scrotal_circumference_excellent" className="text-sm text-muted-foreground">{t('settings:benchmarks.excellent')}</Label>
+                  <Input
+                    id="scrotal_circumference_excellent"
+                    type="number"
+                    step="0.1"
+                    value={formData.scrotal_circumference_excellent}
+                    onChange={(e) => setFormData({ ...formData, scrotal_circumference_excellent: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="scrotal_circumference_good" className="text-sm text-muted-foreground">{t('settings:benchmarks.good')}</Label>
+                  <Input
+                    id="scrotal_circumference_good"
+                    type="number"
+                    step="0.1"
+                    value={formData.scrotal_circumference_good}
+                    onChange={(e) => setFormData({ ...formData, scrotal_circumference_good: Number(e.target.value) })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="scrotal_circumference_poor" className="text-sm text-muted-foreground">{t('settings:benchmarks.poor')}</Label>
+                  <Input
+                    id="scrotal_circumference_poor"
+                    type="number"
+                    step="0.1"
+                    value={formData.scrotal_circumference_poor}
+                    onChange={(e) => setFormData({ ...formData, scrotal_circumference_poor: Number(e.target.value) })}
+                    required
+                  />
+                </div>
               </div>
-              <div>
-                <Label htmlFor="daily_gain_poor">{t('settings:benchmarks.dailyGainPoor')}</Label>
-                <Input
-                  id="daily_gain_poor"
-                  type="number"
-                  step="0.01"
-                  value={formData.daily_gain_poor}
-                  onChange={(e) => 
-                    setFormData({ ...formData, daily_gain_poor: Number(e.target.value) })
-                  }
-                  required
-                />
-              </div>
+            </div>
+
+            {/* Horn Preference */}
+            <div>
+              <Label htmlFor="horn_preference" className="text-base font-semibold">{t('settings:benchmarks.hornPreference')}</Label>
+              <Select
+                value={formData.horn_preference}
+                onValueChange={(value) => setFormData({ ...formData, horn_preference: value })}
+              >
+                <SelectTrigger className="mt-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">{t('settings:benchmarks.horn_any')}</SelectItem>
+                  <SelectItem value="polled">{t('settings:benchmarks.horn_polled')}</SelectItem>
+                  <SelectItem value="horned">{t('settings:benchmarks.horn_horned')}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">

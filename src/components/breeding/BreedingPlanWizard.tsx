@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, Target, CheckCircle, AlertTriangle, HelpCircle, Settings, Info } from "lucide-react";
+import { Brain, Target, CheckCircle, AlertTriangle, HelpCircle, Settings, Info, Star, TrendingUp, Scale } from "lucide-react";
 import { toast } from "sonner";
 import { useBenchmarks } from "@/hooks/useBenchmarks";
 
@@ -19,6 +20,8 @@ interface Pairing {
   bull_id: string;
   cow_name: string;
   bull_name: string;
+  cow_tag?: string;
+  bull_tag?: string;
   score: number;
   inbreeding_F: number;
   blocked: boolean;
@@ -28,12 +31,20 @@ interface Pairing {
     final_weight?: number;
     ce_cm?: number;
   };
+  match_quality: 'excellent' | 'good' | 'acceptable' | 'poor';
   explain: string;
   detailed_explanation: {
     genetic_merit: string;
     inbreeding_risk: string;
     predicted_performance: string;
     recommendation: string;
+    scores: {
+      birth_weight_score: number;
+      weaning_weight_score: number;
+      final_weight_score: number;
+      ce_score: number;
+      horn_match: boolean;
+    };
   };
 }
 
@@ -45,6 +56,15 @@ interface BreedingPlan {
     capacity_respected: boolean;
   };
   pairings: Pairing[];
+  summary: {
+    total_eligible_cows: number;
+    total_eligible_bulls: number;
+    total_pairings: number;
+    excellent_matches: number;
+    good_matches: number;
+    acceptable_matches: number;
+    blocked_combinations: number;
+  };
   corral_plan: Array<{
     corral_id: string;
     corral_name: string;
@@ -82,7 +102,6 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<BreedingPlan | null>(null);
 
-  // Step 1: Configuration - load from settings
   const [config, setConfig] = useState({
     mode: 'BOTH',
     targets: {
@@ -104,7 +123,6 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
     density_per_hectare: 1.5
   });
 
-  // Load targets from settings when dialog opens
   useEffect(() => {
     if (isOpen && !benchmarksLoading) {
       const targets = getBreedingTargets();
@@ -115,7 +133,6 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
     }
   }, [isOpen, benchmarksLoading, getBreedingTargets]);
 
-  // Reset state when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setStep(1);
@@ -171,11 +188,23 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
     }
   };
 
+  const getMatchBadge = (quality: string) => {
+    switch (quality) {
+      case 'excellent':
+        return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100"><Star className="h-3 w-3 mr-1" />{t('breeding:excellent')}</Badge>;
+      case 'good':
+        return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100"><TrendingUp className="h-3 w-3 mr-1" />{t('breeding:good')}</Badge>;
+      case 'acceptable':
+        return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100">{t('breeding:acceptable')}</Badge>;
+      default:
+        return <Badge variant="outline" className="text-muted-foreground">{t('breeding:poor')}</Badge>;
+    }
+  };
+
   const getRiskBadge = (F: number) => {
-    if (F <= 0.015) return <Badge variant="default" className="bg-green-100 text-green-800">{t('breeding:lowRisk')}</Badge>;
-    if (F <= 0.03) return <Badge variant="default" className="bg-yellow-100 text-yellow-800">{t('breeding:moderateRisk')}</Badge>;
-    if (F <= 0.0625) return <Badge variant="default" className="bg-orange-100 text-orange-800">{t('breeding:highRisk')}</Badge>;
-    return <Badge variant="destructive">{t('breeding:criticalRisk')}</Badge>;
+    if (F <= 0.015) return <Badge variant="outline" className="bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300">{t('breeding:lowRisk')}</Badge>;
+    if (F <= 0.03) return <Badge variant="outline" className="bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">{t('breeding:moderateRisk')}</Badge>;
+    return <Badge variant="destructive">{t('breeding:highRisk')}</Badge>;
   };
 
   const resetWizard = () => {
@@ -195,11 +224,10 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
 
         {step === 1 && (
           <div className="space-y-6">
-            {/* Benchmark Settings Notice */}
             {!hasBenchmarks && (
               <Alert>
                 <Info className="h-4 w-4" />
-                <AlertDescription className="flex items-center justify-between">
+                <AlertDescription className="flex items-center justify-between flex-wrap gap-2">
                   <span>{t('breeding:noBenchmarksConfigured')}</span>
                   <Button variant="link" asChild className="p-0 h-auto">
                     <Link to="/settings?tab=benchmarks" onClick={onClose}>
@@ -212,9 +240,9 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
             )}
 
             {hasBenchmarks && (
-              <Alert className="bg-green-50 border-green-200">
+              <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
                 <CheckCircle className="h-4 w-4 text-green-600" />
-                <AlertDescription className="text-green-800">
+                <AlertDescription className="text-green-800 dark:text-green-200">
                   {t('breeding:benchmarksLoaded')}
                 </AlertDescription>
               </Alert>
@@ -344,55 +372,103 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
 
         {step === 2 && plan && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">{t('breeding:planPreview', { season: plan.season })}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('breeding:suggestedPairingsCount', { count: plan.pairings.length })}
-                </p>
-              </div>
-              <div className="flex gap-2">
+            {/* Summary Section */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="text-2xl font-bold text-primary">{plan.summary.total_pairings}</div>
+                <div className="text-sm text-muted-foreground">{t('breeding:totalPairings')}</div>
+              </Card>
+              <Card className="p-4 bg-green-50 dark:bg-green-950">
+                <div className="text-2xl font-bold text-green-600">{plan.summary.excellent_matches}</div>
+                <div className="text-sm text-green-700 dark:text-green-300">{t('breeding:excellentMatches')}</div>
+              </Card>
+              <Card className="p-4 bg-blue-50 dark:bg-blue-950">
+                <div className="text-2xl font-bold text-blue-600">{plan.summary.good_matches}</div>
+                <div className="text-sm text-blue-700 dark:text-blue-300">{t('breeding:goodMatches')}</div>
+              </Card>
+              <Card className="p-4 bg-yellow-50 dark:bg-yellow-950">
+                <div className="text-2xl font-bold text-yellow-600">{plan.summary.blocked_combinations}</div>
+                <div className="text-sm text-yellow-700 dark:text-yellow-300">{t('breeding:blockedCombinations')}</div>
+              </Card>
+            </div>
+
+            {/* Warnings */}
+            {plan.warnings.length > 0 && (
+              <div className="flex flex-wrap gap-2">
                 {plan.warnings.map((warning, i) => (
-                  <Badge key={i} variant="outline" className="bg-yellow-50">
+                  <Badge key={i} variant="outline" className="bg-yellow-50 dark:bg-yellow-950">
                     <AlertTriangle className="h-3 w-3 mr-1" />
                     {warning}
                   </Badge>
                 ))}
               </div>
-            </div>
+            )}
 
             {/* Pairings Table */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('breeding:suggestedPairings')}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Scale className="h-4 w-4" />
+                  {t('breeding:suggestedPairings')} ({plan.pairings.length})
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
                   <TooltipProvider>
-                    {plan.pairings.slice(0, 10).map((pairing, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
-                        <div className="flex items-center gap-4">
-                          <div>
-                            <span className="font-medium">{pairing.cow_name}</span>
-                            <span className="mx-2 text-muted-foreground">×</span>
-                            <span className="font-medium">{pairing.bull_name}</span>
+                    {plan.pairings.map((pairing, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center gap-4 flex-wrap">
+                          <div className="min-w-[200px]">
+                            <div className="font-medium">{pairing.cow_name}</div>
+                            <div className="text-xs text-muted-foreground">{pairing.cow_tag}</div>
                           </div>
-                          {getRiskBadge(pairing.inbreeding_F)}
+                          <span className="text-muted-foreground">×</span>
+                          <div className="min-w-[200px]">
+                            <div className="font-medium">{pairing.bull_name}</div>
+                            <div className="text-xs text-muted-foreground">{pairing.bull_tag}</div>
+                          </div>
+                          <div className="flex gap-2 flex-wrap">
+                            {getMatchBadge(pairing.match_quality)}
+                            {getRiskBadge(pairing.inbreeding_F)}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">
-                            {t('breeding:score', { score: (pairing.score * 100).toFixed(0) })}
-                          </Badge>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="font-bold text-lg">{pairing.score}</div>
+                            <div className="text-xs text-muted-foreground">pts</div>
+                          </div>
                           <Tooltip>
-                            <TooltipTrigger>
-                              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <HelpCircle className="h-4 w-4" />
+                              </Button>
                             </TooltipTrigger>
-                            <TooltipContent className="max-w-md">
-                              <div className="space-y-2">
+                            <TooltipContent className="max-w-md p-4">
+                              <div className="space-y-3">
                                 <p className="font-medium">{pairing.detailed_explanation.recommendation}</p>
-                                <p className="text-sm">{pairing.detailed_explanation.genetic_merit}</p>
-                                <p className="text-sm">{pairing.detailed_explanation.inbreeding_risk}</p>
-                                <p className="text-sm">{pairing.detailed_explanation.predicted_performance}</p>
+                                <div className="text-sm space-y-1">
+                                  <p>{pairing.detailed_explanation.genetic_merit}</p>
+                                  <p>{pairing.detailed_explanation.inbreeding_risk}</p>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {pairing.detailed_explanation.predicted_performance}
+                                </div>
+                                {pairing.predicted && (
+                                  <div className="grid grid-cols-2 gap-2 text-xs mt-2 pt-2 border-t">
+                                    {pairing.predicted.birth_weight && (
+                                      <div>Peso nacer: <span className="font-medium">{pairing.predicted.birth_weight.toFixed(1)}kg</span></div>
+                                    )}
+                                    {pairing.predicted.weaning_weight && (
+                                      <div>Peso destete: <span className="font-medium">{pairing.predicted.weaning_weight.toFixed(1)}kg</span></div>
+                                    )}
+                                    {pairing.predicted.final_weight && (
+                                      <div>Peso final: <span className="font-medium">{pairing.predicted.final_weight.toFixed(1)}kg</span></div>
+                                    )}
+                                    {pairing.predicted.ce_cm && (
+                                      <div>CE: <span className="font-medium">{pairing.predicted.ce_cm.toFixed(1)}cm</span></div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </TooltipContent>
                           </Tooltip>
@@ -400,11 +476,6 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                       </div>
                     ))}
                   </TooltipProvider>
-                  {plan.pairings.length > 10 && (
-                    <p className="text-sm text-muted-foreground text-center">
-                      {t('breeding:morePairings', { count: plan.pairings.length - 10 })}
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -429,7 +500,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                       </div>
                       <div className="flex gap-2">
                         {corral.capacity_ok ? (
-                          <Badge variant="default" className="bg-green-100 text-green-800">
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">
                             {t('breeding:capacityOk')}
                           </Badge>
                         ) : (
@@ -438,11 +509,11 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                           </Badge>
                         )}
                         {corral.ratio_ok ? (
-                          <Badge variant="default" className="bg-blue-100 text-blue-800">
+                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
                             {t('breeding:ratioOk')}
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100">
                             {t('breeding:reviewBulls')}
                           </Badge>
                         )}
@@ -483,13 +554,15 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
         )}
 
         {step === 3 && (
-          <div className="text-center space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-600 mx-auto" />
-            <h3 className="text-xl font-semibold">{t('breeding:planCompletedTitle')}</h3>
+          <div className="text-center py-8 space-y-4">
+            <CheckCircle className="h-16 w-16 mx-auto text-green-600" />
+            <h3 className="text-xl font-semibold">{t('breeding:planApplied')}</h3>
             <p className="text-muted-foreground">
-              {t('breeding:planCompletedDesc')}
+              {t('breeding:planAppliedDescription')}
             </p>
-            <Button onClick={onClose}>{t('breeding:close')}</Button>
+            <Button onClick={onClose}>
+              {t('common:close')}
+            </Button>
           </div>
         )}
       </DialogContent>
