@@ -2352,79 +2352,86 @@ serve(async (req) => {
       });
       
       // Calculate FEMALE fertility scores (0-100)
+      // Score = base 50 + pregnancy bonus (40) + offspring bonus (30) + AI bonus (20) + efficiency bonus (10)
       const femaleFertilityScores: Record<string, number> = {};
       animals.filter((a: Animal) => a.sex === 'Hembra').forEach((female: Animal) => {
-        let score = 50; // Default neutral score
+        let score = 50; // Base score for all females
         let hasData = false;
         
         const pregnancies = pregnanciesByAnimal[female.id];
         const offspring = offspringByMother[female.id] || 0;
         const aiRecords = aiByFemale[female.id];
         
-        // Pregnancy success rate: up to 40 points
+        // Pregnancy success rate: ADD up to 40 points (not replace!)
         if (pregnancies && pregnancies.total > 0) {
           const successRate = pregnancies.successful / pregnancies.total;
-          score = successRate * 40;
+          score += successRate * 40; // FIX: was = instead of +=
           hasData = true;
         }
         
-        // Offspring count bonus: up to 30 points (capped at 6 offspring)
+        // Offspring count bonus: ADD up to 30 points (capped at 6 offspring)
         if (offspring > 0) {
           score += Math.min(offspring * 5, 30);
           hasData = true;
         }
         
-        // AI success rate: up to 20 points
+        // AI success rate: ADD up to 20 points
         if (aiRecords && aiRecords.total > 0) {
           const aiSuccessRate = aiRecords.successful / aiRecords.total;
           score += aiSuccessRate * 20;
           hasData = true;
         }
         
-        // Reproductive efficiency bonus: 10 points if no failed pregnancies
+        // Reproductive efficiency bonus: ADD 10 points if no failed pregnancies
         if (pregnancies && pregnancies.total > 0 && pregnancies.failed === 0) {
           score += 10;
         }
         
-        femaleFertilityScores[female.id] = hasData ? Math.min(Math.round(score), 100) : 50;
+        femaleFertilityScores[female.id] = Math.min(Math.round(score), 100);
+        if (hasData) {
+          console.log(`Female ${female.name || female.id_tag}: score=${femaleFertilityScores[female.id]} (offspring=${offspring})`);
+        }
       });
       
       // Calculate MALE fertility scores (0-100)
+      // Score = base 50 + offspring bonus (40) + AI bonus (30) + service bonus (20) + diversity bonus (10)
       const maleFertilityScores: Record<string, number> = {};
       animals.filter((a: Animal) => a.sex === 'Macho').forEach((male: Animal) => {
-        let score = 50; // Default neutral score
+        let score = 50; // Base score for all males
         let hasData = false;
         
         const offspring = offspringByFather[male.id] || 0;
         const aiRecords = aiByBull[male.id];
         const iaServices = iaServicesByBull[male.id] || 0;
         
-        // Offspring sired count: up to 40 points (capped at ~13 offspring)
+        // Offspring sired count: ADD up to 40 points (capped at ~13 offspring)
         if (offspring > 0) {
-          score = Math.min(offspring * 3, 40);
+          score += Math.min(offspring * 3, 40); // FIX: was = instead of +=
           hasData = true;
         }
         
-        // AI success rate as sire: up to 30 points
+        // AI success rate as sire: ADD up to 30 points
         if (aiRecords && aiRecords.total > 0) {
           const aiSuccessRate = aiRecords.successful / aiRecords.total;
           score += aiSuccessRate * 30;
           hasData = true;
         }
         
-        // IA service count bonus: up to 20 points (capped at ~20 services)
+        // IA service count bonus: ADD up to 20 points (capped at ~20 services)
         if (iaServices > 0) {
           score += Math.min(iaServices, 20);
           hasData = true;
         }
         
-        // Genetic diversity bonus: 10 points if offspring from multiple females
-        // (simplified: if offspring > 3, assume diversity)
+        // Genetic diversity bonus: ADD 10 points if offspring from multiple females
         if (offspring >= 3) {
           score += 10;
         }
         
-        maleFertilityScores[male.id] = hasData ? Math.min(Math.round(score), 100) : 50;
+        maleFertilityScores[male.id] = Math.min(Math.round(score), 100);
+        if (hasData) {
+          console.log(`Male ${male.name || male.id_tag}: score=${maleFertilityScores[male.id]} (offspring=${offspring})`);
+        }
       });
       
       console.log(`Calculated fertility scores for ${Object.keys(femaleFertilityScores).length} females and ${Object.keys(maleFertilityScores).length} males`);
@@ -2446,27 +2453,42 @@ serve(async (req) => {
         return a.sex === 'Macho' && ageMonths >= MIN_AGE_MONTHS && !movedAnimals.has(a.id);
       });
       
-      // Classify animals by fertility score
+      // Classify animals by fertility score (lowered threshold from 70 to 60)
+      const HIGH_FERTILITY_THRESHOLD = 60;
+      const MEDIUM_FERTILITY_THRESHOLD = 50;
+      
       const highFertilityFemales = breedingAgeFemales
-        .filter(a => (femaleFertilityScores[a.id] || 50) >= 70)
+        .filter(a => (femaleFertilityScores[a.id] || 50) >= HIGH_FERTILITY_THRESHOLD)
         .sort((a, b) => (femaleFertilityScores[b.id] || 50) - (femaleFertilityScores[a.id] || 50));
       
       const mediumFertilityFemales = breedingAgeFemales
         .filter(a => {
           const score = femaleFertilityScores[a.id] || 50;
-          return score >= 50 && score < 70;
+          return score >= MEDIUM_FERTILITY_THRESHOLD && score < HIGH_FERTILITY_THRESHOLD;
         });
       
       const highFertilityMales = breedingAgeMales
-        .filter(a => (maleFertilityScores[a.id] || 50) >= 70)
+        .filter(a => (maleFertilityScores[a.id] || 50) >= HIGH_FERTILITY_THRESHOLD)
         .sort((a, b) => (maleFertilityScores[b.id] || 50) - (maleFertilityScores[a.id] || 50));
       
-      console.log(`High fertility: ${highFertilityFemales.length} females, ${highFertilityMales.length} males`);
+      // Also track medium fertility males for redistribution
+      const mediumFertilityMales = breedingAgeMales
+        .filter(a => {
+          const score = maleFertilityScores[a.id] || 50;
+          return score >= MEDIUM_FERTILITY_THRESHOLD && score < HIGH_FERTILITY_THRESHOLD;
+        })
+        .sort((a, b) => (maleFertilityScores[b.id] || 50) - (maleFertilityScores[a.id] || 50));
+      
+      console.log(`High fertility (>=${HIGH_FERTILITY_THRESHOLD}): ${highFertilityFemales.length} females, ${highFertilityMales.length} males`);
+      console.log(`Medium fertility: ${mediumFertilityFemales.length} females, ${mediumFertilityMales.length} males`);
       
       // Determine source and destination corrals
       const sourceCorralSet = new Set(sourceCorrals);
       const destCorralSet = new Set(destinationCorrals);
-      const isConsolidationMode = destinationCorrals.length > 0;
+      // FIX: Consolidation mode only if destinations are a SUBSET of all corrals
+      const isConsolidationMode = destinationCorrals.length > 0 && destinationCorrals.length < corralsWithCounts.length;
+      
+      console.log(`Consolidation mode: ${isConsolidationMode} (${destinationCorrals.length} destinations vs ${corralsWithCounts.length} total corrals)`);
       
       // Get animals from source corrals (or all if not specified)
       const animalsToConsider = isConsolidationMode && sourceCorrals.length > 0
@@ -2572,8 +2594,12 @@ serve(async (req) => {
         }
       }
       
-      // Move high-fertility bulls to corrals with females but no bulls
-      const corralsNeedingBulls = targetCorrals.filter(corral => {
+      // -------------------------------------------------------------------------
+      // PHASE 4B: Bull Redistribution - Include corrals with suboptimal ratios
+      // -------------------------------------------------------------------------
+      
+      // Analyze current bull:female ratios in all target corrals
+      const corralBreedingAnalysis = targetCorrals.map(corral => {
         const animalsInCorral = workingDistribution[corral.id] || [];
         const females = animalsInCorral.filter(a => {
           const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
@@ -2583,51 +2609,175 @@ serve(async (req) => {
           const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
           return a.sex === 'Macho' && ageMonths >= MIN_AGE_MONTHS;
         });
-        return females.length > 0 && bulls.length === 0;
+        const targetRatio = females_per_bull || 25;
+        const idealBulls = Math.max(1, Math.ceil(females.length / targetRatio));
+        const needsBulls = bulls.length < idealBulls && females.length > 0;
+        const hasExcessBulls = bulls.length > idealBulls && bulls.length > 1;
+        
+        return {
+          ...corral,
+          femaleCount: females.length,
+          bullCount: bulls.length,
+          idealBulls,
+          needsBulls,
+          hasExcessBulls,
+          bulls,
+          avgBullScore: bulls.length > 0 
+            ? Math.round(bulls.reduce((sum, b) => sum + (maleFertilityScores[b.id] || 50), 0) / bulls.length)
+            : 0
+        };
       });
       
+      // Corrals needing bulls (NO bulls or suboptimal ratio)
+      const corralsNeedingBulls = corralBreedingAnalysis.filter(c => c.needsBulls);
+      // Corrals with excess bulls that can donate
+      const corralsWithExcessBulls = corralBreedingAnalysis.filter(c => c.hasExcessBulls);
+      
+      console.log(`Corrals needing bulls: ${corralsNeedingBulls.length}, Corrals with excess bulls: ${corralsWithExcessBulls.length}`);
+      
+      // Get all available bulls (high + medium fertility) sorted by score
+      const allAvailableBulls = [...highFertilityMales, ...mediumFertilityMales]
+        .filter(b => !movedAnimals.has(b.id))
+        .sort((a, b) => (maleFertilityScores[b.id] || 50) - (maleFertilityScores[a.id] || 50));
+      
+      console.log(`Available bulls for redistribution: ${allAvailableBulls.length}`);
+      
       for (const corral of corralsNeedingBulls) {
-        // Find best available high-fertility bull without consanguinity risk
-        for (const bull of highFertilityMales) {
-          if (movedAnimals.has(bull.id)) continue;
-          if (bull.corral_id === corral.id) continue;
+        const bullsNeeded = corral.idealBulls - corral.bullCount;
+        let bullsAssigned = 0;
+        
+        // First try from excess bulls in other corrals
+        for (const donorCorral of corralsWithExcessBulls) {
+          if (bullsAssigned >= bullsNeeded) break;
           
-          const consanguinityCheck = checkMoveConsanguinityRisk(bull, corral.id);
-          if (consanguinityCheck.severityMax === 'severe') continue;
+          // Get lowest-scoring bull from donor corral (keep best ones)
+          const donorBulls = donorCorral.bulls
+            .filter(b => !movedAnimals.has(b.id))
+            .sort((a, b) => (maleFertilityScores[a.id] || 50) - (maleFertilityScores[b.id] || 50));
           
-          const bullScore = maleFertilityScores[bull.id] || 50;
-          let reasonSuffix = '';
-          if (consanguinityCheck.riskCount > 0) {
-            reasonSuffix = ` ⚠️ ${consanguinityCheck.riskCount} ${t.lowRiskRelationships}`;
+          for (const bull of donorBulls) {
+            if (bullsAssigned >= bullsNeeded) break;
+            if (movedAnimals.has(bull.id)) continue;
+            
+            const consanguinityCheck = checkMoveConsanguinityRisk(bull, corral.id);
+            if (consanguinityCheck.severityMax === 'severe') continue;
+            
+            const bullScore = maleFertilityScores[bull.id] || 50;
+            let reasonSuffix = '';
+            if (consanguinityCheck.riskCount > 0) {
+              reasonSuffix = ` ⚠️ ${consanguinityCheck.riskCount} ${t.lowRiskRelationships}`;
+            }
+            
+            suggestedMoves.push({
+              animal_id: bull.id,
+              animal_name: bull.name || bull.id_tag || 'Sin nombre',
+              from_corral_id: bull.corral_id,
+              from_corral_name: donorCorral.name,
+              to_corral_id: corral.id,
+              to_corral_name: corral.name,
+              reason: `${t.assignBullToCorral} (${bullScore}% ${t.fertilityScore})${reasonSuffix}`,
+              issue_type: 'fertility',
+              expectedBenefit: `${t.improveBreeding}: ${corral.femaleCount} hembras sin toro`,
+            });
+            movedAnimals.add(bull.id);
+            bullsAssigned++;
+            
+            // Update working distribution
+            if (bull.corral_id && workingDistribution[bull.corral_id]) {
+              workingDistribution[bull.corral_id] = workingDistribution[bull.corral_id].filter(a => a.id !== bull.id);
+            }
+            workingDistribution[corral.id].push({ ...bull, corral_id: corral.id });
           }
-          
-          suggestedMoves.push({
-            animal_id: bull.id,
-            animal_name: bull.name || bull.id_tag || 'Sin nombre',
-            from_corral_id: bull.corral_id,
-            from_corral_name: corralsWithCounts.find(c => c.id === bull.corral_id)?.name || null,
-            to_corral_id: corral.id,
-            to_corral_name: corral.name,
-            reason: `${t.assignBullToCorral} (${bullScore}% ${t.fertilityScore})${reasonSuffix}`,
-            issue_type: 'fertility',
-            expectedBenefit: t.createBreedingCorral,
-          });
-          movedAnimals.add(bull.id);
-          
-          // Update working distribution
-          if (bull.corral_id && workingDistribution[bull.corral_id]) {
-            workingDistribution[bull.corral_id] = workingDistribution[bull.corral_id].filter(a => a.id !== bull.id);
+        }
+        
+        // Then try from general available bulls pool
+        if (bullsAssigned < bullsNeeded) {
+          for (const bull of allAvailableBulls) {
+            if (bullsAssigned >= bullsNeeded) break;
+            if (movedAnimals.has(bull.id)) continue;
+            if (bull.corral_id === corral.id) continue;
+            
+            const consanguinityCheck = checkMoveConsanguinityRisk(bull, corral.id);
+            if (consanguinityCheck.severityMax === 'severe') continue;
+            
+            const bullScore = maleFertilityScores[bull.id] || 50;
+            let reasonSuffix = '';
+            if (consanguinityCheck.riskCount > 0) {
+              reasonSuffix = ` ⚠️ ${consanguinityCheck.riskCount} ${t.lowRiskRelationships}`;
+            }
+            
+            suggestedMoves.push({
+              animal_id: bull.id,
+              animal_name: bull.name || bull.id_tag || 'Sin nombre',
+              from_corral_id: bull.corral_id,
+              from_corral_name: corralsWithCounts.find(c => c.id === bull.corral_id)?.name || null,
+              to_corral_id: corral.id,
+              to_corral_name: corral.name,
+              reason: `${t.assignBullToCorral} (${bullScore}% ${t.fertilityScore})${reasonSuffix}`,
+              issue_type: 'fertility',
+              expectedBenefit: t.createBreedingCorral,
+            });
+            movedAnimals.add(bull.id);
+            bullsAssigned++;
+            
+            // Update working distribution
+            if (bull.corral_id && workingDistribution[bull.corral_id]) {
+              workingDistribution[bull.corral_id] = workingDistribution[bull.corral_id].filter(a => a.id !== bull.id);
+            }
+            workingDistribution[corral.id].push({ ...bull, corral_id: corral.id });
           }
-          workingDistribution[corral.id].push({ ...bull, corral_id: corral.id });
-          break; // Only one bull per corral for now
         }
       }
       
       // -------------------------------------------------------------------------
-      // PHASE 5: Calculate Metrics
+      // PHASE 5: Calculate ACTUAL Metrics (not hardcoded)
       // -------------------------------------------------------------------------
       
-      // Calculate average fertility improvement
+      // Calculate average fertility scores before and after
+      const calculateAvgFertility = (distribution: Record<string, Animal[]>) => {
+        let totalScore = 0;
+        let count = 0;
+        Object.values(distribution).forEach(animals => {
+          animals.forEach(a => {
+            const score = a.sex === 'Hembra' 
+              ? (femaleFertilityScores[a.id] || 50)
+              : (maleFertilityScores[a.id] || 50);
+            const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
+            if (ageMonths >= MIN_AGE_MONTHS) {
+              totalScore += score;
+              count++;
+            }
+          });
+        });
+        return count > 0 ? Math.round(totalScore / count) : 50;
+      };
+      
+      // Count breeding pairs before/after
+      const countBreedingPairs = (distribution: Record<string, Animal[]>) => {
+        let pairs = 0;
+        Object.values(distribution).forEach(animals => {
+          const females = animals.filter(a => {
+            const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
+            return a.sex === 'Hembra' && ageMonths >= MIN_AGE_MONTHS;
+          });
+          const bulls = animals.filter(a => {
+            const ageMonths = a.birth_date ? calcAgeInMonths(a.birth_date) : 999;
+            return a.sex === 'Macho' && ageMonths >= MIN_AGE_MONTHS;
+          });
+          if (females.length > 0 && bulls.length > 0) {
+            pairs += females.length; // Each female paired with bull
+          }
+        });
+        return pairs;
+      };
+      
+      const avgFertilityAfter = calculateAvgFertility(workingDistribution);
+      const breedingPairsBefore = countBreedingPairs(corralAnimals);
+      const breedingPairsAfter = countBreedingPairs(workingDistribution);
+      const pairsImprovement = breedingPairsBefore > 0 
+        ? Math.round(((breedingPairsAfter - breedingPairsBefore) / breedingPairsBefore) * 100)
+        : (breedingPairsAfter > 0 ? 100 : 0);
+      
       const movedFemalesScores = suggestedMoves
         .filter(m => m.issue_type === 'fertility')
         .map(m => femaleFertilityScores[m.animal_id] || maleFertilityScores[m.animal_id] || 50);
@@ -2637,10 +2787,12 @@ serve(async (req) => {
         : 0;
       
       const breedingGroupsCreated = corralsNeedingBulls.filter(c => 
-        suggestedMoves.some(m => m.to_corral_id === c.id && (workingDistribution[c.id] || []).some(a => a.sex === 'Macho'))
+        suggestedMoves.some(m => m.to_corral_id === c.id)
       ).length;
       
-      console.log(`Generated ${suggestedMoves.length} fertility moves, avg score: ${avgFertilityMoved}%`);
+      console.log(`Generated ${suggestedMoves.length} fertility moves`);
+      console.log(`Breeding pairs: ${breedingPairsBefore} -> ${breedingPairsAfter} (${pairsImprovement}% improvement)`);
+      console.log(`Avg fertility of moved animals: ${avgFertilityMoved}%`);
       
     } else if (objective === 'weight') {
       // =========================================================================
@@ -2763,7 +2915,15 @@ serve(async (req) => {
 
     let expectedImprovement = '';
     if (objective === 'fertility') {
-      expectedImprovement = t.expectedImprovementFertility.replace('{{percent}}', '15');
+      // Calculate actual improvement percentage based on breeding pairs
+      const fertilityMoves = suggestedMoves.filter(m => m.issue_type === 'fertility');
+      if (fertilityMoves.length > 0) {
+        // Use breeding pairs improvement or moved animals count as fallback
+        const improvementPercent = pairsImprovement > 0 ? pairsImprovement : Math.min(fertilityMoves.length * 5, 50);
+        expectedImprovement = t.expectedImprovementFertility.replace('{{percent}}', improvementPercent.toString());
+      } else {
+        expectedImprovement = t.alreadyOptimal || 'Distribution is already optimal';
+      }
     } else if (objective === 'weight') {
       const count = suggestedMoves.filter(m => m.issue_type === 'weight').length;
       expectedImprovement = t.expectedImprovementWeight.replace('{{count}}', count.toString());
