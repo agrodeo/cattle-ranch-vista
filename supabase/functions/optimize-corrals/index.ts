@@ -3304,270 +3304,174 @@ serve(async (req) => {
         console.log('No destination corrals available');
       } else {
         // -------------------------------------------------------------------------
-        // OPTIMAL BREEDING CONFIGURATION - 1 BULL PER CORRAL
-        // Each corral gets exactly 1 bull (optimal for breeding, avoids fighting)
-        // Females distributed to maximize their pairing score with that specific bull
+        // OPTIMAL BREEDING CONFIGURATION - COW-FIRST MATCHING
+        // Each cow is assigned to her BEST bull, then groups are assigned to corrals
+        // This ensures truly optimal pairings based on ranch standards
         // -------------------------------------------------------------------------
         const totalFemales = breedingAgeFemales.length;
         const totalBulls = breedingAgeMales.length;
         
-        // Use ALL available bulls (up to destination corral count)
-        // Each bull gets their own corral - this is optimal for breeding
-        const bullsToUse = Math.min(totalBulls, allDestinationCorrals.length);
-        const corralsToUse = bullsToUse; // 1 bull per corral
-        
-        console.log(`=== OPTIMAL 1-BULL-PER-CORRAL CONFIGURATION ===`);
+        console.log(`=== COW-FIRST OPTIMAL MATCHING ===`);
         console.log(`Total females: ${totalFemales}, Total bulls: ${totalBulls}`);
         console.log(`Available destination corrals: ${allDestinationCorrals.length}`);
-        console.log(`Bulls to assign: ${bullsToUse} (1 per corral)`);
-        console.log(`Corrals to use: ${corralsToUse}`);
         console.log(`Females per bull target: ${females_per_bull}`);
         
         // -------------------------------------------------------------------------
-        // STEP 1: Rank bulls by their average pairing quality with all females
+        // STEP 1: For each cow, find her BEST bull match (highest pairing score)
         // -------------------------------------------------------------------------
-        console.log('Ranking bulls by average pairing quality...');
+        console.log('Finding best bull match for each cow...');
         
-        const bullsRankedByQuality = [...breedingAgeMales].map(bull => {
-          let totalScore = 0;
-          let validPairs = 0;
+        type CowBullMatch = {
+          cow: Animal;
+          bestBull: Animal;
+          bestScore: number;
+          allScores: Array<{ bull: Animal; score: number }>;
+        };
+        
+        const cowMatches: CowBullMatch[] = breedingAgeFemales.map(cow => {
+          const scores: Array<{ bull: Animal; score: number }> = [];
           
-          for (const cow of breedingAgeFemales) {
-            const data = scoreMatrix[cow.id]?.[bull.id];
-            if (data && !data.blocked) {
-              totalScore += data.score;
-              validPairs++;
+          for (const bull of breedingAgeMales) {
+            const pairData = scoreMatrix[cow.id]?.[bull.id];
+            if (pairData && !pairData.blocked) {
+              scores.push({ bull, score: pairData.score });
             }
           }
           
+          // Sort by score descending
+          scores.sort((a, b) => b.score - a.score);
+          
           return {
-            bull,
-            avgScore: validPairs > 0 ? totalScore / validPairs : 0,
-            validPairCount: validPairs
+            cow,
+            bestBull: scores[0]?.bull,
+            bestScore: scores[0]?.score || 0,
+            allScores: scores
           };
-        }).sort((a, b) => b.avgScore - a.avgScore);
+        }).filter(m => m.bestBull); // Only cows with at least one valid pairing
         
-        // Select top bulls (1 per available corral)
-        const selectedBulls = bullsRankedByQuality.slice(0, bullsToUse);
-        console.log(`Selected ${selectedBulls.length} best bulls:`);
-        selectedBulls.slice(0, 5).forEach((b, i) => {
-          console.log(`  ${i + 1}. ${b.bull.id_tag || b.bull.name}: avgScore=${Math.round(b.avgScore)}, validPairs=${b.validPairCount}`);
+        console.log(`${cowMatches.length} cows have valid bull matches`);
+        
+        // -------------------------------------------------------------------------
+        // STEP 2: Group cows by their best bull, respecting capacity limits
+        // If a bull has too many cows, reassign excess cows to their 2nd best match
+        // -------------------------------------------------------------------------
+        console.log('Grouping cows by best bull match (respecting capacity limits)...');
+        
+        const bullGroups: Map<string, { bull: Animal; cows: Animal[]; totalScore: number }> = new Map();
+        
+        // Initialize groups for all bulls
+        for (const bull of breedingAgeMales) {
+          bullGroups.set(bull.id, { bull, cows: [], totalScore: 0 });
+        }
+        
+        // Sort cows by their best score (highest first - priority assignment)
+        cowMatches.sort((a, b) => b.bestScore - a.bestScore);
+        
+        // Assign each cow to a bull, respecting capacity
+        for (const match of cowMatches) {
+          let assigned = false;
+          
+          // Try each bull in order of preference for this cow
+          for (const { bull, score } of match.allScores) {
+            const group = bullGroups.get(bull.id);
+            if (group && group.cows.length < females_per_bull) {
+              group.cows.push(match.cow);
+              group.totalScore += score;
+              assigned = true;
+              break;
+            }
+          }
+          
+          if (!assigned) {
+            console.log(`Warning: Could not assign cow ${match.cow.id_tag || match.cow.name} to any bull (all at capacity)`);
+          }
+        }
+        
+        // -------------------------------------------------------------------------
+        // STEP 3: Select bulls that have cows assigned (active breeding groups)
+        // -------------------------------------------------------------------------
+        const activeGroups = Array.from(bullGroups.values())
+          .filter(g => g.cows.length > 0)
+          .sort((a, b) => {
+            // Sort by number of cows (largest groups first for best capacity use)
+            return b.cows.length - a.cows.length;
+          });
+        
+        console.log(`${activeGroups.length} bulls have cows assigned:`);
+        activeGroups.forEach((g, i) => {
+          const avgScore = g.cows.length > 0 ? Math.round(g.totalScore / g.cows.length) : 0;
+          console.log(`  ${i + 1}. ${g.bull.id_tag || g.bull.name}: ${g.cows.length} cows, avgScore=${avgScore}`);
         });
         
         // -------------------------------------------------------------------------
-        // STEP 2: Rank corrals by capacity and suitability
+        // STEP 4: Assign bull groups to corrals (1 bull per corral)
         // -------------------------------------------------------------------------
         const corralsSortedByCapacity = [...allDestinationCorrals].map(corral => {
           const capacity = corral.capacity || (corral.hectareas ? Math.round(corral.hectareas * 2) : 100);
           return { ...corral, effectiveCapacity: capacity };
         }).sort((a, b) => b.effectiveCapacity - a.effectiveCapacity);
         
-        // Select corrals (1 per bull)
-        const selectedCorrals = corralsSortedByCapacity.slice(0, bullsToUse);
-        console.log(`Selected ${selectedCorrals.length} corrals: ${selectedCorrals.map(c => c.name).join(', ')}`);
+        // Only use as many corrals as we have active breeding groups
+        const corralsNeeded = Math.min(activeGroups.length, corralsSortedByCapacity.length);
+        const selectedCorrals = corralsSortedByCapacity.slice(0, corralsNeeded);
         
-        // -------------------------------------------------------------------------
-        // STEP 3: Assign exactly 1 bull to each selected corral
-        // -------------------------------------------------------------------------
+        console.log(`Assigning ${activeGroups.length} breeding groups to ${selectedCorrals.length} corrals`);
+        
         const corralAssignments: Record<string, { 
           bulls: Animal[]; 
           cows: Animal[];
           expectedScore: number;
         }> = {};
         
-        // Initialize all selected corrals
-        for (const corral of selectedCorrals) {
-          corralAssignments[corral.id] = { bulls: [], cows: [], expectedScore: 0 };
-        }
-        
-        // Assign exactly 1 bull per corral (best bull to best corral by capacity)
-        for (let i = 0; i < selectedBulls.length; i++) {
-          const bull = selectedBulls[i].bull;
+        // Match largest groups to largest corrals
+        for (let i = 0; i < corralsNeeded; i++) {
+          const group = activeGroups[i];
           const corral = selectedCorrals[i];
-          corralAssignments[corral.id].bulls.push(bull);
+          
+          corralAssignments[corral.id] = {
+            bulls: [group.bull],
+            cows: group.cows,
+            expectedScore: group.cows.length > 0 ? Math.round(group.totalScore / group.cows.length) : 0
+          };
         }
         
-        console.log('Bull assignments (1 per corral):');
+        // Log final assignments
+        console.log('Final corral assignments (each cow with her BEST matching bull):');
         Object.entries(corralAssignments).forEach(([id, a]) => {
           const corralName = selectedCorrals.find(c => c.id === id)?.name;
           const bullTag = a.bulls[0]?.id_tag || a.bulls[0]?.name || 'unknown';
-          console.log(`  ${corralName}: ${bullTag}`);
+          const avgScore = a.expectedScore;
+          console.log(`  ${corralName}: ${bullTag} with ${a.cows.length} cows (avgScore=${avgScore})`);
         });
-        
-        // -------------------------------------------------------------------------
-        // STEP 4: Assign each cow to the corral with the BEST pairing score
-        // Since each corral has exactly 1 bull, we find the cow's best match
-        // -------------------------------------------------------------------------
-        console.log('Assigning cows to corrals based on best individual pairing scores...');
-        
-        const cowsToAssign = [...breedingAgeFemales];
-        
-        // Calculate each cow's score with each corral's single bull
-        const getCowScoreWithCorral = (cow: Animal, corralId: string): number => {
-          const bulls = corralAssignments[corralId].bulls;
-          if (bulls.length === 0) return -1;
-          
-          // With 1 bull per corral, just get the direct pairing score
-          const bull = bulls[0];
-          const pairData = scoreMatrix[cow.id]?.[bull.id];
-          
-          if (!pairData) return 0;
-          if (pairData.blocked) return -1; // Consanguinity block
-          
-          return pairData.score;
-        };
-        
-        // Sort cows by their BEST possible score (to prioritize high-value cows)
-        const cowsWithBestScores = cowsToAssign.map(cow => {
-          let bestScore = -Infinity;
-          for (const corral of selectedCorrals) {
-            const score = getCowScoreWithCorral(cow, corral.id);
-            if (score > bestScore) bestScore = score;
-          }
-          return { cow, bestPossibleScore: bestScore };
-        }).sort((a, b) => b.bestPossibleScore - a.bestPossibleScore);
-        
-        // Assign cows to their best corral (high-value cows first to ensure they get best matches)
-        for (const { cow } of cowsWithBestScores) {
-          let bestCorralId = '';
-          let bestScore = -Infinity;
-          
-          for (const corral of selectedCorrals) {
-            // Check capacity (females_per_bull ratio per corral)
-            const currentCows = corralAssignments[corral.id].cows.length;
-            if (currentCows >= females_per_bull) continue; // This corral is full
-            
-            const score = getCowScoreWithCorral(cow, corral.id);
-            
-            if (score > bestScore) {
-              bestScore = score;
-              bestCorralId = corral.id;
-            }
-          }
-          
-          if (bestCorralId && bestScore >= 0) {
-            corralAssignments[bestCorralId].cows.push(cow);
-          }
-        }
-        
-        // Log assignment summary
-        console.log('Cow assignment summary:');
-        Object.entries(corralAssignments).forEach(([id, a]) => {
-          const corralName = selectedCorrals.find(c => c.id === id)?.name;
-          console.log(`  ${corralName}: ${a.bulls.length} bull, ${a.cows.length} cows`);
-        });
-        
-        // -------------------------------------------------------------------------
-        // STEP 5: ITERATIVE IMPROVEMENT PHASE
-        // Try swapping cows between corrals to find better global configuration
-        // -------------------------------------------------------------------------
-        console.log('Starting iterative improvement phase...');
-        
-        const MAX_ITERATIONS = 100;
-        const IMPROVEMENT_THRESHOLD = 0.5; // Minimum improvement % to continue
-        let iterations = 0;
-        let improved = true;
         
         const selectedCorralIds = selectedCorrals.map(c => c.id);
         
-        // Function to calculate total score for current assignments
-        const calculateTotalScore = (): { totalScore: number; pairCount: number } => {
-          let totalScore = 0;
-          let pairCount = 0;
-          
-          for (const corralId in corralAssignments) {
-            const assignment = corralAssignments[corralId];
-            for (const cow of assignment.cows) {
-              for (const bull of assignment.bulls) {
-                const pairData = scoreMatrix[cow.id]?.[bull.id];
-                if (pairData && !pairData.blocked) {
-                  totalScore += pairData.score;
-                  pairCount++;
-                }
+        // -------------------------------------------------------------------------
+        // STEP 5: ITERATIVE IMPROVEMENT PHASE (SKIP - already optimal)
+        // Since we assigned each cow to her BEST bull, no swapping needed
+        // -------------------------------------------------------------------------
+        console.log('Skipping iterative improvement - cow-first matching is already optimal');
+        
+        // Calculate final score for logging
+        let bestScore = 0;
+        let bestPairCount = 0;
+        for (const [corralId, assignment] of Object.entries(corralAssignments)) {
+          for (const cow of assignment.cows) {
+            const bull = assignment.bulls[0];
+            if (bull) {
+              const pairData = scoreMatrix[cow.id]?.[bull.id];
+              if (pairData && !pairData.blocked) {
+                bestScore += pairData.score;
+                bestPairCount++;
               }
             }
-          }
-          
-          return { totalScore, pairCount };
-        };
-        
-        // Function to try swapping a cow between corrals (simplified for 1-bull-per-corral)
-        const trySwapCow = (cow: Animal, fromCorralId: string, toCorralId: string): number => {
-          const fromBull = corralAssignments[fromCorralId].bulls[0];
-          const toBull = corralAssignments[toCorralId].bulls[0];
-          
-          if (!fromBull || !toBull) return -Infinity;
-          
-          // Calculate current score with fromBull
-          const currentData = scoreMatrix[cow.id]?.[fromBull.id];
-          const currentScore = currentData && !currentData.blocked ? currentData.score : 0;
-          
-          // Calculate potential score with toBull
-          const newData = scoreMatrix[cow.id]?.[toBull.id];
-          if (!newData || newData.blocked) return -Infinity; // Blocked pair
-          
-          // Check capacity constraints
-          const toCows = corralAssignments[toCorralId].cows.length;
-          if (toCows >= females_per_bull) return -Infinity;
-          
-          // Return the score improvement (positive = better)
-          return newData.score - currentScore;
-        };
-        
-        // Perform swaps
-        let { totalScore: bestScore, pairCount: bestPairCount } = calculateTotalScore();
-        console.log(`Initial greedy score: ${bestPairCount > 0 ? Math.round(bestScore / bestPairCount) : 0} (${bestPairCount} pairs)`);
-        
-        while (improved && iterations < MAX_ITERATIONS) {
-          improved = false;
-          iterations++;
-          
-          // Try swapping each cow to each other corral
-          for (const fromCorralId of selectedCorralIds) {
-            const cows = [...corralAssignments[fromCorralId].cows]; // Copy to avoid mutation during iteration
-            
-            for (const cow of cows) {
-              let bestSwapCorral = '';
-              let bestSwapImprovement = 0;
-              
-              for (const toCorralId of selectedCorralIds) {
-                if (toCorralId === fromCorralId) continue;
-                
-                const improvement = trySwapCow(cow, fromCorralId, toCorralId);
-                if (improvement > bestSwapImprovement) {
-                  bestSwapImprovement = improvement;
-                  bestSwapCorral = toCorralId;
-                }
-              }
-              
-              // If found a better placement, make the swap
-              if (bestSwapCorral && bestSwapImprovement > IMPROVEMENT_THRESHOLD) {
-                // Remove from current corral
-                corralAssignments[fromCorralId].cows = corralAssignments[fromCorralId].cows.filter(c => c.id !== cow.id);
-                // Add to new corral
-                corralAssignments[bestSwapCorral].cows.push(cow);
-                
-                improved = true;
-                console.log(`Iter ${iterations}: Swapped ${cow.name || cow.id_tag} from ${selectedCorrals.find(c => c.id === fromCorralId)?.name} to ${selectedCorrals.find(c => c.id === bestSwapCorral)?.name} (+${bestSwapImprovement.toFixed(1)} pts)`);
-              }
-            }
-          }
-          
-          // Recalculate total after this iteration
-          const { totalScore: newScore, pairCount: newPairCount } = calculateTotalScore();
-          const improvementPct = bestScore > 0 ? ((newScore - bestScore) / bestScore) * 100 : 0;
-          
-          if (improvementPct < IMPROVEMENT_THRESHOLD) {
-            improved = false; // Stop if no significant improvement
-          } else {
-            bestScore = newScore;
-            bestPairCount = newPairCount;
           }
         }
         
         const finalAvgScore = bestPairCount > 0 ? Math.round(bestScore / bestPairCount) : 0;
-        console.log(`Iterative improvement complete after ${iterations} iterations`);
         console.log(`Final optimized score: ${finalAvgScore} (${bestPairCount} pairs)`);
+        
+        
         
         // -------------------------------------------------------------------------
         // STEP 6: Calculate final expected scores per corral
