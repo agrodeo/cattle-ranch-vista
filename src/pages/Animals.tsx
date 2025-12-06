@@ -545,6 +545,22 @@ const Animals = () => {
     if (!confirm(t('animals:messages.confirmDelete'))) return;
 
     try {
+      // Delete related records first to avoid foreign key constraints
+      await supabase.from("animal_vaccines").delete().eq("animal_id", animalId);
+      await supabase.from("activities").delete().eq("animal_id", animalId);
+      await supabase.from("reproductive_events").delete().eq("animal_id", animalId);
+      await supabase.from("preñeces").delete().eq("animal_id", animalId);
+      await supabase.from("reproductive_current_state").delete().eq("animal_id", animalId);
+      await supabase.from("verification_tasks").delete().eq("animal_id", animalId);
+      await supabase.from("reproductive_alerts").delete().eq("animal_id", animalId);
+      await supabase.from("vaccination_alerts").delete().eq("animal_id", animalId);
+      await supabase.from("finances_animal_sales").delete().eq("animal_id", animalId);
+      await supabase.from("animal_weight_history").delete().eq("animal_id", animalId);
+      await supabase.from("individual_reproductive_kpis").delete().eq("animal_id", animalId);
+      await supabase.from("reproductive_active_years").delete().eq("animal_id", animalId);
+      await supabase.from("reproductive_activities").delete().eq("animal_id", animalId);
+      
+      // Now delete the animal
       const { error } = await supabase
         .from("animals")
         .delete()
@@ -561,7 +577,7 @@ const Animals = () => {
     } catch (error) {
       console.error("Error deleting animal:", error);
       toast({
-        title: t('common:errors.generic'),
+        title: t('common:status.error'),
         description: t('animals:errors.deleteFailed'),
         variant: "destructive",
       });

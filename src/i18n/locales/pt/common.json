@@ -256,6 +256,7 @@
     "resolved": "Resolvido com sucesso"
   },
   "errors": {
+    "generic": "Erro",
     "unexpectedError": "Erro inesperado",
     "reload": "Recarregar",
     "errorProcessing": "Erro ao processar",
