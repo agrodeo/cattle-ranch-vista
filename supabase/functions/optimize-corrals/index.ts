@@ -3431,7 +3431,141 @@ serve(async (req) => {
         }
         
         // -------------------------------------------------------------------------
-        // STEP 4: Calculate final expected scores per corral
+        // STEP 4: ITERATIVE IMPROVEMENT PHASE
+        // Try swapping cows between corrals to find better global configuration
+        // -------------------------------------------------------------------------
+        console.log('Starting iterative improvement phase...');
+        
+        const MAX_ITERATIONS = 100;
+        const IMPROVEMENT_THRESHOLD = 0.5; // Minimum improvement % to continue
+        let iterations = 0;
+        let improved = true;
+        
+        // Function to calculate total score for current assignments
+        const calculateTotalScore = (): { totalScore: number; pairCount: number } => {
+          let totalScore = 0;
+          let pairCount = 0;
+          
+          for (const corralId in corralAssignments) {
+            const assignment = corralAssignments[corralId];
+            for (const cow of assignment.cows) {
+              for (const bull of assignment.bulls) {
+                const pairData = scoreMatrix[cow.id]?.[bull.id];
+                if (pairData && !pairData.blocked) {
+                  totalScore += pairData.score;
+                  pairCount++;
+                }
+              }
+            }
+          }
+          
+          return { totalScore, pairCount };
+        };
+        
+        // Function to try swapping a cow between corrals
+        const trySwapCow = (cow: Animal, fromCorralId: string, toCorralId: string): number => {
+          const fromBulls = corralAssignments[fromCorralId].bulls;
+          const toBulls = corralAssignments[toCorralId].bulls;
+          
+          // Calculate current contribution in fromCorral
+          let currentContribution = 0;
+          let currentPairs = 0;
+          for (const bull of fromBulls) {
+            const pairData = scoreMatrix[cow.id]?.[bull.id];
+            if (pairData && !pairData.blocked) {
+              currentContribution += pairData.score;
+              currentPairs++;
+            }
+          }
+          
+          // Calculate potential contribution in toCorral
+          let newContribution = 0;
+          let newPairs = 0;
+          let hasBlockedPair = false;
+          for (const bull of toBulls) {
+            const pairData = scoreMatrix[cow.id]?.[bull.id];
+            if (pairData) {
+              if (pairData.blocked) {
+                hasBlockedPair = true;
+              } else {
+                newContribution += pairData.score;
+                newPairs++;
+              }
+            }
+          }
+          
+          // If any blocked pair in destination, return negative (don't swap)
+          if (hasBlockedPair) return -Infinity;
+          
+          // Check capacity constraints
+          const toCows = corralAssignments[toCorralId].cows.length;
+          const toMaxCows = toBulls.length * females_per_bull;
+          if (toCows >= toMaxCows && toBulls.length > 0) return -Infinity;
+          
+          // Return the score improvement (positive = better)
+          const avgBefore = currentPairs > 0 ? currentContribution / currentPairs : 0;
+          const avgAfter = newPairs > 0 ? newContribution / newPairs : 0;
+          
+          return avgAfter - avgBefore;
+        };
+        
+        // Perform swaps
+        let { totalScore: bestScore, pairCount: bestPairCount } = calculateTotalScore();
+        console.log(`Initial greedy score: ${bestPairCount > 0 ? Math.round(bestScore / bestPairCount) : 0} (${bestPairCount} pairs)`);
+        
+        while (improved && iterations < MAX_ITERATIONS) {
+          improved = false;
+          iterations++;
+          
+          // Try swapping each cow to each other corral
+          for (const fromCorralId of selectedCorralIds) {
+            const cows = [...corralAssignments[fromCorralId].cows]; // Copy to avoid mutation during iteration
+            
+            for (const cow of cows) {
+              let bestSwapCorral = '';
+              let bestSwapImprovement = 0;
+              
+              for (const toCorralId of selectedCorralIds) {
+                if (toCorralId === fromCorralId) continue;
+                
+                const improvement = trySwapCow(cow, fromCorralId, toCorralId);
+                if (improvement > bestSwapImprovement) {
+                  bestSwapImprovement = improvement;
+                  bestSwapCorral = toCorralId;
+                }
+              }
+              
+              // If found a better placement, make the swap
+              if (bestSwapCorral && bestSwapImprovement > IMPROVEMENT_THRESHOLD) {
+                // Remove from current corral
+                corralAssignments[fromCorralId].cows = corralAssignments[fromCorralId].cows.filter(c => c.id !== cow.id);
+                // Add to new corral
+                corralAssignments[bestSwapCorral].cows.push(cow);
+                
+                improved = true;
+                console.log(`Iter ${iterations}: Swapped ${cow.name || cow.id_tag} from ${corralsWithCounts.find(c => c.id === fromCorralId)?.name} to ${corralsWithCounts.find(c => c.id === bestSwapCorral)?.name} (+${bestSwapImprovement.toFixed(1)} pts)`);
+              }
+            }
+          }
+          
+          // Recalculate total after this iteration
+          const { totalScore: newScore, pairCount: newPairCount } = calculateTotalScore();
+          const improvementPct = bestScore > 0 ? ((newScore - bestScore) / bestScore) * 100 : 0;
+          
+          if (improvementPct < IMPROVEMENT_THRESHOLD) {
+            improved = false; // Stop if no significant improvement
+          } else {
+            bestScore = newScore;
+            bestPairCount = newPairCount;
+          }
+        }
+        
+        const finalAvgScore = bestPairCount > 0 ? Math.round(bestScore / bestPairCount) : 0;
+        console.log(`Iterative improvement complete after ${iterations} iterations`);
+        console.log(`Final optimized score: ${finalAvgScore} (${bestPairCount} pairs)`);
+        
+        // -------------------------------------------------------------------------
+        // STEP 5: Calculate final expected scores per corral
         // -------------------------------------------------------------------------
         let totalOptimizedScore = 0;
         let totalOptimizedPairs = 0;
