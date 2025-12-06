@@ -238,6 +238,9 @@ const translations = {
     secondaryApplied: "Seleccionado por mejor",
     fertilityOptimized: "fertilidad",
     standardsOptimized: "estándares",
+    separateUnusedBull: "Toro sin vacas asignadas - mover a corral de reserva",
+    avoidMultipleBulls: "Evitar múltiples toros en corrales de cría",
+    assignBull: "Asignar toro",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -322,6 +325,9 @@ const translations = {
     secondaryApplied: "Selected by better",
     fertilityOptimized: "fertility",
     standardsOptimized: "standards",
+    separateUnusedBull: "Bull with no assigned cows - move to reserve corral",
+    avoidMultipleBulls: "Avoid multiple bulls in breeding corrals",
+    assignBull: "Assign bull",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -406,6 +412,9 @@ const translations = {
     secondaryApplied: "Selecionado por melhor",
     fertilityOptimized: "fertilidade",
     standardsOptimized: "padrões",
+    separateUnusedBull: "Touro sem vacas atribuídas - mover para curral de reserva",
+    avoidMultipleBulls: "Evitar múltiplos touros em currais de reprodução",
+    assignBull: "Atribuir touro",
   },
 };
 
@@ -3568,9 +3577,30 @@ serve(async (req) => {
         // This ensures the preview accurately reflects the optimal 1-bull-per-corral setup
         // -------------------------------------------------------------------------
         
-        // First, rebuild workingDistribution for selected corrals based on optimization
-        // Clear all selected destination corrals for fresh assignment
-        for (const corral of selectedCorrals) {
+        // Track which bulls are being used in optimization (assigned to a group)
+        const usedBullIds = new Set<string>();
+        for (const config of corralConfigurations) {
+          for (const bullData of config.bulls) {
+            usedBullIds.add(bullData.id);
+          }
+        }
+        
+        // Track which cows are being used in optimization
+        const usedCowIds = new Set<string>();
+        for (const config of corralConfigurations) {
+          for (const cowData of config.cows) {
+            usedCowIds.add(cowData.id);
+          }
+        }
+        
+        // Identify unused breeding-age bulls (not assigned to any group)
+        const unusedBulls = breedingAgeMales.filter(b => !usedBullIds.has(b.id));
+        console.log(`${unusedBulls.length} bulls are NOT anyone's best match and will be handled:`);
+        unusedBulls.forEach(b => console.log(`  - ${b.id_tag || b.name} (currently in ${corralsWithCounts.find(c => c.id === b.corral_id)?.name || 'no corral'})`));
+        
+        // Clear ALL destination corrals of breeding-age animals (not just selectedCorrals)
+        // This ensures unused bulls don't remain in optimized corrals
+        for (const corral of allDestinationCorrals) {
           // Keep non-breeding-age animals in their original corrals
           const nonBreedingAge = (workingDistribution[corral.id] || []).filter(a => {
             const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 0;
@@ -3579,16 +3609,14 @@ serve(async (req) => {
           workingDistribution[corral.id] = nonBreedingAge;
         }
         
+        // Now add back ONLY the animals that are explicitly assigned by the optimizer
         for (const config of corralConfigurations) {
-          // Generate moves for cows that need to relocate
+          // Add cows to their assigned corral
           for (const cowData of config.cows) {
             const cow = breedingAgeFemales.find(c => c.id === cowData.id);
             if (!cow) continue;
             
-            // Update workingDistribution: remove from old corral, add to new
-            if (cow.corral_id && workingDistribution[cow.corral_id]) {
-              workingDistribution[cow.corral_id] = workingDistribution[cow.corral_id].filter(a => a.id !== cow.id);
-            }
+            // Update workingDistribution: add to new corral
             if (!workingDistribution[config.corral_id]) {
               workingDistribution[config.corral_id] = [];
             }
@@ -3611,15 +3639,12 @@ serve(async (req) => {
             }
           }
           
-          // Generate moves for bulls that need to relocate
+          // Add bulls to their assigned corral
           for (const bullData of config.bulls) {
             const bull = breedingAgeMales.find(b => b.id === bullData.id);
             if (!bull) continue;
             
-            // Update workingDistribution: remove from old corral, add to new
-            if (bull.corral_id && workingDistribution[bull.corral_id]) {
-              workingDistribution[bull.corral_id] = workingDistribution[bull.corral_id].filter(a => a.id !== bull.id);
-            }
+            // Update workingDistribution: add to new corral
             if (!workingDistribution[config.corral_id]) {
               workingDistribution[config.corral_id] = [];
             }
@@ -3642,11 +3667,63 @@ serve(async (req) => {
           }
         }
         
+        // Handle unused bulls: find the first non-selected corral to use as "holding"
+        // Or if their original corral is not a destination corral, leave them there
+        if (unusedBulls.length > 0) {
+          const nonDestinationCorralIds = corralsWithCounts
+            .filter(c => !allDestinationCorrals.some(d => d.id === c.id))
+            .map(c => c.id);
+          
+          // If there are non-destination corrals, we can leave bulls there
+          // Otherwise, find the first destination corral not used for breeding (if any)
+          const unusedDestinationCorrals = allDestinationCorrals
+            .filter(c => !corralConfigurations.some(cfg => cfg.corral_id === c.id));
+          
+          for (const bull of unusedBulls) {
+            // If bull's original corral is not a destination corral, leave it there (it won't be in workingDistribution)
+            if (bull.corral_id && nonDestinationCorralIds.includes(bull.corral_id)) {
+              // Bull stays in its original non-destination corral (no move needed)
+              // Add it back to workingDistribution for that corral
+              if (!workingDistribution[bull.corral_id]) {
+                workingDistribution[bull.corral_id] = [];
+              }
+              workingDistribution[bull.corral_id].push(bull);
+              console.log(`  Unused bull ${bull.id_tag || bull.name} stays in non-destination corral ${corralsWithCounts.find(c => c.id === bull.corral_id)?.name}`);
+            } else if (unusedDestinationCorrals.length > 0) {
+              // Move to an unused destination corral
+              const holdingCorral = unusedDestinationCorrals[0];
+              if (!workingDistribution[holdingCorral.id]) {
+                workingDistribution[holdingCorral.id] = [];
+              }
+              workingDistribution[holdingCorral.id].push({ ...bull, corral_id: holdingCorral.id });
+              
+              if (bull.corral_id !== holdingCorral.id && !movedAnimals.has(bull.id)) {
+                suggestedMoves.push({
+                  animal_id: bull.id,
+                  animal_name: bull.id_tag || bull.name || 'Toro',
+                  from_corral_id: bull.corral_id,
+                  from_corral_name: corralsWithCounts.find(c => c.id === bull.corral_id)?.name || null,
+                  to_corral_id: holdingCorral.id,
+                  to_corral_name: holdingCorral.name,
+                  reason: t.separateUnusedBull || 'Toro sin vacas asignadas - mover a corral de reserva',
+                  issue_type: 'standards',
+                  expectedBenefit: t.avoidMultipleBulls || 'Evitar múltiples toros en corrales de cría',
+                });
+                movedAnimals.add(bull.id);
+              }
+              console.log(`  Unused bull ${bull.id_tag || bull.name} moved to holding corral ${holdingCorral.name}`);
+            } else {
+              // No available corrals - bull must stay somewhere (add warning)
+              console.log(`  Warning: No available corral for unused bull ${bull.id_tag || bull.name}`);
+            }
+          }
+        }
+        
         console.log(`Generated ${suggestedMoves.length} moves for standards optimization`);
         
         // Log final workingDistribution for verification
         console.log('Post-optimization workingDistribution:');
-        for (const corral of selectedCorrals) {
+        for (const corral of allDestinationCorrals) {
           const animals = workingDistribution[corral.id] || [];
           const males = animals.filter(a => a.sex === 'Macho').length;
           const females = animals.filter(a => a.sex === 'Hembra').length;
