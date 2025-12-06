@@ -3564,13 +3564,35 @@ serve(async (req) => {
         console.log(`Optimized distribution expected score: ${overallExpectedScore} (${totalOptimizedPairs} valid pairs)`);
         
         // -------------------------------------------------------------------------
-        // STEP 5: Generate suggested moves based on optimization
+        // STEP 5: Generate suggested moves and UPDATE workingDistribution
+        // This ensures the preview accurately reflects the optimal 1-bull-per-corral setup
         // -------------------------------------------------------------------------
+        
+        // First, rebuild workingDistribution for selected corrals based on optimization
+        // Clear all selected destination corrals for fresh assignment
+        for (const corral of selectedCorrals) {
+          // Keep non-breeding-age animals in their original corrals
+          const nonBreedingAge = (workingDistribution[corral.id] || []).filter(a => {
+            const ageMonths = a.birth_date ? calculateAgeInMonths(a.birth_date) : 0;
+            return ageMonths < MIN_AGE_MONTHS;
+          });
+          workingDistribution[corral.id] = nonBreedingAge;
+        }
+        
         for (const config of corralConfigurations) {
           // Generate moves for cows that need to relocate
           for (const cowData of config.cows) {
             const cow = breedingAgeFemales.find(c => c.id === cowData.id);
             if (!cow) continue;
+            
+            // Update workingDistribution: remove from old corral, add to new
+            if (cow.corral_id && workingDistribution[cow.corral_id]) {
+              workingDistribution[cow.corral_id] = workingDistribution[cow.corral_id].filter(a => a.id !== cow.id);
+            }
+            if (!workingDistribution[config.corral_id]) {
+              workingDistribution[config.corral_id] = [];
+            }
+            workingDistribution[config.corral_id].push({ ...cow, corral_id: config.corral_id });
             
             // Only suggest move if cow is not already in this corral
             if (cow.corral_id !== config.corral_id && !movedAnimals.has(cow.id)) {
@@ -3594,6 +3616,15 @@ serve(async (req) => {
             const bull = breedingAgeMales.find(b => b.id === bullData.id);
             if (!bull) continue;
             
+            // Update workingDistribution: remove from old corral, add to new
+            if (bull.corral_id && workingDistribution[bull.corral_id]) {
+              workingDistribution[bull.corral_id] = workingDistribution[bull.corral_id].filter(a => a.id !== bull.id);
+            }
+            if (!workingDistribution[config.corral_id]) {
+              workingDistribution[config.corral_id] = [];
+            }
+            workingDistribution[config.corral_id].push({ ...bull, corral_id: config.corral_id });
+            
             if (bull.corral_id !== config.corral_id && !movedAnimals.has(bull.id)) {
               suggestedMoves.push({
                 animal_id: bull.id,
@@ -3612,6 +3643,15 @@ serve(async (req) => {
         }
         
         console.log(`Generated ${suggestedMoves.length} moves for standards optimization`);
+        
+        // Log final workingDistribution for verification
+        console.log('Post-optimization workingDistribution:');
+        for (const corral of selectedCorrals) {
+          const animals = workingDistribution[corral.id] || [];
+          const males = animals.filter(a => a.sex === 'Macho').length;
+          const females = animals.filter(a => a.sex === 'Hembra').length;
+          console.log(`  ${corral.name}: ${males}M / ${females}F`);
+        }
       }
     }
 
