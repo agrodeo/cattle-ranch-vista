@@ -44,7 +44,7 @@ import { Animal } from "@/types/animal";
 
 const formSchema = z.object({
   fecha_defuncion: z.date({
-    required_error: "La fecha de defunción es requerida",
+    required_error: "Date required",
   }),
   causa_id: z.string().optional(),
   causa_texto: z.string().optional(),
@@ -55,7 +55,7 @@ const formSchema = z.object({
   }
   return true;
 }, {
-  message: "Debe seleccionar una causa o escribir una causa personalizada",
+  message: "Cause required",
   path: ["causa_id"],
 });
 
@@ -118,8 +118,8 @@ export function MarkDeathDialog({
     } catch (error) {
       console.error('Error fetching animal data:', error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los datos del animal",
+        title: t('common:status.error'),
+        description: t('mortality:errors.loadAnimal'),
         variant: "destructive",
       });
     } finally {
@@ -192,8 +192,8 @@ export function MarkDeathDialog({
       console.error('Error loading death causes:', error);
       setCauses([]); // Ensure causes is always an array
       toast({
-        title: "Error",
-        description: "No se pudieron cargar las causas de muerte",
+        title: t('common:status.error'),
+        description: t('mortality:errors.loadCauses'),
         variant: "destructive",
       });
     }
@@ -214,8 +214,8 @@ export function MarkDeathDialog({
 
       if ((data as any)?.success) {
         toast({
-          title: "Éxito",
-          description: "Causa de muerte agregada correctamente",
+          title: t('mortality:success.title'),
+          description: t('mortality:success.causeAdded'),
         });
         
         // Recargar las causas y seleccionar la nueva
@@ -232,13 +232,13 @@ export function MarkDeathDialog({
         setShowAddCause(false);
         setShowCustomCause(false);
       } else {
-        throw new Error((data as any)?.error || 'Error desconocido');
+        throw new Error((data as any)?.error || t('common:errors.unexpectedError'));
       }
     } catch (error: any) {
       console.error('Error adding death cause:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo agregar la causa",
+        title: t('common:status.error'),
+        description: error.message || t('mortality:errors.addCause'),
         variant: "destructive",
       });
     } finally {
@@ -264,19 +264,19 @@ export function MarkDeathDialog({
 
       if ((data as any)?.success) {
         toast({
-          title: "Éxito",
-          description: (data as any).message,
+          title: t('mortality:success.title'),
+          description: t('mortality:success.deathRegistered'),
         });
         onSuccess();
         onOpenChange(false);
       } else {
-        throw new Error((data as any)?.error || 'Error desconocido');
+        throw new Error((data as any)?.error || t('common:errors.unexpectedError'));
       }
     } catch (error: any) {
       console.error('Error marking death:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo marcar la defunción",
+        title: t('common:status.error'),
+        description: error.message || t('mortality:errors.registerDeath'),
         variant: "destructive",
       });
     } finally {
@@ -291,18 +291,18 @@ export function MarkDeathDialog({
     const deathDate = form.watch('fecha_defuncion');
     
     // Validar que la fecha de muerte no sea anterior al nacimiento
-    if (deathDate < birthDate) return "Fecha inválida";
+    if (deathDate < birthDate) return t('mortality:validation.invalidDate');
     
     const totalDays = differenceInDays(deathDate, birthDate);
     const years = differenceInYears(deathDate, birthDate);
     const months = differenceInMonths(deathDate, birthDate) % 12;
     
     if (years > 0) {
-      return `${years} año${years > 1 ? 's' : ''} ${months} mes${months !== 1 ? 'es' : ''} (${totalDays} días)`;
+      return `${years} ${years > 1 ? t('common:time.years') : t('common:time.year')} ${months} ${months !== 1 ? t('common:time.months') : t('common:time.month')} (${totalDays} ${t('mortality:reports.days')})`;
     } else if (months > 0) {
-      return `${months} mes${months !== 1 ? 'es' : ''} (${totalDays} días)`;
+      return `${months} ${months !== 1 ? t('common:time.months') : t('common:time.month')} (${totalDays} ${t('mortality:reports.days')})`;
     } else {
-      return `${totalDays} día${totalDays !== 1 ? 's' : ''}`;
+      return `${totalDays} ${totalDays !== 1 ? t('mortality:reports.days') : t('common:time.day')}`;
     }
   };
 
@@ -333,7 +333,7 @@ export function MarkDeathDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Skull className="h-5 w-5 text-destructive" />
-            Marcar como Fallecido
+            {t('mortality:markDeath.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -341,12 +341,12 @@ export function MarkDeathDialog({
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-              <p className="text-muted-foreground">Cargando datos del animal...</p>
+              <p className="text-muted-foreground">{t('mortality:markDeath.loadingAnimal')}</p>
             </div>
           </div>
         ) : !animal ? (
           <div className="flex items-center justify-center p-8">
-            <p className="text-muted-foreground">No se encontraron datos del animal</p>
+            <p className="text-muted-foreground">{t('mortality:markDeath.animalNotFound')}</p>
           </div>
         ) : (
           <>
@@ -354,31 +354,31 @@ export function MarkDeathDialog({
           <div className="mb-4 p-3 bg-muted rounded-lg space-y-2">
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="font-medium text-muted-foreground">Nombre:</span>
-                <p className="font-medium">{animal.name || 'Sin nombre'}</p>
+                <span className="font-medium text-muted-foreground">{t('mortality:markDeath.name')}:</span>
+                <p className="font-medium">{animal.name || t('mortality:markDeath.noName')}</p>
               </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Identificador:</span>
+                    <span className="font-medium text-muted-foreground">{t('mortality:markDeath.identifier')}:</span>
                     <p className="font-medium">{animal.id_tag}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Sexo:</span>
+                    <span className="font-medium text-muted-foreground">{t('mortality:markDeath.sex')}:</span>
                     <p className="font-medium">{animal.sex}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-muted-foreground">Raza:</span>
+                    <span className="font-medium text-muted-foreground">{t('mortality:markDeath.breed')}:</span>
                     <p className="font-medium">{animal.breed}</p>
                   </div>
             </div>
             {animal.birth_date && (
               <div>
-                <span className="font-medium text-muted-foreground text-sm">Fecha de nacimiento:</span>
+                <span className="font-medium text-muted-foreground text-sm">{t('mortality:markDeath.birthDate')}:</span>
                 <p className="text-sm">{format(new Date(animal.birth_date), 'dd/MM/yyyy')}</p>
               </div>
             )}
             {ageDisplay && (
               <div>
-                <span className="font-medium text-muted-foreground text-sm">Edad al morir:</span>
+                <span className="font-medium text-muted-foreground text-sm">{t('mortality:markDeath.ageAtDeath')}:</span>
                 <p className="text-sm font-medium text-primary">{ageDisplay}</p>
               </div>
             )}
@@ -392,7 +392,7 @@ export function MarkDeathDialog({
               name="fecha_defuncion"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Fecha de defunción *</FormLabel>
+                  <FormLabel>{t('mortality:markDeath.deathDate')} *</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -406,7 +406,7 @@ export function MarkDeathDialog({
                           {field.value ? (
                             format(field.value, "dd/MM/yyyy")
                           ) : (
-                            <span>Seleccionar fecha</span>
+                            <span>{t('mortality:markDeath.selectDate')}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -436,11 +436,11 @@ export function MarkDeathDialog({
               name="causa_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Causa de muerte *</FormLabel>
+                  <FormLabel>{t('mortality:markDeath.causeOfDeath')} *</FormLabel>
                   <Select onValueChange={handleCauseChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar causa" />
+                        <SelectValue placeholder={t('mortality:markDeath.selectCause')} />
                       </SelectTrigger>
                     </FormControl>
                      <SelectContent>
@@ -449,8 +449,8 @@ export function MarkDeathDialog({
                            {cause.nombre}
                          </SelectItem>
                        ))}
-                       <SelectItem value="agregar_nueva">+ Agregar nueva causa</SelectItem>
-                       <SelectItem value="otra">Otra causa...</SelectItem>
+                       <SelectItem value="agregar_nueva">{t('mortality:markDeath.addNewCause')}</SelectItem>
+                       <SelectItem value="otra">{t('mortality:markDeath.otherCause')}</SelectItem>
                      </SelectContent>
                   </Select>
                   <FormMessage />
@@ -464,10 +464,10 @@ export function MarkDeathDialog({
                 name="causa_texto"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Especificar causa *</FormLabel>
+                    <FormLabel>{t('mortality:markDeath.specifyCause')} *</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Escribir causa de muerte"
+                        placeholder={t('mortality:markDeath.writeCause')}
                         {...field}
                       />
                     </FormControl>
@@ -479,10 +479,10 @@ export function MarkDeathDialog({
 
             {showAddCause && (
               <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
-                <FormLabel>Agregar nueva causa de muerte</FormLabel>
+                <FormLabel>{t('mortality:markDeath.addNewCauseTitle')}</FormLabel>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Nombre de la nueva causa"
+                    placeholder={t('mortality:markDeath.newCauseName')}
                     value={newCauseName}
                     onChange={(e) => setNewCauseName(e.target.value)}
                     onKeyDown={(e) => {
@@ -498,7 +498,7 @@ export function MarkDeathDialog({
                     disabled={!newCauseName.trim() || addingCause}
                     size="sm"
                   >
-                    {addingCause ? "Agregando..." : "Agregar"}
+                    {addingCause ? t('mortality:markDeath.adding') : t('mortality:markDeath.addButton')}
                   </Button>
                 </div>
                 <Button
@@ -510,7 +510,7 @@ export function MarkDeathDialog({
                     setNewCauseName("");
                   }}
                 >
-                  Cancelar
+                  {t('mortality:markDeath.cancel')}
                 </Button>
               </div>
             )}
@@ -520,10 +520,10 @@ export function MarkDeathDialog({
               name="notas"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas adicionales</FormLabel>
+                  <FormLabel>{t('mortality:markDeath.additionalNotes')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Observaciones sobre la defunción..."
+                      placeholder={t('mortality:markDeath.observations')}
                       {...field}
                     />
                   </FormControl>
@@ -539,10 +539,10 @@ export function MarkDeathDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={loading}
               >
-                Cancelar
+                {t('mortality:markDeath.cancel')}
               </Button>
               <Button type="submit" disabled={loading} variant="destructive">
-                {loading ? "Guardando..." : "Marcar como Fallecido"}
+                {loading ? t('mortality:markDeath.saving') : t('mortality:markDeath.confirmDeath')}
               </Button>
             </DialogFooter>
           </form>

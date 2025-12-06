@@ -13,7 +13,8 @@
     "deathDate": "Fecha de defunción",
     "causeOfDeath": "Causa de muerte",
     "selectCause": "Seleccionar causa",
-    "addNewCause": "Agregar nueva causa",
+    "selectDate": "Seleccionar fecha",
+    "addNewCause": "+ Agregar nueva causa",
     "otherCause": "Otra causa...",
     "specifyCause": "Especificar causa",
     "writeCause": "Escribir causa de muerte",
@@ -22,9 +23,11 @@
     "adding": "Agregando...",
     "addButton": "Agregar",
     "additionalNotes": "Notas adicionales",
-    "observations": "Observaciones sobre el deceso...",
-    "confirmDeath": "Confirmar Defunción",
-    "processing": "Procesando..."
+    "observations": "Observaciones sobre la defunción...",
+    "confirmDeath": "Marcar como Fallecido",
+    "processing": "Guardando...",
+    "cancel": "Cancelar",
+    "saving": "Guardando..."
   },
   "validation": {
     "dateRequired": "La fecha de defunción es requerida",

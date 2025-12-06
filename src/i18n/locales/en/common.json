@@ -50,7 +50,17 @@
     "none": "None",
     "total": "Total",
     "date": "Date",
-    "time": "Time",
+    "time": "Time"
+  },
+  "time": {
+    "year": "year",
+    "years": "years",
+    "month": "month",
+    "months": "months",
+    "day": "day",
+    "days": "days"
+  },
+  "fields": {
     "name": "Name",
     "description": "Description",
     "type": "Type",
