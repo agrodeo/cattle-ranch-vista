@@ -13,7 +13,8 @@
     "deathDate": "Death date",
     "causeOfDeath": "Cause of death",
     "selectCause": "Select cause",
-    "addNewCause": "Add new cause",
+    "selectDate": "Select date",
+    "addNewCause": "+ Add new cause",
     "otherCause": "Other cause...",
     "specifyCause": "Specify cause",
     "writeCause": "Write cause of death",
@@ -23,8 +24,10 @@
     "addButton": "Add",
     "additionalNotes": "Additional notes",
     "observations": "Observations about the death...",
-    "confirmDeath": "Confirm Death",
-    "processing": "Processing..."
+    "confirmDeath": "Mark as Deceased",
+    "processing": "Saving...",
+    "cancel": "Cancel",
+    "saving": "Saving..."
   },
   "validation": {
     "dateRequired": "Death date is required",
