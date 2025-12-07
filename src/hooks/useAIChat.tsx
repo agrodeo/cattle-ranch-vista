@@ -264,47 +264,42 @@ export function useAIChat() {
     abortControllerRef.current = new AbortController();
 
     try {
-      // Prepare messages for AI
-      let aiMessages = messages.concat(userMessage).map(msg => {
-        if (msg.image) {
-          // Handle image messages for OpenAI vision
-          return {
-            role: msg.role,
-            content: [
-              { type: "text", text: msg.content },
-              { 
-                type: "image_url", 
-                image_url: { 
-                  url: msg.image,
-                  detail: "high"
-                } 
-              }
-            ]
-          };
-        } else {
-          return {
-            role: msg.role,
-            content: msg.content
-          };
-        }
+      // Convert new image to base64 if provided (for sending to OpenAI)
+      let newImageBase64: string | null = null;
+      if (image) {
+        newImageBase64 = await fileToBase64(image);
+      }
+
+      // Prepare messages for AI - always use base64 for current image
+      let aiMessages = messages.map(msg => {
+        // For old messages with images (stored URLs), we still need to handle them
+        // But OpenAI may not be able to download from Storage, so we skip image for old messages
+        return {
+          role: msg.role,
+          content: msg.content
+        };
       });
 
-      // Convert image to base64 if provided
-      if (image) {
-        const base64 = await fileToBase64(image);
-        const lastMessage = aiMessages[aiMessages.length - 1];
-        if (typeof lastMessage.content === 'string') {
-          lastMessage.content = [
-            { type: "text", text: lastMessage.content },
+      // Add current user message with base64 image if provided
+      if (newImageBase64) {
+        aiMessages.push({
+          role: 'user',
+          content: [
+            { type: "text", text: content },
             { 
               type: "image_url", 
               image_url: { 
-                url: base64,
+                url: newImageBase64,
                 detail: "high"
               } 
             }
-          ];
-        }
+          ] as any
+        });
+      } else {
+        aiMessages.push({
+          role: 'user',
+          content: content
+        });
       }
 
       // Use Supabase function invoke for streaming
