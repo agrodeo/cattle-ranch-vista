@@ -18,13 +18,9 @@ export const ReadOnlyProtectedAction = ({
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
-  // If subscription is loading, show disabled state
+  // If subscription is loading, allow interaction (don't block the user)
   if (!subscriptionStatus) {
-    return fallback || (
-      <div className="opacity-50 pointer-events-none">
-        {children}
-      </div>
-    );
+    return <>{children}</>;
   }
 
   // If in read-only mode, intercept clicks and show upgrade modal
