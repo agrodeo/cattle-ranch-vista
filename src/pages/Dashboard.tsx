@@ -183,7 +183,7 @@ const Dashboard = () => {
             {warnings.alerts.length > 0 && (
               <SectionCard
                 title={t('dashboard:sections.warnings')}
-                subtitle={t('common:common.requiresAttention')}
+                subtitle={t('common:fields.requiresAttention')}
                 count={warnings.alerts.length}
               >
                 <div className="space-y-3">
@@ -235,7 +235,7 @@ const Dashboard = () => {
 
             <SectionCard
               title={t('dashboard:sections.upcomingActivities')}
-              subtitle={t('common:common.scheduledNext')}
+              subtitle={t('common:fields.scheduledNext')}
               count={upcoming.activitiesNext7d.length}
             >
               {upcoming.activitiesNext7d.length > 0 ? (
