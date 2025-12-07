@@ -126,6 +126,27 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`${isMobile ? 'h-[85vh] max-w-[95vw]' : 'max-w-4xl h-[85vh]'} flex flex-col p-0`}>
+        {/* Mobile header with proper DialogHeader to avoid overlap with close button */}
+        {isMobile && (
+          <DialogHeader className="flex-shrink-0 p-4 border-b pr-12">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <DialogTitle className="font-semibold">{conversationTitle}</DialogTitle>
+                {isSaving && (
+                  <Badge variant="outline" className="text-xs">
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    {t('aiChat.saving')}
+                  </Badge>
+                )}
+              </div>
+              <Button onClick={clearMessages} variant="outline" size="sm">
+                <MessageSquare className="h-4 w-4" />
+              </Button>
+            </div>
+          </DialogHeader>
+        )}
+
         <div className="flex-1 flex overflow-hidden">
           {/* Sidebar con conversaciones (solo desktop) */}
           {!isMobile && (
@@ -275,11 +296,12 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
           {/* Área principal del chat */}
           <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex-shrink-0 p-4 border-b">
-              <div className="flex items-center justify-between">
+            {/* Desktop header */}
+            {!isMobile && (
+              <DialogHeader className="flex-shrink-0 p-4 border-b">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="font-semibold">{conversationTitle}</h2>
+                  <DialogTitle className="font-semibold">{conversationTitle}</DialogTitle>
                   {isSaving && (
                     <Badge variant="outline" className="text-xs">
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
@@ -287,13 +309,8 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                     </Badge>
                   )}
                 </div>
-                {isMobile && (
-                  <Button onClick={clearMessages} variant="outline" size="sm">
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
+              </DialogHeader>
+            )}
 
             <div className="flex-1 flex flex-col min-h-0">
               {/* Messages Area */}
@@ -343,7 +360,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
               </ScrollArea>
 
               {/* Input Area */}
-              <div className="flex-shrink-0 pt-4 px-4 border-t">
+              <div className="flex-shrink-0 pt-4 px-4 pb-4 border-t">
                 {/* Limit warning for Personal plan */}
                 {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
                   <Alert className="mb-3">
