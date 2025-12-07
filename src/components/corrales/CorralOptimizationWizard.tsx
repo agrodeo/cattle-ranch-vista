@@ -647,12 +647,12 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                       <Label className="text-xs sm:text-sm">{t('optimization.step1.breedingRatioConfig.minBullsPerCorralLabel')}</Label>
                       <Input
                         type="number"
-                        min={1}
+                        min={0}
                         max={5}
                         value={config.min_bulls_per_corral}
                         onChange={(e) => setConfig(prev => ({
                           ...prev,
-                          min_bulls_per_corral: Number(e.target.value)
+                          min_bulls_per_corral: Math.max(0, Math.min(5, Number(e.target.value) || 0))
                         }))}
                         className="w-full"
                       />

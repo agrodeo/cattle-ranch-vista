@@ -533,10 +533,10 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
                         <label className="text-sm font-medium">{t('corrals:optimizer.breedingConfig.minBullsPerCorral')}</label>
                         <input
                           type="number"
-                          min={1}
+                          min={0}
                           max={5}
                           value={minBullsPerCorral}
-                          onChange={(e) => setMinBullsPerCorral(Math.max(1, Math.min(5, parseInt(e.target.value) || 1)))}
+                          onChange={(e) => setMinBullsPerCorral(Math.max(0, Math.min(5, parseInt(e.target.value) || 0)))}
                           className="w-full px-3 py-2 border rounded-md bg-background text-foreground"
                         />
                         <p className="text-xs text-muted-foreground">{t('corrals:optimizer.breedingConfig.minBullsHint')}</p>
