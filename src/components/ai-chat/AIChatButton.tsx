@@ -47,13 +47,6 @@ export function AIChatButton() {
   return (
     <>
       <div className="fixed bottom-24 right-6 z-50 lg:bottom-6 flex flex-col items-end gap-1">
-        {/* Show remaining messages badge for Personal plan */}
-        {!isUnlimited && !limitReached && (
-          <Badge variant="secondary" className="text-xs">
-            {t('aiChat.messagesRemaining', { count: messagesRemaining })}
-          </Badge>
-        )}
-        
         {limitReached && (
           <Badge variant="destructive" className="text-xs">
             {t('aiChat.limitReached')}
