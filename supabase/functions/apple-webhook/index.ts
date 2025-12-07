@@ -7,6 +7,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Map RevenueCat product IDs to internal plan codes
+const PRODUCT_ID_TO_PLAN: Record<string, string> = {
+  // Personal
+  'prodc6836489e3': 'personal',
+  'prodc8d8f05de3': 'personal',
+  // Avanzado (Advanced)
+  'prodc70244af0c': 'avanzado',
+  'prod089fc06f3e': 'avanzado',
+  // Productor (Producer)
+  'prod994aa82559': 'productor',
+  'prod698531dc0f': 'productor',
+  // Cabaña (Herd)
+  'prod303c757d05': 'cabana',
+  'prodf140665f04': 'cabana',
+  // Corporativo - TODO: Add when available
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -73,12 +90,21 @@ serve(async (req) => {
     // Map product ID to product code
     let productCode = 'free';
     if (productId) {
-      if (productId.includes('personal')) productCode = 'personal';
-      else if (productId.includes('avanzado')) productCode = 'avanzado';
-      else if (productId.includes('productor')) productCode = 'productor';
-      else if (productId.includes('cabana')) productCode = 'cabana';
-      else if (productId.includes('corporativo')) productCode = 'corporativo';
+      // Direct lookup in our product ID map
+      if (PRODUCT_ID_TO_PLAN[productId]) {
+        productCode = PRODUCT_ID_TO_PLAN[productId];
+      } else {
+        // Fallback to string matching for legacy or unknown products
+        console.log('Product ID not found in map, using fallback matching:', productId);
+        if (productId.includes('personal')) productCode = 'personal';
+        else if (productId.includes('avanzado') || productId.includes('advanced')) productCode = 'avanzado';
+        else if (productId.includes('productor') || productId.includes('producer')) productCode = 'productor';
+        else if (productId.includes('cabana') || productId.includes('herd')) productCode = 'cabana';
+        else if (productId.includes('corporativo') || productId.includes('corporate')) productCode = 'corporativo';
+      }
     }
+    
+    console.log('Mapped product ID', productId, 'to product code:', productCode);
 
     // Handle different notification types
     switch (notificationType) {
