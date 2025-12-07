@@ -117,7 +117,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
     density_per_hectare: 1.5,
     calf_space_factor: 0.6,
     objectives: ['consanguinity'] as string[],
-    secondaryObjective: 'none' as 'none' | 'fertility' | 'standards',
+    secondaryObjective: 'none' as 'none' | 'standards',
     targetWeights: {
       birth: 0,
       weaning: 0,
@@ -180,8 +180,8 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       if (animalsRes.data) setAllAnimals(animalsRes.data);
       if (corralsRes.data) setAllCorrals(corralsRes.data);
       
-      // Load reproductive metrics if reproduction objective is selected
-      if (config.objectives.includes('reproduction') || config.objectives.includes('benchmarks')) {
+      // Load reproductive metrics if benchmarks objective is selected
+      if (config.objectives.includes('benchmarks')) {
         const { data: metrics } = await supabase.rpc('calculate_reproductive_kpis', {
           _cabana_id: cabanaId
         });
@@ -205,15 +205,13 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
         ? 'breeding_ratio'
         : config.objectives.includes('consanguinity')
         ? 'consanguinity'
-        : config.objectives.includes('reproduction')
-        ? 'fertility'
         : config.objectives.includes('benchmarks')
         ? 'standards'
         : 'consanguinity';
       
-      // Use optimize-corrals for breeding_ratio, consanguinity, fertility, standards
+      // Use optimize-corrals for breeding_ratio, consanguinity, standards
       // Use suggest-corral-distribution for AI-based optimization
-      const useOptimizeCorrals = ['breeding_ratio', 'consanguinity', 'fertility', 'standards'].includes(primaryObjective);
+      const useOptimizeCorrals = ['breeding_ratio', 'consanguinity', 'standards'].includes(primaryObjective);
       const functionName = useOptimizeCorrals ? 'optimize-corrals' : 'suggest-corral-distribution';
       
       console.log('Invoking', functionName, 'with cabanaId:', cabanaId, 'objective:', primaryObjective);
@@ -512,19 +510,6 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                             <input
                               type="radio"
                               name="secondaryObjective"
-                              checked={config.secondaryObjective === 'fertility'}
-                              onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'fertility' }))}
-                              className="w-4 h-4"
-                            />
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{t('optimization.step1.secondaryObjective.options.fertility')}</div>
-                              <div className="text-xs text-muted-foreground">{t('optimization.step1.secondaryObjective.options.fertilityDesc')}</div>
-                            </div>
-                          </label>
-                          <label className="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-accent">
-                            <input
-                              type="radio"
-                              name="secondaryObjective"
                               checked={config.secondaryObjective === 'standards'}
                               onChange={() => setConfig(prev => ({ ...prev, secondaryObjective: 'standards' }))}
                               className="w-4 h-4"
@@ -537,24 +522,6 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
                         </div>
                       </div>
                     )}
-
-                    <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
-                      <input
-                        type="checkbox"
-                        checked={config.objectives.includes('reproduction')}
-                        onChange={(e) => {
-                          const objectives = e.target.checked
-                            ? [...config.objectives, 'reproduction']
-                            : config.objectives.filter(o => o !== 'reproduction');
-                          setConfig(prev => ({ ...prev, objectives }));
-                        }}
-                        className="w-4 h-4 flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0 overflow-hidden">
-                        <div className="font-medium text-sm sm:text-base">{t('optimization.step1.objectives.reproduction.title')}</div>
-                        <div className="text-xs sm:text-sm text-muted-foreground break-words">{t('optimization.step1.objectives.reproduction.description')}</div>
-                      </div>
-                    </label>
                     
                     
                     <label className="flex items-center gap-2 p-2 sm:p-3 border rounded-lg cursor-pointer hover:bg-accent min-w-0">
