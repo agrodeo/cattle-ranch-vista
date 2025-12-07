@@ -241,6 +241,10 @@ const translations = {
     separateUnusedBull: "Toro sin vacas asignadas - mover a corral de reserva",
     avoidMultipleBulls: "Evitar múltiples toros en corrales de cría",
     assignBull: "Asignar toro",
+    withBull: "con",
+    bullSingular: "toro",
+    bullPlural: "toros",
+    ptsAvg: "pts prom",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -328,6 +332,10 @@ const translations = {
     separateUnusedBull: "Bull with no assigned cows - move to reserve corral",
     avoidMultipleBulls: "Avoid multiple bulls in breeding corrals",
     assignBull: "Assign bull",
+    withBull: "with",
+    bullSingular: "bull",
+    bullPlural: "bulls",
+    ptsAvg: "pts avg",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -415,6 +423,10 @@ const translations = {
     separateUnusedBull: "Touro sem vacas atribuídas - mover para curral de reserva",
     avoidMultipleBulls: "Evitar múltiplos touros em currais de reprodução",
     assignBull: "Atribuir touro",
+    withBull: "com",
+    bullSingular: "touro",
+    bullPlural: "touros",
+    ptsAvg: "pts méd",
   },
 };
 
@@ -3631,7 +3643,7 @@ serve(async (req) => {
                 from_corral_name: corralsWithCounts.find(c => c.id === cow.corral_id)?.name || null,
                 to_corral_id: config.corral_id,
                 to_corral_name: config.corral_name,
-                reason: `${t.optimizeStandards}: ${cowData.assignedScore} pts avg con ${config.bulls.length} ${config.bulls.length === 1 ? 'toro' : 'toros'}`,
+                reason: `${t.optimizeStandards}: ${cowData.assignedScore} ${t.ptsAvg} ${t.withBull} ${config.bulls.length} ${config.bulls.length === 1 ? t.bullSingular : t.bullPlural}`,
                 issue_type: 'standards',
                 expectedBenefit: `${t.meetsExcellent} (${config.matchQuality})`,
               });
@@ -3658,7 +3670,7 @@ serve(async (req) => {
                 from_corral_name: corralsWithCounts.find(c => c.id === bull.corral_id)?.name || null,
                 to_corral_id: config.corral_id,
                 to_corral_name: config.corral_name,
-                reason: `${t.assignBull}: ${bullData.score} pts avg`,
+                reason: `${t.assignBull}: ${bullData.score} ${t.ptsAvg}`,
                 issue_type: 'standards',
                 expectedBenefit: config.matchQuality,
               });
