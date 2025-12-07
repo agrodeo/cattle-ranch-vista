@@ -145,7 +145,7 @@ const Dashboard = () => {
             {/* Recent Activities */}
             <SectionCard
               title={t('dashboard:sections.recentActivities')}
-              subtitle={t('common:common.operations')}
+              subtitle={t('common:fields.operations')}
               count={recentActivities.length}
               primaryAction={!warnings.noCabana ? {
                 label: t('dashboard:actions.viewAll'),
