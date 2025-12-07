@@ -73,10 +73,9 @@ const getPlansData = (t: any) => [
     features: [
       t('plansModal.unlimitedUsers'),
       t('plansModal.allReports'),
-      t('plansModal.executiveDashboard'),
-      t('plansModal.apiAccess'),
-      t('plansModal.systemIntegration'),
-      t('plansModal.phoneSupport')
+      t('plansModal.aiChatUnlimited'),
+      t('plansModal.dataExport'),
+      t('plansModal.prioritySupport')
     ],
     monthly: 149000,
     annual: 1490000
@@ -90,10 +89,9 @@ const getPlansData = (t: any) => [
     features: [
       t('plansModal.unlimitedAnimals'),
       t('plansModal.unlimitedUsers'),
-      t('plansModal.customFeatures'),
-      t('plansModal.dedicatedServer'),
-      t('plansModal.support24x7'),
-      t('plansModal.customImplementation')
+      t('plansModal.aiChatUnlimited'),
+      t('plansModal.allReports'),
+      t('plansModal.support24x7')
     ],
     monthly: 159000,
     annual: 1590000
