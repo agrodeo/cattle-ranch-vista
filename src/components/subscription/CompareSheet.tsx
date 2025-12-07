@@ -26,7 +26,7 @@ interface Feature {
 
 const FEATURES: Feature[] = [
   {
-    name: 'Capacidad de animales',
+    name: 'Animales',
     getValue: (plan) => {
       if (plan.id === 'free') return 'Hasta 50';
       if (plan.id === 'personal') return 'Hasta 125';
@@ -41,51 +41,19 @@ const FEATURES: Feature[] = [
     name: 'Chat IA',
     getValue: (plan) => {
       if (plan.id === 'free') return false;
-      if (plan.id === 'personal') return '20 mensajes/mes';
+      if (plan.id === 'personal') return '20/mes';
       return 'Ilimitado';
-    }
-  },
-  {
-    name: 'Usuarios',
-    getValue: (plan) => {
-      if (plan.id === 'free') return '1 usuario';
-      return 'Ilimitados';
     }
   },
   {
     name: 'Soporte',
     getValue: (plan) => {
       if (plan.id === 'free') return 'Básico';
-      if (plan.id === 'personal' || plan.id === 'avanzado') return 'Estándar';
-      if (plan.id === 'productor') return 'Prioritario';
-      if (plan.id === 'cabana') return 'Avanzado';
-      if (plan.id === 'corporativo') return 'Dedicado';
+      if (plan.id === 'personal' || plan.id === 'avanzado') return 'Email';
+      if (plan.id === 'productor' || plan.id === 'cabana') return 'Prioritario';
+      if (plan.id === 'corporativo') return '24/7';
       return '—';
     }
-  },
-  {
-    name: 'Integraciones',
-    getValue: (plan) => {
-      if (plan.id === 'free' || plan.id === 'personal') return false;
-      if (plan.id === 'avanzado') return 'Básicas';
-      return true;
-    }
-  },
-  {
-    name: 'Roles y permisos',
-    getValue: (plan) => ['cabana', 'corporativo'].includes(plan.id)
-  },
-  {
-    name: 'Reportes avanzados',
-    getValue: (plan) => ['cabana', 'corporativo'].includes(plan.id)
-  },
-  {
-    name: 'Multi-establecimiento',
-    getValue: (plan) => plan.id === 'corporativo'
-  },
-  {
-    name: 'SSO/Seguridad',
-    getValue: (plan) => plan.id === 'corporativo'
   }
 ];
 

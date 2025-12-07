@@ -48,25 +48,11 @@
     "upTo": "Até",
     "animals": "animais",
     "unlimitedAnimals": "Animais ilimitados",
-    "unlimitedUsers": "Usuários ilimitados",
-    "basicReports": "Relatórios básicos",
-    "intermediateReports": "Relatórios intermediários",
-    "advancedReports": "Relatórios avançados",
-    "allReports": "Todos os relatórios",
-    "dataExport": "Exportação de dados",
-    "realtimeAnalytics": "Analytics em tempo real",
-    "executiveDashboard": "Dashboard executivo",
-    "apiAccess": "Acesso API",
-    "systemIntegration": "Integração com sistemas",
-    "customFeatures": "Funcionalidades personalizadas",
-    "dedicatedServer": "Servidor dedicado",
-    "emailSupport": "Suporte por email",
-    "prioritySupport": "Suporte prioritário",
-    "phoneSupport": "Suporte telefônico",
-    "support24x7": "Suporte 24/7",
-    "customImplementation": "Implementação personalizada",
     "aiChatLimited": "Chat IA (20 mensagens/mês)",
     "aiChatUnlimited": "Chat IA ilimitado",
+    "emailSupport": "Suporte por email",
+    "prioritySupport": "Suporte prioritário",
+    "support24x7": "Suporte 24/7",
     "selectPlan": "Selecionar Plano",
     "contactUs": "Contatar",
     "perMonth": "/mês",
@@ -87,24 +73,23 @@
       "name": "Gratuito",
       "bullets": [
         "Até 50 animais",
-        "1 usuário",
-        "Funcionalidades básicas"
+        "Suporte básico"
       ]
     },
     "personal": {
       "name": "Pessoal",
       "bullets": [
         "Até 125 animais",
-        "Usuários ilimitados",
-        "Chat IA (20 mensagens/mês)"
+        "Chat IA (20 mensagens/mês)",
+        "Suporte por email"
       ]
     },
     "avanzado": {
       "name": "Avançado",
       "bullets": [
         "Até 250 animais",
-        "Usuários ilimitados",
-        "Chat IA ilimitado"
+        "Chat IA ilimitado",
+        "Suporte por email"
       ]
     },
     "productor": {
@@ -121,8 +106,8 @@
       "badge": "Pro",
       "bullets": [
         "Até 1.000 animais",
-        "Relatórios avançados",
-        "Chat IA ilimitado"
+        "Chat IA ilimitado",
+        "Suporte prioritário"
       ]
     },
     "corporativo": {
@@ -130,8 +115,8 @@
       "badge": "Empresas",
       "bullets": [
         "Animais ilimitados",
-        "Multi-estabelecimento",
-        "Suporte dedicado"
+        "Chat IA ilimitado",
+        "Suporte 24/7"
       ]
     }
   },

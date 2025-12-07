@@ -22,8 +22,6 @@ const getPlansData = (t: any) => [
     color: 'bg-blue-500',
     maxAnimals: 125,
     features: [
-      t('plansModal.unlimitedUsers'),
-      t('plansModal.basicReports'),
       t('plansModal.aiChatLimited'),
       t('plansModal.emailSupport')
     ],
@@ -37,10 +35,7 @@ const getPlansData = (t: any) => [
     color: 'bg-indigo-500',
     maxAnimals: 250,
     features: [
-      t('plansModal.unlimitedUsers'),
-      t('plansModal.intermediateReports'),
       t('plansModal.aiChatUnlimited'),
-      t('plansModal.dataExport'),
       t('plansModal.emailSupport')
     ],
     monthly: 44900,
@@ -53,11 +48,7 @@ const getPlansData = (t: any) => [
     color: 'bg-primary',
     maxAnimals: 500,
     features: [
-      t('plansModal.unlimitedUsers'),
-      t('plansModal.advancedReports'),
       t('plansModal.aiChatUnlimited'),
-      t('plansModal.realtimeAnalytics'),
-      t('plansModal.dataExport'),
       t('plansModal.prioritySupport')
     ],
     monthly: 69900,
@@ -71,10 +62,7 @@ const getPlansData = (t: any) => [
     color: 'bg-purple-500',
     maxAnimals: 1000,
     features: [
-      t('plansModal.unlimitedUsers'),
-      t('plansModal.allReports'),
       t('plansModal.aiChatUnlimited'),
-      t('plansModal.dataExport'),
       t('plansModal.prioritySupport')
     ],
     monthly: 149000,
@@ -87,10 +75,7 @@ const getPlansData = (t: any) => [
     color: 'bg-orange-500',
     maxAnimals: 'unlimited',
     features: [
-      t('plansModal.unlimitedAnimals'),
-      t('plansModal.unlimitedUsers'),
       t('plansModal.aiChatUnlimited'),
-      t('plansModal.allReports'),
       t('plansModal.support24x7')
     ],
     monthly: 159000,
