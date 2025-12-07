@@ -161,11 +161,11 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>{t('plansModal.unlimitedUsers')}</span>
+                    <span>{t('plansModal.aiChatLimited')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>{t('plansModal.basicFeatures', 'Funcionalidades básicas')}</span>
+                    <span>{t('plansModal.emailSupport')}</span>
                   </li>
                 </ul>
               </div>

@@ -3385,13 +3385,18 @@ export type Database = {
         }
         Returns: undefined
       }
-      update_subscription_plan: {
-        Args: {
-          cabana_uuid: string
-          new_plan: Database["public"]["Enums"]["subscription_plan"]
-        }
-        Returns: undefined
-      }
+      update_subscription_plan:
+        | {
+            Args: { cabana_uuid: string; new_plan: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              cabana_uuid: string
+              new_plan: Database["public"]["Enums"]["subscription_plan"]
+            }
+            Returns: undefined
+          }
       verify_sistema_login: {
         Args: { input_email: string; input_password: string }
         Returns: boolean
