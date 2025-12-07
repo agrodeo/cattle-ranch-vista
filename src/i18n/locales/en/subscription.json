@@ -48,25 +48,11 @@
     "upTo": "Up to",
     "animals": "animals",
     "unlimitedAnimals": "Unlimited animals",
-    "unlimitedUsers": "Unlimited users",
-    "basicReports": "Basic reports",
-    "intermediateReports": "Intermediate reports",
-    "advancedReports": "Advanced reports",
-    "allReports": "All reports",
-    "dataExport": "Data export",
-    "realtimeAnalytics": "Real-time analytics",
-    "executiveDashboard": "Executive dashboard",
-    "apiAccess": "API access",
-    "systemIntegration": "System integration",
-    "customFeatures": "Custom features",
-    "dedicatedServer": "Dedicated server",
-    "emailSupport": "Email support",
-    "prioritySupport": "Priority support",
-    "phoneSupport": "Phone support",
-    "support24x7": "24/7 support",
-    "customImplementation": "Custom implementation",
     "aiChatLimited": "AI Chat (20 messages/month)",
     "aiChatUnlimited": "Unlimited AI Chat",
+    "emailSupport": "Email support",
+    "prioritySupport": "Priority support",
+    "support24x7": "24/7 support",
     "selectPlan": "Select Plan",
     "contactUs": "Contact Us",
     "perMonth": "/month",
@@ -87,24 +73,23 @@
       "name": "Free",
       "bullets": [
         "Up to 50 animals",
-        "1 user",
-        "Basic features"
+        "Basic support"
       ]
     },
     "personal": {
       "name": "Personal",
       "bullets": [
         "Up to 125 animals",
-        "Unlimited users",
-        "AI Chat (20 messages/month)"
+        "AI Chat (20 messages/month)",
+        "Email support"
       ]
     },
     "avanzado": {
       "name": "Advanced",
       "bullets": [
         "Up to 250 animals",
-        "Unlimited users",
-        "Unlimited AI Chat"
+        "Unlimited AI Chat",
+        "Email support"
       ]
     },
     "productor": {
@@ -121,8 +106,8 @@
       "badge": "Pro",
       "bullets": [
         "Up to 1,000 animals",
-        "Advanced reports",
-        "Unlimited AI Chat"
+        "Unlimited AI Chat",
+        "Priority support"
       ]
     },
     "corporativo": {
@@ -130,8 +115,8 @@
       "badge": "Enterprise",
       "bullets": [
         "Unlimited animals",
-        "Multi-establishment",
-        "Dedicated support"
+        "Unlimited AI Chat",
+        "24/7 support"
       ]
     }
   },
