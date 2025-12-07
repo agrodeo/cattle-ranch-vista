@@ -6,8 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Check, Users, Zap, Crown, Building2, Briefcase } from "lucide-react";
+import { Check, Users, Zap, Crown, Building2, Briefcase, Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePlatformPurchase } from "@/hooks/usePlatformPurchase";
+import { isNativeApp } from "@/lib/platformDetection";
+import { toast } from "sonner";
 
 interface SubscriptionPlansModalProps {
   open: boolean;
@@ -86,7 +89,10 @@ const getPlansData = (t: any) => [
 export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlansModalProps) => {
   const { t } = useTranslation('subscription');
   const [isAnnual, setIsAnnual] = useState(false);
-  const { subscriptionStatus, upgradePlan } = useSubscription();
+  const [isPurchasing, setIsPurchasing] = useState(false);
+  const { subscriptionStatus, upgradePlan, fetchSubscriptionStatus } = useSubscription();
+  const { initiatePurchase } = usePlatformPurchase();
+  const isNative = isNativeApp();
   
   const plans = getPlansData(t);
 
@@ -97,9 +103,36 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
       return;
     }
 
-    const success = await upgradePlan(planId as any);
-    if (success) {
-      onOpenChange(false);
+    setIsPurchasing(true);
+    
+    try {
+      if (isNative) {
+        // Use RevenueCat for iOS/Android purchases
+        await initiatePurchase({
+          planId,
+          billingCycle: isAnnual ? 'annual' : 'monthly',
+          platform: 'ios'
+        });
+        
+        // Refresh subscription status after purchase
+        await fetchSubscriptionStatus();
+        toast.success(t('plansModal.purchaseSuccess', 'Suscripción activada exitosamente'));
+        onOpenChange(false);
+      } else {
+        // Use web payment (MercadoPago) for web users
+        const success = await upgradePlan(planId as any);
+        if (success) {
+          onOpenChange(false);
+        }
+      }
+    } catch (error: any) {
+      console.error('Purchase error:', error);
+      // Don't show error for user cancellation
+      if (!error.message?.includes('cancelled') && !error.message?.includes('canceled')) {
+        toast.error(t('plansModal.purchaseError', 'Error al procesar la compra'));
+      }
+    } finally {
+      setIsPurchasing(false);
     }
   };
 
@@ -239,9 +272,11 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                     className="w-full"
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => handleSelectPlan(plan.id)}
-                    disabled={isCurrentPlan}
+                    disabled={isCurrentPlan || isPurchasing}
                   >
-                    {isCurrentPlan 
+                    {isPurchasing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : isCurrentPlan 
                       ? t('plansModal.currentPlan')
                       : plan.id === 'corporativo' 
                         ? t('plansModal.contactSales', 'Contactar Ventas')
