@@ -1,23 +1,24 @@
+// App Store product IDs (same as RevenueCat for iOS)
 export const APP_STORE_PRODUCTS = {
   personal: {
-    monthly: 'com.agrodeo.personal.monthly',
-    annual: 'com.agrodeo.personal.annual'
+    monthly: 'prodc6836489e3',
+    annual: 'prodc8d8f05de3'
   },
   avanzado: {
-    monthly: 'com.agrodeo.avanzado.monthly',
-    annual: 'com.agrodeo.avanzado.annual'
+    monthly: 'prodc70244af0c',
+    annual: 'prod089fc06f3e'
   },
   productor: {
-    monthly: 'com.agrodeo.productor.monthly',
-    annual: 'com.agrodeo.productor.annual'
+    monthly: 'prod994aa82559',
+    annual: 'prod698531dc0f'
   },
   cabana: {
-    monthly: 'com.agrodeo.cabana.monthly',
-    annual: 'com.agrodeo.cabana.annual'
+    monthly: 'prod303c757d05',
+    annual: 'prodf140665f04'
   },
   corporativo: {
-    monthly: 'com.agrodeo.corporativo.monthly',
-    annual: 'com.agrodeo.corporativo.annual'
+    monthly: '', // TODO: Add when available
+    annual: ''   // TODO: Add when available
   }
 } as const;
 
