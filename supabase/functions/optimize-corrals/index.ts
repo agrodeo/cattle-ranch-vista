@@ -245,6 +245,12 @@ const translations = {
     bullSingular: "toro",
     bullPlural: "toros",
     ptsAvg: "pts prom",
+    noName: "Sin nombre",
+    femaleSingular: "hembra",
+    femalePlural: "hembras",
+    femalesWithoutBull: "hembras sin toro",
+    expectedImprovement: "mejora esperada",
+    expectedAvg: "promedio esperado",
   },
   en: {
     reuniteWithMother: "Reunite with mother",
@@ -336,6 +342,12 @@ const translations = {
     bullSingular: "bull",
     bullPlural: "bulls",
     ptsAvg: "pts avg",
+    noName: "Unnamed",
+    femaleSingular: "female",
+    femalePlural: "females",
+    femalesWithoutBull: "females without bull",
+    expectedImprovement: "expected improvement",
+    expectedAvg: "expected average",
   },
   pt: {
     reuniteWithMother: "Reunir com mãe",
@@ -427,6 +439,12 @@ const translations = {
     bullSingular: "touro",
     bullPlural: "touros",
     ptsAvg: "pts méd",
+    noName: "Sem nome",
+    femaleSingular: "fêmea",
+    femalePlural: "fêmeas",
+    femalesWithoutBull: "fêmeas sem touro",
+    expectedImprovement: "melhoria esperada",
+    expectedAvg: "média esperada",
   },
 };
 
@@ -1019,7 +1037,7 @@ function redistributeForOptimalBreeding(
       // Move bull to new corral
       suggestedMoves.push({
         animal_id: bull.id,
-        animal_name: bull.name || bull.id_tag || 'Sin nombre',
+        animal_name: bull.name || bull.id_tag || t.noName,
         from_corral_id: bullFromCorral,
         from_corral_name: bullFromCorralName,
         to_corral_id: targetCorral.corralId,
@@ -1037,7 +1055,7 @@ function redistributeForOptimalBreeding(
       for (const femaleInfo of bestCompatibleFemales) {
         suggestedMoves.push({
           animal_id: femaleInfo.female.id,
-          animal_name: femaleInfo.female.name || femaleInfo.female.id_tag || 'Sin nombre',
+          animal_name: femaleInfo.female.name || femaleInfo.female.id_tag || t.noName,
           from_corral_id: femaleInfo.fromCorralId,
           from_corral_name: femaleInfo.fromCorralName,
           to_corral_id: targetCorral.corralId,
@@ -1163,7 +1181,7 @@ function redistributeForOptimalBreeding(
       
       suggestedMoves.push({
         animal_id: bull.id,
-        animal_name: bull.name || bull.id_tag || 'Sin nombre',
+        animal_name: bull.name || bull.id_tag || t.noName,
         from_corral_id: fromCorralId,
         from_corral_name: fromCorralName,
         to_corral_id: target.corralId,
@@ -1299,7 +1317,7 @@ function redistributeForOptimalBreeding(
     if (bestDestination) {
       suggestedMoves.push({
         animal_id: female.id,
-        animal_name: female.name || female.id_tag || 'Sin nombre',
+        animal_name: female.name || female.id_tag || t.noName,
         from_corral_id: fromCorralId,
         from_corral_name: fromCorralName,
         to_corral_id: bestDestination.corralId,
@@ -1527,9 +1545,9 @@ serve(async (req) => {
             if (mother && animal.corral_id !== mother.corral_id) {
               separationIssues.push({
                 calf_id: animal.id,
-                calf_name: animal.name || animal.id_tag || 'Sin nombre',
-                mother_id: mother.id,
-                mother_name: mother.name || mother.id_tag || 'Sin nombre',
+              calf_name: animal.name || animal.id_tag || t.noName,
+              mother_id: mother.id,
+              mother_name: mother.name || mother.id_tag || t.noName,
                 calf_corral_id: animal.corral_id,
                 mother_corral_id: mother.corral_id,
                 age_months: ageMonths,
@@ -1542,7 +1560,7 @@ serve(async (req) => {
                   if (motherCorral.animal_count < capacity) {
                     suggestedMoves.push({
                       animal_id: animal.id,
-                      animal_name: animal.name || animal.id_tag || 'Sin nombre',
+                      animal_name: animal.name || animal.id_tag || t.noName,
                       from_corral_id: animal.corral_id,
                       from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
                       to_corral_id: motherCorral.id,
@@ -1723,9 +1741,9 @@ serve(async (req) => {
               totalScore += relationship.coefficient;
               risks.push({
                 animal1_id: male.id,
-                animal1_name: male.name || male.id_tag || 'Sin nombre',
+                animal1_name: male.name || male.id_tag || t.noName,
                 animal2_id: female.id,
-                animal2_name: female.name || female.id_tag || 'Sin nombre',
+                animal2_name: female.name || female.id_tag || t.noName,
                 relationship: relationship.type,
                 severity: relationship.severity,
                 coefficient: relationship.coefficient,
@@ -1917,7 +1935,7 @@ serve(async (req) => {
               const fromCorral = corralsWithCounts.find(c => c.id === animal.corral_id);
               consolidationMoves.push({
                 animal_id: animal.id,
-                animal_name: animal.name || animal.id_tag || 'Sin nombre',
+                animal_name: animal.name || animal.id_tag || t.noName,
                 from_corral_id: animal.corral_id,
                 from_corral_name: fromCorral?.name || null,
                 to_corral_id: bestCorral.id,
@@ -1956,7 +1974,7 @@ serve(async (req) => {
           corral_name: corral.name,
           count: corralAnimals[corral.id]?.length || 0,
           capacity: corral.capacity,
-          animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+          animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || t.noName).slice(0, 10),
         }));
         
         const afterState = corralsWithCounts.map(corral => ({
@@ -1964,7 +1982,7 @@ serve(async (req) => {
           corral_name: corral.name,
           count: consolidationDistribution[corral.id]?.length || 0,
           capacity: corral.capacity,
-          animals: (consolidationDistribution[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+          animals: (consolidationDistribution[corral.id] || []).map(a => a.name || a.id_tag || t.noName).slice(0, 10),
         }));
         
         return new Response(
@@ -2073,10 +2091,10 @@ serve(async (req) => {
               const relationshipText = getRelationshipText(relationship.type, t);
               futureConsanguinityRisks.push({
                 animal1_id: youngAnimal.id,
-                animal1_name: youngAnimal.name || youngAnimal.id_tag || 'Sin nombre',
+                animal1_name: youngAnimal.name || youngAnimal.id_tag || t.noName,
                 animal1_age_months: youngAgeMonths,
                 animal2_id: mateAnimal.id,
-                animal2_name: mateAnimal.name || mateAnimal.id_tag || 'Sin nombre',
+                animal2_name: mateAnimal.name || mateAnimal.id_tag || t.noName,
                 animal2_age_months: mateAgeMonths,
                 relationship: relationship.type,
                 severity: relationship.severity,
@@ -2108,10 +2126,10 @@ serve(async (req) => {
             if (relationship && (relationship.severity === 'severe' || relationship.severity === 'medium')) {
               futureConsanguinityRisks.push({
                 animal1_id: animal1.id,
-                animal1_name: animal1.name || animal1.id_tag || 'Sin nombre',
+                animal1_name: animal1.name || animal1.id_tag || t.noName,
                 animal1_age_months: age1,
                 animal2_id: animal2.id,
-                animal2_name: animal2.name || animal2.id_tag || 'Sin nombre',
+                animal2_name: animal2.name || animal2.id_tag || t.noName,
                 animal2_age_months: age2,
                 relationship: relationship.type,
                 severity: relationship.severity,
@@ -2180,7 +2198,7 @@ serve(async (req) => {
           const relationshipText = getRelationshipText(futureRisk.relationship, t);
           proactiveMoves.push({
             animal_id: animalToMove.id,
-            animal_name: animalToMove.name || animalToMove.id_tag || 'Sin nombre',
+            animal_name: animalToMove.name || animalToMove.id_tag || t.noName,
             from_corral_id: futureRisk.corral_id,
             from_corral_name: futureRisk.corral_name,
             to_corral_id: bestDestination.id,
@@ -2385,7 +2403,7 @@ serve(async (req) => {
           
           suggestedMoves.push({
             animal_id: bestMove.animal.id,
-            animal_name: bestMove.animal.name || bestMove.animal.id_tag || 'Sin nombre',
+            animal_name: bestMove.animal.name || bestMove.animal.id_tag || t.noName,
             from_corral_id: fromCorralId,
             from_corral_name: fromCorralName,
             to_corral_id: bestMove.targetCorralId,
@@ -2492,7 +2510,7 @@ serve(async (req) => {
         corral_name: corral.name,
         count: corralAnimals[corral.id]?.length || 0,
         capacity: corral.capacity,
-        animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+        animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || t.noName).slice(0, 10),
       }));
 
       const afterState = corralsWithCounts.map(corral => ({
@@ -2500,7 +2518,7 @@ serve(async (req) => {
         corral_name: corral.name,
         count: workingDistribution[corral.id]?.length || 0,
         capacity: corral.capacity,
-        animals: (workingDistribution[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+        animals: (workingDistribution[corral.id] || []).map(a => a.name || a.id_tag || t.noName).slice(0, 10),
       }));
 
       const affectedCorrals = new Set<string>();
@@ -2897,14 +2915,14 @@ serve(async (req) => {
           const femaleScore = femaleFertilityScores[female.id] || 50;
           suggestedMoves.push({
             animal_id: female.id,
-            animal_name: female.name || female.id_tag || 'Sin nombre',
+            animal_name: female.name || female.id_tag || t.noName,
             from_corral_id: female.corral_id,
             from_corral_name: corralsWithCounts.find(c => c.id === female.corral_id)?.name || null,
             to_corral_id: bestCorral.id,
             to_corral_name: bestCorral.name,
             reason: `${t.groupFertileFemales} (${femaleScore}% ${t.fertilityScore})`,
             issue_type: 'fertility',
-            expectedBenefit: `${t.improveBreeding}: ${femaleScore}% hembra + ${bestBullScore}% toro`,
+            expectedBenefit: `${t.improveBreeding}: ${femaleScore}% ${t.femaleSingular} + ${bestBullScore}% ${t.bullSingular}`,
           });
           movedAnimals.add(female.id);
           
@@ -2993,14 +3011,14 @@ serve(async (req) => {
             
             suggestedMoves.push({
               animal_id: bull.id,
-              animal_name: bull.name || bull.id_tag || 'Sin nombre',
+              animal_name: bull.name || bull.id_tag || t.noName,
               from_corral_id: bull.corral_id,
               from_corral_name: donorCorral.name,
               to_corral_id: corral.id,
               to_corral_name: corral.name,
               reason: `${t.assignBullToCorral} (${bullScore}% ${t.fertilityScore})${reasonSuffix}`,
               issue_type: 'fertility',
-              expectedBenefit: `${t.improveBreeding}: ${corral.femaleCount} hembras sin toro`,
+              expectedBenefit: `${t.improveBreeding}: ${corral.femaleCount} ${t.femalesWithoutBull}`,
             });
             movedAnimals.add(bull.id);
             bullsAssigned++;
@@ -3031,7 +3049,7 @@ serve(async (req) => {
             
             suggestedMoves.push({
               animal_id: bull.id,
-              animal_name: bull.name || bull.id_tag || 'Sin nombre',
+              animal_name: bull.name || bull.id_tag || t.noName,
               from_corral_id: bull.corral_id,
               from_corral_name: corralsWithCounts.find(c => c.id === bull.corral_id)?.name || null,
               to_corral_id: corral.id,
@@ -3258,8 +3276,8 @@ serve(async (req) => {
           breedingPairings.push({
             cow_id: cow.id,
             bull_id: bull.id,
-            cow_name: cow.name || cow.id_tag || 'Sin nombre',
-            bull_name: bull.name || bull.id_tag || 'Sin nombre',
+            cow_name: cow.name || cow.id_tag || t.noName,
+            bull_name: bull.name || bull.id_tag || t.noName,
             cow_tag: cow.id_tag || undefined,
             bull_tag: bull.id_tag || undefined,
             score: finalScore,
@@ -3520,8 +3538,8 @@ serve(async (req) => {
                   corralTotalScore += pairData.score;
                   corralPairCount++;
                   allPairings.push({
-                    cow_name: cow.name || cow.id_tag || 'Sin nombre',
-                    bull_name: bull.name || bull.id_tag || 'Sin nombre',
+                    cow_name: cow.name || cow.id_tag || t.noName,
+                    bull_name: bull.name || bull.id_tag || t.noName,
                     score: pairData.score,
                   });
                 }
@@ -3550,7 +3568,7 @@ serve(async (req) => {
             corral_name: corral.name,
             bulls: assignment.bulls.map(b => ({
               id: b.id,
-              name: b.name || b.id_tag || 'Sin nombre',
+              name: b.name || b.id_tag || t.noName,
               tag: b.id_tag,
               score: Math.round(breedingAgeFemales.reduce((sum, cow) => {
                 const data = scoreMatrix[cow.id]?.[b.id];
@@ -3566,7 +3584,7 @@ serve(async (req) => {
                 : 0;
               return {
                 id: c.id,
-                name: c.name || c.id_tag || 'Sin nombre',
+                name: c.name || c.id_tag || t.noName,
                 tag: c.id_tag,
                 assignedScore: avgScore,
               };
@@ -3781,7 +3799,7 @@ serve(async (req) => {
       corral_name: corral.name,
       count: corral.animal_count,
       capacity: corral.capacity,
-      animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || 'Sin nombre').slice(0, 10),
+      animals: (corralAnimals[corral.id] || []).map(a => a.name || a.id_tag || t.noName).slice(0, 10),
     }));
 
     const afterCounts: Record<string, number> = {};
@@ -3822,8 +3840,8 @@ serve(async (req) => {
         ? Math.round(((overallExpectedScore - currentDistributionScore) / currentDistributionScore) * 100)
         : 0;
       expectedImprovement = improvement > 0 
-        ? `+${improvement}% mejora esperada (${currentDistributionScore} → ${overallExpectedScore} pts)`
-        : `${overallExpectedScore} pts promedio esperado`;
+        ? `+${improvement}% ${t.expectedImprovement} (${currentDistributionScore} → ${overallExpectedScore} pts)`
+        : `${overallExpectedScore} pts ${t.expectedAvg}`;
       
       // Include breeding pairings summary for standards objective
       if (breedingPairingsResults.length > 0) {
