@@ -444,7 +444,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
               {t('corrals:optimizer.selectObjectiveSubtitle')}
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {objectives.map(({ id, icon: Icon, color }) => (
                 <Card
                   key={id}
