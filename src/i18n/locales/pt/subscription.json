@@ -30,9 +30,9 @@
     "addAnimals": "Adicionar novos animais",
     "editInfo": "Editar informações existentes",
     "planProducer": "Plano Produtor",
-    "planProducerDesc": "Mais popular • 1.000 animais",
+    "planProducerDesc": "Mais popular • 500 animais",
     "planCabana": "Plano Rebanho",
-    "planCabanaDesc": "Para grandes produtores • 5.000 animais",
+    "planCabanaDesc": "Para grandes produtores • 1.000 animais",
     "continueReadOnly": "Continuar em modo leitura",
     "viewAllPlans": "Ver todos os planos",
     "perMonth": "/mês"
@@ -65,6 +65,8 @@
     "phoneSupport": "Suporte telefônico",
     "support24x7": "Suporte 24/7",
     "customImplementation": "Implementação personalizada",
+    "aiChatLimited": "Chat IA (20 mensagens/mês)",
+    "aiChatUnlimited": "Chat IA ilimitado",
     "selectPlan": "Selecionar Plano",
     "contactUs": "Contatar",
     "perMonth": "/mês",
@@ -92,25 +94,25 @@
     "personal": {
       "name": "Pessoal",
       "bullets": [
-        "Até 500 animais",
-        "2 usuários",
-        "Suporte padrão"
+        "Até 125 animais",
+        "Usuários ilimitados",
+        "Chat IA (20 mensagens/mês)"
       ]
     },
     "avanzado": {
       "name": "Avançado",
       "bullets": [
-        "Até 2.000 animais",
+        "Até 250 animais",
         "Usuários ilimitados",
-        "Integrações básicas"
+        "Chat IA ilimitado"
       ]
     },
     "productor": {
       "name": "Produtor",
       "badge": "Mais popular",
       "bullets": [
-        "Até 10.000 animais",
-        "Usuários ilimitados",
+        "Até 500 animais",
+        "Chat IA ilimitado",
         "Suporte prioritário"
       ]
     },
@@ -118,18 +120,18 @@
       "name": "Rebanho",
       "badge": "Pro",
       "bullets": [
-        "Animais ilimitados",
+        "Até 1.000 animais",
         "Relatórios avançados",
-        "Funções e permissões"
+        "Chat IA ilimitado"
       ]
     },
     "corporativo": {
       "name": "Corporativo",
       "badge": "Empresas",
       "bullets": [
+        "Animais ilimitados",
         "Multi-estabelecimento",
-        "SSO/segurança",
-        "Sucesso do cliente dedicado"
+        "Suporte dedicado"
       ]
     }
   },
@@ -154,5 +156,12 @@
     "free": "Grátis",
     "perMonth": "/mês",
     "perYear": "/ano"
+  },
+  "aiChat": {
+    "upgradeRequired": "Atualização necessária",
+    "upgradeMessage": "O Chat IA está disponível para planos pagos.",
+    "limitReached": "Limite atingido",
+    "limitMessage": "Você atingiu seu limite de 20 mensagens este mês. Atualize para um plano superior para chat ilimitado.",
+    "messagesRemaining": "{{count}} mensagens restantes este mês"
   }
 }

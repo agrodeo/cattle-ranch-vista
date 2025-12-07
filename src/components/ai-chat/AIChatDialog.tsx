@@ -1,15 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Image as ImageIcon, RotateCcw, Sparkles, Trash2, MessageSquare, Search, Loader2 } from 'lucide-react';
+import { Send, Image as ImageIcon, RotateCcw, Sparkles, Trash2, MessageSquare, Search, Loader2, AlertCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAIChat, type ChatMessage } from '@/hooks/useAIChat';
+import { useAIChatLimit } from '@/hooks/useAIChatLimit';
 import { AIChatMessage } from './AIChatMessage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AIChatDialogProps {
   open: boolean;
@@ -17,13 +19,14 @@ interface AIChatDialogProps {
 }
 
 export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'subscription']);
   const [input, setInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const { isUnlimited, messagesRemaining, limitReached, incrementUsage } = useAIChatLimit();
 
   const quickActions = [
     t('aiChat.quickActions.mortality'),
@@ -65,14 +68,18 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() && !selectedImage) return;
+    if (limitReached) return;
 
     await sendMessage(input || "Analiza esta imagen", selectedImage || undefined);
+    incrementUsage();
     setInput('');
     setSelectedImage(null);
   };
 
   const handleQuickAction = (action: string) => {
+    if (limitReached) return;
     sendMessage(action);
+    incrementUsage();
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -337,6 +344,25 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
               {/* Input Area */}
               <div className="flex-shrink-0 pt-4 px-4 border-t">
+                {/* Limit warning for Personal plan */}
+                {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
+                  <Alert className="mb-3">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      {t('subscription:aiChat.messagesRemaining', { count: messagesRemaining })}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {limitReached && (
+                  <Alert variant="destructive" className="mb-3">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      {t('subscription:aiChat.limitMessage')}
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 {selectedImage && (
                   <div className="mb-3 p-2 bg-muted rounded-lg flex items-center gap-2">
                     <ImageIcon className="h-4 w-4" />
@@ -357,8 +383,8 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                     <Input
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
-                      placeholder={t('aiChat.inputPlaceholder')}
-                      disabled={isLoading}
+                      placeholder={t('common:aiChat.inputPlaceholder')}
+                      disabled={isLoading || limitReached}
                     />
                     
                     <input
@@ -374,7 +400,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                       size="icon"
                       variant="outline"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={isLoading}
+                      disabled={isLoading || limitReached}
                     >
                       <ImageIcon className="h-4 w-4" />
                     </Button>
@@ -383,7 +409,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                   <Button 
                     type="submit" 
                     size="icon"
-                    disabled={isLoading || (!input.trim() && !selectedImage)}
+                    disabled={isLoading || limitReached || (!input.trim() && !selectedImage)}
                   >
                     <Send className="h-4 w-4" />
                   </Button>

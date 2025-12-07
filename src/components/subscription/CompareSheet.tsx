@@ -29,18 +29,26 @@ const FEATURES: Feature[] = [
     name: 'Capacidad de animales',
     getValue: (plan) => {
       if (plan.id === 'free') return 'Hasta 50';
-      if (plan.id === 'personal') return 'Hasta 500';
-      if (plan.id === 'avanzado') return 'Hasta 2.000';
-      if (plan.id === 'productor') return 'Hasta 10.000';
-      if (plan.id === 'cabana' || plan.id === 'corporativo') return 'Ilimitados';
+      if (plan.id === 'personal') return 'Hasta 125';
+      if (plan.id === 'avanzado') return 'Hasta 250';
+      if (plan.id === 'productor') return 'Hasta 500';
+      if (plan.id === 'cabana') return 'Hasta 1.000';
+      if (plan.id === 'corporativo') return 'Ilimitados';
       return '—';
+    }
+  },
+  {
+    name: 'Chat IA',
+    getValue: (plan) => {
+      if (plan.id === 'free') return false;
+      if (plan.id === 'personal') return '20 mensajes/mes';
+      return 'Ilimitado';
     }
   },
   {
     name: 'Usuarios',
     getValue: (plan) => {
       if (plan.id === 'free') return '1 usuario';
-      if (plan.id === 'personal') return '2 usuarios';
       return 'Ilimitados';
     }
   },

@@ -30,9 +30,9 @@
     "addAnimals": "Add new animals",
     "editInfo": "Edit existing information",
     "planProducer": "Producer Plan",
-    "planProducerDesc": "Most popular • 1,000 animals",
+    "planProducerDesc": "Most popular • 500 animals",
     "planCabana": "Herd Plan",
-    "planCabanaDesc": "For large producers • 5,000 animals",
+    "planCabanaDesc": "For large producers • 1,000 animals",
     "continueReadOnly": "Continue in read-only mode",
     "viewAllPlans": "View all plans",
     "perMonth": "/month"
@@ -65,6 +65,8 @@
     "phoneSupport": "Phone support",
     "support24x7": "24/7 support",
     "customImplementation": "Custom implementation",
+    "aiChatLimited": "AI Chat (20 messages/month)",
+    "aiChatUnlimited": "Unlimited AI Chat",
     "selectPlan": "Select Plan",
     "contactUs": "Contact Us",
     "perMonth": "/month",
@@ -92,25 +94,25 @@
     "personal": {
       "name": "Personal",
       "bullets": [
-        "Up to 500 animals",
-        "2 users",
-        "Standard support"
+        "Up to 125 animals",
+        "Unlimited users",
+        "AI Chat (20 messages/month)"
       ]
     },
     "avanzado": {
       "name": "Advanced",
       "bullets": [
-        "Up to 2,000 animals",
+        "Up to 250 animals",
         "Unlimited users",
-        "Basic integrations"
+        "Unlimited AI Chat"
       ]
     },
     "productor": {
       "name": "Producer",
       "badge": "Most popular",
       "bullets": [
-        "Up to 10,000 animals",
-        "Unlimited users",
+        "Up to 500 animals",
+        "Unlimited AI Chat",
         "Priority support"
       ]
     },
@@ -118,18 +120,18 @@
       "name": "Herd",
       "badge": "Pro",
       "bullets": [
-        "Unlimited animals",
+        "Up to 1,000 animals",
         "Advanced reports",
-        "Roles & permissions"
+        "Unlimited AI Chat"
       ]
     },
     "corporativo": {
       "name": "Corporate",
       "badge": "Enterprise",
       "bullets": [
+        "Unlimited animals",
         "Multi-establishment",
-        "SSO/security",
-        "Dedicated customer success"
+        "Dedicated support"
       ]
     }
   },
@@ -154,5 +156,12 @@
     "free": "Free",
     "perMonth": "/month",
     "perYear": "/year"
+  },
+  "aiChat": {
+    "upgradeRequired": "Upgrade required",
+    "upgradeMessage": "AI Chat is available for paid plans.",
+    "limitReached": "Limit reached",
+    "limitMessage": "You've reached your 20 message limit this month. Upgrade to a higher plan for unlimited chat.",
+    "messagesRemaining": "{{count}} messages remaining this month"
   }
 }
