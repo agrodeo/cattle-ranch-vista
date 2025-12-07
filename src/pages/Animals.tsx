@@ -743,15 +743,14 @@ const Animals = () => {
         </div>
         
         <div className="hidden lg:flex flex-col sm:flex-row gap-2 sm:gap-4">
-          <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-            <DialogTrigger asChild>
-              <ReadOnlyProtectedAction>
+          <ReadOnlyProtectedAction>
+            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+              <DialogTrigger asChild>
                 <Button onClick={() => { resetForm(); setEditingAnimal(null); }} className="w-full sm:w-auto">
                   <Plus className="h-4 w-4 mr-2" />
                   {t('animals:addAnimal')}
                 </Button>
-              </ReadOnlyProtectedAction>
-            </DialogTrigger>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background">
             <DialogHeader>
               <DialogTitle>
@@ -1084,7 +1083,8 @@ const Animals = () => {
               </div>
             </form>
             </DialogContent>
-          </Dialog>
+            </Dialog>
+          </ReadOnlyProtectedAction>
           
           <AnimalExcelUploadAdvanced userCabañaId={userCabaña} onUploadComplete={fetchAnimals} />
         </div>
