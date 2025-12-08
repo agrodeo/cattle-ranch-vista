@@ -732,15 +732,12 @@ const Animals = () => {
           />
         </div>
       )}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative py-6 px-4 rounded-2xl">
-        <div className="space-y-2">
-          <h1 className="hidden sm:block text-4xl font-display font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            {t('animals:title')}
-          </h1>
-          <p className="hidden sm:block text-muted-foreground font-medium">
-            {t('animals:subtitle')}
-          </p>
-        </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <PageHeader
+          title={t('animals:title')}
+          subtitle={t('animals:subtitle')}
+          className="hidden sm:block"
+        />
         
         <div className="hidden lg:flex flex-col sm:flex-row gap-2 sm:gap-4">
           <ReadOnlyProtectedAction>
