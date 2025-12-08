@@ -95,10 +95,7 @@ export function AppSidebar() {
           "py-4 border-b border-ink-100",
           isCollapsed ? "px-2" : "px-3"
         )}>
-          <div className={cn(
-            "flex items-center justify-center w-full",
-            isCollapsed ? "justify-center" : ""
-          )}>
+          <div className="flex items-center">
             {(!isCollapsed || isMobile) && (
               <span className="text-xl font-bold text-ink-900">agrodeo</span>
             )}
