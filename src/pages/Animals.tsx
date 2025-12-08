@@ -732,7 +732,7 @@ const Animals = () => {
           />
         </div>
       )}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative gradient-mesh py-6 px-4 rounded-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative py-6 px-4 rounded-2xl">
         <div className="space-y-2">
           <h1 className="hidden sm:block text-4xl font-display font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             {t('animals:title')}
