@@ -99,11 +99,8 @@ export function AppSidebar() {
             "flex items-center",
             isCollapsed ? "justify-center" : "gap-3"
           )}>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-gradient flex-shrink-0">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
             {(!isCollapsed || isMobile) && (
-              <span className="text-xl font-bold text-ink-900">Agrodeo</span>
+              <span className="text-xl font-bold text-ink-900">agrodeo</span>
             )}
           </div>
         </div>
