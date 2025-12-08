@@ -55,7 +55,7 @@ export function AchievementsGallery() {
       <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
         <div className="flex items-center justify-between">
           <p className="text-muted-foreground">
-            {t('common:achievements.unlocked')} {totalUnlocked} {t('common:common.of')} {totalPossible} {t('common:achievements.medals').toLowerCase()}
+            {t('common:achievements.unlocked')} {totalUnlocked} {t('common:achievements.of')} {totalPossible} {t('common:achievements.medals').toLowerCase()}
           </p>
           <div className="text-right">
             <div className="text-2xl font-bold text-primary">{totalUnlocked}</div>
