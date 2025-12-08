@@ -73,18 +73,10 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   return (
     <div className="min-h-screen gradient-mesh flex items-center justify-center p-3 sm:p-4 animate-fade-in">
       <div className="w-full max-w-4xl space-y-6 sm:space-y-8">
-        {/* Header with brand logo */}
+        {/* Header */}
         <div className="text-center space-y-3 sm:space-y-4 px-2">
-          <div className="flex justify-center mb-3 sm:mb-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-brand-gradient rounded-2xl blur-lg opacity-30" />
-              <div className="relative bg-brand-gradient p-3 sm:p-4 rounded-2xl shadow-lg">
-                <Sparkles className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-              </div>
-            </div>
-          </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-gradient mb-2 px-4">
-            ¡Bienvenido a AgroDeo!
+            ¡Bienvenido a agrodeo!
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground px-4">
             Configuremos tu cabaña para comenzar a gestionar tu ganado
