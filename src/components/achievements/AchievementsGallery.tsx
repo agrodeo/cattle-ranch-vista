@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Trophy, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAchievements } from '@/hooks/useAchievements';
@@ -51,21 +51,15 @@ export function AchievementsGallery() {
 
   return (
     <div className="space-y-6">
-      {/* Header Stats */}
-      <Card className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
-        <div className="flex items-center gap-4">
-          <div className="p-3 rounded-full bg-primary/10">
-            <Trophy className="h-8 w-8 text-primary" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-foreground">{t('common:achievements.title')}</h2>
-            <p className="text-muted-foreground">
-              {t('common:achievements.unlocked')} {totalUnlocked} {t('common:common.of')} {totalPossible} {t('common:achievements.medals').toLowerCase()}
-            </p>
-          </div>
+      {/* Stats Summary */}
+      <Card className="p-4 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+        <div className="flex items-center justify-between">
+          <p className="text-muted-foreground">
+            {t('common:achievements.unlocked')} {totalUnlocked} {t('common:common.of')} {totalPossible} {t('common:achievements.medals').toLowerCase()}
+          </p>
           <div className="text-right">
-            <div className="text-3xl font-bold text-primary">{totalUnlocked}</div>
-            <div className="text-sm text-muted-foreground">{t('common:achievements.medals')}</div>
+            <div className="text-2xl font-bold text-primary">{totalUnlocked}</div>
+            <div className="text-xs text-muted-foreground">{t('common:achievements.medals')}</div>
           </div>
         </div>
       </Card>
