@@ -98,6 +98,12 @@ export function buildReproductiveHistory(
 
 /**
  * Calculate pregnancy rate using the most appropriate method
+ * 
+ * HYBRID APPROACH:
+ * 1. If service records exist: use service-based calculation (pregnancies/services)
+ * 2. If no service records but offspring exist: use offspring-based calculation
+ * 3. Include current pregnancy (esta_preñada) in all calculations
+ * 4. Use reproductive years as denominator when no service data available
  */
 export function calculatePregnancyRate(
   animal: AnimalReproductiveData,
@@ -111,76 +117,59 @@ export function calculatePregnancyRate(
   const totalServices = services.length;
   const totalOffspring = offspring.length;
   const liveOffspring = offspring.filter(child => child.status !== 'muerto').length;
+  const currentlyPregnant = animal.esta_preñada ? 1 : 0;
   
-  // CRITICAL: Ensure we have successful pregnancies for each offspring
-  // If animal has offspring but no corresponding successful pregnancies, 
-  // we need to account for missing pregnancy records
-  let adjustedPregnancies = [...pregnancies];
-  const successfulPregnancies = pregnancies.filter(p => p.estado_final === 'exitosa').length;
+  // Count successful pregnancies from preñeces table
+  const successfulPregnanciesFromRecords = pregnancies.filter(p => p.estado_final === 'exitosa').length;
+  const activePregnanciesFromRecords = pregnancies.filter(p => p.estado === 'activa' || p.estado === 'confirmada').length;
   
-  // If we have more offspring than successful pregnancies, add missing successful pregnancies
-  if (totalOffspring > successfulPregnancies) {
-    const missingPregnancies = totalOffspring - successfulPregnancies;
-    for (let i = 0; i < missingPregnancies; i++) {
-      adjustedPregnancies.push({
-        id: `auto-generated-${i}`,
-        animal_id: animal.id,
-        estado: 'confirmada',
-        estado_final: 'exitosa',
-        fecha_inicio: new Date(Date.now() - (283 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0], // 283 days ago
-        fecha_estimada_parto: new Date().toISOString().split('T')[0],
-        fecha_finalizacion: new Date().toISOString().split('T')[0],
-        motivo_finalizacion: 'parto_exitoso',
-        cria_id: offspring[successfulPregnancies + i]?.id
-      });
-    }
-  }
+  // CRITICAL: Calculate total successful pregnancies
+  // Each offspring represents a successful pregnancy, even if not recorded in preñeces table
+  // This handles data migration cases where offspring exist but pregnancy records don't
+  const totalSuccessfulPregnancies = Math.max(totalOffspring, successfulPregnanciesFromRecords);
   
-  const confirmedPregnancies = adjustedPregnancies.filter(p => p.estado === 'confirmada' || p.estado_final === 'exitosa').length;
-  const totalPregnancies = adjustedPregnancies.length;
-  const finalSuccessfulPregnancies = adjustedPregnancies.filter(p => p.estado_final === 'exitosa').length;
-  
-  console.log(`DEBUG calculatePregnancyRate for ${animal.id_tag}:`, {
-    ageMonths,
-    reproductiveYears,
-    totalServices,
-    originalPregnancies: pregnancies.length,
-    adjustedPregnancies: totalPregnancies,
-    confirmedPregnancies,
-    finalSuccessfulPregnancies,
-    totalOffspring,
-    liveOffspring
-  });
+  // Total pregnancies = successful + current active pregnancy (if pregnant and not already counted)
+  const hasActivePregnancyRecord = activePregnanciesFromRecords > 0;
+  const totalPregnancies = totalSuccessfulPregnancies + (currentlyPregnant && !hasActivePregnancyRecord ? 1 : 0);
   
   let pregnancyRate = 0;
   let calvingRate = 0;
   let calculationMethod = '';
   
-  // Calculate calving rate: offspring / successful pregnancies
-  // Since we adjusted pregnancies to match offspring, this should never be 0 if there are offspring
-  if (finalSuccessfulPregnancies > 0) {
-    calvingRate = Math.round((totalOffspring / finalSuccessfulPregnancies) * 100);
-    calculationMethod = 'pregnancy_based';
-  }
-  
-  // For pregnancy rate, use service-based calculation if available
+  // METHOD 1: Service-based calculation (most accurate when data is complete)
   if (totalServices > 0) {
-    const currentPregnancy = animal.esta_preñada ? 1 : 0;
-    pregnancyRate = Math.round((confirmedPregnancies + currentPregnancy) / totalServices * 100);
-  } else if (reproductiveYears > 0 && confirmedPregnancies > 0) {
-    // Fallback: use pregnancies per reproductive year
-    pregnancyRate = Math.round((confirmedPregnancies / reproductiveYears) * 100);
+    // Pregnancy rate = (confirmed pregnancies + current pregnancy) / total services
+    const confirmedPregnancies = totalSuccessfulPregnancies + currentlyPregnant;
+    pregnancyRate = Math.min(100, Math.round((confirmedPregnancies / totalServices) * 100));
+    calculationMethod = 'service_based';
+  }
+  // METHOD 2: Reproductive years-based calculation (when no service data)
+  else if (reproductiveYears > 0) {
+    // Use offspring + current pregnancy as proxy for successful reproductive events
+    const totalReproductiveEvents = totalSuccessfulPregnancies + currentlyPregnant;
+    
+    if (totalReproductiveEvents > 0) {
+      // Pregnancy rate = reproductive events / reproductive years
+      // Cap at 100% per year average
+      pregnancyRate = Math.min(100, Math.round((totalReproductiveEvents / reproductiveYears) * 100));
+      calculationMethod = 'offspring_based';
+    } else {
+      // No reproductive events but animal is of reproductive age
+      pregnancyRate = 0;
+      calculationMethod = 'no_data';
+    }
   }
   
-  console.log(`DEBUG ${animal.id_tag} final calculation:`, {
-    totalPregnancies,
-    finalSuccessfulPregnancies,
-    totalOffspring,
-    calvingRate,
-    pregnancyRate
-  });
+  // Calculate calving rate: offspring / total pregnancies (historical success rate)
+  if (totalPregnancies > 0) {
+    // Calving rate represents successful births from pregnancies
+    calvingRate = Math.min(100, Math.round((totalOffspring / totalPregnancies) * 100));
+  } else if (totalOffspring > 0) {
+    // If we have offspring but no pregnancy records, assume 100% success rate
+    calvingRate = 100;
+  }
   
-  // Determine performance level
+  // Determine performance level based on pregnancy rate
   let performanceLevel = 'Bajo';
   if (pregnancyRate >= 85) performanceLevel = 'Excelente';
   else if (pregnancyRate >= 70) performanceLevel = 'Muy Bueno';
@@ -192,8 +181,8 @@ export function calculatePregnancyRate(
     calving_rate: calvingRate,
     reproductive_years: reproductiveYears,
     total_services: totalServices,
-    total_pregnancies: confirmedPregnancies,
-    total_calvings: totalOffspring, // Use total offspring, not just live ones for calving count
+    total_pregnancies: totalPregnancies,
+    total_calvings: totalOffspring,
     performance_level: performanceLevel,
     calculation_method: calculationMethod
   };
