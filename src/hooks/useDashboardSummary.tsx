@@ -221,11 +221,12 @@ export const useDashboardSummary = (): DashboardSummary => {
       sevenDaysFromNow.setDate(today.getDate() + 7);
 
       // Count active animals - exclude only sold/dead (match subscription logic)
+      // Include both case variants for defensive filtering
       const { count: animalsCount, error: animalsError } = await supabase
         .from('animals')
         .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
-        .not('status', 'in', '("vendido","muerto")');
+        .not('status', 'in', '("vendido","muerto","Vendido","Muerto")');
 
       if (animalsError) {
         console.error('Error counting animals:', animalsError);
@@ -303,7 +304,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         .select('id, birth_date, esta_preñada')
         .eq('cabaña_id', cabanaId)
         .eq('sex', 'Hembra')
-        .not('status', 'in', '("vendido","muerto")');
+        .not('status', 'in', '("vendido","muerto","Vendido","Muerto")');
 
       let reproductiveFemalesCount = 0;
       let pregnantFemalesCount = 0;
