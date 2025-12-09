@@ -56,7 +56,7 @@ export function AchievementCard({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `AgroDeo - ${t('common:achievements.medal')} ${t(`common:achievements.tiers.${medalTier}`)}`,
+          title: `agrodeo - ${t('common:achievements.medal')} ${t(`common:achievements.tiers.${medalTier}`)}`,
           text: t('common:achievements.awarded_message', {
             tier: tierName,
             achievement: t(nameKey)
@@ -87,7 +87,7 @@ export function AchievementCard({
           {/* Logo/Brand */}
           <div className="flex items-center justify-center gap-2">
             <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-              AgroDeo
+              agrodeo
             </span>
           </div>
 

@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.7240114acf5f4b1cbc891b5d3e2a51f9',
-  appName: 'AgroDeo',
+  appName: 'agrodeo',
   webDir: 'dist',
   server: {
     url: 'https://7240114a-cf5f-4b1c-bc89-1b5d3e2a51f9.lovableproject.com?forceHideBadge=true',

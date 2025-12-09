@@ -16,7 +16,7 @@ export const SettingsPage = () => {
   const defaultTab = searchParams.get("tab") || "benchmarks";
 
   useEffect(() => {
-    document.title = `${t('settings:title')} - AgroDeo`;
+    document.title = `${t('settings:title')} - agrodeo`;
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', t('settings:subtitle'));

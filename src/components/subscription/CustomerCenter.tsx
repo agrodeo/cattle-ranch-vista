@@ -81,7 +81,7 @@ export function CustomerCenter({ open, onOpenChange }: CustomerCenterProps) {
               <div className="flex items-center gap-2">
                 <Crown className={`h-5 w-5 ${isPro ? 'text-amber-500' : 'text-muted-foreground'}`} />
                 <span className="font-semibold text-lg">
-                  {isPro ? 'AgroDeo Pro' : 'Plan Gratuito'}
+                  {isPro ? 'agrodeo Pro' : 'Plan Gratuito'}
                 </span>
               </div>
               <Badge variant={isPro ? 'default' : 'secondary'}>

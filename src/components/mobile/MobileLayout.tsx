@@ -59,7 +59,7 @@ export function MobileLayout() {
               {currentUser && (
                 <div className="flex flex-col min-w-0">
                   <span className="text-sm font-semibold text-foreground truncate leading-tight">
-                    {currentUser.cabañaName || 'AgroDeo'}
+                    {currentUser.cabañaName || 'agrodeo'}
                   </span>
                   <span className="text-xs text-muted-foreground truncate">
                     {currentUser.fullName || 'Usuario'}

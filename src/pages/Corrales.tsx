@@ -277,7 +277,7 @@ export default function Corrales() {
   };
 
   useEffect(() => {
-    document.title = "Corrales | AgroDeo";
+    document.title = "Corrales | agrodeo";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Gestiona corrales y asignación de animales");
   }, []);

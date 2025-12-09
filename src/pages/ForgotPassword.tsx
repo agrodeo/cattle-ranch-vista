@@ -15,7 +15,7 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Recuperar contraseña | AgroDeo"; // SEO title
+    document.title = "Recuperar contraseña | agrodeo"; // SEO title
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

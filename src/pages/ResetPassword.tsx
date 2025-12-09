@@ -19,7 +19,7 @@ const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Restablecer contraseña | AgroDeo"; // SEO title
+    document.title = "Restablecer contraseña | agrodeo"; // SEO title
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
     const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://7240114a-cf5f-4b1c-bc89-1b5d3e2a51f9.sandbox.lovable.dev'
 
     const preapprovalPayload = {
-      reason: `Suscripción ${priceData.product_code} - AgroDeo`,
+      reason: `Suscripción ${priceData.product_code} - agrodeo`,
       external_reference: externalReference,
       payer_email: "", // Will be filled by user during checkout
       back_url: `${appBaseUrl}/billing/success`,

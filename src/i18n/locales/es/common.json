@@ -153,7 +153,7 @@
   },
   "achievements": {
     "title": "Mis Logros",
-    "subtitle": "Tus medallas y reconocimientos en AgroDeo",
+    "subtitle": "Tus medallas y reconocimientos en agrodeo",
     "unlocked": "Has desbloqueado",
     "of": "de",
     "medals": "Medallas",
@@ -162,7 +162,7 @@
     "achievements_count": "logros",
     "unlocked_on": "Desbloqueado",
     "share": "Compartir en Redes",
-    "awarded_message": "AgroDeo te otorga la medalla de {{tier}} por conseguir {{achievement}}",
+    "awarded_message": "agrodeo te otorga la medalla de {{tier}} por conseguir {{achievement}}",
     "unlocked_achievement": "¡Logro Desbloqueado!",
     "medal_unlocked": "¡Medalla de {{tier}} desbloqueada!",
     "tiers": {

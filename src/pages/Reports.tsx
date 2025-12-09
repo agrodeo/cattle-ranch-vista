@@ -82,7 +82,7 @@ const Reports = () => {
   }, [currentUser?.cabañaId]);
 
   useEffect(() => {
-    document.title = `${t('reports:title')} | AgroDeo`;
+    document.title = `${t('reports:title')} | agrodeo`;
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", t('reports:pageSubtitle'));
   }, [t]);

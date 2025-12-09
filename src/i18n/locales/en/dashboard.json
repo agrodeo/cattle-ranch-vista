@@ -40,7 +40,7 @@
   },
   "noCabana": {
     "title": "Set up your herd",
-    "description": "To start using AgroDeo, you first need to create and configure your herd. This will allow you to register animals, activities, and manage your livestock operation."
+    "description": "To start using agrodeo, you first need to create and configure your herd. This will allow you to register animals, activities, and manage your livestock operation."
   },
   "vaccination": {
     "title": "Configure Vaccines",

@@ -153,7 +153,7 @@
   },
   "achievements": {
     "title": "Minhas Conquistas",
-    "subtitle": "Suas medalhas e reconhecimentos no AgroDeo",
+    "subtitle": "Suas medalhas e reconhecimentos no agrodeo",
     "unlocked": "Você desbloqueou",
     "of": "de",
     "medals": "Medalhas",
@@ -162,7 +162,7 @@
     "achievements_count": "conquistas",
     "unlocked_on": "Desbloqueado",
     "share": "Compartilhar nas Redes",
-    "awarded_message": "AgroDeo te concede a medalha de {{tier}} por conquistar {{achievement}}",
+    "awarded_message": "agrodeo te concede a medalha de {{tier}} por conquistar {{achievement}}",
     "unlocked_achievement": "Conquista Desbloqueada!",
     "medal_unlocked": "Medalha de {{tier}} desbloqueada!",
     "tiers": {
