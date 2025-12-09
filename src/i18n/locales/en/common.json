@@ -153,7 +153,7 @@
   },
   "achievements": {
     "title": "My Achievements",
-    "subtitle": "Your medals and awards in AgroDeo",
+    "subtitle": "Your medals and awards in agrodeo",
     "unlocked": "You have unlocked",
     "of": "of",
     "medals": "Medals",
@@ -162,7 +162,7 @@
     "achievements_count": "achievements",
     "unlocked_on": "Unlocked",
     "share": "Share on Social Media",
-    "awarded_message": "AgroDeo awards you the {{tier}} medal for achieving {{achievement}}",
+    "awarded_message": "agrodeo awards you the {{tier}} medal for achieving {{achievement}}",
     "unlocked_achievement": "Achievement Unlocked!",
     "medal_unlocked": "{{tier}} Medal unlocked!",
     "tiers": {

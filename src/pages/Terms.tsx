@@ -7,9 +7,9 @@ export default function Terms() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Términos de Servicio | AgroDeo";
+    document.title = "Términos de Servicio | agrodeo";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Términos y condiciones de uso de AgroDeo");
+    if (meta) meta.setAttribute("content", "Términos y condiciones de uso de agrodeo");
   }, []);
 
   return (
@@ -29,7 +29,7 @@ export default function Terms() {
 
         <h2>1. Aceptación de los Términos</h2>
         <p>
-          Al acceder y utilizar AgroDeo, aceptas estar sujeto a estos términos de servicio. Si no estás de acuerdo con alguno de estos términos, no debes utilizar esta aplicación.
+          Al acceder y utilizar agrodeo, aceptas estar sujeto a estos términos de servicio. Si no estás de acuerdo con alguno de estos términos, no debes utilizar esta aplicación.
         </p>
 
         <h2>2. Suscripciones</h2>
@@ -51,7 +51,7 @@ export default function Terms() {
         <h2>3. Uso del Servicio</h2>
         <h3>3.1 Licencia</h3>
         <p>
-          Te otorgamos una licencia limitada, no exclusiva, no transferible y revocable para usar AgroDeo para tu gestión ganadera personal o comercial.
+          Te otorgamos una licencia limitada, no exclusiva, no transferible y revocable para usar agrodeo para tu gestión ganadera personal o comercial.
         </p>
 
         <h3>3.2 Restricciones</h3>
@@ -66,7 +66,7 @@ export default function Terms() {
         <h2>4. Datos del Usuario</h2>
         <h3>4.1 Propiedad de los Datos</h3>
         <p>
-          Mantienes todos los derechos sobre los datos que ingresas en AgroDeo. Consulta nuestra Política de Privacidad para más información sobre cómo manejamos tus datos.
+          Mantienes todos los derechos sobre los datos que ingresas en agrodeo. Consulta nuestra Política de Privacidad para más información sobre cómo manejamos tus datos.
         </p>
 
         <h3>4.2 Respaldo de Datos</h3>
@@ -76,7 +76,7 @@ export default function Terms() {
 
         <h2>5. Limitación de Responsabilidad</h2>
         <p>
-          AgroDeo se proporciona "tal cual" sin garantías de ningún tipo. No seremos responsables por pérdidas directas, indirectas, incidentales o consecuentes derivadas del uso o la imposibilidad de usar el servicio.
+          agrodeo se proporciona "tal cual" sin garantías de ningún tipo. No seremos responsables por pérdidas directas, indirectas, incidentales o consecuentes derivadas del uso o la imposibilidad de usar el servicio.
         </p>
 
         <h2>6. Modificaciones del Servicio</h2>

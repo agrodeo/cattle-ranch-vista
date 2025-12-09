@@ -7,9 +7,9 @@ export default function Privacy() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Política de Privacidad | AgroDeo";
+    document.title = "Política de Privacidad | agrodeo";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "Política de privacidad y manejo de datos de AgroDeo");
+    if (meta) meta.setAttribute("content", "Política de privacidad y manejo de datos de agrodeo");
   }, []);
 
   return (
@@ -29,7 +29,7 @@ export default function Privacy() {
 
         <h2>1. Introducción</h2>
         <p>
-          En AgroDeo, respetamos tu privacidad y nos comprometemos a proteger tus datos personales. Esta política explica qué información recopilamos, cómo la usamos y tus derechos respecto a ella.
+          En agrodeo, respetamos tu privacidad y nos comprometemos a proteger tus datos personales. Esta política explica qué información recopilamos, cómo la usamos y tus derechos respecto a ella.
         </p>
 
         <h2>2. Información que Recopilamos</h2>
@@ -65,7 +65,7 @@ export default function Privacy() {
         <h2>3. Cómo Usamos tu Información</h2>
         <p>Utilizamos tu información para:</p>
         <ul>
-          <li>Proporcionar y mantener el servicio de AgroDeo</li>
+          <li>Proporcionar y mantener el servicio de agrodeo</li>
           <li>Gestionar tu cuenta y suscripción</li>
           <li>Generar reportes y análisis de tu cabaña</li>
           <li>Mejorar la aplicación y desarrollar nuevas funcionalidades</li>
@@ -111,7 +111,7 @@ export default function Privacy() {
 
         <h2>8. Privacidad de Menores</h2>
         <p>
-          AgroDeo no está dirigido a menores de 13 años. No recopilamos intencionalmente información de menores.
+          agrodeo no está dirigido a menores de 13 años. No recopilamos intencionalmente información de menores.
         </p>
 
         <h2>9. Cambios a esta Política</h2>
@@ -121,7 +121,7 @@ export default function Privacy() {
 
         <h2>10. Información Específica de iOS</h2>
         <p>
-          Cuando uses AgroDeo en iOS, Apple recopila información de compra de acuerdo con su propia política de privacidad. No tenemos acceso a información de pago como números de tarjeta de crédito.
+          Cuando uses agrodeo en iOS, Apple recopila información de compra de acuerdo con su propia política de privacidad. No tenemos acceso a información de pago como números de tarjeta de crédito.
         </p>
 
         <h2>11. Contacto</h2>

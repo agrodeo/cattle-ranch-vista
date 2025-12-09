@@ -16,7 +16,7 @@ export default function Subscription() {
   const isNative = isNativeApp();
 
   useEffect(() => {
-    document.title = "Suscripción | AgroDeo";
+    document.title = "Suscripción | agrodeo";
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Gestiona tu plan de suscripción y límites de uso");
   }, []);
