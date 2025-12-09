@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Syringe, Heart, Stethoscope, Scale, Activity, Calendar, User } from "lucide-react";
+import { ChevronDown, Syringe, Heart, Stethoscope, Scale, Activity, Calendar, User, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BadgePill } from "@/components/ui/badge-pill";
 import { useTranslation } from 'react-i18next';
@@ -27,6 +27,9 @@ interface ActivityDetail {
     peso_promedio?: number;
     // General
     notas?: string;
+    // Sale
+    amount?: number;
+    buyer_name?: string;
   };
 }
 
@@ -40,6 +43,7 @@ const getActivityIcon = (type: string) => {
   if (lowerType.includes('inseminacion') || lowerType.includes('ia')) return Heart;
   if (lowerType.includes('tacto') || lowerType.includes('preñ')) return Stethoscope;
   if (lowerType.includes('pesa')) return Scale;
+  if (lowerType === 'sale' || lowerType.includes('venta')) return DollarSign;
   return Activity;
 };
 
@@ -49,6 +53,7 @@ const getActivityColor = (type: string) => {
   if (lowerType.includes('inseminacion') || lowerType.includes('ia') || lowerType === 'insemination') return 'text-pink-600';
   if (lowerType.includes('tacto') || lowerType.includes('preñ') || lowerType === 'tacto') return 'text-purple-600';
   if (lowerType.includes('pesa') || lowerType === 'weighing') return 'text-amber-600';
+  if (lowerType === 'sale' || lowerType.includes('venta')) return 'text-emerald-600';
   return 'text-slate-600';
 };
 
@@ -185,6 +190,22 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
                 <span className="text-slate-500">{t('dashboard:activity.averageWeight')}:</span>
                 <span className="font-medium text-slate-900">{activity.details.peso_promedio} kg</span>
               </div>
+            )}
+
+            {/* Sale Details */}
+            {activity.details.amount !== undefined && (
+              <>
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">{t('dashboard:activity.amount')}:</span>
+                  <span className="font-medium text-emerald-600">${activity.details.amount?.toLocaleString()}</span>
+                </div>
+                {activity.details.buyer_name && (
+                  <div className="flex justify-between text-xs">
+                    <span className="text-slate-500">{t('dashboard:activity.buyer')}:</span>
+                    <span className="font-medium text-slate-900">{activity.details.buyer_name}</span>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Notes */}

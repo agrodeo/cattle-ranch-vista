@@ -65,7 +65,9 @@
     "route": "Vía",
     "breed": "Raza",
     "empty": "Vacías",
-    "notes": "Notas"
+    "notes": "Notas",
+    "amount": "Monto",
+    "buyer": "Comprador"
   },
   "warnings": {
     "consanguinityRisk": "Riesgo de Consanguinidad",
@@ -81,6 +83,7 @@
     "birth": "Parto",
     "death": "Muerte",
     "treatment": "Tratamiento",
-    "movement": "Movimiento"
+    "movement": "Movimiento",
+    "sale": "Venta de Animales"
   }
 }

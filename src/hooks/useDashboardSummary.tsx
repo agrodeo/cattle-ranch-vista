@@ -379,11 +379,37 @@ export const useDashboardSummary = (): DashboardSummary => {
         .order('insemination_date', { ascending: false })
         .limit(50);
 
-      if (eventosRecentError || vaccinesRecentError || inseminationsRecentError) {
+      // Fetch animal sales from finances with animal count
+      const { data: salesData, error: salesRecentError } = await supabase
+        .from('finances')
+        .select(`
+          id,
+          date,
+          amount,
+          description,
+          buyer_name,
+          finances_animal_sales (
+            id,
+            animal_id,
+            unit_price
+          )
+        `)
+        .eq('cabaña_id', cabanaId)
+        .eq('type', 'ingreso')
+        .order('date', { ascending: false })
+        .limit(20);
+
+      // Filter to only sales with animals
+      const animalSales = (salesData || []).filter(sale => 
+        sale.finances_animal_sales && sale.finances_animal_sales.length > 0
+      );
+
+      if (eventosRecentError || vaccinesRecentError || inseminationsRecentError || salesRecentError) {
         console.error('Error fetching recent activities:', { 
           eventosRecentError, 
           vaccinesRecentError, 
-          inseminationsRecentError 
+          inseminationsRecentError,
+          salesRecentError
         });
       }
 
@@ -474,6 +500,24 @@ export const useDashboardSummary = (): DashboardSummary => {
           source: 'insemination',
           animalCount: batch.count,
           rawData: batch,
+        });
+      });
+
+      // Add animal sale activities
+      animalSales.forEach(sale => {
+        allActivities.push({
+          id: sale.id,
+          type: 'sale',
+          date: sale.date,
+          sortDate: sale.date,
+          source: 'finances',
+          animalCount: sale.finances_animal_sales.length,
+          rawData: {
+            amount: sale.amount,
+            description: sale.description,
+            buyer_name: sale.buyer_name,
+            animal_count: sale.finances_animal_sales.length
+          },
         });
       });
 
