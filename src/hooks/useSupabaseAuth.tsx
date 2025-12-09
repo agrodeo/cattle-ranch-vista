@@ -229,6 +229,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         cabaña_id: newCabana.id,
         full_name: ownerData.full_name,
         email: ownerData.email,
+        phone: ownerData.phone,
         is_active: true,
         is_internal_profile: true,
       });
