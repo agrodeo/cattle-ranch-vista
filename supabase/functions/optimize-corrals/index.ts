@@ -81,6 +81,7 @@ interface Animal {
   father_id: string | null;
   mother_id: string | null;
   status: string;
+  is_castrated: boolean | null;
   peso_actual_kg: number | null;
   ganancia_diaria_kg: number | null;
   peso_destete: number | null;
@@ -1387,7 +1388,7 @@ serve(async (req) => {
     // Fetch ALL animals (including inactive for ancestry reference)
     const { data: allAnimals, error: animalsError } = await supabase
       .from('animals')
-      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, peso_actual_kg, ganancia_diaria_kg, peso_destete')
+      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, is_castrated, peso_actual_kg, ganancia_diaria_kg, peso_destete')
       .eq('cabaña_id', cabanaId);
 
     if (animalsError) throw animalsError;
@@ -1396,8 +1397,13 @@ serve(async (req) => {
     const ancestryMap = buildAncestryMap(allAnimals || []);
     console.log(`Built ancestry map for ${ancestryMap.size} animals`);
 
-    // Filter active animals for optimization
-    const animals = (allAnimals || []).filter(a => a.status === 'activo');
+    // Filter active animals for optimization (exclude castrated males from breeding analysis)
+    const animals = (allAnimals || []).filter(a => {
+      if (a.status !== 'activo') return false;
+      // Exclude castrated males - they cannot breed
+      if (a.sex === 'Macho' && a.is_castrated === true) return false;
+      return true;
+    });
 
     // Fetch corrals
     const { data: corrals, error: corralsError } = await supabase
