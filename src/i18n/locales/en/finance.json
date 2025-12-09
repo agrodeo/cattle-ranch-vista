@@ -91,7 +91,26 @@
       "services": "Services",
       "taxes": "Taxes",
       "other": "Other expenses"
-    }
+    },
+    "animalSaleSection": "Animal Sale",
+    "enableAnimalSale": "Is this an animal sale?",
+    "selectAnimalsToSell": "Select animals to sell",
+    "animalsSelected": "animals selected",
+    "buyerInfo": "Buyer Information (Optional)",
+    "buyerName": "Buyer name",
+    "buyerDocument": "Document",
+    "buyerDestination": "Destination",
+    "animalSaleSuccess": "Sale registered and animals marked as sold",
+    "animalSaleError": "Error registering sale",
+    "noAnimalsSelected": "Please select at least one animal to sell",
+    "clear": "Clear",
+    "selectAnimals": "Select animals",
+    "loadingAnimals": "Loading animals...",
+    "noAnimalsAvailable": "No animals available for sale",
+    "noResults": "No results for",
+    "close": "Close",
+    "done": "Done",
+    "search": "Search..."
   },
   "categorySelect": {
     "selectCategory": "Select category",
