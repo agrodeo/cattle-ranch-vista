@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Mail, UserPlus } from "lucide-react";
+import { Loader2, Mail, UserPlus, Phone } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   Form,
@@ -30,6 +30,7 @@ interface SignUpForm {
   companyName: string;
   ownerName: string;
   email: string;
+  phone: string;
   password: string;
   confirmPassword: string;
   country_code: string;
@@ -135,6 +136,7 @@ const Auth = () => {
       localStorage.setItem('pending_owner_data', JSON.stringify({
         full_name: values.ownerName,
         email: values.email,
+        phone: values.phone,
         country_code: values.country_code,
         province_code: values.country_code === 'AR' ? values.province_code ?? null : null,
       }));
@@ -309,6 +311,23 @@ const Auth = () => {
                         </FormLabel>
                         <FormControl>
                           <Input type="email" placeholder={t('auth:register.emailPlaceholder', 'admin@cabaña.com')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={signUpForm.control}
+                    name="phone"
+                    rules={{ required: t('common:validation.required') }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Phone className="h-4 w-4" />
+                          {t('auth:register.phone', 'Teléfono')}
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="tel" placeholder={t('auth:register.phonePlaceholder', '+54 9 11 1234-5678')} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

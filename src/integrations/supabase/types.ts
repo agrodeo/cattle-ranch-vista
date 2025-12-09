@@ -1709,6 +1709,7 @@ export type Database = {
           is_internal_profile: boolean | null
           language: string | null
           last_login: string | null
+          phone: string | null
           position: string | null
           updated_at: string
           user_id: string
@@ -1727,6 +1728,7 @@ export type Database = {
           is_internal_profile?: boolean | null
           language?: string | null
           last_login?: string | null
+          phone?: string | null
           position?: string | null
           updated_at?: string
           user_id: string
@@ -1745,6 +1747,7 @@ export type Database = {
           is_internal_profile?: boolean | null
           language?: string | null
           last_login?: string | null
+          phone?: string | null
           position?: string | null
           updated_at?: string
           user_id?: string
