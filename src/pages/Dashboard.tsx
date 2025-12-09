@@ -14,6 +14,7 @@ import { PlanLimitAlert } from "@/components/dashboard/PlanLimitAlert";
 import { NoCabanaAlert } from "@/components/dashboard/NoCabanaAlert";
 import { RecentActivityItem } from "@/components/dashboard/RecentActivityItem";
 import { useDashboardSummary } from "@/hooks/useDashboardSummary";
+import { useAchievementTriggers } from "@/hooks/useAchievementTriggers";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -33,6 +34,9 @@ const Dashboard = () => {
     diagnostics,
     refetch 
   } = useDashboardSummary();
+
+  // Trigger achievement checks on dashboard load
+  useAchievementTriggers();
 
   const handleCreateCabana = () => {
     navigate('/settings');
