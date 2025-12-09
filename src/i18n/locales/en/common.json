@@ -95,8 +95,9 @@
     "you": "You",
     "howItWorks": "How does it work?",
     "noCorral": "No corral",
-    "imageDownloaded": "Image downloaded",
-    "errorDownloadingImage": "Error downloading image",
+  "imageDownloaded": "Image downloaded",
+  "errorDownloadingImage": "Error downloading image",
+  "shareInstructions": "Image downloaded. Share it manually on your social media.",
     "of": "of"
   },
   "validation": {

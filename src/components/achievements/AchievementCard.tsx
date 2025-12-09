@@ -16,6 +16,18 @@ interface AchievementCardProps {
   onShare?: () => void;
 }
 
+// Simplified colors for html2canvas (no CSS variables or gradients)
+const getMedalSolidColors = (tier: MedalTier) => {
+  switch (tier) {
+    case 'gold':
+      return { bg: '#fbbf24', text: '#92400e', border: '#f59e0b' };
+    case 'silver':
+      return { bg: '#9ca3af', text: '#374151', border: '#6b7280' };
+    case 'bronze':
+      return { bg: '#d97706', text: '#78350f', border: '#b45309' };
+  }
+};
+
 export function AchievementCard({
   achievementCode,
   nameKey,
@@ -27,102 +39,176 @@ export function AchievementCard({
 }: AchievementCardProps) {
   const { t } = useTranslation(['common']);
   
-  const medalGradient = getMedalColor(medalTier);
   const medalEmoji = getMedalIcon(medalTier);
   const tierName = t(`common:achievements.tiers.${medalTier}`);
+  const solidColors = getMedalSolidColors(medalTier);
 
-  const handleDownload = async () => {
+  const generateImage = async (): Promise<Blob | null> => {
     const element = document.getElementById(`achievement-${achievementCode}`);
-    if (!element) return;
+    if (!element) return null;
 
     try {
       const canvas = await html2canvas(element, {
         backgroundColor: '#ffffff',
-        scale: 2
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
       });
       
-      const link = document.createElement('a');
-      link.download = `agrodeo-medalla-${medalTier}-${achievementCode}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-      
-      toast.success(t('common:imageDownloaded'));
+      return new Promise((resolve) => {
+        canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
+      });
     } catch (error) {
-      toast.error(t('common:errorDownloadingImage'));
+      console.error('Error generating image:', error);
+      return null;
     }
   };
 
+  const handleDownload = async () => {
+    const blob = await generateImage();
+    if (!blob) {
+      toast.error(t('common:errorDownloadingImage'));
+      return;
+    }
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = `agrodeo-medalla-${medalTier}-${achievementCode}.png`;
+    link.href = url;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    toast.success(t('common:imageDownloaded'));
+  };
+
   const handleShare = async () => {
-    if (navigator.share) {
+    const blob = await generateImage();
+    
+    if (!blob) {
+      toast.error(t('common:errorDownloadingImage'));
+      return;
+    }
+
+    const file = new File([blob], `agrodeo-medalla-${medalTier}.png`, { type: 'image/png' });
+
+    // Check if file sharing is supported
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
-          title: `agrodeo - ${t('common:achievements.medal')} ${t(`common:achievements.tiers.${medalTier}`)}`,
+          files: [file],
+          title: `agrodeo - ${t('common:achievements.medal')} ${tierName}`,
           text: t('common:achievements.awarded_message', {
             tier: tierName,
             achievement: t(nameKey)
           }),
-          url: window.location.origin
         });
         onShare?.();
-      } catch (error) {
-        console.log('Share cancelled');
+      } catch (error: any) {
+        if (error.name !== 'AbortError') {
+          // If share was cancelled, don't show error
+          console.log('Share failed, falling back to download');
+          handleDownload();
+        }
       }
     } else {
+      // Fallback: download and show instructions
       handleDownload();
+      toast.info(t('common:achievements.shareInstructions'));
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* Card optimized for html2canvas - using inline styles for reliability */}
       <Card 
         id={`achievement-${achievementCode}`}
-        className="relative overflow-hidden p-8 bg-gradient-to-br from-background to-muted"
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          padding: '32px',
+          backgroundColor: '#f8fafc',
+          border: '1px solid #e2e8f0',
+        }}
       >
-        {/* Decorative background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_var(--tw-gradient-stops))] from-primary via-transparent to-transparent" />
-        </div>
-
-        <div className="relative z-10 space-y-6 text-center">
+        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
           {/* Logo/Brand */}
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          <div style={{ marginBottom: '24px' }}>
+            <span style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              color: '#16a34a',
+            }}>
               agrodeo
             </span>
           </div>
 
           {/* Medal */}
-          <div className="flex justify-center">
-            <div className={`relative w-32 h-32 rounded-full bg-gradient-to-br ${medalGradient} p-1 animate-scale-in`}>
-              <div className="w-full h-full rounded-full bg-background/95 flex items-center justify-center">
-                <span className="text-6xl">{medalEmoji}</span>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+            <div style={{
+              width: '128px',
+              height: '128px',
+              borderRadius: '50%',
+              background: `linear-gradient(135deg, ${solidColors.bg}, ${solidColors.border})`,
+              padding: '4px',
+              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+            }}>
+              <div style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                backgroundColor: '#fefefe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: '64px' }}>{medalEmoji}</span>
               </div>
-              
-              {/* Shine effect */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/20 to-transparent animate-pulse" />
             </div>
           </div>
 
           {/* Achievement Text */}
-          <div className="space-y-3">
-            <h3 className="text-2xl font-bold text-foreground">
+          <div style={{ marginBottom: '24px' }}>
+            <h3 style={{ 
+              fontSize: '24px', 
+              fontWeight: 'bold', 
+              color: '#1e293b',
+              marginBottom: '12px',
+            }}>
               {t('common:achievements.medal')} {t('common:achievements.of')} {tierName}
             </h3>
-            <p className="text-lg text-muted-foreground font-medium">
+            <p style={{ 
+              fontSize: '18px', 
+              color: '#475569',
+              fontWeight: '500',
+              marginBottom: '8px',
+            }}>
               {t(nameKey)}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p style={{ 
+              fontSize: '14px', 
+              color: '#64748b',
+            }}>
               {t(descriptionKey)}
             </p>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground pt-4 border-t border-border/50">
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '24px',
+            fontSize: '14px',
+            color: '#64748b',
+            paddingTop: '16px',
+            borderTop: '1px solid #e2e8f0',
+          }}>
             <div>
-              <span className="font-semibold text-foreground">{progressValue}</span>
-              <span className="ml-1">{t('common:achievements.achievements_count')}</span>
+              <span style={{ fontWeight: '600', color: '#1e293b' }}>{progressValue}</span>
+              <span style={{ marginLeft: '4px' }}>{t('common:achievements.achievements_count')}</span>
             </div>
-            <div className="w-px h-4 bg-border" />
+            <div style={{ width: '1px', height: '16px', backgroundColor: '#e2e8f0' }} />
             <div>
               {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', { 
                 day: 'numeric', 
@@ -133,8 +219,12 @@ export function AchievementCard({
           </div>
 
           {/* Message */}
-          <div className="pt-4">
-            <p className="text-base font-medium text-primary">
+          <div style={{ paddingTop: '16px' }}>
+            <p style={{ 
+              fontSize: '16px', 
+              fontWeight: '500', 
+              color: '#16a34a',
+            }}>
               {t('common:achievements.awarded_message', {
                 tier: tierName,
                 achievement: t(nameKey)
@@ -144,7 +234,7 @@ export function AchievementCard({
         </div>
       </Card>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - these use Tailwind since they're not captured */}
       <div className="flex gap-2">
         <Button
           onClick={handleShare}
