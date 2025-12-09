@@ -8,6 +8,7 @@ export interface Animal {
   birth_date: string;
   father_id: string | null;
   mother_id: string | null;
+  is_castrated?: boolean | null;
 }
 
 export interface RelationshipRisk {
@@ -545,15 +546,18 @@ export function detectRelationship(
  * Analyzes all animals in a corral for consanguinity risks
  * Only considers animals 15+ months old (breeding age)
  * Only checks male-female pairs within the original corral
+ * Excludes castrated males (they cannot breed)
  */
 export async function analyzeCorralConsanguinity(
   animals: Animal[], 
   userCabañaId: string,
   t?: (key: string, params?: any) => string
 ): Promise<RelationshipRisk[]> {
-  // Filter animals over 15 months old (breeding age)
+  // Filter animals over 15 months old (breeding age) and exclude castrated males
   const eligibleAnimals = animals.filter(animal => {
     if (!animal.birth_date) return false;
+    // Exclude castrated males - they cannot breed
+    if (animal.sex?.toLowerCase() === 'macho' && animal.is_castrated === true) return false;
     const ageMonths = Math.floor(
       (new Date().getTime() - new Date(animal.birth_date).getTime()) / 
       (1000 * 60 * 60 * 24 * 30.44)
