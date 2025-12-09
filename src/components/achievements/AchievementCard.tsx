@@ -106,7 +106,7 @@ export function AchievementCard({
           {/* Achievement Text */}
           <div className="space-y-3">
             <h3 className="text-2xl font-bold text-foreground">
-              {t('common:achievements.medal')} {t('common:common.of')} {tierName}
+              {t('common:achievements.medal')} {t('common:achievements.of')} {tierName}
             </h3>
             <p className="text-lg text-muted-foreground font-medium">
               {t(nameKey)}
