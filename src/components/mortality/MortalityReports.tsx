@@ -12,10 +12,11 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { FileDown } from "lucide-react";
+import { FileDown, Calendar, Skull } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
 
 interface DeathRecord {
@@ -64,6 +65,7 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (currentUser) {
@@ -318,7 +320,71 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
             <div className="text-center py-8">
               <p className="text-muted-foreground">{t('mortality:reports.noRecords')}</p>
             </div>
+          ) : isMobile ? (
+            // Mobile card layout
+            <div className="space-y-3">
+              {deaths.map((death) => (
+                <Card key={death.id} className="border">
+                  <CardContent className="p-4 space-y-3">
+                    {/* Header: Animal identifier + Date */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm whitespace-normal">
+                          {death.animal_id_tag ? `RP: ${death.animal_id_tag}` : (death.animal_name || t('mortality:reports.noIdentifier'))}
+                        </div>
+                        {death.animal_name && death.animal_id_tag && (
+                          <div className="text-xs text-muted-foreground">
+                            {death.animal_name}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
+                        <Calendar className="h-3 w-3" />
+                        {format(new Date(death.fecha_defuncion), 'dd/MM/yyyy')}
+                      </div>
+                    </div>
+                    
+                    {/* Age and Cause */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">{t('mortality:reports.table.ageAtDeath')}</div>
+                        {death.edad_dias !== null && death.edad_dias !== undefined ? (
+                          <div className="whitespace-normal">
+                            <span>{death.edad_dias} {t('mortality:reports.days')}</span>
+                            <span className="text-muted-foreground text-xs ml-1">
+                              ({death.edad_meses || 0} {t('mortality:reports.months')})
+                            </span>
+                          </div>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs">{t('mortality:reports.unknown')}</Badge>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                          <Skull className="h-3 w-3" />
+                          {t('mortality:reports.table.cause')}
+                        </div>
+                        <div className="whitespace-normal">
+                          {death.causa_nombre || death.causa_texto || t('mortality:reports.notSpecified')}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Badges: Sex and Breed */}
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="outline" className="text-xs">
+                        {death.animal_sex || t('mortality:reports.notSpecified')}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {death.animal_breed || t('mortality:reports.notSpecified')}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : (
+            // Desktop table layout
             <Table>
               <TableHeader>
                 <TableRow>
