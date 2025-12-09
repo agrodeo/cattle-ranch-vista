@@ -17,8 +17,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     code: 'herd_starter',
     category: 'herd',
-    nameKey: 'achievements.herd.starter.name',
-    descriptionKey: 'achievements.herd.starter.description',
+    nameKey: 'common:achievements.herd.starter.name',
+    descriptionKey: 'common:achievements.herd.starter.description',
     tiers: {
       bronze: { threshold: 10, iconKey: 'primera_manada' },
       silver: { threshold: 50, iconKey: 'criador_consolidado' },
@@ -30,8 +30,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     code: 'activity_tracker',
     category: 'activities',
-    nameKey: 'achievements.activities.tracker.name',
-    descriptionKey: 'achievements.activities.tracker.description',
+    nameKey: 'common:achievements.activities.tracker.name',
+    descriptionKey: 'common:achievements.activities.tracker.description',
     tiers: {
       bronze: { threshold: 25, iconKey: 'gestor_activo' },
       silver: { threshold: 100, iconKey: 'gestor_dedicado' },
@@ -43,8 +43,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     code: 'health_guardian',
     category: 'vaccination',
-    nameKey: 'achievements.vaccination.guardian.name',
-    descriptionKey: 'achievements.vaccination.guardian.description',
+    nameKey: 'common:achievements.vaccination.guardian.name',
+    descriptionKey: 'common:achievements.vaccination.guardian.description',
     tiers: {
       bronze: { threshold: 10, iconKey: 'protector_inicial' },
       silver: { threshold: 50, iconKey: 'guardian_salud' },
@@ -56,8 +56,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     code: 'financial_manager',
     category: 'finance',
-    nameKey: 'achievements.finance.manager.name',
-    descriptionKey: 'achievements.finance.manager.description',
+    nameKey: 'common:achievements.finance.manager.name',
+    descriptionKey: 'common:achievements.finance.manager.description',
     tiers: {
       bronze: { threshold: 10, iconKey: 'contador_novato' },
       silver: { threshold: 50, iconKey: 'gestor_financiero' },
@@ -69,8 +69,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     code: 'consistent_user',
     category: 'streak',
-    nameKey: 'achievements.streak.consistent.name',
-    descriptionKey: 'achievements.streak.consistent.description',
+    nameKey: 'common:achievements.streak.consistent.name',
+    descriptionKey: 'common:achievements.streak.consistent.description',
     tiers: {
       bronze: { threshold: 7, iconKey: 'consistente' },
       silver: { threshold: 30, iconKey: 'dedicado' },
@@ -82,8 +82,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     code: 'corral_organizer',
     category: 'corrals',
-    nameKey: 'achievements.corrals.organizer.name',
-    descriptionKey: 'achievements.corrals.organizer.description',
+    nameKey: 'common:achievements.corrals.organizer.name',
+    descriptionKey: 'common:achievements.corrals.organizer.description',
     tiers: {
       bronze: { threshold: 3, iconKey: 'organizador_inicial' },
       silver: { threshold: 10, iconKey: 'gestor_espacios' },
