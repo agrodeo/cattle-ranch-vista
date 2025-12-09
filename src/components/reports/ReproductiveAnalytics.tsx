@@ -305,7 +305,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const totalFemales = reproductiveData.length;
       const currentlyPregnant = reproductiveData.filter(f => f.is_pregnant).length;
       
-      // Calculate overall pregnancy and calving rates from all animals
+      // Calculate overall service and calving counts
       let totalServices = 0;
       let totalPregnancies = 0;
       let totalCalvings = 0;
@@ -318,42 +318,29 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         totalReproductiveYears += female.reproductive_years;
       });
 
-      // Calculate herd-level metrics as average of individual animal rates
-      const validPregnancyRates = reproductiveData
-        .map(animal => animal.individual_pregnancy_rate)
-        .filter(rate => !isNaN(rate) && rate >= 0);
+      // PREGNANCY RATE: Current snapshot only
+      // Formula: currently pregnant females / total reproductive females × 100
+      const herdPregnancyRate = totalFemales > 0
+        ? Math.round((currentlyPregnant / totalFemales) * 100)
+        : 0;
       
+      // Calving rate: average of individual animal calving rates
       const validCalvingRates = reproductiveData
         .map(animal => animal.individual_calving_rate)
         .filter(rate => !isNaN(rate) && rate >= 0);
 
-      const herdPregnancyRate = validPregnancyRates.length > 0
-        ? Math.round(validPregnancyRates.reduce((sum, rate) => sum + rate, 0) / validPregnancyRates.length)
-        : 0;
-      
       const herdCalvingRate = validCalvingRates.length > 0
         ? Math.round(validCalvingRates.reduce((sum, rate) => sum + rate, 0) / validCalvingRates.length)
         : 0;
-
-      console.log('Herd Summary Calculations:', {
-        totalFemales,
-        currentlyPregnant,
-        totalServices,
-        totalPregnancies,
-        totalCalvings,
-        totalReproductiveYears,
-        herdPregnancyRate,
-        herdCalvingRate
-      });
 
       setSummaryMetrics({
         totalFemales,
         currentlyPregnant,
         totalServices,
-        pregnancyRate: herdPregnancyRate || 0,
-        calvingRate: herdCalvingRate || 0,
+        pregnancyRate: herdPregnancyRate,
+        calvingRate: herdCalvingRate,
         openFemales: totalFemales - currentlyPregnant,
-        avgDaysOpen: 0, // TODO: Calculate average days open
+        avgDaysOpen: 0,
         successfulPregnancies: totalCalvings,
         failedPregnancies: totalPregnancies - totalCalvings,
         activePregnancies: currentlyPregnant,
