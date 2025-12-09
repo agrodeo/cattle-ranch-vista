@@ -1,5 +1,5 @@
-
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -16,6 +16,7 @@ interface Props {
 }
 
 export default function MultiAnimalSelect({ selectedIds, onChange, className }: Props) {
+  const { t } = useTranslation(['finance', 'common']);
   const { currentUser } = useSupabaseAuth();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -24,26 +25,20 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
     queryKey: ["animals-available", currentUser?.cabañaId],
     queryFn: async (): Promise<any[]> => {
       const cabId = currentUser?.cabañaId || "";
-      console.log("🐄 MultiAnimalSelect - Current user cabaña_id:", cabId);
-      console.log("🐄 MultiAnimalSelect - Current user:", currentUser);
       
       if (!cabId) {
-        console.log("🐄 MultiAnimalSelect - No cabaña ID found");
         return [];
       }
       
-      // Traer animales de la cabaña que no estén vendidos ni muertos
+      // Fetch animals that are not sold or dead
       const { data, error } = await supabase
         .from("animals")
         .select("*")
         .eq("cabaña_id", cabId)
         .not("status", "in", "(vendido,muerto,Vendido,Muerto)");
         
-      console.log("🐄 MultiAnimalSelect - Query result:", { data, error });
-      console.log("🐄 MultiAnimalSelect - Animals count:", data?.length || 0);
-      
       if (error) {
-        console.error("🐄 MultiAnimalSelect - Query error:", error);
+        console.error("MultiAnimalSelect - Query error:", error);
         throw error;
       }
       return data || [];
@@ -72,11 +67,11 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
     <div className={className}>
       <div className="flex gap-2">
         <Button type="button" variant="outline" onClick={() => setOpen(true)}>
-          Seleccionar animales ({selectedIds.length})
+          {t('finance:movements.selectAnimals')} ({selectedIds.length})
         </Button>
         {selectedIds.length > 0 && (
           <Button type="button" variant="ghost" onClick={() => onChange([])}>
-            Limpiar
+            {t('finance:mobile.clear')}
           </Button>
         )}
       </div>
@@ -84,18 +79,24 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Seleccionar animales</DialogTitle>
+            <DialogTitle>{t('finance:movements.selectAnimals')}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-3">
-            <Input placeholder="Buscar..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input 
+              placeholder={t('finance:mobile.search')} 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+            />
             <ScrollArea className="h-64 rounded border">
               <div className="p-2 space-y-1">
                 {isLoading && (
-                  <div className="text-sm text-muted-foreground px-2 py-1">Cargando animales...</div>
+                  <div className="text-sm text-muted-foreground px-2 py-1">
+                    {t('finance:mobile.loadingAnimals')}
+                  </div>
                 )}
                 {error && (
                   <div className="text-sm text-destructive px-2 py-1">
-                    Error al cargar animales: {error.message}
+                    {t('finance:mobile.animalSaleError')}: {error.message}
                   </div>
                 )}
                 {!isLoading && !error && filtered.map((a: any) => (
@@ -109,18 +110,24 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
                 ))}
                 {!isLoading && !error && filtered.length === 0 && animals.length === 0 && (
                   <div className="text-sm text-muted-foreground px-2 py-1">
-                    No hay animales disponibles para vender
+                    {t('finance:mobile.noAnimalsAvailable')}
                   </div>
                 )}
                 {!isLoading && !error && filtered.length === 0 && animals.length > 0 && (
-                  <div className="text-sm text-muted-foreground px-2 py-1">Sin resultados para "{search}"</div>
+                  <div className="text-sm text-muted-foreground px-2 py-1">
+                    {t('finance:mobile.noResults')} "{search}"
+                  </div>
                 )}
               </div>
             </ScrollArea>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>Cerrar</Button>
-            <Button onClick={() => setOpen(false)}>Listo</Button>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              {t('finance:mobile.close')}
+            </Button>
+            <Button onClick={() => setOpen(false)}>
+              {t('finance:mobile.done')}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -129,6 +136,5 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
 }
 
 function getLabel(a: any) {
-  // Tratamos de armar una etiqueta legible con posibles campos
   return a.id_tag || a.name || a.registration_number || a.id;
 }

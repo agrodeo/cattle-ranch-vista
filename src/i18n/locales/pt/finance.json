@@ -91,7 +91,26 @@
       "services": "Serviços",
       "taxes": "Impostos",
       "other": "Outras despesas"
-    }
+    },
+    "animalSaleSection": "Venda de Animais",
+    "enableAnimalSale": "É uma venda de animais?",
+    "selectAnimalsToSell": "Selecionar animais para vender",
+    "animalsSelected": "animais selecionados",
+    "buyerInfo": "Informação do Comprador (Opcional)",
+    "buyerName": "Nome do comprador",
+    "buyerDocument": "Documento",
+    "buyerDestination": "Destino",
+    "animalSaleSuccess": "Venda registrada e animais marcados como vendidos",
+    "animalSaleError": "Erro ao registrar venda",
+    "noAnimalsSelected": "Por favor selecione pelo menos um animal para vender",
+    "clear": "Limpar",
+    "selectAnimals": "Selecionar animais",
+    "loadingAnimals": "Carregando animais...",
+    "noAnimalsAvailable": "Nenhum animal disponível para venda",
+    "noResults": "Sem resultados para",
+    "close": "Fechar",
+    "done": "Pronto",
+    "search": "Pesquisar..."
   },
   "categorySelect": {
     "selectCategory": "Selecionar categoria",
