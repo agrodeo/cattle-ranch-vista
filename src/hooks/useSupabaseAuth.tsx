@@ -1,7 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-
+import { setCabañaId, cleanupAutoSync } from "@/services/autoSync";
+import { fullSync } from "@/services/dataSync";
+import { db } from "@/services/db";
 interface AuthUser {
   id: string;
   email: string;
@@ -274,6 +276,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 console.log('✅ Profile loaded successfully:', userProfile.fullName);
                 setCurrentUser(userProfile);
                 setIsAuthenticated(true);
+                
+                // Initialize offline sync with user's cabaña
+                if (userProfile.cabañaId) {
+                  console.log('🔄 Initializing offline sync for cabaña:', userProfile.cabañaId);
+                  setCabañaId(userProfile.cabañaId);
+                  
+                  // Trigger initial full sync in background (don't block auth)
+                  fullSync(userProfile.cabañaId).then(() => {
+                    console.log('✅ Initial full sync completed');
+                  }).catch((error) => {
+                    console.warn('⚠️ Initial sync failed (will retry):', error);
+                  });
+                }
               } else {
                 console.error('❌ Failed to load profile, but keeping user signed in for now');
                 setCurrentUser(null);
@@ -318,6 +333,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    // Cleanup auto-sync before signing out
+    cleanupAutoSync();
+    
+    // Clear local caches on logout for security
+    try {
+      await db.animals_cache.clear();
+      await db.corrales_cache.clear();
+      await db.activities_cache.clear();
+      await db.finances_cache.clear();
+      await db.outbox.clear();
+      await db.id_map.clear();
+      console.log('🧹 Cleared local caches on logout');
+    } catch (error) {
+      console.warn('⚠️ Error clearing caches:', error);
+    }
+    
     await supabase.auth.signOut();
     setIsAuthenticated(false);
     setCurrentUser(null);
