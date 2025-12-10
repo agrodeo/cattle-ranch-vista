@@ -194,52 +194,87 @@ async function networkFirstWithFallback(request) {
       return indexResponse;
     }
     
-    // Last resort - return offline page
+    // Last resort - return offline page with multilingual support
     return new Response(
       `<!DOCTYPE html>
-      <html>
+      <html lang="es">
         <head>
           <title>Offline - agrodeo</title>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
             body { 
-              font-family: system-ui, sans-serif; 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
               display: flex; 
               align-items: center; 
               justify-content: center; 
-              height: 100vh; 
-              margin: 0;
-              background: #f5f5f5;
-            }
-            .container { 
-              text-align: center; 
+              min-height: 100vh; 
+              background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
               padding: 20px;
             }
-            h1 { color: #333; }
-            p { color: #666; }
+            .container { 
+              text-align: center;
+              max-width: 400px;
+              background: white;
+              padding: 40px 30px;
+              border-radius: 16px;
+              box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            }
+            .icon { font-size: 64px; margin-bottom: 24px; }
+            h1 { 
+              color: #1a1a1a; 
+              font-size: 24px; 
+              font-weight: 600;
+              margin-bottom: 12px;
+            }
+            p { 
+              color: #666; 
+              font-size: 16px;
+              line-height: 1.5;
+              margin-bottom: 24px;
+            }
+            .hint {
+              color: #888;
+              font-size: 14px;
+              background: #f5f5f5;
+              padding: 12px;
+              border-radius: 8px;
+              margin-bottom: 24px;
+            }
             button {
-              margin-top: 20px;
-              padding: 10px 20px;
-              background: #10b981;
+              padding: 14px 32px;
+              background: linear-gradient(135deg, #10b981 0%, #059669 100%);
               color: white;
               border: none;
-              border-radius: 8px;
+              border-radius: 12px;
+              font-size: 16px;
+              font-weight: 600;
               cursor: pointer;
+              transition: transform 0.2s, box-shadow 0.2s;
             }
+            button:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            }
+            button:active { transform: translateY(0); }
           </style>
         </head>
         <body>
           <div class="container">
-            <h1>📡 Sin conexión</h1>
-            <p>No hay conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.</p>
+            <div class="icon">📡</div>
+            <h1>Sin conexión</h1>
+            <p>No hay conexión a internet. Verifica tu conexión e intenta nuevamente.</p>
+            <div class="hint">
+              💡 Para usar agrodeo sin conexión, primero debes iniciar sesión al menos una vez con internet.
+            </div>
             <button onclick="location.reload()">Reintentar</button>
           </div>
         </body>
       </html>`,
       { 
         status: 200, 
-        headers: { 'Content-Type': 'text/html' } 
+        headers: { 'Content-Type': 'text/html; charset=utf-8' } 
       }
     );
   }
