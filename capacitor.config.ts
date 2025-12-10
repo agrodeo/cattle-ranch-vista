@@ -6,7 +6,9 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     url: 'https://7240114a-cf5f-4b1c-bc89-1b5d3e2a51f9.lovableproject.com?forceHideBadge=true',
-    cleartext: true
+    cleartext: true,
+    // Allow offline access - let service worker handle caching
+    errorPath: 'offline.html'
   },
   plugins: {
     SplashScreen: {
@@ -22,7 +24,13 @@ const config: CapacitorConfig = {
   },
   ios: {
     contentInset: 'automatic',
-    allowsLinkPreview: false
+    allowsLinkPreview: false,
+    // Enable offline mode support
+    limitsNavigationsToAppBoundDomains: false
+  },
+  android: {
+    // Allow mixed content for offline service worker
+    allowMixedContent: true
   }
 };
 
