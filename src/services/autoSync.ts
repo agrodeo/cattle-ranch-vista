@@ -9,17 +9,27 @@ let syncIntervalId: NodeJS.Timeout | null = null;
 let currentCabañaId: string | null = null;
 
 // Setup automatic sync on connectivity changes and periodic intervals
-export function setupAutoSync(cabañaId: string): void {
-  currentCabañaId = cabañaId;
+export function setupAutoSync(cabañaId?: string): void {
+  if (cabañaId) {
+    currentCabañaId = cabañaId;
+  }
 
   // Listen for online event
+  window.removeEventListener('online', handleOnline);
+  window.removeEventListener('offline', handleOffline);
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
 
   // Start periodic sync
   startPeriodicSync();
 
-  console.log('Auto sync initialized for cabaña:', cabañaId);
+  console.log('Auto sync initialized', cabañaId ? `for cabaña: ${cabañaId}` : '(waiting for cabaña)');
+}
+
+// Update cabaña ID for sync
+export function setCabañaId(cabañaId: string): void {
+  currentCabañaId = cabañaId;
+  console.log('Auto sync cabaña set:', cabañaId);
 }
 
 // Cleanup auto sync listeners

@@ -1,10 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { LogOut, Building2, HelpCircle, Menu } from "lucide-react";
+import { LogOut, Building2, HelpCircle, Menu, Cloud, CloudOff } from "lucide-react";
 import { useSupport } from "@/components/SupportProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
+import { useState, useEffect } from "react";
+import { useConnectivity } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { SyncStatusBadge } from "@/components/SyncStatusBadge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,11 +18,37 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { SyncCenter } from "@/components/SyncCenter";
+import { Badge } from "@/components/ui/badge";
 
 export function Header() {
   const { currentUser, signOut } = useSupabaseAuth();
   const support = useSupport();
   const { t } = useTranslation(['menu', 'common']);
+  const { isOnline } = useConnectivity();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const loadPendingCount = async () => {
+      try {
+        const count = await db.outbox.where('status').anyOf(['pending', 'failed']).count();
+        setPendingCount(count);
+      } catch (error) {
+        console.error('Error loading pending count:', error);
+      }
+    };
+
+    loadPendingCount();
+    const interval = setInterval(loadPendingCount, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSignOut = () => {
     signOut();
@@ -45,6 +75,38 @@ export function Header() {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Sync Status */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative h-9 w-9">
+                {isOnline ? (
+                  <Cloud className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <CloudOff className="h-5 w-5 text-amber-500" />
+                )}
+                {pendingCount > 0 && (
+                  <Badge 
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                  >
+                    {pendingCount > 9 ? '9+' : pendingCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="w-full sm:max-w-md">
+              <SheetHeader>
+                <SheetTitle className="flex items-center gap-2">
+                  {isOnline ? <Cloud className="h-5 w-5" /> : <CloudOff className="h-5 w-5 text-amber-500" />}
+                  {t('common:sync.syncCenter')}
+                </SheetTitle>
+              </SheetHeader>
+              <div className="mt-4">
+                <SyncCenter />
+              </div>
+            </SheetContent>
+          </Sheet>
+
           {/* Language Switcher */}
           <LanguageSwitcher variant="compact" />
           
@@ -88,4 +150,4 @@ export function Header() {
       </div>
     </header>
   );
-};
+}

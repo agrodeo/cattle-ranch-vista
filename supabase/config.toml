@@ -88,3 +88,6 @@ verify_jwt = false
 
 [functions.ai-corral-recommendations]
 verify_jwt = true
+
+[functions.sync-batch]
+verify_jwt = true
