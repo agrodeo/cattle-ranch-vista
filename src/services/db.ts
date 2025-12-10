@@ -16,13 +16,14 @@ import type {
   CachedDeathCause,
   CachedBenchmark,
   CachedCorralMovement,
+  CachedUserProfile,
   SyncMetadata,
   OutboxEvent,
   IdMap
 } from './offlineTypes';
 
 // Re-export types for backward compatibility
-export type { SyncStatus, OutboxEvent, IdMap };
+export type { SyncStatus, OutboxEvent, IdMap, CachedUserProfile };
 
 class AgroDB extends Dexie {
   // Core entities
@@ -48,6 +49,9 @@ class AgroDB extends Dexie {
   death_records_cache!: Table<CachedDeathRecord, string>;
   benchmarks_cache!: Table<CachedBenchmark, string>;
 
+  // User profile for offline auth
+  user_profile!: Table<CachedUserProfile, string>;
+
   // Sync infrastructure
   id_map!: Table<IdMap, string>;
   outbox!: Table<OutboxEvent, string>;
@@ -59,7 +63,7 @@ class AgroDB extends Dexie {
   constructor() {
     super('agrodeo');
 
-    this.version(2).stores({
+    this.version(3).stores({
       // Core entities
       animals_cache: 'id, cabaña_id, corral_id, sync_status, status, sex',
       corrales_cache: 'id, cabaña_id, sync_status',
@@ -83,6 +87,9 @@ class AgroDB extends Dexie {
       death_records_cache: 'id, cabaña_id, animal_id, fecha_defuncion, sync_status',
       benchmarks_cache: 'id, cabaña_id, breed, sync_status',
 
+      // User profile for offline auth
+      user_profile: 'id, user_id, cabañaId',
+
       // Sync infrastructure
       id_map: 'tempId, realId',
       outbox: 'id, status, createdAt, type',
@@ -91,8 +98,7 @@ class AgroDB extends Dexie {
       // Legacy compatibility
       activities_cache: 'id, cabaña_id, sync_status'
     }).upgrade(tx => {
-      // Migration from v1 to v2 - no data migration needed, new tables are empty
-      console.log('Upgrading database to v2 with expanded offline support');
+      console.log('Upgrading database to v3 with user profile for offline auth');
     });
   }
 }

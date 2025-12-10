@@ -194,6 +194,23 @@ export interface CachedCorralMovement extends BaseCachedEntity {
   registrado_por?: string;
 }
 
+// User Profile (for offline auth)
+export interface CachedUserProfile {
+  id: string;
+  user_id: string;
+  email: string;
+  fullName: string;
+  employeeCode?: string;
+  position?: string;
+  department?: string;
+  cabañaId: string;
+  cabañaName?: string;
+  role?: string;
+  username?: string;
+  isActive: boolean;
+  cached_at: string;
+}
+
 // Sync Metadata
 export interface SyncMetadata {
   id: string;
