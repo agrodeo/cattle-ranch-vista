@@ -304,6 +304,9 @@
     "pendingChanges": "alterações pendentes",
     "connectionStatus": "Status da conexão",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "pendingEvents": "Eventos pendentes",
+    "failedEvents": "Eventos falhados",
+    "syncedEvents": "Eventos sincronizados"
   }
 }

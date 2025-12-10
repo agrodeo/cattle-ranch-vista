@@ -304,6 +304,9 @@
     "pendingChanges": "pending changes",
     "connectionStatus": "Connection status",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "pendingEvents": "Pending events",
+    "failedEvents": "Failed events",
+    "syncedEvents": "Synced events"
   }
 }
