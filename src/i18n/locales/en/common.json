@@ -285,5 +285,25 @@
   },
   "user": "User",
   "noHerd": "No herd",
-  "noRole": "No role"
+  "noRole": "No role",
+  "pendingSync": "Pending sync",
+  "willSyncWhenOnline": "Will sync when online",
+  "syncFailed": "Sync failed",
+  "willRetryAutomatically": "Will retry automatically",
+  "syncError": "Sync error",
+  "manualActionRequired": "Manual action required",
+  "sync": {
+    "syncCenter": "Sync Center",
+    "pending": "Pending",
+    "failed": "Failed",
+    "synced": "Synced",
+    "syncNow": "Sync Now",
+    "retryFailed": "Retry Failed",
+    "offlineMode": "Offline Mode",
+    "offlineWarning": "Offline. Changes will be saved locally.",
+    "pendingChanges": "pending changes",
+    "connectionStatus": "Connection status",
+    "online": "Online",
+    "offline": "Offline"
+  }
 }

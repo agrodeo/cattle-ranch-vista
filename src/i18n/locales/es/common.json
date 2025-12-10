@@ -285,5 +285,25 @@
   },
   "user": "Usuario",
   "noHerd": "Sin cabaña",
-  "noRole": "Sin rol"
+  "noRole": "Sin rol",
+  "pendingSync": "Pendiente de sincronizar",
+  "willSyncWhenOnline": "Se sincronizará cuando haya conexión",
+  "syncFailed": "Sincronización fallida",
+  "willRetryAutomatically": "Se reintentará automáticamente",
+  "syncError": "Error de sincronización",
+  "manualActionRequired": "Requiere acción manual",
+  "sync": {
+    "syncCenter": "Centro de Sincronización",
+    "pending": "Pendientes",
+    "failed": "Fallidos",
+    "synced": "Sincronizados",
+    "syncNow": "Sincronizar Ahora",
+    "retryFailed": "Reintentar Fallidos",
+    "offlineMode": "Modo Sin Conexión",
+    "offlineWarning": "Sin conexión. Los cambios se guardarán localmente.",
+    "pendingChanges": "cambios pendientes",
+    "connectionStatus": "Estado de conexión",
+    "online": "Conectado",
+    "offline": "Sin conexión"
+  }
 }
