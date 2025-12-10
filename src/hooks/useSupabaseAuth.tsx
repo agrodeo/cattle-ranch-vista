@@ -3,7 +3,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { setCabañaId, cleanupAutoSync } from "@/services/autoSync";
 import { fullSync } from "@/services/dataSync";
-import { db } from "@/services/db";
+import { db, CachedUserProfile } from "@/services/db";
+
 interface AuthUser {
   id: string;
   email: string;
@@ -21,6 +22,7 @@ interface AuthUser {
 interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
+  isOffline: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
@@ -32,6 +34,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   loading: true,
+  isOffline: false,
   currentUser: null,
   user: null,
   session: null,
@@ -48,12 +51,119 @@ export const useSupabaseAuth = () => {
   return context;
 };
 
+// Cache user profile to IndexedDB for offline access
+async function cacheUserProfile(profile: AuthUser): Promise<void> {
+  try {
+    const cachedProfile: CachedUserProfile = {
+      id: profile.id,
+      user_id: profile.id,
+      email: profile.email,
+      fullName: profile.fullName,
+      employeeCode: profile.employeeCode,
+      position: profile.position,
+      department: profile.department,
+      cabañaId: profile.cabañaId,
+      cabañaName: profile.cabañaName,
+      role: profile.role,
+      username: profile.username,
+      isActive: profile.isActive,
+      cached_at: new Date().toISOString()
+    };
+    await db.user_profile.put(cachedProfile);
+    console.log('✅ User profile cached for offline access');
+  } catch (error) {
+    console.warn('⚠️ Failed to cache user profile:', error);
+  }
+}
+
+// Load user profile from IndexedDB for offline access
+async function loadCachedUserProfile(): Promise<AuthUser | null> {
+  try {
+    const profiles = await db.user_profile.toArray();
+    if (profiles.length > 0) {
+      const cached = profiles[0];
+      console.log('📦 Loaded cached user profile for offline access');
+      return {
+        id: cached.user_id,
+        email: cached.email,
+        fullName: cached.fullName,
+        employeeCode: cached.employeeCode,
+        position: cached.position,
+        department: cached.department,
+        cabañaId: cached.cabañaId,
+        cabañaName: cached.cabañaName,
+        role: cached.role,
+        username: cached.username,
+        isActive: cached.isActive
+      };
+    }
+    return null;
+  } catch (error) {
+    console.warn('⚠️ Failed to load cached user profile:', error);
+    return null;
+  }
+}
+
+// Check if there's a valid cached Supabase session in localStorage
+function getCachedSession(): { session: Session | null; user: User | null } {
+  try {
+    // Supabase stores session in localStorage with key pattern: sb-[project-ref]-auth-token
+    const storageKey = 'sb-yjzxbjwewzyhjquhrfzv-auth-token';
+    const stored = localStorage.getItem(storageKey);
+    
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed && parsed.access_token && parsed.user) {
+        // Check if token is not expired (give some buffer)
+        const expiresAt = parsed.expires_at ? parsed.expires_at * 1000 : 0;
+        const now = Date.now();
+        const bufferMs = 5 * 60 * 1000; // 5 minutes buffer
+        
+        if (expiresAt > now - bufferMs) {
+          console.log('📦 Found valid cached session in localStorage');
+          return {
+            session: parsed as Session,
+            user: parsed.user as User
+          };
+        } else {
+          console.log('⏰ Cached session expired');
+        }
+      }
+    }
+    return { session: null, user: null };
+  } catch (error) {
+    console.warn('⚠️ Error reading cached session:', error);
+    return { session: null, user: null };
+  }
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+
+  // Track online/offline status
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log('🌐 Back online');
+      setIsOffline(false);
+    };
+    const handleOffline = () => {
+      console.log('📴 Gone offline');
+      setIsOffline(true);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const fetchUserProfile = async (userId: string) => {
     console.log('👤 Fetching user profile for:', userId);
@@ -253,69 +363,147 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Initialize auth with offline support
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('🔐 Auth state change:', event, session ? 'session exists' : 'no session');
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          console.log('👤 User authenticated, fetching profile...');
-          
-          // Handle async operations in setTimeout to avoid blocking auth state
-          setTimeout(async () => {
-            try {
-              // Handle pending cabaña creation on first sign in
-              if (event === 'SIGNED_IN') {
-                await handlePendingCabanaCreation(session.user.id);
-              }
-              
-              const userProfile = await fetchUserProfile(session.user.id);
-              if (userProfile) {
-                console.log('✅ Profile loaded successfully:', userProfile.fullName);
-                setCurrentUser(userProfile);
-                setIsAuthenticated(true);
-                
-                // Initialize offline sync with user's cabaña
-                if (userProfile.cabañaId) {
-                  console.log('🔄 Initializing offline sync for cabaña:', userProfile.cabañaId);
-                  setCabañaId(userProfile.cabañaId);
-                  
-                  // Trigger initial full sync in background (don't block auth)
-                  fullSync(userProfile.cabañaId).then(() => {
-                    console.log('✅ Initial full sync completed');
-                  }).catch((error) => {
-                    console.warn('⚠️ Initial sync failed (will retry):', error);
-                  });
-                }
-              } else {
-                console.error('❌ Failed to load profile, but keeping user signed in for now');
-                setCurrentUser(null);
-                setIsAuthenticated(false);
-                // Don't auto-sign out anymore - let user troubleshoot
-              }
-            } catch (error) {
-              console.error('💥 Error in auth state change handler:', error);
-              setCurrentUser(null);
-              setIsAuthenticated(false);
+    let mounted = true;
+
+    const initializeAuth = async () => {
+      const currentlyOffline = !navigator.onLine;
+      console.log(`🔐 Initializing auth (offline: ${currentlyOffline})`);
+
+      // If offline, try to load cached auth data
+      if (currentlyOffline) {
+        console.log('📴 Offline mode - checking for cached credentials');
+        const { session: cachedSession, user: cachedUser } = getCachedSession();
+        const cachedProfile = await loadCachedUserProfile();
+
+        if (cachedSession && cachedUser && cachedProfile) {
+          console.log('✅ Loaded cached auth data for offline access');
+          if (mounted) {
+            setSession(cachedSession);
+            setUser(cachedUser);
+            setCurrentUser(cachedProfile);
+            setIsAuthenticated(true);
+            setLoading(false);
+
+            // Initialize offline sync with cached cabaña
+            if (cachedProfile.cabañaId) {
+              setCabañaId(cachedProfile.cabañaId);
             }
-          }, 0);
+          }
+          return; // Don't try to contact Supabase when offline
         } else {
-          console.log('👤 No user session');
-          setCurrentUser(null);
-          setIsAuthenticated(false);
+          console.log('❌ No cached credentials available for offline access');
+          if (mounted) {
+            setLoading(false);
+          }
+          return;
         }
-        setLoading(false);
       }
-    );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
-      // Auth state change will handle the session
-    });
+      // Online - use normal Supabase auth flow
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          if (!mounted) return;
+          
+          console.log('🔐 Auth state change:', event, session ? 'session exists' : 'no session');
+          setSession(session);
+          setUser(session?.user ?? null);
+          
+          if (session?.user) {
+            console.log('👤 User authenticated, fetching profile...');
+            
+            // Handle async operations in setTimeout to avoid blocking auth state
+            setTimeout(async () => {
+              if (!mounted) return;
+              
+              try {
+                // Handle pending cabaña creation on first sign in
+                if (event === 'SIGNED_IN') {
+                  await handlePendingCabanaCreation(session.user.id);
+                }
+                
+                const userProfile = await fetchUserProfile(session.user.id);
+                if (userProfile && mounted) {
+                  console.log('✅ Profile loaded successfully:', userProfile.fullName);
+                  setCurrentUser(userProfile);
+                  setIsAuthenticated(true);
+                  
+                  // Cache profile for offline access
+                  await cacheUserProfile(userProfile);
+                  
+                  // Initialize offline sync with user's cabaña
+                  if (userProfile.cabañaId) {
+                    console.log('🔄 Initializing offline sync for cabaña:', userProfile.cabañaId);
+                    setCabañaId(userProfile.cabañaId);
+                    
+                    // Trigger initial full sync in background (don't block auth)
+                    fullSync(userProfile.cabañaId).then(() => {
+                      console.log('✅ Initial full sync completed');
+                    }).catch((error) => {
+                      console.warn('⚠️ Initial sync failed (will retry):', error);
+                    });
+                  }
+                } else if (mounted) {
+                  console.error('❌ Failed to load profile, but keeping user signed in for now');
+                  setCurrentUser(null);
+                  setIsAuthenticated(false);
+                }
+              } catch (error) {
+                console.error('💥 Error in auth state change handler:', error);
+                if (mounted) {
+                  setCurrentUser(null);
+                  setIsAuthenticated(false);
+                }
+              }
+            }, 0);
+          } else {
+            console.log('👤 No user session');
+            setCurrentUser(null);
+            setIsAuthenticated(false);
+          }
+          setLoading(false);
+        }
+      );
 
-    return () => subscription.unsubscribe();
+      // Check for existing session
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
+        // Auth state change will handle the session
+      } catch (error) {
+        console.error('❌ Failed to get session (possibly offline):', error);
+        // Try offline fallback
+        const { session: cachedSession, user: cachedUser } = getCachedSession();
+        const cachedProfile = await loadCachedUserProfile();
+        
+        if (cachedSession && cachedUser && cachedProfile && mounted) {
+          console.log('✅ Falling back to cached auth data');
+          setSession(cachedSession);
+          setUser(cachedUser);
+          setCurrentUser(cachedProfile);
+          setIsAuthenticated(true);
+          setIsOffline(true);
+          
+          if (cachedProfile.cabañaId) {
+            setCabañaId(cachedProfile.cabañaId);
+          }
+        }
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    initializeAuth();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -344,6 +532,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await db.finances_cache.clear();
       await db.outbox.clear();
       await db.id_map.clear();
+      await db.user_profile.clear(); // Clear cached user profile
       console.log('🧹 Cleared local caches on logout');
     } catch (error) {
       console.warn('⚠️ Error clearing caches:', error);
@@ -372,6 +561,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const value = {
     isAuthenticated,
     loading,
+    isOffline,
     signIn,
     signOut,
     resetPassword,
