@@ -102,6 +102,7 @@
     "services": "services",
     "pregnancies": "pregnancies",
     "successfulPregnancies": "successful pregnancies",
+    "femalesPregnant": "females pregnant",
     "births": "births",
     "losses": "losses"
   },

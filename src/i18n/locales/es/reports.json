@@ -102,6 +102,7 @@
     "services": "servicios",
     "pregnancies": "preñeces",
     "successfulPregnancies": "preñeces exitosas",
+    "femalesPregnant": "hembras preñadas",
     "births": "nacimientos",
     "losses": "pérdidas"
   },
