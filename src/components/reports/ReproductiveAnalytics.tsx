@@ -316,7 +316,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           reproductive_years: metrics.reproductive_years,
           total_offspring: animalOffspring.length,
           lifetime_services: animalServices.length,
-          lifetime_pregnancies: pregnancyRecords.length,
+          lifetime_pregnancies: metrics.total_pregnancies,
           lifetime_calvings: metrics.total_calvings,
           individual_pregnancy_rate: metrics.pregnancy_rate,
           individual_calving_rate: metrics.calving_rate,
