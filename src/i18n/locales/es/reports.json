@@ -101,6 +101,7 @@
     "noYearlyData": "Sin datos históricos suficientes",
     "services": "servicios",
     "pregnancies": "preñeces",
+    "successfulPregnancies": "preñeces exitosas",
     "births": "nacimientos",
     "losses": "pérdidas"
   },

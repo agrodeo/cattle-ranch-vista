@@ -101,6 +101,7 @@
     "noYearlyData": "Not enough historical data",
     "services": "services",
     "pregnancies": "pregnancies",
+    "successfulPregnancies": "successful pregnancies",
     "births": "births",
     "losses": "losses"
   },
