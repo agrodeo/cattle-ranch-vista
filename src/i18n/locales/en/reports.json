@@ -93,7 +93,13 @@
     "empty": "Empty",
     "open": "Open",
     "pregnant": "Pregnant",
-    "postpartum": "Post-partum"
+    "postpartum": "Post-partum",
+    "yearlyRates": "Yearly Rates",
+    "yearlyPregnancyRate": "Pregnancy Rate",
+    "yearlyCalvingRate": "Calving Rate",
+    "noYearlyData": "Not enough historical data",
+    "pregnancies": "pregnancies",
+    "births": "births"
   },
   "production": {
     "title": "Production Analysis",

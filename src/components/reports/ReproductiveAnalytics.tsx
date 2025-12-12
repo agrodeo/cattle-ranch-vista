@@ -72,6 +72,16 @@ interface ReproductiveFemale {
   current_state: string;
 }
 
+interface YearlyReproductiveRate {
+  year: number;
+  pregnancyRate: number;
+  calvingRate: number;
+  totalPregnancies: number;
+  successfulPregnancies: number;
+  totalBirths: number;
+  reproductiveFemalesCount: number;
+}
+
 interface ReproductiveAnalyticsProps {
   filters?: ReportFilters;
 }
@@ -91,6 +101,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
   });
   
   const [reproductiveFemales, setReproductiveFemales] = useState<ReproductiveFemale[]>([]);
+  const [yearlyRates, setYearlyRates] = useState<YearlyReproductiveRate[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -348,6 +359,81 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         completedPregnancies: totalPregnancies
       });
 
+      // Calculate yearly reproductive rates
+      const yearlyDataMap = new Map<number, {
+        totalPregnancies: number;
+        successfulPregnancies: number;
+        totalBirths: number;
+        reproductiveFemalesCount: number;
+      }>();
+
+      // Get all pregnancies and births grouped by year
+      (pregnancies || []).forEach(p => {
+        const year = new Date(p.fecha_inicio).getFullYear();
+        if (!yearlyDataMap.has(year)) {
+          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+        }
+        const data = yearlyDataMap.get(year)!;
+        data.totalPregnancies += 1;
+        if (p.estado_final === 'exitosa' || p.cria_id) {
+          data.successfulPregnancies += 1;
+        }
+      });
+
+      // Count births by year from offspring
+      (offspring || []).forEach(o => {
+        if (o.birth_date) {
+          const year = new Date(o.birth_date).getFullYear();
+          if (!yearlyDataMap.has(year)) {
+            yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+          }
+          const data = yearlyDataMap.get(year)!;
+          data.totalBirths += 1;
+        }
+      });
+
+      // Count reproductive females per year (females that were 15+ months in that year)
+      reproductiveFemales.forEach(animal => {
+        if (animals) {
+          const animalData = animals.find(a => a.id === animal.id);
+          if (animalData?.birth_date) {
+            const birthDate = new Date(animalData.birth_date);
+            const currentYear = new Date().getFullYear();
+            for (let year = birthDate.getFullYear() + 1; year <= currentYear; year++) {
+              const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+              if (ageAtYearStart >= 15) {
+                if (!yearlyDataMap.has(year)) {
+                  yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+                }
+                const data = yearlyDataMap.get(year)!;
+                data.reproductiveFemalesCount += 1;
+              }
+            }
+          }
+        }
+      });
+
+      // Convert to array and calculate rates
+      const yearlyRatesData: YearlyReproductiveRate[] = Array.from(yearlyDataMap.entries())
+        .map(([year, data]) => ({
+          year,
+          totalPregnancies: data.totalPregnancies,
+          successfulPregnancies: data.successfulPregnancies,
+          totalBirths: data.totalBirths,
+          reproductiveFemalesCount: data.reproductiveFemalesCount,
+          pregnancyRate: data.totalPregnancies > 0 
+            ? Math.round((data.successfulPregnancies / data.totalPregnancies) * 100) 
+            : 0,
+          calvingRate: data.reproductiveFemalesCount > 0 
+            ? Math.round((data.totalBirths / data.reproductiveFemalesCount) * 100) 
+            : 0
+        }))
+        .filter(d => d.totalPregnancies > 0 || d.totalBirths > 0)
+        .sort((a, b) => b.year - a.year)
+        .slice(0, 5);
+
+      setYearlyRates(yearlyRatesData);
+
     } catch (error) {
       console.error('Error in fetchReproductiveData:', error);
       setError(t('reports:reproductive.loadingError'));
@@ -512,6 +598,62 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           </CardContent>
         </Card>
       </div>
+
+      {/* Yearly Reproductive Rates */}
+      {yearlyRates.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              {t('reports:reproductive.yearlyRates')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {yearlyRates.map((rate) => (
+                <Card key={rate.year} className="min-w-[160px] flex-shrink-0 border-2">
+                  <CardContent className="p-4">
+                    <div className="text-lg font-bold text-center mb-3">{rate.year}</div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          {t('reports:reproductive.yearlyPregnancyRate')}
+                        </div>
+                        <div className={`text-xl font-bold ${
+                          rate.pregnancyRate >= 80 ? 'text-emerald-600' :
+                          rate.pregnancyRate >= 60 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {rate.pregnancyRate}%
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="text-xs text-muted-foreground mb-1">
+                          {t('reports:reproductive.yearlyCalvingRate')}
+                        </div>
+                        <div className={`text-xl font-bold ${
+                          rate.calvingRate >= 90 ? 'text-emerald-600' :
+                          rate.calvingRate >= 75 ? 'text-yellow-600' :
+                          'text-red-600'
+                        }`}>
+                          {rate.calvingRate}%
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 border-t text-xs text-muted-foreground">
+                        <div>{rate.successfulPregnancies} {t('reports:reproductive.pregnancies')}</div>
+                        <div>{rate.totalBirths} {t('reports:reproductive.births')}</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Expandable Reproductive Females Detail */}
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
