@@ -475,16 +475,18 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         }
       });
 
-      // Count reproductive females per year (ALL females that were 15+ months in that year)
+      // Count reproductive females per year (females that reached 15+ months at any point during that year)
       (allFemales || []).forEach(female => {
         if (female.birth_date) {
           const birthDate = new Date(female.birth_date);
-          for (let year = birthDate.getFullYear() + 1; year <= currentYear; year++) {
-            const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
-            if (ageAtYearStart >= 15) {
-              const data = getOrCreateYear(year);
-              data.reproductiveFemalesCount += 1;
-            }
+          // Calculate the year when the female turns 15 months old
+          const turns15MonthsDate = new Date(birthDate.getTime() + 15 * 30.44 * 24 * 60 * 60 * 1000);
+          const firstReproductiveYear = turns15MonthsDate.getFullYear();
+          
+          // Count this female for every year from when she turned 15 months onwards
+          for (let year = firstReproductiveYear; year <= currentYear; year++) {
+            const data = getOrCreateYear(year);
+            data.reproductiveFemalesCount += 1;
           }
         }
       });
