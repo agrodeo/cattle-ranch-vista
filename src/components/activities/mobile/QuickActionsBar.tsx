@@ -30,7 +30,7 @@ export function QuickActionsBar({ onRegisterActivity, onVaccinate }: QuickAction
 
       {/* Mobile: Sticky FAB */}
       <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none">
-        <div className="mx-auto mb-4 max-w-screen-sm px-4 pointer-events-auto">
+        <div className="mx-auto max-w-screen-sm px-4 pb-[max(env(safe-area-inset-bottom),12px)] pointer-events-auto">
           <div className="rounded-full bg-white/95 shadow-lg backdrop-blur border border-ink-200 p-2 flex gap-2">
             <Button 
               onClick={onRegisterActivity}
