@@ -61,7 +61,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
   };
 
   return (
-    <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-background border-t border-border">
+    <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-background border-t border-border w-full max-w-full overflow-hidden">
       {/* Safe area for iOS */}
       <div className="px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2">
         <nav className="flex items-center justify-around h-16">
