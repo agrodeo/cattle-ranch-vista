@@ -74,10 +74,10 @@ interface ReproductiveFemale {
 
 interface YearlyReproductiveRate {
   year: number;
-  pregnancyRate: number; // Successful pregnancies / Total pregnancies (successful + failed)
-  calvingRate: number; // Births / Reproductive females
-  lossRate: number; // Failed pregnancies / Total pregnancies
-  successfulPregnancies: number; // Inferred from births (each birth = 1 successful pregnancy)
+  pregnancyRate: number; // Females who got pregnant / Total reproductive females × 100
+  calvingRate: number; // Births / Reproductive females × 100
+  lossRate: number; // Failed pregnancies / Total pregnancies × 100
+  femalesWhoGotPregnant: number; // Unique mothers who conceived that year
   failedPregnancies: number; // From preñeces where estado_final = 'fallida'
   totalBirths: number;
   reproductiveFemalesCount: number;
@@ -415,10 +415,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       });
 
       // Calculate yearly reproductive rates using ALL cabaña data (not filtered)
-      // Key insight: Each birth represents 1 successful pregnancy for the mother in that year
+      // Pregnancy Rate = (Females who got pregnant / Total reproductive females) × 100
+      // We infer conception year from birth_date - 283 days (gestation period)
+      const GESTATION_DAYS = 283;
+      const currentYear = new Date().getFullYear();
+      
       const yearlyDataMap = new Map<number, {
-        successfulPregnancies: number; // Inferred from births (each birth = 1 successful pregnancy)
-        failedPregnancies: number;     // From preñeces table where estado_final = 'fallida'
+        mothersWhoConceived: Set<string>; // Unique mother IDs who conceived that year
+        failedPregnancies: number;        // From preñeces table where estado_final = 'fallida'
         totalBirths: number;
         reproductiveFemalesCount: number;
       }>();
@@ -426,7 +430,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const getOrCreateYear = (year: number) => {
         if (!yearlyDataMap.has(year)) {
           yearlyDataMap.set(year, { 
-            successfulPregnancies: 0, 
+            mothersWhoConceived: new Set(), 
             failedPregnancies: 0, 
             totalBirths: 0, 
             reproductiveFemalesCount: 0 
@@ -435,13 +439,31 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         return yearlyDataMap.get(year)!;
       };
 
-      // Count successful pregnancies from births (each birth = 1 successful pregnancy)
-      // Use birth_date year as the pregnancy success year
+      // Count unique mothers who conceived each year (inferred from birth_date - 283 days)
       (allBirths || []).forEach(o => {
-        const year = new Date(o.birth_date).getFullYear();
-        const data = getOrCreateYear(year);
-        data.totalBirths += 1;
-        data.successfulPregnancies += 1; // Each birth = 1 successful pregnancy
+        const birthDate = new Date(o.birth_date);
+        const conceptionDate = new Date(birthDate.getTime() - GESTATION_DAYS * 24 * 60 * 60 * 1000);
+        const conceptionYear = conceptionDate.getFullYear();
+        const birthYear = birthDate.getFullYear();
+        
+        // Track conception year for pregnancy rate
+        const conceptionData = getOrCreateYear(conceptionYear);
+        if (o.mother_id) {
+          conceptionData.mothersWhoConceived.add(o.mother_id);
+        }
+        
+        // Track birth year for calving rate
+        const birthData = getOrCreateYear(birthYear);
+        birthData.totalBirths += 1;
+      });
+
+      // Add currently pregnant females for current year (from fecha_ultima_preñez)
+      (reproductiveFemales || []).forEach(animal => {
+        if (animal.esta_preñada && animal.fecha_ultima_preñez) {
+          const pregnancyYear = new Date(animal.fecha_ultima_preñez).getFullYear();
+          const data = getOrCreateYear(pregnancyYear);
+          data.mothersWhoConceived.add(animal.id);
+        }
       });
 
       // Count failed pregnancies from preñeces table
@@ -457,7 +479,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       (allFemales || []).forEach(female => {
         if (female.birth_date) {
           const birthDate = new Date(female.birth_date);
-          const currentYear = new Date().getFullYear();
           for (let year = birthDate.getFullYear() + 1; year <= currentYear; year++) {
             const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
             if (ageAtYearStart >= 15) {
@@ -471,28 +492,29 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       // Convert to array and calculate rates
       const yearlyRatesData: YearlyReproductiveRate[] = Array.from(yearlyDataMap.entries())
         .map(([year, data]) => {
-          const totalPregnancies = data.successfulPregnancies + data.failedPregnancies;
+          const femalesWhoGotPregnant = data.mothersWhoConceived.size;
+          const totalPregnancies = femalesWhoGotPregnant + data.failedPregnancies;
           return {
             year,
             totalBirths: data.totalBirths,
-            successfulPregnancies: data.successfulPregnancies,
+            femalesWhoGotPregnant,
             failedPregnancies: data.failedPregnancies,
             reproductiveFemalesCount: data.reproductiveFemalesCount,
-            // Pregnancy rate = successful / total pregnancies (successful + failed)
-            pregnancyRate: totalPregnancies > 0 
-              ? Math.round((data.successfulPregnancies / totalPregnancies) * 100) 
+            // Pregnancy rate = females who got pregnant / total reproductive females × 100
+            pregnancyRate: data.reproductiveFemalesCount > 0 
+              ? Math.round((femalesWhoGotPregnant / data.reproductiveFemalesCount) * 100) 
               : 0,
-            // Calving rate = births / reproductive females
+            // Calving rate = births / reproductive females × 100
             calvingRate: data.reproductiveFemalesCount > 0 
               ? Math.round((data.totalBirths / data.reproductiveFemalesCount) * 100) 
               : 0,
-            // Loss rate = failed / total pregnancies
+            // Loss rate = failed / total pregnancies × 100
             lossRate: totalPregnancies > 0
               ? Math.round((data.failedPregnancies / totalPregnancies) * 100)
               : 0
           };
         })
-        .filter(d => d.totalBirths > 0 || d.failedPregnancies > 0)
+        .filter(d => d.femalesWhoGotPregnant > 0 || d.totalBirths > 0 || d.failedPregnancies > 0)
         .sort((a, b) => b.year - a.year)
         .slice(0, 10); // Show up to 10 years
 
@@ -707,7 +729,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                       </div>
                       
                       <div className="pt-2 border-t text-xs text-muted-foreground">
-                        <div>{rate.successfulPregnancies} {t('reports:reproductive.successfulPregnancies')}</div>
+                        <div>{rate.femalesWhoGotPregnant} {t('reports:reproductive.femalesPregnant')}</div>
                         <div>{rate.totalBirths} {t('reports:reproductive.births')}</div>
                         {rate.failedPregnancies > 0 && (
                           <div className="text-red-500">{rate.failedPregnancies} {t('reports:reproductive.losses')}</div>
