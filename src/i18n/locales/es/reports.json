@@ -95,9 +95,11 @@
     "pregnant": "Preñada",
     "postpartum": "Post-parto",
     "yearlyRates": "Tasas Reproductivas Anuales",
-    "yearlyPregnancyRate": "Éxito de Preñez",
+    "yearlyPregnancyRate": "Tasa de Preñez",
     "yearlyCalvingRate": "Tasa de Parición",
+    "yearlyLossRate": "Tasa de Pérdida",
     "noYearlyData": "Sin datos históricos suficientes",
+    "services": "servicios",
     "pregnancies": "preñeces",
     "births": "nacimientos",
     "losses": "pérdidas"
