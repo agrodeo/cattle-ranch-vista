@@ -20,10 +20,18 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
+import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
 
 interface AnimalResumenProps {
   animal: Animal;
   onAnimalUpdate: (animal: Animal) => void;
+}
+
+interface WeightData {
+  peso_kg: number;
+  fecha: string;
+  ganancia_diaria?: number;
 }
 
 export function AnimalResumen({ animal }: AnimalResumenProps) {
@@ -36,33 +44,104 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
     totalOffspring: number;
     liveOffspring: number;
   } | null>(null);
+  const [latestWeight, setLatestWeight] = useState<WeightData | null>(null);
 
+  // Fetch latest weight from animal_weight_history
+  useEffect(() => {
+    const fetchLatestWeight = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('animal_weight_history')
+          .select('peso_kg, fecha, ganancia_diaria')
+          .eq('animal_id', animal.id)
+          .order('fecha', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) {
+          setLatestWeight(data);
+        }
+      } catch (error) {
+        console.error('Error fetching latest weight:', error);
+      }
+    };
+
+    fetchLatestWeight();
+  }, [animal.id]);
+
+  // Fetch reproductive data using the same logic as ReproductivePerformance
   useEffect(() => {
     const fetchReproductiveData = async () => {
       if (animal.sex !== 'Hembra') return;
       
       try {
-        // Get reproductive events for this animal
-        const { data: reproductiveEvents } = await supabase
-          .from('reproductive_events')
+        // Get pregnancy history from preñeces table
+        const { data: pregnancies } = await supabase
+          .from('preñeces')
           .select('*')
           .eq('animal_id', animal.id);
+
+        // Get services from IA table
+        const { data: services } = await supabase
+          .from('ia')
+          .select('id, evento_id, animales_ids')
+          .contains('animales_ids', [animal.id]);
 
         // Get offspring count
         const { data: offspring } = await supabase
           .from('animals')
-          .select('id, status')
-          .or(`mother_id.eq.${animal.id},father_id.eq.${animal.id}`);
+          .select('id, mother_id, father_id, status')
+          .eq('mother_id', animal.id);
 
-        const totalEvents = reproductiveEvents?.length || 0;
-        const pregnancies = reproductiveEvents?.filter(e => e.pregnancy_status === 'confirmed').length || 0;
-        const calvings = reproductiveEvents?.filter(e => e.calving_date).length || 0;
+        // Convert to proper types
+        const animalData: AnimalReproductiveData = {
+          id: animal.id,
+          id_tag: animal.id_tag,
+          name: animal.name,
+          birth_date: animal.birth_date,
+          esta_preñada: animal.esta_preñada,
+          fecha_ultima_preñez: undefined, // Not available in Animal type, but pregnancy detection exists in preñeces
+          fecha_probable_parto: animal.fecha_probable_parto,
+          sex: animal.sex,
+          status: animal.status,
+          corral_id: animal.corral_id
+        };
+
+        const pregnancyRecords: PregnancyRecord[] = (pregnancies || []).map(p => ({
+          id: p.id,
+          animal_id: p.animal_id,
+          estado: p.estado,
+          estado_final: (p.estado_final as 'activa' | 'exitosa' | 'fallida') || 'activa',
+          fecha_inicio: p.fecha_inicio,
+          fecha_estimada_parto: p.fecha_estimada_parto,
+          fecha_finalizacion: p.fecha_finalizacion,
+          motivo_finalizacion: p.motivo_finalizacion,
+          cria_id: p.cria_id
+        }));
+
+        const serviceRecords: ServiceRecord[] = (services || []).map(s => ({
+          id: s.id,
+          animales_ids: s.animales_ids,
+          evento_id: s.evento_id
+        }));
+
+        const offspringRecords: OffspringRecord[] = (offspring || []).map(o => ({
+          id: o.id,
+          mother_id: o.mother_id,
+          father_id: o.father_id,
+          status: o.status
+        }));
+
+        // Calculate using the same function as ReproductivePerformance
+        const result = calculatePregnancyRate(animalData, pregnancyRecords, serviceRecords, offspringRecords);
+
         const liveOffspring = offspring?.filter(o => o.status !== 'muerto').length || 0;
         const totalOffspring = offspring?.length || 0;
 
         setReproductiveData({
-          pregnancyPercentage: totalEvents > 0 ? Math.round((pregnancies / totalEvents) * 100) : 0,
-          calvingPercentage: pregnancies > 0 ? Math.round((calvings / pregnancies) * 100) : 0,
+          pregnancyPercentage: result.pregnancy_rate,
+          calvingPercentage: result.calving_rate,
           totalOffspring,
           liveOffspring
         });
@@ -108,16 +187,18 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : t('animals:profile.summary.noData')}
+              {latestWeight?.peso_kg ? `${latestWeight.peso_kg} kg` : 
+               animal.peso_actual_kg ? `${animal.peso_actual_kg} kg` : 
+               t('animals:profile.summary.noData')}
             </div>
-            {animal.ganancia_diaria_kg && (
+            {(latestWeight?.ganancia_diaria || animal.ganancia_diaria_kg) && (
               <p className="text-xs text-muted-foreground">
-                {t('animals:profile.summary.dailyGainShort')}: +{animal.ganancia_diaria_kg.toFixed(2)} kg/día
+                {t('animals:profile.summary.dailyGainShort')}: +{(latestWeight?.ganancia_diaria || animal.ganancia_diaria_kg)?.toFixed(2)} kg/día
               </p>
             )}
-            {animal.fecha_ultimo_pesaje && (
+            {(latestWeight?.fecha || animal.fecha_ultimo_pesaje) && (
               <p className="text-xs text-muted-foreground">
-                {format(new Date(animal.fecha_ultimo_pesaje), 'dd/MM/yyyy', { locale: es })}
+                {format(new Date(latestWeight?.fecha || animal.fecha_ultimo_pesaje!), 'dd/MM/yyyy', { locale: es })}
               </p>
             )}
           </CardContent>
