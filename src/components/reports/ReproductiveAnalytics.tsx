@@ -74,10 +74,11 @@ interface ReproductiveFemale {
 
 interface YearlyReproductiveRate {
   year: number;
-  pregnancyRate: number;
-  calvingRate: number;
-  totalPregnancies: number;
-  successfulPregnancies: number;
+  pregnancySuccessRate: number; // Successful pregnancies / Total pregnancies
+  calvingRate: number; // Births / Reproductive females
+  totalPregnancies: number; // Births + failed pregnancies
+  successfulPregnancies: number; // = births (each birth = successful pregnancy)
+  failedPregnancies: number;
   totalBirths: number;
   reproductiveFemalesCount: number;
 }
@@ -391,31 +392,36 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const yearlyDataMap = new Map<number, {
         totalPregnancies: number;
         successfulPregnancies: number;
+        failedPregnancies: number;
         totalBirths: number;
         reproductiveFemalesCount: number;
       }>();
 
       // Get all pregnancies grouped by year (from ALL pregnancies in cabaña)
-      (allPregnancies || []).forEach(p => {
-        const year = new Date(p.fecha_inicio).getFullYear();
-        if (!yearlyDataMap.has(year)) {
-          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
-        }
-        const data = yearlyDataMap.get(year)!;
-        data.totalPregnancies += 1;
-        if (p.estado_final === 'exitosa' || p.cria_id) {
-          data.successfulPregnancies += 1;
-        }
-      });
-
-      // Count births by year from ALL births in cabaña
+      // First, count births by year - each birth = 1 successful pregnancy
       (allBirths || []).forEach(o => {
         const year = new Date(o.birth_date).getFullYear();
         if (!yearlyDataMap.has(year)) {
-          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, failedPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
         }
         const data = yearlyDataMap.get(year)!;
         data.totalBirths += 1;
+        data.successfulPregnancies += 1; // Each birth = 1 successful pregnancy
+        data.totalPregnancies += 1; // Count as a pregnancy
+      });
+
+      // Add failed pregnancies from preñeces table
+      (allPregnancies || []).forEach(p => {
+        const year = new Date(p.fecha_inicio).getFullYear();
+        if (!yearlyDataMap.has(year)) {
+          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, failedPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+        }
+        const data = yearlyDataMap.get(year)!;
+        // Only count failed pregnancies (not exitosa, no cria_id linked)
+        if (p.estado_final === 'fallida' || p.tipo_perdida) {
+          data.failedPregnancies += 1;
+          data.totalPregnancies += 1;
+        }
       });
 
       // Count reproductive females per year (ALL females that were 15+ months in that year)
@@ -427,7 +433,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
             const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
             if (ageAtYearStart >= 15) {
               if (!yearlyDataMap.has(year)) {
-                yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+                yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, failedPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
               }
               const data = yearlyDataMap.get(year)!;
               data.reproductiveFemalesCount += 1;
@@ -442,11 +448,14 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           year,
           totalPregnancies: data.totalPregnancies,
           successfulPregnancies: data.successfulPregnancies,
+          failedPregnancies: data.failedPregnancies,
           totalBirths: data.totalBirths,
           reproductiveFemalesCount: data.reproductiveFemalesCount,
-          pregnancyRate: data.totalPregnancies > 0 
+          // Pregnancy success rate = successful / total pregnancies
+          pregnancySuccessRate: data.totalPregnancies > 0 
             ? Math.round((data.successfulPregnancies / data.totalPregnancies) * 100) 
             : 0,
+          // Calving rate = births / reproductive females
           calvingRate: data.reproductiveFemalesCount > 0 
             ? Math.round((data.totalBirths / data.reproductiveFemalesCount) * 100) 
             : 0
@@ -644,11 +653,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                           {t('reports:reproductive.yearlyPregnancyRate')}
                         </div>
                         <div className={`text-xl font-bold ${
-                          rate.pregnancyRate >= 80 ? 'text-emerald-600' :
-                          rate.pregnancyRate >= 60 ? 'text-yellow-600' :
+                          rate.pregnancySuccessRate >= 80 ? 'text-emerald-600' :
+                          rate.pregnancySuccessRate >= 60 ? 'text-yellow-600' :
                           'text-red-600'
                         }`}>
-                          {rate.pregnancyRate}%
+                          {rate.pregnancySuccessRate}%
                         </div>
                       </div>
                       
@@ -666,8 +675,10 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                       </div>
                       
                       <div className="pt-2 border-t text-xs text-muted-foreground">
-                        <div>{rate.successfulPregnancies} {t('reports:reproductive.pregnancies')}</div>
                         <div>{rate.totalBirths} {t('reports:reproductive.births')}</div>
+                        {rate.failedPregnancies > 0 && (
+                          <div className="text-red-500">{rate.failedPregnancies} {t('reports:reproductive.losses')}</div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
