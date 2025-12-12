@@ -93,7 +93,13 @@
     "empty": "Vacía",
     "open": "Vacía",
     "pregnant": "Preñada",
-    "postpartum": "Post-parto"
+    "postpartum": "Post-parto",
+    "yearlyRates": "Tasas Anuales",
+    "yearlyPregnancyRate": "Tasa de Preñez",
+    "yearlyCalvingRate": "Tasa de Parición",
+    "noYearlyData": "Sin datos históricos suficientes",
+    "pregnancies": "preñeces",
+    "births": "nacimientos"
   },
   "production": {
     "title": "Análisis de Producción",
