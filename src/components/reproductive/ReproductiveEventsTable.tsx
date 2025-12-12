@@ -57,14 +57,28 @@ export function ReproductiveEventsTable({ animalId, animalSex, cabaña_id }: Rep
     }
 
     try {
-      const { data, error } = await supabase
-        .from("reproductive_events")
+      // Fetch from preñeces table (source of truth) instead of empty reproductive_events
+      const { data: pregnancyData, error } = await supabase
+        .from("preñeces")
         .select("*")
         .eq("animal_id", animalId)
-        .order("year", { ascending: false });
+        .order("fecha_inicio", { ascending: false });
 
       if (error) throw error;
-      setEvents(data || []);
+
+      // Transform preñeces data to ReproductiveEvent format
+      const transformedEvents: ReproductiveEvent[] = (pregnancyData || []).map((p: any) => ({
+        id: p.id,
+        year: new Date(p.fecha_inicio).getFullYear(),
+        pregnancy_status: p.estado === 'confirmada' || p.estado_final === 'exitosa' || p.estado_final === 'activa' ? 'pregnant' : 'not_pregnant',
+        pregnancy_outcome: p.estado_final === 'exitosa' ? 'live_calf' : 
+                          p.estado_final === 'fallida' ? 'lost_pregnancy' : undefined,
+        calving_date: p.fecha_parto_real || p.fecha_finalizacion,
+        linked_calf_id: p.cria_id,
+        notes: p.notas
+      }));
+
+      setEvents(transformedEvents);
     } catch (error: any) {
       toast({
         variant: "destructive",
