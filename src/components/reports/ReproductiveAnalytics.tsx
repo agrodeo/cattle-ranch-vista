@@ -196,6 +196,34 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       if (corralesError) throw corralesError;
 
+      // Get ALL births from cabaña for yearly stats (not filtered by current reproductive females)
+      const { data: allBirths, error: allBirthsError } = await supabase
+        .from('animals')
+        .select('id, mother_id, birth_date')
+        .eq('cabaña_id', cabanaId)
+        .not('mother_id', 'is', null)
+        .not('birth_date', 'is', null);
+
+      if (allBirthsError) throw allBirthsError;
+
+      // Get ALL pregnancies from cabaña for yearly stats
+      const { data: allPregnancies, error: allPregnanciesError } = await supabase
+        .from('preñeces')
+        .select('*')
+        .eq('cabaña_id', cabanaId);
+
+      if (allPregnanciesError) throw allPregnanciesError;
+
+      // Get ALL reproductive females for yearly stats (females 15+ months born in cabaña)
+      const { data: allFemales, error: allFemalesError } = await supabase
+        .from('animals')
+        .select('id, birth_date, sex')
+        .eq('cabaña_id', cabanaId)
+        .eq('sex', 'Hembra')
+        .not('birth_date', 'is', null);
+
+      if (allFemalesError) throw allFemalesError;
+
       const corralesMap = new Map(corrales?.map(c => [c.id, c.name]) || []);
 
       // Calculate metrics for each animal
@@ -359,7 +387,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         completedPregnancies: totalPregnancies
       });
 
-      // Calculate yearly reproductive rates
+      // Calculate yearly reproductive rates using ALL cabaña data (not filtered)
       const yearlyDataMap = new Map<number, {
         totalPregnancies: number;
         successfulPregnancies: number;
@@ -367,8 +395,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         reproductiveFemalesCount: number;
       }>();
 
-      // Get all pregnancies and births grouped by year
-      (pregnancies || []).forEach(p => {
+      // Get all pregnancies grouped by year (from ALL pregnancies in cabaña)
+      (allPregnancies || []).forEach(p => {
         const year = new Date(p.fecha_inicio).getFullYear();
         if (!yearlyDataMap.has(year)) {
           yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
@@ -380,34 +408,29 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         }
       });
 
-      // Count births by year from offspring
-      (offspring || []).forEach(o => {
-        if (o.birth_date) {
-          const year = new Date(o.birth_date).getFullYear();
-          if (!yearlyDataMap.has(year)) {
-            yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
-          }
-          const data = yearlyDataMap.get(year)!;
-          data.totalBirths += 1;
+      // Count births by year from ALL births in cabaña
+      (allBirths || []).forEach(o => {
+        const year = new Date(o.birth_date).getFullYear();
+        if (!yearlyDataMap.has(year)) {
+          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
         }
+        const data = yearlyDataMap.get(year)!;
+        data.totalBirths += 1;
       });
 
-      // Count reproductive females per year (females that were 15+ months in that year)
-      reproductiveFemales.forEach(animal => {
-        if (animals) {
-          const animalData = animals.find(a => a.id === animal.id);
-          if (animalData?.birth_date) {
-            const birthDate = new Date(animalData.birth_date);
-            const currentYear = new Date().getFullYear();
-            for (let year = birthDate.getFullYear() + 1; year <= currentYear; year++) {
-              const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
-              if (ageAtYearStart >= 15) {
-                if (!yearlyDataMap.has(year)) {
-                  yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
-                }
-                const data = yearlyDataMap.get(year)!;
-                data.reproductiveFemalesCount += 1;
+      // Count reproductive females per year (ALL females that were 15+ months in that year)
+      (allFemales || []).forEach(female => {
+        if (female.birth_date) {
+          const birthDate = new Date(female.birth_date);
+          const currentYear = new Date().getFullYear();
+          for (let year = birthDate.getFullYear() + 1; year <= currentYear; year++) {
+            const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+            if (ageAtYearStart >= 15) {
+              if (!yearlyDataMap.has(year)) {
+                yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
               }
+              const data = yearlyDataMap.get(year)!;
+              data.reproductiveFemalesCount += 1;
             }
           }
         }
@@ -430,7 +453,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         }))
         .filter(d => d.totalPregnancies > 0 || d.totalBirths > 0)
         .sort((a, b) => b.year - a.year)
-        .slice(0, 5);
+        .slice(0, 10); // Show up to 10 years
 
       setYearlyRates(yearlyRatesData);
 
