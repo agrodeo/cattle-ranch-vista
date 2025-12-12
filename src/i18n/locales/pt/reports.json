@@ -95,9 +95,11 @@
     "pregnant": "Prenhe",
     "postpartum": "Pós-parto",
     "yearlyRates": "Taxas Reprodutivas Anuais",
-    "yearlyPregnancyRate": "Sucesso de Prenhez",
+    "yearlyPregnancyRate": "Taxa de Prenhez",
     "yearlyCalvingRate": "Taxa de Parição",
+    "yearlyLossRate": "Taxa de Perda",
     "noYearlyData": "Dados históricos insuficientes",
+    "services": "serviços",
     "pregnancies": "prenhezes",
     "births": "nascimentos",
     "losses": "perdas"

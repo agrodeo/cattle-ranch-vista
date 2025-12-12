@@ -95,9 +95,11 @@
     "pregnant": "Pregnant",
     "postpartum": "Post-partum",
     "yearlyRates": "Yearly Reproductive Rates",
-    "yearlyPregnancyRate": "Pregnancy Success",
+    "yearlyPregnancyRate": "Pregnancy Rate",
     "yearlyCalvingRate": "Calving Rate",
+    "yearlyLossRate": "Loss Rate",
     "noYearlyData": "Not enough historical data",
+    "services": "services",
     "pregnancies": "pregnancies",
     "births": "births",
     "losses": "losses"

@@ -74,10 +74,11 @@ interface ReproductiveFemale {
 
 interface YearlyReproductiveRate {
   year: number;
-  pregnancySuccessRate: number; // Successful pregnancies / Total pregnancies
+  pregnancyRate: number; // Confirmed pregnancies / Total services
   calvingRate: number; // Births / Reproductive females
-  totalPregnancies: number; // Births + failed pregnancies
-  successfulPregnancies: number; // = births (each birth = successful pregnancy)
+  lossRate: number; // Failed pregnancies / (Confirmed + Failed)
+  totalServices: number; // All inseminations/services performed
+  confirmedPregnancies: number; // Services that resulted in pregnancy
   failedPregnancies: number;
   totalBirths: number;
   reproductiveFemalesCount: number;
@@ -214,6 +215,32 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         .eq('cabaña_id', cabanaId);
 
       if (allPregnanciesError) throw allPregnanciesError;
+
+      // Get ALL services (artificial inseminations) for yearly stats
+      const { data: allAI, error: allAIError } = await supabase
+        .from('artificial_inseminations')
+        .select('id, insemination_date, is_pregnant')
+        .eq('cabaña_id', cabanaId);
+
+      if (allAIError) throw allAIError;
+
+      // Get ALL IA records with evento dates for yearly stats
+      const { data: allIAEvents, error: allIAEventsError } = await supabase
+        .from('ia')
+        .select('id, evento_id, animales_ids');
+
+      if (allIAEventsError) throw allIAEventsError;
+
+      // Get eventos for IA records
+      const iaEventoIds = (allIAEvents || []).map(ia => ia.evento_id).filter(Boolean);
+      let eventosDates: { id: string; fecha: string }[] = [];
+      if (iaEventoIds.length > 0) {
+        const { data: eventosData } = await supabase
+          .from('eventos')
+          .select('id, fecha')
+          .in('id', iaEventoIds);
+        eventosDates = eventosData || [];
+      }
 
       // Get ALL reproductive females for yearly stats (females 15+ months born in cabaña)
       const { data: allFemales, error: allFemalesError } = await supabase
@@ -390,38 +417,72 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       // Calculate yearly reproductive rates using ALL cabaña data (not filtered)
       const yearlyDataMap = new Map<number, {
-        totalPregnancies: number;
-        successfulPregnancies: number;
+        totalServices: number;
+        confirmedPregnancies: number;
         failedPregnancies: number;
         totalBirths: number;
         reproductiveFemalesCount: number;
       }>();
 
-      // Get all pregnancies grouped by year (from ALL pregnancies in cabaña)
-      // First, count births by year - each birth = 1 successful pregnancy
-      (allBirths || []).forEach(o => {
-        const year = new Date(o.birth_date).getFullYear();
+      const getOrCreateYear = (year: number) => {
         if (!yearlyDataMap.has(year)) {
-          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, failedPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
+          yearlyDataMap.set(year, { 
+            totalServices: 0, 
+            confirmedPregnancies: 0, 
+            failedPregnancies: 0, 
+            totalBirths: 0, 
+            reproductiveFemalesCount: 0 
+          });
         }
-        const data = yearlyDataMap.get(year)!;
-        data.totalBirths += 1;
-        data.successfulPregnancies += 1; // Each birth = 1 successful pregnancy
-        data.totalPregnancies += 1; // Count as a pregnancy
+        return yearlyDataMap.get(year)!;
+      };
+
+      // Count services from artificial_inseminations table
+      (allAI || []).forEach(ai => {
+        if (ai.insemination_date) {
+          const year = new Date(ai.insemination_date).getFullYear();
+          const data = getOrCreateYear(year);
+          data.totalServices += 1;
+          // If marked as pregnant, count as confirmed pregnancy
+          if (ai.is_pregnant) {
+            data.confirmedPregnancies += 1;
+          }
+        }
       });
 
-      // Add failed pregnancies from preñeces table
+      // Count services from IA table via eventos
+      const eventosMap = new Map(eventosDates.map(e => [e.id, e.fecha]));
+      (allIAEvents || []).forEach(ia => {
+        if (ia.evento_id && eventosMap.has(ia.evento_id)) {
+          const fecha = eventosMap.get(ia.evento_id)!;
+          const year = new Date(fecha).getFullYear();
+          const data = getOrCreateYear(year);
+          // Each animal in the service counts as 1 service
+          const animalCount = ia.animales_ids?.length || 1;
+          data.totalServices += animalCount;
+        }
+      });
+
+      // Count confirmed pregnancies from preñeces table (estado_final = 'exitosa' or has cria_id)
       (allPregnancies || []).forEach(p => {
         const year = new Date(p.fecha_inicio).getFullYear();
-        if (!yearlyDataMap.has(year)) {
-          yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, failedPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
-        }
-        const data = yearlyDataMap.get(year)!;
-        // Only count failed pregnancies (not exitosa, no cria_id linked)
-        if (p.estado_final === 'fallida' || p.tipo_perdida) {
+        const data = getOrCreateYear(year);
+        
+        if (p.estado_final === 'exitosa' || p.cria_id) {
+          data.confirmedPregnancies += 1;
+        } else if (p.estado_final === 'fallida' || p.tipo_perdida) {
           data.failedPregnancies += 1;
-          data.totalPregnancies += 1;
+        } else if (p.estado === 'activa' || p.estado_final === 'activa') {
+          // Active pregnancies count as confirmed
+          data.confirmedPregnancies += 1;
         }
+      });
+
+      // Count births by year
+      (allBirths || []).forEach(o => {
+        const year = new Date(o.birth_date).getFullYear();
+        const data = getOrCreateYear(year);
+        data.totalBirths += 1;
       });
 
       // Count reproductive females per year (ALL females that were 15+ months in that year)
@@ -432,10 +493,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           for (let year = birthDate.getFullYear() + 1; year <= currentYear; year++) {
             const ageAtYearStart = (new Date(year, 0, 1).getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
             if (ageAtYearStart >= 15) {
-              if (!yearlyDataMap.has(year)) {
-                yearlyDataMap.set(year, { totalPregnancies: 0, successfulPregnancies: 0, failedPregnancies: 0, totalBirths: 0, reproductiveFemalesCount: 0 });
-              }
-              const data = yearlyDataMap.get(year)!;
+              const data = getOrCreateYear(year);
               data.reproductiveFemalesCount += 1;
             }
           }
@@ -446,21 +504,25 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const yearlyRatesData: YearlyReproductiveRate[] = Array.from(yearlyDataMap.entries())
         .map(([year, data]) => ({
           year,
-          totalPregnancies: data.totalPregnancies,
-          successfulPregnancies: data.successfulPregnancies,
+          totalServices: data.totalServices,
+          confirmedPregnancies: data.confirmedPregnancies,
           failedPregnancies: data.failedPregnancies,
           totalBirths: data.totalBirths,
           reproductiveFemalesCount: data.reproductiveFemalesCount,
-          // Pregnancy success rate = successful / total pregnancies
-          pregnancySuccessRate: data.totalPregnancies > 0 
-            ? Math.round((data.successfulPregnancies / data.totalPregnancies) * 100) 
+          // Pregnancy rate = confirmed pregnancies / total services
+          pregnancyRate: data.totalServices > 0 
+            ? Math.round((data.confirmedPregnancies / data.totalServices) * 100) 
             : 0,
           // Calving rate = births / reproductive females
           calvingRate: data.reproductiveFemalesCount > 0 
             ? Math.round((data.totalBirths / data.reproductiveFemalesCount) * 100) 
+            : 0,
+          // Loss rate = failed / (confirmed + failed)
+          lossRate: (data.confirmedPregnancies + data.failedPregnancies) > 0
+            ? Math.round((data.failedPregnancies / (data.confirmedPregnancies + data.failedPregnancies)) * 100)
             : 0
         }))
-        .filter(d => d.totalPregnancies > 0 || d.totalBirths > 0)
+        .filter(d => d.totalServices > 0 || d.totalBirths > 0)
         .sort((a, b) => b.year - a.year)
         .slice(0, 10); // Show up to 10 years
 
@@ -653,11 +715,11 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                           {t('reports:reproductive.yearlyPregnancyRate')}
                         </div>
                         <div className={`text-xl font-bold ${
-                          rate.pregnancySuccessRate >= 80 ? 'text-emerald-600' :
-                          rate.pregnancySuccessRate >= 60 ? 'text-yellow-600' :
+                          rate.pregnancyRate >= 70 ? 'text-emerald-600' :
+                          rate.pregnancyRate >= 50 ? 'text-yellow-600' :
                           'text-red-600'
                         }`}>
-                          {rate.pregnancySuccessRate}%
+                          {rate.pregnancyRate}%
                         </div>
                       </div>
                       
@@ -675,6 +737,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
                       </div>
                       
                       <div className="pt-2 border-t text-xs text-muted-foreground">
+                        <div>{rate.totalServices} {t('reports:reproductive.services')}</div>
                         <div>{rate.totalBirths} {t('reports:reproductive.births')}</div>
                         {rate.failedPregnancies > 0 && (
                           <div className="text-red-500">{rate.failedPregnancies} {t('reports:reproductive.losses')}</div>
