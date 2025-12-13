@@ -126,16 +126,16 @@ export function AchievementCard({
         style={{
           position: 'relative',
           overflow: 'hidden',
-          padding: '32px',
+          padding: '16px',
           backgroundColor: '#f8fafc',
           border: '1px solid #e2e8f0',
         }}
       >
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
           {/* Logo/Brand */}
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <span style={{ 
-              fontSize: '24px', 
+              fontSize: '20px', 
               fontWeight: 'bold', 
               color: '#16a34a',
             }}>
@@ -144,14 +144,14 @@ export function AchievementCard({
           </div>
 
           {/* Medal */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
             <div style={{
-              width: '128px',
-              height: '128px',
+              width: '96px',
+              height: '96px',
               borderRadius: '50%',
               background: `linear-gradient(135deg, ${solidColors.bg}, ${solidColors.border})`,
-              padding: '4px',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+              padding: '3px',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
             }}>
               <div style={{
                 width: '100%',
@@ -162,31 +162,31 @@ export function AchievementCard({
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <span style={{ fontSize: '64px' }}>{medalEmoji}</span>
+                <span style={{ fontSize: '48px' }}>{medalEmoji}</span>
               </div>
             </div>
           </div>
 
           {/* Achievement Text */}
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '16px' }}>
             <h3 style={{ 
-              fontSize: '24px', 
+              fontSize: '18px', 
               fontWeight: 'bold', 
               color: '#1e293b',
-              marginBottom: '12px',
+              marginBottom: '8px',
             }}>
               {t('common:achievements.medal')} {t('common:achievements.of')} {tierName}
             </h3>
             <p style={{ 
-              fontSize: '18px', 
+              fontSize: '14px', 
               color: '#475569',
               fontWeight: '500',
-              marginBottom: '8px',
+              marginBottom: '6px',
             }}>
               {t(nameKey)}
             </p>
             <p style={{ 
-              fontSize: '14px', 
+              fontSize: '12px', 
               color: '#64748b',
             }}>
               {t(descriptionKey)}
@@ -196,19 +196,18 @@ export function AchievementCard({
           {/* Stats */}
           <div style={{
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '24px',
-            fontSize: '14px',
+            gap: '8px',
+            fontSize: '12px',
             color: '#64748b',
-            paddingTop: '16px',
+            paddingTop: '12px',
             borderTop: '1px solid #e2e8f0',
           }}>
             <div>
               <span style={{ fontWeight: '600', color: '#1e293b' }}>{progressValue}</span>
               <span style={{ marginLeft: '4px' }}>{t('common:achievements.achievements_count')}</span>
             </div>
-            <div style={{ width: '1px', height: '16px', backgroundColor: '#e2e8f0' }} />
             <div>
               {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', { 
                 day: 'numeric', 
@@ -219,9 +218,9 @@ export function AchievementCard({
           </div>
 
           {/* Message */}
-          <div style={{ paddingTop: '16px' }}>
+          <div style={{ paddingTop: '12px' }}>
             <p style={{ 
-              fontSize: '16px', 
+              fontSize: '14px', 
               fontWeight: '500', 
               color: '#16a34a',
             }}>
