@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { format, parseISO } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -14,10 +14,13 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { db } from "@/services/db";
+import { useConnectivity } from "@/services/connectivity";
 
 export function FinancesSummary() {
   const { t } = useTranslation('finance');
   const { currentUser } = useSupabaseAuth();
+  const { isOnline } = useConnectivity();
   const [selectedPeriod, setSelectedPeriod] = useState<string>("last6months");
   const [customFromDate, setCustomFromDate] = useState<Date | undefined>();
   const [customToDate, setCustomToDate] = useState<Date | undefined>();
@@ -72,42 +75,112 @@ export function FinancesSummary() {
     }
   }, [selectedPeriod, customFromDate, customToDate]);
 
+  // Calculate summary from cache when offline
+  const getCachedSummary = useCallback(async () => {
+    if (!currentUser?.cabañaId) return { ingresos: 0, egresos: 0, balance: 0 };
+    
+    const cached = await db.finances_cache
+      .where('cabaña_id')
+      .equals(currentUser.cabañaId)
+      .toArray();
+    
+    let filtered = cached;
+    if (fromDate) {
+      const fromStr = format(fromDate, "yyyy-MM-dd");
+      filtered = filtered.filter(f => f.date && f.date >= fromStr);
+    }
+    if (toDate) {
+      const toStr = format(toDate, "yyyy-MM-dd");
+      filtered = filtered.filter(f => f.date && f.date <= toStr);
+    }
+    
+    const ingresos = filtered
+      .filter(f => f.type === 'ingreso')
+      .reduce((sum, f) => sum + (f.amount || 0), 0);
+    
+    const egresos = filtered
+      .filter(f => f.type === 'egreso')
+      .reduce((sum, f) => sum + (f.amount || 0), 0);
+    
+    return { ingresos, egresos, balance: ingresos - egresos };
+  }, [currentUser?.cabañaId, fromDate, toDate]);
+
   // Query for summary data using unified date filters
   const { data } = useQuery({
-    queryKey: ["finances", "summary", currentUser?.id, fromDate?.toISOString(), toDate?.toISOString()],
+    queryKey: ["finances", "summary", currentUser?.id, fromDate?.toISOString(), toDate?.toISOString(), isOnline],
     queryFn: async () => {
+      // If offline, calculate from cache
+      if (!isOnline) {
+        return getCachedSummary();
+      }
+      
       if (!currentUser?.id) {
         throw new Error("Usuario no autenticado");
       }
 
-      const { data, error } = await supabase.rpc("get_finance_summary", {
-        _user_id: currentUser.id,
-        _from_date: fromDate ? format(fromDate, "yyyy-MM-dd") : null,
-        _to_date: toDate ? format(toDate, "yyyy-MM-dd") : null,
-      });
+      try {
+        const { data, error } = await supabase.rpc("get_finance_summary", {
+          _user_id: currentUser.id,
+          _from_date: fromDate ? format(fromDate, "yyyy-MM-dd") : null,
+          _to_date: toDate ? format(toDate, "yyyy-MM-dd") : null,
+        });
 
-      if (error) throw error;
-      return data?.[0] || { ingresos: 0, egresos: 0, balance: 0 };
+        if (error) throw error;
+        return data?.[0] || { ingresos: 0, egresos: 0, balance: 0 };
+      } catch (err) {
+        console.error('Error fetching finance summary:', err);
+        return getCachedSummary();
+      }
     },
     enabled: !!currentUser?.id && !!fromDate && !!toDate,
   });
 
   // Query for reports data using period filters
   const { data: reportsData } = useQuery({
-    queryKey: ["finances", "reports", currentUser?.id, fromDate?.toISOString(), toDate?.toISOString()],
+    queryKey: ["finances", "reports", currentUser?.id, fromDate?.toISOString(), toDate?.toISOString(), isOnline],
     queryFn: async () => {
+      // If offline, return cached data as reports
+      if (!isOnline && currentUser?.cabañaId) {
+        const cached = await db.finances_cache
+          .where('cabaña_id')
+          .equals(currentUser.cabañaId)
+          .toArray();
+        
+        let filtered = cached;
+        if (fromDate) {
+          const fromStr = format(fromDate, "yyyy-MM-dd");
+          filtered = filtered.filter(f => f.date && f.date >= fromStr);
+        }
+        if (toDate) {
+          const toStr = format(toDate, "yyyy-MM-dd");
+          filtered = filtered.filter(f => f.date && f.date <= toStr);
+        }
+        
+        return filtered.map(f => ({
+          date: f.date,
+          type: f.type,
+          amount: f.amount,
+          category_name: null // No category names in cache
+        }));
+      }
+      
       if (!currentUser?.id) {
         throw new Error("Usuario no autenticado");
       }
 
-      const { data, error } = await supabase.rpc("list_finance_reports", {
-        _user_id: currentUser.id,
-        _from_date: fromDate ? format(fromDate, "yyyy-MM-dd") : null,
-        _to_date: toDate ? format(toDate, "yyyy-MM-dd") : null,
-      });
+      try {
+        const { data, error } = await supabase.rpc("list_finance_reports", {
+          _user_id: currentUser.id,
+          _from_date: fromDate ? format(fromDate, "yyyy-MM-dd") : null,
+          _to_date: toDate ? format(toDate, "yyyy-MM-dd") : null,
+        });
 
-      if (error) throw error;
-      return data || [];
+        if (error) throw error;
+        return data || [];
+      } catch (err) {
+        console.error('Error fetching finance reports:', err);
+        return [];
+      }
     },
     enabled: !!currentUser?.id && !!fromDate && !!toDate,
   });

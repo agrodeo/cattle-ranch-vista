@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,9 @@ import CategorySelect from "./CategorySelect";
 import MultiAnimalSelect from "./MultiAnimalSelect";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { db } from "@/services/db";
+import { useConnectivity } from "@/services/connectivity";
+import type { CachedFinance } from "@/services/offlineTypes";
 
 interface FinanceRow {
   id: string;
@@ -27,11 +30,17 @@ interface FinanceRow {
   type: string | null;
   amount: number | null;
   description: string | null;
+  category_name?: string;
+  category_id?: string;
+  buyer_name?: string;
+  buyer_document?: string;
+  buyer_destination?: string;
 }
 
 export function FinancesMovements() {
   const { t } = useTranslation(['finance', 'common']);
   const { currentUser } = useSupabaseAuth();
+  const { isOnline } = useConnectivity();
   const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'employee';
 
   const [from, setFrom] = useState<Date | undefined>();
@@ -43,6 +52,60 @@ export function FinancesMovements() {
   const queryClient = useQueryClient();
 
   const supabaseAny = supabase as any;
+
+  // Load cached finances for offline display
+  const loadCachedFinances = useCallback(async (): Promise<FinanceRow[]> => {
+    if (!currentUser?.cabañaId) return [];
+    try {
+      const cached = await db.finances_cache
+        .where('cabaña_id')
+        .equals(currentUser.cabañaId)
+        .toArray();
+      
+      // Apply filters client-side
+      let filtered = cached;
+      if (from) {
+        const fromStr = format(from, "yyyy-MM-dd");
+        filtered = filtered.filter(f => f.date && f.date >= fromStr);
+      }
+      if (to) {
+        const toStr = format(to, "yyyy-MM-dd");
+        filtered = filtered.filter(f => f.date && f.date <= toStr);
+      }
+      if (type) {
+        filtered = filtered.filter(f => f.type === type);
+      }
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filtered = filtered.filter(f => 
+          f.description?.toLowerCase().includes(searchLower)
+        );
+      }
+      if (categoryFilter) {
+        filtered = filtered.filter(f => f.category_id === categoryFilter);
+      }
+      
+      // Sort by date descending
+      filtered.sort((a, b) => 
+        new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
+      );
+      
+      return filtered.map(f => ({
+        id: f.id,
+        date: f.date || null,
+        type: f.type || null,
+        amount: f.amount || null,
+        description: f.description || null,
+        category_id: f.category_id,
+        buyer_name: f.buyer_name,
+        buyer_document: f.buyer_document,
+        buyer_destination: f.buyer_destination
+      }));
+    } catch (err) {
+      console.error('Error loading cached finances:', err);
+      return [];
+    }
+  }, [currentUser?.cabañaId, from, to, type, search, categoryFilter]);
 
   // Query to get animal sale category ID
   const { data: animalSaleCategory } = useQuery({
@@ -56,27 +119,63 @@ export function FinancesMovements() {
       if (error) throw error;
       return data?.find((c: any) => c.name === 'Venta de Animales') || null;
     },
-    enabled: !!currentUser?.id,
+    enabled: !!currentUser?.id && isOnline,
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search, categoryFilter],
+    queryKey: ["finances","list", from?.toISOString(), to?.toISOString(), type, search, categoryFilter, isOnline],
     queryFn: async (): Promise<FinanceRow[]> => {
+      // Try to load from cache first for instant display
+      const cached = await loadCachedFinances();
+      
+      // If offline, return cached data
+      if (!isOnline) {
+        return cached;
+      }
+      
       if (!currentUser?.id) throw new Error("User not authenticated");
       
-      const { data, error } = await supabaseAny.rpc("list_finance_movements", {
-        _user_id: currentUser.id,
-        _from_date: from ? format(from, "yyyy-MM-dd") : null,
-        _to_date: to ? format(to, "yyyy-MM-dd") : null,
-        _type: type || null,
-        _search: search || null,
-        _category_id: categoryFilter || null
-      });
-      
-      if (error) throw error;
-      return (data as unknown as FinanceRow[]) || [];
+      try {
+        const { data, error } = await supabaseAny.rpc("list_finance_movements", {
+          _user_id: currentUser.id,
+          _from_date: from ? format(from, "yyyy-MM-dd") : null,
+          _to_date: to ? format(to, "yyyy-MM-dd") : null,
+          _type: type || null,
+          _search: search || null,
+          _category_id: categoryFilter || null
+        });
+        
+        if (error) throw error;
+        
+        // Cache the results
+        if (data && currentUser?.cabañaId) {
+          for (const row of data) {
+            await db.finances_cache.put({
+              id: row.id,
+              cabaña_id: currentUser.cabañaId,
+              type: row.type,
+              amount: row.amount,
+              date: row.date,
+              description: row.description,
+              category_id: row.category_id,
+              buyer_name: row.buyer_name,
+              buyer_document: row.buyer_document,
+              buyer_destination: row.buyer_destination,
+              updated_at: new Date().toISOString(),
+              sync_status: 'synced'
+            } as CachedFinance);
+          }
+        }
+        
+        return (data as unknown as FinanceRow[]) || [];
+      } catch (err) {
+        console.error('Error fetching finances from server:', err);
+        // Return cached data on error
+        return cached;
+      }
     },
     enabled: !!currentUser?.id,
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
   const [open, setOpen] = useState(false);
