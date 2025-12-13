@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from './useSupabaseAuth';
+import { db } from '@/services/db';
+import { useConnectivity } from '@/services/connectivity';
 
 export interface UnifiedActivity {
   id: string;
@@ -18,35 +20,62 @@ export interface UnifiedActivity {
   created_at: string;
 }
 
+interface CachedActivity {
+  id: string;
+  cabaña_id: string;
+  tipo: string;
+  subtipo?: string;
+  fecha: string;
+  responsable?: string;
+  notas?: string;
+  animales: string; // JSON string
+  detalles: string; // JSON string
+  created_at: string;
+  updated_at: string;
+  sync_status: 'synced' | 'pending' | 'failed';
+}
+
 export function useAllActivities() {
   const [activities, setActivities] = useState<UnifiedActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { session } = useSupabaseAuth();
+  const isOnline = useConnectivity();
 
-  const fetchActivities = async () => {
-    if (!session?.user?.id) {
-      setActivities([]);
-      setIsLoading(false);
-      return;
+  // Load from IndexedDB cache first
+  const loadFromCache = useCallback(async (cabañaId: string) => {
+    try {
+      const cached = await db.table('eventos_cache')
+        .where('cabaña_id')
+        .equals(cabañaId)
+        .toArray();
+
+      if (cached.length > 0) {
+        const parsedActivities: UnifiedActivity[] = cached.map((c: CachedActivity) => ({
+          id: c.id,
+          tipo: c.tipo as UnifiedActivity['tipo'],
+          subtipo: c.subtipo,
+          fecha: c.fecha,
+          responsable: c.responsable,
+          notas: c.notas,
+          animales: JSON.parse(c.animales || '[]'),
+          detalles: JSON.parse(c.detalles || '{}'),
+          created_at: c.created_at
+        }));
+        
+        parsedActivities.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        setActivities(parsedActivities);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error loading activities from cache:', error);
     }
+  }, []);
+
+  // Sync from server and update cache
+  const syncFromServer = useCallback(async (cabañaId: string) => {
+    if (!isOnline) return;
 
     try {
-      setIsLoading(true);
-
-      // Get user's cabaña
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
-      const cabañaId = (profile as any)?.cabaña_id;
-      
-      if (!cabañaId) {
-        setActivities([]);
-        setIsLoading(false);
-        return;
-      }
       const allActivities: UnifiedActivity[] = [];
 
       // 1. Fetch eventos with related data
@@ -291,18 +320,77 @@ export function useAllActivities() {
         return dateB.getTime() - dateA.getTime();
       });
 
+      // Cache activities in IndexedDB
+      const now = new Date().toISOString();
+      const activitiesToCache: CachedActivity[] = allActivities.map(a => ({
+        id: a.id,
+        cabaña_id: cabañaId,
+        tipo: a.tipo,
+        subtipo: a.subtipo,
+        fecha: a.fecha,
+        responsable: a.responsable,
+        notas: a.notas,
+        animales: JSON.stringify(a.animales),
+        detalles: JSON.stringify(a.detalles),
+        created_at: a.created_at,
+        updated_at: now,
+        sync_status: 'synced' as const
+      }));
+
+      // Clear old cached activities and replace with new ones
+      await db.table('eventos_cache').where('cabaña_id').equals(cabañaId).delete();
+      if (activitiesToCache.length > 0) {
+        await db.table('eventos_cache').bulkPut(activitiesToCache);
+      }
+
       setActivities(allActivities);
     } catch (error) {
-      console.error('Error fetching activities:', error);
-      setActivities([]);
+      console.error('Error syncing activities from server:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isOnline]);
+
+  const fetchActivities = useCallback(async () => {
+    if (!session?.user?.id) {
+      setActivities([]);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      // Get user's cabaña
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .single();
+
+      const cabañaId = (profile as any)?.cabaña_id;
+      
+      if (!cabañaId) {
+        setActivities([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Load from cache first for instant display
+      await loadFromCache(cabañaId);
+
+      // Then sync from server if online
+      await syncFromServer(cabañaId);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      setActivities([]);
+      setIsLoading(false);
+    }
+  }, [session?.user?.id, loadFromCache, syncFromServer]);
 
   useEffect(() => {
     fetchActivities();
-  }, [session?.user?.id]);
+  }, [fetchActivities]);
 
   return {
     activities,
