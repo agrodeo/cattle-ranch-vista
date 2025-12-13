@@ -106,7 +106,7 @@ export function AchievementsGallery() {
                     </DialogTrigger>
 
                     {unlocked && (
-                      <DialogContent className="max-w-md">
+                      <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>{t('common:achievements.unlocked_achievement')}</DialogTitle>
                         </DialogHeader>
