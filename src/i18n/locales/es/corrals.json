@@ -16,6 +16,7 @@
     "location": "Ubicación"
   },
   "actions": {
+    "create": "Crear corral",
     "view": "Ver",
     "edit": "Editar",
     "delete": "Eliminar",

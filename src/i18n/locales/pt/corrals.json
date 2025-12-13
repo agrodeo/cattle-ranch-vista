@@ -16,6 +16,7 @@
     "location": "Localização"
   },
   "actions": {
+    "create": "Criar curral",
     "view": "Ver",
     "edit": "Editar",
     "delete": "Excluir",
