@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
+import { useConnectivity } from "@/services/connectivity";
 import { MobilePageHeader } from "@/components/mobile/MobilePageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,19 +32,46 @@ interface ActivityRecord {
 export function MobileActivities() {
   const { t } = useTranslation(['activities', 'common']);
   const { currentUser } = useSupabaseAuth();
+  const isOnline = useConnectivity();
   const [activities, setActivities] = useState<ActivityRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
-  useEffect(() => {
-    fetchActivities();
+  // Load from cache first
+  const loadFromCache = useCallback(async () => {
+    try {
+      const cached = await db.table('eventos_cache').toArray();
+      if (cached.length > 0) {
+        const transformedData: ActivityRecord[] = cached.map((item: any) => {
+          const animales = JSON.parse(item.animales || '[]');
+          const firstAnimal = animales[0] || {};
+          return {
+            id: item.id,
+            fecha: item.fecha,
+            tipo: item.tipo,
+            animal_id: firstAnimal.id || '',
+            animal_name: firstAnimal.name,
+            animal_id_tag: firstAnimal.id_tag || '',
+            corral_name: '',
+            user_name: item.responsable,
+            observaciones: item.notas,
+          };
+        });
+        setActivities(transformedData);
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error loading from cache:", error);
+    }
   }, []);
 
-  const fetchActivities = async () => {
+  // Sync from server
+  const syncFromServer = useCallback(async () => {
+    if (!isOnline) return;
+    
     try {
-      // This would be replaced with actual query joining activities with animals, corrals, etc.
       const { data, error } = await supabase
         .from("activities")
         .select(`
@@ -54,12 +83,11 @@ export function MobileActivities() {
           animals!inner(id_tag, name),
           users(name)
         `)
-        .order("fecha", { ascending: false })
+        .order("date", { ascending: false })
         .limit(100);
 
       if (error) throw error;
       
-      // Transform data to match our interface
       const transformedData: ActivityRecord[] = (data || []).map(item => ({
         id: item.id,
         fecha: item.date,
@@ -78,7 +106,12 @@ export function MobileActivities() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isOnline]);
+
+  useEffect(() => {
+    loadFromCache();
+    syncFromServer();
+  }, [loadFromCache, syncFromServer]);
 
   const getActivityIcon = (tipo: string) => {
     switch (tipo.toLowerCase()) {
