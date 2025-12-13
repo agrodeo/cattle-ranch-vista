@@ -104,7 +104,8 @@
     "successfulPregnancies": "successful pregnancies",
     "femalesPregnant": "females pregnant",
     "births": "births",
-    "losses": "losses"
+    "losses": "losses",
+    "years": "years"
   },
   "production": {
     "title": "Production Analysis",

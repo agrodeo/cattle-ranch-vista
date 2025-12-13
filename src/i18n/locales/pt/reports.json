@@ -104,7 +104,8 @@
     "successfulPregnancies": "prenhezes bem-sucedidas",
     "femalesPregnant": "fêmeas prenhas",
     "births": "nascimentos",
-    "losses": "perdas"
+    "losses": "perdas",
+    "years": "anos"
   },
   "production": {
     "title": "Análise de Produção",

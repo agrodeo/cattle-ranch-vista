@@ -104,6 +104,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
   const [reproductiveFemales, setReproductiveFemales] = useState<ReproductiveFemale[]>([]);
   const [yearlyRates, setYearlyRates] = useState<YearlyReproductiveRate[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isYearlyExpanded, setIsYearlyExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<keyof ReproductiveFemale | null>(null);
@@ -689,61 +690,77 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       {/* Yearly Reproductive Rates */}
       {yearlyRates.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              {t('reports:reproductive.yearlyRates')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {yearlyRates.map((rate) => (
-                <Card key={rate.year} className="border-2">
-                  <CardContent className="p-4">
-                    <div className="text-lg font-bold text-center mb-3">{rate.year}</div>
-                    
-                    <div className="space-y-3">
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">
-                          {t('reports:reproductive.yearlyPregnancyRate')}
+        <Collapsible open={isYearlyExpanded} onOpenChange={setIsYearlyExpanded}>
+          <Card>
+            <CardHeader>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between p-0 h-auto whitespace-normal">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {t('reports:reproductive.yearlyRates')}
+                    <Badge variant="secondary" className="ml-2">
+                      {yearlyRates.length} {t('reports:reproductive.years')}
+                    </Badge>
+                  </CardTitle>
+                  {isYearlyExpanded ? (
+                    <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {yearlyRates.map((rate) => (
+                    <Card key={rate.year} className="border-2">
+                      <CardContent className="p-4">
+                        <div className="text-lg font-bold text-center mb-3">{rate.year}</div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">
+                              {t('reports:reproductive.yearlyPregnancyRate')}
+                            </div>
+                            <div className={`text-xl font-bold ${
+                              rate.pregnancyRate >= 70 ? 'text-emerald-600' :
+                              rate.pregnancyRate >= 50 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {rate.pregnancyRate}%
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">
+                              {t('reports:reproductive.yearlyCalvingRate')}
+                            </div>
+                            <div className={`text-xl font-bold ${
+                              rate.calvingRate >= 90 ? 'text-emerald-600' :
+                              rate.calvingRate >= 75 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {rate.calvingRate}%
+                            </div>
+                          </div>
+                          
+                          <div className="pt-2 border-t text-xs text-muted-foreground">
+                            <div>{rate.femalesWhoGotPregnant} {t('reports:reproductive.femalesPregnant')}</div>
+                            <div>{rate.totalBirths} {t('reports:reproductive.births')}</div>
+                            {rate.failedPregnancies > 0 && (
+                              <div className="text-red-500">{rate.failedPregnancies} {t('reports:reproductive.losses')}</div>
+                            )}
+                          </div>
                         </div>
-                        <div className={`text-xl font-bold ${
-                          rate.pregnancyRate >= 70 ? 'text-emerald-600' :
-                          rate.pregnancyRate >= 50 ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
-                          {rate.pregnancyRate}%
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <div className="text-xs text-muted-foreground mb-1">
-                          {t('reports:reproductive.yearlyCalvingRate')}
-                        </div>
-                        <div className={`text-xl font-bold ${
-                          rate.calvingRate >= 90 ? 'text-emerald-600' :
-                          rate.calvingRate >= 75 ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
-                          {rate.calvingRate}%
-                        </div>
-                      </div>
-                      
-                      <div className="pt-2 border-t text-xs text-muted-foreground">
-                        <div>{rate.femalesWhoGotPregnant} {t('reports:reproductive.femalesPregnant')}</div>
-                        <div>{rate.totalBirths} {t('reports:reproductive.births')}</div>
-                        {rate.failedPregnancies > 0 && (
-                          <div className="text-red-500">{rate.failedPregnancies} {t('reports:reproductive.losses')}</div>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Card>
+        </Collapsible>
       )}
 
       {/* Expandable Reproductive Females Detail */}
