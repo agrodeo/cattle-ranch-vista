@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,9 @@ import { usePullToRefresh } from "@/hooks/usePullToRefresh";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { db } from "@/services/db";
+import { useConnectivity } from "@/services/connectivity";
+import type { CachedAnimal } from "@/services/offlineTypes";
 
 interface Cabaña {
   id: string;
@@ -135,6 +138,7 @@ const Animals = () => {
   const { currentUser } = useSupabaseAuth();
   const { t } = useTranslation(['animals', 'common', 'forms']);
   const isMobile = useIsMobile();
+  const { isOnline } = useConnectivity();
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [cabañas, setCabañas] = useState<Cabaña[]>([]);
   const [loading, setLoading] = useState(true);
@@ -268,15 +272,36 @@ const Animals = () => {
     return animal.id_tag;
   };
 
-  const fetchAnimals = async () => {
-    if (!userCabaña) {
-      console.log("No userCabaña available, skipping fetchAnimals");
-      setLoading(false);
-      return;
-    }
-
+  // Load animals from cache first, then sync from server
+  const loadFromCache = useCallback(async () => {
+    if (!userCabaña) return;
     try {
-      console.log("🐄 Animals page - Fetching animals for cabaña:", userCabaña);
+      const cached = await db.animals_cache
+        .where('cabaña_id')
+        .equals(userCabaña)
+        .toArray();
+      
+      if (cached.length > 0) {
+        // Sort by birth_date descending
+        cached.sort((a, b) => {
+          if (!a.birth_date && !b.birth_date) return 0;
+          if (!a.birth_date) return 1;
+          if (!b.birth_date) return -1;
+          return new Date(b.birth_date).getTime() - new Date(a.birth_date).getTime();
+        });
+        setAnimals(cached as unknown as Animal[]);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Error loading from cache:', err);
+    }
+  }, [userCabaña]);
+
+  const syncFromServer = useCallback(async () => {
+    if (!userCabaña || !isOnline) return;
+    
+    try {
+      console.log("🐄 Animals page - Syncing from server for cabaña:", userCabaña);
       const { data, error } = await supabase
         .from("animals")
         .select("*, is_castrated")
@@ -284,18 +309,57 @@ const Animals = () => {
         .order("birth_date", { ascending: false, nullsFirst: false });
 
       if (error) throw error;
+      
+      // Get pending local IDs to avoid overwriting
+      const pendingIds = (await db.animals_cache
+        .where('sync_status')
+        .equals('pending')
+        .toArray()
+      ).map(a => a.id);
+
+      // Update cache with server data
+      for (const animal of data || []) {
+        if (pendingIds.includes(animal.id)) continue;
+        
+        await db.animals_cache.put({
+          ...animal,
+          cabaña_id: animal.cabaña_id || userCabaña,
+          sex: animal.sex as 'Macho' | 'Hembra',
+          status: (animal.status || 'activo') as 'activo' | 'vendido' | 'muerto',
+          updated_at: new Date().toISOString(),
+          sync_status: 'synced'
+        } as CachedAnimal);
+      }
+
       setAnimals(data || []);
     } catch (error) {
-      console.error("Error fetching animals:", error);
-      toast({
-        title: t('common:errors.generic'),
-        description: t('animals:errors.loadAnimals'),
-        variant: "destructive",
-      });
+      console.error("Error syncing animals:", error);
+      // Only show error if we have no cached data
+      if (animals.length === 0) {
+        toast({
+          title: t('common:errors.generic'),
+          description: t('animals:errors.loadAnimals'),
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [userCabaña, isOnline, animals.length, t]);
+
+  const fetchAnimals = useCallback(async () => {
+    if (!userCabaña) {
+      console.log("No userCabaña available, skipping fetchAnimals");
+      setLoading(false);
+      return;
+    }
+
+    // Load from cache first for instant display
+    await loadFromCache();
+    
+    // Then sync from server if online
+    await syncFromServer();
+  }, [userCabaña, loadFromCache, syncFromServer]);
 
   const fetchCabañas = async () => {
     try {
