@@ -238,6 +238,7 @@ All colors MUST be HSL.
   /* Smooth scroll */
   html {
     scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
 }
 
