@@ -5,6 +5,9 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { normalizeStatus } from '@/lib/status';
 import { isValidUUID } from '@/lib/cabana';
+import { db } from '@/services/db';
+import { useConnectivity } from '@/services/connectivity';
+import type { CachedAnimal, CachedCorral, CachedEvento } from '@/services/offlineTypes';
 
 // Helper to normalize activity types to translation keys
 const normalizeActivityType = (tipo: string): string => {
@@ -115,6 +118,7 @@ export const useDashboardSummary = (): DashboardSummary => {
   const { t } = useTranslation(['dashboard', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { subscriptionStatus } = useSubscription();
+  const isOnline = useConnectivity();
   
   const [cabana, setCabana] = useState<CabanaInfo | null>(null);
   const [counts, setCounts] = useState<DashboardCounts>({
@@ -140,9 +144,93 @@ export const useDashboardSummary = (): DashboardSummary => {
   const [isError, setIsError] = useState(false);
   const [diagnostics, setDiagnostics] = useState<any[]>([]);
 
-  const fetchDashboardData = useCallback(async () => {
+  // Load dashboard summary from cache for instant display
+  const loadFromCache = useCallback(async () => {
     try {
-      setIsLoading(true);
+      // Get cached animals
+      const cachedAnimals = await db.table('animals_cache').toArray() as CachedAnimal[];
+      const activeAnimals = cachedAnimals.filter(a => 
+        !['vendido', 'muerto', 'Vendido', 'Muerto'].includes(a.status || '')
+      );
+      
+      // Get cached corrals
+      const cachedCorrals = await db.table('corrales_cache').toArray() as CachedCorral[];
+      
+      // Get cached eventos
+      const cachedEventos = await db.table('eventos_cache').toArray();
+      
+      if (cachedAnimals.length > 0 || cachedCorrals.length > 0) {
+        // Calculate basic counts from cache
+        const today = new Date();
+        const thirtyDaysAgo = new Date(today);
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        
+        // Count reproductive females and pregnant
+        let reproductiveFemalesCount = 0;
+        let pregnantFemalesCount = 0;
+        
+        activeAnimals.forEach(animal => {
+          if (animal.sex === 'Hembra' && animal.birth_date) {
+            const birthDate = new Date(animal.birth_date);
+            const ageMonths = (today.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 30.44);
+            if (ageMonths >= 15) {
+              reproductiveFemalesCount++;
+              if (animal.esta_preñada) {
+                pregnantFemalesCount++;
+              }
+            }
+          }
+        });
+        
+        const pregnancyPercentage = reproductiveFemalesCount > 0 
+          ? Math.round((pregnantFemalesCount / reproductiveFemalesCount) * 100)
+          : 0;
+        
+        // Count recent activities from cache
+        const recentEventos = cachedEventos.filter((e: any) => 
+          new Date(e.fecha) >= thirtyDaysAgo
+        );
+        
+        setCounts({
+          animalsActive: activeAnimals.length,
+          corrals: cachedCorrals.length,
+          activitiesLast30d: recentEventos.length,
+          servicesTotal: 0, // Will be updated from server
+          pregnancyPercentage,
+          reproductiveFemales: reproductiveFemalesCount,
+          pregnantFemales: pregnantFemalesCount,
+        });
+        
+        // Parse recent activities from cache
+        const recentFromCache: RecentActivity[] = cachedEventos
+          .slice(0, 5)
+          .map((e: any) => ({
+            id: e.id,
+            type: normalizeActivityType(e.tipo || 'general'),
+            date: e.fecha,
+            description: e.notas || e.tipo || '',
+            animalCount: 0,
+          }));
+        
+        setRecentActivities(recentFromCache);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error loading dashboard from cache:', error);
+    }
+  }, []);
+
+  const fetchDashboardData = useCallback(async () => {
+    // Load from cache first for instant display
+    await loadFromCache();
+    
+    // If offline, stop here
+    if (!isOnline) {
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
       setIsError(false);
 
       // Validate user is available
@@ -890,7 +978,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     } finally {
       setIsLoading(false);
     }
-  }, [subscriptionStatus, currentUser]);
+  }, [subscriptionStatus, currentUser, isOnline, loadFromCache]);
 
   useEffect(() => {
     fetchDashboardData();
