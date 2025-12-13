@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { PageHeader } from "@/components/ui/page-header";
@@ -49,6 +49,9 @@ import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
 import { cn } from "@/lib/utils";
+import { db } from "@/services/db";
+import { useConnectivity } from "@/services/connectivity";
+import type { CachedCorral } from "@/services/offlineTypes";
 
 interface Corral {
   id: string;
@@ -74,6 +77,7 @@ export default function Corrales() {
   const { t } = useTranslation(['corrals', 'common', 'animals']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
+  const { isOnline } = useConnectivity();
   const { kpis: corralKPIs, loading: kpisLoading } = useCorralKPIs();
   const [corrales, setCorrales] = useState<Corral[]>([]);
   const [loading, setLoading] = useState(true);
@@ -89,13 +93,65 @@ export default function Corrales() {
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
   const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
 
-  const fetchCorrales = async () => {
+  // Load from cache first for instant display
+  const loadFromCache = useCallback(async () => {
     if (!currentUser?.cabañaId) return;
+    try {
+      const cachedCorrales = await db.corrales_cache
+        .where('cabaña_id')
+        .equals(currentUser.cabañaId)
+        .toArray();
+      
+      if (cachedCorrales.length > 0) {
+        // Get animal counts from cache
+        const processedCorrales: Corral[] = await Promise.all(
+          cachedCorrales.map(async (corral) => {
+            const animals = await db.animals_cache
+              .where('corral_id')
+              .equals(corral.id)
+              .toArray();
+            const activeAnimals = animals.filter(a => 
+              a.status?.toLowerCase() === 'activo'
+            );
+            
+            return {
+              id: corral.id,
+              name: corral.name,
+              hectareas: corral.hectareas || null,
+              animal_count: activeAnimals.length,
+              male_count: activeAnimals.filter(a => a.sex === 'Macho').length,
+              female_count: activeAnimals.filter(a => a.sex === 'Hembra').length,
+              has_consanguinity_risk: false,
+              risk_count: 0,
+              highest_severity: null
+            };
+          })
+        );
+        
+        setCorrales(processedCorrales);
+        
+        // Count total active animals from cache
+        const allCachedAnimals = await db.animals_cache
+          .where('cabaña_id')
+          .equals(currentUser.cabañaId)
+          .toArray();
+        const activeCount = allCachedAnimals.filter(a => 
+          a.status?.toLowerCase() === 'activo'
+        ).length;
+        setTotalActiveAnimals(activeCount);
+        
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Error loading corrales from cache:', err);
+    }
+  }, [currentUser?.cabañaId]);
+
+  const syncFromServer = useCallback(async () => {
+    if (!currentUser?.cabañaId || !isOnline) return;
 
     try {
-      setLoading(true);
-
-      // Fetch total active animals count (including those without corral assignment)
+      // Fetch total active animals count
       const { count: activeCount, error: countError } = await supabase
         .from('animals')
         .select('*', { count: 'exact', head: true })
@@ -105,13 +161,14 @@ export default function Corrales() {
       if (countError) throw countError;
       setTotalActiveAnimals(activeCount || 0);
 
-      // Fetch corrales with all animals, then filter active ones
+      // Fetch corrales with animals
       const { data: corralesData, error } = await supabase
         .from("corrales")
         .select(`
           id,
           name,
           hectareas,
+          capacity,
           animals (
             id,
             name,
@@ -127,15 +184,35 @@ export default function Corrales() {
 
       if (error) throw error;
 
-      // Process data to include counts and consanguinity risk
+      // Get pending local IDs to avoid overwriting
+      const pendingIds = (await db.corrales_cache
+        .where('sync_status')
+        .equals('pending')
+        .toArray()
+      ).map(c => c.id);
+
+      // Update cache with server data
+      for (const corral of corralesData || []) {
+        if (pendingIds.includes(corral.id)) continue;
+        
+        await db.corrales_cache.put({
+          id: corral.id,
+          name: corral.name,
+          hectareas: corral.hectareas,
+          capacity: corral.capacity,
+          cabaña_id: currentUser.cabañaId,
+          updated_at: new Date().toISOString(),
+          sync_status: 'synced'
+        } as CachedCorral);
+      }
+
+      // Process data with consanguinity analysis
       const processedCorrales = await Promise.all(corralesData?.map(async (corral: any) => {
         const allAnimals = corral.animals || [];
-        // Filter only active animals for counting and analysis (case-insensitive)
         const activeAnimals = allAnimals.filter((a: any) => a.status?.toLowerCase() === "activo");
         const maleCount = activeAnimals.filter((a: any) => a.sex?.toLowerCase() === "macho").length;
         const femaleCount = activeAnimals.filter((a: any) => a.sex?.toLowerCase() === "hembra").length;
         
-        // Perform comprehensive consanguinity analysis (only on active animals)
         let riskCount = 0;
         let highestSeverity: 'severe' | 'medium' | 'low' | null = null;
         
@@ -148,7 +225,6 @@ export default function Corrales() {
             riskCount = risks.length;
             
             if (risks.length > 0) {
-              // Determine highest severity
               const severityOrder = { severe: 3, medium: 2, low: 1 };
               const maxSeverity = risks.reduce((prev, curr) => 
                 severityOrder[curr.severity] > severityOrder[prev.severity] ? curr : prev
@@ -160,14 +236,13 @@ export default function Corrales() {
           }
         }
 
-        // Merge with KPI data if available
         const kpiData = corralKPIs.find(kpi => kpi.corral_id === corral.id);
 
         return {
           id: corral.id,
           name: corral.name,
           hectareas: corral.hectareas,
-          animal_count: activeAnimals.length, // Only count active animals
+          animal_count: activeAnimals.length,
           male_count: maleCount,
           female_count: femaleCount,
           has_consanguinity_risk: riskCount > 0,
@@ -186,20 +261,32 @@ export default function Corrales() {
 
       setCorrales(processedCorrales);
     } catch (error) {
-      console.error("Error fetching corrales:", error);
-      toast({
-        title: "Error",
-        description: t('corrals:errors.loadError'),
-        variant: "destructive",
-      });
+      console.error("Error syncing corrales:", error);
+      if (corrales.length === 0) {
+        toast({
+          title: "Error",
+          description: t('corrals:errors.loadError'),
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser?.cabañaId, isOnline, corralKPIs, corrales.length, t, toast]);
+
+  const fetchCorrales = useCallback(async () => {
+    if (!currentUser?.cabañaId) return;
+    
+    // Load from cache first
+    await loadFromCache();
+    
+    // Then sync from server if online
+    await syncFromServer();
+  }, [currentUser?.cabañaId, loadFromCache, syncFromServer]);
 
   useEffect(() => {
     fetchCorrales();
-  }, [currentUser]);
+  }, [fetchCorrales]);
 
   // Subscribe to vaccination changes in real-time to update KPIs
   useEffect(() => {
