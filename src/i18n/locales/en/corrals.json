@@ -16,6 +16,7 @@
     "location": "Location"
   },
   "actions": {
+    "create": "Create corral",
     "view": "View",
     "edit": "Edit",
     "delete": "Delete",
