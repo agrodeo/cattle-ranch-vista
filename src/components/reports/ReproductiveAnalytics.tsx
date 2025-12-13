@@ -697,9 +697,9 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4 overflow-x-auto pb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {yearlyRates.map((rate) => (
-                <Card key={rate.year} className="min-w-[160px] flex-shrink-0 border-2">
+                <Card key={rate.year} className="border-2">
                   <CardContent className="p-4">
                     <div className="text-lg font-bold text-center mb-3">{rate.year}</div>
                     
