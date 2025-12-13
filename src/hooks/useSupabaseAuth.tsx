@@ -176,102 +176,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (error) {
         console.error('❌ Error fetching profile:', error);
-        // Don't fail completely - try to create a basic profile
-        console.log('⚠️ Creating basic profile for user:', userId);
-        
-        const { data: basicProfile, error: createError } = await supabase
-          .from('profiles')
-          .upsert({
-            user_id: userId,
-            email: '', // Will be updated later
-            full_name: 'Usuario',
-            is_active: true,
-            is_internal_profile: true,
-          })
-          .select()
-          .single();
-          
-        if (createError) {
-          console.error('❌ Failed to create basic profile:', createError);
-          return null;
-        }
-        
-        return {
-          id: userId,
-          email: basicProfile.email || '',
-          fullName: basicProfile.full_name || 'Usuario',
-          employeeCode: basicProfile.employee_code,
-          position: basicProfile.position,
-          department: basicProfile.department,
-          cabañaId: basicProfile.cabaña_id || '',
-          role: 'employee',
-          cabañaName: '',
-          username: basicProfile.username,
-          isActive: basicProfile.is_active ?? true
-        };
+        return null;
       }
 
       if (!profile) {
-        console.warn('⚠️ No profile found for authenticated user, creating one:', userId);
-        
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: userId,
-            email: '',
-            full_name: 'Usuario',
-            is_active: true,
-            is_internal_profile: true,
-          })
-          .select()
-          .single();
-          
-        if (createError) {
-          console.error('❌ Failed to create profile:', createError);
-          return null;
-        }
-        
-        return {
-          id: userId,
-          email: newProfile.email || '',
-          fullName: newProfile.full_name || 'Usuario',
-          employeeCode: newProfile.employee_code,
-          position: newProfile.position,
-          department: newProfile.department,
-          cabañaId: newProfile.cabaña_id || '',
-          role: 'employee',
-          cabañaName: '',
-          username: newProfile.username,
-          isActive: newProfile.is_active ?? true
-        };
+        console.warn('⚠️ No profile found for authenticated user:', userId);
+        return null;
       }
 
-      // Get cabaña info
-      let cabañaName = '';
-      if (profile.cabaña_id) {
+      // Fetch cabaña name and role IN PARALLEL for speed
+      const cabañaPromise = profile.cabaña_id 
+        ? supabase.from('cabañas').select('name').eq('id', profile.cabaña_id).maybeSingle()
+        : Promise.resolve({ data: null });
+      
+      const rolePromise = (async () => {
         try {
-          const { data: cabañaData } = await supabase
-            .from('cabañas')
-            .select('name')
-            .eq('id', profile.cabaña_id)
-            .maybeSingle();
-          
-          cabañaName = cabañaData?.name || '';
-        } catch (cabañaError) {
-          console.warn('⚠️ Could not fetch cabaña info:', cabañaError);
+          const { data } = await supabase.rpc('get_user_role', { _user_id: userId });
+          return data || 'employee';
+        } catch {
+          return 'employee';
         }
-      }
+      })();
 
-      // Get user role safely
-      let userRole = 'employee';
-      try {
-        const { data: roleData } = await supabase.rpc('get_user_role', {
-          _user_id: userId
-        });
-        userRole = roleData || 'employee';
-      } catch (roleError) {
-        console.warn('⚠️ Could not fetch user role:', roleError);
-      }
+      const [cabañaResult, userRole] = await Promise.all([cabañaPromise, rolePromise]);
 
       return {
         id: userId,
@@ -282,7 +209,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         department: profile.department,
         cabañaId: profile.cabaña_id || '',
         role: userRole,
-        cabañaName: cabañaName,
+        cabañaName: cabañaResult.data?.name || '',
         username: profile.username,
         isActive: profile.is_active ?? true
       };
@@ -371,37 +298,54 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const currentlyOffline = !navigator.onLine;
       console.log(`🔐 Initializing auth (offline: ${currentlyOffline})`);
 
-      // If offline, try to load cached auth data
-      if (currentlyOffline) {
-        console.log('📴 Offline mode - checking for cached credentials');
-        const { session: cachedSession, user: cachedUser } = getCachedSession();
-        const cachedProfile = await loadCachedUserProfile();
-
-        if (cachedSession && cachedUser && cachedProfile) {
-          console.log('✅ Loaded cached auth data for offline access');
-          if (mounted) {
-            setSession(cachedSession);
-            setUser(cachedUser);
-            setCurrentUser(cachedProfile);
-            setIsAuthenticated(true);
-            setLoading(false);
-
-            // Initialize offline sync with cached cabaña
-            if (cachedProfile.cabañaId) {
-              setCabañaId(cachedProfile.cabañaId);
-            }
-          }
-          return; // Don't try to contact Supabase when offline
-        } else {
-          console.log('❌ No cached credentials available for offline access');
-          if (mounted) {
-            setLoading(false);
-          }
+      // INSTANT: Load cached profile first for immediate UI
+      const { session: cachedSession, user: cachedUser } = getCachedSession();
+      const cachedProfile = await loadCachedUserProfile();
+      
+      if (cachedSession && cachedUser && cachedProfile && mounted) {
+        console.log('⚡ Instant load from cache');
+        setSession(cachedSession);
+        setUser(cachedUser);
+        setCurrentUser(cachedProfile);
+        setIsAuthenticated(true);
+        setLoading(false);
+        
+        if (cachedProfile.cabañaId) {
+          setCabañaId(cachedProfile.cabañaId);
+        }
+        
+        // If offline, stop here
+        if (currentlyOffline) {
+          console.log('📴 Offline mode - using cached data');
           return;
         }
+        
+        // If online, refresh in background (don't block UI)
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
+          if (!session || !mounted) return;
+          
+          const freshProfile = await fetchUserProfile(session.user.id);
+          if (freshProfile && mounted) {
+            setCurrentUser(freshProfile);
+            await cacheUserProfile(freshProfile);
+            
+            if (freshProfile.cabañaId) {
+              fullSync(freshProfile.cabañaId).catch(console.warn);
+            }
+          }
+        }).catch(console.warn);
+        
+        return;
       }
 
-      // Online - use normal Supabase auth flow
+      // No cache - if offline, can't proceed
+      if (currentlyOffline) {
+        console.log('📴 Offline with no cache - cannot authenticate');
+        if (mounted) setLoading(false);
+        return;
+      }
+
+      // Online with no cache - use normal Supabase auth flow
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, session) => {
           if (!mounted) return;
@@ -472,23 +416,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
         // Auth state change will handle the session
       } catch (error) {
-        console.error('❌ Failed to get session (possibly offline):', error);
-        // Try offline fallback
-        const { session: cachedSession, user: cachedUser } = getCachedSession();
-        const cachedProfile = await loadCachedUserProfile();
-        
-        if (cachedSession && cachedUser && cachedProfile && mounted) {
-          console.log('✅ Falling back to cached auth data');
-          setSession(cachedSession);
-          setUser(cachedUser);
-          setCurrentUser(cachedProfile);
-          setIsAuthenticated(true);
-          setIsOffline(true);
-          
-          if (cachedProfile.cabañaId) {
-            setCabañaId(cachedProfile.cabañaId);
-          }
-        }
+        console.error('❌ Failed to get session:', error);
         if (mounted) {
           setLoading(false);
         }
