@@ -1,11 +1,10 @@
 import { toast } from 'sonner';
-import { trySync } from './sync';
+import { syncOutbox, getOutboxStatus, isSyncInProgress } from './syncEngine';
 import { incrementalSync } from './dataSync';
-import { getOutboxStatus } from './outbox';
 import { isOnline } from './connectivity';
 
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
-let syncIntervalId: NodeJS.Timeout | null = null;
+let syncIntervalId: ReturnType<typeof setInterval> | null = null;
 let currentCabañaId: string | null = null;
 
 // Setup automatic sync on connectivity changes and periodic intervals
@@ -54,8 +53,8 @@ async function handleOnline(): Promise<void> {
   }
 
   try {
-    // Push local changes first
-    await trySync();
+    // Push local changes first using enhanced sync engine
+    await syncOutbox();
     
     // Then pull server changes
     if (currentCabañaId) {
@@ -86,13 +85,13 @@ function startPeriodicSync(): void {
   if (syncIntervalId) return;
 
   syncIntervalId = setInterval(async () => {
-    if (!isOnline() || !currentCabañaId) return;
+    if (!isOnline() || !currentCabañaId || isSyncInProgress()) return;
 
     try {
       // Check if there are pending changes
       const status = await getOutboxStatus();
       if (status.pending > 0 || status.failed > 0) {
-        await trySync();
+        await syncOutbox();
       }
 
       // Pull incremental changes
@@ -126,8 +125,8 @@ export async function manualSync(cabañaId?: string): Promise<{ success: boolean
   }
 
   try {
-    // Push local changes
-    await trySync();
+    // Push local changes using enhanced sync engine
+    await syncOutbox();
     
     // Pull server changes
     const result = await incrementalSync(targetCabañaId);
