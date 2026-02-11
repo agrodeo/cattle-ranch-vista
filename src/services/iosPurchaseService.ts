@@ -17,7 +17,7 @@ export class IOSPurchaseService {
 
     try {
       // TODO: Replace with your actual RevenueCat iOS public SDK key before building for App Store.
-      const apiKey = 'appl_YOUR_REVENUECAT_IOS_KEY';
+      const apiKey = 'appl_UBiuqNanQpBmPXTYgwPDzNSzznY';
       if (apiKey.includes('YOUR_REVENUECAT')) {
         console.error('[RevenueCat] iOS API key not configured in iosPurchaseService.ts');
         return;
