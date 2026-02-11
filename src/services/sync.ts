@@ -1,4 +1,4 @@
-import { flushOutbox, applyIdMapInCaches } from './outbox';
+import { syncOutbox } from './syncEngine';
 import { isOnline } from './connectivity';
 
 const SYNC_TIMEOUT = 30000; // 30 seconds
@@ -12,11 +12,7 @@ export async function trySync() {
   try {
     console.log('Starting sync...');
     
-    // Add timeout to sync operations
-    const syncPromise = (async () => {
-      await flushOutbox();
-      await applyIdMapInCaches();
-    })();
+    const syncPromise = syncOutbox();
     
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Sync timeout')), SYNC_TIMEOUT);

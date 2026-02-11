@@ -497,9 +497,8 @@ async function syncFinancesIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('finances');
   let query = supabase.from('finances').select('*').eq('cabaña_id', cabañaId);
   
-  // Finances don't have updated_at, use date field
   if (lastSync) {
-    query = query.gte('date', lastSync);
+    query = query.gte('updated_at', lastSync);
   }
 
   const { data, error } = await query;

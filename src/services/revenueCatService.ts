@@ -37,15 +37,19 @@ class RevenueCatService {
     const platform = Capacitor.getPlatform();
     let apiKey: string | undefined;
     
+    // TODO: Replace these placeholder keys with your actual RevenueCat public SDK keys before building for stores.
+    const REVENUECAT_IOS_KEY = 'appl_YOUR_REVENUECAT_IOS_KEY';
+    const REVENUECAT_ANDROID_KEY = 'goog_YOUR_REVENUECAT_ANDROID_KEY';
+
     if (platform === 'ios') {
-      apiKey = import.meta.env.VITE_REVENUECAT_API_KEY_IOS || import.meta.env.VITE_REVENUECAT_API_KEY;
+      apiKey = REVENUECAT_IOS_KEY;
     } else if (platform === 'android') {
-      apiKey = import.meta.env.VITE_REVENUECAT_API_KEY_ANDROID || import.meta.env.VITE_REVENUECAT_API_KEY;
+      apiKey = REVENUECAT_ANDROID_KEY;
     }
     
-    if (!apiKey) {
+    if (!apiKey || apiKey.includes('YOUR_REVENUECAT')) {
       console.error('[RevenueCat] API key not configured for platform:', platform);
-      console.error('[RevenueCat] Set VITE_REVENUECAT_API_KEY_IOS or VITE_REVENUECAT_API_KEY_ANDROID');
+      console.error('[RevenueCat] Set your RevenueCat keys in src/services/revenueCatService.ts');
       return;
     }
     

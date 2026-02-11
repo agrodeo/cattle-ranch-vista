@@ -4,8 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, Loader2, Cloud, CloudOff } from "lucide-react";
-import { getOutboxStatus, retryFailedEvents } from "@/services/outbox";
-import { trySync } from "@/services/sync";
+import { getOutboxStatus, retryFailedEvents, syncOutbox } from "@/services/syncEngine";
 import { useConnectivity } from "@/services/connectivity";
 import { db, OutboxEvent } from "@/services/db";
 import { toast } from "sonner";
@@ -40,7 +39,7 @@ export function SyncCenter() {
 
     setLoading(true);
     try {
-      await trySync();
+      await syncOutbox();
       toast.success(t('sync.syncCompleted'));
       await loadStatus();
     } catch (error) {

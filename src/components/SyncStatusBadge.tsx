@@ -4,7 +4,7 @@ import { Cloud, CloudOff, RefreshCw, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
-import { getOutboxStatus } from '@/services/outbox';
+import { getOutboxStatus } from '@/services/syncEngine';
 import { manualSync } from '@/services/autoSync';
 import { useConnectivity } from '@/services/connectivity';
 import { cn } from '@/lib/utils';

@@ -16,9 +16,10 @@ export class IOSPurchaseService {
     }
 
     try {
-      const apiKey = import.meta.env.VITE_REVENUECAT_API_KEY;
-      if (!apiKey) {
-        console.error('VITE_REVENUECAT_API_KEY not configured');
+      // TODO: Replace with your actual RevenueCat iOS public SDK key before building for App Store.
+      const apiKey = 'appl_YOUR_REVENUECAT_IOS_KEY';
+      if (apiKey.includes('YOUR_REVENUECAT')) {
+        console.error('[RevenueCat] iOS API key not configured in iosPurchaseService.ts');
         return;
       }
 

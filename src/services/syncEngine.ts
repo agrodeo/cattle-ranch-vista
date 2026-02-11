@@ -244,7 +244,7 @@ async function handleEventFailure(
  * Apply ID mappings to local caches
  * Implements last-write-wins conflict resolution
  */
-async function applyIdMappings(): Promise<void> {
+export async function applyIdMappings(): Promise<void> {
   const maps = await db.id_map.toArray();
   if (!maps.length) return;
   
