@@ -38,8 +38,8 @@ class RevenueCatService {
     let apiKey: string | undefined;
     
     // TODO: Replace these placeholder keys with your actual RevenueCat public SDK keys before building for stores.
-    const REVENUECAT_IOS_KEY = 'appl_YOUR_REVENUECAT_IOS_KEY';
-    const REVENUECAT_ANDROID_KEY = 'goog_YOUR_REVENUECAT_ANDROID_KEY';
+    const REVENUECAT_IOS_KEY = 'appl_UBiuqNanQpBmPXTYgwPDzNSzznY';
+    const REVENUECAT_ANDROID_KEY = 'test_TyRsiXbFUgYLiOrgpoVsRBGuAYf';
 
     if (platform === 'ios') {
       apiKey = REVENUECAT_IOS_KEY;
