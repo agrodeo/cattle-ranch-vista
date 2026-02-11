@@ -345,6 +345,7 @@ export type Database = {
           tipo_parto: string | null
           tipo_servicio: string | null
           toro_servicio_id: string | null
+          updated_at: string | null
         }
         Insert: {
           birth_date?: string | null
@@ -397,6 +398,7 @@ export type Database = {
           tipo_parto?: string | null
           tipo_servicio?: string | null
           toro_servicio_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           birth_date?: string | null
@@ -449,6 +451,7 @@ export type Database = {
           tipo_parto?: string | null
           tipo_servicio?: string | null
           toro_servicio_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
@@ -1302,6 +1305,7 @@ export type Database = {
           description: string | null
           id: string
           type: string | null
+          updated_at: string | null
         }
         Insert: {
           amount?: number | null
@@ -1314,6 +1318,7 @@ export type Database = {
           description?: string | null
           id?: string
           type?: string | null
+          updated_at?: string | null
         }
         Update: {
           amount?: number | null
@@ -1326,6 +1331,7 @@ export type Database = {
           description?: string | null
           id?: string
           type?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
