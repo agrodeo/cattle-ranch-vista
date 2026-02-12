@@ -108,16 +108,18 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
     try {
       if (isNative) {
         // Use RevenueCat for iOS/Android purchases
-        await initiatePurchase({
+        const result = await initiatePurchase({
           planId,
           billingCycle: isAnnual ? 'annual' : 'monthly',
           platform: 'ios'
         });
         
-        // Refresh subscription status after purchase
-        await fetchSubscriptionStatus();
-        toast.success(t('plansModal.purchaseSuccess', 'Suscripción activada exitosamente'));
-        onOpenChange(false);
+        // Only proceed if purchase was successful
+        if (result?.success) {
+          await fetchSubscriptionStatus();
+          toast.success(t('plansModal.purchaseSuccess', 'Suscripción activada exitosamente'));
+          onOpenChange(false);
+        }
       } else {
         // Use web payment (MercadoPago) for web users
         const success = await upgradePlan(planId as any);
