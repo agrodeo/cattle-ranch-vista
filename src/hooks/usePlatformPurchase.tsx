@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { detectPlatform, isNativeApp } from '@/lib/platformDetection';
-import { IOSPurchaseService } from '@/services/iosPurchaseService';
+import { revenueCatService } from '@/services/revenueCatService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useEntitlements } from '@/hooks/useEntitlements';
 import { getAppStoreProductId } from '@/config/appStoreProducts';
 
 export interface PurchaseData {
@@ -14,26 +15,10 @@ export interface PurchaseData {
 
 export const usePlatformPurchase = () => {
   const [loading, setLoading] = useState(false);
-  const [offerings, setOfferings] = useState<any>(null);
   const { toast } = useToast();
   const { session } = useSupabaseAuth();
+  const { offerings } = useEntitlements();
   const platform = detectPlatform();
-
-  useEffect(() => {
-    if (platform === 'ios' && session?.user?.id) {
-      initializeIOS();
-    }
-  }, [platform, session?.user?.id]);
-
-  const initializeIOS = async () => {
-    try {
-      await IOSPurchaseService.initialize(session!.user!.id);
-      const offeringsData = await IOSPurchaseService.getOfferings();
-      setOfferings(offeringsData);
-    } catch (error) {
-      console.error('Failed to initialize iOS purchases:', error);
-    }
-  };
 
   const initiatePurchase = async (purchaseData: PurchaseData) => {
     setLoading(true);
@@ -69,10 +54,24 @@ export const usePlatformPurchase = () => {
     try {
       const productId = getAppStoreProductId(data.planId as any, data.billingCycle);
       
-      const customerInfo = await IOSPurchaseService.purchaseProduct(productId);
+      // Use the unified revenueCatService instead of IOSPurchaseService
+      const customerInfo = await revenueCatService.purchaseProduct(productId);
       
       // Sync purchase with backend
-      await IOSPurchaseService.syncWithBackend(customerInfo, supabase.functions.invoke.bind(supabase.functions));
+      try {
+        await supabase.functions.invoke('sync-ios-purchase', {
+          body: { 
+            customerInfo: {
+              originalAppUserId: customerInfo.originalAppUserId,
+              activeSubscriptions: customerInfo.activeSubscriptions,
+              allPurchasedProductIdentifiers: customerInfo.allPurchasedProductIdentifiers,
+              entitlements: customerInfo.entitlements
+            }
+          }
+        });
+      } catch (syncError) {
+        console.error('Failed to sync purchase with backend:', syncError);
+      }
       
       toast({
         title: "¡Compra exitosa!",
@@ -136,8 +135,23 @@ export const usePlatformPurchase = () => {
     
     setLoading(true);
     try {
-      const customerInfo = await IOSPurchaseService.restorePurchases();
-      await IOSPurchaseService.syncWithBackend(customerInfo, supabase.functions.invoke.bind(supabase.functions));
+      const customerInfo = await revenueCatService.restorePurchases();
+      
+      // Sync with backend
+      try {
+        await supabase.functions.invoke('sync-ios-purchase', {
+          body: { 
+            customerInfo: {
+              originalAppUserId: customerInfo.originalAppUserId,
+              activeSubscriptions: customerInfo.activeSubscriptions,
+              allPurchasedProductIdentifiers: customerInfo.allPurchasedProductIdentifiers,
+              entitlements: customerInfo.entitlements
+            }
+          }
+        });
+      } catch (syncError) {
+        console.error('Failed to sync restored purchases:', syncError);
+      }
       
       toast({
         title: "Compras restauradas",

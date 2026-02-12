@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { revenueCatService } from '@/services/revenueCatService';
+import { useRevenueCat } from '@/providers/RevenueCatProvider';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
 import { isNativeApp } from '@/lib/platformDetection';
 import type { CustomerInfo, PurchasesOfferings } from '@revenuecat/purchases-capacitor';
@@ -14,6 +15,7 @@ export interface EntitlementState {
 }
 
 export const useEntitlements = () => {
+  const { isConfigured } = useRevenueCat();
   const [state, setState] = useState<EntitlementState>({
     isLoading: true,
     isPro: false,
@@ -24,7 +26,7 @@ export const useEntitlements = () => {
   });
 
   const refreshCustomerInfo = useCallback(async () => {
-    if (!isNativeApp()) {
+    if (!isNativeApp() || !revenueCatService.isInitialized()) {
       setState(prev => ({ ...prev, isLoading: false }));
       return;
     }
@@ -48,7 +50,7 @@ export const useEntitlements = () => {
   }, []);
 
   const loadOfferings = useCallback(async () => {
-    if (!isNativeApp()) return;
+    if (!isNativeApp() || !revenueCatService.isInitialized()) return;
     
     try {
       const offerings = await revenueCatService.getOfferings();
@@ -58,11 +60,14 @@ export const useEntitlements = () => {
     }
   }, []);
 
+  // Wait for RevenueCat to be configured before loading data
   useEffect(() => {
+    if (!isConfigured) return;
+
     refreshCustomerInfo();
     loadOfferings();
 
-    if (isNativeApp()) {
+    if (isNativeApp() && revenueCatService.isInitialized()) {
       const cleanup = revenueCatService.addCustomerInfoUpdateListener((customerInfo) => {
         const proEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PRO];
         setState(prev => ({
@@ -75,7 +80,7 @@ export const useEntitlements = () => {
       });
       return cleanup;
     }
-  }, [refreshCustomerInfo, loadOfferings]);
+  }, [isConfigured, refreshCustomerInfo, loadOfferings]);
 
   return {
     ...state,
