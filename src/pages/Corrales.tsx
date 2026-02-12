@@ -433,7 +433,7 @@ export default function Corrales() {
           title={t('corrals:title')}
           subtitle={t('corrals:subtitle')}
           action={
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() => setShowBulkMove(true)}
                 variant="outline"
@@ -469,7 +469,7 @@ export default function Corrales() {
           }
         />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 overflow-x-hidden">
           {/* Main Content */}
           <section className="lg:col-span-3 space-y-6">
             {/* KPIs */}
