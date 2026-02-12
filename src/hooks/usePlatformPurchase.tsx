@@ -21,22 +21,31 @@ export const usePlatformPurchase = () => {
   const platform = detectPlatform();
 
   const initiatePurchase = async (purchaseData: PurchaseData) => {
+    console.log('[Purchase] initiatePurchase called', { planId: purchaseData.planId, billingCycle: purchaseData.billingCycle, platform });
     setLoading(true);
     
     try {
+      let result;
       if (platform === 'ios') {
-        return await purchaseIOS(purchaseData);
+        console.log('[Purchase] Routing to iOS purchase flow');
+        result = await purchaseIOS(purchaseData);
       } else if (platform === 'android') {
-        return await purchaseAndroid(purchaseData);
+        console.log('[Purchase] Routing to Android purchase flow');
+        result = await purchaseAndroid(purchaseData);
       } else {
-        return await purchaseWeb(purchaseData);
+        console.log('[Purchase] Routing to Web purchase flow');
+        result = await purchaseWeb(purchaseData);
       }
+      console.log('[Purchase] Purchase result:', result);
+      return result;
     } catch (error: any) {
-      console.error('Purchase failed:', error);
+      console.error('[Purchase] Purchase failed:', error);
       
-      // Handle user cancellation gracefully
+      // Handle user cancellation gracefully - don't show toast, just re-throw
       if (error?.code === 'PURCHASE_CANCELLED' || error?.userCancelled) {
-        return { success: false, cancelled: true };
+        const cancelError = new Error('Purchase cancelled');
+        (cancelError as any).cancelled = true;
+        throw cancelError;
       }
       
       toast({
@@ -44,7 +53,7 @@ export const usePlatformPurchase = () => {
         description: error.message || "No se pudo completar la compra. Intenta nuevamente.",
         variant: "destructive",
       });
-      return { success: false, error };
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -53,9 +62,11 @@ export const usePlatformPurchase = () => {
   const purchaseIOS = async (data: PurchaseData) => {
     try {
       const productId = getAppStoreProductId(data.planId as any, data.billingCycle);
+      console.log('[Purchase:iOS] productId resolved:', productId);
       
       // Use the unified revenueCatService instead of IOSPurchaseService
       const customerInfo = await revenueCatService.purchaseProduct(productId);
+      console.log('[Purchase:iOS] purchaseProduct succeeded, syncing with backend...');
       
       // Sync purchase with backend
       try {
