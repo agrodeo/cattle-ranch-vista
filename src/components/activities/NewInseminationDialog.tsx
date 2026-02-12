@@ -493,7 +493,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>{t('activities:newInsemination.title')}</DialogTitle>
           <DialogDescription>

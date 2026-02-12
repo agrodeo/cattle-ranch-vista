@@ -13,7 +13,7 @@ export default function Terms() {
   }, []);
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 py-8">
+    <div className="mx-auto w-full max-w-4xl px-3 sm:px-4 py-8 overflow-x-hidden">
       <Button 
         variant="ghost" 
         onClick={() => navigate(-1)}

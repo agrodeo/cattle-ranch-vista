@@ -154,7 +154,7 @@ export function AnimalGenealogia({ animal }: AnimalGenealogiaProps) {
                   {t('animals:profile.genealogy.viewFullTree')}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-6xl max-h-[80vh] overflow-auto">
+              <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl max-h-[80vh] overflow-auto">
                 <DialogHeader>
                   <DialogTitle>
                     {t('animals:profile.genealogy.genealogyTreeTitle')} - {animal.name || animal.id_tag}

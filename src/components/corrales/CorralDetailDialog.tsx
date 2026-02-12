@@ -350,7 +350,7 @@ export function CorralDetailDialog({ open, onOpenChange, corralId, onUpdate }: C
   if (loading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl">
           <div className="flex items-center justify-center p-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>

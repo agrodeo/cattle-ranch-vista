@@ -229,7 +229,7 @@ export const FamilyTreeVisualization = ({
 
         {/* Tree statistics */}
         {familyTree && (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="text-center p-3 border rounded">
               <div className="text-2xl font-bold text-primary">{treeStats.totalAnimals}</div>
               <div className="text-xs text-muted-foreground">Animales en el árbol</div>
