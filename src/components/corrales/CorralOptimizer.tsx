@@ -426,7 +426,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-5xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>
             {step === 'objective' && t('corrals:optimizer.selectObjectiveTitle')}

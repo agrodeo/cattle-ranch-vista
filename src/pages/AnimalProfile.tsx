@@ -178,7 +178,7 @@ export default function AnimalProfile() {
       </div>
 
       {/* Main Content */}
-      <div className="px-4 py-4 max-w-7xl mx-auto">
+      <div className="w-full max-w-screen-sm mx-auto px-3 sm:px-4 lg:max-w-7xl lg:px-6 py-4">
         <AnimalProfileTabs 
           animal={animal} 
           onAnimalUpdate={handleAnimalUpdate}

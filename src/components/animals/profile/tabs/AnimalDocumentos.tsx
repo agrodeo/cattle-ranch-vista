@@ -186,7 +186,7 @@ export function AnimalDocumentos({ animal }: AnimalDocumentosProps) {
 
       {/* Image Preview Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl">
           <DialogHeader>
             <DialogTitle>{t('animals:profile.documents.imagePreview')}</DialogTitle>
             <DialogDescription>

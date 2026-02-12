@@ -59,7 +59,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
 
   return (
     <div className="w-full">
-      <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="w-full max-w-screen-sm mx-auto px-3 sm:px-4 lg:max-w-7xl lg:px-6 py-4">
         <div className="space-y-4">
           {/* Back Button and Title */}
           <div className="flex items-center gap-4">

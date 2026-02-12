@@ -122,7 +122,7 @@ export function EditArtificialInseminationDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
             <Label htmlFor="date" className="text-right">
               {t('activities:artificialInsemination.date')}
             </Label>
@@ -152,7 +152,7 @@ export function EditArtificialInseminationDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
             <Label htmlFor="bull-name" className="text-right">
               {t('activities:artificialInsemination.bull')}
             </Label>
@@ -165,7 +165,7 @@ export function EditArtificialInseminationDialog({
             />
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
             <Label htmlFor="pregnant" className="text-right">
               {t('activities:artificialInsemination.pregnantLabel')}
             </Label>
@@ -183,7 +183,7 @@ export function EditArtificialInseminationDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 items-center gap-4">
             <Label htmlFor="notes" className="text-right">
               {t('activities:artificialInsemination.notesLabel')}
             </Label>

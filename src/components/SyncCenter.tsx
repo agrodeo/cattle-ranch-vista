@@ -126,7 +126,7 @@ export function SyncCenter() {
       </div>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="text-center p-3 rounded-lg bg-amber-50 dark:bg-amber-950">
           <div className="text-xl font-bold text-amber-600">{status.pending}</div>
           <div className="text-xs text-muted-foreground">{t('sync.pending')}</div>

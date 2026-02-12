@@ -424,7 +424,7 @@ export const PreviewAndEditStep = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Summary stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{validAnimals.length}</div>
             <div className="text-sm text-muted-foreground">Válidos</div>

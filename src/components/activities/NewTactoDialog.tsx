@@ -284,7 +284,7 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-full max-w-6xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto overflow-y-auto p-0 lg:p-6 lg:rounded-lg">
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto overflow-y-auto overflow-x-hidden p-0 lg:p-6 lg:rounded-lg">
         {/* Mobile Header */}
         <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">

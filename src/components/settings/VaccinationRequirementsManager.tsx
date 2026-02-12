@@ -254,7 +254,7 @@ export const VaccinationRequirementsManager = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   <FormField
                     control={form.control}
                     name="min_age_months"
