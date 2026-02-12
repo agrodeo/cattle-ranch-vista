@@ -38,7 +38,7 @@ const Layout = () => {
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
               <Header />
               <ConnectivityBanner />
-              <main className="flex-1 overflow-auto pt-6">
+              <main className="flex-1 overflow-x-hidden overflow-y-auto pt-6">
                 <Outlet />
               </main>
             </div>

@@ -777,7 +777,7 @@ const Animals = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0">
+    <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
       <div className="space-y-6 relative">
       {/* Pull to refresh indicator for mobile */}
       {isMobile && isPulling && (
@@ -803,7 +803,7 @@ const Animals = () => {
           className="hidden sm:block"
         />
         
-        <div className="hidden lg:flex flex-col sm:flex-row gap-2 sm:gap-4">
+        <div className="hidden lg:flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4">
           <ReadOnlyProtectedAction>
             <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
               <DialogTrigger asChild>
@@ -1191,7 +1191,7 @@ const Animals = () => {
                 />
               </div>
               
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                   <SelectTrigger className="w-full sm:w-auto">
                     <SelectValue placeholder={t('animals:filters.allCategories')} />
