@@ -37,7 +37,7 @@ export const useSubscription = () => {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchSubscriptionStatus = useCallback(async () => {
+  const fetchSubscriptionStatus = useCallback(async (retryCount = 0) => {
     if (!currentUser?.cabañaId) {
       console.warn('⚠️ No cabaña ID found, skipping subscription status fetch');
       setSubscriptionStatus(null);
@@ -53,9 +53,16 @@ export const useSubscription = () => {
 
       if (error) {
         console.error('Error fetching subscription status:', error);
+        // Retry silently up to 2 times for transient errors (503, timeouts)
+        if (retryCount < 2) {
+          console.log(`🔄 Retrying subscription fetch (attempt ${retryCount + 2}/3)...`);
+          setTimeout(() => fetchSubscriptionStatus(retryCount + 1), 2000 * (retryCount + 1));
+          return;
+        }
+        // Only show toast after all retries exhausted
         toast({
           title: "Error",
-          description: "No se pudo obtener el estado de la suscripción",
+          description: "No se pudo obtener el estado de la suscripción. Intenta recargar la página.",
           variant: "destructive"
         });
         setLoading(false);
@@ -78,6 +85,10 @@ export const useSubscription = () => {
       }
     } catch (error) {
       console.error('Error in fetchSubscriptionStatus:', error);
+      if (retryCount < 2) {
+        setTimeout(() => fetchSubscriptionStatus(retryCount + 1), 2000 * (retryCount + 1));
+        return;
+      }
     } finally {
       setLoading(false);
     }
