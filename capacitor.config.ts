@@ -4,12 +4,6 @@ const config: CapacitorConfig = {
   appId: 'app.lovable.7240114acf5f4b1cbc891b5d3e2a51f9',
   appName: 'agrodeo',
   webDir: 'dist',
-  server: {
-    url: 'https://7240114a-cf5f-4b1c-bc89-1b5d3e2a51f9.lovableproject.com?forceHideBadge=true',
-    cleartext: true,
-    // Allow offline access - let service worker handle caching
-    errorPath: 'offline.html'
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
@@ -25,11 +19,9 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     allowsLinkPreview: false,
-    // Enable offline mode support
     limitsNavigationsToAppBoundDomains: false
   },
   android: {
-    // Allow mixed content for offline service worker
     allowMixedContent: true
   }
 };

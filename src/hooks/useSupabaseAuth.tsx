@@ -320,28 +320,57 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return;
         }
         
-        // If online, refresh in background (don't block UI)
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-          if (!session || !mounted) return;
-          
-          const freshProfile = await fetchUserProfile(session.user.id);
-          if (freshProfile && mounted) {
-            setCurrentUser(freshProfile);
-            await cacheUserProfile(freshProfile);
+        // If online, refresh in background with timeout so false-positive online doesn't hang
+        const refreshTimeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Session refresh timed out')), 5000)
+        );
+
+        Promise.race([
+          supabase.auth.getSession().then(async ({ data: { session } }) => {
+            if (!session || !mounted) return;
             
-            if (freshProfile.cabañaId) {
-              fullSync(freshProfile.cabañaId).catch(console.warn);
+            const freshProfile = await fetchUserProfile(session.user.id);
+            if (freshProfile && mounted) {
+              setCurrentUser(freshProfile);
+              await cacheUserProfile(freshProfile);
+              
+              if (freshProfile.cabañaId) {
+                fullSync(freshProfile.cabañaId).catch(console.warn);
+              }
             }
-          }
-        }).catch(console.warn);
+          }),
+          refreshTimeout
+        ]).catch((err) => {
+          console.warn('⚠️ Background session refresh failed/timed out, continuing with cache:', err.message);
+        });
         
         return;
       }
 
-      // No cache - if offline, can't proceed
-      if (currentlyOffline) {
+      // No cache — verify real connectivity before giving up
+      // (navigator.onLine is unreliable on iOS WKWebView)
+      let reallyOffline = currentlyOffline;
+      if (!currentlyOffline) {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 3000);
+          await fetch('https://yjzxbjwewzyhjquhrfzv.supabase.co/rest/v1/', {
+            method: 'HEAD',
+            signal: controller.signal,
+            cache: 'no-store',
+          });
+          clearTimeout(timeout);
+        } catch {
+          reallyOffline = true;
+        }
+      }
+
+      if (reallyOffline) {
         console.log('📴 Offline with no cache - cannot authenticate');
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setIsOffline(true);
+          setLoading(false);
+        }
         return;
       }
 
