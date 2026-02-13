@@ -4,7 +4,7 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
 // @ts-ignore
-import despia from "@despia/local";
+import { despiaLocalPlugin as despia } from "@despia/local/vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
