@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { toast } from '@/hooks/use-toast';
+import { useConnectivity } from '@/services/connectivity';
 
 export interface SubscriptionStatus {
   plan: 'free' | 'personal' | 'avanzado' | 'productor' | 'cabana' | 'corporativo';
@@ -34,6 +35,7 @@ const PLAN_PRICES = {
 
 export const useSubscription = () => {
   const { currentUser } = useSupabaseAuth();
+  const { isOnline } = useConnectivity();
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,6 +43,13 @@ export const useSubscription = () => {
     if (!currentUser?.cabañaId) {
       console.warn('⚠️ No cabaña ID found, skipping subscription status fetch');
       setSubscriptionStatus(null);
+      setLoading(false);
+      return;
+    }
+
+    // Skip RPC when offline — don't block the app
+    if (!isOnline) {
+      console.log('📴 Offline — skipping subscription status fetch');
       setLoading(false);
       return;
     }
@@ -92,7 +101,7 @@ export const useSubscription = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentUser?.cabañaId]);
+  }, [currentUser?.cabañaId, isOnline]);
 
   useEffect(() => {
     fetchSubscriptionStatus();
