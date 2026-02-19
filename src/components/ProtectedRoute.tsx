@@ -2,9 +2,10 @@ import { Navigate } from "react-router-dom";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ReadOnlyModeModal } from "@/components/subscription/ReadOnlyModeModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useConnectivity } from "@/services/connectivity";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -12,14 +13,22 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRouteProps) => {
-  const { isAuthenticated, loading: authLoading, isOffline } = useSupabaseAuth();
+  const { isAuthenticated, loading: authLoading } = useSupabaseAuth();
   const { subscriptionStatus, loading: subscriptionLoading } = useSubscription();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { t } = useTranslation('common');
+  const { isOnline } = useConnectivity();
+
+  // 3-second timeout so subscription never blocks UI indefinitely
+  const [subTimedOut, setSubTimedOut] = useState(false);
+  useEffect(() => {
+    if (!subscriptionLoading) return;
+    const timer = setTimeout(() => setSubTimedOut(true), 3000);
+    return () => clearTimeout(timer);
+  }, [subscriptionLoading]);
 
   // Show loading spinner while auth is being determined
-  // Skip subscription loading check when offline since it requires network
-  if (authLoading || (!isOffline && subscriptionLoading)) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
@@ -36,11 +45,9 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
   }
 
   // When offline, allow access but show offline indicator
-  // Skip subscription checks when offline since they require network
-  if (isOffline) {
+  if (!isOnline) {
     return (
       <>
-        {/* Offline banner at top of protected content */}
         <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 text-amber-950 px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" />
           <span>{t('sync.offline')}</span>
@@ -49,6 +56,18 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
           {children}
         </div>
       </>
+    );
+  }
+
+  // Wait for subscription only if online AND not timed out
+  if (subscriptionLoading && !subTimedOut) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground text-sm">{t('loading')}</p>
+        </div>
+      </div>
     );
   }
 

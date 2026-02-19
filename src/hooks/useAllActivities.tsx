@@ -35,11 +35,32 @@ interface CachedActivity {
   sync_status: 'synced' | 'pending' | 'failed';
 }
 
+// Helper to batch-fetch animal details for a list of IDs
+async function batchFetchAnimals(animalIds: string[]): Promise<Map<string, { id: string; name?: string; id_tag: string }>> {
+  const map = new Map<string, { id: string; name?: string; id_tag: string }>();
+  if (animalIds.length === 0) return map;
+
+  const uniqueIds = [...new Set(animalIds)];
+  // Supabase .in() supports up to ~300 items; chunk if needed
+  const CHUNK = 300;
+  for (let i = 0; i < uniqueIds.length; i += CHUNK) {
+    const chunk = uniqueIds.slice(i, i + CHUNK);
+    const { data } = await supabase
+      .from('animals')
+      .select('id, name, id_tag')
+      .in('id', chunk);
+    if (data) {
+      data.forEach(a => map.set(a.id, { id: a.id, name: a.name || undefined, id_tag: a.id_tag || 'Sin ID' }));
+    }
+  }
+  return map;
+}
+
 export function useAllActivities() {
   const [activities, setActivities] = useState<UnifiedActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { session } = useSupabaseAuth();
-  const isOnline = useConnectivity();
+  const { isOnline } = useConnectivity(); // Fix: destructure correctly
 
   // Load from IndexedDB cache first
   const loadFromCache = useCallback(async (cabañaId: string) => {
@@ -71,14 +92,14 @@ export function useAllActivities() {
     }
   }, []);
 
-  // Sync from server and update cache
+  // Sync from server and update cache — batched queries
   const syncFromServer = useCallback(async (cabañaId: string) => {
     if (!isOnline) return;
 
     try {
       const allActivities: UnifiedActivity[] = [];
 
-      // 1. Fetch eventos with related data
+      // ── 1. Fetch eventos + related pesajes/tactos in bulk ──
       const { data: eventos, error: eventosError } = await supabase
         .from('eventos')
         .select('*')
@@ -86,83 +107,67 @@ export function useAllActivities() {
         .order('fecha', { ascending: false })
         .limit(100);
 
-      if (eventosError) {
-        console.error('Error fetching eventos:', eventosError);
-      }
+      if (eventosError) console.error('Error fetching eventos:', eventosError);
 
-      if (eventos) {
-        for (const evento of eventos) {
+      if (eventos && eventos.length > 0) {
+        // Collect evento IDs by type for batch fetch
+        const pesajeEventoIds = eventos.filter(e => e.tipo === 'PESAJE').map(e => e.id);
+        const tactoEventoIds = eventos.filter(e => e.tipo === 'TACTO').map(e => e.id);
+
+        // Batch fetch pesajes and tactos in parallel
+        const [pesajesResult, tactosResult] = await Promise.all([
+          pesajeEventoIds.length > 0
+            ? supabase.from('pesajes').select('evento_id, mediciones').in('evento_id', pesajeEventoIds)
+            : Promise.resolve({ data: [] as any[] }),
+          tactoEventoIds.length > 0
+            ? supabase.from('tactos').select('evento_id, resultados').in('evento_id', tactoEventoIds)
+            : Promise.resolve({ data: [] as any[] }),
+        ]);
+
+        const pesajesMap = new Map<string, any>();
+        (pesajesResult.data || []).forEach((p: any) => pesajesMap.set(p.evento_id, p.mediciones));
+
+        const tactosMap = new Map<string, any>();
+        (tactosResult.data || []).forEach((t: any) => tactosMap.set(t.evento_id, t.resultados));
+
+        // Collect ALL animal IDs from all eventos first
+        const allAnimalIds: string[] = [];
+
+        const eventoParsed = eventos.map(evento => {
           const payload = evento.payload as any;
           let animalIds: string[] = [];
           const detalles: Record<string, any> = {};
 
-          // Handle PESAJE - get animal_ids from pesajes table
           if (evento.tipo === 'PESAJE') {
-            const { data: pesajesData } = await supabase
-              .from('pesajes')
-              .select('mediciones')
-              .eq('evento_id', evento.id)
-              .single();
-            
-            if (pesajesData?.mediciones) {
-              const mediciones = pesajesData.mediciones as any[];
+            const mediciones = pesajesMap.get(evento.id) as any[] | undefined;
+            if (mediciones) {
               animalIds = mediciones.map((m: any) => m.animal_id).filter(Boolean);
               detalles.peso_promedio = (
-                mediciones.reduce((sum: number, m: any) => sum + (parseFloat(m.peso_kg) || 0), 0) / 
+                mediciones.reduce((sum: number, m: any) => sum + (parseFloat(m.peso_kg) || 0), 0) /
                 mediciones.length
               ).toFixed(1);
             }
-          } 
-          // Handle TACTO - get animal_ids from tactos table
-          else if (evento.tipo === 'TACTO') {
-            const { data: tactosData } = await supabase
-              .from('tactos')
-              .select('resultados')
-              .eq('evento_id', evento.id)
-              .single();
-            
-            if (tactosData?.resultados) {
-              const resultados = tactosData.resultados as any[];
+          } else if (evento.tipo === 'TACTO') {
+            const resultados = tactosMap.get(evento.id) as any[] | undefined;
+            if (resultados) {
               animalIds = resultados.map((r: any) => r.animal_id).filter(Boolean);
-              const prenadas = resultados.filter((r: any) => r.resultado === 'preñada').length;
-              const vacias = resultados.filter((r: any) => r.resultado === 'vacia').length;
-              detalles.prenadas = prenadas;
-              detalles.vacias = vacias;
+              detalles.prenadas = resultados.filter((r: any) => r.resultado === 'preñada').length;
+              detalles.vacias = resultados.filter((r: any) => r.resultado === 'vacia').length;
             }
-          }
-          // Other event types - get animal_ids from payload
-          else if (payload?.animales_ids) {
+          } else if (payload?.animales_ids) {
             animalIds = payload.animales_ids;
           } else if (payload?.animal_id) {
             animalIds = [payload.animal_id];
           }
 
-          // Fetch animal details
-          const animales: UnifiedActivity['animales'] = [];
-          if (animalIds.length > 0) {
-            const { data: animalsData } = await supabase
-              .from('animals')
-              .select('id, name, id_tag')
-              .in('id', animalIds);
+          allAnimalIds.push(...animalIds);
 
-            if (animalsData) {
-              animales.push(...animalsData.map(a => ({
-                id: a.id,
-                name: a.name || undefined,
-                id_tag: a.id_tag || 'Sin ID'
-              })));
-            }
-          }
-
-          // Determine activity type and details
           let tipo: UnifiedActivity['tipo'] = 'GENERAL';
           let subtipo: string | undefined;
 
-          if (evento.tipo === 'PESAJE') {
-            tipo = 'PESAJE';
-          } else if (evento.tipo === 'TACTO') {
-            tipo = 'TACTO';
-          } else if (evento.tipo === 'PARTO') {
+          if (evento.tipo === 'PESAJE') tipo = 'PESAJE';
+          else if (evento.tipo === 'TACTO') tipo = 'TACTO';
+          else if (evento.tipo === 'PARTO') {
             tipo = 'PARTO';
             if (payload?.tipo_parto) detalles.tipo_parto = payload.tipo_parto;
             if (payload?.crias) detalles.crias = payload.crias;
@@ -173,11 +178,21 @@ export function useAllActivities() {
             tipo = 'MUERTE';
             if (payload?.causa) detalles.causa = payload.causa;
           } else {
-            // General management activities
-            tipo = 'GENERAL';
             subtipo = evento.tipo;
             Object.assign(detalles, payload || {});
           }
+
+          return { evento, tipo, subtipo, animalIds, detalles };
+        });
+
+        // Single batch fetch for all animal data from eventos
+        const animalsMap = await batchFetchAnimals(allAnimalIds);
+
+        // Build activities using the map
+        for (const { evento, tipo, subtipo, animalIds, detalles } of eventoParsed) {
+          const animales = animalIds
+            .map(id => animalsMap.get(id))
+            .filter(Boolean) as UnifiedActivity['animales'];
 
           allActivities.push({
             id: evento.id,
@@ -193,7 +208,7 @@ export function useAllActivities() {
         }
       }
 
-      // 2. Fetch vaccinations grouped by date + vaccine
+      // ── 2. Fetch vaccinations ──
       const { data: vaccines, error: vaccinesError } = await supabase
         .from('animal_vaccines')
         .select('id, animal_id, date, vaccine_code, dose, lot, route, created_by')
@@ -201,54 +216,51 @@ export function useAllActivities() {
         .order('date', { ascending: false })
         .limit(100);
 
-      if (vaccinesError) {
-        console.error('Error fetching vaccines:', vaccinesError);
-      }
+      if (vaccinesError) console.error('Error fetching vaccines:', vaccinesError);
 
-      if (vaccines) {
+      if (vaccines && vaccines.length > 0) {
         // Group by date + vaccine_code
         const vaccineGroups = new Map<string, typeof vaccines>();
         vaccines.forEach(v => {
           const key = `${v.date}_${v.vaccine_code}`;
-          if (!vaccineGroups.has(key)) {
-            vaccineGroups.set(key, []);
-          }
+          if (!vaccineGroups.has(key)) vaccineGroups.set(key, []);
           vaccineGroups.get(key)!.push(v);
         });
 
-        // Convert groups to activities
-        for (const [key, group] of vaccineGroups.entries()) {
-          const animalIds = group.map(v => v.animal_id);
-          const { data: animalsData } = await supabase
-            .from('animals')
-            .select('id, name, id_tag')
-            .in('id', animalIds);
+        // Batch fetch all vaccine animal IDs + all vaccine requirements at once
+        const allVaccineAnimalIds = vaccines.map(v => v.animal_id);
+        const uniqueVaccineCodes = [...new Set(vaccines.map(v => v.vaccine_code))];
 
-          const animales: UnifiedActivity['animales'] = animalsData?.map(a => ({
-            id: a.id,
-            name: a.name || undefined,
-            id_tag: a.id_tag || 'Sin ID'
-          })) || [];
-
-          // Get vaccine name from requirements
-          const { data: reqData } = await supabase
+        const [vaccineAnimalsMap, reqsResult] = await Promise.all([
+          batchFetchAnimals(allVaccineAnimalIds),
+          supabase
             .from('cabaña_vaccination_requirements')
-            .select('vaccine_name')
-            .eq('vaccine_code', group[0].vaccine_code)
+            .select('vaccine_code, vaccine_name')
             .eq('cabaña_id', cabañaId)
-            .single();
+            .in('vaccine_code', uniqueVaccineCodes),
+        ]);
+
+        const vaccineNamesMap = new Map<string, string>();
+        (reqsResult.data || []).forEach((r: any) => vaccineNamesMap.set(r.vaccine_code, r.vaccine_name));
+
+        for (const [key, group] of vaccineGroups.entries()) {
+          const animales = group
+            .map(v => vaccineAnimalsMap.get(v.animal_id))
+            .filter(Boolean) as UnifiedActivity['animales'];
+
+          const vaccineName = vaccineNamesMap.get(group[0].vaccine_code);
 
           allActivities.push({
             id: `vaccine_${key}`,
             tipo: 'VACUNACION',
-            subtipo: reqData?.vaccine_name || group[0].vaccine_code,
+            subtipo: vaccineName || group[0].vaccine_code,
             fecha: group[0].date,
             responsable: group[0].created_by || undefined,
             notas: undefined,
             animales,
             detalles: {
               vaccine_code: group[0].vaccine_code,
-              vaccine_name: reqData?.vaccine_name,
+              vaccine_name: vaccineName,
               dose: group[0].dose,
               lot: group[0].lot,
               route: group[0].route,
@@ -259,7 +271,7 @@ export function useAllActivities() {
         }
       }
 
-      // 3. Fetch artificial inseminations grouped by date + bull
+      // ── 3. Fetch artificial inseminations ──
       const { data: inseminations, error: iaError } = await supabase
         .from('artificial_inseminations')
         .select('id, female_id, bull_name, insemination_date, notes, created_by, created_at')
@@ -267,34 +279,25 @@ export function useAllActivities() {
         .order('insemination_date', { ascending: false })
         .limit(100);
 
-      if (iaError) {
-        console.error('Error fetching inseminations:', iaError);
-      }
+      if (iaError) console.error('Error fetching inseminations:', iaError);
 
-      if (inseminations) {
+      if (inseminations && inseminations.length > 0) {
         // Group by date + bull_name
         const iaGroups = new Map<string, typeof inseminations>();
         inseminations.forEach(ia => {
           const key = `${ia.insemination_date}_${ia.bull_name}`;
-          if (!iaGroups.has(key)) {
-            iaGroups.set(key, []);
-          }
+          if (!iaGroups.has(key)) iaGroups.set(key, []);
           iaGroups.get(key)!.push(ia);
         });
 
-        // Convert groups to activities
-        for (const [key, group] of iaGroups.entries()) {
-          const animalIds = group.map(ia => ia.female_id);
-          const { data: animalsData } = await supabase
-            .from('animals')
-            .select('id, name, id_tag')
-            .in('id', animalIds);
+        // Batch fetch all IA animal IDs
+        const allIaAnimalIds = inseminations.map(ia => ia.female_id);
+        const iaAnimalsMap = await batchFetchAnimals(allIaAnimalIds);
 
-          const animales: UnifiedActivity['animales'] = animalsData?.map(a => ({
-            id: a.id,
-            name: a.name || undefined,
-            id_tag: a.id_tag || 'Sin ID'
-          })) || [];
+        for (const [key, group] of iaGroups.entries()) {
+          const animales = group
+            .map(ia => iaAnimalsMap.get(ia.female_id))
+            .filter(Boolean) as UnifiedActivity['animales'];
 
           allActivities.push({
             id: `ia_${key}`,
@@ -314,11 +317,7 @@ export function useAllActivities() {
       }
 
       // Sort all activities by date (most recent first)
-      allActivities.sort((a, b) => {
-        const dateA = new Date(a.fecha);
-        const dateB = new Date(b.fecha);
-        return dateB.getTime() - dateA.getTime();
-      });
+      allActivities.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
 
       // Cache activities in IndexedDB
       const now = new Date().toISOString();
@@ -337,7 +336,6 @@ export function useAllActivities() {
         sync_status: 'synced' as const
       }));
 
-      // Clear old cached activities and replace with new ones
       await db.table('eventos_cache').where('cabaña_id').equals(cabañaId).delete();
       if (activitiesToCache.length > 0) {
         await db.table('eventos_cache').bulkPut(activitiesToCache);
@@ -361,7 +359,6 @@ export function useAllActivities() {
     try {
       setIsLoading(true);
 
-      // Get user's cabaña
       const { data: profile } = await supabase
         .from('profiles')
         .select('*')
@@ -376,10 +373,7 @@ export function useAllActivities() {
         return;
       }
 
-      // Load from cache first for instant display
       await loadFromCache(cabañaId);
-
-      // Then sync from server if online
       await syncFromServer(cabañaId);
     } catch (error) {
       console.error('Error fetching activities:', error);
