@@ -3,7 +3,8 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { setCabañaId, cleanupAutoSync } from "@/services/autoSync";
 import { fullSync } from "@/services/dataSync";
-import { db, CachedUserProfile } from "@/services/db";
+import { db, CachedUserProfile, clearAllCaches } from "@/services/db";
+import { clearCachedEntitlement } from "@/services/entitlementCache";
 
 interface AuthUser {
   id: string;
@@ -481,16 +482,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Cleanup auto-sync before signing out
     cleanupAutoSync();
     
-    // Clear local caches on logout for security
+    // Clear ALL local caches on logout for security
     try {
-      await db.animals_cache.clear();
-      await db.corrales_cache.clear();
-      await db.activities_cache.clear();
-      await db.finances_cache.clear();
+      await clearAllCaches();
       await db.outbox.clear();
       await db.id_map.clear();
-      await db.user_profile.clear(); // Clear cached user profile
-      console.log('🧹 Cleared local caches on logout');
+      await db.user_profile.clear();
+      // Clear entitlement cache so next user doesn't inherit subscription
+      await clearCachedEntitlement();
+      // Clear cached subscription status from localStorage
+      localStorage.removeItem('cached_subscription_status');
+      console.log('🧹 Cleared all local caches on logout');
     } catch (error) {
       console.warn('⚠️ Error clearing caches:', error);
     }
