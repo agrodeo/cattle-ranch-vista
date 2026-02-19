@@ -256,14 +256,7 @@
     "overdueBy": "{{days}} days overdue",
     "reproductiveAlerts": "Reproductive Alerts",
     "requiresAttention": "Requires immediate attention",
-    "viewAnimal": "View animal",
-    "reproductiveType_repeat_service": "Repeat service",
-    "reproductiveType_pregnancy_loss": "Pregnancy loss",
-    "reproductiveType_overdue_birth": "Overdue birth",
-    "reproductiveType_heat_detection": "Heat detection",
-    "reproductiveType_failed_insemination": "Failed insemination",
-    "reproductiveType_abortion": "Abortion",
-    "reproductiveType_dystocia": "Dystocia"
+    "viewAnimal": "View animal"
   },
   "success": {
     "title": "Success",

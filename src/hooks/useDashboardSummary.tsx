@@ -712,9 +712,7 @@ export const useDashboardSummary = (): DashboardSummary => {
           animal_id,
           vaccine_code,
           next_due,
-          requirement_id,
-          animals!inner(id, id_tag, name, status),
-          cabaña_vaccination_requirements(vaccine_name)
+          animals!inner(id, id_tag, name, status)
         `)
         .eq('animals.cabaña_id', cabanaId)
         .not('animals.status', 'in', '("vendido","muerto")')
@@ -728,20 +726,18 @@ export const useDashboardSummary = (): DashboardSummary => {
             const diffTime = dueDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            const vaccineName = vaccine.cabaña_vaccination_requirements?.vaccine_name || vaccine.vaccine_code;
-
             if (diffDays < 0) {
               // Overdue vaccine
               warnings.push({
                 id: `vaccination_overdue_${vaccine.id}`,
                 type: 'vaccination_overdue',
                 title: t('common:notifications.vaccinationOverdue'),
-                description: `${vaccine.animals.name || vaccine.animals.id_tag}`,
+                description: `${vaccine.animals.name || vaccine.animals.id_tag} - ${vaccine.vaccine_code}`,
                 severity: 'high',
                 animal_id: vaccine.animal_id,
                 animal_name: vaccine.animals.name,
                 animal_tag: vaccine.animals.id_tag,
-                vaccine_name: vaccineName,
+                vaccine_name: vaccine.vaccine_code,
                 days_overdue: Math.abs(diffDays),
               });
             } else if (diffDays <= 7) {
@@ -750,12 +746,12 @@ export const useDashboardSummary = (): DashboardSummary => {
                 id: `vaccination_due_${vaccine.id}`,
                 type: 'vaccination_due',
                 title: t('common:notifications.vaccinationDue'),
-                description: `${vaccine.animals.name || vaccine.animals.id_tag}`,
+                description: `${vaccine.animals.name || vaccine.animals.id_tag} - ${vaccine.vaccine_code}`,
                 severity: 'medium',
                 animal_id: vaccine.animal_id,
                 animal_name: vaccine.animals.name,
                 animal_tag: vaccine.animals.id_tag,
-                vaccine_name: vaccineName,
+                vaccine_name: vaccine.vaccine_code,
                 expected_date: vaccine.next_due,
                 days_until: diffDays,
               });
@@ -840,19 +836,16 @@ export const useDashboardSummary = (): DashboardSummary => {
       if (!reproductiveError && reproductiveAlertsData) {
         reproductiveAlertsData.forEach((alert: any) => {
           if (alert.animals) {
-            const alertTypeKey = `common:notifications.reproductiveType_${alert.alert_type}`;
-            const translatedAlertType = t(alertTypeKey, { defaultValue: alert.alert_type });
-            
             warnings.push({
               id: `reproductive_${alert.id}`,
               type: 'reproductive',
               title: t('common:notifications.reproductiveAlerts'),
-              description: `${alert.animals.name || alert.animals.id_tag}`,
+              description: `${alert.animals.name || alert.animals.id_tag} - ${alert.alert_type}`,
               severity: 'high',
               animal_id: alert.animal_id,
               animal_name: alert.animals.name,
               animal_tag: alert.animals.id_tag,
-              alert_type: translatedAlertType,
+              alert_type: alert.alert_type,
               expected_date: alert.expected_date,
               days_overdue: alert.days_overdue,
             });

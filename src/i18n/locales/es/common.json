@@ -256,14 +256,7 @@
     "overdueBy": "Atrasado {{days}} días",
     "reproductiveAlerts": "Alertas Reproductivas",
     "requiresAttention": "Requiere atención inmediata",
-    "viewAnimal": "Ver animal",
-    "reproductiveType_repeat_service": "Repetición de servicio",
-    "reproductiveType_pregnancy_loss": "Pérdida de preñez",
-    "reproductiveType_overdue_birth": "Parto atrasado",
-    "reproductiveType_heat_detection": "Detección de celo",
-    "reproductiveType_failed_insemination": "Inseminación fallida",
-    "reproductiveType_abortion": "Aborto",
-    "reproductiveType_dystocia": "Distocia"
+    "viewAnimal": "Ver animal"
   },
   "success": {
     "title": "Éxito",
