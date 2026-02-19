@@ -38,7 +38,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   if (currentStep >= steps.length) {
     return (
       <div className="gradient-mesh min-h-screen flex items-center justify-center p-3 sm:p-4 animate-fade-in">
-        <Card className="w-full max-w-md mx-3 sm:mx-auto glass card-modern">
+        <Card className="w-[calc(100%-1.5rem)] sm:w-full max-w-md mx-auto glass card-modern overflow-hidden">
           <CardHeader className="text-center space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="flex justify-center">
               <div className="relative">
