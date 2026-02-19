@@ -1,160 +1,70 @@
 
+# Fix: Mobile Loading Stuck on Activities and Tab Switching
 
-# Fix Plan: Sync System Unification and Bug Fixes
+## Problem Analysis
 
-## Problem Summary
+Three bugs are causing the app to get stuck in a loading state on mobile:
 
-The codebase has two competing sync systems (`outbox.ts` and `syncEngine.ts`) causing inconsistent behavior, missing sync handlers for several operations, a faulty retry mechanism, and `VITE_*` environment variables that are not supported by Lovable.
+### Bug 1: `useConnectivity()` destructuring mismatch in `useAllActivities.tsx`
+- `useConnectivity()` returns `{ isOnline: boolean }` (an object)
+- But `useAllActivities.tsx` line 42 assigns it as: `const isOnline = useConnectivity()`
+- Then line 76 checks `if (!isOnline) return` -- but `isOnline` is an **object**, which is always truthy
+- **Impact**: When offline, `syncFromServer` still runs, all fetches fail silently, and the N+1 queries below compound the delay
+
+### Bug 2: N+1 query waterfall in `syncFromServer` (useAllActivities.tsx)
+- For each evento, it makes individual sequential queries (pesajes, tactos, animals)
+- For each vaccine group, it queries animals + vaccination requirements individually
+- For each insemination group, it queries animals individually
+- On a slow mobile connection with 50+ events, this means 100+ sequential HTTP requests
+- **Impact**: Loading takes 30+ seconds on mobile or times out entirely
+
+### Bug 3: Subscription RPC blocks the entire app (`ProtectedRoute.tsx` line 22)
+- `ProtectedRoute` waits for both `authLoading` AND `subscriptionLoading` before rendering anything
+- `useSubscription` calls an RPC that retries up to 3 times with increasing delays (2s, 4s)
+- If the RPC is slow or fails, the app shows a spinner for 6+ seconds before any content appears
+- The `isOffline` check uses `navigator.onLine` which is unreliable on iOS WKWebView
+- **Impact**: App stuck on loading spinner on flaky mobile connections
 
 ---
 
-## Changes Overview
+## Fix Plan
 
-### 1. Unify Sync Systems -- Redirect old outbox imports to syncEngine
+### Step 1: Fix `useConnectivity()` destructuring in `useAllActivities.tsx`
+**File**: `src/hooks/useAllActivities.tsx`
+- Change line 42 from `const isOnline = useConnectivity()` to `const { isOnline } = useConnectivity()`
+- This ensures the offline guard on line 76 actually works
 
-**Problem:** `outbox.ts` and `syncEngine.ts` both provide `enqueue`, `getOutboxStatus`, and `retryFailedEvents`. Most of the app imports from the old `outbox.ts`, while only `autoSync.ts` and `SyncStatusWidget.tsx` use the new engine.
+### Step 2: Eliminate N+1 queries in `syncFromServer`
+**File**: `src/hooks/useAllActivities.tsx`
+- Batch-fetch all animal details in a single query instead of per-event
+- Collect all animal IDs first, then fetch once with `.in('id', allAnimalIds)`
+- Fetch pesajes and tactos in bulk by evento_ids instead of one-by-one
+- This reduces 100+ queries to approximately 5-6 queries total
 
-**Fix:** Replace `outbox.ts` contents with re-exports from `syncEngine.ts`, making `syncEngine.ts` the single source of truth. This avoids touching every consumer file.
+### Step 3: Make subscription loading non-blocking
+**File**: `src/components/ProtectedRoute.tsx`
+- Use the robust `useConnectivity()` hook instead of `isOffline` from auth (which uses unreliable `navigator.onLine`)
+- Add a 3-second timeout for subscription loading -- if it hasn't resolved, render the page anyway
+- Subscription status will populate in the background without blocking the UI
 
-**File:** `src/services/outbox.ts`
-- Replace all function implementations with re-exports:
-  ```
-  export { enqueue, getOutboxStatus, retryFailedEvents, syncOutbox as flushOutbox } from './syncEngine';
-  export { applyIdMappings as applyIdMapInCaches } from './syncEngine';
-  ```
-  (Note: `applyIdMappings` is not currently exported from syncEngine, so we will export it.)
-
-**File:** `src/services/syncEngine.ts`
-- Export `applyIdMappings` so `outbox.ts` can re-export it.
-
-### 2. Unify SyncCenter and SyncStatusBadge to use syncEngine
-
-**File:** `src/components/SyncCenter.tsx`
-- Change import from `@/services/outbox` to `@/services/syncEngine` for `getOutboxStatus` and `retryFailedEvents`.
-- Change `trySync` import to use `syncOutbox` from `syncEngine`.
-
-**File:** `src/components/SyncStatusBadge.tsx`
-- Change `getOutboxStatus` import from `@/services/outbox` to `@/services/syncEngine`.
-
-### 3. Add missing handlers in syncApi.ts
-
-**Problem:** `ANIMAL_DELETE`, `CORRAL_DELETE`, `FINANCE_UPDATE`, `FINANCE_DELETE`, `DEATH_RECORD_INSERT`, `TACTO_INSERT` (and other types defined in `OutboxEventType`) are not handled, causing "Unsupported event type" errors.
-
-**File:** `src/services/syncApi.ts`
-- Add cases for:
-  - `ANIMAL_DELETE`: delete from `animals` by id
-  - `CORRAL_DELETE`: delete from `corrales` by id
-  - `FINANCE_UPDATE`: update `finances` by id
-  - `FINANCE_DELETE`: delete from `finances` by id
-  - `DEATH_RECORD_INSERT`: insert into `defunciones`
-  - `VACCINE_UPDATE`: update `animal_vaccines` by id
-  - `VACCINE_DELETE`: delete from `animal_vaccines` by id
-  - `WEIGHT_UPDATE`: update `animal_weight_history` by id
-  - `INSEMINATION_UPDATE`: update `artificial_inseminations` by id
-  - `EVENTO_UPDATE`: update `eventos` by id
-  - `CORRAL_MOVEMENT_INSERT`: insert into `corral_movements`
-  - `PREGNANCY_INSERT`: insert into `preñeces`
-  - `PREGNANCY_UPDATE`: update `preñeces` by id
-
-### 4. Fix VITE_ environment variables in RevenueCat
-
-**Problem:** Lovable does not support `VITE_*` variables. The RevenueCat service uses `import.meta.env.VITE_REVENUECAT_API_KEY_*` which will always be undefined.
-
-**File:** `src/services/revenueCatService.ts`
-- Replace `import.meta.env.VITE_REVENUECAT_API_KEY_IOS` / `ANDROID` with hardcoded placeholder constants and a clear comment telling the developer to set them before building for stores. This follows the same pattern used for the Supabase client.
-
-**File:** `src/services/iosPurchaseService.ts`
-- Same fix: replace `import.meta.env.VITE_REVENUECAT_API_KEY` with the constant.
-
-### 5. Fix faulty retry logic in outbox.ts (now moot)
-
-Since `outbox.ts` will become a re-export file (change 1), the faulty `retryFailedEvents` that increments `retries` before the attempt is eliminated. The `syncEngine.ts` version correctly only resets status to `pending` without incrementing.
-
-### 6. Fix incremental sync for animals (missing updated_at column)
-
-**Problem:** `syncAnimalsIncremental` queries `.gte('updated_at', lastSync)` but the `animals` table has no `updated_at` column, so the query silently returns nothing.
-
-**Fix (non-destructive):** Add a database migration to add `updated_at` column to `animals` with a default and trigger.
-
-**Migration SQL:**
-```sql
-ALTER TABLE animals ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-
-CREATE OR REPLACE FUNCTION update_animals_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER set_animals_updated_at
-  BEFORE UPDATE ON animals
-  FOR EACH ROW
-  EXECUTE FUNCTION update_animals_updated_at();
-
--- Backfill existing rows
-UPDATE animals SET updated_at = COALESCE(created_at, now()) WHERE updated_at IS NULL;
-```
-
-(Note: `animals` table does not have `created_at` either based on schema. We will just use `now()` for the backfill.)
-
-### 7. Fix finances incremental sync using date instead of updated_at
-
-**Problem:** `syncFinancesIncremental` uses `.gte('date', lastSync)` which compares transaction dates against sync timestamps -- incorrect semantics.
-
-**Fix:** The `finances` table also lacks `updated_at`. Since adding columns requires a migration, we will add `updated_at` to finances as well, then use it in the incremental query.
-
-**Migration SQL:**
-```sql
-ALTER TABLE finances ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-
-CREATE OR REPLACE FUNCTION update_finances_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = now();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER set_finances_updated_at
-  BEFORE UPDATE ON finances
-  FOR EACH ROW
-  EXECUTE FUNCTION update_finances_updated_at();
-
-UPDATE finances SET updated_at = now() WHERE updated_at IS NULL;
-```
-
-**File:** `src/services/dataSync.ts` line 500-503
-- Change `query = query.gte('date', lastSync)` to `query = query.gte('updated_at', lastSync)`
-
-### 8. Remove dead sync.ts file
-
-**Problem:** `src/services/sync.ts` is only imported by `SyncCenter` and offline hooks via `trySync`. After change 1, the offline hooks still import `enqueue` from outbox (now re-exporting syncEngine) and `trySync` from sync.ts.
-
-**Fix:** Update `src/services/sync.ts` to use `syncOutbox` from syncEngine instead of `flushOutbox`/`applyIdMapInCaches` from outbox, keeping it as a thin wrapper.
+### Step 4: Add connectivity timeout to `useSubscription`
+**File**: `src/hooks/useSubscription.tsx`
+- Check `isOnline` from the robust connectivity service before making the RPC call
+- If offline, skip the RPC and set loading to false immediately
+- This prevents the subscription check from blocking the app when there's no real connectivity
 
 ---
 
 ## Technical Details
 
-### Files Modified (8 files):
-1. `src/services/outbox.ts` -- gutted, becomes re-exports
-2. `src/services/syncEngine.ts` -- export `applyIdMappings`
-3. `src/services/syncApi.ts` -- add 13 missing event handlers
-4. `src/services/sync.ts` -- use syncEngine internally
-5. `src/services/revenueCatService.ts` -- remove VITE_ vars
-6. `src/services/iosPurchaseService.ts` -- remove VITE_ vars
-7. `src/services/dataSync.ts` -- fix finances incremental sync field
-8. `src/components/SyncStatusBadge.tsx` -- import from syncEngine
-9. `src/components/SyncCenter.tsx` -- import from syncEngine
+### Files Modified
+1. `src/hooks/useAllActivities.tsx` -- Fix destructuring + batch queries
+2. `src/components/ProtectedRoute.tsx` -- Non-blocking subscription check
+3. `src/hooks/useSubscription.tsx` -- Offline-aware subscription fetch
 
-### Database Migrations (1 migration):
-- Add `updated_at` column + trigger to `animals` and `finances` tables
-
-### No Breaking Changes:
-- All existing imports continue to work (outbox re-exports)
-- No routes, components, or UI flows are altered
-- No enum values or field meanings change
-- Existing data is preserved (additive migration only)
-
+### Risk Assessment
+- No database changes required
+- No new tables, columns, or RLS policies
+- No changes to existing routes, components, or flows
+- All changes are performance/resilience improvements to existing hooks
+- Existing buttons, labels, and flows remain unchanged
