@@ -180,17 +180,17 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen gradient-mesh flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen gradient-mesh flex items-center justify-center p-4 animate-fade-in">
-      <Card className="w-full max-w-md glass card-modern animate-scale-in">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 animate-fade-in">
+      <Card className="w-full max-w-md card-modern animate-scale-in">
         <CardHeader className="text-center space-y-2 pb-6">
-          <CardTitle className="text-3xl font-bold text-brand-gradient">agrodeo</CardTitle>
+          <CardTitle className="text-3xl font-bold text-primary">agrodeo</CardTitle>
           <CardDescription className="text-base">
             {t('auth:appDescription', 'Sistema de Gestión Integral de Ganado')}
           </CardDescription>

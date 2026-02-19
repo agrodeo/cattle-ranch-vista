@@ -128,7 +128,7 @@ export const VaccinationSetupStep = ({ onComplete, onSkip }: VaccinationSetupSte
   };
 
   return (
-    <Card className="w-[calc(100%-1.5rem)] sm:w-full max-w-4xl mx-auto glass card-modern animate-scale-in overflow-hidden">
+    <Card className="w-[calc(100%-1.5rem)] sm:w-full max-w-4xl mx-auto card-modern animate-scale-in overflow-hidden">
       <CardHeader className="space-y-3 sm:space-y-4 p-4 sm:p-6">
         <div className="flex items-start sm:items-center gap-3 sm:gap-4">
           <div className="relative flex-shrink-0">

@@ -37,8 +37,8 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
 
   if (currentStep >= steps.length) {
     return (
-      <div className="gradient-mesh min-h-screen flex items-center justify-center p-3 sm:p-4 animate-fade-in">
-        <Card className="w-[calc(100%-1.5rem)] sm:w-full max-w-md mx-auto glass card-modern overflow-hidden">
+      <div className="bg-background min-h-screen flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+        <Card className="w-[calc(100%-1.5rem)] sm:w-full max-w-md mx-auto card-modern overflow-hidden">
           <CardHeader className="text-center space-y-4 sm:space-y-6 p-4 sm:p-6">
             <div className="flex justify-center">
               <div className="relative">
@@ -49,7 +49,7 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
               </div>
             </div>
             <div className="space-y-2">
-              <CardTitle className="text-2xl sm:text-3xl text-brand-gradient">
+              <CardTitle className="text-2xl sm:text-3xl text-primary">
                 ¡Configuración Completa!
               </CardTitle>
               <CardDescription className="text-sm sm:text-base">
@@ -71,11 +71,11 @@ export const OnboardingFlow = ({ onComplete }: OnboardingFlowProps) => {
   const CurrentStepComponent = steps[currentStep].component;
 
   return (
-    <div className="min-h-screen gradient-mesh flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+    <div className="min-h-screen bg-background flex items-center justify-center p-3 sm:p-4 animate-fade-in">
       <div className="w-full max-w-4xl space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center space-y-3 sm:space-y-4 px-2">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-brand-gradient mb-2 px-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-2 px-4">
             ¡Bienvenido a agrodeo!
           </h1>
           <p className="text-base sm:text-lg text-muted-foreground px-4">
