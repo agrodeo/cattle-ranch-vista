@@ -36,7 +36,14 @@ const PLAN_PRICES = {
 export const useSubscription = () => {
   const { currentUser } = useSupabaseAuth();
   const { isOnline } = useConnectivity();
-  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus | null>(() => {
+    // Instantly load cached subscription status from localStorage
+    try {
+      const cached = localStorage.getItem('cached_subscription_status');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return null;
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchSubscriptionStatus = useCallback(async (retryCount = 0) => {
@@ -47,9 +54,9 @@ export const useSubscription = () => {
       return;
     }
 
-    // Skip RPC when offline — don't block the app
+    // Skip RPC when offline — use cached status
     if (!isOnline) {
-      console.log('📴 Offline — skipping subscription status fetch');
+      console.log('📴 Offline — using cached subscription status');
       setLoading(false);
       return;
     }
@@ -81,7 +88,7 @@ export const useSubscription = () => {
       if (data && data.length > 0) {
         const status = data[0];
         console.log('✅ Subscription status:', status);
-        setSubscriptionStatus({
+        const newStatus: SubscriptionStatus = {
           plan: status.plan,
           isTrialActive: status.is_trial_active,
           trialDaysRemaining: status.trial_days_remaining,
@@ -90,7 +97,12 @@ export const useSubscription = () => {
           currentAnimalsCount: status.current_animals_count,
           canAddAnimals: status.can_add_animals,
           isReadOnly: status.is_read_only
-        });
+        };
+        setSubscriptionStatus(newStatus);
+        // Cache to localStorage for offline access
+        try {
+          localStorage.setItem('cached_subscription_status', JSON.stringify(newStatus));
+        } catch {}
       }
     } catch (error) {
       console.error('Error in fetchSubscriptionStatus:', error);
