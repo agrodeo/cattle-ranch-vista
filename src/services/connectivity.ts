@@ -18,7 +18,7 @@ export async function checkConnectivity(): Promise<boolean> {
       cache: 'no-store',
     });
     clearTimeout(timeout);
-    lastKnownOnline = res.ok;
+    lastKnownOnline = true;  // Any HTTP response (even 401/403) means we have connectivity
   } catch {
     lastKnownOnline = false;
   }
