@@ -126,12 +126,12 @@ export function useAnimalVaccinations(animalId: string | null) {
 
       if (error) throw error;
 
-      toast.success('Vacunación registrada exitosamente');
+      toast.success(t('common:toast.vaccinationRecorded'));
       await fetchStatus(); // Refresh data
       return data;
     } catch (error: any) {
       console.error('Error recording vaccination:', error);
-      toast.error('Error al registrar vacunación');
+      toast.error(t('common:toast.vaccinationError'));
       throw error;
     }
   };

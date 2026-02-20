@@ -82,8 +82,8 @@ export function ReproductiveEventsTable({ animalId, animalSex, cabaña_id }: Rep
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los eventos reproductivos",
+        title: t('common:toast.error'),
+        description: t('common:toast.couldNotLoadReproductiveEvents'),
       });
     } finally {
       setLoading(false);
@@ -115,7 +115,7 @@ export function ReproductiveEventsTable({ animalId, animalSex, cabaña_id }: Rep
 
       if (error) throw error;
 
-      toast({ title: "Evento eliminado exitosamente" });
+      toast({ title: t('common:toast.eventDeleted') });
       fetchEvents();
     } catch (error: any) {
       toast({

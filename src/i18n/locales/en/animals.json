@@ -122,7 +122,10 @@
     "updated": "Animal updated successfully",
     "deleted": "Animal deleted successfully",
     "suggestion": "Suggestion",
-    "aiSuggestion": "This female is over 15 months old. Consider registering artificial insemination if she's of breeding age"
+    "aiSuggestion": "This female is over 15 months old. Consider registering artificial insemination if she's of breeding age",
+    "requiredFields": "Please complete required fields: ID, Sex and Breed",
+    "createdSuccessfully": "Animal created successfully",
+    "errorCreating": "Error creating animal"
   },
   "errors": {
     "configRequired": "Configuration required",

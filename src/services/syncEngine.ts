@@ -13,6 +13,7 @@ import { db, OutboxEvent } from './db';
 import { postSyncBatch } from './syncApi';
 import { isOnline } from './connectivity';
 import { toast } from 'sonner';
+import i18n from '@/i18n';
 
 // Configuration
 const MAX_RETRIES = 5;
@@ -366,7 +367,7 @@ export async function retryFailedEvents(): Promise<number> {
  */
 export async function manualSync(): Promise<SyncResult> {
   if (!isOnline()) {
-    toast.error('Sin conexión a internet');
+    toast.error(i18n.t('common:toast.noConnection'));
     return { success: false, sent: 0, failed: 0, mapped: 0, errors: [] };
   }
   
@@ -374,17 +375,17 @@ export async function manualSync(): Promise<SyncResult> {
   const pendingCount = status.pending + status.failed;
   
   if (pendingCount > 0) {
-    toast.loading(`Sincronizando ${pendingCount} cambios...`, { id: 'manual-sync' });
+    toast.loading(i18n.t('common:toast.syncingChanges', { count: pendingCount }), { id: 'manual-sync' });
   }
   
   const result = await syncOutbox();
   
   if (result.success) {
-    toast.success(`Sincronizado: ${result.sent} cambios`, { id: 'manual-sync' });
+    toast.success(i18n.t('common:toast.syncedChanges', { count: result.sent }), { id: 'manual-sync' });
   } else if (result.failed > 0) {
-    toast.error(`Error: ${result.failed} cambios fallaron`, { id: 'manual-sync' });
+    toast.error(i18n.t('common:toast.syncFailedCount', { count: result.failed }), { id: 'manual-sync' });
   } else {
-    toast.success('Todo sincronizado', { id: 'manual-sync' });
+    toast.success(i18n.t('common:toast.allSynced'), { id: 'manual-sync' });
   }
   
   return result;

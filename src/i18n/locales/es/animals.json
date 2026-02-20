@@ -122,7 +122,10 @@
     "updated": "Animal actualizado correctamente",
     "deleted": "Animal eliminado correctamente",
     "suggestion": "Sugerencia",
-    "aiSuggestion": "Esta hembra tiene más de 15 meses. Considera registrar inseminación artificial si está en edad reproductiva"
+    "aiSuggestion": "Esta hembra tiene más de 15 meses. Considera registrar inseminación artificial si está en edad reproductiva",
+    "requiredFields": "Complete los campos requeridos: Identificación, Sexo y Raza",
+    "createdSuccessfully": "Animal creado correctamente",
+    "errorCreating": "Error al crear el animal"
   },
   "errors": {
     "configRequired": "Configuración requerida",
