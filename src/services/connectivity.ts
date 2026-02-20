@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 
 const SUPABASE_URL = 'https://yjzxbjwewzyhjquhrfzv.supabase.co';
 const CHECK_INTERVAL_MS = 30_000; // 30 seconds
-const TIMEOUT_MS = 3_000; // 3 seconds
+const TIMEOUT_MS = 5_000; // 5 seconds (increased for slow connections)
 
 let lastKnownOnline = navigator.onLine;
+let consecutiveFailures = 0;
+const OFFLINE_THRESHOLD = 2; // require 2 consecutive failures before marking offline
 
 /** Actually ping Supabase to verify connectivity (iOS WKWebView lies about navigator.onLine) */
 export async function checkConnectivity(): Promise<boolean> {
@@ -12,15 +14,20 @@ export async function checkConnectivity(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/`, {
       method: 'HEAD',
       signal: controller.signal,
       cache: 'no-store',
     });
     clearTimeout(timeout);
     lastKnownOnline = true;  // Any HTTP response (even 401/403) means we have connectivity
+    consecutiveFailures = 0;
   } catch {
-    lastKnownOnline = false;
+    consecutiveFailures++;
+    if (consecutiveFailures >= OFFLINE_THRESHOLD) {
+      lastKnownOnline = false;
+    }
+    // If under threshold, keep lastKnownOnline as-is
   }
   return lastKnownOnline;
 }
