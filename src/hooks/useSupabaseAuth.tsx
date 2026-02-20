@@ -419,16 +419,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     });
                   }
                 } else if (mounted) {
-                  console.error('❌ Failed to load profile, but keeping user signed in for now');
-                  setCurrentUser(null);
-                  setIsAuthenticated(false);
+                  // Profile fetch returned null — keep existing auth state if we have one
+                  console.warn('⚠️ Profile fetch returned null, keeping existing auth state');
+                  if (!currentUser) {
+                    setIsAuthenticated(false);
+                  }
                 }
               } catch (error) {
                 console.error('💥 Error in auth state change handler:', error);
-                if (mounted) {
-                  setCurrentUser(null);
-                  setIsAuthenticated(false);
-                }
+                // Do NOT de-authenticate on transient errors — session is still valid
               }
             }, 0);
           } else {
