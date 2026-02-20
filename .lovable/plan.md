@@ -1,41 +1,112 @@
 
+# Fix: False "offline" banner and unexpected logout
 
-# Fix: Animals tab stuck on loading
+## Problem
 
-## Root Cause
+Two separate bugs cause the user to (1) see an "offline" banner and (2) get logged out, despite having a working internet connection.
 
-The connectivity checker (`src/services/connectivity.ts`) pings `https://...supabase.co/rest/v1/` with a HEAD request **without authentication headers**. Supabase returns **401 Unauthorized**. The code checks `res.ok` (which is only `true` for 2xx responses), so a 401 is treated as "offline."
+## Root Cause Analysis
 
-This causes a chain reaction:
-1. `useConnectivity()` reports `isOnline = false`
-2. `syncFromServer()` in `Animals.tsx` returns early (`if (!isOnline) return`) without fetching data and without setting `loading = false`
-3. `loadFromCache()` finds nothing for a new user, so it also does not set `loading = false`
-4. The page stays stuck on the loading spinner, and the error toast eventually fires
+### Bug 1: False logout on transient Supabase errors
 
-## Fix (1 file)
-
-### `src/services/connectivity.ts` (line 21)
-
-Change the online check from `res.ok` (2xx only) to accept **any HTTP response** as proof of connectivity. A 401 means the server responded -- the network is working. Only a network failure (caught by the `catch` block) should be treated as offline.
+In `src/hooks/useSupabaseAuth.tsx` (lines 379-441), the `onAuthStateChange` listener fires on events like `TOKEN_REFRESHED`. The handler calls `fetchUserProfile()`, and if the profile fetch fails (e.g., Supabase returns a transient 503), the code at **line 423-424** sets `isAuthenticated = false`:
 
 ```typescript
-// BEFORE
-lastKnownOnline = res.ok;
-
-// AFTER
-lastKnownOnline = true;  // Any HTTP response (even 401/403) means we have connectivity
+} else if (mounted) {
+  setCurrentUser(null);
+  setIsAuthenticated(false);  // <-- THIS LOGS THE USER OUT
+}
 ```
 
-This is the correct approach because:
-- The purpose of this check is to detect **network connectivity**, not authentication status
-- A 401 response proves the server is reachable
-- The `catch` block already handles actual network failures (timeout, DNS, no connection)
+Similarly, the `catch` block at **lines 428-430** also sets `isAuthenticated(false)`.
+
+Since `ProtectedRoute` redirects to `/auth` when `isAuthenticated` is false, the user gets "logged out" even though their session token is still valid.
+
+### Bug 2: False "offline" on connectivity ping timeout
+
+In `src/services/connectivity.ts`, the ping has a 3-second timeout. If the Supabase API is slow (as seen with the 503 errors in the logs), the `AbortController` fires, the `catch` block runs, and `lastKnownOnline` is set to `false`. This triggers the offline banner in `ProtectedRoute`.
+
+## Fix
+
+### File 1: `src/hooks/useSupabaseAuth.tsx`
+
+**Change**: When `fetchUserProfile` fails inside `onAuthStateChange`, do NOT set `isAuthenticated = false` if the user already has a cached profile or a valid session. Only de-authenticate on explicit `SIGNED_OUT` events.
+
+Specifically:
+- Lines 421-424: Instead of setting `isAuthenticated(false)` when profile fetch returns null, log a warning and keep the existing `currentUser` state. The user still has a valid Supabase session.
+- Lines 426-431: Same -- on catch, log the error but do NOT de-authenticate.
+- The `SIGNED_OUT` case (line 434-438) already correctly clears auth state -- that path remains unchanged.
+
+### File 2: `src/services/connectivity.ts`
+
+**Change**: Make connectivity detection more resilient to transient slowness:
+- Increase `TIMEOUT_MS` from 3000 to 5000ms to tolerate slower Supabase responses.
+- Add a "grace period" -- only mark offline after 2 consecutive failed pings, not just 1. This prevents a single slow request from flipping the entire app to offline mode.
+
+## Technical Details
+
+### useSupabaseAuth.tsx changes (lines ~387-433)
+
+```typescript
+// In the onAuthStateChange handler, inside the setTimeout:
+try {
+  if (event === 'SIGNED_IN') {
+    await handlePendingCabanaCreation(session.user.id);
+  }
+
+  const userProfile = await fetchUserProfile(session.user.id);
+  if (userProfile && mounted) {
+    setCurrentUser(userProfile);
+    setIsAuthenticated(true);
+    await cacheUserProfile(userProfile);
+    // ... sync logic unchanged
+  } else if (mounted) {
+    // CHANGED: Do NOT de-authenticate on profile fetch failure
+    // The session is still valid, just the profile fetch failed transiently
+    console.warn('Profile fetch returned null, keeping existing auth state');
+    // Only de-auth if we have NO prior auth state at all
+    if (!currentUser) {
+      setIsAuthenticated(false);
+    }
+  }
+} catch (error) {
+  console.error('Error in auth state change handler:', error);
+  // CHANGED: Do NOT de-authenticate on transient errors
+  // Keep existing auth state intact
+}
+```
+
+### connectivity.ts changes
+
+```typescript
+const TIMEOUT_MS = 5_000; // increased from 3s to 5s
+let consecutiveFailures = 0;
+const OFFLINE_THRESHOLD = 2; // require 2 consecutive failures
+
+export async function checkConnectivity(): Promise<boolean> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    await fetch(/*...*/);
+    clearTimeout(timeout);
+    lastKnownOnline = true;
+    consecutiveFailures = 0; // reset on success
+  } catch {
+    consecutiveFailures++;
+    if (consecutiveFailures >= OFFLINE_THRESHOLD) {
+      lastKnownOnline = false;
+    }
+    // If under threshold, keep lastKnownOnline as-is
+  }
+  return lastKnownOnline;
+}
+```
 
 ## Impact
 
 - No database changes
 - No schema changes
-- No changes to existing routes, components, or business logic
-- Only the connectivity detection logic is corrected
-- All existing offline behavior continues to work (true network failures still detected via `catch`)
-
+- No changes to routes, components, or business logic
+- Existing offline detection for truly offline scenarios still works (after 2 consecutive failures)
+- Existing logout flow via `signOut()` is untouched
+- The user stays authenticated through transient Supabase outages
