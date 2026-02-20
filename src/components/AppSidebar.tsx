@@ -97,7 +97,7 @@ export function AppSidebar() {
         )}>
           <div className="flex items-center pl-6">
             {(!isCollapsed || isMobile) && (
-              <span className="text-xl font-bold text-ink-900">agrodeo</span>
+              <span className="text-xl font-bold text-primary">agrodeo</span>
             )}
           </div>
         </div>
