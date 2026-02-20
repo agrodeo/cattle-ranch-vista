@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Plus, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { ReproductiveEventDialog } from "./ReproductiveEventDialog";
 import {
   AlertDialog,
@@ -43,6 +44,7 @@ interface ReproductiveEventsTableProps {
 
 export function ReproductiveEventsTable({ animalId, animalSex, cabaña_id }: ReproductiveEventsTableProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [events, setEvents] = useState<ReproductiveEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);

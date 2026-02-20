@@ -64,6 +64,7 @@ export function ReproductiveEventDialog({
   onSuccess,
 }: ReproductiveEventDialogProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ReproductiveEventForm>({
