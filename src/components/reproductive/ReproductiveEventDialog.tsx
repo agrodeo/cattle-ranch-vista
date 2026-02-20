@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -100,14 +101,14 @@ export function ReproductiveEventDialog({
           .eq("id", existingEvent.id);
 
         if (error) throw error;
-        toast({ title: "Evento reproductivo actualizado exitosamente" });
+        toast({ title: t('common:toast.reproductiveEventUpdated') });
       } else {
         const { error } = await supabase
           .from("reproductive_events")
           .insert(payload);
 
         if (error) throw error;
-        toast({ title: "Evento reproductivo creado exitosamente" });
+        toast({ title: t('common:toast.reproductiveEventCreated') });
       }
 
       onSuccess();

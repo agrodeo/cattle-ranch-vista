@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import { syncOutbox, getOutboxStatus, isSyncInProgress } from './syncEngine';
 import { incrementalSync } from './dataSync';
 import { isOnline } from './connectivity';
+import i18n from '@/i18n';
 
 const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
 let syncIntervalId: ReturnType<typeof setInterval> | null = null;
@@ -62,13 +63,13 @@ async function handleOnline(): Promise<void> {
     }
 
     if (pendingCount > 0) {
-      toast.success('Sincronización completada', {
+      toast.success(i18n.t('common:toast.syncCompleted'), {
         id: 'sync-reconnect'
       });
     }
   } catch (error) {
     console.error('Auto sync failed:', error);
-    toast.error('Error al sincronizar. Se reintentará automáticamente.', {
+    toast.error(i18n.t('common:toast.syncError'), {
       id: 'sync-reconnect'
     });
   }
@@ -76,7 +77,7 @@ async function handleOnline(): Promise<void> {
 
 function handleOffline(): void {
   console.log('Connection lost, working offline');
-  toast.info('Sin conexión. Los cambios se guardarán localmente.', {
+  toast.info(i18n.t('common:toast.offlineMode'), {
     duration: 3000
   });
 }
