@@ -32,7 +32,7 @@ interface ActivityRecord {
 export function MobileActivities() {
   const { t } = useTranslation(['activities', 'common']);
   const { currentUser } = useSupabaseAuth();
-  const isOnline = useConnectivity();
+  const { isOnline } = useConnectivity();
   const [activities, setActivities] = useState<ActivityRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");

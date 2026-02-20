@@ -118,7 +118,7 @@ export const useDashboardSummary = (): DashboardSummary => {
   const { t } = useTranslation(['dashboard', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { subscriptionStatus } = useSubscription();
-  const isOnline = useConnectivity();
+  const { isOnline } = useConnectivity();
   
   const [cabana, setCabana] = useState<CabanaInfo | null>(null);
   const [counts, setCounts] = useState<DashboardCounts>({
