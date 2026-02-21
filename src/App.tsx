@@ -44,82 +44,22 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/dashboard" element={
+            {/* Single shared Layout for all protected routes */}
+            <Route element={
               <ProtectedRoute>
                 <Layout />
               </ProtectedRoute>
             }>
-              <Route index element={<Dashboard />} />
-            </Route>
-            <Route path="/animales/:id" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<AnimalProfile />} />
-            </Route>
-            <Route path="/animals" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Animals />} />
-            </Route>
-            <Route path="/finances" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Finances />} />
-            </Route>
-            <Route path="/corrales" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Corrales />} />
-            </Route>
-            <Route path="/activities" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Activities />} />
-            </Route>
-            <Route path="/finances" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Finances />} />
-            </Route>
-            <Route path="/reports" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Reports />} />
-            </Route>
-            <Route path="/subscription" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Subscription />} />
-            </Route>
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<SettingsPage />} />
-            </Route>
-            <Route path="/achievements" element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Achievements />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/animales/:id" element={<AnimalProfile />} />
+              <Route path="/animals" element={<Animals />} />
+              <Route path="/finances" element={<Finances />} />
+              <Route path="/corrales" element={<Corrales />} />
+              <Route path="/activities" element={<Activities />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/subscription" element={<Subscription />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/achievements" element={<Achievements />} />
             </Route>
             <Route path="/plans" element={
               <ProtectedRoute>

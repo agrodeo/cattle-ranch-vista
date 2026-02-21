@@ -1,15 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 
 const SUPABASE_URL = 'https://yjzxbjwewzyhjquhrfzv.supabase.co';
 const CHECK_INTERVAL_MS = 30_000; // 30 seconds
-const TIMEOUT_MS = 5_000; // 5 seconds (increased for slow connections)
+const TIMEOUT_MS = 5_000;
 
 let lastKnownOnline = navigator.onLine;
 let consecutiveFailures = 0;
-const OFFLINE_THRESHOLD = 2; // require 2 consecutive failures before marking offline
+const OFFLINE_THRESHOLD = 2;
 
-/** Actually ping Supabase to verify connectivity (iOS WKWebView lies about navigator.onLine) */
+// Subscribers for useSyncExternalStore
+const listeners = new Set<() => void>();
+function notifyListeners() {
+  listeners.forEach(l => l());
+}
+
+/** Actually ping Supabase to verify connectivity */
 export async function checkConnectivity(): Promise<boolean> {
+  const prev = lastKnownOnline;
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -20,59 +27,47 @@ export async function checkConnectivity(): Promise<boolean> {
       cache: 'no-store',
     });
     clearTimeout(timeout);
-    lastKnownOnline = true;  // Any HTTP response (even 401/403) means we have connectivity
+    lastKnownOnline = true;
     consecutiveFailures = 0;
   } catch {
     consecutiveFailures++;
     if (consecutiveFailures >= OFFLINE_THRESHOLD) {
       lastKnownOnline = false;
     }
-    // If under threshold, keep lastKnownOnline as-is
   }
+  if (lastKnownOnline !== prev) notifyListeners();
   return lastKnownOnline;
 }
 
-/** Synchronous getter — returns the result of the last active check */
+/** Synchronous getter */
 export function isOnline(): boolean {
   return lastKnownOnline;
 }
 
-// Start periodic background checks
+// Single module-level periodic check
 let intervalId: ReturnType<typeof setInterval> | null = null;
 function startPeriodicCheck() {
   if (intervalId) return;
-  // Initial check
   checkConnectivity();
   intervalId = setInterval(checkConnectivity, CHECK_INTERVAL_MS);
 }
 startPeriodicCheck();
 
+// Listen for browser online/offline hints at module level
+function handleHint() {
+  checkConnectivity().then(() => notifyListeners());
+}
+window.addEventListener('online', handleHint);
+window.addEventListener('offline', handleHint);
+
+/** React hook – uses useSyncExternalStore for zero duplicate polling */
 export function useConnectivity() {
-  const [online, setOnline] = useState(lastKnownOnline);
-
-  useEffect(() => {
-    // Browser events as hints → trigger real check
-    const verify = () => {
-      checkConnectivity().then(setOnline);
-    };
-
-    window.addEventListener('online', verify);
-    window.addEventListener('offline', verify);
-
-    // Also poll in sync with module-level interval
-    const poll = setInterval(() => {
-      checkConnectivity().then(setOnline);
-    }, CHECK_INTERVAL_MS);
-
-    // Initial real check
-    verify();
-
-    return () => {
-      window.removeEventListener('online', verify);
-      window.removeEventListener('offline', verify);
-      clearInterval(poll);
-    };
-  }, []);
-
+  const online = useSyncExternalStore(
+    (callback) => {
+      listeners.add(callback);
+      return () => listeners.delete(callback);
+    },
+    () => lastKnownOnline
+  );
   return { isOnline: online };
 }

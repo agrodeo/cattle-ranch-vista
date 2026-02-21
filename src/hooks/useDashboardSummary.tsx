@@ -142,7 +142,6 @@ export const useDashboardSummary = (): DashboardSummary => {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [diagnostics, setDiagnostics] = useState<any[]>([]);
 
   // Load dashboard summary from cache for instant display
   const loadFromCache = useCallback(async () => {
@@ -276,31 +275,6 @@ export const useDashboardSummary = (): DashboardSummary => {
       setCabana(cabanaInfo);
       setWarnings(prev => ({ ...prev, noCabana: false }));
       
-      // -------- DIAGNÓSTICO: probar varias combinaciones de filtros ----------
-      const runCount = async (label: string, filters: any) => {
-        try {
-          const q = supabase.from('animals').select('id', { count: 'exact', head: true });
-          if (filters.cabana && cabanaId) q.eq('cabaña_id', cabanaId);
-          if (filters.status) q.in('status', filters.status);
-          const { count, error } = await q;
-          return { label, count: count ?? 0, error: error?.message ?? null, filters, cabanaId };
-        } catch (e: any) {
-          return { label, count: 0, error: e.message, filters, cabanaId };
-        }
-      };
-
-      const diag = [];
-      diag.push(await runCount('Total animals (no filters)', { cabana: false, status: null }));
-      diag.push(await runCount('Animals in cabaña', { cabana: true, status: null }));
-      diag.push(await runCount('Active animals (lowercase)', { cabana: true, status: ['activo'] }));
-      diag.push(await runCount('Active animals (uppercase)', { cabana: true, status: ['Activo'] }));
-      diag.push(await runCount('Active animals (both)', { cabana: true, status: ['activo', 'Activo'] }));
-
-      setDiagnostics(diag);
-      console.group('🔍 Dashboard Animal Count Diagnostics');
-      console.table(diag.map(d => ({ ...d.filters, label: d.label, count: d.count, error: d.error, cabanaId: d.cabanaId })));
-      console.groupEnd();
-
       // Calculate date ranges
       const today = new Date();
       const thirtyDaysAgo = new Date(today);
@@ -308,57 +282,111 @@ export const useDashboardSummary = (): DashboardSummary => {
       const sevenDaysFromNow = new Date(today);
       sevenDaysFromNow.setDate(today.getDate() + 7);
 
-      // Count active animals - exclude only sold/dead (match subscription logic)
-      // Include both case variants for defensive filtering
-      const { count: animalsCount, error: animalsError } = await supabase
-        .from('animals')
-        .select('id', { count: 'exact', head: true })
-        .eq('cabaña_id', cabanaId)
-        .not('status', 'in', '("vendido","muerto","Vendido","Muerto")');
+      // Run all independent queries in parallel
+      const [
+        animalsResult,
+        corralsResult,
+        eventosResult,
+        vaccinesResult,
+        inseminationsResult,
+        servicesResult,
+        reproFemalesResult,
+        eventosRecentResult,
+        vaccinesRecentResult,
+        inseminationsRecentResult,
+        salesResult,
+        upcomingResult,
+      ] = await Promise.all([
+        // Count active animals
+        supabase
+          .from('animals')
+          .select('id', { count: 'exact', head: true })
+          .eq('cabaña_id', cabanaId)
+          .not('status', 'in', '("vendido","muerto","Vendido","Muerto")'),
+        // Count corrals
+        supabase
+          .from('corrales')
+          .select('id', { count: 'exact', head: true })
+          .eq('cabaña_id', cabanaId),
+        // Eventos batches last 30d
+        supabase
+          .from('eventos')
+          .select('tipo, fecha, creado_por')
+          .eq('cabaña_id', cabanaId)
+          .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0]),
+        // Vaccine batches last 30d
+        supabase
+          .from('animal_vaccines')
+          .select('vaccine_code, date, created_by')
+          .eq('cabaña_id', cabanaId)
+          .gte('date', thirtyDaysAgo.toISOString().split('T')[0]),
+        // Insemination batches last 30d
+        supabase
+          .from('artificial_inseminations')
+          .select('insemination_date, bull_name, created_by')
+          .eq('cabaña_id', cabanaId)
+          .gte('insemination_date', thirtyDaysAgo.toISOString().split('T')[0]),
+        // Total AI services
+        supabase
+          .from('artificial_inseminations')
+          .select('id', { count: 'exact', head: true })
+          .eq('cabaña_id', cabanaId),
+        // Reproductive females
+        supabase
+          .from('animals')
+          .select('id, birth_date, esta_preñada')
+          .eq('cabaña_id', cabanaId)
+          .eq('sex', 'Hembra')
+          .not('status', 'in', '("vendido","muerto","Vendido","Muerto")'),
+        // Recent eventos
+        supabase
+          .from('eventos')
+          .select('id, tipo, fecha, notas, payload, creado_por')
+          .eq('cabaña_id', cabanaId)
+          .order('fecha', { ascending: false })
+          .limit(10),
+        // Recent vaccines
+        supabase
+          .from('animal_vaccines')
+          .select('id, vaccine_code, date, created_by, created_at, lot, dose, route, animal_id')
+          .eq('cabaña_id', cabanaId)
+          .order('date', { ascending: false })
+          .limit(50),
+        // Recent inseminations
+        supabase
+          .from('artificial_inseminations')
+          .select('id, bull_name, insemination_date, created_by, created_at, female_id')
+          .eq('cabaña_id', cabanaId)
+          .order('insemination_date', { ascending: false })
+          .limit(50),
+        // Sales
+        supabase
+          .from('finances')
+          .select('id, date, amount, description, buyer_name, finances_animal_sales (id, animal_id, unit_price)')
+          .eq('cabaña_id', cabanaId)
+          .eq('type', 'ingreso')
+          .order('date', { ascending: false })
+          .limit(20),
+        // Upcoming eventos
+        supabase
+          .from('eventos')
+          .select('id, tipo, fecha')
+          .eq('cabaña_id', cabanaId)
+          .gt('fecha', today.toISOString().split('T')[0])
+          .lte('fecha', sevenDaysFromNow.toISOString().split('T')[0])
+          .order('fecha', { ascending: true })
+          .limit(5),
+      ]);
 
-      if (animalsError) {
-        console.error('Error counting animals:', animalsError);
-        console.log('Animals count result:', { animalsCount, animalsError });
-      } else {
-        console.log(`✅ Found ${animalsCount} active animals in cabaña ${cabanaId}`);
-      }
-
-      // Count corrals
-      const { count: corralsCount, error: corralsError } = await supabase
-        .from('corrales')
-        .select('id', { count: 'exact', head: true })
-        .eq('cabaña_id', cabanaId);
-
-      if (corralsError) {
-        console.error('Error counting corrals:', corralsError);
-        throw corralsError;
-      }
-
-      // Count batch activities from last 30 days (grouped by batch characteristics)
-      // For eventos: count distinct batches by (tipo, fecha, creado_por)
-      const { data: eventosBatches, error: eventosError } = await supabase
-        .from('eventos')
-        .select('tipo, fecha, creado_por')
-        .eq('cabaña_id', cabanaId)
-        .gte('fecha', thirtyDaysAgo.toISOString().split('T')[0]);
-
-      // For animal_vaccines: count distinct batches by (vaccine_code, DATE(date), created_by)
-      const { data: vaccinesBatches, error: vaccinesError } = await supabase
-        .from('animal_vaccines')
-        .select('vaccine_code, date, created_by')
-        .eq('cabaña_id', cabanaId)
-        .gte('date', thirtyDaysAgo.toISOString().split('T')[0]);
-
-      // For artificial_inseminations: count distinct batches by (insemination_date, bull_name, created_by)
-      const { data: inseminationsBatches, error: inseminationsError } = await supabase
-        .from('artificial_inseminations')
-        .select('insemination_date, bull_name, created_by')
-        .eq('cabaña_id', cabanaId)
-        .gte('insemination_date', thirtyDaysAgo.toISOString().split('T')[0]);
-
-      if (eventosError || vaccinesError || inseminationsError) {
-        console.error('Error counting activities:', { eventosError, vaccinesError, inseminationsError });
-      }
+      const animalsCount = animalsResult.count;
+      const corralsCount = corralsResult.count;
+      const servicesCount = servicesResult.count;
+      const reproductiveFemalesData = reproFemalesResult.data;
+      const eventosData = eventosRecentResult.data;
+      const vaccinesData = vaccinesRecentResult.data;
+      const inseminationsData = inseminationsRecentResult.data;
+      const salesData = salesResult.data;
+      const upcomingData = upcomingResult.data;
 
       // Count unique batches
       const countUniqueBatches = (batches: any[], keys: string[]) => {
@@ -369,35 +397,15 @@ export const useDashboardSummary = (): DashboardSummary => {
         return uniqueSet.size;
       };
 
-      const eventosCount = countUniqueBatches(eventosBatches || [], ['tipo', 'fecha', 'creado_por']);
-      const vaccinesCount = countUniqueBatches(vaccinesBatches || [], ['vaccine_code', 'date', 'created_by']);
-      const inseminationsCount = countUniqueBatches(inseminationsBatches || [], ['insemination_date', 'bull_name', 'created_by']);
-
+      const eventosCount = countUniqueBatches(eventosResult.data || [], ['tipo', 'fecha', 'creado_por']);
+      const vaccinesCount = countUniqueBatches(vaccinesResult.data || [], ['vaccine_code', 'date', 'created_by']);
+      const inseminationsCount = countUniqueBatches(inseminationsResult.data || [], ['insemination_date', 'bull_name', 'created_by']);
       const activitiesCount = eventosCount + vaccinesCount + inseminationsCount;
-
-      // Count total AI services
-      const { count: servicesCount, error: servicesError } = await supabase
-        .from('artificial_inseminations')
-        .select('id', { count: 'exact', head: true })
-        .eq('cabaña_id', cabanaId);
-
-      if (servicesError) {
-        console.error('Error counting services:', servicesError);
-        throw servicesError;
-      }
-
-      // Count reproductive females (≥15 months, active)
-      const { data: reproductiveFemalesData, error: reproFemalesError } = await supabase
-        .from('animals')
-        .select('id, birth_date, esta_preñada')
-        .eq('cabaña_id', cabanaId)
-        .eq('sex', 'Hembra')
-        .not('status', 'in', '("vendido","muerto","Vendido","Muerto")');
 
       let reproductiveFemalesCount = 0;
       let pregnantFemalesCount = 0;
 
-      if (!reproFemalesError && reproductiveFemalesData) {
+      if (reproductiveFemalesData) {
         reproductiveFemalesData.forEach((animal: any) => {
           if (animal.birth_date) {
             const birthDate = new Date(animal.birth_date);
@@ -488,7 +496,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         .limit(20);
 
       // Filter to only sales with animals
-      const animalSales = (salesData || []).filter(sale => 
+      const animalSales = (salesData || []).filter((sale: any) => 
         sale.finances_animal_sales && sale.finances_animal_sales.length > 0
       );
 
@@ -1032,57 +1040,6 @@ export const useDashboardSummary = (): DashboardSummary => {
     };
   }, [cabana?.id, fetchDashboardData]);
 
-  // Set up real-time subscriptions
-  useEffect(() => {
-    if (!cabana?.id) return;
-
-    const channel = supabase
-      .channel('dashboard-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'animals',
-          filter: `cabaña_id=eq.${cabana.id}`,
-        },
-        () => {
-          console.log('🔄 Animals changed, refetching dashboard data');
-          fetchDashboardData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'eventos',
-          filter: `cabaña_id=eq.${cabana.id}`,
-        },
-        () => {
-          console.log('🔄 Eventos changed, refetching dashboard data');
-          fetchDashboardData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'corrales',
-          filter: `cabaña_id=eq.${cabana.id}`,
-        },
-        () => {
-          console.log('🔄 Corrales changed, refetching dashboard data');
-          fetchDashboardData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [cabana?.id, fetchDashboardData]);
 
   return {
     cabana,
@@ -1092,7 +1049,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     warnings,
     isLoading,
     isError,
-    diagnostics,
+    diagnostics: [] as any[],
     refetch: fetchDashboardData,
   };
 };
