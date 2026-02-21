@@ -57,6 +57,9 @@ class AgroDB extends Dexie {
   outbox!: Table<OutboxEvent, string>;
   sync_metadata!: Table<SyncMetadata, string>;
 
+  // Auth session persistence
+  auth_storage!: Table<{ key: string; value: string }, string>;
+
   // Legacy compatibility (keep for existing code)
   activities_cache!: Table<any, string>;
 
@@ -99,6 +102,13 @@ class AgroDB extends Dexie {
       activities_cache: 'id, cabaña_id, sync_status'
     }).upgrade(tx => {
       console.log('Upgrading database to v3 with user profile for offline auth');
+    });
+
+    this.version(4).stores({
+      // Add auth session persistence table
+      auth_storage: 'key'
+    }).upgrade(tx => {
+      console.log('Upgrading database to v4 with auth_storage for persistent sessions');
     });
   }
 }

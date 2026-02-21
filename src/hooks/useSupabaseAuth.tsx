@@ -105,38 +105,6 @@ async function loadCachedUserProfile(): Promise<AuthUser | null> {
   }
 }
 
-// Check if there's a valid cached Supabase session in localStorage
-function getCachedSession(): { session: Session | null; user: User | null } {
-  try {
-    // Supabase stores session in localStorage with key pattern: sb-[project-ref]-auth-token
-    const storageKey = 'sb-yjzxbjwewzyhjquhrfzv-auth-token';
-    const stored = localStorage.getItem(storageKey);
-    
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed && parsed.access_token && parsed.user) {
-        // Check if token is not expired (give some buffer)
-        const expiresAt = parsed.expires_at ? parsed.expires_at * 1000 : 0;
-        const now = Date.now();
-        const bufferMs = 5 * 60 * 1000; // 5 minutes buffer
-        
-        if (expiresAt > now - bufferMs) {
-          console.log('📦 Found valid cached session in localStorage');
-          return {
-            session: parsed as Session,
-            user: parsed.user as User
-          };
-        } else {
-          console.log('⏰ Cached session expired');
-        }
-      }
-    }
-    return { session: null, user: null };
-  } catch (error) {
-    console.warn('⚠️ Error reading cached session:', error);
-    return { session: null, user: null };
-  }
-}
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -355,45 +323,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const currentlyOffline = !navigator.onLine;
       console.log(`🔐 Initializing auth (offline: ${currentlyOffline})`);
 
-      // INSTANT: Load cached profile first for immediate UI
-      const { session: cachedSession, user: cachedUser } = getCachedSession();
-      const cachedProfile = await loadCachedUserProfile();
-      
-      if (cachedSession && cachedUser && cachedProfile && mounted) {
-        console.log('⚡ Instant load from cache');
-        setSession(cachedSession);
-        setUser(cachedUser);
-        setCurrentUser(cachedProfile);
-        setIsAuthenticated(true);
-        setLoading(false);
-        
-        if (cachedProfile.cabañaId) {
-          setCabañaId(cachedProfile.cabañaId);
+      // If offline, try to load cached profile for immediate UI
+      if (currentlyOffline) {
+        const cachedProfile = await loadCachedUserProfile();
+        if (cachedProfile && mounted) {
+          console.log('📦 Offline: using cached profile');
+          setCurrentUser(cachedProfile);
+          setIsAuthenticated(true);
+          setLoading(false);
+          if (cachedProfile.cabañaId) {
+            setCabañaId(cachedProfile.cabañaId);
+          }
+          return;
         }
-        
-        // If online, refresh in background
-        if (!currentlyOffline) {
-          Promise.race([
-            supabase.auth.getSession().then(async ({ data: { session } }) => {
-              if (!session || !mounted) return;
-              const freshProfile = await fetchUserProfile(session.user.id);
-              if (freshProfile && mounted) {
-                setCurrentUser(freshProfile);
-                await cacheUserProfile(freshProfile);
-                if (freshProfile.cabañaId) {
-                  fullSync(freshProfile.cabañaId).catch(console.warn);
-                }
-              }
-            }),
-            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
-          ]).catch((err) => {
-            console.warn('⚠️ Background refresh failed:', err.message);
-          });
-        }
-        return;
       }
 
-      // No cache — check for existing session (onAuthStateChange will handle it)
+      // Online: Supabase will read session from IndexedDB via custom storage adapter
       try {
         const { data: { session } } = await supabase.auth.getSession();
         console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
@@ -442,6 +387,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await db.outbox.clear();
       await db.id_map.clear();
       await db.user_profile.clear();
+      await db.auth_storage.clear();
       // Clear entitlement cache so next user doesn't inherit subscription
       await clearCachedEntitlement();
       // Clear cached subscription status from localStorage
