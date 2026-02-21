@@ -1,4 +1,5 @@
 import { Bot, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { type ChatMessage } from '@/hooks/useAIChat';
 
 interface AIChatMessageProps {
@@ -30,9 +31,15 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
             />
           )}
           
-          <div className="whitespace-pre-wrap break-words text-sm">
-            {message.content}
-          </div>
+          {isUser ? (
+            <div className="whitespace-pre-wrap break-words text-sm">
+              {message.content}
+            </div>
+          ) : (
+            <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            </div>
+          )}
         </div>
         
         <div className={`text-xs text-muted-foreground mt-1 ${

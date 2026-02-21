@@ -174,121 +174,39 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
               <ScrollArea className="flex-1">
                 <div className="p-2 space-y-4">
-                  {groupedConvs.today.length > 0 && (
-                    <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.today')}</div>
-                      {groupedConvs.today.map(conv => (
-                        <div
-                          key={conv.id}
-                          className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-accent ${
-                            conversationId === conv.id ? 'bg-accent' : ''
-                          }`}
-                          onClick={() => loadConversation(conv.id)}
-                        >
-                          <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm truncate flex-1">{conv.title}</span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteConversation(conv.id);
-                            }}
+                  {(['today', 'yesterday', 'thisWeek', 'older'] as const).map(group => {
+                    const convs = groupedConvs[group];
+                    if (convs.length === 0) return null;
+                    const labels = { today: t('aiChat.today'), yesterday: t('aiChat.yesterday'), thisWeek: t('aiChat.thisWeek'), older: t('aiChat.older') };
+                    return (
+                      <div key={group}>
+                        <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{labels[group]}</div>
+                        {convs.map(conv => (
+                          <div
+                            key={conv.id}
+                            className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-accent ${
+                              conversationId === conv.id ? 'bg-accent' : ''
+                            }`}
+                            onClick={() => loadConversation(conv.id)}
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {groupedConvs.yesterday.length > 0 && (
-                    <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.yesterday')}</div>
-                      {groupedConvs.yesterday.map(conv => (
-                        <div
-                          key={conv.id}
-                          className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-accent ${
-                            conversationId === conv.id ? 'bg-accent' : ''
-                          }`}
-                          onClick={() => loadConversation(conv.id)}
-                        >
-                          <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm truncate flex-1">{conv.title}</span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteConversation(conv.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {groupedConvs.thisWeek.length > 0 && (
-                    <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.thisWeek')}</div>
-                      {groupedConvs.thisWeek.map(conv => (
-                        <div
-                          key={conv.id}
-                          className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-accent ${
-                            conversationId === conv.id ? 'bg-accent' : ''
-                          }`}
-                          onClick={() => loadConversation(conv.id)}
-                        >
-                          <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm truncate flex-1">{conv.title}</span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteConversation(conv.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {groupedConvs.older.length > 0 && (
-                    <div>
-                      <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{t('aiChat.older')}</div>
-                      {groupedConvs.older.map(conv => (
-                        <div
-                          key={conv.id}
-                          className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-accent ${
-                            conversationId === conv.id ? 'bg-accent' : ''
-                          }`}
-                          onClick={() => loadConversation(conv.id)}
-                        >
-                          <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-sm truncate flex-1">{conv.title}</span>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteConversation(conv.id);
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                            <MessageSquare className="h-4 w-4 flex-shrink-0" />
+                            <span className="text-sm truncate flex-1">{conv.title}</span>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteConversation(conv.id);
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
                 </div>
               </ScrollArea>
             </div>
@@ -345,7 +263,11 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                     <AIChatMessage key={message.id} message={message} />
                   ))}
 
-                  {isLoading && (
+                  {isLoading && (() => {
+                    const lastMsg = messages[messages.length - 1];
+                    const isStreaming = lastMsg?.role === 'assistant' && lastMsg.content.length > 0;
+                    return !isStreaming;
+                  })() && (
                     <div className="flex justify-start">
                       <div className="bg-muted rounded-lg p-3 max-w-[80%]">
                         <div className="flex space-x-1">
