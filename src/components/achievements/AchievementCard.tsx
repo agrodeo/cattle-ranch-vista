@@ -1,10 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { Share2, Download } from 'lucide-react';
+import { Share2, Download, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { getMedalColor, getMedalIcon, type MedalTier } from '@/lib/achievements';
+import { AchievementStoryCard } from './AchievementStoryCard';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
+import { useRef } from 'react';
 
 interface AchievementCardProps {
   achievementCode: string;
@@ -16,7 +18,7 @@ interface AchievementCardProps {
   onShare?: () => void;
 }
 
-// Simplified colors for html2canvas (no CSS variables or gradients)
+// Simplified colors for the visible preview card
 const getMedalSolidColors = (tier: MedalTier) => {
   switch (tier) {
     case 'gold':
@@ -38,61 +40,61 @@ export function AchievementCard({
   onShare
 }: AchievementCardProps) {
   const { t } = useTranslation(['common']);
-  
+  const storyRef = useRef<HTMLDivElement>(null);
+
   const medalEmoji = getMedalIcon(medalTier);
   const tierName = t(`common:achievements.tiers.${medalTier}`);
   const solidColors = getMedalSolidColors(medalTier);
 
-  const generateImage = async (): Promise<Blob | null> => {
-    const element = document.getElementById(`achievement-${achievementCode}`);
+  const generateStoryImage = async (): Promise<Blob | null> => {
+    const element = storyRef.current;
     if (!element) return null;
 
     try {
       const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
-        scale: 2,
+        backgroundColor: null,
+        scale: 3,
         useCORS: true,
         allowTaint: true,
         logging: false,
       });
-      
+
       return new Promise((resolve) => {
         canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
       });
     } catch (error) {
-      console.error('Error generating image:', error);
+      console.error('Error generating story image:', error);
       return null;
     }
   };
 
   const handleDownload = async () => {
-    const blob = await generateImage();
+    const blob = await generateStoryImage();
     if (!blob) {
-      toast.error(t('common:errorDownloadingImage'));
+      toast.error(t('common:fields.errorDownloadingImage'));
       return;
     }
 
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `agrodeo-medalla-${medalTier}-${achievementCode}.png`;
+    link.download = `agrodeo-story-${medalTier}-${achievementCode}.png`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-    
-    toast.success(t('common:imageDownloaded'));
+
+    toast.success(t('common:fields.imageDownloaded'));
   };
 
   const handleShare = async () => {
-    const blob = await generateImage();
-    
+    const blob = await generateStoryImage();
+
     if (!blob) {
-      toast.error(t('common:errorDownloadingImage'));
+      toast.error(t('common:fields.errorDownloadingImage'));
       return;
     }
 
-    const file = new File([blob], `agrodeo-medalla-${medalTier}.png`, { type: 'image/png' });
+    const file = new File([blob], `agrodeo-story-${medalTier}-${achievementCode}.png`, { type: 'image/png' });
 
-    // Check if file sharing is supported
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
@@ -106,23 +108,32 @@ export function AchievementCard({
         onShare?.();
       } catch (error: any) {
         if (error.name !== 'AbortError') {
-          // If share was cancelled, don't show error
-          console.log('Share failed, falling back to download');
           handleDownload();
         }
       }
     } else {
-      // Fallback: download and show instructions
       handleDownload();
-      toast.info(t('common:achievements.shareInstructions'));
+      toast.info(t('common:fields.shareInstructions'));
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Card optimized for html2canvas - using inline styles for reliability */}
-      <Card 
-        id={`achievement-${achievementCode}`}
+      {/* Off-screen Story canvas for capture */}
+      <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
+        <AchievementStoryCard
+          ref={storyRef}
+          achievementCode={achievementCode}
+          nameKey={nameKey}
+          descriptionKey={descriptionKey}
+          medalTier={medalTier}
+          unlockedAt={unlockedAt}
+          progressValue={progressValue}
+        />
+      </div>
+
+      {/* Visible preview card */}
+      <Card
         style={{
           position: 'relative',
           overflow: 'hidden',
@@ -132,18 +143,12 @@ export function AchievementCard({
         }}
       >
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
-          {/* Logo/Brand */}
           <div style={{ marginBottom: '16px' }}>
-            <span style={{ 
-              fontSize: '20px', 
-              fontWeight: 'bold', 
-              color: '#16a34a',
-            }}>
+            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#16a34a' }}>
               agrodeo
             </span>
           </div>
 
-          {/* Medal */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
             <div style={{
               width: '96px',
@@ -167,33 +172,18 @@ export function AchievementCard({
             </div>
           </div>
 
-          {/* Achievement Text */}
           <div style={{ marginBottom: '16px' }}>
-            <h3 style={{ 
-              fontSize: '18px', 
-              fontWeight: 'bold', 
-              color: '#1e293b',
-              marginBottom: '8px',
-            }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1e293b', marginBottom: '8px' }}>
               {t('common:achievements.medal')} {t('common:achievements.of')} {tierName}
             </h3>
-            <p style={{ 
-              fontSize: '14px', 
-              color: '#475569',
-              fontWeight: '500',
-              marginBottom: '6px',
-            }}>
+            <p style={{ fontSize: '14px', color: '#475569', fontWeight: '500', marginBottom: '6px' }}>
               {t(nameKey)}
             </p>
-            <p style={{ 
-              fontSize: '12px', 
-              color: '#64748b',
-            }}>
+            <p style={{ fontSize: '12px', color: '#64748b' }}>
               {t(descriptionKey)}
             </p>
           </div>
 
-          {/* Stats */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -209,45 +199,32 @@ export function AchievementCard({
               <span style={{ marginLeft: '4px' }}>{t('common:achievements.achievements_count')}</span>
             </div>
             <div>
-              {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', { 
-                day: 'numeric', 
-                month: 'short', 
-                year: 'numeric' 
+              {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
               })}
             </div>
           </div>
 
-          {/* Message */}
           <div style={{ paddingTop: '12px' }}>
-            <p style={{ 
-              fontSize: '14px', 
-              fontWeight: '500', 
-              color: '#16a34a',
-            }}>
+            <p style={{ fontSize: '14px', fontWeight: '500', color: '#16a34a' }}>
               {t('common:achievements.awarded_message', {
                 tier: tierName,
-                achievement: t(nameKey)
+                achievement: t(nameKey),
               })}
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Action Buttons - these use Tailwind since they're not captured */}
+      {/* Action Buttons */}
       <div className="flex gap-2">
-        <Button
-          onClick={handleShare}
-          className="flex-1"
-          size="lg"
-        >
+        <Button onClick={handleShare} className="flex-1" size="lg">
           <Share2 className="mr-2 h-4 w-4" />
-          {t('common:achievements.share')}
+          {t('common:achievements.share_story')}
         </Button>
-        <Button
-          onClick={handleDownload}
-          variant="outline"
-          size="lg"
-        >
+        <Button onClick={handleDownload} variant="outline" size="lg">
           <Download className="h-4 w-4" />
         </Button>
       </div>

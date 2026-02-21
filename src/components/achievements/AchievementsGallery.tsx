@@ -90,7 +90,17 @@ export function AchievementsGallery() {
                             : 'opacity-40 cursor-not-allowed'
                         }`}
                       >
-                        <div className={`relative w-16 h-16 rounded-full bg-gradient-to-br ${getMedalColor(tier)} p-0.5`}>
+                        <div className={`relative w-16 h-16 rounded-full bg-gradient-to-br ${getMedalColor(tier)} p-0.5 ${
+                          unlocked ? 'shadow-lg animate-[medal-glow_3s_ease-in-out_infinite]' : ''
+                        }`}
+                          style={unlocked ? {
+                            boxShadow: tier === 'gold' 
+                              ? '0 0 12px rgba(251,191,36,0.4)' 
+                              : tier === 'silver' 
+                                ? '0 0 12px rgba(156,163,175,0.4)' 
+                                : '0 0 12px rgba(217,119,6,0.4)',
+                          } : undefined}
+                        >
                           <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
                             {unlocked ? (
                               <span className="text-3xl">{getMedalIcon(tier)}</span>
