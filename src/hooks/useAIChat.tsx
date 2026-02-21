@@ -307,7 +307,7 @@ export function useAIChat() {
       
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqenhiandld3p5aGpxdWhyZnp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwODUxNDUsImV4cCI6MjA2NzY2MTE0NX0.q78732rZWj61LtlkEBOYj259ML4cHkRTTy60nhlsBH8',
+        'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       };
 
       // Only add Authorization header if we have a valid session
@@ -327,6 +327,12 @@ export function useAIChat() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        if (response.status === 429) {
+          throw new Error('rate_limit');
+        }
+        if (response.status === 402) {
+          throw new Error('payment_required');
+        }
         throw new Error(errorData.error || `HTTP ${response.status}: Failed to get AI response`);
       }
       
@@ -398,10 +404,16 @@ export function useAIChat() {
     } catch (error: any) {
       if (error.name !== 'AbortError') {
         console.error('AI chat error:', error);
+        let errorContent = 'Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.';
+        if (error.message === 'rate_limit') {
+          errorContent = 'Se alcanzó el límite de solicitudes. Por favor esperá unos segundos e intentá de nuevo.';
+        } else if (error.message === 'payment_required') {
+          errorContent = 'Se agotaron los créditos de IA. Contactá al administrador.';
+        }
         const errorMessage: ChatMessage = {
           id: `error-${Date.now()}`,
           role: 'assistant',
-          content: 'Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
+          content: errorContent,
           timestamp: new Date(),
         };
         setMessages(prev => [...prev, errorMessage]);
