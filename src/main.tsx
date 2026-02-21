@@ -3,8 +3,6 @@ import React from 'react';
 import App from './App.tsx';
 import './index.css';
 import './i18n'; // Initialize i18n
-import { setupAutoSync } from './services/autoSync';
-
 // Unregister any old service workers that may conflict with Despia
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.getRegistrations().then((registrations) => {
@@ -14,9 +12,6 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
-
-// Setup auto-sync on reconnect and periodic sync
-setupAutoSync();
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
