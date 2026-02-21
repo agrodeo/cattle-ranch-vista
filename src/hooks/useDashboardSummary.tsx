@@ -424,94 +424,14 @@ export const useDashboardSummary = (): DashboardSummary => {
         ? Math.round((pregnantFemalesCount / reproductiveFemalesCount) * 100)
         : 0;
 
-      // Get recent batch activities from all three sources (grouped)
-      console.log('🔍 Fetching recent batch activities from all sources');
-      
-      // Fetch from eventos (already naturally batched by event)
-      const { data: eventosData, error: eventosRecentError } = await supabase
-        .from('eventos')
-        .select(`
-          id, 
-          tipo, 
-          fecha, 
-          notas,
-          payload,
-          creado_por
-        `)
-        .eq('cabaña_id', cabanaId)
-        .order('fecha', { ascending: false })
-        .limit(10);
-
-      // Fetch from animal_vaccines and group by batch
-      const { data: vaccinesData, error: vaccinesRecentError } = await supabase
-        .from('animal_vaccines')
-        .select(`
-          id,
-          vaccine_code,
-          date,
-          created_by,
-          created_at,
-          lot,
-          dose,
-          route,
-          animal_id
-        `)
-        .eq('cabaña_id', cabanaId)
-        .order('date', { ascending: false })
-        .limit(50); // Fetch more to ensure we can group properly
-
-      // Fetch from artificial_inseminations and group by batch
-      const { data: inseminationsData, error: inseminationsRecentError } = await supabase
-        .from('artificial_inseminations')
-        .select(`
-          id,
-          bull_name,
-          insemination_date,
-          created_by,
-          created_at,
-          female_id
-        `)
-        .eq('cabaña_id', cabanaId)
-        .order('insemination_date', { ascending: false })
-        .limit(50);
-
-      // Fetch animal sales from finances with animal count
-      const { data: salesData, error: salesRecentError } = await supabase
-        .from('finances')
-        .select(`
-          id,
-          date,
-          amount,
-          description,
-          buyer_name,
-          finances_animal_sales (
-            id,
-            animal_id,
-            unit_price
-          )
-        `)
-        .eq('cabaña_id', cabanaId)
-        .eq('type', 'ingreso')
-        .order('date', { ascending: false })
-        .limit(20);
-
       // Filter to only sales with animals
       const animalSales = (salesData || []).filter((sale: any) => 
         sale.finances_animal_sales && sale.finances_animal_sales.length > 0
       );
 
-      if (eventosRecentError || vaccinesRecentError || inseminationsRecentError || salesRecentError) {
-        console.error('Error fetching recent activities:', { 
-          eventosRecentError, 
-          vaccinesRecentError, 
-          inseminationsRecentError,
-          salesRecentError
-        });
-      }
-
       // Group vaccinations by batch (vaccine_code, date, created_by)
       const vaccineBatches = new Map<string, any>();
-      (vaccinesData || []).forEach(vaccine => {
+      (vaccinesData || []).forEach((vaccine: any) => {
         const batchKey = `${vaccine.vaccine_code}|${vaccine.date}|${vaccine.created_by}`;
         if (!vaccineBatches.has(batchKey)) {
           vaccineBatches.set(batchKey, {
@@ -529,7 +449,6 @@ export const useDashboardSummary = (): DashboardSummary => {
         const batch = vaccineBatches.get(batchKey)!;
         batch.animal_ids.push(vaccine.animal_id);
         batch.count++;
-        // Keep the most recent created_at for sorting
         if (new Date(vaccine.created_at) > new Date(batch.created_at)) {
           batch.created_at = vaccine.created_at;
         }
@@ -537,7 +456,7 @@ export const useDashboardSummary = (): DashboardSummary => {
 
       // Group inseminations by batch (insemination_date, bull_name, created_by)
       const inseminationBatches = new Map<string, any>();
-      (inseminationsData || []).forEach(ia => {
+      (inseminationsData || []).forEach((ia: any) => {
         const batchKey = `${ia.insemination_date}|${ia.bull_name}|${ia.created_by}`;
         if (!inseminationBatches.has(batchKey)) {
           inseminationBatches.set(batchKey, {
@@ -560,8 +479,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       // Merge all batch activities with standardized format
       const allActivities: any[] = [];
 
-      // Add eventos activities (already batched)
-      (eventosData || []).forEach(event => {
+      (eventosData || []).forEach((event: any) => {
         allActivities.push({
           id: event.id,
           type: normalizeActivityType(event.tipo || 'General'),
@@ -573,7 +491,6 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       });
 
-      // Add vaccination batch activities
       vaccineBatches.forEach((batch, key) => {
         allActivities.push({
           id: key,
@@ -586,7 +503,6 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       });
 
-      // Add insemination batch activities
       inseminationBatches.forEach((batch, key) => {
         allActivities.push({
           id: key,
@@ -599,8 +515,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       });
 
-      // Add animal sale activities
-      animalSales.forEach(sale => {
+      animalSales.forEach((sale: any) => {
         allActivities.push({
           id: sale.id,
           type: 'sale',
@@ -617,26 +532,9 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       });
 
-      // Sort by sortDate descending and take top 5
       const recentData = allActivities
         .sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime())
         .slice(0, 5);
-      
-      console.log('📊 Recent batch activities merged:', { count: recentData.length, data: recentData });
-
-      // Get upcoming activities (next 7 days) - using eventos table, only future dates
-      const { data: upcomingData, error: upcomingError } = await supabase
-        .from('eventos')
-        .select('id, tipo, fecha')
-        .eq('cabaña_id', cabanaId)
-        .gt('fecha', today.toISOString().split('T')[0])
-        .lte('fecha', sevenDaysFromNow.toISOString().split('T')[0])
-        .order('fecha', { ascending: true })
-        .limit(5);
-
-      if (upcomingError) {
-        console.error('Error fetching upcoming activities:', upcomingError);
-      }
 
       // Get warnings: consanguinity and vaccination alerts
       const warnings: DashboardWarning[] = [];
