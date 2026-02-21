@@ -295,6 +295,62 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
+    // ALWAYS register the auth listener so sign-in/sign-out events are captured
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        
+        console.log('🔐 Auth state change:', event, session ? 'session exists' : 'no session');
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          console.log('👤 User authenticated, fetching profile...');
+          
+          // Use setTimeout to avoid deadlocking Supabase internals
+          setTimeout(async () => {
+            if (!mounted) return;
+            
+            try {
+              if (event === 'SIGNED_IN') {
+                await handlePendingCabanaCreation(session.user.id);
+              }
+              
+              const userProfile = await fetchUserProfile(session.user.id);
+              if (userProfile && mounted) {
+                console.log('✅ Profile loaded successfully:', userProfile.fullName);
+                setCurrentUser(userProfile);
+                setIsAuthenticated(true);
+                setLoading(false);
+                
+                await cacheUserProfile(userProfile);
+                
+                if (userProfile.cabañaId) {
+                  setCabañaId(userProfile.cabañaId);
+                  fullSync(userProfile.cabañaId).catch(console.warn);
+                }
+              } else if (mounted) {
+                console.warn('⚠️ Profile fetch returned null');
+                // Still mark as authenticated if we have a session — profile may load later
+                setIsAuthenticated(true);
+                setLoading(false);
+              }
+            } catch (error) {
+              console.error('💥 Error in auth state change handler:', error);
+              // Session is valid, don't de-auth
+              setIsAuthenticated(true);
+              setLoading(false);
+            }
+          }, 0);
+        } else {
+          console.log('👤 No user session');
+          setCurrentUser(null);
+          setIsAuthenticated(false);
+          setLoading(false);
+        }
+      }
+    );
+
     const initializeAuth = async () => {
       const currentlyOffline = !navigator.onLine;
       console.log(`🔐 Initializing auth (offline: ${currentlyOffline})`);
@@ -315,151 +371,50 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setCabañaId(cachedProfile.cabañaId);
         }
         
-        // If offline, stop here
-        if (currentlyOffline) {
-          console.log('📴 Offline mode - using cached data');
-          return;
-        }
-        
-        // If online, refresh in background with timeout so false-positive online doesn't hang
-        const refreshTimeout = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Session refresh timed out')), 5000)
-        );
-
-        Promise.race([
-          supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (!session || !mounted) return;
-            
-            const freshProfile = await fetchUserProfile(session.user.id);
-            if (freshProfile && mounted) {
-              setCurrentUser(freshProfile);
-              await cacheUserProfile(freshProfile);
-              
-              if (freshProfile.cabañaId) {
-                fullSync(freshProfile.cabañaId).catch(console.warn);
+        // If online, refresh in background
+        if (!currentlyOffline) {
+          Promise.race([
+            supabase.auth.getSession().then(async ({ data: { session } }) => {
+              if (!session || !mounted) return;
+              const freshProfile = await fetchUserProfile(session.user.id);
+              if (freshProfile && mounted) {
+                setCurrentUser(freshProfile);
+                await cacheUserProfile(freshProfile);
+                if (freshProfile.cabañaId) {
+                  fullSync(freshProfile.cabañaId).catch(console.warn);
+                }
               }
-            }
-          }),
-          refreshTimeout
-        ]).catch((err) => {
-          console.warn('⚠️ Background session refresh failed/timed out, continuing with cache:', err.message);
-        });
-        
-        return;
-      }
-
-      // No cache — verify real connectivity before giving up
-      // (navigator.onLine is unreliable on iOS WKWebView)
-      let reallyOffline = currentlyOffline;
-      if (!currentlyOffline) {
-        try {
-          const controller = new AbortController();
-          const timeout = setTimeout(() => controller.abort(), 3000);
-          await fetch('https://yjzxbjwewzyhjquhrfzv.supabase.co/rest/v1/', {
-            method: 'HEAD',
-            signal: controller.signal,
-            cache: 'no-store',
+            }),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+          ]).catch((err) => {
+            console.warn('⚠️ Background refresh failed:', err.message);
           });
-          clearTimeout(timeout);
-        } catch {
-          reallyOffline = true;
-        }
-      }
-
-      if (reallyOffline) {
-        console.log('📴 Offline with no cache - cannot authenticate');
-        if (mounted) {
-          setIsOffline(true);
-          setLoading(false);
         }
         return;
       }
 
-      // Online with no cache - use normal Supabase auth flow
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        (event, session) => {
-          if (!mounted) return;
-          
-          console.log('🔐 Auth state change:', event, session ? 'session exists' : 'no session');
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-          if (session?.user) {
-            console.log('👤 User authenticated, fetching profile...');
-            
-            // Handle async operations in setTimeout to avoid blocking auth state
-            setTimeout(async () => {
-              if (!mounted) return;
-              
-              try {
-                // Handle pending cabaña creation on first sign in
-                if (event === 'SIGNED_IN') {
-                  await handlePendingCabanaCreation(session.user.id);
-                }
-                
-                const userProfile = await fetchUserProfile(session.user.id);
-                if (userProfile && mounted) {
-                  console.log('✅ Profile loaded successfully:', userProfile.fullName);
-                  setCurrentUser(userProfile);
-                  setIsAuthenticated(true);
-                  
-                  // Cache profile for offline access
-                  await cacheUserProfile(userProfile);
-                  
-                  // Initialize offline sync with user's cabaña
-                  if (userProfile.cabañaId) {
-                    console.log('🔄 Initializing offline sync for cabaña:', userProfile.cabañaId);
-                    setCabañaId(userProfile.cabañaId);
-                    
-                    // Trigger initial full sync in background (don't block auth)
-                    fullSync(userProfile.cabañaId).then(() => {
-                      console.log('✅ Initial full sync completed');
-                    }).catch((error) => {
-                      console.warn('⚠️ Initial sync failed (will retry):', error);
-                    });
-                  }
-                } else if (mounted) {
-                  // Profile fetch returned null — keep existing auth state if we have one
-                  console.warn('⚠️ Profile fetch returned null, keeping existing auth state');
-                  if (!currentUser) {
-                    setIsAuthenticated(false);
-                  }
-                }
-              } catch (error) {
-                console.error('💥 Error in auth state change handler:', error);
-                // Do NOT de-authenticate on transient errors — session is still valid
-              }
-            }, 0);
-          } else {
-            console.log('👤 No user session');
-            setCurrentUser(null);
-            setIsAuthenticated(false);
-          }
-          setLoading(false);
-        }
-      );
-
-      // Check for existing session
+      // No cache — check for existing session (onAuthStateChange will handle it)
       try {
         const { data: { session } } = await supabase.auth.getSession();
         console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
-        // Auth state change will handle the session
+        // If no session, stop loading
+        if (!session && mounted) {
+          setLoading(false);
+        }
+        // If session exists, onAuthStateChange callback handles the rest
       } catch (error) {
         console.error('❌ Failed to get session:', error);
         if (mounted) {
           setLoading(false);
         }
       }
-
-      return () => {
-        subscription.unsubscribe();
-      };
     };
 
     initializeAuth();
 
     return () => {
       mounted = false;
+      subscription.unsubscribe();
     };
   }, []);
 
