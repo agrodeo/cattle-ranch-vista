@@ -3,7 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
-const PERSONAL_MONTHLY_LIMIT = 20;
+const PLAN_LIMITS: Record<string, number> = {
+  free: 3,
+  personal: 20,
+  // advanced, producer, herd, corporate → unlimited
+};
 
 export interface AIChatLimitStatus {
   hasAccess: boolean;
@@ -11,6 +15,7 @@ export interface AIChatLimitStatus {
   messagesUsed: number;
   messagesRemaining: number;
   limitReached: boolean;
+  monthlyLimit: number;
 }
 
 export const useAIChatLimit = () => {
@@ -26,7 +31,6 @@ export const useAIChatLimit = () => {
     }
 
     try {
-      // Get the first day of current month
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       
@@ -53,18 +57,19 @@ export const useAIChatLimit = () => {
   }, [fetchMonthlyUsage]);
 
   const plan = subscriptionStatus?.plan || 'free';
+  const monthlyLimit = PLAN_LIMITS[plan] ?? Infinity;
   
-  // Free plan has no access
-  const hasAccess = plan !== 'free';
+  // All plans have access now (free gets 3 msgs)
+  const hasAccess = true;
   
-  // Personal plan has limited access, all others are unlimited
-  const isUnlimited = hasAccess && plan !== 'personal';
+  // Unlimited if no cap defined for the plan
+  const isUnlimited = monthlyLimit === Infinity;
   
-  // Calculate remaining messages for personal plan
-  const messagesRemaining = isUnlimited ? Infinity : Math.max(0, PERSONAL_MONTHLY_LIMIT - messagesUsed);
+  // Calculate remaining messages
+  const messagesRemaining = isUnlimited ? Infinity : Math.max(0, monthlyLimit - messagesUsed);
   
-  // Check if limit is reached (only for personal plan)
-  const limitReached = !isUnlimited && messagesUsed >= PERSONAL_MONTHLY_LIMIT;
+  // Check if limit is reached
+  const limitReached = !isUnlimited && messagesUsed >= monthlyLimit;
 
   const incrementUsage = useCallback(() => {
     setMessagesUsed(prev => prev + 1);
@@ -79,6 +84,6 @@ export const useAIChatLimit = () => {
     loading: loading || subscriptionLoading,
     incrementUsage,
     refreshUsage: fetchMonthlyUsage,
-    monthlyLimit: PERSONAL_MONTHLY_LIMIT
+    monthlyLimit
   };
 };

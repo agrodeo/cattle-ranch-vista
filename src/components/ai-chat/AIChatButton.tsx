@@ -21,28 +21,7 @@ export function AIChatButton() {
     return null;
   }
 
-  // Free users see locked button
-  if (!hasAccess) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className="fixed bottom-24 right-6 z-50 h-14 w-14 rounded-full bg-muted hover:bg-muted shadow-lg lg:bottom-6 cursor-not-allowed"
-              size="icon"
-              disabled
-            >
-              <Lock className="h-6 w-6 text-muted-foreground" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p className="font-medium">{t('aiChat.upgradeRequired')}</p>
-            <p className="text-sm text-muted-foreground">{t('aiChat.upgradeMessage')}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+  // No longer block free users — they get 3 msgs/month
 
   return (
     <>
