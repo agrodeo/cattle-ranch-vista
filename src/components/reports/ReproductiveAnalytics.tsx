@@ -131,24 +131,19 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       const cabanaId = userInfo[0].cabana_id;
 
-      // Fetch animals
+      // Fetch animals (needed first for animalIds)
       let animalsQuery = supabase
         .from('animals')
         .select('*')
         .eq('cabaña_id', cabanaId)
         .eq('sex', 'Hembra');
       
-      // Apply corral filter
       if (filters?.corral_ids?.length) {
         animalsQuery = animalsQuery.in('corral_id', filters.corral_ids);
       }
-      
-      // Apply breed filter
       if (filters?.breed) {
         animalsQuery = animalsQuery.eq('breed', filters.breed);
       }
-      
-      // Apply filter for sold/dead animals if needed
       if (!filters.include_sold_dead) {
         animalsQuery = animalsQuery
           .neq('status', 'vendido')
@@ -156,82 +151,61 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       }
       
       const { data: animals, error: animalsError } = await animalsQuery;
-
       if (animalsError) throw animalsError;
 
       // Filter females 15+ months old
       const reproductiveFemales = (animals || []).filter(animal => {
-        if (!animal.birth_date) return true; // Include animals without birth date
+        if (!animal.birth_date) return true;
         const ageMonths = (new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44);
         return ageMonths >= 15;
       });
 
-      // Get all pregnancy records for these animals
       const animalIds = reproductiveFemales.map(a => a.id);
-      const { data: pregnancies, error: pregnanciesError } = await supabase
-        .from('preñeces')
-        .select('*')
-        .in('animal_id', animalIds);
 
-      if (pregnanciesError) throw pregnanciesError;
+      // Parallelize ALL remaining queries
+      const [
+        pregnanciesResult,
+        servicesResult,
+        offspringResult,
+        corralesResult,
+        allBirthsResult,
+        allPregnanciesResult,
+        allAIResult,
+        allIAEventsResult,
+        allFemalesResult,
+      ] = await Promise.all([
+        supabase.from('preñeces').select('*').in('animal_id', animalIds),
+        supabase.from('ia').select('id, evento_id, animales_ids'),
+        supabase.from('animals').select('id, mother_id, father_id, status, birth_date').in('mother_id', animalIds),
+        supabase.from('corrales').select('id, name').eq('cabaña_id', cabanaId),
+        supabase.from('animals').select('id, mother_id, birth_date').eq('cabaña_id', cabanaId).not('mother_id', 'is', null).not('birth_date', 'is', null),
+        supabase.from('preñeces').select('*').eq('cabaña_id', cabanaId),
+        supabase.from('artificial_inseminations').select('id, insemination_date, is_pregnant').eq('cabaña_id', cabanaId),
+        supabase.from('ia').select('id, evento_id, animales_ids'),
+        supabase.from('animals').select('id, birth_date, sex').eq('cabaña_id', cabanaId).eq('sex', 'Hembra').not('birth_date', 'is', null),
+      ]);
 
-      // Get all service records (IA)
-      const { data: services, error: servicesError } = await supabase
-        .from('ia')
-        .select('id, evento_id, animales_ids');
+      if (pregnanciesResult.error) throw pregnanciesResult.error;
+      if (servicesResult.error) throw servicesResult.error;
+      if (offspringResult.error) throw offspringResult.error;
+      if (corralesResult.error) throw corralesResult.error;
+      if (allBirthsResult.error) throw allBirthsResult.error;
+      if (allPregnanciesResult.error) throw allPregnanciesResult.error;
+      if (allAIResult.error) throw allAIResult.error;
+      if (allIAEventsResult.error) throw allIAEventsResult.error;
+      if (allFemalesResult.error) throw allFemalesResult.error;
 
-      if (servicesError) throw servicesError;
+      const pregnancies = pregnanciesResult.data;
+      const services = servicesResult.data;
+      const offspring = offspringResult.data;
+      const corrales = corralesResult.data;
+      const allBirths = allBirthsResult.data;
+      const allPregnancies = allPregnanciesResult.data;
+      const allAI = allAIResult.data;
+      const allIAEvents = allIAEventsResult.data;
+      const allFemales = allFemalesResult.data;
 
-      // Get all offspring for these animals
-      const { data: offspring, error: offspringError } = await supabase
-        .from('animals')
-        .select('id, mother_id, father_id, status, birth_date')
-        .in('mother_id', animalIds);
-
-      if (offspringError) throw offspringError;
-
-      // Get corral information
-      const { data: corrales, error: corralesError } = await supabase
-        .from('corrales')
-        .select('id, name')
-        .eq('cabaña_id', cabanaId);
-
-      if (corralesError) throw corralesError;
-
-      // Get ALL births from cabaña for yearly stats (not filtered by current reproductive females)
-      const { data: allBirths, error: allBirthsError } = await supabase
-        .from('animals')
-        .select('id, mother_id, birth_date')
-        .eq('cabaña_id', cabanaId)
-        .not('mother_id', 'is', null)
-        .not('birth_date', 'is', null);
-
-      if (allBirthsError) throw allBirthsError;
-
-      // Get ALL pregnancies from cabaña for yearly stats
-      const { data: allPregnancies, error: allPregnanciesError } = await supabase
-        .from('preñeces')
-        .select('*')
-        .eq('cabaña_id', cabanaId);
-
-      if (allPregnanciesError) throw allPregnanciesError;
-
-      // Get ALL services (artificial inseminations) for yearly stats
-      const { data: allAI, error: allAIError } = await supabase
-        .from('artificial_inseminations')
-        .select('id, insemination_date, is_pregnant')
-        .eq('cabaña_id', cabanaId);
-
-      if (allAIError) throw allAIError;
-
-      // Get ALL IA records with evento dates for yearly stats
-      const { data: allIAEvents, error: allIAEventsError } = await supabase
-        .from('ia')
-        .select('id, evento_id, animales_ids');
-
-      if (allIAEventsError) throw allIAEventsError;
-
-      // Get eventos for IA records
+      // Get eventos for IA records (depends on allIAEvents)
       const iaEventoIds = (allIAEvents || []).map(ia => ia.evento_id).filter(Boolean);
       let eventosDates: { id: string; fecha: string }[] = [];
       if (iaEventoIds.length > 0) {
@@ -241,16 +215,6 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
           .in('id', iaEventoIds);
         eventosDates = eventosData || [];
       }
-
-      // Get ALL reproductive females for yearly stats (females 15+ months born in cabaña)
-      const { data: allFemales, error: allFemalesError } = await supabase
-        .from('animals')
-        .select('id, birth_date, sex')
-        .eq('cabaña_id', cabanaId)
-        .eq('sex', 'Hembra')
-        .not('birth_date', 'is', null);
-
-      if (allFemalesError) throw allFemalesError;
 
       const corralesMap = new Map(corrales?.map(c => [c.id, c.name]) || []);
 
