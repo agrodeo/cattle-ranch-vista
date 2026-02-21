@@ -1,32 +1,46 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Image as ImageIcon, RotateCcw, Sparkles, Trash2, MessageSquare, Search, Loader2, AlertCircle } from 'lucide-react';
+import {
+  Send, Image as ImageIcon, RotateCcw, Sparkles, MessageSquare, Search,
+  Loader2, AlertCircle, Scale, Heart, Shield, BarChart3, Stethoscope, TrendingUp,
+  History, X, ArrowUpCircle,
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAIChat, type ChatMessage } from '@/hooks/useAIChat';
+import { useAIChat } from '@/hooks/useAIChat';
 import { useAIChatLimit } from '@/hooks/useAIChatLimit';
 import { AIChatMessage } from './AIChatMessage';
+import { ConversationList } from './ConversationList';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Drawer, DrawerContent, DrawerHeader, DrawerTitle,
+} from '@/components/ui/drawer';
+import { useNavigate } from 'react-router-dom';
 
 interface AIChatDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+const QUICK_ACTION_ICONS = [Scale, Stethoscope, Heart, BarChart3, ImageIcon, TrendingUp];
+
 export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   const { t } = useTranslation(['common', 'subscription']);
   const [input, setInput] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [historyOpen, setHistoryOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
-  const { isUnlimited, messagesRemaining, limitReached, incrementUsage } = useAIChatLimit();
+  const navigate = useNavigate();
+  const { isUnlimited, messagesRemaining, messagesUsed, monthlyLimit, limitReached, incrementUsage } = useAIChatLimit();
 
   const quickActions = [
     t('aiChat.quickActions.mortality'),
@@ -36,44 +50,58 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     t('aiChat.quickActions.analyzeImage'),
     t('aiChat.quickActions.improvements'),
   ];
-  
-  const { 
-    messages, 
-    isLoading, 
-    sendMessage, 
-    clearMessages,
-    conversations,
-    loadConversations,
-    loadConversation,
-    deleteConversation,
-    conversationId,
-    conversationTitle,
-    isSaving
+
+  const {
+    messages, isLoading, sendMessage, clearMessages,
+    conversations, loadConversations, loadConversation, deleteConversation,
+    conversationId, conversationTitle, isSaving,
   } = useAIChat();
 
-  // Load conversations when dialog opens
   useEffect(() => {
-    if (open) {
-      loadConversations();
-    }
+    if (open) loadConversations();
   }, [open, loadConversations]);
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  // Cleanup image preview URL
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
+
+  const handleImageSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setSelectedImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  }, []);
+
+  const clearImage = useCallback(() => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setSelectedImage(null);
+    setImagePreview(null);
+  }, [imagePreview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() && !selectedImage) return;
     if (limitReached) return;
 
-    await sendMessage(input || "Analiza esta imagen", selectedImage || undefined);
+    await sendMessage(input || 'Analiza esta imagen', selectedImage || undefined);
     incrementUsage();
     setInput('');
-    setSelectedImage(null);
+    clearImage();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
+    }
   };
 
   const handleQuickAction = (action: string) => {
@@ -82,85 +110,234 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     incrementUsage();
   };
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      setSelectedImage(file);
-    }
-  };
-
   const handleDeleteConversation = async (convId: string) => {
     if (confirm(t('aiChat.deleteConfirm'))) {
       await deleteConversation(convId);
     }
   };
 
-  const filteredConversations = conversations.filter(conv =>
-    conv.title.toLowerCase().includes(searchQuery.toLowerCase())
+  // --- Render helpers ---
+
+  const usageIndicator = !isUnlimited && (
+    <span className="text-xs text-muted-foreground">
+      {messagesUsed}/{monthlyLimit} {t('subscription:aiChat.messagesLabel', 'mensajes')}
+    </span>
   );
 
-  const groupConversationsByDate = () => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const lastWeek = new Date(today);
-    lastWeek.setDate(lastWeek.getDate() - 7);
+  const welcomeScreen = (
+    <div className="text-center py-8 px-2">
+      <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 mb-4">
+        <Sparkles className="h-8 w-8 text-primary" />
+      </div>
+      <h3 className="text-lg font-semibold mb-1">{t('aiChat.welcomeTitle')}</h3>
+      <p className="text-sm text-muted-foreground mb-2 max-w-sm mx-auto">
+        {t('aiChat.welcomeMessage')}
+      </p>
+      {usageIndicator && <div className="mb-4">{usageIndicator}</div>}
 
-    return {
-      today: filteredConversations.filter(c => new Date(c.updated_at) >= today),
-      yesterday: filteredConversations.filter(c => {
-        const date = new Date(c.updated_at);
-        return date >= yesterday && date < today;
-      }),
-      thisWeek: filteredConversations.filter(c => {
-        const date = new Date(c.updated_at);
-        return date >= lastWeek && date < yesterday;
-      }),
-      older: filteredConversations.filter(c => new Date(c.updated_at) < lastWeek)
-    };
-  };
+      <div className="grid grid-cols-2 gap-2 max-w-md mx-auto">
+        {quickActions.map((action, i) => {
+          const Icon = QUICK_ACTION_ICONS[i] || Sparkles;
+          return (
+            <Button
+              key={i}
+              variant="outline"
+              size="sm"
+              onClick={() => handleQuickAction(action)}
+              className="text-left justify-start gap-2 h-auto py-2.5 px-3"
+            >
+              <Icon className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
+              <span className="text-xs leading-tight">{action}</span>
+            </Button>
+          );
+        })}
+      </div>
+    </div>
+  );
 
-  const groupedConvs = groupConversationsByDate();
+  const loadingDots = (() => {
+    if (!isLoading) return null;
+    const lastMsg = messages[messages.length - 1];
+    if (lastMsg?.role === 'assistant' && lastMsg.content.length > 0) return null;
+    return (
+      <div className="flex justify-start">
+        <div className="bg-muted rounded-lg p-3 max-w-[80%]">
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" />
+            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+          </div>
+        </div>
+      </div>
+    );
+  })();
+
+  const inputArea = (
+    <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t space-y-2">
+      {/* Soft limit warning */}
+      {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+          <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>{t('subscription:aiChat.messagesRemaining', { count: messagesRemaining })}</span>
+        </div>
+      )}
+
+      {/* Soft limit reached */}
+      {limitReached && (
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+            <span>{t('subscription:aiChat.limitMessage')}</span>
+          </div>
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto p-0 text-xs text-primary"
+            onClick={() => { onOpenChange(false); navigate('/plans'); }}
+          >
+            <ArrowUpCircle className="h-3.5 w-3.5 mr-1" />
+            {t('subscription:aiChat.upgrade', 'Mejorar plan')}
+          </Button>
+        </div>
+      )}
+
+      {/* Image thumbnail preview */}
+      {selectedImage && imagePreview && (
+        <div className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
+          <img
+            src={imagePreview}
+            alt="Preview"
+            className="h-12 w-12 rounded object-cover flex-shrink-0"
+          />
+          <span className="text-xs text-muted-foreground truncate flex-1">{selectedImage.name}</span>
+          <Button size="icon" variant="ghost" onClick={clearImage} className="h-6 w-6">
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      )}
+
+      {/* Input row */}
+      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+        <div className="flex-1 relative">
+          <Textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={t('common:aiChat.inputPlaceholder')}
+            disabled={isLoading || limitReached}
+            className="min-h-[44px] max-h-[120px] resize-none pr-10 py-2.5 text-sm"
+            rows={1}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageSelect}
+            className="hidden"
+          />
+          <Button
+            type="button"
+            size="icon"
+            variant="ghost"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading || limitReached}
+            className="absolute right-1 bottom-1 h-8 w-8 text-muted-foreground hover:text-foreground"
+          >
+            <ImageIcon className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <Button
+          type="submit"
+          size="icon"
+          className="h-[44px] w-[44px] flex-shrink-0"
+          disabled={isLoading || limitReached || (!input.trim() && !selectedImage)}
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
+
+      {messages.length > 0 && !isMobile && (
+        <div className="flex justify-center">
+          <Button variant="ghost" size="sm" onClick={clearMessages} className="text-muted-foreground text-xs">
+            <RotateCcw className="h-3.5 w-3.5 mr-1" />
+            {t('aiChat.newConversation')}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+
+  // --- Mobile history drawer ---
+  const mobileHistoryDrawer = (
+    <Drawer open={historyOpen} onOpenChange={setHistoryOpen}>
+      <DrawerContent>
+        <DrawerHeader>
+          <DrawerTitle>{t('aiChat.history', 'Historial')}</DrawerTitle>
+        </DrawerHeader>
+        <div className="px-4 pb-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder={t('aiChat.search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+        </div>
+        <div className="max-h-[50vh] overflow-auto">
+          <ConversationList
+            conversations={conversations}
+            activeId={conversationId}
+            searchQuery={searchQuery}
+            onSelect={(id) => { loadConversation(id); setHistoryOpen(false); }}
+            onDelete={handleDeleteConversation}
+          />
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={`${isMobile ? 'h-[85vh] max-w-[95vw]' : 'max-w-4xl h-[85vh]'} flex flex-col p-0`}>
-        {/* Mobile header with proper DialogHeader to avoid overlap with close button */}
+        {/* Mobile header */}
         {isMobile && (
           <DialogHeader className="flex-shrink-0 p-4 border-b pr-12">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
-                <DialogTitle className="font-semibold">{conversationTitle}</DialogTitle>
+              <div className="flex items-center gap-2 min-w-0">
+                <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
+                <DialogTitle className="font-semibold truncate">{conversationTitle}</DialogTitle>
                 {isSaving && (
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs flex-shrink-0">
                     <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                     {t('aiChat.saving')}
                   </Badge>
                 )}
               </div>
-              <Button onClick={clearMessages} variant="outline" size="sm">
-                <MessageSquare className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button onClick={() => setHistoryOpen(true)} variant="outline" size="sm">
+                  <History className="h-4 w-4" />
+                </Button>
+                <Button onClick={clearMessages} variant="outline" size="sm">
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </DialogHeader>
         )}
 
         <div className="flex-1 flex overflow-hidden">
-          {/* Sidebar con conversaciones (solo desktop) */}
+          {/* Desktop sidebar */}
           {!isMobile && (
             <div className="w-64 border-r flex flex-col">
               <div className="p-4 border-b">
-                <Button 
-                  onClick={clearMessages} 
-                  className="w-full"
-                  variant="default"
-                >
+                <Button onClick={clearMessages} className="w-full" variant="default">
                   <MessageSquare className="h-4 w-4 mr-2" />
                   {t('aiChat.newConversation')}
                 </Button>
-                
                 <div className="mt-3 relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -171,48 +348,17 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                   />
                 </div>
               </div>
-
-              <ScrollArea className="flex-1">
-                <div className="p-2 space-y-4">
-                  {(['today', 'yesterday', 'thisWeek', 'older'] as const).map(group => {
-                    const convs = groupedConvs[group];
-                    if (convs.length === 0) return null;
-                    const labels = { today: t('aiChat.today'), yesterday: t('aiChat.yesterday'), thisWeek: t('aiChat.thisWeek'), older: t('aiChat.older') };
-                    return (
-                      <div key={group}>
-                        <div className="px-2 py-1 text-xs font-medium text-muted-foreground">{labels[group]}</div>
-                        {convs.map(conv => (
-                          <div
-                            key={conv.id}
-                            className={`group flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-accent ${
-                              conversationId === conv.id ? 'bg-accent' : ''
-                            }`}
-                            onClick={() => loadConversation(conv.id)}
-                          >
-                            <MessageSquare className="h-4 w-4 flex-shrink-0" />
-                            <span className="text-sm truncate flex-1">{conv.title}</span>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteConversation(conv.id);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
+              <ConversationList
+                conversations={conversations}
+                activeId={conversationId}
+                searchQuery={searchQuery}
+                onSelect={loadConversation}
+                onDelete={handleDeleteConversation}
+              />
             </div>
           )}
 
-          {/* Área principal del chat */}
+          {/* Main chat area */}
           <div className="flex-1 flex flex-col min-h-0">
             {/* Desktop header */}
             {!isMobile && (
@@ -226,152 +372,29 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
                       {t('aiChat.saving')}
                     </Badge>
                   )}
+                  {usageIndicator && <div className="ml-auto">{usageIndicator}</div>}
                 </div>
               </DialogHeader>
             )}
 
             <div className="flex-1 flex flex-col min-h-0">
-              {/* Messages Area */}
               <ScrollArea ref={scrollRef} className="flex-1 pr-4 px-4">
                 <div className="space-y-4 pb-4">
-                  {messages.length === 0 && (
-                    <div className="text-center py-8">
-                      <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">{t('aiChat.welcomeTitle')}</h3>
-                      <p className="text-muted-foreground mb-4">
-                        {t('aiChat.welcomeMessage')}
-                      </p>
-                      
-                      {/* Quick Actions */}
-                      <div className="grid grid-cols-1 gap-2 max-w-md mx-auto">
-                        {quickActions.map((action, index) => (
-                          <Button
-                            key={index}
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleQuickAction(action)}
-                            className="text-left justify-start"
-                          >
-                            {action}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
+                  {messages.length === 0 && welcomeScreen}
                   {messages.map((message) => (
                     <AIChatMessage key={message.id} message={message} />
                   ))}
-
-                  {isLoading && (() => {
-                    const lastMsg = messages[messages.length - 1];
-                    const isStreaming = lastMsg?.role === 'assistant' && lastMsg.content.length > 0;
-                    return !isStreaming;
-                  })() && (
-                    <div className="flex justify-start">
-                      <div className="bg-muted rounded-lg p-3 max-w-[80%]">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {loadingDots}
                 </div>
               </ScrollArea>
-
-              {/* Input Area */}
-              <div className="flex-shrink-0 pt-4 px-4 pb-4 border-t">
-                {/* Limit warning for Personal plan */}
-                {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
-                  <Alert className="mb-3">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {t('subscription:aiChat.messagesRemaining', { count: messagesRemaining })}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {limitReached && (
-                  <Alert variant="destructive" className="mb-3">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {t('subscription:aiChat.limitMessage')}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {selectedImage && (
-                  <div className="mb-3 p-2 bg-muted rounded-lg flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4" />
-                    <span className="text-sm">{selectedImage.name}</span>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setSelectedImage(null)}
-                      className="ml-auto h-6 w-6 p-0"
-                    >
-                      ×
-                    </Button>
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="flex gap-2">
-                  <div className="flex-1 flex gap-2">
-                    <Input
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      placeholder={t('common:aiChat.inputPlaceholder')}
-                      disabled={isLoading || limitReached}
-                    />
-                    
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                    />
-                    
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isLoading || limitReached}
-                    >
-                      <ImageIcon className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    size="icon"
-                    disabled={isLoading || limitReached || (!input.trim() && !selectedImage)}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </form>
-
-                {messages.length > 0 && !isMobile && (
-                  <div className="flex justify-center mt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={clearMessages}
-                      className="text-muted-foreground"
-                    >
-                      <RotateCcw className="h-4 w-4 mr-1" />
-                      {t('aiChat.newConversation')}
-                    </Button>
-                  </div>
-                )}
-              </div>
+              {inputArea}
             </div>
           </div>
         </div>
       </DialogContent>
+
+      {/* Mobile history drawer */}
+      {isMobile && mobileHistoryDrawer}
     </Dialog>
   );
 }

@@ -5,29 +5,28 @@ import { Button } from '@/components/ui/button';
 import { AIChatDialog } from './AIChatDialog';
 import { useAIChatLimit } from '@/hooks/useAIChatLimit';
 import { Badge } from '@/components/ui/badge';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 export function AIChatButton() {
   const { t } = useTranslation('subscription');
   const [isOpen, setIsOpen] = useState(false);
-  const { hasAccess, isUnlimited, messagesRemaining, limitReached, loading } = useAIChatLimit();
+  const { hasAccess, isUnlimited, messagesRemaining, messagesUsed, monthlyLimit, limitReached, loading } = useAIChatLimit();
 
   if (loading) {
     return null;
   }
 
-  // No longer block free users — they get 3 msgs/month
-
   return (
     <>
       <div className="fixed bottom-24 right-6 z-50 lg:bottom-6 flex flex-col items-end gap-1">
+        {/* Usage counter badge for limited plans */}
+        {!isUnlimited && !limitReached && (
+          <Badge variant="secondary" className="text-xs shadow-sm">
+            {messagesUsed}/{monthlyLimit}
+          </Badge>
+        )}
+
         {limitReached && (
-          <Badge variant="destructive" className="text-xs">
+          <Badge variant="secondary" className="text-xs bg-muted text-muted-foreground">
             {t('aiChat.limitReached')}
           </Badge>
         )}
