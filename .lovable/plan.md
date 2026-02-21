@@ -1,103 +1,93 @@
 
 
-# AI Chat Optimization: Deep Context for Actionable Insights
+# AI Chat UI Improvements
 
-## Goal
-Keep the ChatGPT API and enrich the AI's data context so it can confidently analyze trends like "animal X has been losing weight for 6 months -- possible disease" or "your pregnancy loss rate spiked last quarter."
+## Issues Identified
 
-## Current Issues Found
-
-1. **Weight history capped at 20 animals** -- The AI only sees weight trends for the top 20 animals by record count; the rest are invisible.
-2. **No trend analysis in context** -- Raw weight numbers are passed, but no pre-computed trends (declining, stagnant, gaining) are flagged for the AI.
-3. **max_tokens = 600** -- Responses get cut off mid-sentence for any detailed analysis.
-4. **No markdown rendering** -- AI responses show raw `**bold**` and `- lists` as plain text.
-5. **Loading dots overlap streaming** -- Bouncing dots appear even while tokens are already streaming in.
-6. **Sidebar JSX duplicated 4x** -- Same conversation card markup copy-pasted for today/yesterday/thisWeek/older.
+1. **No usage counter visible** -- Users have no idea how many messages they've used or have left until they're almost out (warning only shows at 5 remaining).
+2. **Quick actions are plain text buttons** -- They look generic and don't hint at what the AI can do; no icons or visual grouping.
+3. **Welcome screen is bland** -- Just a sparkle icon and text; doesn't convey the AI's analytical capabilities.
+4. **No conversation history on mobile** -- Mobile users can't access past conversations at all; the sidebar is desktop-only.
+5. **Image preview shows filename only** -- No thumbnail preview of the selected image before sending.
+6. **Input area is cramped** -- The text input, image button, and send button are all squeezed into one row with no visual breathing room.
+7. **No empty state for conversation sidebar** -- If there are no past conversations, the sidebar is just blank.
+8. **Limit alerts are aggressive** -- The destructive alert for "limit reached" pushes the input area down and feels punishing.
+9. **FAB button has no usage indicator** -- The floating button gives no hint of remaining messages.
 
 ---
 
 ## Plan
 
-### 1. Backend: Enrich context with trend analysis (ai-chat edge function)
+### 1. Add a usage counter badge on the FAB button
 
-**File:** `supabase/functions/ai-chat/index.ts`
+**File:** `src/components/ai-chat/AIChatButton.tsx`
 
-- **Increase `max_tokens`** from 600 to 4096 so the AI can give complete, detailed analyses.
-- **Add `gpt-4o` to the allowed models list** so users can opt for deeper reasoning when needed (keep `gpt-4o-mini` as default for cost efficiency).
-- **Weight trend analysis**: Instead of listing raw weights for 20 animals, compute per-animal trends for ALL animals with weight history:
-  - Last 3 weights with dates
-  - Direction: "declining", "stable", or "gaining"
-  - Flag animals that lost weight over the last 3+ months with a warning marker
-  - Average daily gain over last 90 days vs. overall GDP
-- **Expand animal detail**: For each active animal, include its full weight history summary (last weight, weight 3 months ago, weight 6 months ago) so the AI can spot patterns.
-- **Add reproductive timeline per animal**: Include last insemination date, pregnancy status, days to expected calving, and loss history per female -- enabling the AI to correlate reproductive and weight issues.
-- **Add mortality pattern analysis**: Pre-compute mortality by month/cause so the AI can identify seasonal patterns without counting raw records.
+- For non-unlimited plans, show a small counter badge (e.g., "2/3") on the corner of the floating button so users always know their remaining quota.
+- Keep the "limit reached" badge but make it less aggressive (use `secondary` variant instead of `destructive`).
 
-### 2. Frontend: Markdown rendering for AI messages
-
-**File:** `src/components/ai-chat/AIChatMessage.tsx`
-
-- Install `react-markdown` dependency.
-- Render assistant messages through `ReactMarkdown` with `prose prose-sm` styling.
-- Keep user messages as plain text.
-
-### 3. Frontend: Fix streaming indicator
+### 2. Redesign the welcome screen with categorized quick actions
 
 **File:** `src/components/ai-chat/AIChatDialog.tsx`
 
-- Only show bouncing dots when `isLoading` is true AND the last message is NOT an in-progress assistant message (i.e., hide dots once the first token arrives).
+- Group quick actions into 2 columns with small icons (e.g., weight icon for production, heart icon for reproductive, shield for health).
+- Add a subtle usage indicator below the welcome message: "3 messages remaining this month" for limited plans.
+- Make the welcome title more descriptive: highlight that the AI can analyze trends, detect health issues, and give recommendations.
 
-### 4. Frontend: Deduplicate conversation sidebar
+### 3. Add mobile conversation drawer
 
 **File:** `src/components/ai-chat/AIChatDialog.tsx`
 
-- Extract a `ConversationGroup` component that takes a label and conversation list.
-- Replace the 4 identical JSX blocks (today/yesterday/thisWeek/older) with the reusable component.
+- On mobile, add a small "History" button in the header that opens conversation history as a bottom sheet/drawer.
+- Reuse the same conversation list and grouping logic already built for desktop.
 
-### 5. Frontend: Remove hardcoded API key
+### 4. Image thumbnail preview
 
-**File:** `src/hooks/useAIChat.tsx`
+**File:** `src/components/ai-chat/AIChatDialog.tsx`
 
-- Replace the hardcoded Supabase anon key string with `import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY`.
+- When an image is selected, show a small thumbnail (48x48) instead of just the filename.
+- Use `URL.createObjectURL(file)` for the preview.
+
+### 5. Softer limit-reached state
+
+**File:** `src/components/ai-chat/AIChatDialog.tsx`
+
+- Replace the destructive alert with a gentler inline message inside the input area.
+- Add an "Upgrade" button linking to `/plans` so users can easily upgrade.
+
+### 6. Empty state for sidebar
+
+**File:** `src/components/ai-chat/AIChatDialog.tsx`
+
+- When no conversations exist, show a subtle empty state with text like "Your conversations will appear here."
+
+### 7. Input area polish
+
+**File:** `src/components/ai-chat/AIChatDialog.tsx`
+
+- Use a textarea instead of input for multi-line support (submit on Enter, new line on Shift+Enter).
+- Move the image button inside the input field (left side) for a cleaner look.
+- Add a subtle character/line hint.
 
 ---
 
 ## Technical Details
 
-### Enhanced weight context structure (backend)
-
-```text
-=== TENDENCIAS DE PESO POR ANIMAL ===
-- TAG001 (Vaca, 36m): 420kg (2026-02-15) -> 405kg (2025-11-20) -> 390kg (2025-08-10) | DECLINANDO -0.15kg/dia | ALERTA: perdida sostenida 6 meses
-- TAG002 (Ternero, 8m): 180kg (2026-02-10) -> 150kg (2025-12-01) -> 120kg (2025-09-15) | GANANDO +0.39kg/dia | Normal
-```
-
-### Enhanced reproductive context per animal
-
-```text
-=== HISTORIAL REPRODUCTIVO POR HEMBRA ===
-- TAG001: ultima IA 2025-09-15 (toro: Emperador), tacto positivo 2025-11-20, parto estimado 2026-06-15, 0 perdidas previas
-- TAG003: ultima IA 2025-07-01, tacto negativo 2025-09-05, sin prenez actual, 2 perdidas en ultimo ano
-```
-
-### New dependency
-
-- `react-markdown` for rendering formatted AI responses
-
-### Files modified
+### Files to modify
 
 | File | Changes |
 |------|---------|
-| `supabase/functions/ai-chat/index.ts` | max_tokens 4096, add gpt-4o to allowed list, enrich weight trends + reproductive timeline + mortality patterns |
-| `src/components/ai-chat/AIChatMessage.tsx` | Render assistant messages with react-markdown |
-| `src/components/ai-chat/AIChatDialog.tsx` | Fix streaming dots, extract ConversationGroup component |
-| `src/hooks/useAIChat.tsx` | Replace hardcoded key with env var |
+| `src/components/ai-chat/AIChatButton.tsx` | Add usage counter badge on FAB |
+| `src/components/ai-chat/AIChatDialog.tsx` | Redesign welcome screen, add mobile history drawer, image thumbnail, textarea input, softer limits, sidebar empty state |
+| `src/components/ai-chat/AIChatMessage.tsx` | No changes needed |
+
+### No new dependencies required
+
+All changes use existing UI components (Badge, Drawer/Sheet, Textarea) already in the project.
 
 ### Risk assessment
 
-- No database schema changes
-- No existing routes or components removed
-- System prompt content extended but same structure
-- OpenAI API key already configured as secret
-- Backward-compatible: existing conversations load normally
+- No database changes
+- No existing routes or flows altered
+- All changes scoped to ai-chat components only
+- Existing conversation persistence and limit logic untouched
 
