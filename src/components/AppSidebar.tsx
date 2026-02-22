@@ -97,7 +97,7 @@ export function AppSidebar() {
         )}>
           <div className="flex items-center pl-6">
             {(!isCollapsed || isMobile) && (
-              <span className="text-xl font-bold text-primary">agrodeo</span>
+              <span className="text-xl font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>agrodeo</span>
             )}
           </div>
         </div>
