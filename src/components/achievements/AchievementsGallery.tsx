@@ -146,7 +146,7 @@ export function AchievementsGallery() {
                 <div
                   className="h-full bg-gradient-to-r from-primary to-primary/60 transition-all duration-500"
                   style={{ 
-                    width: `${(currentValue / definition.tiers.gold.threshold) * 100}%` 
+                    width: `${Math.min(100, (currentValue / definition.tiers.gold.threshold) * 100)}%` 
                   }}
                 />
               </div>

@@ -19,8 +19,6 @@ const SelectTrigger = React.forwardRef<
   // Completely override disabled when forceEnabled is true
   const finalDisabled = forceEnabled ? false : disabled;
   
-  console.log('SelectTrigger render:', { forceEnabled, disabled, finalDisabled });
-  
   return (
     <SelectPrimitive.Trigger
       ref={ref}

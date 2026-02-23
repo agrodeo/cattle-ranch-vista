@@ -130,6 +130,7 @@
     "welcomeTitle": "¡Hola! Soy tu asistente ganadero",
     "welcomeMessage": "Puedo ayudarte con información sobre tu cabaña, analizar imágenes de animales, instalaciones y documentos, y responder preguntas sobre ganadería.",
     "inputPlaceholder": "Escribe tu pregunta, sube una imagen para análisis...",
+    "history": "Historial",
     "quickActions": {
       "mortality": "¿Cómo están mis mortalidades?",
       "vaccinations": "¿Cuáles son mis próximas vacunaciones?",
