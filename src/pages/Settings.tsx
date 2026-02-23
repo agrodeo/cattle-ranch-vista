@@ -36,26 +36,25 @@ export const SettingsPage = () => {
           subtitle={t('settings:subtitle')}
         >
           <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto sm:h-10">
-              <TabsTrigger value="benchmarks" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+            <TabsList className="flex w-full overflow-x-auto scrollbar-hide h-auto sm:h-10">
+              <TabsTrigger value="benchmarks" className="flex-shrink-0 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-3">
                 <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('settings:tabs.benchmarks')}</span>
                 <span className="sm:hidden">Config.</span>
               </TabsTrigger>
-              <TabsTrigger value="vaccines" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+              <TabsTrigger value="vaccines" className="flex-shrink-0 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-3">
                 <Syringe className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">{t('settings:tabs.vaccines')}</span>
-                <span className="sm:hidden">{t('settings:tabs.vaccines')}</span>
+                {t('settings:tabs.vaccines')}
               </TabsTrigger>
-              <TabsTrigger value="users" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2" disabled>
+              <TabsTrigger value="users" className="flex-shrink-0 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-3" disabled>
                 <Users className="h-3 w-3 sm:h-4 sm:w-4" />
                 {t('settings:tabs.users')}
               </TabsTrigger>
-              <TabsTrigger value="general" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2">
+              <TabsTrigger value="general" className="flex-shrink-0 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-3">
                 <SettingsIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                 {t('settings:tabs.general')}
               </TabsTrigger>
-              <TabsTrigger value="billing" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2" disabled>
+              <TabsTrigger value="billing" className="flex-shrink-0 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 sm:px-3" disabled>
                 <CreditCard className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">{t('settings:tabs.billing')}</span>
                 <span className="sm:hidden">Plan</span>
