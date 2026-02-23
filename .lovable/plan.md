@@ -1,41 +1,29 @@
 
-# Fix: Cleanup Bugs and Missing Pieces
+
+# Fix: Tab Overflow on Mobile and Tablet Viewports
 
 ## Issues Found
 
-### 1. Debug `console.log` left in SelectTrigger component
-**File:** `src/components/ui/select.tsx` (line 22)
+### 1. Settings page -- 5 tabs in 3-column grid on mobile (HIGH RISK)
+**File:** `src/pages/Settings.tsx` (line 39)
 
-Every time any `<Select>` renders, it logs `SelectTrigger render: { forceEnabled, disabled, finalDisabled }` to the console. This fires dozens of times per page load, polluting logs and slightly hurting performance.
+The `TabsList` uses `grid-cols-3 sm:grid-cols-5`. On mobile, 5 tabs are forced into a 3-column grid, creating a second row with only 2 items. The tab labels (especially "Vacunas", "Usuarios", "General", "Facturación") can overflow or truncate, and the grid layout looks uneven with the orphan row.
 
-**Fix:** Remove the `console.log` statement on line 22.
+**Fix:** On mobile, switch to a horizontally scrollable tab strip using `flex overflow-x-auto` instead of a grid. Add `whitespace-nowrap` and `scrollbar-hide` to prevent wrapping and hide the scrollbar. Alternatively, use `grid-cols-3` for the first 3 and stack the remaining 2 below with a clean `grid-cols-2` second row -- but the scroll approach is cleaner for 5 tabs.
 
----
+### 2. AnimalProfileTabs -- 8 tabs in grid-cols-8 at ~768px (MEDIUM RISK)
+**File:** `src/components/animals/profile/AnimalProfileTabs.tsx` (line 95)
 
-### 2. Missing translation key: `aiChat.history`
-**File:** Console warning: `Missing translation key: common:aiChat.history for language: es`
+Desktop uses `grid-cols-8` with 8 tabs. At the 768px breakpoint (where `isMobile` flips to false), each tab gets ~85px, but labels like "Reproducción", "Documentos", "Genealogía" are 10-12 characters. The text is already truncated with `hidden sm:inline`, but the icons alone at that size still crowd.
 
-The `AIChatDialog.tsx` component uses `t('aiChat.history', 'Historial')` but the key doesn't exist in any locale file.
+**Fix:** Add `overflow-x-auto` to the `TabsList` wrapper and switch from `grid` to `flex` with `flex-shrink-0` on each trigger, so tabs scroll horizontally rather than crushing. This is already handled on true mobile via `Select`, so this only affects the 768-1024px zone.
 
-**Fix:** Add `"history": "Historial"` to `es/common.json`, `"history": "History"` to `en/common.json`, and `"history": "Historico"` to `pt/common.json` inside the `aiChat` object.
+### 3. Reports desktop -- 6 tabs in grid-cols-6 on tablets (LOW RISK)
+**File:** `src/pages/Reports.tsx` (line 245)
 
----
+Six tabs in `grid-cols-6` at tablet widths. Labels like "Reproducción", "Producción", "Evolución" can get cramped around 768-900px.
 
-### 3. `medal-glow` animation not defined in Tailwind config
-**File:** `src/components/achievements/AchievementsGallery.tsx` (line 94)
-
-Uses `animate-[medal-glow_3s_ease-in-out_infinite]` which references a `@keyframes medal-glow` that doesn't exist anywhere. The arbitrary animation syntax in Tailwind requires the `@keyframes` to be defined in CSS. Currently the animation silently does nothing.
-
-**Fix:** Add a `@keyframes medal-glow` rule in `src/index.css` that pulses the box-shadow opacity for a subtle glow effect.
-
----
-
-### 4. Progress bar can exceed 100% width
-**File:** `src/components/achievements/AchievementsGallery.tsx` (line 149)
-
-The progress bar width is calculated as `(currentValue / definition.tiers.gold.threshold) * 100` with no cap. If a user's value exceeds the gold threshold, the bar overflows.
-
-**Fix:** Clamp the width to `Math.min(100, ...)`.
+**Fix:** Add `text-xs lg:text-sm` to the TabsTriggers and ensure `truncate` is applied so text clips gracefully rather than overflowing the grid cell.
 
 ---
 
@@ -43,15 +31,13 @@ The progress bar width is calculated as `(currentValue / definition.tiers.gold.t
 
 | File | Change |
 |------|--------|
-| `src/components/ui/select.tsx` | Remove debug `console.log` |
-| `src/i18n/locales/es/common.json` | Add `aiChat.history` key |
-| `src/i18n/locales/en/common.json` | Add `aiChat.history` key |
-| `src/i18n/locales/pt/common.json` | Add `aiChat.history` key |
-| `src/index.css` | Add `@keyframes medal-glow` |
-| `src/components/achievements/AchievementsGallery.tsx` | Cap progress bar at 100% |
+| `src/pages/Settings.tsx` | Replace grid TabsList with scrollable flex layout on mobile |
+| `src/components/animals/profile/AnimalProfileTabs.tsx` | Add overflow-x-auto + flex layout for desktop TabsList at narrow widths |
+| `src/pages/Reports.tsx` | Add truncate + smaller text on TabsTriggers for tablet safety |
 
 ## Risk Assessment
 - No database changes
 - No routes or flows altered
-- All changes are scoped fixes (remove log, add translations, add keyframes, cap a number)
-- No global CSS side effects
+- Settings tab IDs and values stay the same
+- Only CSS/layout changes scoped to TabsList containers
+- No global CSS modifications
