@@ -130,6 +130,7 @@
     "welcomeTitle": "Olá! Sou seu assistente pecuário",
     "welcomeMessage": "Posso ajudá-lo com informações sobre seu rebanho, analisar imagens de animais, instalações e documentos, e responder perguntas sobre pecuária.",
     "inputPlaceholder": "Digite sua pergunta, envie uma imagem para análise...",
+    "history": "Histórico",
     "quickActions": {
       "mortality": "Como estão minhas mortalidades?",
       "vaccinations": "Quais são minhas próximas vacinações?",

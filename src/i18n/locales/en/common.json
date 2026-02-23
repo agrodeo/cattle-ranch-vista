@@ -130,6 +130,7 @@
     "welcomeTitle": "Hello! I'm your livestock assistant",
     "welcomeMessage": "I can help you with information about your herd, analyze images of animals, facilities and documents, and answer questions about livestock management.",
     "inputPlaceholder": "Type your question, upload an image for analysis...",
+    "history": "History",
     "quickActions": {
       "mortality": "How are my mortalities?",
       "vaccinations": "What are my upcoming vaccinations?",
