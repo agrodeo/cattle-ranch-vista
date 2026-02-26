@@ -188,7 +188,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <p className="text-2xl font-bold">$0</p>
-                <p className="text-sm text-muted-foreground">{t('plansModal.freeTrial', '30 días de prueba completa')}</p>
+                <p className="text-sm text-muted-foreground">{t('plansModal.freePlanDesc')}</p>
                 <ul className="mt-4 space-y-2">
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
@@ -254,9 +254,12 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                     <p className="text-sm text-muted-foreground">
                       {isAnnual ? t('plansModal.perYear') : t('plansModal.perMonth')}
                     </p>
+                    <p className="text-sm font-medium text-emerald-600">
+                      {t('plansPage.freeTrialBadge')}
+                    </p>
                     {isAnnual && (
                       <p className="text-xs text-green-600">
-                        {t('plansModal.youSave', 'Ahorras')} {formatPrice((plan.monthly * 12) - plan.annual)}
+                        {t('plansModal.youSave')} {formatPrice((plan.monthly * 12) - plan.annual)}
                       </p>
                     )}
                   </div>
