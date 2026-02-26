@@ -122,7 +122,7 @@
   },
   "plansPage": {
     "title": "Elegí tu plan",
-    "subtitle": "Probalo 7 días. Cancelás cuando quieras.",
+    "subtitle": "Probalo 14 días gratis. Cancelás cuando quieras.",
     "restorePurchases": "Restaurar compras",
     "comparePlans": "Comparar planes",
     "terms": "Términos",
@@ -140,7 +140,13 @@
     "choose": "Elegir",
     "free": "Gratis",
     "perMonth": "/mes",
-    "perYear": "/año"
+    "perYear": "/año",
+    "startTrial": "Iniciar prueba gratuita de 14 días",
+    "trialLegal": "Prueba gratuita de 14 días. Luego se renueva automáticamente. Cancelás cuando quieras.",
+    "processing": "Procesando...",
+    "continue": "Continuar",
+    "freePlanLabel": "Plan gratuito",
+    "freeTrialBadge": "14 días gratis"
   },
   "aiChat": {
     "upgradeRequired": "Actualiza tu plan",

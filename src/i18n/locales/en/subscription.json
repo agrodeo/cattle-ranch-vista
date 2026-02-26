@@ -122,7 +122,7 @@
   },
   "plansPage": {
     "title": "Choose your plan",
-    "subtitle": "Try it for 7 days. Cancel anytime.",
+    "subtitle": "Try it free for 14 days. Cancel anytime.",
     "restorePurchases": "Restore purchases",
     "comparePlans": "Compare plans",
     "terms": "Terms",
@@ -140,7 +140,13 @@
     "choose": "Choose",
     "free": "Free",
     "perMonth": "/month",
-    "perYear": "/year"
+    "perYear": "/year",
+    "startTrial": "Start 14-day free trial",
+    "trialLegal": "14-day free trial. Then auto-renews. Cancel anytime.",
+    "processing": "Processing...",
+    "continue": "Continue",
+    "freePlanLabel": "Free plan",
+    "freeTrialBadge": "14 days free"
   },
   "aiChat": {
     "upgradeRequired": "Upgrade required",
