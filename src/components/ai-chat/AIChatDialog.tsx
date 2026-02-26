@@ -304,7 +304,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     return (
       <>
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="h-[92dvh] max-h-[92dvh] flex flex-col">
+          <DrawerContent className="h-[92dvh] max-h-[92dvh] flex flex-col overflow-hidden">
             {/* Clean mobile header */}
             <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0 flex-1">
