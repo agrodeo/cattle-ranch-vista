@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Check, Users, Zap, Crown, Building2, Briefcase, Loader2 } from "lucide-react";
+import { Check, X, Users, Zap, Crown, Building2, Briefcase, Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePlatformPurchase } from "@/hooks/usePlatformPurchase";
 import { isNativeApp } from "@/lib/platformDetection";
@@ -25,8 +25,10 @@ const getPlansData = (t: any) => [
     color: 'bg-blue-500',
     maxAnimals: 125,
     features: [
-      t('plansModal.aiChatLimited'),
-      t('plansModal.emailSupport')
+      { text: `${t('plansModal.upTo')} 125 ${t('plansModal.animals')}`, included: true },
+      { text: t('plansModal.aiChatLimited'), included: true },
+      { text: t('plansModal.emailSupport'), included: true },
+      { text: t('plansModal.prioritySupport'), included: false },
     ],
     monthly: 24900,
     annual: 249000
@@ -38,8 +40,10 @@ const getPlansData = (t: any) => [
     color: 'bg-indigo-500',
     maxAnimals: 250,
     features: [
-      t('plansModal.aiChatUnlimited'),
-      t('plansModal.emailSupport')
+      { text: `${t('plansModal.upTo')} 250 ${t('plansModal.animals')}`, included: true },
+      { text: t('plansModal.aiChatUnlimited'), included: true },
+      { text: t('plansModal.emailSupport'), included: true },
+      { text: t('plansModal.prioritySupport'), included: false },
     ],
     monthly: 44900,
     annual: 449000
@@ -51,8 +55,9 @@ const getPlansData = (t: any) => [
     color: 'bg-primary',
     maxAnimals: 500,
     features: [
-      t('plansModal.aiChatUnlimited'),
-      t('plansModal.prioritySupport')
+      { text: `${t('plansModal.upTo')} 500 ${t('plansModal.animals')}`, included: true },
+      { text: t('plansModal.aiChatUnlimited'), included: true },
+      { text: t('plansModal.prioritySupport'), included: true },
     ],
     monthly: 69900,
     annual: 699000,
@@ -65,8 +70,9 @@ const getPlansData = (t: any) => [
     color: 'bg-purple-500',
     maxAnimals: 1000,
     features: [
-      t('plansModal.aiChatUnlimited'),
-      t('plansModal.prioritySupport')
+      { text: `${t('plansModal.upTo')} 1.000 ${t('plansModal.animals')}`, included: true },
+      { text: t('plansModal.aiChatUnlimited'), included: true },
+      { text: t('plansModal.prioritySupport'), included: true },
     ],
     monthly: 149000,
     annual: 1490000
@@ -78,8 +84,9 @@ const getPlansData = (t: any) => [
     color: 'bg-orange-500',
     maxAnimals: 'unlimited',
     features: [
-      t('plansModal.aiChatUnlimited'),
-      t('plansModal.support24x7')
+      { text: t('plansModal.unlimitedAnimals'), included: true },
+      { text: t('plansModal.aiChatUnlimited'), included: true },
+      { text: t('plansModal.support24x7'), included: true },
     ],
     monthly: 159000,
     annual: 1590000
@@ -200,7 +207,11 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   </li>
                   <li className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-green-500" />
-                    <span>{t('plansModal.emailSupport')}</span>
+                    <span>{t('plansModal.basicFeatures')}</span>
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <X className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{t('plansModal.prioritySupport')}</span>
                   </li>
                 </ul>
               </div>
@@ -267,8 +278,12 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   <ul className="space-y-2">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-2 text-sm">
-                        <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        <span>{feature}</span>
+                        {feature.included ? (
+                          <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                        ) : (
+                          <X className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        )}
+                        <span className={feature.included ? '' : 'text-muted-foreground'}>{feature.text}</span>
                       </li>
                     ))}
                   </ul>
