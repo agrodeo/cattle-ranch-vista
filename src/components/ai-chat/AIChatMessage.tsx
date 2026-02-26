@@ -17,7 +17,7 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
         </div>
       )}
 
-      <div className={`max-w-[80%] ${isUser ? 'order-first' : ''}`}>
+      <div className={`max-w-[80%] min-w-0 ${isUser ? 'order-first' : ''}`}>
         <div className={`rounded-lg p-3 ${
           isUser 
             ? 'bg-primary text-primary-foreground ml-auto' 
@@ -36,7 +36,7 @@ export function AIChatMessage({ message }: AIChatMessageProps) {
               {message.content}
             </div>
           ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+            <div className="prose prose-sm dark:prose-invert max-w-none break-words overflow-hidden [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_pre]:overflow-x-auto [&_table]:overflow-x-auto [&_code]:break-all">
               <ReactMarkdown>{message.content}</ReactMarkdown>
             </div>
           )}

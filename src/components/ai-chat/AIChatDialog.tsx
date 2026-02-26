@@ -173,7 +173,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   })();
 
   const inputArea = (
-    <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t space-y-2">
+    <div className={`flex-shrink-0 ${isMobile ? 'px-3 pb-3' : 'px-4 pb-4'} pt-3 border-t space-y-2`}>
       {/* Soft limit warning */}
       {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
@@ -302,26 +302,21 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`${isMobile ? 'h-[85vh] max-w-[95vw]' : 'max-w-4xl h-[85vh]'} flex flex-col p-0`}>
+      <DialogContent className={`${isMobile ? 'h-[90dvh] w-[calc(100vw-1.5rem)] max-w-none' : 'max-w-4xl h-[85vh]'} flex flex-col p-0 overflow-hidden`}>
         {/* Mobile header */}
         {isMobile && (
-          <DialogHeader className="flex-shrink-0 p-4 border-b pr-12">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className="h-5 w-5 text-primary flex-shrink-0" />
-                <DialogTitle className="font-semibold truncate">{conversationTitle}</DialogTitle>
-                {isSaving && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0">
-                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    {t('aiChat.saving')}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center gap-1">
-                <Button onClick={() => setHistoryOpen(true)} variant="outline" size="sm">
+          <DialogHeader className="flex-shrink-0 px-3 py-3 border-b">
+            <div className="flex items-center gap-2 pr-8">
+              <Sparkles className="h-4 w-4 text-primary flex-shrink-0" />
+              <DialogTitle className="text-sm font-semibold truncate flex-1">{conversationTitle}</DialogTitle>
+              {isSaving && (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground flex-shrink-0" />
+              )}
+              <div className="flex items-center gap-1 flex-shrink-0">
+                <Button onClick={() => setHistoryOpen(true)} variant="ghost" size="icon" className="h-8 w-8">
                   <History className="h-4 w-4" />
                 </Button>
-                <Button onClick={clearMessages} variant="outline" size="sm">
+                <Button onClick={clearMessages} variant="ghost" size="icon" className="h-8 w-8">
                   <MessageSquare className="h-4 w-4" />
                 </Button>
               </div>
@@ -377,9 +372,9 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
               </DialogHeader>
             )}
 
-            <div className="flex-1 flex flex-col min-h-0">
-              <ScrollArea ref={scrollRef} className="flex-1 pr-4 px-4">
-                <div className="space-y-4 pb-4">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <ScrollArea ref={scrollRef} className={`flex-1 ${isMobile ? 'px-3' : 'px-4 pr-4'}`}>
+                <div className="space-y-4 pb-4 overflow-hidden">
                   {messages.length === 0 && welcomeScreen}
                   {messages.map((message) => (
                     <AIChatMessage key={message.id} message={message} />
