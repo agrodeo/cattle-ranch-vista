@@ -122,7 +122,7 @@
   },
   "plansPage": {
     "title": "Escolha seu plano",
-    "subtitle": "Teste por 7 dias. Cancele quando quiser.",
+    "subtitle": "Teste grátis por 14 dias. Cancele quando quiser.",
     "restorePurchases": "Restaurar compras",
     "comparePlans": "Comparar planos",
     "terms": "Termos",
@@ -140,7 +140,13 @@
     "choose": "Escolher",
     "free": "Grátis",
     "perMonth": "/mês",
-    "perYear": "/ano"
+    "perYear": "/ano",
+    "startTrial": "Iniciar teste gratuito de 14 dias",
+    "trialLegal": "Teste gratuito de 14 dias. Depois renova automaticamente. Cancele quando quiser.",
+    "processing": "Processando...",
+    "continue": "Continuar",
+    "freePlanLabel": "Plano gratuito",
+    "freeTrialBadge": "14 dias grátis"
   },
   "aiChat": {
     "upgradeRequired": "Atualização necessária",

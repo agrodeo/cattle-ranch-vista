@@ -65,9 +65,14 @@ export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: 
             </span>
             {!isFree && <span className="text-muted-foreground ml-1">{t('subscription:plansPage.perMonth')}</span>}
           </div>
-          {billingCycle === 'annual' && !isFree && (
+         {billingCycle === 'annual' && !isFree && (
             <p className="text-sm text-muted-foreground">
               {formatPrice(totalAnual)}{t('subscription:plansPage.perYear')}
+            </p>
+          )}
+          {!isFree && (
+            <p className="text-sm font-medium text-emerald-600">
+              {t('subscription:plansPage.freeTrialBadge')}
             </p>
           )}
         </div>
