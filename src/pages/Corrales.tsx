@@ -139,9 +139,8 @@ export default function Corrales() {
           a.status?.toLowerCase() === 'activo'
         ).length;
         setTotalActiveAnimals(activeCount);
-        
-        setLoading(false);
       }
+      setLoading(false);
     } catch (err) {
       console.error('Error loading corrales from cache:', err);
     }
