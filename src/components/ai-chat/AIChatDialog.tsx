@@ -217,8 +217,8 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
             onKeyDown={handleKeyDown}
             placeholder={t('common:aiChat.inputPlaceholder')}
             disabled={isLoading || limitReached}
-            className="min-h-[44px] max-h-[120px] resize-none pr-10 py-2.5 text-sm"
-            rows={1}
+            className="min-h-[52px] max-h-[120px] resize-none pr-10 py-2.5 text-sm placeholder:leading-tight"
+            rows={isMobile ? 2 : 1}
           />
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
           <Button
@@ -235,7 +235,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
         <Button
           type="submit"
           size="icon"
-          className="h-[44px] w-[44px] flex-shrink-0"
+          className="h-[52px] w-[44px] flex-shrink-0"
           disabled={isLoading || limitReached || (!input.trim() && !selectedImage)}
         >
           <Send className="h-4 w-4" />
