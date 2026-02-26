@@ -1,36 +1,69 @@
 
 
-# Add 14-Day Free Trial to Subscription Flow
+# Internationalize Plans Page Fully (ES/EN/PT)
 
-## Overview
-Update the Plans page and subscription components to clearly communicate a 14-day free trial for all paid plans. This involves UI text changes and translation updates across 3 languages.
+## Problem
+Several components on the Plans page still have hardcoded Spanish text, breaking the experience for English and Portuguese users:
 
-## Changes
+1. **FAQAccordion** -- All 4 FAQ questions and answers are hardcoded in Spanish. The trial FAQ still says "7 days" instead of 14.
+2. **BillingToggle** -- "Mensual", "Anual", and "-20%" are hardcoded in Spanish.
+3. **CompareSheet** -- Feature names ("Animales", "Chat IA", "Soporte"), feature values ("Ilimitados", "Ilimitado", "Basico", "Prioritario", etc.), header text ("Comparar planes", "Encontra el plan perfecto..."), column labels ("Gratis"), and CTA buttons ("Elegir {name}") are all hardcoded in Spanish.
+4. **PlanCard** -- The badge comparison `plan.badge === 'Mas popular'` is fragile since badges are now translated; needs to compare by plan ID instead.
 
-### 1. Update subtitle from "7 days" to "14 days" (translation files)
-The `plansPage.subtitle` key currently says "Try it for 7 days. Cancel anytime." -- update to 14 days in all 3 locales.
+## Plan
 
-### 2. Add free trial badge on PlanCard for paid plans
-Below the price on each paid plan card, add a small green text line: "14 days free" to make it clear the trial applies. Add a new translation key `plansPage.freeTrial` = "14-day free trial".
+### 1. Add translation keys to all 3 locale files
 
-### 3. Update StickyFooterCTA with trial info
-When a paid plan is selected, show "Start 14-day free trial" instead of "Continuar" on the CTA button, and update the legal text to mention the trial. Add translation keys for these strings.
+Add the following keys under `subscription` namespace in `es`, `en`, and `pt`:
 
-### 4. Update StickyFooterCTA hardcoded Spanish strings
-The component has hardcoded Spanish text ("Plan gratuito", "Procesando...", "Continuar", legal text). These will be replaced with translation keys for proper i18n.
+**FAQ section** (`plansPage.faq`):
+- `title`: "Preguntas frecuentes" / "Frequently asked questions" / "Perguntas frequentes"
+- `q1` through `q4` and `a1` through `a4` for each question/answer pair
+- Update the trial FAQ answer to reference 14 days (not 7)
+
+**Billing toggle** (`plansPage.billing`):
+- `monthly`: "Mensual" / "Monthly" / "Mensal"
+- `annual`: "Anual" / "Annual" / "Anual"
+- `discount`: "-20%"
+
+**Compare sheet** (`plansPage.compare`):
+- `title`, `description`
+- Feature names: `animals`, `aiChat`, `support`
+- Feature values: `upTo50`, `upTo125`, `upTo250`, `upTo500`, `upTo1000`, `unlimited`, `limited20mo`, `basic`, `email`, `priority`, `support247`
+- `choosePlan`: "Elegir {{name}}" / "Choose {{name}}" / "Escolher {{name}}"
+- `free`: "Gratis" / "Free" / "Gratis"
+
+### 2. Update FAQAccordion component
+- Import `useTranslation`
+- Replace hardcoded FAQ_DATA with translated strings using `t()` calls
+- Fix trial FAQ to say 14 days
+
+### 3. Update BillingToggle component
+- Import `useTranslation`
+- Replace "Mensual", "Anual", "-20%" with `t()` calls
+
+### 4. Update CompareSheet component
+- Import `useTranslation`
+- Replace all hardcoded Spanish strings with `t()` calls
+- Replace feature value functions with translated strings
+
+### 5. Fix PlanCard badge comparison
+- Change `plan.badge === 'Mas popular'` to `plan.id === 'productor'` so the styling works regardless of language
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/i18n/locales/es/subscription.json` | Update `plansPage.subtitle` to 14 days; add `plansPage.startTrial`, `plansPage.trialLegal`, `plansPage.processing`, `plansPage.continue`, `plansPage.freePlanLabel`, `plansPage.freeTrialBadge` |
-| `src/i18n/locales/en/subscription.json` | Same keys in English |
-| `src/i18n/locales/pt/subscription.json` | Same keys in Portuguese |
-| `src/components/subscription/PlanCard.tsx` | Add "14-day free trial" text below the price for paid plans |
-| `src/components/subscription/StickyFooterCTA.tsx` | Change CTA button text to "Start free trial" for paid plans; update legal text; replace hardcoded Spanish with i18n keys |
+| `src/i18n/locales/es/subscription.json` | Add FAQ, billing, compare keys |
+| `src/i18n/locales/en/subscription.json` | Add FAQ, billing, compare keys |
+| `src/i18n/locales/pt/subscription.json` | Add FAQ, billing, compare keys |
+| `src/components/subscription/FAQAccordion.tsx` | Use `useTranslation` for all strings |
+| `src/components/subscription/BillingToggle.tsx` | Use `useTranslation` for all strings |
+| `src/components/subscription/CompareSheet.tsx` | Use `useTranslation` for all strings |
+| `src/components/subscription/PlanCard.tsx` | Fix badge comparison to use plan ID |
 
 ## Risk Assessment
-- No database changes
-- No route changes
-- No plan names, limits, or trial logic altered (this is purely UI messaging)
-- Scoped to subscription display components only
+- No database changes, no route changes, no plan limits altered
+- Purely UI/i18n text changes scoped to subscription components
+- Existing behavior and layout preserved
+
