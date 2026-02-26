@@ -290,8 +290,8 @@ const Animals = () => {
           return new Date(b.birth_date).getTime() - new Date(a.birth_date).getTime();
         });
         setAnimals(cached as unknown as Animal[]);
-        setLoading(false);
       }
+      setLoading(false);
     } catch (err) {
       console.error('Error loading from cache:', err);
     }

@@ -21,18 +21,33 @@ export async function checkConnectivity(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    await fetch(`${SUPABASE_URL}/rest/v1/`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
       method: 'HEAD',
       signal: controller.signal,
       cache: 'no-store',
     });
     clearTimeout(timeout);
+    // Any HTTP response (even 4xx/5xx) proves network connectivity
     lastKnownOnline = true;
     consecutiveFailures = 0;
-  } catch {
-    consecutiveFailures++;
-    if (consecutiveFailures >= OFFLINE_THRESHOLD) {
-      lastKnownOnline = false;
+  } catch (err: any) {
+    // Only count as failure if it's a true network error (not an HTTP error response)
+    // AbortError = timeout, TypeError "Failed to fetch" = no network
+    const isNetworkError = err.name === 'AbortError' || 
+      err.message?.includes('Failed to fetch') ||
+      err.message?.includes('NetworkError') ||
+      err.message?.includes('Network request failed') ||
+      err.name === 'TypeError';
+    
+    if (isNetworkError) {
+      consecutiveFailures++;
+      if (consecutiveFailures >= OFFLINE_THRESHOLD) {
+        lastKnownOnline = false;
+      }
+    } else {
+      // Non-network error (e.g. CORS with a response) = we have connectivity
+      lastKnownOnline = true;
+      consecutiveFailures = 0;
     }
   }
   if (lastKnownOnline !== prev) notifyListeners();
