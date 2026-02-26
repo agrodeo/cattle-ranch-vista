@@ -261,17 +261,23 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
 
                 <CardContent className="space-y-4">
                   <div>
-                    <p className="text-3xl font-bold">{formatPrice(price)}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {isAnnual ? t('plansModal.perYear') : t('plansModal.perMonth')}
-                    </p>
-                    <p className="text-sm font-medium text-emerald-600">
-                      {t('plansPage.freeTrialBadge')}
-                    </p>
-                    {isAnnual && (
-                      <p className="text-xs text-green-600">
-                        {t('plansModal.youSave')} {formatPrice((plan.monthly * 12) - plan.annual)}
-                      </p>
+                    {plan.id === 'corporativo' ? (
+                      <p className="text-xl font-bold text-foreground">{t('plansModal.contactUs')}</p>
+                    ) : (
+                      <>
+                        <p className="text-3xl font-bold">{formatPrice(price)}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {isAnnual ? t('plansModal.perYear') : t('plansModal.perMonth')}
+                        </p>
+                        <p className="text-sm font-medium text-emerald-600">
+                          {t('plansPage.freeTrialBadge')}
+                        </p>
+                        {isAnnual && (
+                          <p className="text-xs text-green-600">
+                            {t('plansModal.youSave')} {formatPrice((plan.monthly * 12) - plan.annual)}
+                          </p>
+                        )}
+                      </>
                     )}
                   </div>
 
