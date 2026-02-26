@@ -60,8 +60,8 @@ export function MobileActivities() {
           };
         });
         setActivities(transformedData);
-        setLoading(false);
       }
+      setLoading(false);
     } catch (error) {
       console.error("Error loading from cache:", error);
     }
