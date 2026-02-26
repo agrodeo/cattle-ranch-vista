@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   Sheet,
   SheetContent,
@@ -19,44 +20,6 @@ interface CompareSheetProps {
   onPlanSelect: (plan: Plan) => void;
 }
 
-interface Feature {
-  name: string;
-  getValue: (plan: Plan) => string | boolean | number;
-}
-
-const FEATURES: Feature[] = [
-  {
-    name: 'Animales',
-    getValue: (plan) => {
-      if (plan.id === 'free') return 'Hasta 50';
-      if (plan.id === 'personal') return 'Hasta 125';
-      if (plan.id === 'avanzado') return 'Hasta 250';
-      if (plan.id === 'productor') return 'Hasta 500';
-      if (plan.id === 'cabana') return 'Hasta 1.000';
-      if (plan.id === 'corporativo') return 'Ilimitados';
-      return '—';
-    }
-  },
-  {
-    name: 'Chat IA',
-    getValue: (plan) => {
-      if (plan.id === 'free') return false;
-      if (plan.id === 'personal') return '20/mes';
-      return 'Ilimitado';
-    }
-  },
-  {
-    name: 'Soporte',
-    getValue: (plan) => {
-      if (plan.id === 'free') return 'Básico';
-      if (plan.id === 'personal' || plan.id === 'avanzado') return 'Email';
-      if (plan.id === 'productor' || plan.id === 'cabana') return 'Prioritario';
-      if (plan.id === 'corporativo') return '24/7';
-      return '—';
-    }
-  }
-];
-
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat('es-AR', {
     style: 'currency',
@@ -72,6 +35,47 @@ export function CompareSheet({
   billingCycle, 
   onPlanSelect 
 }: CompareSheetProps) {
+  const { t } = useTranslation(['subscription']);
+
+  const FEATURES = [
+    {
+      name: t('plansPage.compare.animals'),
+      getValue: (plan: Plan) => {
+        const map: Record<string, string> = {
+          free: t('plansPage.compare.upTo50'),
+          personal: t('plansPage.compare.upTo125'),
+          avanzado: t('plansPage.compare.upTo250'),
+          productor: t('plansPage.compare.upTo500'),
+          cabana: t('plansPage.compare.upTo1000'),
+          corporativo: t('plansPage.compare.unlimited'),
+        };
+        return map[plan.id] ?? '—';
+      }
+    },
+    {
+      name: t('plansPage.compare.aiChat'),
+      getValue: (plan: Plan): string | boolean => {
+        if (plan.id === 'free') return false;
+        if (plan.id === 'personal') return t('plansPage.compare.limited20mo');
+        return t('plansPage.compare.unlimitedChat');
+      }
+    },
+    {
+      name: t('plansPage.compare.support'),
+      getValue: (plan: Plan) => {
+        const map: Record<string, string> = {
+          free: t('plansPage.compare.basic'),
+          personal: t('plansPage.compare.email'),
+          avanzado: t('plansPage.compare.email'),
+          productor: t('plansPage.compare.priority'),
+          cabana: t('plansPage.compare.priority'),
+          corporativo: t('plansPage.compare.support247'),
+        };
+        return map[plan.id] ?? '—';
+      }
+    }
+  ];
+
   const renderFeatureValue = (value: string | boolean | number) => {
     if (typeof value === 'boolean') {
       return value ? (
@@ -87,9 +91,9 @@ export function CompareSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[80vh] rounded-t-2xl">
         <SheetHeader className="pb-4">
-          <SheetTitle>Comparar planes</SheetTitle>
+          <SheetTitle>{t('plansPage.compare.title')}</SheetTitle>
           <SheetDescription>
-            Encontrá el plan perfecto para tu operación
+            {t('plansPage.compare.description')}
           </SheetDescription>
         </SheetHeader>
 
@@ -109,11 +113,11 @@ export function CompareSheet({
                       <div className="font-semibold text-sm">{plan.nombre}</div>
                       <div className="text-xs text-muted-foreground">
                         {plan.precio_mensual === 0 
-                          ? 'Gratis' 
+                          ? t('plansPage.compare.free')
                           : formatPrice(billingCycle === 'monthly' 
                               ? plan.precio_mensual 
                               : plan.precio_anual / 12
-                            ) + '/mes'
+                            ) + t('plansPage.perMonth')
                         }
                       </div>
                     </div>
@@ -138,20 +142,19 @@ export function CompareSheet({
           </table>
         </div>
 
-        {/* CTA Buttons */}
         <div className="grid grid-cols-2 gap-2 mt-6 lg:grid-cols-3">
-          {plans.slice(1).map((plan) => ( // Skip free plan for CTAs
+          {plans.slice(1).map((plan) => (
             <Button
               key={plan.id}
               onClick={() => {
                 onPlanSelect(plan);
                 onOpenChange(false);
               }}
-              variant={plan.badge === 'Más popular' ? 'default' : 'outline'}
+              variant={plan.id === 'productor' ? 'default' : 'outline'}
               size="sm"
               className="text-xs"
             >
-              Elegir {plan.nombre}
+              {t('plansPage.compare.choosePlan', { name: plan.nombre })}
             </Button>
           ))}
         </div>

@@ -146,7 +146,45 @@
     "processing": "Procesando...",
     "continue": "Continuar",
     "freePlanLabel": "Plan gratuito",
-    "freeTrialBadge": "14 días gratis"
+    "freeTrialBadge": "14 días gratis",
+    "billing": {
+      "monthly": "Mensual",
+      "annual": "Anual",
+      "discount": "-20%"
+    },
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "q1": "¿Puedo cancelar cuando quiera?",
+      "a1": "Sí, podés cancelar tu suscripción en cualquier momento desde tu cuenta. No hay compromisos a largo plazo ni penalidades por cancelación. Tu plan seguirá activo hasta el final del período de facturación actual.",
+      "q2": "¿Cómo funciona la prueba gratis?",
+      "a2": "Tenés 14 días para probar cualquier plan sin costo. Durante la prueba, tenés acceso completo a todas las funciones del plan elegido. Si decidís no continuar, simplemente cancelá antes de que termine la prueba y no se te cobrará nada.",
+      "q3": "¿Cómo cambio de plan?",
+      "a3": "Podés cambiar tu plan en cualquier momento desde la configuración de tu cuenta. Si cambiás a un plan superior, el cambio es inmediato. Si cambiás a un plan inferior, el cambio se aplicará en tu próximo período de facturación.",
+      "q4": "¿Cómo pido factura A?",
+      "a4": "Para obtener facturas tipo A, contactanos a ayuda@agrodeo.farm con tus datos fiscales (CUIT, razón social, domicilio fiscal). Configuraremos tu cuenta para emitir las facturas correspondientes a partir de tu próximo período de facturación."
+    },
+    "compare": {
+      "title": "Comparar planes",
+      "description": "Encontrá el plan perfecto para tu operación",
+      "animals": "Animales",
+      "aiChat": "Chat IA",
+      "support": "Soporte",
+      "upTo50": "Hasta 50",
+      "upTo125": "Hasta 125",
+      "upTo250": "Hasta 250",
+      "upTo500": "Hasta 500",
+      "upTo1000": "Hasta 1.000",
+      "unlimited": "Ilimitados",
+      "unlimitedChat": "Ilimitado",
+      "limited20mo": "20/mes",
+      "noChat": "No",
+      "basic": "Básico",
+      "email": "Email",
+      "priority": "Prioritario",
+      "support247": "24/7",
+      "free": "Gratis",
+      "choosePlan": "Elegir {{name}}"
+    }
   },
   "aiChat": {
     "upgradeRequired": "Actualiza tu plan",
