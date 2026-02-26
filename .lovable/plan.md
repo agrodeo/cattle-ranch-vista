@@ -1,43 +1,36 @@
 
 
-# Fix: Tab Overflow on Mobile and Tablet Viewports
+# Add 14-Day Free Trial to Subscription Flow
 
-## Issues Found
+## Overview
+Update the Plans page and subscription components to clearly communicate a 14-day free trial for all paid plans. This involves UI text changes and translation updates across 3 languages.
 
-### 1. Settings page -- 5 tabs in 3-column grid on mobile (HIGH RISK)
-**File:** `src/pages/Settings.tsx` (line 39)
+## Changes
 
-The `TabsList` uses `grid-cols-3 sm:grid-cols-5`. On mobile, 5 tabs are forced into a 3-column grid, creating a second row with only 2 items. The tab labels (especially "Vacunas", "Usuarios", "General", "Facturación") can overflow or truncate, and the grid layout looks uneven with the orphan row.
+### 1. Update subtitle from "7 days" to "14 days" (translation files)
+The `plansPage.subtitle` key currently says "Try it for 7 days. Cancel anytime." -- update to 14 days in all 3 locales.
 
-**Fix:** On mobile, switch to a horizontally scrollable tab strip using `flex overflow-x-auto` instead of a grid. Add `whitespace-nowrap` and `scrollbar-hide` to prevent wrapping and hide the scrollbar. Alternatively, use `grid-cols-3` for the first 3 and stack the remaining 2 below with a clean `grid-cols-2` second row -- but the scroll approach is cleaner for 5 tabs.
+### 2. Add free trial badge on PlanCard for paid plans
+Below the price on each paid plan card, add a small green text line: "14 days free" to make it clear the trial applies. Add a new translation key `plansPage.freeTrial` = "14-day free trial".
 
-### 2. AnimalProfileTabs -- 8 tabs in grid-cols-8 at ~768px (MEDIUM RISK)
-**File:** `src/components/animals/profile/AnimalProfileTabs.tsx` (line 95)
+### 3. Update StickyFooterCTA with trial info
+When a paid plan is selected, show "Start 14-day free trial" instead of "Continuar" on the CTA button, and update the legal text to mention the trial. Add translation keys for these strings.
 
-Desktop uses `grid-cols-8` with 8 tabs. At the 768px breakpoint (where `isMobile` flips to false), each tab gets ~85px, but labels like "Reproducción", "Documentos", "Genealogía" are 10-12 characters. The text is already truncated with `hidden sm:inline`, but the icons alone at that size still crowd.
-
-**Fix:** Add `overflow-x-auto` to the `TabsList` wrapper and switch from `grid` to `flex` with `flex-shrink-0` on each trigger, so tabs scroll horizontally rather than crushing. This is already handled on true mobile via `Select`, so this only affects the 768-1024px zone.
-
-### 3. Reports desktop -- 6 tabs in grid-cols-6 on tablets (LOW RISK)
-**File:** `src/pages/Reports.tsx` (line 245)
-
-Six tabs in `grid-cols-6` at tablet widths. Labels like "Reproducción", "Producción", "Evolución" can get cramped around 768-900px.
-
-**Fix:** Add `text-xs lg:text-sm` to the TabsTriggers and ensure `truncate` is applied so text clips gracefully rather than overflowing the grid cell.
-
----
+### 4. Update StickyFooterCTA hardcoded Spanish strings
+The component has hardcoded Spanish text ("Plan gratuito", "Procesando...", "Continuar", legal text). These will be replaced with translation keys for proper i18n.
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/pages/Settings.tsx` | Replace grid TabsList with scrollable flex layout on mobile |
-| `src/components/animals/profile/AnimalProfileTabs.tsx` | Add overflow-x-auto + flex layout for desktop TabsList at narrow widths |
-| `src/pages/Reports.tsx` | Add truncate + smaller text on TabsTriggers for tablet safety |
+| `src/i18n/locales/es/subscription.json` | Update `plansPage.subtitle` to 14 days; add `plansPage.startTrial`, `plansPage.trialLegal`, `plansPage.processing`, `plansPage.continue`, `plansPage.freePlanLabel`, `plansPage.freeTrialBadge` |
+| `src/i18n/locales/en/subscription.json` | Same keys in English |
+| `src/i18n/locales/pt/subscription.json` | Same keys in Portuguese |
+| `src/components/subscription/PlanCard.tsx` | Add "14-day free trial" text below the price for paid plans |
+| `src/components/subscription/StickyFooterCTA.tsx` | Change CTA button text to "Start free trial" for paid plans; update legal text; replace hardcoded Spanish with i18n keys |
 
 ## Risk Assessment
 - No database changes
-- No routes or flows altered
-- Settings tab IDs and values stay the same
-- Only CSS/layout changes scoped to TabsList containers
-- No global CSS modifications
+- No route changes
+- No plan names, limits, or trial logic altered (this is purely UI messaging)
+- Scoped to subscription display components only
