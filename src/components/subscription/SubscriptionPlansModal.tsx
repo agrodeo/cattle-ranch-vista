@@ -242,7 +242,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   </Badge>
                 )}
                 
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
                     <div className={`p-2 rounded-lg ${plan.color} text-white`}>
                       <Icon className="h-5 w-5" />
@@ -252,11 +252,6 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                       {isCurrentPlan && <Badge>{t('plansModal.currentPlan')}</Badge>}
                     </CardTitle>
                   </div>
-                  <CardDescription>
-                    {typeof plan.maxAnimals === 'number' 
-                      ? `${t('plansModal.upTo')} ${plan.maxAnimals.toLocaleString()} ${t('plansModal.animals')}`
-                      : t('plansModal.unlimitedAnimals')}
-                  </CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
