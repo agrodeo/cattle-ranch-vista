@@ -146,7 +146,45 @@
     "processing": "Processing...",
     "continue": "Continue",
     "freePlanLabel": "Free plan",
-    "freeTrialBadge": "14 days free"
+    "freeTrialBadge": "14 days free",
+    "billing": {
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "discount": "-20%"
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "q1": "Can I cancel anytime?",
+      "a1": "Yes, you can cancel your subscription at any time from your account. There are no long-term commitments or cancellation penalties. Your plan will remain active until the end of the current billing period.",
+      "q2": "How does the free trial work?",
+      "a2": "You have 14 days to try any plan at no cost. During the trial, you have full access to all features of the chosen plan. If you decide not to continue, simply cancel before the trial ends and you won't be charged.",
+      "q3": "How do I change my plan?",
+      "a3": "You can change your plan at any time from your account settings. If you upgrade to a higher plan, the change is immediate. If you downgrade, the change will apply at your next billing period.",
+      "q4": "How do I request an invoice?",
+      "a4": "To obtain invoices, contact us at ayuda@agrodeo.farm with your tax details. We'll configure your account to issue the corresponding invoices from your next billing period."
+    },
+    "compare": {
+      "title": "Compare plans",
+      "description": "Find the perfect plan for your operation",
+      "animals": "Animals",
+      "aiChat": "AI Chat",
+      "support": "Support",
+      "upTo50": "Up to 50",
+      "upTo125": "Up to 125",
+      "upTo250": "Up to 250",
+      "upTo500": "Up to 500",
+      "upTo1000": "Up to 1,000",
+      "unlimited": "Unlimited",
+      "unlimitedChat": "Unlimited",
+      "limited20mo": "20/month",
+      "noChat": "No",
+      "basic": "Basic",
+      "email": "Email",
+      "priority": "Priority",
+      "support247": "24/7",
+      "free": "Free",
+      "choosePlan": "Choose {{name}}"
+    }
   },
   "aiChat": {
     "upgradeRequired": "Upgrade required",

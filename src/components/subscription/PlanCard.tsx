@@ -46,8 +46,8 @@ export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: 
       <CardHeader className="pb-4">
         {/* Badge */}
         {plan.badge && (
-          <Badge 
-            variant={plan.badge === 'Más popular' ? 'default' : 'secondary'}
+           <Badge 
+             variant={plan.id === 'productor' ? 'default' : 'secondary'}
             className="self-start mb-2"
           >
             {plan.badge}

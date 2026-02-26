@@ -146,7 +146,45 @@
     "processing": "Processando...",
     "continue": "Continuar",
     "freePlanLabel": "Plano gratuito",
-    "freeTrialBadge": "14 dias grátis"
+    "freeTrialBadge": "14 dias grátis",
+    "billing": {
+      "monthly": "Mensal",
+      "annual": "Anual",
+      "discount": "-20%"
+    },
+    "faq": {
+      "title": "Perguntas frequentes",
+      "q1": "Posso cancelar quando quiser?",
+      "a1": "Sim, você pode cancelar sua assinatura a qualquer momento pela sua conta. Não há compromissos de longo prazo nem penalidades por cancelamento. Seu plano continuará ativo até o final do período de cobrança atual.",
+      "q2": "Como funciona o teste grátis?",
+      "a2": "Você tem 14 dias para experimentar qualquer plano sem custo. Durante o teste, você tem acesso completo a todas as funcionalidades do plano escolhido. Se decidir não continuar, basta cancelar antes do fim do teste e você não será cobrado.",
+      "q3": "Como mudo de plano?",
+      "a3": "Você pode mudar seu plano a qualquer momento nas configurações da sua conta. Se mudar para um plano superior, a mudança é imediata. Se mudar para um plano inferior, a mudança será aplicada no próximo período de cobrança.",
+      "q4": "Como solicito nota fiscal?",
+      "a4": "Para obter notas fiscais, entre em contato conosco em ayuda@agrodeo.farm com seus dados fiscais. Configuraremos sua conta para emitir as notas correspondentes a partir do próximo período de cobrança."
+    },
+    "compare": {
+      "title": "Comparar planos",
+      "description": "Encontre o plano perfeito para sua operação",
+      "animals": "Animais",
+      "aiChat": "Chat IA",
+      "support": "Suporte",
+      "upTo50": "Até 50",
+      "upTo125": "Até 125",
+      "upTo250": "Até 250",
+      "upTo500": "Até 500",
+      "upTo1000": "Até 1.000",
+      "unlimited": "Ilimitados",
+      "unlimitedChat": "Ilimitado",
+      "limited20mo": "20/mês",
+      "noChat": "Não",
+      "basic": "Básico",
+      "email": "Email",
+      "priority": "Prioritário",
+      "support247": "24/7",
+      "free": "Grátis",
+      "choosePlan": "Escolher {{name}}"
+    }
   },
   "aiChat": {
     "upgradeRequired": "Atualização necessária",
