@@ -138,13 +138,22 @@ export default function Plans() {
 
     try {
       if (isNative) {
-        // Use RevenueCat for native platforms
+        // Try to find a matching RevenueCat package first
         const pkg = realPackages.find(p => p.identifier === selectedPlan.id);
         if (pkg) {
           await revenueCatService.purchasePackage(pkg);
           await refreshCustomerInfo();
         } else {
-          throw new Error('Package not found');
+          // Fallback: use platform purchase with product ID mapping
+          console.log('[Plans] No RevenueCat package match, using initiatePurchase fallback', { planId: selectedPlan.id });
+          const result = await initiatePurchase({
+            planId: selectedPlan.id as any,
+            billingCycle,
+            platform
+          });
+          if (result?.success) {
+            await refreshCustomerInfo();
+          }
         }
       } else {
         // Use web purchase flow (MercadoPago)
