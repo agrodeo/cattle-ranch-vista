@@ -2,12 +2,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useSupabaseAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import SupportProvider from "@/components/SupportProvider";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { RevenueCatProvider } from "@/providers/RevenueCatProvider";
+import { isNativeApp } from "@/lib/platformDetection";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
@@ -29,6 +30,9 @@ import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
+// Use HashRouter on native apps (local file loading) to avoid 404s on deep links
+const Router = isNativeApp() ? HashRouter : BrowserRouter;
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -38,7 +42,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BrowserRouter>
+              <Router>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/auth" element={<Auth />} />
@@ -68,7 +72,7 @@ const App = () => (
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
-           </BrowserRouter>
+           </Router>
          </TooltipProvider>
           </GlobalErrorBoundary>
         </SupportProvider>
