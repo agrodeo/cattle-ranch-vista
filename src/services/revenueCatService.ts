@@ -19,52 +19,55 @@ import { ENTITLEMENTS } from '@/config/revenueCatProducts';
 
 class RevenueCatService {
   private initialized = false;
+  private configureFailed = false;
   private configuring: Promise<void> | null = null;
   private listeners: Array<(info: CustomerInfo) => void> = [];
   
   /**
    * Ensure RevenueCat is initialized before calling purchase/offerings methods.
-   * Auto-retries configuration if it previously failed.
+   * Throws with actionable messages on failure.
    */
   private async ensureInitialized(): Promise<void> {
     if (this.initialized) return;
     
     if (!Capacitor.isNativePlatform()) {
-      console.warn('[RevenueCat] ensureInitialized called on non-native platform');
-      return;
+      throw new Error('RevenueCat is only available on native platforms (iOS/Android).');
     }
     
     console.log('[RevenueCat] Not initialized, attempting auto-configure...');
     await this.configure();
     
     if (!this.initialized) {
-      throw new Error('RevenueCat SDK failed to initialize. Check API keys and network.');
+      throw new Error(
+        'RevenueCat SDK failed to initialize. ' +
+        'Please check your internet connection and restart the app.'
+      );
     }
   }
   
   /**
    * Configure RevenueCat SDK
    * Uses platform-specific API keys
+   * Returns true if configuration succeeded, false otherwise.
    */
-  async configure(userId?: string): Promise<void> {
+  async configure(userId?: string): Promise<boolean> {
     if (!Capacitor.isNativePlatform()) {
       console.log('[RevenueCat] Not a native platform, skipping');
-      return;
+      return false;
     }
     
-    if (this.initialized) return;
+    if (this.initialized) return true;
     
     // Prevent concurrent configuration attempts
     if (this.configuring) {
       await this.configuring;
-      return;
+      return this.initialized;
     }
     
     // Get platform-specific API key
     const platform = Capacitor.getPlatform();
     let apiKey: string | undefined;
     
-    // TODO: Replace these placeholder keys with your actual RevenueCat public SDK keys before building for stores.
     const REVENUECAT_IOS_KEY = 'appl_UBiuqNanQpBmPXTYgwPDzNSzznY';
     const REVENUECAT_ANDROID_KEY = 'test_TyRsiXbFUgYLiOrgpoVsRBGuAYf';
 
@@ -75,9 +78,10 @@ class RevenueCatService {
     }
     
     if (!apiKey || apiKey.includes('YOUR_REVENUECAT')) {
-      console.error('[RevenueCat] API key not configured for platform:', platform);
-      console.error('[RevenueCat] Set your RevenueCat keys in src/services/revenueCatService.ts');
-      return;
+      const msg = `[RevenueCat] API key not configured for platform: ${platform}`;
+      console.error(msg);
+      this.configureFailed = true;
+      return false;
     }
     
     this.configuring = (async () => {
@@ -90,15 +94,29 @@ class RevenueCatService {
         });
         
         this.initialized = true;
+        this.configureFailed = false;
         console.log('[RevenueCat] Configured successfully for', platform);
-      } catch (error) {
-        console.error('[RevenueCat] Configuration failed:', error);
+      } catch (error: any) {
+        this.configureFailed = true;
+        console.error('[RevenueCat] Configuration failed:', {
+          message: error?.message,
+          code: error?.code,
+          domain: error?.domain,
+          raw: JSON.stringify(error)
+        });
+        // Re-throw so callers know configuration failed
+        throw error;
       } finally {
         this.configuring = null;
       }
     })();
     
-    await this.configuring;
+    try {
+      await this.configuring;
+    } catch {
+      // Error already logged above
+    }
+    return this.initialized;
   }
   
   /**
@@ -175,7 +193,13 @@ class RevenueCatService {
    * Purchase by product ID
    */
   async purchaseProduct(productId: string): Promise<CustomerInfo> {
+    if (!productId) {
+      throw new Error('Product ID is required for purchase');
+    }
+    
+    await this.ensureInitialized();
     console.log('[RevenueCat] purchaseProduct:', productId);
+    
     const offerings = await this.getOfferings();
     const packages = offerings.current?.availablePackages || [];
     
@@ -198,7 +222,7 @@ class RevenueCatService {
       return customerInfo;
     }
     
-    throw new Error(`Product not found: ${productId}`);
+    throw new Error(`Product not found in store: ${productId}. Please check your RevenueCat configuration.`);
   }
   
   /**
@@ -249,6 +273,13 @@ class RevenueCatService {
    */
   isInitialized(): boolean {
     return this.initialized;
+  }
+
+  /**
+   * Check if configuration has failed (useful for UI)
+   */
+  hasConfigFailed(): boolean {
+    return this.configureFailed;
   }
 }
 

@@ -5,37 +5,44 @@ import { isNativeApp } from '@/lib/platformDetection';
 
 interface RevenueCatContextType {
   isConfigured: boolean;
+  configFailed: boolean;
 }
 
 const RevenueCatContext = createContext<RevenueCatContextType>({ 
-  isConfigured: false 
+  isConfigured: false,
+  configFailed: false
 });
 
 export const useRevenueCat = () => useContext(RevenueCatContext);
 
 export function RevenueCatProvider({ children }: { children: React.ReactNode }) {
   const [isConfigured, setIsConfigured] = useState(false);
+  const [configFailed, setConfigFailed] = useState(false);
   const { session } = useSupabaseAuth();
 
   useEffect(() => {
     const configure = async () => {
       if (!isNativeApp()) {
+        // On web, RevenueCat is not used — mark as configured so app doesn't block
         setIsConfigured(true);
         return;
       }
 
       try {
-        await revenueCatService.configure(session?.user?.id);
+        const success = await revenueCatService.configure(session?.user?.id);
         
-        if (session?.user?.id) {
+        if (success && session?.user?.id) {
           await revenueCatService.login(session.user.id);
         }
         
         setIsConfigured(true);
+        setConfigFailed(!success);
       } catch (error) {
-        console.error('Failed to configure RevenueCat:', error);
-        // Still set configured so the app doesn't block — ensureInitialized will retry on purchase
+        console.error('[RevenueCatProvider] Configuration failed:', error);
+        // Mark configured=true so app doesn't block, but track failure
+        // ensureInitialized() will retry on actual purchase attempts
         setIsConfigured(true);
+        setConfigFailed(true);
       }
     };
 
@@ -43,7 +50,7 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
   }, [session?.user?.id]);
 
   return (
-    <RevenueCatContext.Provider value={{ isConfigured }}>
+    <RevenueCatContext.Provider value={{ isConfigured, configFailed }}>
       {children}
     </RevenueCatContext.Provider>
   );

@@ -4,8 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Zap, Star, Loader2 } from 'lucide-react';
-import { useEntitlements } from '@/hooks/useEntitlements';
-import { revenueCatService } from '@/services/revenueCatService';
+import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
 import { useToast } from '@/hooks/use-toast';
 import type { PurchasesPackage } from '@revenuecat/purchases-capacitor';
 
@@ -20,7 +19,7 @@ export function RevenueCatPaywall({
   onOpenChange, 
   onPurchaseComplete 
 }: RevenueCatPaywallProps) {
-  const { offerings, refreshCustomerInfo } = useEntitlements();
+  const { offerings, initiatePurchase, restorePurchases } = usePlatformPurchase();
   const [loading, setLoading] = useState<string | null>(null);
   const { toast } = useToast();
   
@@ -30,26 +29,19 @@ export function RevenueCatPaywall({
     setLoading(pkg.identifier);
     
     try {
-      await revenueCatService.purchasePackage(pkg);
-      await refreshCustomerInfo();
-      
-      toast({
-        title: "¡Compra exitosa!",
-        description: "Ahora tienes acceso a agrodeo Pro",
+      // Use the unified purchase flow — it handles native vs web internally
+      await initiatePurchase({
+        planId: pkg.product.identifier,
+        billingCycle: pkg.identifier.toLowerCase().includes('annual') || pkg.identifier.toLowerCase().includes('year') ? 'annual' : 'monthly',
       });
       
       onPurchaseComplete?.();
       onOpenChange(false);
     } catch (error: any) {
-      if (error?.userCancelled) {
+      if (error?.cancelled || error?.userCancelled) {
         return;
       }
-      
-      toast({
-        title: "Error en la compra",
-        description: error.message || "No se pudo completar la compra",
-        variant: "destructive",
-      });
+      // Error toast already handled by usePlatformPurchase
     } finally {
       setLoading(null);
     }
@@ -59,19 +51,9 @@ export function RevenueCatPaywall({
     setLoading('restore');
     
     try {
-      await revenueCatService.restorePurchases();
-      await refreshCustomerInfo();
-      
-      toast({
-        title: "Compras restauradas",
-        description: "Se verificaron tus compras anteriores",
-      });
+      await restorePurchases();
     } catch (error) {
-      toast({
-        title: "Error al restaurar",
-        description: "No se encontraron compras anteriores",
-        variant: "destructive",
-      });
+      // Error toast already handled by restorePurchases
     } finally {
       setLoading(null);
     }

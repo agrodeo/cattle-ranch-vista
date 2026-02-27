@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { detectPlatform, isNativeApp } from '@/lib/platformDetection';
+import { isNativeApp, getNativePlatform } from '@/lib/platformDetection';
 import { revenueCatService } from '@/services/revenueCatService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,47 +10,75 @@ import { getAppStoreProductId } from '@/config/appStoreProducts';
 export interface PurchaseData {
   planId: string;
   billingCycle: 'monthly' | 'annual';
-  platform: string;
+  platform?: string; // ignored — platform is resolved at click-time
 }
 
 export const usePlatformPurchase = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const { session } = useSupabaseAuth();
-  const { offerings } = useEntitlements();
-  const platform = detectPlatform();
+  const { offerings, refreshCustomerInfo } = useEntitlements();
 
+  /**
+   * Unified purchase entry point.
+   * Resolves platform at call-time (not render-time) for safety.
+   */
   const initiatePurchase = async (purchaseData: PurchaseData) => {
-    console.log('[Purchase] initiatePurchase called', { planId: purchaseData.planId, billingCycle: purchaseData.billingCycle, platform });
+    // Resolve platform RIGHT NOW, not from cached state
+    const native = isNativeApp();
+    const nativePlatform = getNativePlatform();
+    
+    console.log('[Purchase] initiatePurchase called', {
+      planId: purchaseData.planId,
+      billingCycle: purchaseData.billingCycle,
+      native,
+      nativePlatform
+    });
+    
     setLoading(true);
     
     try {
       let result;
-      if (platform === 'ios') {
-        console.log('[Purchase] Routing to iOS purchase flow');
-        result = await purchaseIOS(purchaseData);
-      } else if (platform === 'android') {
-        console.log('[Purchase] Routing to Android purchase flow');
-        result = await purchaseAndroid(purchaseData);
+      if (native && (nativePlatform === 'ios' || nativePlatform === 'android')) {
+        console.log(`[Purchase] Routing to ${nativePlatform} native purchase flow`);
+        result = await purchaseNative(purchaseData, nativePlatform);
       } else {
-        console.log('[Purchase] Routing to Web purchase flow');
+        console.log('[Purchase] Routing to Web purchase flow (MercadoPago)');
         result = await purchaseWeb(purchaseData);
       }
       console.log('[Purchase] Purchase result:', result);
       return result;
     } catch (error: any) {
-      console.error('[Purchase] Purchase failed:', error);
+      console.error('[Purchase] Purchase failed:', {
+        message: error?.message,
+        code: error?.code,
+        domain: error?.domain,
+        userCancelled: error?.userCancelled,
+        raw: JSON.stringify(error)
+      });
       
-      // Handle user cancellation gracefully - don't show toast, just re-throw
-      if (error?.code === 'PURCHASE_CANCELLED' || error?.userCancelled) {
+      // Handle user cancellation gracefully
+      if (
+        error?.userCancelled ||
+        error?.code === 'PURCHASE_CANCELLED' ||
+        error?.code === 1
+      ) {
         const cancelError = new Error('Purchase cancelled');
         (cancelError as any).cancelled = true;
         throw cancelError;
       }
       
+      // Provide actionable error messages
+      let description = 'No se pudo completar la compra. Intenta nuevamente.';
+      if (error?.message?.includes('not found in store')) {
+        description = 'Producto no encontrado. Intenta cerrar y reabrir la app.';
+      } else if (error?.message?.includes('failed to initialize')) {
+        description = 'No se pudo conectar con la tienda. Verifica tu conexión a internet.';
+      }
+      
       toast({
         title: "Error en la compra",
-        description: error.message || "No se pudo completar la compra. Intenta nuevamente.",
+        description,
         variant: "destructive",
       });
       throw error;
@@ -59,53 +87,46 @@ export const usePlatformPurchase = () => {
     }
   };
 
-  const purchaseIOS = async (data: PurchaseData) => {
-    try {
-      const productId = getAppStoreProductId(data.planId as any, data.billingCycle);
-      console.log('[Purchase:iOS] productId resolved:', productId);
-      
-      // Use the unified revenueCatService instead of IOSPurchaseService
-      const customerInfo = await revenueCatService.purchaseProduct(productId);
-      console.log('[Purchase:iOS] purchaseProduct succeeded, syncing with backend...');
-      
-      // Sync purchase with backend
-      try {
-        await supabase.functions.invoke('sync-ios-purchase', {
-          body: { 
-            customerInfo: {
-              originalAppUserId: customerInfo.originalAppUserId,
-              activeSubscriptions: customerInfo.activeSubscriptions,
-              allPurchasedProductIdentifiers: customerInfo.allPurchasedProductIdentifiers,
-              entitlements: customerInfo.entitlements
-            }
-          }
-        });
-      } catch (syncError) {
-        console.error('Failed to sync purchase with backend:', syncError);
-      }
-      
-      toast({
-        title: "¡Compra exitosa!",
-        description: "Tu suscripción ha sido activada.",
-      });
-      
-      // Refresh page to update subscription status
-      setTimeout(() => window.location.reload(), 1000);
-      
-      return { success: true };
-    } catch (error) {
-      console.error('iOS purchase error:', error);
-      throw error;
-    }
-  };
+  /**
+   * Native purchase flow (iOS / Android) via RevenueCat
+   */
+  const purchaseNative = async (data: PurchaseData, nativePlatform: 'ios' | 'android') => {
+    const productId = getAppStoreProductId(data.planId as any, data.billingCycle);
+    console.log('[Purchase:Native] productId resolved:', productId, 'platform:', nativePlatform);
 
-  const purchaseAndroid = async (data: PurchaseData) => {
-    // TODO: Implement Android purchase flow
+    if (!productId) {
+      throw new Error(`No product ID configured for plan: ${data.planId} (${data.billingCycle})`);
+    }
+
+    // purchaseProduct calls ensureInitialized() internally — will auto-retry config
+    const customerInfo = await revenueCatService.purchaseProduct(productId);
+    console.log('[Purchase:Native] purchase succeeded, syncing with backend...');
+
+    // Sync purchase with backend
+    try {
+      await supabase.functions.invoke('sync-ios-purchase', {
+        body: {
+          customerInfo: {
+            originalAppUserId: customerInfo.originalAppUserId,
+            activeSubscriptions: customerInfo.activeSubscriptions,
+            allPurchasedProductIdentifiers: customerInfo.allPurchasedProductIdentifiers,
+            entitlements: customerInfo.entitlements
+          }
+        }
+      });
+    } catch (syncError) {
+      console.error('[Purchase:Native] Failed to sync purchase with backend:', syncError);
+    }
+
+    // Refresh entitlements
+    await refreshCustomerInfo();
+
     toast({
-      title: "Próximamente",
-      description: "Las compras en Android estarán disponibles pronto.",
+      title: "¡Compra exitosa!",
+      description: "Tu suscripción ha sido activada.",
     });
-    return { success: false };
+
+    return { success: true };
   };
 
   const purchaseWeb = async (data: PurchaseData) => {
@@ -130,16 +151,16 @@ export const usePlatformPurchase = () => {
       
       throw new Error('No se recibió el link de pago');
     } catch (error) {
-      console.error('Mercado Pago error:', error);
+      console.error('[Purchase:Web] Mercado Pago error:', error);
       throw error;
     }
   };
 
   const restorePurchases = async () => {
-    if (platform !== 'ios') {
+    if (!isNativeApp()) {
       toast({
         title: "Función no disponible",
-        description: "Restaurar compras solo está disponible en iOS.",
+        description: "Restaurar compras solo está disponible en la app nativa.",
       });
       return;
     }
@@ -161,17 +182,17 @@ export const usePlatformPurchase = () => {
           }
         });
       } catch (syncError) {
-        console.error('Failed to sync restored purchases:', syncError);
+        console.error('[Purchase] Failed to sync restored purchases:', syncError);
       }
+
+      await refreshCustomerInfo();
       
       toast({
         title: "Compras restauradas",
         description: "Se han verificado tus compras anteriores.",
       });
-      
-      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
-      console.error('Restore purchases failed:', error);
+      console.error('[Purchase] Restore purchases failed:', error);
       toast({
         title: "Error al restaurar",
         description: "No se pudieron restaurar las compras.",
@@ -183,7 +204,6 @@ export const usePlatformPurchase = () => {
   };
 
   return {
-    platform,
     loading,
     offerings,
     initiatePurchase,

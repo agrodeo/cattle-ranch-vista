@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +9,8 @@ import { CompareSheet } from '@/components/subscription/CompareSheet';
 import { StickyFooterCTA } from '@/components/subscription/StickyFooterCTA';
 import { FAQAccordion } from '@/components/subscription/FAQAccordion';
 import { useToast } from '@/hooks/use-toast';
-import { useEntitlements } from '@/hooks/useEntitlements';
-import { revenueCatService } from '@/services/revenueCatService';
-import { detectPlatform, isNativeApp } from '@/lib/platformDetection';
+import { isNativeApp } from '@/lib/platformDetection';
 import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
-import { getAppStoreProductId } from '@/config/appStoreProducts';
 
 export type BillingCycle = 'monthly' | 'annual';
 export type Platform = 'web' | 'ios' | 'android';
@@ -75,9 +72,6 @@ const getPlanData = (t: any): Plan[] => [
   }
 ];
 
-// Remove mock platform detection - use real one
-// Remove mock purchase functions - use real RevenueCat
-
 export default function Plans() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -87,77 +81,44 @@ export default function Plans() {
   const [compareSheetOpen, setCompareSheetOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  const { offerings, refreshCustomerInfo } = useEntitlements();
-  const { initiatePurchase, restorePurchases: restoreRevenueCat } = usePlatformPurchase();
-  
-  const platform = detectPlatform();
+  const { initiatePurchase, restorePurchases } = usePlatformPurchase();
   const isNative = isNativeApp();
   
   const PLANS_DATA = getPlanData(t);
-  
-  // Always use our internal PLANS_DATA for display — RevenueCat packages are used only for purchase execution
-  const realPackages = offerings?.current?.availablePackages || [];
   const displayPlans = PLANS_DATA;
 
   const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
-    // Track event
     console.log('Event: plan_selected', { plan: plan.id, billingCycle });
   };
 
   const handleBillingToggle = (cycle: BillingCycle) => {
     setBillingCycle(cycle);
-    // Track event
     console.log('Event: billing_toggled', { cycle });
   };
 
   const handleCompareOpen = () => {
     setCompareSheetOpen(true);
-    // Track event
     console.log('Event: compare_opened');
   };
 
   const handleContinue = async () => {
     if (!selectedPlan) return;
 
-    // Free plan: just navigate, no purchase needed
     if (selectedPlan.id === 'free') {
       navigate('/dashboard');
       return;
     }
 
     setLoading(true);
-    console.log('Event: purchase_started', { plan: selectedPlan.id, billingCycle, platform });
+    console.log('Event: purchase_started', { plan: selectedPlan.id, billingCycle });
 
     try {
-      if (isNative) {
-        // Map our internal plan ID to the App Store product ID
-        const productId = getAppStoreProductId(selectedPlan.id as any, billingCycle);
-        console.log('[Plans] Native purchase: planId=', selectedPlan.id, 'productId=', productId, 'rcInitialized=', revenueCatService.isInitialized());
-
-        if (!productId) {
-          throw new Error(`No product ID configured for plan: ${selectedPlan.id}`);
-        }
-
-        // Try to find matching package in RC offerings first (preferred)
-        const pkg = realPackages.find(p => p.product.identifier === productId);
-        if (pkg) {
-          console.log('[Plans] Found RC package, purchasing via package');
-          await revenueCatService.purchasePackage(pkg);
-        } else {
-          // Fallback: purchase by product ID directly
-          console.log('[Plans] No RC package match, purchasing by product ID');
-          await revenueCatService.purchaseProduct(productId);
-        }
-        await refreshCustomerInfo();
-      } else {
-        // Use web purchase flow (MercadoPago)
-        await initiatePurchase({
-          planId: selectedPlan.id as any,
-          billingCycle,
-          platform
-        });
-      }
+      // Unified: initiatePurchase resolves platform internally
+      await initiatePurchase({
+        planId: selectedPlan.id,
+        billingCycle,
+      });
 
       console.log('Event: purchase_succeeded', { plan: selectedPlan.id, billingCycle });
       
@@ -168,20 +129,14 @@ export default function Plans() {
       
       navigate('/dashboard');
     } catch (error: any) {
-      // Handle user cancellation from RevenueCat or usePlatformPurchase
-      if (error?.userCancelled || error?.cancelled || error?.code === 'PURCHASE_CANCELLED' || error?.code === 1) {
+      // User cancellation — no error toast (already handled by usePlatformPurchase)
+      if (error?.cancelled || error?.userCancelled || error?.code === 'PURCHASE_CANCELLED' || error?.code === 1) {
         console.log('[Plans] Purchase cancelled by user');
         return;
       }
       
       console.error('[Plans] Purchase failed:', error);
-      console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error: error?.message, code: error?.code });
-      
-      toast({
-        title: t('subscription:plansPage.purchaseFailed'),
-        description: t('subscription:plansPage.purchaseFailedDesc'),
-        variant: "destructive",
-      });
+      // Error toast already shown by usePlatformPurchase
     } finally {
       setLoading(false);
     }
@@ -189,17 +144,9 @@ export default function Plans() {
 
   const handleRestorePurchases = async () => {
     if (!isNative) return;
-
     try {
       console.log('Event: restore_purchases');
-      
-      if (platform === 'ios') {
-        await revenueCatService.restorePurchases();
-        await refreshCustomerInfo();
-      } else {
-        await restoreRevenueCat();
-      }
-      
+      await restorePurchases();
       toast({
         title: t('subscription:plansPage.purchasesRestored'),
         description: t('subscription:plansPage.purchasesRestoredDesc'),
@@ -215,33 +162,20 @@ export default function Plans() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="flex items-center justify-between p-4 max-w-lg mx-auto">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(-1)}
-            className="p-2"
-          >
+          <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="p-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           {isNative && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRestorePurchases}
-              className="text-sm"
-            >
+            <Button variant="ghost" size="sm" onClick={handleRestorePurchases} className="text-sm">
               {t('subscription:plansPage.restorePurchases')}
             </Button>
           )}
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="pb-32">
-        {/* Hero Section */}
         <section className="text-center px-4 py-8 max-w-lg mx-auto">
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {t('subscription:plansPage.title')}
@@ -251,15 +185,10 @@ export default function Plans() {
           </p>
         </section>
 
-        {/* Billing Toggle */}
         <section className="px-4 mb-8 max-w-lg mx-auto">
-          <BillingToggle
-            billingCycle={billingCycle}
-            onToggle={handleBillingToggle}
-          />
+          <BillingToggle billingCycle={billingCycle} onToggle={handleBillingToggle} />
         </section>
 
-        {/* Plans Carousel */}
         <section className="mb-8">
           <PlansCarousel
             plans={displayPlans}
@@ -270,23 +199,16 @@ export default function Plans() {
           />
         </section>
 
-        {/* Compare Plans Button */}
         <section className="px-4 mb-8 max-w-lg mx-auto">
-          <Button
-            variant="outline"
-            onClick={handleCompareOpen}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={handleCompareOpen} className="w-full">
             {t('subscription:plansPage.comparePlans')}
           </Button>
         </section>
 
-        {/* FAQ Section */}
         <section className="px-4 mb-8 max-w-lg mx-auto">
           <FAQAccordion />
         </section>
 
-        {/* Footer Links */}
         <footer className="px-4 max-w-lg mx-auto text-center space-y-2">
           <div className="flex justify-center space-x-4 text-sm text-muted-foreground">
             <button className="hover:text-foreground">{t('subscription:plansPage.terms')}</button>
@@ -296,7 +218,6 @@ export default function Plans() {
         </footer>
       </main>
 
-      {/* Sticky Footer CTA */}
       {selectedPlan && (
         <StickyFooterCTA
           selectedPlan={selectedPlan}
@@ -306,7 +227,6 @@ export default function Plans() {
         />
       )}
 
-      {/* Compare Sheet */}
       <CompareSheet
         open={compareSheetOpen}
         onOpenChange={setCompareSheetOpen}
