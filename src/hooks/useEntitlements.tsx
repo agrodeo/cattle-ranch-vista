@@ -26,12 +26,13 @@ export const useEntitlements = () => {
   });
 
   const refreshCustomerInfo = useCallback(async () => {
-    if (!isNativeApp() || !revenueCatService.isInitialized()) {
+    if (!isNativeApp()) {
       setState(prev => ({ ...prev, isLoading: false }));
       return;
     }
 
     try {
+      // ensureInitialized() inside getCustomerInfo will auto-retry if needed
       const customerInfo = await revenueCatService.getCustomerInfo();
       const proEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PRO];
       
@@ -44,23 +45,24 @@ export const useEntitlements = () => {
         expirationDate: proEntitlement?.expirationDate ?? null
       }));
     } catch (error) {
-      console.error('Failed to get customer info:', error);
+      console.error('[useEntitlements] Failed to get customer info:', error);
       setState(prev => ({ ...prev, isLoading: false }));
     }
   }, []);
 
   const loadOfferings = useCallback(async () => {
-    if (!isNativeApp() || !revenueCatService.isInitialized()) return;
+    if (!isNativeApp()) return;
     
     try {
+      // ensureInitialized() inside getOfferings will auto-retry if needed
       const offerings = await revenueCatService.getOfferings();
       setState(prev => ({ ...prev, offerings }));
     } catch (error) {
-      console.error('Failed to load offerings:', error);
+      console.error('[useEntitlements] Failed to load offerings:', error);
     }
   }, []);
 
-  // Wait for RevenueCat to be configured before loading data
+  // Wait for RevenueCat provider to finish initial config attempt
   useEffect(() => {
     if (!isConfigured) return;
 
