@@ -1,105 +1,95 @@
 
-Objetivo: corregir el flujo de compra nativa (TestFlight) para que al tocar un plan sí aparezca la hoja de pago de Apple/Google, manteniendo MercadoPago solo en web y sin permitir activaciones sin pago.
+Objetivo: lograr que al tocar un plan en TestFlight (desplegado con Despia) se abra el flujo nativo de compra (App Store), evitando que caiga al flujo web de MercadoPago y eliminando los errores silenciosos previos.
 
-Lo que encontré en el código actual (causas probables del error inmediato):
-1) Flujo fragmentado de compras
-- Hay lógica de compra repartida en `Plans.tsx`, `SubscriptionPlansModal.tsx`, `ReadOnlyModeModal.tsx` y `RevenueCatPaywall.tsx`.
-- No todos usan el mismo camino (algunos llaman `revenueCatService` directo, otros `usePlatformPurchase`), lo que genera comportamientos distintos y errores difíciles de rastrear.
+Diagnóstico confirmado (con evidencia)
+- Síntoma actual: al seleccionar plan no aparece hoja nativa de compra.
+- Evidencia de logs: hubo invocaciones recientes a `mp-sub-create-link` con error interno (`Cannot read properties of undefined...`) durante intentos de compra.
+- Conclusión: en TestFlight/Despia el código está ruteando al flujo web, no al nativo.
+- Causa raíz principal: la detección nativa actual depende de Capacitor (`Capacitor.isNativePlatform()`), pero en runtime Despia ese check no necesariamente representa el entorno de compra.
+- Causas adicionales que agravan:
+  1) `RevenueCatPaywall` envía `pkg.product.identifier` como `planId`, mientras `usePlatformPurchase` espera claves de plan (`personal|avanzado|productor|cabana`) para mapear producto.
+  2) `purchaseWeb` espera `response.init_point`, pero la edge function devuelve `url`.
+  3) `mp-sub-create-link` usa un cliente Supabase antiguo en Deno que rompe en runtime.
+  4) `Plans.tsx` muestra éxito tras `await initiatePurchase()` sin validar `result.success`.
 
-2) Detección de plataforma frágil
-- `usePlatformPurchase` define `const platform = detectPlatform()` al render del hook y luego lo reutiliza; si esa detección inicial falla o queda desfasada, puede rutear mal.
-- `detectPlatform()` hace fallback por user-agent y puede devolver `ios/android` en contextos web iPhone/Android, lo cual es riesgoso para compras nativas.
+Do I know what the issue is?
+- Sí: hoy la compra en Despia está tomando el camino web por detección de plataforma incorrecta para ese runtime; además, el fallback web está roto por incompatibilidad de respuesta y por error en la edge function.
 
-3) Inicialización de RevenueCat poco estricta
-- `revenueCatService.configure()` atrapa errores y no los relanza; eso oculta fallas reales.
-- `RevenueCatProvider` marca `isConfigured=true` incluso cuando la configuración falla.
-- `ensureInitialized()` en no-nativo hace `return` (no error), permitiendo que se intente usar `Purchases.*` fuera de contexto.
+Implementación propuesta (secuencia)
+1) Agregar detección explícita de runtime Despia para compras
+- Archivo: `src/lib/platformDetection.ts`
+- Añadir helpers específicos:
+  - `isDespiaRuntime()` (detección segura por señales de runtime Despia).
+  - `getDespiaPlatform()` (`ios|android|null`).
+  - Mantener helpers actuales de Capacitor para no romper otros módulos.
+- Importante: no convertir globalmente todo “native” a Despia para hooks de RevenueCat Capacitor (evita regresiones en `useEntitlements`).
 
-4) Carga de offerings bloqueada por estado interno
-- `useEntitlements` exige `revenueCatService.isInitialized()` antes de cargar; si hubo un fallo inicial y luego recuperación, puede quedarse sin offerings cargados/reintentos.
+2) Unificar ruteo de compra por runtime real (Capacitor vs Despia vs Web)
+- Archivo: `src/hooks/usePlatformPurchase.tsx`
+- Cambiar `initiatePurchase` para resolver en click-time:
+  - Capacitor nativo -> flujo actual RevenueCat Capacitor.
+  - Despia runtime -> comando nativo Despia para RevenueCat (compra nativa).
+  - Web -> MercadoPago.
+- Añadir `resolveProductId(...)` robusto:
+  - Si entra clave de plan, mapear a product ID.
+  - Si entra product ID directo (caso paywall), usarlo sin remap.
+- Mejorar logs de diagnóstico por rama (`[Purchase][runtime]`).
 
-5) Síntoma del usuario coincide con ruta de error genérica
-- El mensaje “Error en la compra…” viene de `usePlatformPurchase`, consistente con fallo previo a abrir la hoja de pago.
+3) Corregir entradas UI para no falsear éxito y no romper mapping
+- Archivos:
+  - `src/components/subscription/RevenueCatPaywall.tsx`
+  - `src/pages/Plans.tsx`
+  - `src/components/subscription/SubscriptionPlansModal.tsx`
+  - `src/components/subscription/ReadOnlyModeModal.tsx` (si aplica)
+- Cambios:
+  - Usar resultado estructurado (`success`, `pending`, `cancelled`) y no asumir éxito.
+  - En `Plans.tsx`, no mostrar “suscripción activada” hasta `success === true`.
+  - Asegurar que todos los entry points consuman el mismo contrato de `initiatePurchase`.
 
-Plan de implementación (sin romper reglas del proyecto):
-Paso 1: Unificar el flujo de compra en un solo punto
-- Centralizar la ejecución real de compra en `usePlatformPurchase.initiatePurchase`.
-- Hacer que `Plans.tsx`, `SubscriptionPlansModal.tsx`, `ReadOnlyModeModal.tsx` y `RevenueCatPaywall.tsx` usen ese flujo unificado.
-- Mantener la regla:
-  - Nativo iOS/Android: RevenueCat -> App Store / Google Play.
-  - Web: MercadoPago.
+4) Reparar fallback web para que no falle en caso de ruta web
+- Archivos:
+  - `src/hooks/usePlatformPurchase.tsx`
+  - `supabase/functions/mp-sub-create-link/index.ts`
+- Cambios:
+  - Cliente: aceptar `response.url || response.init_point`.
+  - Edge function: actualizar cliente Supabase Deno a implementación compatible (evitar crash actual) y devolver payload consistente.
+- Resultado: aunque no debería usarse en TestFlight/Despia, el fallback web queda sano.
 
-Archivos:
+5) Mantener integridad de negocio y guardrails
+- Sin tocar nombres de planes/límites/trial.
+- Sin cambios destructivos de DB, rutas críticas o estilos globales.
+- No habilitar activación premium sin pago: la fuente de verdad sigue siendo backend/webhooks.
+
+Validación obligatoria (E2E)
+1. TestFlight (Despia)
+- Abrir app autenticada.
+- Probar compra desde:
+  - `/plans`
+  - modal de suscripción
+  - paywall de feature premium (si aplica)
+- Esperado: se abre hoja nativa de App Store al tocar plan.
+- Cancelar compra: sin toast destructivo engañoso.
+- Completar sandbox: estado premium actualizado tras sincronización/webhook.
+
+2. Web
+- Seleccionar plan en `/plans` y modal.
+- Esperado: abre MercadoPago correctamente (sin error de edge function).
+
+3. Regresión
+- Verificar que no se alteraron rutas críticas, límites, trial ni nombres de planes.
+- Confirmar que no hay cambios globales de estilo ni regresiones en flujo existente.
+
+Riesgos y mitigación
+- Riesgo: detectar mal runtime Despia y disparar rama incorrecta.
+  - Mitigación: helper dedicado + logs por rama + prueba E2E en TestFlight.
+- Riesgo: UX de éxito prematuro.
+  - Mitigación: contrato de resultado explícito y toasts condicionados por `success`.
+
+Archivos previstos para tocar
+- `src/lib/platformDetection.ts`
 - `src/hooks/usePlatformPurchase.tsx`
 - `src/pages/Plans.tsx`
 - `src/components/subscription/SubscriptionPlansModal.tsx`
-- `src/components/subscription/ReadOnlyModeModal.tsx`
 - `src/components/subscription/RevenueCatPaywall.tsx`
-
-Paso 2: Endurecer detección de plataforma para compras
-- Para decisiones de pago, priorizar solo `Capacitor.isNativePlatform()` + `Capacitor.getPlatform()`.
-- Evitar fallback por user-agent en lógica crítica de pago.
-- Resolver plataforma “en el momento del click”, no sólo al render inicial del hook.
-
-Archivo:
-- `src/lib/platformDetection.ts`
-- `src/hooks/usePlatformPurchase.tsx`
-
-Paso 3: Hacer explícitas las fallas de inicialización RevenueCat
-- En `revenueCatService.configure()`, relanzar errores críticos (no tragarlos silenciosamente).
-- En `ensureInitialized()`, si no es entorno nativo y se intenta compra nativa, lanzar error claro.
-- Validar `productId` vacío antes de llamar SDK.
-- Enriquecer logs (código, dominio, mensaje y detalles serializados de error nativo).
-
-Archivo:
-- `src/services/revenueCatService.ts`
-
-Paso 4: Corregir el estado de “configured” y reintentos reales
-- `RevenueCatProvider` debe reflejar estado real de configuración (no “true” si falló).
-- `useEntitlements` debe permitir reintentos de `getOfferings/getCustomerInfo` apoyándose en `ensureInitialized()` en vez de bloquear por `isInitialized()` local.
-
-Archivos:
-- `src/providers/RevenueCatProvider.tsx`
-- `src/hooks/useEntitlements.tsx`
-
-Paso 5: Mensajes de error útiles para soporte
-- Diferenciar errores:
-  - cancelación del usuario,
-  - producto no encontrado,
-  - tienda no disponible / configuración nativa faltante,
-  - RevenueCat no inicializado.
-- Mostrar texto accionable para usuario final y dejar detalle técnico en consola.
-
-Archivos:
-- `src/hooks/usePlatformPurchase.tsx`
-- componentes de planes/paywall que muestran toast
-
-Paso 6: Verificación funcional obligatoria (incluye E2E)
-1. iOS TestFlight:
-- Abrir `/plans` y modal de suscripción.
-- Tocar plan mensual y anual.
-- Confirmar que aparece hoja de pago nativa.
-- Cancelar: no debe mostrar error destructivo.
-- Completar compra sandbox: debe actualizar estado premium.
-
-2. Web:
-- Seleccionar plan en `/plans` y modal.
-- Debe abrir MercadoPago (sin tocar App Store/Google Play).
-
-3. Seguridad/facturación:
-- Verificar que nadie puede activar plan sin pago (RPC restringida sigue intacta).
-- Confirmar que no se alteran límites, trial ni nombres de planes.
-
-4. Regresión guardrails:
-- No cambios en rutas críticas (`/actividades`, `/animales`).
-- Sin cambios globales de estilo.
-- Sin cambios destructivos de DB/políticas.
-
-Riesgo y mitigación:
-- Riesgo principal: romper alguna de las entradas actuales de compra al unificar.
-- Mitigación: unificar con una interfaz común mínima y mantener los mismos IDs de planes/productos existentes (`Personal_Monthly`, `Advanced_*`, `Producer_*`, `Herd_*`), más pruebas E2E en TestFlight y web antes de cerrar.
-
-Resultado esperado después del cambio:
-- En TestFlight, tocar un plan abrirá flujo de compra nativo en vez de caer directo en toast de error.
-- En web, seguirá MercadoPago.
-- Sin posibilidad de “activar plan sin pagar”.
+- `src/components/subscription/ReadOnlyModeModal.tsx` (si aplica)
+- `supabase/functions/mp-sub-create-link/index.ts`
