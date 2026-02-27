@@ -7,9 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Apple's JWKS endpoint for verifying App Store Server Notifications V2
+const APPLE_JWKS = jose.createRemoteJWKSet(
+  new URL('https://appleid.apple.com/auth/keys')
+);
+
 // Map RevenueCat product IDs to internal plan codes
 const PRODUCT_ID_TO_PLAN: Record<string, string> = {
-  // New RevenueCat product IDs
   'Personal_Monthly': 'personal',
   'Personal_Yearly': 'personal',
   'Advanced_Monthly': 'avanzado',
@@ -18,7 +22,6 @@ const PRODUCT_ID_TO_PLAN: Record<string, string> = {
   'Producer_Yearly': 'productor',
   'Herd_Monthly': 'cabana',
   'Herd_Yearly': 'cabana',
-  // Legacy product IDs (kept for backward compatibility)
   'prodc6836489e3': 'personal',
   'prodc8d8f05de3': 'personal',
   'prodc70244af0c': 'avanzado',
@@ -28,6 +31,17 @@ const PRODUCT_ID_TO_PLAN: Record<string, string> = {
   'prod303c757d05': 'cabana',
   'prodf140665f04': 'cabana',
 };
+
+/** Verify a signed JWT from Apple using their public JWKS */
+async function verifyAppleJWT(signedPayload: string): Promise<any> {
+  try {
+    const { payload } = await jose.jwtVerify(signedPayload, APPLE_JWKS);
+    return payload;
+  } catch (error) {
+    console.error('Apple JWT verification failed:', error);
+    throw new Error('Invalid Apple JWT signature');
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -40,33 +54,29 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { signedPayload } = await req.json();
+
+    if (!signedPayload || typeof signedPayload !== 'string') {
+      return new Response('Bad Request: missing signedPayload', { status: 400, headers: corsHeaders });
+    }
+
     console.log('Received Apple webhook notification');
 
-    // Verify JWT signature from Apple (simplified - in production use proper verification)
-    let payload: any;
-    try {
-      const decoded = jose.decodeJwt(signedPayload);
-      payload = decoded;
-      console.log('Decoded payload:', JSON.stringify(payload, null, 2));
-    } catch (error) {
-      console.error('Failed to decode JWT:', error);
-      throw new Error('Invalid signature');
-    }
+    // Cryptographically verify the JWT signature against Apple's JWKS
+    const payload = await verifyAppleJWT(signedPayload);
+    console.log('Verified payload notification type:', payload.notificationType);
 
     const notificationType = payload.notificationType;
     const data = payload.data || {};
     const transactionInfo = data.signedTransactionInfo;
-    
-    console.log('Notification type:', notificationType);
 
-    // Decode transaction info if present
+    // Decode and verify transaction info if present
     let transaction: any = {};
     if (transactionInfo) {
       try {
-        transaction = jose.decodeJwt(transactionInfo);
-        console.log('Transaction info:', JSON.stringify(transaction, null, 2));
+        transaction = await verifyAppleJWT(transactionInfo);
+        console.log('Verified transaction productId:', transaction.productId);
       } catch (error) {
-        console.error('Failed to decode transaction:', error);
+        console.error('Failed to verify transaction JWT:', error);
       }
     }
 
@@ -86,7 +96,6 @@ serve(async (req) => {
 
     if (customerError || !customer) {
       console.error('Customer not found for transaction ID:', originalTransactionId);
-      // Still return 200 to acknowledge receipt
       return new Response('OK', { status: 200, headers: corsHeaders });
     }
 
@@ -95,11 +104,9 @@ serve(async (req) => {
     // Map product ID to product code
     let productCode = 'free';
     if (productId) {
-      // Direct lookup in our product ID map
       if (PRODUCT_ID_TO_PLAN[productId]) {
         productCode = PRODUCT_ID_TO_PLAN[productId];
       } else {
-        // Fallback to string matching for legacy or unknown products
         console.log('Product ID not found in map, using fallback matching:', productId);
         if (productId.includes('personal')) productCode = 'personal';
         else if (productId.includes('avanzado') || productId.includes('advanced')) productCode = 'avanzado';
@@ -111,7 +118,6 @@ serve(async (req) => {
     
     console.log('Mapped product ID', productId, 'to product code:', productCode);
 
-    // Handle different notification types
     switch (notificationType) {
       case 'SUBSCRIBED':
       case 'DID_RENEW':
@@ -145,7 +151,6 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Apple webhook error:', error);
-    // Always return 200 to acknowledge receipt, even on error
     return new Response('OK', { status: 200, headers: corsHeaders });
   }
 });
@@ -193,7 +198,6 @@ async function expireSubscription(supabase: any, cabanaId: string) {
 }
 
 async function handleRefund(supabase: any, cabanaId: string, transaction: any) {
-  // Record refund payment
   const { error: paymentError } = await supabase
     .from('billing_payments')
     .insert({
@@ -208,6 +212,5 @@ async function handleRefund(supabase: any, cabanaId: string, transaction: any) {
     console.error('Failed to record refund:', paymentError);
   }
 
-  // Cancel subscription
   await expireSubscription(supabase, cabanaId);
 }

@@ -1,37 +1,43 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const CreateUserSchema = z.object({
+  email: z.string().email().max(255),
+  password: z.string().min(8).max(128),
+  fullName: z.string().min(1).max(100).trim(),
+  role: z.enum(['admin', 'employee', 'read_only']),
+  requesterId: z.string().uuid(),
+});
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Create admin client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { email, password, fullName, role, requesterId } = await req.json()
+    const body = await req.json();
+    const parsed = CreateUserSchema.safeParse(body);
 
-    // Validate input
-    if (!email || !password || !fullName || !role) {
+    if (!parsed.success) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        JSON.stringify({ error: 'Invalid input', details: parsed.error.flatten().fieldErrors }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
+
+    const { email, password, fullName, role, requesterId } = parsed.data;
 
     // Verify that the requester is an admin
     const { data: requesterRole, error: roleError } = await supabaseAdmin
@@ -41,10 +47,7 @@ serve(async (req) => {
       console.error('Authorization error:', roleError)
       return new Response(
         JSON.stringify({ error: 'Unauthorized - admin access required' }),
-        { 
-          status: 403, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -53,10 +56,8 @@ serve(async (req) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds.toString())
 
     // Create user with admin privileges using direct SQL insert
-    // First create auth user
     const userId = crypto.randomUUID();
     
-    // Insert directly into auth.users using service role
     const { error: createError } = await supabaseAdmin
       .from('auth.users')
       .insert({
@@ -77,7 +78,6 @@ serve(async (req) => {
     const userData = { id: userId, email, user_metadata: { full_name: fullName } };
 
     if (userData) {
-      // Create user role
       const { error: roleInsertError } = await supabaseAdmin
         .from('user_roles')
         .insert({
@@ -88,26 +88,22 @@ serve(async (req) => {
 
       if (roleInsertError) {
         console.error('Role insertion error:', roleInsertError)
-        // If role creation fails, cleanup the user
         await supabaseAdmin.from('auth.users').delete().eq('id', userData.id)
         throw roleInsertError
       }
 
-      // Store hashed password for admin access
       const { error: passwordError } = await supabaseAdmin
         .from('user_passwords')
         .insert({
           user_id: userData.id,
-          password_text: hashedPassword, // Store hashed password
+          password_text: hashedPassword,
           created_by: requesterId
         })
 
       if (passwordError) {
         console.error('Error storing password:', passwordError)
-        // Don't fail the entire operation if password storage fails
       }
 
-      // Log security event
       await supabaseAdmin.rpc('log_security_event', {
         _action: 'user_created',
         _table_name: 'users',
@@ -118,19 +114,14 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, user: userData }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
   } catch (error) {
     console.error('Error in create-user function:', error)
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      { 
-        status: 400, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
