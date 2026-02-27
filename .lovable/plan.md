@@ -1,73 +1,105 @@
 
-# Fix In-App Purchase Not Triggering on Native (iOS/TestFlight)
+Objetivo: corregir el flujo de compra nativa (TestFlight) para que al tocar un plan sí aparezca la hoja de pago de Apple/Google, manteniendo MercadoPago solo en web y sin permitir activaciones sin pago.
 
-## Root Causes Found
+Lo que encontré en el código actual (causas probables del error inmediato):
+1) Flujo fragmentado de compras
+- Hay lógica de compra repartida en `Plans.tsx`, `SubscriptionPlansModal.tsx`, `ReadOnlyModeModal.tsx` y `RevenueCatPaywall.tsx`.
+- No todos usan el mismo camino (algunos llaman `revenueCatService` directo, otros `usePlatformPurchase`), lo que genera comportamientos distintos y errores difíciles de rastrear.
 
-After tracing the full purchase flow across both screens (Plans page and SubscriptionPlansModal), I identified **5 issues** preventing the Apple purchase sheet from appearing:
+2) Detección de plataforma frágil
+- `usePlatformPurchase` define `const platform = detectPlatform()` al render del hook y luego lo reutiliza; si esa detección inicial falla o queda desfasada, puede rutear mal.
+- `detectPlatform()` hace fallback por user-agent y puede devolver `ios/android` en contextos web iPhone/Android, lo cual es riesgoso para compras nativas.
 
-### 1. RevenueCat initialization failure is silent
-`revenueCatService.configure()` can fail, leaving `initialized = false`. Every subsequent purchase call throws `"RevenueCat not initialized"` -- but the error gets caught without clear user feedback. The `RevenueCatProvider` sets `isConfigured = true` even when configuration fails, masking the problem.
+3) Inicialización de RevenueCat poco estricta
+- `revenueCatService.configure()` atrapa errores y no los relanza; eso oculta fallas reales.
+- `RevenueCatProvider` marca `isConfigured=true` incluso cuando la configuración falla.
+- `ensureInitialized()` en no-nativo hace `return` (no error), permitiendo que se intente usar `Purchases.*` fuera de contexto.
 
-### 2. No initialization guard before purchase attempts
-Both `Plans.tsx` and `SubscriptionPlansModal` call `revenueCatService.purchasePackage()` / `purchaseProduct()` directly without first checking if the SDK is actually ready. These methods throw immediately if not initialized.
+4) Carga de offerings bloqueada por estado interno
+- `useEntitlements` exige `revenueCatService.isInitialized()` antes de cargar; si hubo un fallo inicial y luego recuperación, puede quedarse sin offerings cargados/reintentos.
 
-### 3. Free plan crashes native purchase flow
-Selecting the "free" plan on native calls `getAppStoreProductId('free', billingCycle)` which returns `''`, causing an immediate throw with no useful feedback.
+5) Síntoma del usuario coincide con ruta de error genérica
+- El mensaje “Error en la compra…” viene de `usePlatformPurchase`, consistente con fallo previo a abrir la hoja de pago.
 
-### 4. Backend edge functions have stale product ID mappings
-`sync-ios-purchase` and `apple-webhook` still reference OLD product IDs (`prodc6836489e3`, etc.) from a previous configuration. The new product IDs (`Personal_Monthly`, `Producer_Monthly`, etc.) won't match. The fallback string matching partially works but is fragile.
+Plan de implementación (sin romper reglas del proyecto):
+Paso 1: Unificar el flujo de compra en un solo punto
+- Centralizar la ejecución real de compra en `usePlatformPurchase.initiatePurchase`.
+- Hacer que `Plans.tsx`, `SubscriptionPlansModal.tsx`, `ReadOnlyModeModal.tsx` y `RevenueCatPaywall.tsx` usen ese flujo unificado.
+- Mantener la regla:
+  - Nativo iOS/Android: RevenueCat -> App Store / Google Play.
+  - Web: MercadoPago.
 
-### 5. SubscriptionPlansModal hardcodes `platform: 'ios'`
-Line 122 always passes `platform: 'ios'` regardless of actual device.
+Archivos:
+- `src/hooks/usePlatformPurchase.tsx`
+- `src/pages/Plans.tsx`
+- `src/components/subscription/SubscriptionPlansModal.tsx`
+- `src/components/subscription/ReadOnlyModeModal.tsx`
+- `src/components/subscription/RevenueCatPaywall.tsx`
 
----
+Paso 2: Endurecer detección de plataforma para compras
+- Para decisiones de pago, priorizar solo `Capacitor.isNativePlatform()` + `Capacitor.getPlatform()`.
+- Evitar fallback por user-agent en lógica crítica de pago.
+- Resolver plataforma “en el momento del click”, no sólo al render inicial del hook.
 
-## Plan
+Archivo:
+- `src/lib/platformDetection.ts`
+- `src/hooks/usePlatformPurchase.tsx`
 
-### Step 1: Add initialization check + auto-retry to `revenueCatService.ts`
-- Add an `ensureInitialized()` method that attempts to configure if not yet initialized
-- Use it in `purchasePackage()`, `purchaseProduct()`, `getOfferings()`, and `getCustomerInfo()` instead of just throwing
-- Add detailed console logging at each step for device-side debugging
+Paso 3: Hacer explícitas las fallas de inicialización RevenueCat
+- En `revenueCatService.configure()`, relanzar errores críticos (no tragarlos silenciosamente).
+- En `ensureInitialized()`, si no es entorno nativo y se intenta compra nativa, lanzar error claro.
+- Validar `productId` vacío antes de llamar SDK.
+- Enriquecer logs (código, dominio, mensaje y detalles serializados de error nativo).
 
-### Step 2: Fix `Plans.tsx` purchase flow
-- Skip purchase flow for the free plan (just navigate to dashboard)
-- Add a check: if `revenueCatService` is not initialized, show a user-visible error toast instead of silently failing
-- Log the full error object (not just `error?.message`) for debugging on device
+Archivo:
+- `src/services/revenueCatService.ts`
 
-### Step 3: Fix `SubscriptionPlansModal.tsx`
-- Use `detectPlatform()` instead of hardcoded `'ios'`
-- Add the same initialization guard and free plan handling
+Paso 4: Corregir el estado de “configured” y reintentos reales
+- `RevenueCatProvider` debe reflejar estado real de configuración (no “true” si falló).
+- `useEntitlements` debe permitir reintentos de `getOfferings/getCustomerInfo` apoyándose en `ensureInitialized()` en vez de bloquear por `isInitialized()` local.
 
-### Step 4: Update backend product ID mappings
-Update both `sync-ios-purchase/index.ts` and `apple-webhook/index.ts` to include the **new** product IDs alongside the old ones:
+Archivos:
+- `src/providers/RevenueCatProvider.tsx`
+- `src/hooks/useEntitlements.tsx`
 
-```text
-'Personal_Monthly'  -> 'personal'
-'Personal_Yearly'   -> 'personal'
-'Advanced_Monthly'  -> 'avanzado'
-'Advanced_Yearly'   -> 'avanzado'
-'Producer_Monthly'  -> 'productor'
-'Producer_Yearly'   -> 'productor'
-'Herd_Monthly'      -> 'cabana'
-'Herd_Yearly'       -> 'cabana'
-```
+Paso 5: Mensajes de error útiles para soporte
+- Diferenciar errores:
+  - cancelación del usuario,
+  - producto no encontrado,
+  - tienda no disponible / configuración nativa faltante,
+  - RevenueCat no inicializado.
+- Mostrar texto accionable para usuario final y dejar detalle técnico en consola.
 
-### Step 5: Expose `isConfigured` status to Plans page
-- Pass `isConfigured` from `useRevenueCat()` to the Plans page so it can show a loading state or warning when RevenueCat isn't ready yet
+Archivos:
+- `src/hooks/usePlatformPurchase.tsx`
+- componentes de planes/paywall que muestran toast
 
----
+Paso 6: Verificación funcional obligatoria (incluye E2E)
+1. iOS TestFlight:
+- Abrir `/plans` y modal de suscripción.
+- Tocar plan mensual y anual.
+- Confirmar que aparece hoja de pago nativa.
+- Cancelar: no debe mostrar error destructivo.
+- Completar compra sandbox: debe actualizar estado premium.
 
-## Files to Modify
+2. Web:
+- Seleccionar plan en `/plans` y modal.
+- Debe abrir MercadoPago (sin tocar App Store/Google Play).
 
-| File | Change |
-|------|--------|
-| `src/services/revenueCatService.ts` | Add `ensureInitialized()` with auto-retry; use it in purchase/offerings methods |
-| `src/pages/Plans.tsx` | Handle free plan; add RC init guard; improve error logging |
-| `src/components/subscription/SubscriptionPlansModal.tsx` | Use `detectPlatform()`; add init guard |
-| `supabase/functions/sync-ios-purchase/index.ts` | Add new product ID mappings |
-| `supabase/functions/apple-webhook/index.ts` | Add new product ID mappings |
+3. Seguridad/facturación:
+- Verificar que nadie puede activar plan sin pago (RPC restringida sigue intacta).
+- Confirmar que no se alteran límites, trial ni nombres de planes.
 
-## Risk Assessment
-- No database changes, no route changes, no plan limits altered
-- Edge function changes are additive (old IDs preserved alongside new)
-- Existing behavior preserved; only adds guards, logging, and correct mappings
+4. Regresión guardrails:
+- No cambios en rutas críticas (`/actividades`, `/animales`).
+- Sin cambios globales de estilo.
+- Sin cambios destructivos de DB/políticas.
+
+Riesgo y mitigación:
+- Riesgo principal: romper alguna de las entradas actuales de compra al unificar.
+- Mitigación: unificar con una interfaz común mínima y mantener los mismos IDs de planes/productos existentes (`Personal_Monthly`, `Advanced_*`, `Producer_*`, `Herd_*`), más pruebas E2E en TestFlight y web antes de cerrar.
+
+Resultado esperado después del cambio:
+- En TestFlight, tocar un plan abrirá flujo de compra nativo en vez de caer directo en toast de error.
+- En web, seguirá MercadoPago.
+- Sin posibilidad de “activar plan sin pagar”.
