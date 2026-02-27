@@ -130,7 +130,8 @@ export const usePlatformPurchase = () => {
     const { data: response, error } = await supabase.functions.invoke('mp-sub-create-link', {
       body: {
         cabanaId: session?.user?.id,
-        productCode: data.planId
+        productCode: data.planId,
+        payerEmail: session?.user?.email
       }
     });
 
