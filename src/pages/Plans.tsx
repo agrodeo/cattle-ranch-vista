@@ -9,7 +9,7 @@ import { CompareSheet } from '@/components/subscription/CompareSheet';
 import { StickyFooterCTA } from '@/components/subscription/StickyFooterCTA';
 import { FAQAccordion } from '@/components/subscription/FAQAccordion';
 import { useToast } from '@/hooks/use-toast';
-import { isNativeApp } from '@/lib/platformDetection';
+import { isNativeApp, isDespiaRuntime } from '@/lib/platformDetection';
 import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
 
 export type BillingCycle = 'monthly' | 'annual';
@@ -82,7 +82,7 @@ export default function Plans() {
   const [loading, setLoading] = useState(false);
   
   const { initiatePurchase, restorePurchases } = usePlatformPurchase();
-  const isNative = isNativeApp();
+  const isNative = isNativeApp() || isDespiaRuntime();
   
   const PLANS_DATA = getPlanData(t);
   const displayPlans = PLANS_DATA;
