@@ -99,7 +99,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
   const { t } = useTranslation('subscription');
   const [isAnnual, setIsAnnual] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
-  const { subscriptionStatus, upgradePlan, fetchSubscriptionStatus } = useSubscription();
+  const { subscriptionStatus, fetchSubscriptionStatus } = useSubscription();
   const { initiatePurchase } = usePlatformPurchase();
   const isNative = isNativeApp();
   
@@ -132,8 +132,12 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
         onOpenChange(false);
       } else {
         // Use web payment (MercadoPago) for web users
-        const success = await upgradePlan(planId as any);
-        if (success) {
+        const result = await initiatePurchase({
+          planId,
+          billingCycle,
+          platform: 'web'
+        });
+        if (result?.success) {
           onOpenChange(false);
         }
       }
