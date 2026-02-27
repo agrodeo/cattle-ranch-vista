@@ -34,6 +34,7 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
         setIsConfigured(true);
       } catch (error) {
         console.error('Failed to configure RevenueCat:', error);
+        // Still set configured so the app doesn't block — ensureInitialized will retry on purchase
         setIsConfigured(true);
       }
     };

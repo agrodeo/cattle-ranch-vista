@@ -9,19 +9,24 @@ const corsHeaders = {
 
 // Map RevenueCat product IDs to internal plan codes
 const PRODUCT_ID_TO_PLAN: Record<string, string> = {
-  // Personal
+  // New RevenueCat product IDs
+  'Personal_Monthly': 'personal',
+  'Personal_Yearly': 'personal',
+  'Advanced_Monthly': 'avanzado',
+  'Advanced_Yearly': 'avanzado',
+  'Producer_Monthly': 'productor',
+  'Producer_Yearly': 'productor',
+  'Herd_Monthly': 'cabana',
+  'Herd_Yearly': 'cabana',
+  // Legacy product IDs (kept for backward compatibility)
   'prodc6836489e3': 'personal',
   'prodc8d8f05de3': 'personal',
-  // Avanzado (Advanced)
   'prodc70244af0c': 'avanzado',
   'prod089fc06f3e': 'avanzado',
-  // Productor (Producer)
   'prod994aa82559': 'productor',
   'prod698531dc0f': 'productor',
-  // Cabaña (Herd)
   'prod303c757d05': 'cabana',
   'prodf140665f04': 'cabana',
-  // Corporativo - TODO: Add when available
 };
 
 serve(async (req) => {

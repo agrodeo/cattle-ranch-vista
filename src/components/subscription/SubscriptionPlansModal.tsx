@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Check, X, Users, Zap, Crown, Building2, Briefcase, Loader2 } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePlatformPurchase } from "@/hooks/usePlatformPurchase";
-import { isNativeApp } from "@/lib/platformDetection";
+import { isNativeApp, detectPlatform } from "@/lib/platformDetection";
+import { getAppStoreProductId } from "@/config/appStoreProducts";
+import { revenueCatService } from "@/services/revenueCatService";
 import { toast } from "sonner";
 
 interface SubscriptionPlansModalProps {
@@ -105,28 +107,29 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
 
   const handleSelectPlan = async (planId: string) => {
     if (planId === 'corporativo') {
-      // Handle corporate plan contact
       window.open('mailto:ventas@agrodeo.com?subject=Plan Corporativo', '_blank');
       return;
     }
 
     setIsPurchasing(true);
+    const billingCycle = isAnnual ? 'annual' : 'monthly';
+    const platform = detectPlatform();
     
     try {
       if (isNative) {
-        // Use RevenueCat for iOS/Android purchases
-        const result = await initiatePurchase({
-          planId,
-          billingCycle: isAnnual ? 'annual' : 'monthly',
-          platform: 'ios'
-        });
-        
-        // Only proceed if purchase was successful
-        if (result?.success) {
-          await fetchSubscriptionStatus();
-          toast.success(t('plansModal.purchaseSuccess', 'Suscripción activada exitosamente'));
-          onOpenChange(false);
+        // Map internal plan ID to App Store product ID
+        const productId = getAppStoreProductId(planId as any, billingCycle);
+        console.log('[SubscriptionModal] Native purchase: planId=', planId, 'productId=', productId);
+
+        if (!productId) {
+          throw new Error(`No product ID configured for plan: ${planId}`);
         }
+
+        // Use RevenueCat to purchase
+        await revenueCatService.purchaseProduct(productId);
+        await fetchSubscriptionStatus();
+        toast.success(t('plansModal.purchaseSuccess', 'Suscripción activada exitosamente'));
+        onOpenChange(false);
       } else {
         // Use web payment (MercadoPago) for web users
         const success = await upgradePlan(planId as any);
@@ -135,11 +138,12 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
         }
       }
     } catch (error: any) {
-      console.error('Purchase error:', error);
+      console.error('[SubscriptionModal] Purchase error:', error);
       // Don't show error for user cancellation
-      if (!error.message?.includes('cancelled') && !error.message?.includes('canceled')) {
-        toast.error(t('plansModal.purchaseError', 'Error al procesar la compra'));
+      if (error?.userCancelled || error?.cancelled || error?.code === 'PURCHASE_CANCELLED' || error?.code === 1) {
+        return;
       }
+      toast.error(t('plansModal.purchaseError', 'Error al procesar la compra'));
     } finally {
       setIsPurchasing(false);
     }
