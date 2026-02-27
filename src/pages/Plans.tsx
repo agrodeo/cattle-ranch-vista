@@ -114,20 +114,22 @@ export default function Plans() {
     console.log('Event: purchase_started', { plan: selectedPlan.id, billingCycle });
 
     try {
-      // Unified: initiatePurchase resolves platform internally
-      await initiatePurchase({
+      const result = await initiatePurchase({
         planId: selectedPlan.id,
         billingCycle,
       });
 
-      console.log('Event: purchase_succeeded', { plan: selectedPlan.id, billingCycle });
-      
-      toast({
-        title: t('subscription:plansPage.subscriptionActive'),
-        description: t('subscription:plansPage.planActivated'),
-      });
-      
-      navigate('/dashboard');
+      if (result?.success) {
+        console.log('Event: purchase_succeeded', { plan: selectedPlan.id, billingCycle });
+        toast({
+          title: t('subscription:plansPage.subscriptionActive'),
+          description: t('subscription:plansPage.planActivated'),
+        });
+        navigate('/dashboard');
+      } else if (result?.pending) {
+        console.log('Event: purchase_pending', { plan: selectedPlan.id, billingCycle });
+        // MercadoPago flow — user completes externally
+      }
     } catch (error: any) {
       // User cancellation — no error toast (already handled by usePlatformPurchase)
       if (error?.cancelled || error?.userCancelled || error?.code === 'PURCHASE_CANCELLED' || error?.code === 1) {

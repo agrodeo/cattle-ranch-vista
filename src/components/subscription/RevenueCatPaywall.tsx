@@ -29,14 +29,15 @@ export function RevenueCatPaywall({
     setLoading(pkg.identifier);
     
     try {
-      // Use the unified purchase flow — it handles native vs web internally
-      await initiatePurchase({
+      const result = await initiatePurchase({
         planId: pkg.product.identifier,
         billingCycle: pkg.identifier.toLowerCase().includes('annual') || pkg.identifier.toLowerCase().includes('year') ? 'annual' : 'monthly',
       });
       
-      onPurchaseComplete?.();
-      onOpenChange(false);
+      if (result?.success) {
+        onPurchaseComplete?.();
+        onOpenChange(false);
+      }
     } catch (error: any) {
       if (error?.cancelled || error?.userCancelled) {
         return;

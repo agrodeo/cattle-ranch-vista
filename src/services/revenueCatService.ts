@@ -16,6 +16,7 @@ import {
 } from '@revenuecat/purchases-capacitor';
 import { Capacitor } from '@capacitor/core';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
+import { isDespiaRuntime } from '@/lib/platformDetection';
 
 class RevenueCatService {
   private initialized = false;
@@ -30,7 +31,7 @@ class RevenueCatService {
   private async ensureInitialized(): Promise<void> {
     if (this.initialized) return;
     
-    if (!Capacitor.isNativePlatform()) {
+    if (!Capacitor.isNativePlatform() && !isDespiaRuntime()) {
       throw new Error('RevenueCat is only available on native platforms (iOS/Android).');
     }
     
@@ -51,7 +52,7 @@ class RevenueCatService {
    * Returns true if configuration succeeded, false otherwise.
    */
   async configure(userId?: string): Promise<boolean> {
-    if (!Capacitor.isNativePlatform()) {
+    if (!Capacitor.isNativePlatform() && !isDespiaRuntime()) {
       console.log('[RevenueCat] Not a native platform, skipping');
       return false;
     }
@@ -64,8 +65,16 @@ class RevenueCatService {
       return this.initialized;
     }
     
-    // Get platform-specific API key
-    const platform = Capacitor.getPlatform();
+    // Get platform-specific API key — check Capacitor first, fall back to Despia detection
+    let platform = Capacitor.getPlatform();
+    
+    // If Capacitor reports 'web' but we're in Despia, infer from user agent
+    if (platform === 'web' && isDespiaRuntime()) {
+      const ua = navigator.userAgent.toLowerCase();
+      if (/iphone|ipad|ipod/.test(ua)) platform = 'ios';
+      else if (/android/.test(ua)) platform = 'android';
+    }
+    
     let apiKey: string | undefined;
     
     const REVENUECAT_IOS_KEY = 'appl_UBiuqNanQpBmPXTYgwPDzNSzznY';

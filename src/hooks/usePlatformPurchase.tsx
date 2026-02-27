@@ -1,17 +1,38 @@
 import { useState } from 'react';
-import { isNativeApp, getNativePlatform } from '@/lib/platformDetection';
+import { isNativeApp, getNativePlatform, isCapacitorNative, isDespiaRuntime } from '@/lib/platformDetection';
 import { revenueCatService } from '@/services/revenueCatService';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEntitlements } from '@/hooks/useEntitlements';
-import { getAppStoreProductId } from '@/config/appStoreProducts';
+import { getAppStoreProductId, type PlanId } from '@/config/appStoreProducts';
 
 export interface PurchaseData {
   planId: string;
   billingCycle: 'monthly' | 'annual';
   platform?: string; // ignored — platform is resolved at click-time
 }
+
+export interface PurchaseResult {
+  success: boolean;
+  pending?: boolean;
+}
+
+// Known plan keys that need mapping to store product IDs
+const KNOWN_PLAN_KEYS = ['personal', 'avanzado', 'productor', 'cabana', 'corporativo'];
+
+/**
+ * Resolve a planId to a store product ID.
+ * If it's a known plan key (e.g. "personal"), map via appStoreProducts.
+ * If it's already a product ID (e.g. "Personal_Monthly"), return as-is.
+ */
+const resolveProductId = (planId: string, billingCycle: 'monthly' | 'annual'): string => {
+  if (KNOWN_PLAN_KEYS.includes(planId)) {
+    return getAppStoreProductId(planId as PlanId, billingCycle);
+  }
+  // Already a product identifier (from RevenueCat paywall)
+  return planId;
+};
 
 export const usePlatformPurchase = () => {
   const [loading, setLoading] = useState(false);
@@ -23,31 +44,42 @@ export const usePlatformPurchase = () => {
    * Unified purchase entry point.
    * Resolves platform at call-time (not render-time) for safety.
    */
-  const initiatePurchase = async (purchaseData: PurchaseData) => {
-    // Resolve platform RIGHT NOW, not from cached state
+  const initiatePurchase = async (purchaseData: PurchaseData): Promise<PurchaseResult> => {
     const native = isNativeApp();
+    const capacitorNative = isCapacitorNative();
+    const despia = isDespiaRuntime();
     const nativePlatform = getNativePlatform();
     
     console.log('[Purchase] initiatePurchase called', {
       planId: purchaseData.planId,
       billingCycle: purchaseData.billingCycle,
       native,
-      nativePlatform
+      capacitorNative,
+      despia,
+      nativePlatform,
+      hostname: window.location.hostname,
+      bundleNumber: (window as any).bundleNumber,
     });
     
     setLoading(true);
     
     try {
-      let result;
-      if (native && (nativePlatform === 'ios' || nativePlatform === 'android')) {
-        console.log(`[Purchase] Routing to ${nativePlatform} native purchase flow`);
-        result = await purchaseNative(purchaseData, nativePlatform);
-      } else {
-        console.log('[Purchase] Routing to Web purchase flow (MercadoPago)');
-        result = await purchaseWeb(purchaseData);
+      // Route 1: Capacitor native bridge available → RevenueCat native
+      if (capacitorNative && (nativePlatform === 'ios' || nativePlatform === 'android')) {
+        console.log(`[Purchase] Route: Capacitor native (${nativePlatform})`);
+        return await purchaseNative(purchaseData, nativePlatform);
       }
-      console.log('[Purchase] Purchase result:', result);
-      return result;
+      
+      // Route 2: Despia runtime (no Capacitor bridge) → still try RevenueCat
+      // RevenueCat Capacitor plugin may work via Despia's bridge
+      if (despia && (nativePlatform === 'ios' || nativePlatform === 'android')) {
+        console.log(`[Purchase] Route: Despia native (${nativePlatform})`);
+        return await purchaseNative(purchaseData, nativePlatform);
+      }
+      
+      // Route 3: Web → MercadoPago
+      console.log('[Purchase] Route: Web (MercadoPago)');
+      return await purchaseWeb(purchaseData);
     } catch (error: any) {
       console.error('[Purchase] Purchase failed:', {
         message: error?.message,
@@ -74,6 +106,8 @@ export const usePlatformPurchase = () => {
         description = 'Producto no encontrado. Intenta cerrar y reabrir la app.';
       } else if (error?.message?.includes('failed to initialize')) {
         description = 'No se pudo conectar con la tienda. Verifica tu conexión a internet.';
+      } else if (error?.message?.includes('only available on native')) {
+        description = 'La compra nativa no está disponible en este entorno.';
       }
       
       toast({
@@ -90,15 +124,14 @@ export const usePlatformPurchase = () => {
   /**
    * Native purchase flow (iOS / Android) via RevenueCat
    */
-  const purchaseNative = async (data: PurchaseData, nativePlatform: 'ios' | 'android') => {
-    const productId = getAppStoreProductId(data.planId as any, data.billingCycle);
-    console.log('[Purchase:Native] productId resolved:', productId, 'platform:', nativePlatform);
+  const purchaseNative = async (data: PurchaseData, nativePlatform: 'ios' | 'android'): Promise<PurchaseResult> => {
+    const productId = resolveProductId(data.planId, data.billingCycle);
+    console.log('[Purchase:Native] productId resolved:', productId, 'from planId:', data.planId);
 
     if (!productId) {
       throw new Error(`No product ID configured for plan: ${data.planId} (${data.billingCycle})`);
     }
 
-    // purchaseProduct calls ensureInitialized() internally — will auto-retry config
     const customerInfo = await revenueCatService.purchaseProduct(productId);
     console.log('[Purchase:Native] purchase succeeded, syncing with backend...');
 
@@ -118,7 +151,6 @@ export const usePlatformPurchase = () => {
       console.error('[Purchase:Native] Failed to sync purchase with backend:', syncError);
     }
 
-    // Refresh entitlements
     await refreshCustomerInfo();
 
     toast({
@@ -129,31 +161,27 @@ export const usePlatformPurchase = () => {
     return { success: true };
   };
 
-  const purchaseWeb = async (data: PurchaseData) => {
-    try {
-      const { data: response, error } = await supabase.functions.invoke('mp-sub-create-link', {
-        body: {
-          cabanaId: session?.user?.id,
-          productCode: data.planId
-        }
-      });
-
-      if (error) throw error;
-
-      if (response?.init_point) {
-        window.open(response.init_point, '_blank');
-        toast({
-          title: "Redirigiendo a Mercado Pago",
-          description: "Completa tu pago en la ventana que se abrió.",
-        });
-        return { success: true };
+  const purchaseWeb = async (data: PurchaseData): Promise<PurchaseResult> => {
+    const { data: response, error } = await supabase.functions.invoke('mp-sub-create-link', {
+      body: {
+        cabanaId: session?.user?.id,
+        productCode: data.planId
       }
-      
-      throw new Error('No se recibió el link de pago');
-    } catch (error) {
-      console.error('[Purchase:Web] Mercado Pago error:', error);
-      throw error;
+    });
+
+    if (error) throw error;
+
+    const paymentUrl = response?.url || response?.init_point;
+    if (paymentUrl) {
+      window.open(paymentUrl, '_blank');
+      toast({
+        title: "Redirigiendo a Mercado Pago",
+        description: "Completa tu pago en la ventana que se abrió.",
+      });
+      return { success: false, pending: true };
     }
+    
+    throw new Error('No se recibió el link de pago');
   };
 
   const restorePurchases = async () => {
@@ -169,7 +197,6 @@ export const usePlatformPurchase = () => {
     try {
       const customerInfo = await revenueCatService.restorePurchases();
       
-      // Sync with backend
       try {
         await supabase.functions.invoke('sync-ios-purchase', {
           body: { 
