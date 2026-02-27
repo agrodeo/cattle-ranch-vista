@@ -8,6 +8,7 @@ const corsHeaders = {
 interface CreateLinkRequest {
   cabanaId: string
   productCode: string
+  payerEmail?: string
 }
 
 interface MercadoPagoPreapprovalResponse {
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { cabanaId, productCode }: CreateLinkRequest = await req.json()
+    const { cabanaId, productCode, payerEmail }: CreateLinkRequest = await req.json()
 
     if (!cabanaId || !productCode) {
       return new Response(
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
     const preapprovalPayload = {
       reason: `Suscripción ${priceData.product_code} - agrodeo`,
       external_reference: externalReference,
-      payer_email: "", // Will be filled by user during checkout
+      payer_email: payerEmail || "",
       back_url: `${appBaseUrl}/billing/success`,
       auto_recurring: {
         frequency: 1,
