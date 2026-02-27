@@ -13,6 +13,8 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+console.log('🚀 App starting | href:', window.location.href, '| pathname:', window.location.pathname, '| origin:', window.location.origin);
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <App />
