@@ -13,7 +13,7 @@ import { CapacitorConfig } from '@capacitor/cli';
  * 4. Build for iOS/Android
  */
 const config: CapacitorConfig = {
-  appId: 'app.lovable.7240114acf5f4b1cbc891b5d3e2a51f9',
+  appId: 'com.agrodeo.app',
   appName: 'AgroDeo',
   webDir: 'dist',
   // NO server.url - loads from local bundle for true offline support
