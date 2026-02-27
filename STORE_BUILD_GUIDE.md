@@ -26,8 +26,8 @@ VITE_REVENUECAT_API_KEY_ANDROID=your_android_api_key
 ```
 
 **In RevenueCat Dashboard:**
-1. Create an iOS app with Bundle ID: `app.lovable.7240114acf5f4b1cbc891b5d3e2a51f9`
-2. Create an Android app with Package Name: `app.lovable.7240114acf5f4b1cbc891b5d3e2a51f9`
+1. Create an iOS app with Bundle ID: `com.agrodeo.app`
+2. Create an Android app with Package Name: `com.agrodeo.app`
 3. Copy the public SDK keys for each platform
 
 ## 2. Build the Web Bundle
@@ -79,7 +79,7 @@ npx cap open ios
 1. Select the `App` target
 2. Go to **Signing & Capabilities**
 3. Select your Team
-4. Ensure Bundle Identifier is: `app.lovable.7240114acf5f4b1cbc891b5d3e2a51f9`
+4. Ensure Bundle Identifier is: `com.agrodeo.app`
 
 ### 4.4 Configure In-App Purchases
 
