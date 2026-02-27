@@ -13,6 +13,7 @@ import { useEntitlements } from '@/hooks/useEntitlements';
 import { revenueCatService } from '@/services/revenueCatService';
 import { detectPlatform, isNativeApp } from '@/lib/platformDetection';
 import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
+import { getAppStoreProductId } from '@/config/appStoreProducts';
 
 export type BillingCycle = 'monthly' | 'annual';
 export type Platform = 'web' | 'ios' | 'android';
@@ -94,23 +95,9 @@ export default function Plans() {
   
   const PLANS_DATA = getPlanData(t);
   
-  // Get real packages from RevenueCat if available
+  // Always use our internal PLANS_DATA for display — RevenueCat packages are used only for purchase execution
   const realPackages = offerings?.current?.availablePackages || [];
-  
-  // Use real offerings if available on native, otherwise use PLANS_DATA for web
-  const displayPlans = isNative && realPackages.length > 0 
-    ? realPackages.map(pkg => {
-        const id = pkg.identifier.toLowerCase();
-        return {
-          id: pkg.identifier,
-          nombre: id.includes('lifetime') ? t('subscription:plansPage.free') : id.includes('year') ? t('subscription:plansModal.annual') : t('subscription:plansModal.monthly'),
-          precio_mensual: pkg.product.price,
-          precio_anual: pkg.product.price,
-          bullets: [pkg.product.title, pkg.product.description],
-          badge: id.includes('year') ? t('subscription:plansModal.mostPopular') : undefined
-        } as Plan;
-      })
-    : PLANS_DATA;
+  const displayPlans = PLANS_DATA;
 
   const handlePlanSelect = (plan: Plan) => {
     setSelectedPlan(plan);
@@ -138,23 +125,25 @@ export default function Plans() {
 
     try {
       if (isNative) {
-        // Try to find a matching RevenueCat package first
-        const pkg = realPackages.find(p => p.identifier === selectedPlan.id);
-        if (pkg) {
-          await revenueCatService.purchasePackage(pkg);
-          await refreshCustomerInfo();
-        } else {
-          // Fallback: use platform purchase with product ID mapping
-          console.log('[Plans] No RevenueCat package match, using initiatePurchase fallback', { planId: selectedPlan.id });
-          const result = await initiatePurchase({
-            planId: selectedPlan.id as any,
-            billingCycle,
-            platform
-          });
-          if (result?.success) {
-            await refreshCustomerInfo();
-          }
+        // Map our internal plan ID to the App Store product ID
+        const productId = getAppStoreProductId(selectedPlan.id as any, billingCycle);
+        console.log('[Plans] Native purchase: planId=', selectedPlan.id, 'productId=', productId);
+
+        if (!productId) {
+          throw new Error(`No product ID configured for plan: ${selectedPlan.id}`);
         }
+
+        // Try to find matching package in RC offerings first (preferred)
+        const pkg = realPackages.find(p => p.product.identifier === productId);
+        if (pkg) {
+          console.log('[Plans] Found RC package, purchasing via package');
+          await revenueCatService.purchasePackage(pkg);
+        } else {
+          // Fallback: purchase by product ID directly
+          console.log('[Plans] No RC package match, purchasing by product ID');
+          await revenueCatService.purchaseProduct(productId);
+        }
+        await refreshCustomerInfo();
       } else {
         // Use web purchase flow (MercadoPago)
         await initiatePurchase({
@@ -173,11 +162,13 @@ export default function Plans() {
       
       navigate('/dashboard');
     } catch (error: any) {
-      if (error?.userCancelled) {
+      // Handle user cancellation from RevenueCat or usePlatformPurchase
+      if (error?.userCancelled || error?.cancelled || error?.code === 'PURCHASE_CANCELLED' || error?.code === 1) {
+        console.log('[Plans] Purchase cancelled by user');
         return;
       }
       
-      console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error });
+      console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error: error?.message });
       
       toast({
         title: t('subscription:plansPage.purchaseFailed'),
