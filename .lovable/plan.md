@@ -1,69 +1,73 @@
 
+# Fix In-App Purchase Not Triggering on Native (iOS/TestFlight)
 
-# Internationalize Plans Page Fully (ES/EN/PT)
+## Root Causes Found
 
-## Problem
-Several components on the Plans page still have hardcoded Spanish text, breaking the experience for English and Portuguese users:
+After tracing the full purchase flow across both screens (Plans page and SubscriptionPlansModal), I identified **5 issues** preventing the Apple purchase sheet from appearing:
 
-1. **FAQAccordion** -- All 4 FAQ questions and answers are hardcoded in Spanish. The trial FAQ still says "7 days" instead of 14.
-2. **BillingToggle** -- "Mensual", "Anual", and "-20%" are hardcoded in Spanish.
-3. **CompareSheet** -- Feature names ("Animales", "Chat IA", "Soporte"), feature values ("Ilimitados", "Ilimitado", "Basico", "Prioritario", etc.), header text ("Comparar planes", "Encontra el plan perfecto..."), column labels ("Gratis"), and CTA buttons ("Elegir {name}") are all hardcoded in Spanish.
-4. **PlanCard** -- The badge comparison `plan.badge === 'Mas popular'` is fragile since badges are now translated; needs to compare by plan ID instead.
+### 1. RevenueCat initialization failure is silent
+`revenueCatService.configure()` can fail, leaving `initialized = false`. Every subsequent purchase call throws `"RevenueCat not initialized"` -- but the error gets caught without clear user feedback. The `RevenueCatProvider` sets `isConfigured = true` even when configuration fails, masking the problem.
+
+### 2. No initialization guard before purchase attempts
+Both `Plans.tsx` and `SubscriptionPlansModal` call `revenueCatService.purchasePackage()` / `purchaseProduct()` directly without first checking if the SDK is actually ready. These methods throw immediately if not initialized.
+
+### 3. Free plan crashes native purchase flow
+Selecting the "free" plan on native calls `getAppStoreProductId('free', billingCycle)` which returns `''`, causing an immediate throw with no useful feedback.
+
+### 4. Backend edge functions have stale product ID mappings
+`sync-ios-purchase` and `apple-webhook` still reference OLD product IDs (`prodc6836489e3`, etc.) from a previous configuration. The new product IDs (`Personal_Monthly`, `Producer_Monthly`, etc.) won't match. The fallback string matching partially works but is fragile.
+
+### 5. SubscriptionPlansModal hardcodes `platform: 'ios'`
+Line 122 always passes `platform: 'ios'` regardless of actual device.
+
+---
 
 ## Plan
 
-### 1. Add translation keys to all 3 locale files
+### Step 1: Add initialization check + auto-retry to `revenueCatService.ts`
+- Add an `ensureInitialized()` method that attempts to configure if not yet initialized
+- Use it in `purchasePackage()`, `purchaseProduct()`, `getOfferings()`, and `getCustomerInfo()` instead of just throwing
+- Add detailed console logging at each step for device-side debugging
 
-Add the following keys under `subscription` namespace in `es`, `en`, and `pt`:
+### Step 2: Fix `Plans.tsx` purchase flow
+- Skip purchase flow for the free plan (just navigate to dashboard)
+- Add a check: if `revenueCatService` is not initialized, show a user-visible error toast instead of silently failing
+- Log the full error object (not just `error?.message`) for debugging on device
 
-**FAQ section** (`plansPage.faq`):
-- `title`: "Preguntas frecuentes" / "Frequently asked questions" / "Perguntas frequentes"
-- `q1` through `q4` and `a1` through `a4` for each question/answer pair
-- Update the trial FAQ answer to reference 14 days (not 7)
+### Step 3: Fix `SubscriptionPlansModal.tsx`
+- Use `detectPlatform()` instead of hardcoded `'ios'`
+- Add the same initialization guard and free plan handling
 
-**Billing toggle** (`plansPage.billing`):
-- `monthly`: "Mensual" / "Monthly" / "Mensal"
-- `annual`: "Anual" / "Annual" / "Anual"
-- `discount`: "-20%"
+### Step 4: Update backend product ID mappings
+Update both `sync-ios-purchase/index.ts` and `apple-webhook/index.ts` to include the **new** product IDs alongside the old ones:
 
-**Compare sheet** (`plansPage.compare`):
-- `title`, `description`
-- Feature names: `animals`, `aiChat`, `support`
-- Feature values: `upTo50`, `upTo125`, `upTo250`, `upTo500`, `upTo1000`, `unlimited`, `limited20mo`, `basic`, `email`, `priority`, `support247`
-- `choosePlan`: "Elegir {{name}}" / "Choose {{name}}" / "Escolher {{name}}"
-- `free`: "Gratis" / "Free" / "Gratis"
+```text
+'Personal_Monthly'  -> 'personal'
+'Personal_Yearly'   -> 'personal'
+'Advanced_Monthly'  -> 'avanzado'
+'Advanced_Yearly'   -> 'avanzado'
+'Producer_Monthly'  -> 'productor'
+'Producer_Yearly'   -> 'productor'
+'Herd_Monthly'      -> 'cabana'
+'Herd_Yearly'       -> 'cabana'
+```
 
-### 2. Update FAQAccordion component
-- Import `useTranslation`
-- Replace hardcoded FAQ_DATA with translated strings using `t()` calls
-- Fix trial FAQ to say 14 days
+### Step 5: Expose `isConfigured` status to Plans page
+- Pass `isConfigured` from `useRevenueCat()` to the Plans page so it can show a loading state or warning when RevenueCat isn't ready yet
 
-### 3. Update BillingToggle component
-- Import `useTranslation`
-- Replace "Mensual", "Anual", "-20%" with `t()` calls
-
-### 4. Update CompareSheet component
-- Import `useTranslation`
-- Replace all hardcoded Spanish strings with `t()` calls
-- Replace feature value functions with translated strings
-
-### 5. Fix PlanCard badge comparison
-- Change `plan.badge === 'Mas popular'` to `plan.id === 'productor'` so the styling works regardless of language
+---
 
 ## Files to Modify
 
 | File | Change |
 |------|--------|
-| `src/i18n/locales/es/subscription.json` | Add FAQ, billing, compare keys |
-| `src/i18n/locales/en/subscription.json` | Add FAQ, billing, compare keys |
-| `src/i18n/locales/pt/subscription.json` | Add FAQ, billing, compare keys |
-| `src/components/subscription/FAQAccordion.tsx` | Use `useTranslation` for all strings |
-| `src/components/subscription/BillingToggle.tsx` | Use `useTranslation` for all strings |
-| `src/components/subscription/CompareSheet.tsx` | Use `useTranslation` for all strings |
-| `src/components/subscription/PlanCard.tsx` | Fix badge comparison to use plan ID |
+| `src/services/revenueCatService.ts` | Add `ensureInitialized()` with auto-retry; use it in purchase/offerings methods |
+| `src/pages/Plans.tsx` | Handle free plan; add RC init guard; improve error logging |
+| `src/components/subscription/SubscriptionPlansModal.tsx` | Use `detectPlatform()`; add init guard |
+| `supabase/functions/sync-ios-purchase/index.ts` | Add new product ID mappings |
+| `supabase/functions/apple-webhook/index.ts` | Add new product ID mappings |
 
 ## Risk Assessment
 - No database changes, no route changes, no plan limits altered
-- Purely UI/i18n text changes scoped to subscription components
-- Existing behavior and layout preserved
-
+- Edge function changes are additive (old IDs preserved alongside new)
+- Existing behavior preserved; only adds guards, logging, and correct mappings
