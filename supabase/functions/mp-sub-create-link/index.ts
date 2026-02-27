@@ -1,4 +1,4 @@
-import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
 
     // Create preapproval subscription in Mercado Pago
     const externalReference = `${cabanaId}:${productCode}`
-    const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://7240114a-cf5f-4b1c-bc89-1b5d3e2a51f9.sandbox.lovable.dev'
+    const appBaseUrl = Deno.env.get('APP_BASE_URL') || 'https://cattle-ranch-vista.lovable.app'
 
     const preapprovalPayload = {
       reason: `Suscripción ${priceData.product_code} - agrodeo`,
@@ -113,15 +113,17 @@ Deno.serve(async (req) => {
       .upsert({
         cabana_id: cabanaId,
         last_provider: 'mp',
-        mp_preapproval_id: mpData.id
+        mp_payer_id: null
       }, {
         onConflict: 'cabana_id'
       })
 
-    // Return the init_point URL for redirect
+    // Return consistent response with both keys for backward compat
+    const url = mpData.init_point || mpData.sandbox_init_point
     return new Response(
       JSON.stringify({ 
-        url: mpData.init_point || mpData.sandbox_init_point,
+        url,
+        init_point: url,
         preapproval_id: mpData.id
       }),
       { 
