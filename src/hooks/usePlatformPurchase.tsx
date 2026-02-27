@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEntitlements } from '@/hooks/useEntitlements';
+import { getRevenueCatProductId, type PlanId } from '@/config/revenueCatProducts';
 
 export interface PurchaseData {
   planId: string;
@@ -106,20 +107,33 @@ export const usePlatformPurchase = () => {
   };
 
   /**
-   * Despia native purchase via RevenueCat Paywalls
+   * Despia native purchase via RevenueCat direct product purchase
    */
   const purchaseDespia = async (data: PurchaseData): Promise<PurchaseResult> => {
     const userId = session?.user?.id || 'anonymous';
-    // Use "default" offering — RevenueCat dashboard controls which products show
-    const offering = 'default';
     
-    console.log('[Purchase:Despia] Launching paywall', { userId, offering });
+    // Resolve the RevenueCat product ID from plan + billing cycle
+    const productId = getRevenueCatProductId(data.planId as PlanId, data.billingCycle);
     
-    // This launches the native RevenueCat paywall UI
-    despia(`revenuecat://launchPaywall?external_id=${userId}&offering=${offering}`);
+    if (!productId) {
+      console.error('[Purchase:Despia] No product ID found for', data.planId, data.billingCycle);
+      throw new Error(`No se encontró producto para el plan "${data.planId}" (${data.billingCycle})`);
+    }
     
-    // The paywall is shown natively — purchase completion comes via onRevenueCatPurchase callback
-    // We return pending since the actual result comes asynchronously
+    console.log('[Purchase:Despia] Triggering purchase', { 
+      userId, 
+      productId, 
+      planId: data.planId, 
+      billingCycle: data.billingCycle 
+    });
+    
+    // Use the documented Despia purchase command:
+    // revenuecat://purchase?external_id={USER_ID}&product={PRODUCT_ID}
+    despia(
+      `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(productId)}`
+    );
+    
+    // Purchase completion comes via onRevenueCatPurchase callback
     return { success: false, pending: true };
   };
 
