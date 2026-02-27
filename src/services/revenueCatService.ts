@@ -19,7 +19,28 @@ import { ENTITLEMENTS } from '@/config/revenueCatProducts';
 
 class RevenueCatService {
   private initialized = false;
+  private configuring: Promise<void> | null = null;
   private listeners: Array<(info: CustomerInfo) => void> = [];
+  
+  /**
+   * Ensure RevenueCat is initialized before calling purchase/offerings methods.
+   * Auto-retries configuration if it previously failed.
+   */
+  private async ensureInitialized(): Promise<void> {
+    if (this.initialized) return;
+    
+    if (!Capacitor.isNativePlatform()) {
+      console.warn('[RevenueCat] ensureInitialized called on non-native platform');
+      return;
+    }
+    
+    console.log('[RevenueCat] Not initialized, attempting auto-configure...');
+    await this.configure();
+    
+    if (!this.initialized) {
+      throw new Error('RevenueCat SDK failed to initialize. Check API keys and network.');
+    }
+  }
   
   /**
    * Configure RevenueCat SDK
@@ -32,6 +53,12 @@ class RevenueCatService {
     }
     
     if (this.initialized) return;
+    
+    // Prevent concurrent configuration attempts
+    if (this.configuring) {
+      await this.configuring;
+      return;
+    }
     
     // Get platform-specific API key
     const platform = Capacitor.getPlatform();
@@ -53,20 +80,25 @@ class RevenueCatService {
       return;
     }
     
-    try {
-      await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
-      
-      await Purchases.configure({
-        apiKey,
-        appUserID: userId || undefined
-      });
-      
-      this.initialized = true;
-      console.log('[RevenueCat] Configured successfully for', platform);
-    } catch (error) {
-      console.error('[RevenueCat] Configuration failed:', error);
-      throw error;
-    }
+    this.configuring = (async () => {
+      try {
+        await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+        
+        await Purchases.configure({
+          apiKey,
+          appUserID: userId || undefined
+        });
+        
+        this.initialized = true;
+        console.log('[RevenueCat] Configured successfully for', platform);
+      } catch (error) {
+        console.error('[RevenueCat] Configuration failed:', error);
+      } finally {
+        this.configuring = null;
+      }
+    })();
+    
+    await this.configuring;
   }
   
   /**
@@ -93,9 +125,7 @@ class RevenueCatService {
    * Get available offerings
    */
   async getOfferings(): Promise<PurchasesOfferings> {
-    if (!this.initialized) {
-      throw new Error('RevenueCat not initialized');
-    }
+    await this.ensureInitialized();
     return await Purchases.getOfferings();
   }
   
@@ -103,9 +133,7 @@ class RevenueCatService {
    * Get current customer info
    */
   async getCustomerInfo(): Promise<CustomerInfo> {
-    if (!this.initialized) {
-      throw new Error('RevenueCat not initialized');
-    }
+    await this.ensureInitialized();
     const { customerInfo } = await Purchases.getCustomerInfo();
     return customerInfo;
   }
@@ -134,9 +162,8 @@ class RevenueCatService {
    * Purchase a package
    */
   async purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo> {
-    if (!this.initialized) {
-      throw new Error('RevenueCat not initialized');
-    }
+    await this.ensureInitialized();
+    console.log('[RevenueCat] purchasePackage:', pkg.identifier);
     
     const { customerInfo } = await Purchases.purchasePackage({ 
       aPackage: pkg 
@@ -148,6 +175,7 @@ class RevenueCatService {
    * Purchase by product ID
    */
   async purchaseProduct(productId: string): Promise<CustomerInfo> {
+    console.log('[RevenueCat] purchaseProduct:', productId);
     const offerings = await this.getOfferings();
     const packages = offerings.current?.availablePackages || [];
     
@@ -177,9 +205,7 @@ class RevenueCatService {
    * Restore previous purchases
    */
   async restorePurchases(): Promise<CustomerInfo> {
-    if (!this.initialized) {
-      throw new Error('RevenueCat not initialized');
-    }
+    await this.ensureInitialized();
     
     const { customerInfo } = await Purchases.restorePurchases();
     return customerInfo;

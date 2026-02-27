@@ -120,6 +120,12 @@ export default function Plans() {
   const handleContinue = async () => {
     if (!selectedPlan) return;
 
+    // Free plan: just navigate, no purchase needed
+    if (selectedPlan.id === 'free') {
+      navigate('/dashboard');
+      return;
+    }
+
     setLoading(true);
     console.log('Event: purchase_started', { plan: selectedPlan.id, billingCycle, platform });
 
@@ -127,7 +133,7 @@ export default function Plans() {
       if (isNative) {
         // Map our internal plan ID to the App Store product ID
         const productId = getAppStoreProductId(selectedPlan.id as any, billingCycle);
-        console.log('[Plans] Native purchase: planId=', selectedPlan.id, 'productId=', productId);
+        console.log('[Plans] Native purchase: planId=', selectedPlan.id, 'productId=', productId, 'rcInitialized=', revenueCatService.isInitialized());
 
         if (!productId) {
           throw new Error(`No product ID configured for plan: ${selectedPlan.id}`);
@@ -168,7 +174,8 @@ export default function Plans() {
         return;
       }
       
-      console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error: error?.message });
+      console.error('[Plans] Purchase failed:', error);
+      console.log('Event: purchase_failed', { plan: selectedPlan.id, billingCycle, error: error?.message, code: error?.code });
       
       toast({
         title: t('subscription:plansPage.purchaseFailed'),
