@@ -49,8 +49,13 @@ export const useSubscription = () => {
   const fetchSubscriptionStatus = useCallback(async (retryCount = 0) => {
     if (!currentUser?.cabañaId) {
       console.warn('⚠️ No cabaña ID found, skipping subscription status fetch');
-      setSubscriptionStatus(null);
-      setLoading(false);
+      // Don't clear subscriptionStatus if we have a cached value — wait for cabañaId
+      // Only set loading false if we truly have no cached data either
+      if (!subscriptionStatus) {
+        // Keep loading true so the UI waits for cabañaId to arrive
+      } else {
+        setLoading(false);
+      }
       return;
     }
 
@@ -118,6 +123,13 @@ export const useSubscription = () => {
   useEffect(() => {
     fetchSubscriptionStatus();
   }, [fetchSubscriptionStatus]);
+
+  // Safety: if loading is still true after 10s (e.g. cabañaId never arrived), stop loading
+  useEffect(() => {
+    if (!loading) return;
+    const timer = setTimeout(() => setLoading(false), 10000);
+    return () => clearTimeout(timer);
+  }, [loading]);
 
   const checkAnimalLimit = useCallback((): boolean => {
     if (!subscriptionStatus) return false;
