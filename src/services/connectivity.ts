@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 
 const SUPABASE_URL = 'https://yjzxbjwewzyhjquhrfzv.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlqenhiandld3p5aGpxdWhyZnp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwODUxNDUsImV4cCI6MjA2NzY2MTE0NX0.q78732rZWj61LtlkEBOYj259ML4cHkRTTy60nhlsBH8';
 const CHECK_INTERVAL_MS = 30_000; // 30 seconds
 const TIMEOUT_MS = 5_000;
 
@@ -25,6 +26,9 @@ export async function checkConnectivity(): Promise<boolean> {
       method: 'HEAD',
       signal: controller.signal,
       cache: 'no-store',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+      },
     });
     clearTimeout(timeout);
     // Any HTTP response (even 4xx/5xx) proves network connectivity
