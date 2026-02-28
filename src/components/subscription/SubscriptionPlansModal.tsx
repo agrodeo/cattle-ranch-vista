@@ -259,7 +259,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                     )}
                   </div>
 
-                  <ul className="space-y-2">
+                  <ul className="space-y-2 flex-1">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-2 text-sm">
                         {feature.included ? (
