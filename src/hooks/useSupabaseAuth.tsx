@@ -137,6 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const fetchUserProfile = async (userId: string) => {
     console.log('👤 Fetching user profile for:', userId);
     try {
+      console.log('[fetchUserProfile] Querying profiles table...');
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
@@ -153,6 +154,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
+      console.log('[fetchUserProfile] Profile found, fetching cabaña & role...');
+
       // Fetch cabaña name and role IN PARALLEL for speed
       const cabañaPromise = profile.cabaña_id 
         ? supabase.from('cabañas').select('name').eq('id', profile.cabaña_id).maybeSingle()
@@ -168,6 +171,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       })();
 
       const [cabañaResult, userRole] = await Promise.all([cabañaPromise, rolePromise]);
+      console.log('[fetchUserProfile] Done. Role:', userRole, 'Cabaña:', cabañaResult?.data?.name);
 
       return {
         id: userId,
@@ -178,7 +182,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         department: profile.department,
         cabañaId: profile.cabaña_id || '',
         role: userRole,
-        cabañaName: cabañaResult.data?.name || '',
+        cabañaName: cabañaResult?.data?.name || '',
         username: profile.username,
         isActive: profile.is_active ?? true
       };
@@ -204,7 +208,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         .from('cabañas')
         .select('id')
         .eq('owner_id', userId)
-        .single();
+        .maybeSingle();
       
       if (existingCabana) {
         // User already has a cabaña, cleanup pending data
