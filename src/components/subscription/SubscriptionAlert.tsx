@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, Users, Zap, Crown, Building2, Briefcase } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useTranslation } from 'react-i18next';
-import { isNativeApp, isDespiaRuntime } from "@/lib/platformDetection";
 
 interface SubscriptionAlertProps {
   onUpgrade?: () => void;
@@ -37,10 +36,8 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
     }
   };
 
-  const isNativePlatform = isNativeApp() || isDespiaRuntime();
-
-  // Trial ending soon warning (skip on native — Apple/Google manage trials)
-  if (!isNativePlatform && subscriptionStatus.isTrialActive && subscriptionStatus.trialDaysRemaining <= 7) {
+  // Trial ending soon warning
+  if (subscriptionStatus.isTrialActive && subscriptionStatus.trialDaysRemaining <= 7) {
     return (
       <Alert className="mb-4 border-orange-200 bg-orange-50">
         <Clock className="h-4 w-4" />
@@ -106,7 +103,7 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
             </div>
             <div>
               <CardTitle className="text-lg">Plan {planNames[subscriptionStatus.plan]}</CardTitle>
-              {!isNativePlatform && subscriptionStatus.isTrialActive && (
+              {subscriptionStatus.isTrialActive && (
                 <Badge variant="secondary">
                   {t('trial.daysRemaining', { days: subscriptionStatus.trialDaysRemaining })}
                 </Badge>
