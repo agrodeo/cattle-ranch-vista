@@ -128,7 +128,10 @@ export default function Plans() {
         navigate('/dashboard');
       } else if (result?.pending) {
         console.log('Event: purchase_pending', { plan: selectedPlan.id, billingCycle });
-        // MercadoPago flow — user completes externally
+        toast({
+          title: "Redirigiendo al pago",
+          description: "Completá el pago en la ventana que se abrió. Tu suscripción se activará automáticamente.",
+        });
       }
     } catch (error: any) {
       // User cancellation — no error toast (already handled by usePlatformPurchase)

@@ -21,7 +21,7 @@ export interface PurchaseResult {
 export const usePlatformPurchase = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { session } = useSupabaseAuth();
+  const { session, currentUser } = useSupabaseAuth();
   const { offerings, refreshCustomerInfo } = useEntitlements();
 
   // Register global callback for Despia purchase completion
@@ -141,9 +141,12 @@ export const usePlatformPurchase = () => {
    * Web purchase via MercadoPago
    */
   const purchaseWeb = async (data: PurchaseData): Promise<PurchaseResult> => {
+    const cabanaId = currentUser?.cabañaId;
+    if (!cabanaId) throw new Error('No se encontró la cabaña del usuario');
+    
     const { data: response, error } = await supabase.functions.invoke('mp-sub-create-link', {
       body: {
-        cabanaId: session?.user?.id,
+        cabanaId,
         productCode: data.planId,
         payerEmail: session?.user?.email
       }
@@ -154,10 +157,6 @@ export const usePlatformPurchase = () => {
     const paymentUrl = response?.url || response?.init_point;
     if (paymentUrl) {
       window.open(paymentUrl, '_blank');
-      toast({
-        title: "Redirigiendo a Mercado Pago",
-        description: "Completa tu pago en la ventana que se abrió.",
-      });
       return { success: false, pending: true };
     }
     
