@@ -75,7 +75,7 @@ Deno.serve(async (req) => {
       reason: `Suscripción ${priceData.product_code} - agrodeo`,
       external_reference: externalReference,
       payer_email: payerEmail || "",
-      back_url: `${appBaseUrl}/billing/success`,
+      back_url: `${appBaseUrl}/subscription`,
       auto_recurring: {
         frequency: 1,
         frequency_type: "months",
