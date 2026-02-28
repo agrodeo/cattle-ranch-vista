@@ -124,6 +124,17 @@ export const useSubscription = () => {
     fetchSubscriptionStatus();
   }, [fetchSubscriptionStatus]);
 
+  // Listen for purchase completion events to auto-refresh
+  useEffect(() => {
+    const handler = () => {
+      console.log('🔄 subscription-updated event received, refreshing...');
+      // Small delay to let the backend finish writing
+      setTimeout(() => fetchSubscriptionStatus(), 1500);
+    };
+    window.addEventListener('subscription-updated', handler);
+    return () => window.removeEventListener('subscription-updated', handler);
+  }, [fetchSubscriptionStatus]);
+
   // Safety: if loading is still true after 10s (e.g. cabañaId never arrived), stop loading
   useEffect(() => {
     if (!loading) return;
