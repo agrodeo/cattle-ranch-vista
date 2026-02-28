@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Plan, BillingCycle } from '@/pages/Plans';
+import { isNativeApp, isDespiaRuntime } from '@/lib/platformDetection';
 
 interface StickyFooterCTAProps {
   selectedPlan: Plan;
@@ -62,7 +63,9 @@ export function StickyFooterCTA({
               ? t('subscription:plansPage.processing') 
               : isFree 
                 ? t('subscription:plansPage.continue') 
-                : t('subscription:plansPage.startTrial')
+                : (isNativeApp() || isDespiaRuntime()) 
+                  ? t('subscription:plansPage.subscribe', 'Suscribirse')
+                  : t('subscription:plansPage.startTrial')
             }
           </Button>
         </div>
@@ -71,7 +74,9 @@ export function StickyFooterCTA({
         <p className="text-xs text-muted-foreground text-center">
           {isFree
             ? t('subscription:plansPage.continue')
-            : t('subscription:plansPage.trialLegal')
+            : (isNativeApp() || isDespiaRuntime())
+              ? t('subscription:plansPage.managedByStore', 'La suscripción se gestiona a través de la tienda de aplicaciones.')
+              : t('subscription:plansPage.trialLegal')
           }
         </p>
       </div>
