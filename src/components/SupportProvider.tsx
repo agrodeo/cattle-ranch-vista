@@ -27,7 +27,12 @@ export default function SupportProvider({ children }: { children: React.ReactNod
 
   useEffect(() => {
     (window as any).__supportOpen = (ctx?: any) => api.open(ctx);
-    initializeErrorHandlers();
+    const cleanupErrorHandlers = initializeErrorHandlers();
+
+    return () => {
+      delete (window as any).__supportOpen;
+      cleanupErrorHandlers?.();
+    };
   }, [api]);
 
   return (

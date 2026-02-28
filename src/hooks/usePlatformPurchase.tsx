@@ -30,26 +30,31 @@ export const usePlatformPurchase = () => {
 
     (window as any).onRevenueCatPurchase = async () => {
       console.log('[Purchase:Despia] onRevenueCatPurchase callback fired');
-      // Refresh entitlements after successful purchase
-      refreshCustomerInfo();
-      toast({
-        title: "¡Compra exitosa!",
-        description: "Tu suscripción ha sido activada.",
-      });
-      
-      // Sync purchase with Supabase backend so billing_subscriptions is updated
+
       try {
-        const { revenueCatService } = await import('@/services/revenueCatService');
-        const customerInfo = await revenueCatService.getCustomerInfo();
-        const { IOSPurchaseService } = await import('@/services/iosPurchaseService');
-        await IOSPurchaseService.syncWithBackend(customerInfo, (name, options) => 
-          supabase.functions.invoke(name, options)
-        );
-        console.log('[Purchase:Despia] Backend sync completed');
-        // Signal useSubscription to refresh from Supabase
-        window.dispatchEvent(new CustomEvent('subscription-updated'));
-      } catch (syncError) {
-        console.error('[Purchase:Despia] Backend sync failed (non-blocking):', syncError);
+        // Refresh entitlements after successful purchase
+        await refreshCustomerInfo();
+        toast({
+          title: "¡Compra exitosa!",
+          description: "Tu suscripción ha sido activada.",
+        });
+
+        // Sync purchase with Supabase backend so billing_subscriptions is updated
+        try {
+          const { revenueCatService } = await import('@/services/revenueCatService');
+          const customerInfo = await revenueCatService.getCustomerInfo();
+          const { IOSPurchaseService } = await import('@/services/iosPurchaseService');
+          await IOSPurchaseService.syncWithBackend(customerInfo, (name, options) =>
+            supabase.functions.invoke(name, options)
+          );
+          console.log('[Purchase:Despia] Backend sync completed');
+          // Signal useSubscription to refresh from Supabase
+          window.dispatchEvent(new CustomEvent('subscription-updated'));
+        } catch (syncError) {
+          console.error('[Purchase:Despia] Backend sync failed (non-blocking):', syncError);
+        }
+      } catch (callbackError) {
+        console.error('[Purchase:Despia] onRevenueCatPurchase failed:', callbackError);
       }
     };
 
