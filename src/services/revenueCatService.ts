@@ -261,11 +261,15 @@ class RevenueCatService {
   ): () => void {
     this.listeners.push(callback);
     
-    // Set up native listener if not already
-    if (this.listeners.length === 1) {
-      Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
-        this.listeners.forEach(listener => listener(info));
-      });
+    // Set up native listener if not already — only when SDK is initialized
+    if (this.listeners.length === 1 && this.initialized) {
+      try {
+        Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
+          this.listeners.forEach(listener => listener(info));
+        });
+      } catch (error) {
+        console.error('[RevenueCat] Failed to add listener:', error);
+      }
     }
     
     // Return cleanup function
