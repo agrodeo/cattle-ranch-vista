@@ -186,6 +186,37 @@ serve(async (req) => {
       console.log('Subscription updated successfully for cabaña:', cabanaId);
     }
 
+    // Also update the `subscriptions` table (used by get_subscription_status RPC)
+    // so the plan, limits, and trial state stay in sync.
+    // On native platforms Apple/Google manage the free-trial period, so we
+    // deactivate the backend-managed trial to avoid doubling it.
+    if (status === 'active' && productCode !== 'free') {
+      // 1. Update plan + limits via the existing helper function
+      const { error: planError } = await supabase.rpc('update_subscription_plan', {
+        cabana_uuid: cabanaId,
+        new_plan: productCode,
+      });
+      if (planError) {
+        console.error('Failed to update subscription plan:', planError);
+      }
+
+      // 2. Deactivate the backend trial — Apple/Google handle their own trials
+      const { error: trialError } = await supabase
+        .from('subscriptions')
+        .update({
+          is_trial_active: false,
+          is_active: true,
+          subscription_start_date: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .eq('cabaña_id', cabanaId);
+      if (trialError) {
+        console.error('Failed to deactivate trial:', trialError);
+      } else {
+        console.log('Backend trial deactivated for native purchase, cabaña:', cabanaId);
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true,

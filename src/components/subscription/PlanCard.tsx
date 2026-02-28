@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Plan, BillingCycle } from '@/pages/Plans';
-import { isNativeApp, isDespiaRuntime } from '@/lib/platformDetection';
 
 interface PlanCardProps {
   plan: Plan;
@@ -71,7 +70,7 @@ export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: 
               {formatPrice(totalAnual)}{t('subscription:plansPage.perYear')}
             </p>
           )}
-          {!isFree && !isNativeApp() && !isDespiaRuntime() && (
+          {!isFree && (
             <p className="text-sm font-medium text-emerald-600">
               {t('subscription:plansPage.freeTrialBadge')}
             </p>
