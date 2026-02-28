@@ -252,7 +252,7 @@ export function useSubscriptionStatus(): SubscriptionState {
 
   // Listen for RevenueCat updates
   useEffect(() => {
-    if (!isNativeApp()) return;
+    if (!isNativeApp() || !revenueCatService.isInitialized()) return;
     
     const cleanup = revenueCatService.addCustomerInfoUpdateListener(async (customerInfo) => {
       const proEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PRO];
