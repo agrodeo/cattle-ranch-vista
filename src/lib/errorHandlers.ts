@@ -1,36 +1,82 @@
 // Global error handlers for unhandled promises and JavaScript errors
+
+let handlersInitialized = false;
+let lastSupportErrorKey = "";
+let lastSupportErrorAt = 0;
+
+const SUPPORT_ERROR_COOLDOWN_MS = 12000;
+
+function shouldIgnoreErrorMessage(message: string) {
+  const normalized = message.trim().toLowerCase();
+  return (
+    normalized === "script error." ||
+    normalized === "script error" ||
+    normalized.includes("non-error promise rejection captured")
+  );
+}
+
+function canOpenSupportForError(errorKey: string) {
+  const now = Date.now();
+  if (errorKey === lastSupportErrorKey && now - lastSupportErrorAt < SUPPORT_ERROR_COOLDOWN_MS) {
+    return false;
+  }
+  lastSupportErrorKey = errorKey;
+  lastSupportErrorAt = now;
+  return true;
+}
+
 export function initializeErrorHandlers() {
-  // Handle unhandled promise rejections
-  window.addEventListener("unhandledrejection", (e) => {
+  if (handlersInitialized) {
+    return () => {};
+  }
+
+  const onUnhandledRejection = (e: PromiseRejectionEvent) => {
+    const message = String(e.reason?.message ?? e.reason ?? "Unknown promise rejection");
+    if (shouldIgnoreErrorMessage(message)) return;
+
     console.error("Unhandled promise rejection:", e.reason);
     try {
       const supportOpen = (window as any).__supportOpen as ((ctx?: any) => void) | undefined;
-      if (typeof supportOpen === 'function') {
+      const errorKey = `UNHANDLED_PROMISE:${message}`;
+      if (typeof supportOpen === 'function' && canOpenSupportForError(errorKey)) {
         supportOpen({
           title: "Error no controlado (Promise)",
-          message: String(e.reason),
+          message,
           errorCode: "UNHANDLED_PROMISE"
         });
       }
     } catch (err) {
       console.error("Failed to open support dialog:", err);
     }
-  });
+  };
 
-  // Handle uncaught JavaScript errors
-  window.addEventListener("error", (e) => {
+  const onUncaughtError = (e: ErrorEvent) => {
+    const message = e.error?.message || e.message || "Error desconocido";
+    if (shouldIgnoreErrorMessage(message)) return;
+
     console.error("Uncaught error:", e.error || e.message);
     try {
       const supportOpen = (window as any).__supportOpen as ((ctx?: any) => void) | undefined;
-      if (typeof supportOpen === 'function') {
+      const errorKey = `UNCAUGHT_ERROR:${message}`;
+      if (typeof supportOpen === 'function' && canOpenSupportForError(errorKey)) {
         supportOpen({
           title: "Error no controlado (JavaScript)",
-          message: e.error?.message || e.message || "Error desconocido",
+          message,
           errorCode: "UNCAUGHT_ERROR"
         });
       }
     } catch (err) {
       console.error("Failed to open support dialog:", err);
     }
-  });
+  };
+
+  window.addEventListener("unhandledrejection", onUnhandledRejection);
+  window.addEventListener("error", onUncaughtError);
+  handlersInitialized = true;
+
+  return () => {
+    window.removeEventListener("unhandledrejection", onUnhandledRejection);
+    window.removeEventListener("error", onUncaughtError);
+    handlersInitialized = false;
+  };
 }
