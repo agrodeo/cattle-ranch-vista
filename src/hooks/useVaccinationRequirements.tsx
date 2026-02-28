@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isOnline } from "@/services/connectivity";
 
 export interface VaccinationRequirement {
   id: string;
@@ -96,14 +97,15 @@ export function useVaccinationRequirements() {
       
       console.log(`✅ [VaccinationRequirements] Loaded ${data?.length || 0} requirements for cabaña ${cabanaId}`);
       setRequirements((data || []) as VaccinationRequirement[]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('💥 Error fetching vaccination requirements:', error);
-      if (error.message.includes('Usuario no autenticado')) {
-        toast.error(t('common:error.unauthorized'));
-      } else if (error.message.includes('No se pudo obtener la cabaña')) {
-        toast.error(t('common:error.loadFailed'));
-      } else {
-        toast.error(t('common:error.loadFailed'));
+      // Only show toast if we're online (suppress on transient/offline errors)
+      if (isOnline()) {
+        if (error.message?.includes('Usuario no autenticado')) {
+          toast.error(t('common:error.unauthorized'));
+        } else if (!error.message?.includes('upstream connect error') && !error.message?.includes('connection timeout')) {
+          toast.error(t('common:error.loadFailed'));
+        }
       }
       setRequirements([]);
     } finally {
@@ -214,9 +216,11 @@ export function useAnimalVaccinationStatus(animalId?: string) {
 
       if (error) throw error;
       setStatus((data || []) as VaccinationStatus[]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching vaccination status:', error);
-      toast.error(t('common:error.loadFailed'));
+      if (isOnline() && !error.message?.includes('upstream connect error')) {
+        toast.error(t('common:error.loadFailed'));
+      }
     } finally {
       setLoading(false);
     }
