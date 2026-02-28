@@ -10,6 +10,7 @@ import { Check, X, Users, Zap, Crown, Building2, Briefcase, Loader2 } from "luci
 import { useSubscription } from "@/hooks/useSubscription";
 import { usePlatformPurchase } from "@/hooks/usePlatformPurchase";
 import { toast } from "sonner";
+import { isNativeApp, isDespiaRuntime } from "@/lib/platformDetection";
 
 interface SubscriptionPlansModalProps {
   open: boolean;
@@ -247,9 +248,11 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                         <p className="text-sm text-muted-foreground">
                           {isAnnual ? t('plansModal.perYear') : t('plansModal.perMonth')}
                         </p>
-                        <p className="text-sm font-medium text-emerald-600">
-                          {t('plansPage.freeTrialBadge')}
-                        </p>
+                        {!isNativeApp() && !isDespiaRuntime() && (
+                          <p className="text-sm font-medium text-emerald-600">
+                            {t('plansPage.freeTrialBadge')}
+                          </p>
+                        )}
                         {isAnnual && (
                           <p className="text-xs text-green-600">
                             {t('plansModal.youSave')} {formatPrice((plan.monthly * 12) - plan.annual)}
