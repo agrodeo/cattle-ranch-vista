@@ -99,14 +99,7 @@ export function useVaccinationRequirements() {
       setRequirements((data || []) as VaccinationRequirement[]);
     } catch (error: any) {
       console.error('💥 Error fetching vaccination requirements:', error);
-      // Only show toast if we're online (suppress on transient/offline errors)
-      if (isOnline()) {
-        if (error.message?.includes('Usuario no autenticado')) {
-          toast.error(t('common:error.unauthorized'));
-        } else if (!error.message?.includes('upstream connect error') && !error.message?.includes('connection timeout')) {
-          toast.error(t('common:error.loadFailed'));
-        }
-      }
+      // Silently fail — this is a background fetch, no need to interrupt the user
       setRequirements([]);
     } finally {
       setLoading(false);
@@ -218,9 +211,7 @@ export function useAnimalVaccinationStatus(animalId?: string) {
       setStatus((data || []) as VaccinationStatus[]);
     } catch (error: any) {
       console.error('Error fetching vaccination status:', error);
-      if (isOnline() && !error.message?.includes('upstream connect error')) {
-        toast.error(t('common:error.loadFailed'));
-      }
+      // Silently fail for background fetches
     } finally {
       setLoading(false);
     }
