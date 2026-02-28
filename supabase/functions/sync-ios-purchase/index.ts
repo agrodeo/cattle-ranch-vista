@@ -70,6 +70,24 @@ serve(async (req) => {
     const { customerInfo } = parsed.data;
     console.log('Syncing iOS purchase for user:', user.id);
 
+    // Look up the user's cabaña_id from profiles (NOT user.id)
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('cabaña_id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (profileError || !profile?.['cabaña_id']) {
+      console.error('Could not find cabaña for user:', user.id, profileError);
+      return new Response(
+        JSON.stringify({ error: 'User profile or cabaña not found' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const cabanaId = profile['cabaña_id'];
+    console.log('Resolved cabaña_id:', cabanaId, 'for user:', user.id);
+
     const activeSubscriptions = customerInfo.activeSubscriptions || [];
 
     let productCode = 'free';
@@ -95,17 +113,18 @@ serve(async (req) => {
       console.log('No active subscriptions found');
     }
 
+    // Upsert billing_customers with the correct cabaña_id
     const { data: existingCustomer } = await supabase
       .from('billing_customers')
       .select('id')
-      .eq('cabana_id', user.id)
+      .eq('cabana_id', cabanaId)
       .single();
 
     if (!existingCustomer) {
       const { error: customerError } = await supabase
         .from('billing_customers')
         .insert({
-          cabana_id: user.id,
+          cabana_id: cabanaId,
           last_provider: 'ios',
           appstore_original_transaction_id: customerInfo.originalAppUserId
         });
@@ -121,21 +140,22 @@ serve(async (req) => {
           last_provider: 'ios',
           appstore_original_transaction_id: customerInfo.originalAppUserId
         })
-        .eq('cabana_id', user.id);
+        .eq('cabana_id', cabanaId);
 
       if (updateError) {
         console.error('Failed to update customer:', updateError);
       }
     }
 
+    // Upsert billing_subscriptions with the correct cabaña_id
     const { data: existingSubscription } = await supabase
       .from('billing_subscriptions')
       .select('id')
-      .eq('cabana_id', user.id)
+      .eq('cabana_id', cabanaId)
       .single();
 
     const subscriptionData = {
-      cabana_id: user.id,
+      cabana_id: cabanaId,
       product_code: productCode,
       provider: 'ios',
       status: status,
@@ -152,18 +172,18 @@ serve(async (req) => {
         console.error('Failed to create subscription:', subError);
         throw subError;
       }
-      console.log('Subscription created successfully');
+      console.log('Subscription created successfully for cabaña:', cabanaId);
     } else {
       const { error: updateError } = await supabase
         .from('billing_subscriptions')
         .update(subscriptionData)
-        .eq('cabana_id', user.id);
+        .eq('cabana_id', cabanaId);
 
       if (updateError) {
         console.error('Failed to update subscription:', updateError);
         throw updateError;
       }
-      console.log('Subscription updated successfully');
+      console.log('Subscription updated successfully for cabaña:', cabanaId);
     }
 
     return new Response(
