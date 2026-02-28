@@ -218,7 +218,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
             const isCurrentPlan = currentPlan === plan.id;
             
             return (
-              <Card key={plan.id} className={`relative ${plan.popular ? 'ring-2 ring-primary' : ''}`}>
+              <Card key={plan.id} className={`relative flex flex-col ${plan.popular ? 'ring-2 ring-primary' : ''}`}>
                 {plan.popular && (
                   <Badge className="absolute -top-2 left-1/2 -translate-x-1/2">
                     {t('plansModal.mostPopular', 'Más Popular')}
@@ -237,7 +237,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 flex-1 flex flex-col">
                   <div>
                     {plan.id === 'corporativo' ? (
                       <p className="text-xl font-bold text-foreground">{t('plansModal.contactUs')}</p>
@@ -273,7 +273,7 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
                   </ul>
 
                   <Button 
-                    className="w-full"
+                    className="w-full mt-auto"
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => handleSelectPlan(plan.id)}
                     disabled={isCurrentPlan || isPurchasing}
