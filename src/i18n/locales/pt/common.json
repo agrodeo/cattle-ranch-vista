@@ -220,21 +220,7 @@
       "corral_organizer": "agrodeo parabeniza {{user}} de {{cabana}} por organizar {{count}} currais"
     }
   },
-  "sync": {
-    "syncCenter": "Centro de Sincronização",
-    "syncNow": "Sincronizar agora",
-    "syncing": "Sincronizando...",
-    "pending": "Pendente",
-    "failed": "Falhou",
-    "synced": "Sincronizado",
-    "retryFailed": "Tentar novamente",
-    "pendingEvents": "Eventos pendentes de sincronização",
-    "noInternet": "Sem conexão à internet",
-    "syncCompleted": "Sincronização concluída",
-    "syncError": "Erro ao sincronizar",
-    "noConnectionWarning": "Você está offline. Tudo será salvo como pendente e sincronizado ao reconectar.",
-    "eventsRetried": "Eventos tentados novamente"
-  },
+  
   "connectivity": {
     "offlineBanner": "Você está offline. Tudo será salvo como pendente e sincronizado ao reconectar."
   },
@@ -310,6 +296,7 @@
     "failed": "Falharam",
     "synced": "Sincronizados",
     "syncNow": "Sincronizar Agora",
+    "syncing": "Sincronizando...",
     "retryFailed": "Tentar Novamente",
     "offlineMode": "Modo Offline",
     "offlineWarning": "Sem conexão. Alterações serão salvas localmente.",
@@ -319,7 +306,12 @@
     "offline": "Offline",
     "pendingEvents": "Eventos pendentes",
     "failedEvents": "Eventos falhados",
-    "syncedEvents": "Eventos sincronizados"
+    "syncedEvents": "Eventos sincronizados",
+    "noInternet": "Sem conexão à internet",
+    "syncCompleted": "Sincronização concluída",
+    "syncError": "Erro ao sincronizar",
+    "noConnectionWarning": "Você está offline. Tudo será salvo como pendente e sincronizado ao reconectar.",
+    "eventsRetried": "Eventos tentados novamente"
   },
   "toast": {
     "error": "Erro",
