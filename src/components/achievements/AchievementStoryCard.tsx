@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { getMedalIcon, type MedalTier } from '@/lib/achievements';
+import { type MedalTier, getTierNumberColor } from '@/lib/achievements';
 import { forwardRef } from 'react';
 
 interface AchievementStoryCardProps {
@@ -9,6 +9,9 @@ interface AchievementStoryCardProps {
   medalTier: MedalTier;
   unlockedAt: string;
   progressValue: number;
+  threshold: number;
+  userName: string;
+  cabañaName: string;
 }
 
 const getTierColors = (tier: MedalTier) => {
@@ -22,7 +25,6 @@ const getTierColors = (tier: MedalTier) => {
         glowStrong: 'rgba(251, 191, 36, 0.6)',
         text: '#fef3c7',
         textMuted: '#fde68a',
-        ring: '#f59e0b',
         sparkle: '#fbbf24',
       };
     case 'silver':
@@ -34,7 +36,6 @@ const getTierColors = (tier: MedalTier) => {
         glowStrong: 'rgba(156, 163, 175, 0.6)',
         text: '#f3f4f6',
         textMuted: '#d1d5db',
-        ring: '#6b7280',
         sparkle: '#9ca3af',
       };
     case 'bronze':
@@ -46,7 +47,6 @@ const getTierColors = (tier: MedalTier) => {
         glowStrong: 'rgba(217, 119, 6, 0.6)',
         text: '#fef3c7',
         textMuted: '#fde68a',
-        ring: '#b45309',
         sparkle: '#d97706',
       };
   }
@@ -59,11 +59,13 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
   medalTier,
   unlockedAt,
   progressValue,
+  threshold,
+  userName,
+  cabañaName,
 }, ref) => {
   const { t } = useTranslation(['common']);
   const colors = getTierColors(medalTier);
-  const medalEmoji = getMedalIcon(medalTier);
-  const tierName = t(`common:achievements.tiers.${medalTier}`);
+  const numberColor = getTierNumberColor(medalTier);
 
   return (
     <div
@@ -86,8 +88,6 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
         { top: '380px', right: '60px', size: '7px', opacity: 0.5 },
         { top: '450px', left: '40px', size: '6px', opacity: 0.35 },
         { top: '500px', right: '30px', size: '5px', opacity: 0.25 },
-        { top: '160px', left: '280px', size: '4px', opacity: 0.3 },
-        { top: '320px', left: '20px', size: '5px', opacity: 0.2 },
       ].map((sparkle, i) => (
         <div
           key={i}
@@ -106,10 +106,10 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
         />
       ))}
 
-      {/* Subtle radial glow behind medal */}
+      {/* Subtle radial glow behind number */}
       <div style={{
         position: 'absolute',
-        top: '180px',
+        top: '160px',
         left: '50%',
         transform: 'translateX(-50%)',
         width: '280px',
@@ -149,51 +149,16 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
           {t('common:achievements.branding_tagline')}
         </div>
 
-        {/* Medal */}
+        {/* Big Number */}
         <div style={{
-          width: '140px',
-          height: '140px',
-          borderRadius: '50%',
-          background: `linear-gradient(135deg, ${colors.accent}, ${colors.ring})`,
-          padding: '4px',
-          boxShadow: `0 0 40px ${colors.glowStrong}, 0 0 80px ${colors.glow}`,
+          fontSize: '96px',
+          fontWeight: 900,
+          color: numberColor,
+          lineHeight: 1,
           marginBottom: '8px',
+          textShadow: `0 0 40px ${colors.glowStrong}`,
         }}>
-          <div style={{
-            width: '100%',
-            height: '100%',
-            borderRadius: '50%',
-            background: `linear-gradient(135deg, ${colors.ring}, ${colors.accent})`,
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <div style={{
-              width: '100%',
-              height: '100%',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(0,0,0,0.5)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <span style={{ fontSize: '64px' }}>{medalEmoji}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tier label */}
-        <div style={{
-          fontSize: '13px',
-          fontWeight: '700',
-          color: colors.accent,
-          letterSpacing: '4px',
-          textTransform: 'uppercase',
-          marginTop: '20px',
-          marginBottom: '24px',
-        }}>
-          {t('common:achievements.medal')} {t('common:achievements.of')} {tierName}
+          {threshold}
         </div>
 
         {/* Divider */}
@@ -201,52 +166,25 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
           width: '60px',
           height: '2px',
           background: `linear-gradient(90deg, transparent, ${colors.accent}, transparent)`,
+          marginTop: '16px',
           marginBottom: '24px',
         }} />
 
-        {/* Achievement name */}
+        {/* Congratulatory message */}
         <div style={{
-          fontSize: '22px',
-          fontWeight: '700',
+          fontSize: '18px',
+          fontWeight: '600',
           color: '#ffffff',
-          textAlign: 'center',
-          lineHeight: '1.3',
-          marginBottom: '12px',
-          maxWidth: '280px',
-        }}>
-          {t(nameKey)}
-        </div>
-
-        {/* Description */}
-        <div style={{
-          fontSize: '14px',
-          color: colors.textMuted,
           textAlign: 'center',
           lineHeight: '1.5',
           marginBottom: '28px',
-          maxWidth: '260px',
-          opacity: 0.8,
+          maxWidth: '300px',
         }}>
-          {t(descriptionKey)}
-        </div>
-
-        {/* Stat pill */}
-        <div style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '6px',
-          padding: '8px 20px',
-          borderRadius: '999px',
-          backgroundColor: 'rgba(255,255,255,0.1)',
-          border: `1px solid rgba(255,255,255,0.15)`,
-          marginBottom: '12px',
-        }}>
-          <span style={{ fontSize: '18px', fontWeight: '700', color: '#ffffff' }}>
-            {progressValue}
-          </span>
-          <span style={{ fontSize: '13px', color: colors.textMuted }}>
-            {t('common:achievements.achievements_count')}
-          </span>
+          {t(`common:achievements.congrats.${achievementCode}`, {
+            user: userName,
+            cabana: cabañaName,
+            count: threshold,
+          })}
         </div>
 
         {/* Date */}

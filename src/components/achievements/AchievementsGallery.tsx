@@ -3,10 +3,11 @@ import { Lock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAchievements } from '@/hooks/useAchievements';
-import { ACHIEVEMENT_DEFINITIONS, getMedalIcon, getMedalColor, calculateProgress } from '@/lib/achievements';
+import { ACHIEVEMENT_DEFINITIONS, getMedalColor, calculateProgress, getTierNumberColor, getThresholdForTier } from '@/lib/achievements';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AchievementCard } from './AchievementCard';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 interface AchievementProgress {
   definition: typeof ACHIEVEMENT_DEFINITIONS[0];
@@ -18,6 +19,9 @@ interface AchievementProgress {
 export function AchievementsGallery() {
   const { t } = useTranslation(['common']);
   const { achievements, loading, incrementShareCount } = useAchievements();
+  const { currentUser } = useSupabaseAuth();
+  const userName = currentUser?.fullName || currentUser?.email || '';
+  const cabañaName = currentUser?.cabañaName || '';
 
   // Calculate progress for all achievements
   const achievementProgress: AchievementProgress[] = ACHIEVEMENT_DEFINITIONS.map(def => {
@@ -77,7 +81,8 @@ export function AchievementsGallery() {
             <div className="flex justify-around py-4">
               {(['bronze', 'silver', 'gold'] as const).map(tier => {
                 const unlocked = unlockedTiers.find(u => u.tier === tier);
-                const threshold = definition.tiers[tier].threshold;
+                const threshold = getThresholdForTier(definition, tier);
+                const numberColor = getTierNumberColor(tier);
 
                 return (
                   <Dialog key={tier}>
@@ -91,19 +96,11 @@ export function AchievementsGallery() {
                         }`}
                       >
                         <div className={`relative w-16 h-16 rounded-full bg-gradient-to-br ${getMedalColor(tier)} p-0.5 ${
-                          unlocked ? 'shadow-lg animate-[medal-glow_3s_ease-in-out_infinite]' : ''
-                        }`}
-                          style={unlocked ? {
-                            boxShadow: tier === 'gold' 
-                              ? '0 0 12px rgba(251,191,36,0.4)' 
-                              : tier === 'silver' 
-                                ? '0 0 12px rgba(156,163,175,0.4)' 
-                                : '0 0 12px rgba(217,119,6,0.4)',
-                          } : undefined}
-                        >
+                          unlocked ? 'shadow-lg' : ''
+                        }`}>
                           <div className="w-full h-full rounded-full bg-background flex items-center justify-center">
                             {unlocked ? (
-                              <span className="text-3xl">{getMedalIcon(tier)}</span>
+                              <span className="text-2xl font-black" style={{ color: numberColor }}>{threshold}</span>
                             ) : (
                               <Lock className="h-6 w-6 text-muted-foreground" />
                             )}
@@ -127,6 +124,9 @@ export function AchievementsGallery() {
                           medalTier={tier}
                           unlockedAt={unlocked.data.unlocked_at}
                           progressValue={unlocked.data.progress_value}
+                          threshold={threshold}
+                          userName={userName}
+                          cabañaName={cabañaName}
                           onShare={() => incrementShareCount(unlocked.data.id)}
                         />
                       </DialogContent>

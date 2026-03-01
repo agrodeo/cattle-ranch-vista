@@ -210,6 +210,14 @@
         "name": "Organizador de Espaços",
         "description": "Você criou e organizou currais"
       }
+    },
+    "congrats": {
+      "herd_starter": "agrodeo parabeniza {{user}} de {{cabana}} por registrar {{count}} animais",
+      "activity_tracker": "agrodeo parabeniza {{user}} de {{cabana}} por completar {{count}} atividades",
+      "health_guardian": "agrodeo parabeniza {{user}} de {{cabana}} por administrar {{count}} vacinações",
+      "financial_manager": "agrodeo parabeniza {{user}} de {{cabana}} por registrar {{count}} movimentos financeiros",
+      "consistent_user": "agrodeo parabeniza {{user}} de {{cabana}} por {{count}} dias consecutivos de uso",
+      "corral_organizer": "agrodeo parabeniza {{user}} de {{cabana}} por organizar {{count}} currais"
     }
   },
   "sync": {
