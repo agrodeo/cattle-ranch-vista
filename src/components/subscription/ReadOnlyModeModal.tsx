@@ -90,7 +90,7 @@ export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyMod
                 <Zap className="h-6 w-6 mx-auto mb-2 text-green-600" />
                 <CardTitle className="text-sm">{t('readOnlyModal.planProducer')}</CardTitle>
                 <CardDescription className="text-xs">{t('readOnlyModal.planProducerDesc')}</CardDescription>
-                <p className="text-lg font-bold mt-1">$69,900{t('readOnlyModal.perMonth')}</p>
+                <p className="text-lg font-bold mt-1">$49.99{t('readOnlyModal.perMonth')}</p>
                 <Button size="sm" className="w-full mt-2">
                   {t('readOnlyModal.buyIn')} {storeName}
                 </Button>
@@ -105,7 +105,7 @@ export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyMod
                 <Crown className="h-6 w-6 mx-auto mb-2 text-purple-600" />
                 <CardTitle className="text-sm">{t('readOnlyModal.planCabana')}</CardTitle>
                 <CardDescription className="text-xs">{t('readOnlyModal.planCabanaDesc')}</CardDescription>
-                <p className="text-lg font-bold mt-1">$149,000{t('readOnlyModal.perMonth')}</p>
+                <p className="text-lg font-bold mt-1">$89.99{t('readOnlyModal.perMonth')}</p>
                 <Button size="sm" variant="outline" className="w-full mt-2">
                   {t('readOnlyModal.buyIn')} {storeName}
                 </Button>

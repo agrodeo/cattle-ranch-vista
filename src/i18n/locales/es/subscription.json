@@ -66,7 +66,7 @@
     "youSave": "Ahorras",
     "contactSales": "Contactar Ventas",
     "allPlansInclude": "Todos los planes incluyen soporte técnico y actualizaciones gratuitas.",
-    "pricesDisclaimer": "Los precios están en pesos argentinos e incluyen IVA."
+    "pricesDisclaimer": "Los precios están en dólares estadounidenses (USD)."
   },
   "plans": {
     "free": {
@@ -102,7 +102,7 @@
       ]
     },
     "cabana": {
-      "name": "Cabaña",
+      "name": "Herd",
       "badge": "Pro",
       "bullets": [
         "Hasta 1.000 animales",
