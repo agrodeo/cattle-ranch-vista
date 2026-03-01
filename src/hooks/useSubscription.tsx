@@ -17,20 +17,20 @@ export interface SubscriptionStatus {
 }
 
 const PLAN_NAMES = {
-  free: 'Gratuito',
+  free: 'Free',
   personal: 'Personal',
-  avanzado: 'Avanzado',
-  productor: 'Productor',
-  cabana: 'Cabaña',
-  corporativo: 'Corporativo'
+  avanzado: 'Advanced',
+  productor: 'Producer',
+  cabana: 'Herd',
+  corporativo: 'Corporate'
 };
 
 const PLAN_PRICES = {
-  personal: { monthly: 2900, annual: 29000 },
-  avanzado: { monthly: 5900, annual: 59000 },
-  productor: { monthly: 8900, annual: 89000 },
-  cabana: { monthly: 29900, annual: 299000 },
-  corporativo: { monthly: 89900, annual: 899000 }
+  personal: { monthly: 1999, annual: 19999 },
+  avanzado: { monthly: 3499, annual: 34900 },
+  productor: { monthly: 4999, annual: 49999 },
+  cabana: { monthly: 8999, annual: 89900 },
+  corporativo: { monthly: 0, annual: 0 }
 };
 
 export const useSubscription = () => {
