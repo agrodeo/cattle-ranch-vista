@@ -35,39 +35,39 @@ const getPlanData = (t: any): Plan[] => [
   {
     id: "personal",
     nombre: t('subscription:plans.personal.name'),
-    precio_mensual: 24900,
-    precio_anual: 24900 * 12 * 0.8,
+    precio_mensual: 1999,
+    precio_anual: 19999,
     bullets: t('subscription:plans.personal.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "avanzado",
     nombre: t('subscription:plans.avanzado.name'),
-    precio_mensual: 44900,
-    precio_anual: 44900 * 12 * 0.8,
+    precio_mensual: 3499,
+    precio_anual: 34900,
     bullets: t('subscription:plans.avanzado.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "productor",
     nombre: t('subscription:plans.productor.name'),
     badge: t('subscription:plans.productor.badge'),
-    precio_mensual: 69900,
-    precio_anual: 69900 * 12 * 0.8,
+    precio_mensual: 4999,
+    precio_anual: 49999,
     bullets: t('subscription:plans.productor.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "cabana",
     nombre: t('subscription:plans.cabana.name'),
     badge: t('subscription:plans.cabana.badge'),
-    precio_mensual: 149000,
-    precio_anual: 149000 * 12 * 0.8,
+    precio_mensual: 8999,
+    precio_anual: 89900,
     bullets: t('subscription:plans.cabana.bullets', { returnObjects: true }) as string[]
   },
   {
     id: "corporativo",
     nombre: t('subscription:plans.corporativo.name'),
     badge: t('subscription:plans.corporativo.badge'),
-    precio_mensual: 159000,
-    precio_anual: 159000 * 12 * 0.8,
+    precio_mensual: 0,
+    precio_anual: 0,
     bullets: t('subscription:plans.corporativo.bullets', { returnObjects: true }) as string[]
   }
 ];
