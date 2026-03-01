@@ -16,12 +16,13 @@ export interface SubscriptionStatus {
   isReadOnly: boolean;
 }
 
-const PLAN_NAMES = {
+const PLAN_NAMES: Record<string, string> = {
   free: 'Free',
   personal: 'Personal',
   avanzado: 'Advanced',
   productor: 'Producer',
   cabana: 'Herd',
+  cabaña: 'Herd',
   corporativo: 'Corporate'
 };
 
