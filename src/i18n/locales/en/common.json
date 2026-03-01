@@ -210,6 +210,14 @@
         "name": "Space Organizer",
         "description": "You've created and organized corrals"
       }
+    },
+    "congrats": {
+      "herd_starter": "agrodeo congratulates {{user}} from {{cabana}} for registering {{count}} animals",
+      "activity_tracker": "agrodeo congratulates {{user}} from {{cabana}} for completing {{count}} activities",
+      "health_guardian": "agrodeo congratulates {{user}} from {{cabana}} for administering {{count}} vaccinations",
+      "financial_manager": "agrodeo congratulates {{user}} from {{cabana}} for recording {{count}} financial movements",
+      "consistent_user": "agrodeo congratulates {{user}} from {{cabana}} for {{count}} consecutive days of use",
+      "corral_organizer": "agrodeo congratulates {{user}} from {{cabana}} for organizing {{count}} corrals"
     }
   },
   "sync": {

@@ -108,6 +108,18 @@ export function getMedalIcon(tier: MedalTier): string {
   }
 }
 
+export function getThresholdForTier(definition: AchievementDefinition, tier: MedalTier): number {
+  return definition.tiers[tier].threshold;
+}
+
+export function getTierNumberColor(tier: MedalTier): string {
+  switch (tier) {
+    case 'bronze': return '#b45309';
+    case 'silver': return '#6b7280';
+    case 'gold': return '#d97706';
+  }
+}
+
 export function calculateProgress(value: number, definition: AchievementDefinition): {
   currentTier: MedalTier | null;
   nextTier: MedalTier | null;
