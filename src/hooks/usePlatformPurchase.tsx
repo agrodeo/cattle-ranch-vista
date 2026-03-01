@@ -32,36 +32,75 @@ export const usePlatformPurchase = () => {
       console.log('[Purchase:Despia] onRevenueCatPurchase callback fired');
 
       try {
-        // Refresh entitlements after successful purchase
-        await refreshCustomerInfo();
         toast({
           title: "¡Compra exitosa!",
           description: "Tu suscripción ha sido activada.",
         });
 
-        // Sync purchase with Supabase backend so billing_subscriptions is updated
+        // In Despia runtime, the Capacitor RevenueCat SDK is NOT available.
+        // We retrieve purchase history via the Despia bridge and use that
+        // to construct the payload for sync-ios-purchase.
         try {
-          const { revenueCatService } = await import('@/services/revenueCatService');
-          const customerInfo = await revenueCatService.getCustomerInfo();
-          const { IOSPurchaseService } = await import('@/services/iosPurchaseService');
-          await IOSPurchaseService.syncWithBackend(customerInfo, (name, options) =>
-            supabase.functions.invoke(name, options)
-          );
-          console.log('[Purchase:Despia] Backend sync completed');
+          // Get purchase history from Despia bridge
+          const data = await despia("getpurchasehistory://", ["restoredData"]);
+          const purchases = (data as any)?.restoredData || [];
+          console.log('[Purchase:Despia] Purchase history for sync:', purchases);
+
+          // Extract active product IDs from purchase history
+          const activeSubscriptions = purchases
+            .filter((p: any) => p.isActive)
+            .map((p: any) => p.productIdentifier || p.productId || p.product_id)
+            .filter(Boolean);
+
+          // If no active subscriptions found from history, try using the
+          // last purchase data we stored before initiating the purchase
+          const pendingProduct = (window as any).__pendingDespiaProductId;
+          if (activeSubscriptions.length === 0 && pendingProduct) {
+            activeSubscriptions.push(pendingProduct);
+          }
+
+          console.log('[Purchase:Despia] Active subscriptions for sync:', activeSubscriptions);
+
+          const userId = session?.user?.id;
+          // Call sync-ios-purchase directly with constructed customerInfo
+          const { error } = await supabase.functions.invoke('sync-ios-purchase', {
+            body: {
+              customerInfo: {
+                originalAppUserId: userId || 'anonymous',
+                activeSubscriptions,
+                entitlements: { active: {} }
+              }
+            }
+          });
+
+          if (error) {
+            console.error('[Purchase:Despia] sync-ios-purchase error:', error);
+          } else {
+            console.log('[Purchase:Despia] Backend sync completed');
+          }
+
           // Signal useSubscription to refresh from Supabase
           window.dispatchEvent(new CustomEvent('subscription-updated'));
         } catch (syncError) {
           console.error('[Purchase:Despia] Backend sync failed (non-blocking):', syncError);
+          // Still dispatch the event so UI tries to refresh
+          window.dispatchEvent(new CustomEvent('subscription-updated'));
         }
+
+        // Try refreshing entitlements (may fail in Despia, that's ok)
+        try { await refreshCustomerInfo(); } catch {}
       } catch (callbackError) {
         console.error('[Purchase:Despia] onRevenueCatPurchase failed:', callbackError);
       }
+
+      // Clean up pending product
+      delete (window as any).__pendingDespiaProductId;
     };
 
     return () => {
       delete (window as any).onRevenueCatPurchase;
     };
-  }, [refreshCustomerInfo, toast]);
+  }, [refreshCustomerInfo, toast, session?.user?.id]);
 
   /**
    * Unified purchase entry point.
@@ -146,6 +185,9 @@ export const usePlatformPurchase = () => {
       planId: data.planId, 
       billingCycle: data.billingCycle 
     });
+    
+    // Store the product ID so the callback can use it for sync
+    (window as any).__pendingDespiaProductId = productId;
     
     // Use the documented Despia purchase command:
     // revenuecat://purchase?external_id={USER_ID}&product={PRODUCT_ID}
