@@ -1,95 +1,54 @@
 
-Objetivo: lograr que al tocar un plan en TestFlight (desplegado con Despia) se abra el flujo nativo de compra (App Store), evitando que caiga al flujo web de MercadoPago y eliminando los errores silenciosos previos.
 
-Diagnóstico confirmado (con evidencia)
-- Síntoma actual: al seleccionar plan no aparece hoja nativa de compra.
-- Evidencia de logs: hubo invocaciones recientes a `mp-sub-create-link` con error interno (`Cannot read properties of undefined...`) durante intentos de compra.
-- Conclusión: en TestFlight/Despia el código está ruteando al flujo web, no al nativo.
-- Causa raíz principal: la detección nativa actual depende de Capacitor (`Capacitor.isNativePlatform()`), pero en runtime Despia ese check no necesariamente representa el entorno de compra.
-- Causas adicionales que agravan:
-  1) `RevenueCatPaywall` envía `pkg.product.identifier` como `planId`, mientras `usePlatformPurchase` espera claves de plan (`personal|avanzado|productor|cabana`) para mapear producto.
-  2) `purchaseWeb` espera `response.init_point`, pero la edge function devuelve `url`.
-  3) `mp-sub-create-link` usa un cliente Supabase antiguo en Deno que rompe en runtime.
-  4) `Plans.tsx` muestra éxito tras `await initiatePurchase()` sin validar `result.success`.
+## Simplified Achievement Sharing Cards
 
-Do I know what the issue is?
-- Sí: hoy la compra en Despia está tomando el camino web por detección de plataforma incorrecta para ese runtime; además, el fallback web está roto por incompatibilidad de respuesta y por error en la edge function.
+### Current State
+The achievement cards currently use emoji medals (🥇🥈🥉) inside circular gradient rings, with generic text about "Medal of Gold" etc. The sharing story card (`AchievementStoryCard.tsx`) is a 360x640 canvas-like div rendered off-screen and captured with `html2canvas`.
 
-Implementación propuesta (secuencia)
-1) Agregar detección explícita de runtime Despia para compras
-- Archivo: `src/lib/platformDetection.ts`
-- Añadir helpers específicos:
-  - `isDespiaRuntime()` (detección segura por señales de runtime Despia).
-  - `getDespiaPlatform()` (`ios|android|null`).
-  - Mantener helpers actuales de Capacitor para no romper otros módulos.
-- Importante: no convertir globalmente todo “native” a Despia para hooks de RevenueCat Capacitor (evita regresiones en `useEntitlements`).
+### New Design
 
-2) Unificar ruteo de compra por runtime real (Capacitor vs Despia vs Web)
-- Archivo: `src/hooks/usePlatformPurchase.tsx`
-- Cambiar `initiatePurchase` para resolver en click-time:
-  - Capacitor nativo -> flujo actual RevenueCat Capacitor.
-  - Despia runtime -> comando nativo Despia para RevenueCat (compra nativa).
-  - Web -> MercadoPago.
-- Añadir `resolveProductId(...)` robusto:
-  - Si entra clave de plan, mapear a product ID.
-  - Si entra product ID directo (caso paywall), usarlo sin remap.
-- Mejorar logs de diagnóstico por rama (`[Purchase][runtime]`).
+**Visual**: Replace the medal emoji with a **large, bold number** (the threshold value: 10, 50, 100, etc.) styled in the tier color (bronze/silver/gold).
 
-3) Corregir entradas UI para no falsear éxito y no romper mapping
-- Archivos:
-  - `src/components/subscription/RevenueCatPaywall.tsx`
-  - `src/pages/Plans.tsx`
-  - `src/components/subscription/SubscriptionPlansModal.tsx`
-  - `src/components/subscription/ReadOnlyModeModal.tsx` (si aplica)
-- Cambios:
-  - Usar resultado estructurado (`success`, `pending`, `cancelled`) y no asumir éxito.
-  - En `Plans.tsx`, no mostrar “suscripción activada” hasta `success === true`.
-  - Asegurar que todos los entry points consuman el mismo contrato de `initiatePurchase`.
+**Text**: A personalized congratulatory message:
+- ES: "agrodeo felicita a **[nombre usuario]** de **[cabaña]** por registrar **10** animales"
+- EN: "agrodeo congratulates **[user name]** from **[ranch]** for registering **10** animals"
+- PT: "agrodeo parabeniza **[nome usuario]** de **[fazenda]** por registrar **10** animais"
 
-4) Reparar fallback web para que no falle en caso de ruta web
-- Archivos:
-  - `src/hooks/usePlatformPurchase.tsx`
-  - `supabase/functions/mp-sub-create-link/index.ts`
-- Cambios:
-  - Cliente: aceptar `response.url || response.init_point`.
-  - Edge function: actualizar cliente Supabase Deno a implementación compatible (evitar crash actual) y devolver payload consistente.
-- Resultado: aunque no debería usarse en TestFlight/Despia, el fallback web queda sano.
+The exact message varies per achievement (animals, activities, vaccinations, finances, streak days, corrals).
 
-5) Mantener integridad de negocio y guardrails
-- Sin tocar nombres de planes/límites/trial.
-- Sin cambios destructivos de DB, rutas críticas o estilos globales.
-- No habilitar activación premium sin pago: la fuente de verdad sigue siendo backend/webhooks.
+### Changes
 
-Validación obligatoria (E2E)
-1. TestFlight (Despia)
-- Abrir app autenticada.
-- Probar compra desde:
-  - `/plans`
-  - modal de suscripción
-  - paywall de feature premium (si aplica)
-- Esperado: se abre hoja nativa de App Store al tocar plan.
-- Cancelar compra: sin toast destructivo engañoso.
-- Completar sandbox: estado premium actualizado tras sincronización/webhook.
+**1. Update `AchievementStoryCard.tsx`**
+- Remove the emoji medal circle
+- Add a large number (threshold) in tier color as the centerpiece
+- Replace generic "Medal of Gold" text with the personalized congratulatory message
+- Pass `userName`, `cabañaName`, and `threshold` as new props
 
-2. Web
-- Seleccionar plan en `/plans` y modal.
-- Esperado: abre MercadoPago correctamente (sin error de edge function).
+**2. Update `AchievementCard.tsx`** (visible preview card)
+- Same simplification: big number instead of emoji
+- Same congratulatory text
+- Pass the new props down to `AchievementStoryCard`
 
-3. Regresión
-- Verificar que no se alteraron rutas críticas, límites, trial ni nombres de planes.
-- Confirmar que no hay cambios globales de estilo ni regresiones en flujo existente.
+**3. Update `AchievementsGallery.tsx`**
+- Pass `userName` and `cabañaName` to each `AchievementCard`
 
-Riesgos y mitigación
-- Riesgo: detectar mal runtime Despia y disparar rama incorrecta.
-  - Mitigación: helper dedicado + logs por rama + prueba E2E en TestFlight.
-- Riesgo: UX de éxito prematuro.
-  - Mitigación: contrato de resultado explícito y toasts condicionados por `success`.
+**4. Add i18n keys** (en, es, pt)
+- Add per-achievement congratulatory messages:
+  - `achievements.congrats.herd_starter`: "agrodeo congratulates {{user}} from {{cabana}} for registering {{count}} animals"
+  - `achievements.congrats.activity_tracker`: "...for completing {{count}} activities"
+  - `achievements.congrats.health_guardian`: "...for administering {{count}} vaccinations"
+  - `achievements.congrats.financial_manager`: "...for recording {{count}} financial movements"
+  - `achievements.congrats.consistent_user`: "...for {{count}} consecutive days of use"
+  - `achievements.congrats.corral_organizer`: "...for organizing {{count}} corrals"
 
-Archivos previstos para tocar
-- `src/lib/platformDetection.ts`
-- `src/hooks/usePlatformPurchase.tsx`
-- `src/pages/Plans.tsx`
-- `src/components/subscription/SubscriptionPlansModal.tsx`
-- `src/components/subscription/RevenueCatPaywall.tsx`
-- `src/components/subscription/ReadOnlyModeModal.tsx` (si aplica)
-- `supabase/functions/mp-sub-create-link/index.ts`
+**5. Update `achievements.ts`**
+- Add a helper to get the threshold number for a given tier from a definition
+
+### Technical Details
+
+- The big number will use `fontSize: '96px'` (story) / `fontSize: '64px'` (preview) with `fontWeight: 900`
+- Colors: bronze = `#b45309`, silver = `#6b7280`, gold = `#d97706`
+- No emoji medals anywhere in the sharing flow
+- The `userName` and `cabañaName` come from `useSupabaseAuth().currentUser`
+- No changes to achievement unlock logic, DB schema, or routes
+
