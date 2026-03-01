@@ -1,8 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { PageHeader } from "@/components/ui/page-header";
-import { SectionCard } from "@/components/ui/section-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobilePageHeader } from "@/components/mobile/MobilePageHeader";
 import { IconTabsBar } from "@/components/reports/IconTabsBar";
 import { HerdOverview } from "@/components/reports/HerdOverview";
@@ -231,38 +229,32 @@ const Reports = () => {
 
   return (
     <div className="mx-auto w-full max-w-screen-2xl px-6 pb-24 lg:pb-0 overflow-x-hidden">
-      <div className="space-y-3">
+      <div className="space-y-4">
         <PageHeader 
           title={t('reports:title')}
           subtitle={t('reports:subtitle')}
         />
 
-        <SectionCard
-          title={t('reports:analysisPanel')}
-          subtitle={t('reports:detailedReports')}
-        >
-          <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-            <TabsList className="flex w-full overflow-x-auto scrollbar-hide h-10">
-              {tabs.map((tab) => (
-                <TabsTrigger key={tab.id} value={tab.id} className="flex-shrink-0 text-xs lg:text-sm px-2 py-2 truncate">
-                  {tab.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            
-            {/* Quick Filter Chips */}
-            <QuickFilterChips
-              availableFilters={getQuickFiltersForTab(activeTab)}
-              activeFilters={activeQuickFilters}
-              onToggleFilter={handleToggleQuickFilter}
-              className="px-1"
-            />
-            
-            <div className="space-y-4">
-              {renderTabContent()}
-            </div>
-          </Tabs>
-        </SectionCard>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
+          <TabsList className="flex w-full overflow-x-auto scrollbar-hide h-10">
+            {tabs.map((tab) => (
+              <TabsTrigger key={tab.id} value={tab.id} className="flex-shrink-0 text-xs lg:text-sm px-3 py-2 truncate">
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          {/* Quick Filter Chips */}
+          <QuickFilterChips
+            availableFilters={getQuickFiltersForTab(activeTab)}
+            activeFilters={activeQuickFilters}
+            onToggleFilter={handleToggleQuickFilter}
+          />
+          
+          <div className="space-y-4">
+            {renderTabContent()}
+          </div>
+        </Tabs>
       </div>
     </div>
   );
