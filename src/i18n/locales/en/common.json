@@ -220,21 +220,7 @@
       "corral_organizer": "agrodeo congratulates {{user}} from {{cabana}} for organizing {{count}} corrals"
     }
   },
-  "sync": {
-    "syncCenter": "Sync Center",
-    "syncNow": "Sync now",
-    "syncing": "Syncing...",
-    "pending": "Pending",
-    "failed": "Failed",
-    "synced": "Synced",
-    "retryFailed": "Retry failed",
-    "pendingEvents": "Pending events to sync",
-    "noInternet": "No internet connection",
-    "syncCompleted": "Sync completed",
-    "syncError": "Error syncing",
-    "noConnectionWarning": "You're offline. Everything will be saved as pending and synced when reconnected.",
-    "eventsRetried": "Events retried"
-  },
+  
   "connectivity": {
     "offlineBanner": "You're offline. Everything will be saved as pending and synced when reconnected."
   },
@@ -310,6 +296,7 @@
     "failed": "Failed",
     "synced": "Synced",
     "syncNow": "Sync Now",
+    "syncing": "Syncing...",
     "retryFailed": "Retry Failed",
     "offlineMode": "Offline Mode",
     "offlineWarning": "Offline. Changes will be saved locally.",
@@ -319,7 +306,12 @@
     "offline": "Offline",
     "pendingEvents": "Pending events",
     "failedEvents": "Failed events",
-    "syncedEvents": "Synced events"
+    "syncedEvents": "Synced events",
+    "noInternet": "No internet connection",
+    "syncCompleted": "Sync completed",
+    "syncError": "Error syncing",
+    "noConnectionWarning": "You're offline. Everything will be saved as pending and synced when reconnected.",
+    "eventsRetried": "Events retried"
   },
   "toast": {
     "error": "Error",
