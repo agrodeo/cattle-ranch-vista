@@ -29,8 +29,8 @@ const getPlansData = (t: any) => [
       { text: t('plansModal.emailSupport'), included: true },
       { text: t('plansModal.prioritySupport'), included: false },
     ],
-    monthly: 24900,
-    annual: 249000
+    monthly: 1999,
+    annual: 19999
   },
   {
     id: 'avanzado',
@@ -44,8 +44,8 @@ const getPlansData = (t: any) => [
       { text: t('plansModal.emailSupport'), included: true },
       { text: t('plansModal.prioritySupport'), included: false },
     ],
-    monthly: 44900,
-    annual: 449000
+    monthly: 3499,
+    annual: 34900
   },
   {
     id: 'productor',
@@ -58,8 +58,8 @@ const getPlansData = (t: any) => [
       { text: t('plansModal.aiChatUnlimited'), included: true },
       { text: t('plansModal.prioritySupport'), included: true },
     ],
-    monthly: 69900,
-    annual: 699000,
+    monthly: 4999,
+    annual: 49999,
     popular: true
   },
   {
@@ -69,12 +69,12 @@ const getPlansData = (t: any) => [
     color: 'bg-purple-500',
     maxAnimals: 1000,
     features: [
-      { text: `${t('plansModal.upTo')} 1.000 ${t('plansModal.animals')}`, included: true },
+      { text: `${t('plansModal.upTo')} 1,000 ${t('plansModal.animals')}`, included: true },
       { text: t('plansModal.aiChatUnlimited'), included: true },
       { text: t('plansModal.prioritySupport'), included: true },
     ],
-    monthly: 149000,
-    annual: 1490000
+    monthly: 8999,
+    annual: 89900
   },
   {
     id: 'corporativo',
@@ -87,8 +87,8 @@ const getPlansData = (t: any) => [
       { text: t('plansModal.aiChatUnlimited'), included: true },
       { text: t('plansModal.support24x7'), included: true },
     ],
-    monthly: 159000,
-    annual: 1590000
+    monthly: 0,
+    annual: 0
   }
 ];
 
@@ -128,12 +128,12 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
     }
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-AR', {
+  const formatPrice = (cents: number) => {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0
-    }).format(price);
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(cents / 100);
   };
 
   const currentPlan = subscriptionStatus?.plan;
@@ -294,8 +294,8 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
         </div>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>{t('plansModal.allPlansInclude', 'Todos los planes incluyen soporte técnico y actualizaciones gratuitas.')}</p>
-          <p>{t('plansModal.pricesDisclaimer', 'Los precios están en pesos argentinos e incluyen IVA.')}</p>
+          <p>{t('plansModal.allPlansInclude')}</p>
+          <p>{t('plansModal.pricesDisclaimer')}</p>
         </div>
       </DialogContent>
     </Dialog>
