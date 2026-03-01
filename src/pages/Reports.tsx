@@ -236,7 +236,7 @@ const Reports = () => {
         />
 
         <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-4">
-          <TabsList className="inline-flex w-auto overflow-x-auto scrollbar-hide h-10">
+          <TabsList className="inline-flex w-auto h-10">
             {tabs.map((tab) => (
               <TabsTrigger key={tab.id} value={tab.id} className="flex-shrink-0 text-xs lg:text-sm px-3 py-2 truncate">
                 {tab.label}
