@@ -20,12 +20,12 @@ interface CompareSheetProps {
   onPlanSelect: (plan: Plan) => void;
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('es-AR', {
+const formatPrice = (cents: number) => {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 0,
-  }).format(price);
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
 };
 
 export function CompareSheet({ 

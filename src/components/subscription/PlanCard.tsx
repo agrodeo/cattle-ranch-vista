@@ -21,17 +21,17 @@ const getIcon = (index: number) => {
   return Icon;
 };
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('es-AR', {
+const formatPrice = (cents: number) => {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 0,
-  }).format(price);
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
 };
 
 export function PlanCard({ plan, billingCycle, isSelected, onSelect, loading }: PlanCardProps) {
   const { t } = useTranslation(['subscription']);
-  const price = billingCycle === 'monthly' ? plan.precio_mensual : plan.precio_anual / 12;
+  const price = billingCycle === 'monthly' ? plan.precio_mensual : Math.round(plan.precio_anual / 12);
   const totalAnual = plan.precio_anual;
   const isFree = plan.precio_mensual === 0;
 

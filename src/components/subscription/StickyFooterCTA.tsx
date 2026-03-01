@@ -10,12 +10,12 @@ interface StickyFooterCTAProps {
   loading?: boolean;
 }
 
-const formatPrice = (price: number) => {
-  return new Intl.NumberFormat('es-AR', {
+const formatPrice = (cents: number) => {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'ARS',
-    minimumFractionDigits: 0,
-  }).format(price);
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(cents / 100);
 };
 
 export function StickyFooterCTA({ 
@@ -27,7 +27,7 @@ export function StickyFooterCTA({
   const { t } = useTranslation(['subscription']);
   const price = billingCycle === 'monthly' 
     ? selectedPlan.precio_mensual 
-    : selectedPlan.precio_anual / 12;
+    : Math.round(selectedPlan.precio_anual / 12);
   const isFree = selectedPlan.precio_mensual === 0;
 
   return (
