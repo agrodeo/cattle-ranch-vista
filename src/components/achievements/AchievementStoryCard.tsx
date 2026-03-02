@@ -14,58 +14,24 @@ interface AchievementStoryCardProps {
   cabañaName: string;
 }
 
-const getTierColors = (tier: MedalTier) => {
-  switch (tier) {
-    case 'gold':
-      return {
-        bg: 'linear-gradient(180deg, #92400e 0%, #78350f 30%, #451a03 70%, #1c0f00 100%)',
-        accent: '#fbbf24',
-        accentLight: '#fde68a',
-        glow: 'rgba(251, 191, 36, 0.4)',
-        glowStrong: 'rgba(251, 191, 36, 0.6)',
-        text: '#fef3c7',
-        textMuted: '#fde68a',
-        sparkle: '#fbbf24',
-      };
-    case 'silver':
-      return {
-        bg: 'linear-gradient(180deg, #374151 0%, #1f2937 30%, #111827 70%, #030712 100%)',
-        accent: '#9ca3af',
-        accentLight: '#d1d5db',
-        glow: 'rgba(156, 163, 175, 0.4)',
-        glowStrong: 'rgba(156, 163, 175, 0.6)',
-        text: '#f3f4f6',
-        textMuted: '#d1d5db',
-        sparkle: '#9ca3af',
-      };
-    case 'bronze':
-      return {
-        bg: 'linear-gradient(180deg, #78350f 0%, #451a03 30%, #292524 70%, #0c0a09 100%)',
-        accent: '#d97706',
-        accentLight: '#fbbf24',
-        glow: 'rgba(217, 119, 6, 0.4)',
-        glowStrong: 'rgba(217, 119, 6, 0.6)',
-        text: '#fef3c7',
-        textMuted: '#fde68a',
-        sparkle: '#d97706',
-      };
-  }
-};
-
 export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryCardProps>(({
   achievementCode,
   nameKey,
   descriptionKey,
   medalTier,
   unlockedAt,
-  progressValue,
   threshold,
   userName,
   cabañaName,
 }, ref) => {
   const { t } = useTranslation(['common']);
-  const colors = getTierColors(medalTier);
   const numberColor = getTierNumberColor(medalTier);
+
+  const congratsText = t(`common:achievements.congrats.${achievementCode}`, {
+    user: userName,
+    cabana: cabañaName,
+    count: threshold,
+  });
 
   return (
     <div
@@ -74,48 +40,30 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
       style={{
         width: '360px',
         height: '640px',
-        background: colors.bg,
+        background: '#ffffff',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       }}
     >
-      {/* Decorative sparkles */}
-      {[
-        { top: '60px', left: '30px', size: '8px', opacity: 0.6 },
-        { top: '120px', right: '40px', size: '6px', opacity: 0.4 },
-        { top: '200px', left: '50px', size: '5px', opacity: 0.3 },
-        { top: '380px', right: '60px', size: '7px', opacity: 0.5 },
-        { top: '450px', left: '40px', size: '6px', opacity: 0.35 },
-        { top: '500px', right: '30px', size: '5px', opacity: 0.25 },
-      ].map((sparkle, i) => (
-        <div
-          key={i}
-          style={{
-            position: 'absolute',
-            top: sparkle.top,
-            left: sparkle.left,
-            right: (sparkle as any).right,
-            width: sparkle.size,
-            height: sparkle.size,
-            backgroundColor: colors.sparkle,
-            opacity: sparkle.opacity,
-            transform: 'rotate(45deg)',
-            borderRadius: '1px',
-          }}
-        />
-      ))}
-
-      {/* Subtle radial glow behind number */}
+      {/* Top green accent bar */}
       <div style={{
         position: 'absolute',
-        top: '160px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '280px',
-        height: '280px',
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${colors.glow} 0%, transparent 70%)`,
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: 'linear-gradient(90deg, #16a34a, #22c55e)',
+      }} />
+
+      {/* Bottom green accent bar */}
+      <div style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: 'linear-gradient(90deg, #22c55e, #16a34a)',
       }} />
 
       {/* Content */}
@@ -126,28 +74,37 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        padding: '40px 30px 30px',
+        justifyContent: 'center',
+        padding: '48px 36px',
+        textAlign: 'center',
       }}>
         {/* Brand */}
         <div style={{
-          fontSize: '24px',
+          fontSize: '22px',
           fontWeight: '800',
-          color: colors.accent,
+          color: '#16a34a',
           letterSpacing: '2px',
-          marginBottom: '8px',
+          marginBottom: '6px',
         }}>
           agrodeo
         </div>
         <div style={{
           fontSize: '10px',
-          color: colors.textMuted,
-          opacity: 0.6,
+          color: '#94a3b8',
           letterSpacing: '3px',
           textTransform: 'uppercase',
-          marginBottom: '40px',
+          marginBottom: '48px',
         }}>
           {t('common:achievements.branding_tagline')}
         </div>
+
+        {/* Decorative line */}
+        <div style={{
+          width: '40px',
+          height: '2px',
+          backgroundColor: '#e2e8f0',
+          marginBottom: '32px',
+        }} />
 
         {/* Big Number */}
         <div style={{
@@ -155,43 +112,37 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
           fontWeight: 900,
           color: numberColor,
           lineHeight: 1,
-          marginBottom: '8px',
-          textShadow: `0 0 40px ${colors.glowStrong}`,
+          marginBottom: '12px',
         }}>
           {threshold}
         </div>
 
-        {/* Divider */}
+        {/* Decorative line */}
         <div style={{
-          width: '60px',
+          width: '40px',
           height: '2px',
-          background: `linear-gradient(90deg, transparent, ${colors.accent}, transparent)`,
-          marginTop: '16px',
-          marginBottom: '24px',
+          backgroundColor: '#e2e8f0',
+          marginTop: '20px',
+          marginBottom: '28px',
         }} />
 
         {/* Congratulatory message */}
         <div style={{
-          fontSize: '18px',
-          fontWeight: '600',
-          color: '#ffffff',
-          textAlign: 'center',
-          lineHeight: '1.5',
-          marginBottom: '28px',
-          maxWidth: '300px',
+          fontSize: '16px',
+          fontWeight: '500',
+          color: '#334155',
+          lineHeight: '1.6',
+          maxWidth: '280px',
+          marginBottom: '32px',
         }}>
-          {t(`common:achievements.congrats.${achievementCode}`, {
-            user: userName,
-            cabana: cabañaName,
-            count: threshold,
-          })}
+          {congratsText}
         </div>
 
         {/* Date */}
         <div style={{
           fontSize: '12px',
-          color: colors.textMuted,
-          opacity: 0.5,
+          color: '#94a3b8',
+          fontWeight: '400',
         }}>
           {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', {
             day: 'numeric',
@@ -205,9 +156,6 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
 
         {/* Bottom branding */}
         <div style={{
-          width: '100%',
-          borderTop: `1px solid rgba(255,255,255,0.08)`,
-          paddingTop: '16px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -216,16 +164,10 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
           <div style={{
             fontSize: '12px',
             fontWeight: '600',
-            color: colors.accent,
+            color: '#16a34a',
             letterSpacing: '1px',
           }}>
             agrodeo.com
-          </div>
-          <div style={{
-            fontSize: '10px',
-            color: 'rgba(255,255,255,0.3)',
-          }}>
-            {t('common:achievements.branding_tagline')}
           </div>
         </div>
       </div>
