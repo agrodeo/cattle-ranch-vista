@@ -91,9 +91,9 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
         <RadiatingLines />
       </div>
 
-      {/* Bottom-left curved lines (smaller) */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'rotate(90deg)', transformOrigin: 'top left', translate: '0 0' }}>
-        <CurvedLines style={{ width: '140px', height: '140px' }} />
+      {/* Bottom-left curved lines */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'rotate(90deg) scaleX(-1)', transformOrigin: 'bottom left' }}>
+        <CurvedLines />
       </div>
 
       {/* Bottom-right radiating lines */}
@@ -140,13 +140,10 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
             fontStyle: 'italic',
           }}>¡</span>
           <span style={{
-            fontSize: '380px',
+          fontSize: '380px',
             fontWeight: 900,
             color: '#6b7280',
             lineHeight: 0.85,
-            background: 'linear-gradient(180deg, #9ca3af 0%, #4b5563 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
           }}>{threshold}</span>
           <span style={{
             fontSize: '320px',
