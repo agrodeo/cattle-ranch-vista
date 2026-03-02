@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { type MedalTier, getTierNumberColor } from '@/lib/achievements';
 import { AchievementStoryCard } from './AchievementStoryCard';
 import html2canvas from 'html2canvas';
@@ -43,7 +42,7 @@ export function AchievementCard({
 
     try {
       const canvas = await html2canvas(element, {
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         scale: 3,
         useCORS: true,
         allowTaint: true,
@@ -72,13 +71,11 @@ export function AchievementCard({
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
-
     toast.success(t('common:fields.imageDownloaded'));
   };
 
   const handleShare = async () => {
     const blob = await generateStoryImage();
-
     if (!blob) {
       toast.error(t('common:fields.errorDownloadingImage'));
       return;
@@ -90,7 +87,7 @@ export function AchievementCard({
       try {
         await navigator.share({
           files: [file],
-          title: `agrodeo`,
+          title: 'agrodeo',
           text: t(`common:achievements.congrats.${achievementCode}`, {
             user: userName,
             cabana: cabañaName,
@@ -134,60 +131,41 @@ export function AchievementCard({
       </div>
 
       {/* Visible preview card */}
-      <Card
-        style={{
-          position: 'relative',
-          overflow: 'hidden',
-          padding: '16px',
-          backgroundColor: '#f8fafc',
-          border: '1px solid #e2e8f0',
-        }}
-      >
-        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <span style={{ fontSize: '20px', fontWeight: 'bold', color: '#16a34a' }}>
-              agrodeo
-            </span>
-          </div>
+      <div className="rounded-xl border border-border bg-background p-6 text-center space-y-4">
+        {/* Brand */}
+        <p className="text-sm font-bold text-primary tracking-wider">agrodeo</p>
 
-          {/* Big Number */}
-          <div style={{
-            fontSize: '64px',
-            fontWeight: 900,
-            color: numberColor,
-            lineHeight: 1,
-            marginBottom: '16px',
-          }}>
-            {threshold}
-          </div>
+        {/* Separator */}
+        <div className="mx-auto w-10 h-px bg-border" />
 
-          {/* Congratulatory message */}
-          <div style={{ marginBottom: '16px' }}>
-            <p style={{ fontSize: '14px', color: '#475569', fontWeight: '500', lineHeight: '1.5' }}>
-              {congratsText}
-            </p>
-          </div>
-
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '12px',
-            color: '#64748b',
-            paddingTop: '12px',
-            borderTop: '1px solid #e2e8f0',
-          }}>
-            <div>
-              {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', {
-                day: 'numeric',
-                month: 'short',
-                year: 'numeric',
-              })}
-            </div>
-          </div>
+        {/* Big Number */}
+        <div
+          className="text-6xl font-black leading-none"
+          style={{ color: numberColor }}
+        >
+          {threshold}
         </div>
-      </Card>
+
+        {/* Separator */}
+        <div className="mx-auto w-10 h-px bg-border" />
+
+        {/* Congrats */}
+        <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-[260px] mx-auto">
+          {congratsText}
+        </p>
+
+        {/* Date */}
+        <div className="pt-3 border-t border-border">
+          <span className="text-xs text-muted-foreground">
+            {t('common:achievements.unlocked_on')}{' '}
+            {new Date(unlockedAt).toLocaleDateString('es-ES', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            })}
+          </span>
+        </div>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex gap-2">
