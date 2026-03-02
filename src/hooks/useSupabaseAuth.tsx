@@ -344,8 +344,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Online: Supabase will read session from IndexedDB via custom storage adapter
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log('🔍 Initial session check:', session ? 'session exists' : 'no session');
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        console.log('🔍 Initial session check:', session ? 'session exists' : 'no session', sessionError ? `error: ${sessionError.message}` : '');
+        
+        // If there's a session error (e.g. stale/corrupt token), clear everything and go to login
+        if (sessionError) {
+          console.warn('⚠️ Stale session detected, clearing caches...');
+          try {
+            await db.auth_storage.clear();
+            await db.user_profile.clear();
+            localStorage.removeItem('cached_subscription_status');
+          } catch (e) {
+            console.warn('Could not clear caches:', e);
+          }
+          await supabase.auth.signOut().catch(() => {});
+          if (mounted) {
+            setIsAuthenticated(false);
+            setCurrentUser(null);
+            setUser(null);
+            setSession(null);
+            setLoading(false);
+          }
+          return;
+        }
+        
         // If no session, stop loading
         if (!session && mounted) {
           setLoading(false);
@@ -353,6 +375,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // If session exists, onAuthStateChange callback handles the rest
       } catch (error) {
         console.error('❌ Failed to get session:', error);
+        // Clear potentially corrupt session data
+        try {
+          await db.auth_storage.clear();
+        } catch (_) {}
         if (mounted) {
           setLoading(false);
         }
