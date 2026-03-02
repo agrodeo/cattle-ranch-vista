@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { type MedalTier, getTierNumberColor, getMedalIcon } from '@/lib/achievements';
+import { type MedalTier, getTierNumberColor } from '@/lib/achievements';
 import { forwardRef } from 'react';
 
 interface AchievementStoryCardProps {
@@ -14,37 +14,55 @@ interface AchievementStoryCardProps {
   cabañaName: string;
 }
 
-const getTierLabel = (tier: MedalTier, t: any) => t(`common:achievements.tiers.${tier}`);
+/* Curved concentric quarter-circle lines (top-left / bottom-left style) */
+const CurvedLines = ({ style }: { style?: React.CSSProperties }) => (
+  <svg width="220" height="220" viewBox="0 0 220 220" fill="none" style={style}>
+    {[40, 60, 80, 100, 120, 140, 160, 180, 200, 220].map((r, i) => (
+      <path
+        key={i}
+        d={`M 0 ${r} A ${r} ${r} 0 0 1 ${r} 0`}
+        stroke="#16a34a"
+        strokeWidth="2.5"
+        fill="none"
+      />
+    ))}
+  </svg>
+);
 
-const getTierCircleColor = (tier: MedalTier): string => {
-  switch (tier) {
-    case 'bronze': return '#b45309';
-    case 'silver': return '#9ca3af';
-    case 'gold': return '#d97706';
-  }
-};
+/* Straight radiating lines from a corner point */
+const RadiatingLines = ({ style }: { style?: React.CSSProperties }) => (
+  <svg width="200" height="200" viewBox="0 0 200 200" fill="none" style={style}>
+    {Array.from({ length: 12 }, (_, i) => {
+      const angle = (i * 90) / 11; // spread across 90 degrees
+      const rad = (angle * Math.PI) / 180;
+      const x2 = Math.cos(rad) * 190;
+      const y2 = Math.sin(rad) * 190;
+      return (
+        <line
+          key={i}
+          x1="0"
+          y1="0"
+          x2={x2.toString()}
+          y2={y2.toString()}
+          stroke="#16a34a"
+          strokeWidth="2"
+        />
+      );
+    })}
+  </svg>
+);
 
 export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryCardProps>(({
-  achievementCode,
   nameKey,
   descriptionKey,
   medalTier,
-  unlockedAt,
   threshold,
-  userName,
   cabañaName,
+  achievementCode,
 }, ref) => {
   const { t } = useTranslation(['common']);
-  const circleColor = getTierCircleColor(medalTier);
-  const numberColor = getTierNumberColor(medalTier);
-  const medalEmoji = getMedalIcon(medalTier);
-  const tierLabel = getTierLabel(medalTier, t);
 
-  const congratsLine = t('common:achievements.story_congrats', {
-    tier: tierLabel,
-    name: t(nameKey),
-    defaultValue: `agrodeo te otorga la medalla de ${tierLabel} por conseguir ${t(nameKey)}`,
-  });
+  const achievementLabel = t(nameKey).toLowerCase();
 
   return (
     <div
@@ -53,7 +71,7 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
       style={{
         width: '1080px',
         height: '1920px',
-        background: '#f8fafb',
+        background: '#ffffff',
         position: 'relative',
         overflow: 'hidden',
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
@@ -63,145 +81,118 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
         justifyContent: 'center',
       }}
     >
-      {/* Top subtle gradient edge */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: '4px',
-        background: 'linear-gradient(90deg, #d1d5db, #9ca3af, #d1d5db)',
-      }} />
+      {/* Top-left curved lines */}
+      <div style={{ position: 'absolute', top: 0, left: 0 }}>
+        <CurvedLines />
+      </div>
 
-      {/* Bottom subtle gradient edge */}
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px',
-        background: 'linear-gradient(90deg, #d1d5db, #9ca3af, #d1d5db)',
-      }} />
+      {/* Top-right radiating lines */}
+      <div style={{ position: 'absolute', top: 0, right: 0, transform: 'rotate(180deg)', transformOrigin: 'center' }}>
+        <RadiatingLines />
+      </div>
 
-      {/* Content */}
+      {/* Bottom-left curved lines (smaller) */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, transform: 'rotate(90deg)', transformOrigin: 'top left', translate: '0 0' }}>
+        <CurvedLines style={{ width: '140px', height: '140px' }} />
+      </div>
+
+      {/* Bottom-right radiating lines */}
+      <div style={{ position: 'absolute', bottom: 0, right: 0, transform: 'scaleY(-1)' }}>
+        <RadiatingLines />
+      </div>
+
+      {/* Main content */}
       <div style={{
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
-        padding: '0 100px',
+        padding: '0 80px',
         gap: '0',
+        width: '100%',
       }}>
-        {/* Brand */}
+        {/* Congratulatory headline */}
         <div style={{
-          fontSize: '56px',
-          fontWeight: 700,
-          color: '#16a34a',
+          fontSize: '72px',
+          fontWeight: 800,
           fontStyle: 'italic',
-          letterSpacing: '2px',
+          color: '#16a34a',
+          lineHeight: 1.15,
           marginBottom: '60px',
+          maxWidth: '900px',
         }}>
-          agrodeo
+          Agrodeo quiere felicitar a {cabañaName} por registrar
         </div>
 
-        {/* Medal circle */}
+        {/* Big number with exclamation marks */}
         <div style={{
-          width: '220px',
-          height: '220px',
-          borderRadius: '50%',
-          border: `6px solid ${circleColor}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          marginBottom: '60px',
-          background: 'transparent',
+          gap: '0px',
+          marginBottom: '10px',
         }}>
-          <span style={{ fontSize: '100px', lineHeight: 1 }}>{medalEmoji}</span>
+          <span style={{
+            fontSize: '320px',
+            fontWeight: 900,
+            color: '#16a34a',
+            lineHeight: 0.85,
+            fontStyle: 'italic',
+          }}>¡</span>
+          <span style={{
+            fontSize: '380px',
+            fontWeight: 900,
+            color: '#6b7280',
+            lineHeight: 0.85,
+            background: 'linear-gradient(180deg, #9ca3af 0%, #4b5563 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}>{threshold}</span>
+          <span style={{
+            fontSize: '320px',
+            fontWeight: 900,
+            color: '#16a34a',
+            lineHeight: 0.85,
+            fontStyle: 'italic',
+          }}>!</span>
         </div>
 
-        {/* Medalla de [Tier] */}
+        {/* Achievement label (e.g., "animales") */}
+        <div style={{
+          fontSize: '140px',
+          fontWeight: 800,
+          color: '#16a34a',
+          lineHeight: 1,
+          marginBottom: '80px',
+        }}>
+          {achievementLabel}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div style={{
+        position: 'absolute',
+        bottom: '80px',
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+      }}>
         <div style={{
           fontSize: '52px',
           fontWeight: 800,
-          color: '#1e293b',
-          marginBottom: '16px',
+          color: '#16a34a',
+          fontStyle: 'italic',
         }}>
-          {t('common:achievements.medal_of', { tier: tierLabel, defaultValue: `Medalla de ${tierLabel}` })}
+          agrodeo.farm
         </div>
-
-        {/* Achievement Name */}
-        <div style={{
-          fontSize: '38px',
-          fontWeight: 500,
-          color: '#334155',
-          marginBottom: '12px',
-        }}>
-          {t(nameKey)}
-        </div>
-
-        {/* Achievement Description */}
-        <div style={{
-          fontSize: '30px',
-          fontWeight: 400,
-          color: '#94a3b8',
-          marginBottom: '60px',
-          maxWidth: '700px',
-        }}>
-          {t(descriptionKey)}
-        </div>
-
-        {/* Separator */}
-        <div style={{
-          width: '600px',
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, #d1d5db, transparent)',
-          marginBottom: '50px',
-        }} />
-
-        {/* Threshold number + logros */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: '14px',
-          marginBottom: '12px',
-        }}>
-          <span style={{
-            fontSize: '48px',
-            fontWeight: 800,
-            color: numberColor,
-          }}>
-            {threshold}
-          </span>
-          <span style={{
-            fontSize: '32px',
-            fontWeight: 400,
-            color: '#94a3b8',
-          }}>
-            {t('common:achievements.logros', { defaultValue: 'logros' })}
-          </span>
-        </div>
-
-        {/* Date */}
         <div style={{
           fontSize: '28px',
-          color: '#94a3b8',
-          fontWeight: 400,
-          marginBottom: '60px',
-        }}>
-          {t('common:achievements.unlocked_on')} {new Date(unlockedAt).toLocaleDateString('es-ES', {
-            day: 'numeric', month: 'short', year: 'numeric',
-          })}
-        </div>
-
-        {/* Separator */}
-        <div style={{
-          width: '600px',
-          height: '1px',
-          background: 'linear-gradient(90deg, transparent, #d1d5db, transparent)',
-          marginBottom: '60px',
-        }} />
-
-        {/* Green congrats message at bottom */}
-        <div style={{
-          fontSize: '32px',
           fontWeight: 500,
           color: '#16a34a',
-          lineHeight: 1.5,
-          maxWidth: '750px',
+          fontStyle: 'italic',
+          marginTop: '4px',
         }}>
-          {congratsLine}
+          maneja tu ganado como un profesional
         </div>
       </div>
     </div>

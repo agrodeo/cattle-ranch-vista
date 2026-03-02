@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { type MedalTier, getTierNumberColor, getMedalIcon } from '@/lib/achievements';
+import { type MedalTier } from '@/lib/achievements';
 import { AchievementStoryCard } from './AchievementStoryCard';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
@@ -20,14 +20,6 @@ interface AchievementCardProps {
   onShare?: () => void;
 }
 
-const getTierCircleColor = (tier: MedalTier): string => {
-  switch (tier) {
-    case 'bronze': return '#b45309';
-    case 'silver': return '#9ca3af';
-    case 'gold': return '#d97706';
-  }
-};
-
 export function AchievementCard({
   achievementCode,
   nameKey,
@@ -42,16 +34,8 @@ export function AchievementCard({
 }: AchievementCardProps) {
   const { t } = useTranslation(['common']);
   const storyRef = useRef<HTMLDivElement>(null);
-  const numberColor = getTierNumberColor(medalTier);
-  const circleColor = getTierCircleColor(medalTier);
-  const medalEmoji = getMedalIcon(medalTier);
-  const tierLabel = t(`common:achievements.tiers.${medalTier}`);
 
-  const congratsLine = t('common:achievements.story_congrats', {
-    tier: tierLabel,
-    name: t(nameKey),
-    defaultValue: `agrodeo te otorga la medalla de ${tierLabel} por conseguir ${t(nameKey)}`,
-  });
+  const achievementLabel = t(nameKey).toLowerCase();
 
   const generateStoryImage = async (): Promise<Blob | null> => {
     const element = storyRef.current;
@@ -59,7 +43,7 @@ export function AchievementCard({
 
     try {
       const canvas = await html2canvas(element, {
-        backgroundColor: '#f8fafb',
+        backgroundColor: '#ffffff',
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -105,7 +89,7 @@ export function AchievementCard({
         await navigator.share({
           files: [file],
           title: 'agrodeo',
-          text: congratsLine,
+          text: `¡${threshold} ${achievementLabel}!`,
         });
         onShare?.();
       } catch (error: any) {
@@ -121,7 +105,7 @@ export function AchievementCard({
 
   return (
     <div className="space-y-4">
-      {/* Off-screen Story canvas — Instagram story size */}
+      {/* Off-screen Story canvas */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <AchievementStoryCard
           ref={storyRef}
@@ -137,57 +121,29 @@ export function AchievementCard({
         />
       </div>
 
-      {/* Visible preview card — mirrors the story layout */}
-      <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
-        <div className="flex flex-col items-center text-center py-8 px-6 space-y-4">
-          {/* Brand */}
-          <p className="text-base font-bold text-primary italic tracking-wide">agrodeo</p>
-
-          {/* Medal circle */}
-          <div
-            className="w-20 h-20 rounded-full flex items-center justify-center"
-            style={{ border: `3px solid ${circleColor}` }}
-          >
-            <span className="text-3xl">{medalEmoji}</span>
-          </div>
-
-          {/* Medalla de [Tier] */}
-          <h3 className="text-lg font-extrabold text-foreground">
-            {t('common:achievements.medal_of', { tier: tierLabel, defaultValue: `Medalla de ${tierLabel}` })}
-          </h3>
-
-          {/* Achievement Name */}
-          <p className="text-sm font-medium text-foreground/80">{t(nameKey)}</p>
-
-          {/* Achievement Description */}
-          <p className="text-xs text-muted-foreground">{t(descriptionKey)}</p>
-
-          {/* Separator */}
-          <div className="w-48 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-          {/* Threshold + logros */}
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl font-extrabold" style={{ color: numberColor }}>{threshold}</span>
-            <span className="text-sm text-muted-foreground">
-              {t('common:achievements.logros', { defaultValue: 'logros' })}
-            </span>
-          </div>
-
-          {/* Date */}
-          <span className="text-xs text-muted-foreground/60">
-            {t('common:achievements.unlocked_on')}{' '}
-            {new Date(unlockedAt).toLocaleDateString('es-ES', {
-              day: 'numeric', month: 'short', year: 'numeric',
-            })}
-          </span>
-
-          {/* Separator */}
-          <div className="w-48 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
-
-          {/* Green congrats */}
-          <p className="text-xs font-medium text-primary leading-relaxed max-w-[280px]">
-            {congratsLine}
+      {/* Visible preview card */}
+      <div className="rounded-xl border border-border bg-background overflow-hidden">
+        <div className="flex flex-col items-center text-center py-8 px-6 space-y-3">
+          {/* Headline */}
+          <p className="text-sm font-extrabold italic text-primary leading-snug max-w-[260px]">
+            Agrodeo quiere felicitar a {cabañaName} por registrar
           </p>
+
+          {/* Big number */}
+          <div className="flex items-center gap-0">
+            <span className="text-5xl font-black italic text-primary">¡</span>
+            <span className="text-6xl font-black text-muted-foreground">{threshold}</span>
+            <span className="text-5xl font-black italic text-primary">!</span>
+          </div>
+
+          {/* Achievement label */}
+          <p className="text-3xl font-extrabold text-primary">{achievementLabel}</p>
+
+          {/* Footer */}
+          <div className="pt-2">
+            <p className="text-xs font-bold italic text-primary">agrodeo.farm</p>
+            <p className="text-[10px] italic text-primary/70">maneja tu ganado como un profesional</p>
+          </div>
         </div>
       </div>
 
