@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { type MedalTier, getTierNumberColor } from '@/lib/achievements';
+import { type MedalTier, getTierNumberColor, getMedalIcon } from '@/lib/achievements';
 import { AchievementStoryCard } from './AchievementStoryCard';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
@@ -20,6 +20,14 @@ interface AchievementCardProps {
   onShare?: () => void;
 }
 
+const getTierCircleColor = (tier: MedalTier): string => {
+  switch (tier) {
+    case 'bronze': return '#b45309';
+    case 'silver': return '#9ca3af';
+    case 'gold': return '#d97706';
+  }
+};
+
 export function AchievementCard({
   achievementCode,
   nameKey,
@@ -35,6 +43,15 @@ export function AchievementCard({
   const { t } = useTranslation(['common']);
   const storyRef = useRef<HTMLDivElement>(null);
   const numberColor = getTierNumberColor(medalTier);
+  const circleColor = getTierCircleColor(medalTier);
+  const medalEmoji = getMedalIcon(medalTier);
+  const tierLabel = t(`common:achievements.tiers.${medalTier}`);
+
+  const congratsLine = t('common:achievements.story_congrats', {
+    tier: tierLabel,
+    name: t(nameKey),
+    defaultValue: `agrodeo te otorga la medalla de ${tierLabel} por conseguir ${t(nameKey)}`,
+  });
 
   const generateStoryImage = async (): Promise<Blob | null> => {
     const element = storyRef.current;
@@ -42,7 +59,7 @@ export function AchievementCard({
 
     try {
       const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
+        backgroundColor: '#f8fafb',
         scale: 2,
         useCORS: true,
         allowTaint: true,
@@ -67,7 +84,7 @@ export function AchievementCard({
 
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `agrodeo-story-${medalTier}-${achievementCode}.png`;
+    link.download = `agrodeo-${medalTier}-${achievementCode}.png`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -81,14 +98,14 @@ export function AchievementCard({
       return;
     }
 
-    const file = new File([blob], `agrodeo-story-${medalTier}-${achievementCode}.png`, { type: 'image/png' });
+    const file = new File([blob], `agrodeo-${medalTier}-${achievementCode}.png`, { type: 'image/png' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
           title: 'agrodeo',
-          text: congratsText,
+          text: congratsLine,
         });
         onShare?.();
       } catch (error: any) {
@@ -101,14 +118,6 @@ export function AchievementCard({
       toast.info(t('common:fields.shareInstructions'));
     }
   };
-
-  const congratsText = t(`common:achievements.congrats.${achievementCode}`, {
-    user: userName,
-    cabana: cabañaName,
-    count: threshold,
-  });
-
-  const tierLabel = t(`common:achievements.tiers.${medalTier}`);
 
   return (
     <div className="space-y-4">
@@ -129,34 +138,40 @@ export function AchievementCard({
       </div>
 
       {/* Visible preview card — mirrors the story layout */}
-      <div className="rounded-xl border border-border bg-background overflow-hidden">
-        {/* Top green bar */}
-        <div className="h-1 bg-gradient-to-r from-primary via-green-400 to-primary" />
-
-        <div className="flex flex-col items-center text-center py-8 px-6 space-y-5">
+      <div className="rounded-xl border border-border bg-muted/30 overflow-hidden">
+        <div className="flex flex-col items-center text-center py-8 px-6 space-y-4">
           {/* Brand */}
-          <p className="text-sm font-extrabold text-primary tracking-[0.2em]">agrodeo</p>
+          <p className="text-base font-bold text-primary italic tracking-wide">agrodeo</p>
 
-          {/* Separator */}
-          <div className="w-10 h-px bg-border" />
-
-          {/* Big Number */}
-          <div className="text-7xl font-black leading-none" style={{ color: numberColor }}>
-            {threshold}
+          {/* Medal circle */}
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center"
+            style={{ border: `3px solid ${circleColor}` }}
+          >
+            <span className="text-3xl">{medalEmoji}</span>
           </div>
 
-          {/* Tier label */}
-          <p className="text-xs font-semibold tracking-[0.3em] uppercase" style={{ color: numberColor }}>
-            {tierLabel}
-          </p>
+          {/* Medalla de [Tier] */}
+          <h3 className="text-lg font-extrabold text-foreground">
+            {t('common:achievements.medal_of', { tier: tierLabel, defaultValue: `Medalla de ${tierLabel}` })}
+          </h3>
+
+          {/* Achievement Name */}
+          <p className="text-sm font-medium text-foreground/80">{t(nameKey)}</p>
+
+          {/* Achievement Description */}
+          <p className="text-xs text-muted-foreground">{t(descriptionKey)}</p>
 
           {/* Separator */}
-          <div className="w-10 h-px bg-border" />
+          <div className="w-48 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-          {/* Congrats */}
-          <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-[260px]">
-            {congratsText}
-          </p>
+          {/* Threshold + logros */}
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl font-extrabold" style={{ color: numberColor }}>{threshold}</span>
+            <span className="text-sm text-muted-foreground">
+              {t('common:achievements.logros', { defaultValue: 'logros' })}
+            </span>
+          </div>
 
           {/* Date */}
           <span className="text-xs text-muted-foreground/60">
@@ -166,12 +181,14 @@ export function AchievementCard({
             })}
           </span>
 
-          {/* Bottom branding */}
-          <p className="text-xs font-semibold text-primary tracking-wider">agrodeo.com</p>
-        </div>
+          {/* Separator */}
+          <div className="w-48 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-        {/* Bottom green bar */}
-        <div className="h-1 bg-gradient-to-r from-primary via-green-400 to-primary" />
+          {/* Green congrats */}
+          <p className="text-xs font-medium text-primary leading-relaxed max-w-[280px]">
+            {congratsLine}
+          </p>
+        </div>
       </div>
 
       {/* Action Buttons */}
