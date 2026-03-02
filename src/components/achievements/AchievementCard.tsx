@@ -43,7 +43,7 @@ export function AchievementCard({
     try {
       const canvas = await html2canvas(element, {
         backgroundColor: '#ffffff',
-        scale: 3,
+        scale: 2,
         useCORS: true,
         allowTaint: true,
         logging: false,
@@ -88,11 +88,7 @@ export function AchievementCard({
         await navigator.share({
           files: [file],
           title: 'agrodeo',
-          text: t(`common:achievements.congrats.${achievementCode}`, {
-            user: userName,
-            cabana: cabañaName,
-            count: threshold,
-          }),
+          text: congratsText,
         });
         onShare?.();
       } catch (error: any) {
@@ -112,9 +108,11 @@ export function AchievementCard({
     count: threshold,
   });
 
+  const tierLabel = t(`common:achievements.tiers.${medalTier}`);
+
   return (
     <div className="space-y-4">
-      {/* Off-screen Story canvas for capture */}
+      {/* Off-screen Story canvas — Instagram story size */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <AchievementStoryCard
           ref={storyRef}
@@ -130,41 +128,50 @@ export function AchievementCard({
         />
       </div>
 
-      {/* Visible preview card */}
-      <div className="rounded-xl border border-border bg-background p-6 text-center space-y-4">
-        {/* Brand */}
-        <p className="text-sm font-bold text-primary tracking-wider">agrodeo</p>
+      {/* Visible preview card — mirrors the story layout */}
+      <div className="rounded-xl border border-border bg-background overflow-hidden">
+        {/* Top green bar */}
+        <div className="h-1 bg-gradient-to-r from-primary via-green-400 to-primary" />
 
-        {/* Separator */}
-        <div className="mx-auto w-10 h-px bg-border" />
+        <div className="flex flex-col items-center text-center py-8 px-6 space-y-5">
+          {/* Brand */}
+          <p className="text-sm font-extrabold text-primary tracking-[0.2em]">agrodeo</p>
 
-        {/* Big Number */}
-        <div
-          className="text-6xl font-black leading-none"
-          style={{ color: numberColor }}
-        >
-          {threshold}
-        </div>
+          {/* Separator */}
+          <div className="w-10 h-px bg-border" />
 
-        {/* Separator */}
-        <div className="mx-auto w-10 h-px bg-border" />
+          {/* Big Number */}
+          <div className="text-7xl font-black leading-none" style={{ color: numberColor }}>
+            {threshold}
+          </div>
 
-        {/* Congrats */}
-        <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-[260px] mx-auto">
-          {congratsText}
-        </p>
+          {/* Tier label */}
+          <p className="text-xs font-semibold tracking-[0.3em] uppercase" style={{ color: numberColor }}>
+            {tierLabel}
+          </p>
 
-        {/* Date */}
-        <div className="pt-3 border-t border-border">
-          <span className="text-xs text-muted-foreground">
+          {/* Separator */}
+          <div className="w-10 h-px bg-border" />
+
+          {/* Congrats */}
+          <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-[260px]">
+            {congratsText}
+          </p>
+
+          {/* Date */}
+          <span className="text-xs text-muted-foreground/60">
             {t('common:achievements.unlocked_on')}{' '}
             {new Date(unlockedAt).toLocaleDateString('es-ES', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
+              day: 'numeric', month: 'short', year: 'numeric',
             })}
           </span>
+
+          {/* Bottom branding */}
+          <p className="text-xs font-semibold text-primary tracking-wider">agrodeo.com</p>
         </div>
+
+        {/* Bottom green bar */}
+        <div className="h-1 bg-gradient-to-r from-primary via-green-400 to-primary" />
       </div>
 
       {/* Action Buttons */}
