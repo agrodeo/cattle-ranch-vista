@@ -1,16 +1,17 @@
 
 
-## Analysis
+## Fix: auth-email-hook import error
 
-The phone field in the signup form **already has** `required` validation in the form rules, so submitting without it will show an error. However, unlike the Country field which displays a visible `*` asterisk, the phone label does not visually indicate it's mandatory.
+### Problem
+The `auth-email-hook` edge function fails to boot because `@lovable.dev/webhooks-js` does not export a named `Webhook`. Every auth email (password reset, signup confirmation, etc.) is silently failing.
 
-## Plan
+### Solution
+1. **Fix the import** in `supabase/functions/auth-email-hook/index.ts` — change the named import to a default import or the correct export name. I will check the package's actual API first, then update the import accordingly.
+2. **Redeploy** the `auth-email-hook` edge function.
+3. **Verify** the function boots without errors by checking logs after deploy.
 
-Add the `*` asterisk to the phone field's `FormLabel` in `src/pages/Auth.tsx` to match the visual pattern used by the Country and Province fields, making it clear to users that the phone number is required before they attempt to submit.
-
-Single-line change in the phone field's `FormLabel`:
-```
-<Phone className="h-4 w-4" />
-{t('auth:register.phone', 'Teléfono')} *
-```
+### Scope
+- One file changed: `supabase/functions/auth-email-hook/index.ts` (import line only)
+- No database, RLS, or UI changes
+- Templates themselves are fine — only the hook's import is broken
 
