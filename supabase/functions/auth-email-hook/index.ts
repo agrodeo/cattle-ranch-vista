@@ -1,4 +1,4 @@
-import { Webhook } from "@lovable.dev/webhooks-js";
+import { verifyWebhookRequest, type EmailWebhookPayload } from "@lovable.dev/webhooks-js";
 import { sendEmail } from "@lovable.dev/email-js";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
@@ -35,13 +35,11 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const rawBody = await req.text();
-
-    // Verify webhook signature
-    const wh = new Webhook(apiKey);
-    const headers: Record<string, string> = {};
-    req.headers.forEach((v, k) => (headers[k] = v));
-    const payload = wh.verify(rawBody, headers) as AuthEmailPayload;
+    // Verify webhook signature and parse payload
+    const { payload } = await verifyWebhookRequest<AuthEmailPayload>({
+      req,
+      secret: apiKey,
+    });
 
     const { type, email, new_email, confirmation_url, token, callback_url } = payload;
 
