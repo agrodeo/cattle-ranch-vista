@@ -77,7 +77,7 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, setOpenMobile } = useSidebar();
   const location = useLocation();
   const isMobile = useIsMobile();
   const isCollapsed = state === "collapsed";
@@ -113,6 +113,7 @@ export function AppSidebar() {
                     <SidebarMenuButton asChild className="h-auto p-0">
                       <NavLink 
                         to={item.url}
+                        onClick={() => { if (isMobile) setOpenMobile(false); }}
                         className={cn(
                           "flex items-center rounded-lg text-sm font-medium transition-all duration-200 relative min-h-[44px]",
                           isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5",
