@@ -81,12 +81,8 @@ export const useSubscription = () => {
           setTimeout(() => fetchSubscriptionStatus(retryCount + 1), 2000 * (retryCount + 1));
           return;
         }
-        // Only show toast after all retries exhausted
-        toast({
-          title: "Error",
-          description: "No se pudo obtener el estado de la suscripción. Intenta recargar la página.",
-          variant: "destructive"
-        });
+        // Silently fall back to cached status — no toast needed
+        console.warn('⚠️ Subscription fetch failed after retries, using cached status');
         setLoading(false);
         return;
       }

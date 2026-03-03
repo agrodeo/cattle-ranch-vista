@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { isOnline } from '@/services/connectivity';
 
 export interface VaccinationStatus {
   requirement_id: string;
@@ -38,8 +39,10 @@ export function useAnimalVaccinations(animalId: string | null) {
 
   const fetchStatus = async () => {
     if (!animalId) return;
-    
-    setLoading(true);
+    if (!isOnline()) {
+      console.log('📴 Offline — skipping vaccination status fetch');
+      return;
+    }
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');

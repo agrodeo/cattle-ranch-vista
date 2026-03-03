@@ -76,6 +76,11 @@ export function useVaccinationRequirements() {
   const [loading, setLoading] = useState(true);
 
   const fetchRequirements = async () => {
+    if (!isOnline()) {
+      console.log('📴 Offline — skipping vaccination requirements fetch');
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       console.log('🔍 Fetching vaccination requirements...');
@@ -197,8 +202,10 @@ export function useAnimalVaccinationStatus(animalId?: string) {
 
   const fetchVaccinationStatus = async (id: string) => {
     if (!id) return;
-    
-    setLoading(true);
+    if (!isOnline()) {
+      console.log('📴 Offline — skipping animal vaccination status fetch');
+      return;
+    }
     try {
       const cabanaId = await getCurrentCabanaId();
       const { data, error } = await supabase

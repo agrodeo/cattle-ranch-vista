@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isOnline } from "@/services/connectivity";
 
 export interface CorralVaccinationMetrics {
   total_animals: number;
@@ -23,8 +24,10 @@ export function useCorralVaccinationMetrics(corralId?: string) {
 
   const fetchMetrics = async (id: string) => {
     if (!id) return;
-    
-    setLoading(true);
+    if (!isOnline()) {
+      console.log('📴 Offline — skipping corral vaccination metrics fetch');
+      return;
+    }
     try {
       const { data, error } = await supabase
         .rpc('calculate_corral_vaccination_metrics' as any, {
