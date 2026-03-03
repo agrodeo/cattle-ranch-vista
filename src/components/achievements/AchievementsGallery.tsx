@@ -115,7 +115,7 @@ export function AchievementsGallery() {
                     {unlocked && (
                       <DialogContent className="max-w-md w-[calc(100vw-2rem)] max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
-                          <DialogTitle>{t('common:achievements.unlocked_achievement')}</DialogTitle>
+                          <DialogTitle>{t('common:achievements.story.page_title')}</DialogTitle>
                         </DialogHeader>
                         <AchievementCard
                           achievementCode={definition.code}

@@ -221,6 +221,19 @@
       "financial_manager": "agrodeo parabeniza {{user}} de {{cabana}} por registrar {{count}} movimentos financeiros",
       "consistent_user": "agrodeo parabeniza {{user}} de {{cabana}} por {{count}} dias consecutivos de uso",
       "corral_organizer": "agrodeo parabeniza {{user}} de {{cabana}} por organizar {{count}} currais"
+    },
+    "story": {
+      "page_title": "Conquista desbloqueada",
+      "header": "Agrodeo quer parabenizar {{userName}} por registrar",
+      "download": "Baixar imagem",
+      "share": "Compartilhar",
+      "items": {
+        "animals": "animais",
+        "vaccinations": "vacinações",
+        "weights": "pesagens",
+        "births": "partos",
+        "treatments": "tratamentos"
+      }
     }
   },
   

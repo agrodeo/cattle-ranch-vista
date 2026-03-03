@@ -2,8 +2,8 @@ import { useTranslation } from 'react-i18next';
 import { Share2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { type MedalTier } from '@/lib/achievements';
-import { AchievementStoryCard } from './AchievementStoryCard';
-import html2canvas from 'html2canvas';
+import { AchievementStoryCard, type StoryItemKey } from './AchievementStoryCard';
+import { generateAchievementStoryImage } from '@/lib/achievementStoryImage';
 import { toast } from 'sonner';
 import { useRef } from 'react';
 
@@ -18,6 +18,17 @@ interface AchievementCardProps {
   userName: string;
   cabañaName: string;
   onShare?: () => void;
+}
+
+/** Map achievement codes to story item keys */
+function getItemKey(achievementCode: string): StoryItemKey {
+  switch (achievementCode) {
+    case 'herd_starter': return 'animals';
+    case 'health_guardian': return 'vaccinations';
+    case 'activity_tracker': return 'treatments';
+    case 'financial_manager': return 'weights';
+    default: return 'animals';
+  }
 }
 
 export function AchievementCard({
@@ -35,40 +46,19 @@ export function AchievementCard({
   const { t } = useTranslation(['common']);
   const storyRef = useRef<HTMLDivElement>(null);
 
-  const achievementLabel = t(nameKey).toLowerCase();
-
-  const generateStoryImage = async (): Promise<Blob | null> => {
-    const element = storyRef.current;
-    if (!element) return null;
-
-    try {
-      const canvas = await html2canvas(element, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-      });
-
-      return new Promise((resolve) => {
-        canvas.toBlob((blob) => resolve(blob), 'image/png', 1.0);
-      });
-    } catch (error) {
-      console.error('Error generating story image:', error);
-      return null;
-    }
-  };
+  const itemKey = getItemKey(achievementCode);
+  const itemLabel = t(`common:achievements.story.items.${itemKey}`);
 
   const handleDownload = async () => {
-    const blob = await generateStoryImage();
+    if (!storyRef.current) return;
+    const blob = await generateAchievementStoryImage(storyRef.current);
     if (!blob) {
       toast.error(t('common:fields.errorDownloadingImage'));
       return;
     }
-
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.download = `agrodeo-${medalTier}-${achievementCode}.png`;
+    link.download = `agrodeo-${achievementCode}-${threshold}.png`;
     link.href = url;
     link.click();
     URL.revokeObjectURL(url);
@@ -76,26 +66,24 @@ export function AchievementCard({
   };
 
   const handleShare = async () => {
-    const blob = await generateStoryImage();
+    if (!storyRef.current) return;
+    const blob = await generateAchievementStoryImage(storyRef.current);
     if (!blob) {
       toast.error(t('common:fields.errorDownloadingImage'));
       return;
     }
-
-    const file = new File([blob], `agrodeo-${medalTier}-${achievementCode}.png`, { type: 'image/png' });
+    const file = new File([blob], `agrodeo-${achievementCode}-${threshold}.png`, { type: 'image/png' });
 
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({
           files: [file],
           title: 'agrodeo',
-          text: `¡${threshold} ${achievementLabel}!`,
+          text: `¡${threshold} ${itemLabel}!`,
         });
         onShare?.();
       } catch (error: any) {
-        if (error.name !== 'AbortError') {
-          handleDownload();
-        }
+        if (error.name !== 'AbortError') handleDownload();
       }
     } else {
       handleDownload();
@@ -109,40 +97,26 @@ export function AchievementCard({
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <AchievementStoryCard
           ref={storyRef}
-          achievementCode={achievementCode}
-          nameKey={nameKey}
-          descriptionKey={descriptionKey}
-          medalTier={medalTier}
-          unlockedAt={unlockedAt}
-          progressValue={progressValue}
-          threshold={threshold}
-          userName={userName}
-          cabañaName={cabañaName}
+          userName={cabañaName}
+          amount={threshold}
+          itemKey={itemKey}
         />
       </div>
 
-      {/* Visible preview card */}
+      {/* Visible preview card (9:16 ratio) */}
       <div className="rounded-xl border border-border bg-background overflow-hidden">
         <div className="flex flex-col items-center text-center py-8 px-6 space-y-3">
-          {/* Headline */}
           <p className="text-sm font-extrabold italic text-primary leading-snug max-w-[260px]">
-            Agrodeo quiere felicitar a {cabañaName} por registrar
+            {t('common:achievements.story.header', { userName: cabañaName })}
           </p>
-
-          {/* Big number */}
           <div className="flex items-center gap-0">
             <span className="text-5xl font-black italic text-primary">¡</span>
             <span className="text-6xl font-black text-muted-foreground">{threshold}</span>
             <span className="text-5xl font-black italic text-primary">!</span>
           </div>
-
-          {/* Achievement label */}
-          <p className="text-3xl font-extrabold text-primary">{achievementLabel}</p>
-
-          {/* Footer */}
+          <p className="text-3xl font-extrabold text-primary">{itemLabel}</p>
           <div className="pt-2">
             <p className="text-xs font-bold italic text-primary">agrodeo.farm</p>
-            <p className="text-[10px] italic text-primary/70">maneja tu ganado como un profesional</p>
           </div>
         </div>
       </div>
@@ -151,10 +125,11 @@ export function AchievementCard({
       <div className="flex gap-2">
         <Button onClick={handleShare} className="flex-1" size="lg">
           <Share2 className="mr-2 h-4 w-4" />
-          {t('common:achievements.share_story')}
+          {t('common:achievements.story.share')}
         </Button>
         <Button onClick={handleDownload} variant="outline" size="lg">
-          <Download className="h-4 w-4" />
+          <Download className="mr-2 h-4 w-4" />
+          {t('common:achievements.story.download')}
         </Button>
       </div>
     </div>
