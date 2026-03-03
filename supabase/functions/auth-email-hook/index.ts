@@ -45,23 +45,22 @@ function buildConfirmationUrl(
   tokenHash: string,
   type: string,
   redirectTo?: string,
-  siteUrl?: string
+  token?: string
 ): string {
-  // Point directly to Supabase's verify endpoint so it processes the token
-  const supabaseUrl = siteUrl || Deno.env.get("SUPABASE_URL") || "https://yjzxbjwewzyhjquhrfzv.supabase.co";
-  const base = supabaseUrl.endsWith("/auth/v1") ? supabaseUrl : `${supabaseUrl}/auth/v1`;
   const params = new URLSearchParams({
-    token_hash: tokenHash,
     type,
+    token_hash: tokenHash,
   });
-  if (redirectTo) {
-    // For recovery, redirect to reset-password page on the correct origin
-    const dest = type === "recovery" 
-      ? `${redirectTo.replace(/\/$/, "")}/reset-password`
-      : redirectTo;
-    params.set("redirect_to", dest);
+
+  if (token) {
+    params.set("token", token);
   }
-  return `${base}/verify?${params.toString()}`;
+
+  if (redirectTo) {
+    params.set("redirect_to", redirectTo);
+  }
+
+  return `${SITE_URL}/auth/confirm?${params.toString()}`;
 }
 
 Deno.serve(async (req) => {
@@ -129,7 +128,7 @@ Deno.serve(async (req) => {
     console.log(`Processing auth email: type=${emailActionType}, to=${email}`);
 
     const confirmationUrl = tokenHash
-      ? buildConfirmationUrl(tokenHash, emailActionType, redirectTo, siteUrl)
+      ? buildConfirmationUrl(tokenHash, emailActionType, redirectTo, token)
       : (body.email_data?.confirmation_url || body.confirmation_url || siteUrl || SITE_URL);
 
     let subject: string;
