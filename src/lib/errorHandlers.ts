@@ -11,7 +11,15 @@ function shouldIgnoreErrorMessage(message: string) {
   return (
     normalized === "script error." ||
     normalized === "script error" ||
-    normalized.includes("non-error promise rejection captured")
+    normalized.includes("non-error promise rejection captured") ||
+    normalized.includes("failed to fetch") ||
+    normalized.includes("networkerror") ||
+    normalized.includes("network request failed") ||
+    normalized.includes("load failed") ||
+    normalized.includes("aborterror") ||
+    normalized.includes("error.loadfailed") ||
+    normalized.includes("the operation was aborted") ||
+    normalized.includes("the internet connection appears to be offline")
   );
 }
 

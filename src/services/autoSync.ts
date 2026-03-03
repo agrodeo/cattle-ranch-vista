@@ -75,8 +75,14 @@ async function handleOnline(): Promise<void> {
   }
 }
 
+let lastOfflineToastAt = 0;
+const OFFLINE_TOAST_COOLDOWN_MS = 30_000;
+
 function handleOffline(): void {
   console.log('Connection lost, working offline');
+  const now = Date.now();
+  if (now - lastOfflineToastAt < OFFLINE_TOAST_COOLDOWN_MS) return;
+  lastOfflineToastAt = now;
   toast.info(i18n.t('common:toast.offlineMode'), {
     duration: 3000
   });
