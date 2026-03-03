@@ -221,6 +221,19 @@
       "financial_manager": "agrodeo felicita a {{user}} de {{cabana}} por registrar {{count}} movimientos financieros",
       "consistent_user": "agrodeo felicita a {{user}} de {{cabana}} por {{count}} días consecutivos de uso",
       "corral_organizer": "agrodeo felicita a {{user}} de {{cabana}} por organizar {{count}} corrales"
+    },
+    "story": {
+      "page_title": "Logro desbloqueado",
+      "header": "Agrodeo quiere felicitar a {{userName}} por registrar",
+      "download": "Descargar imagen",
+      "share": "Compartir",
+      "items": {
+        "animals": "animales",
+        "vaccinations": "vacunaciones",
+        "weights": "pesajes",
+        "births": "partos",
+        "treatments": "tratamientos"
+      }
     }
   },
   
