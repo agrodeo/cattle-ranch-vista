@@ -4,72 +4,62 @@ import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 
-type ConfirmParams = {
-  tokenHash: string | null;
-  type: string | null;
-  redirectTo: string | null;
-};
-
 const AuthConfirm = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
-  const params = useMemo<ConfirmParams>(() => {
-    const searchParams = new URLSearchParams(location.search);
+  const params = useMemo(() => {
+    const sp = new URLSearchParams(location.search);
     return {
-      tokenHash: searchParams.get("token_hash"),
-      type: searchParams.get("type"),
-      redirectTo: searchParams.get("redirect_to") || searchParams.get("next"),
+      tokenHash: sp.get("token_hash"),
+      type: sp.get("type"),
     };
   }, [location.search]);
 
   useEffect(() => {
-    let active = true;
+    let cancelled = false;
 
-    const runVerification = async () => {
-      if (!params.tokenHash || !params.type) {
-        if (active) setError("Enlace inválido o incompleto");
+    const verify = async () => {
+      const { tokenHash, type } = params;
+
+      if (!tokenHash || !type) {
+        setError("Enlace inválido o incompleto.");
         return;
       }
 
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        type: params.type as any,
-        token_hash: params.tokenHash,
-      });
+      try {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          type: type as any,
+          token_hash: tokenHash,
+        });
 
-      if (verifyError) {
-        if (active) setError(verifyError.message);
-        return;
-      }
+        if (cancelled) return;
 
-      if (params.type === "recovery") {
-        navigate("/reset-password", { replace: true });
-        return;
-      }
-
-      if (params.redirectTo) {
-        if (params.redirectTo.startsWith("http")) {
-          const url = new URL(params.redirectTo);
-          if (url.origin === window.location.origin) {
-            navigate(`${url.pathname}${url.search}${url.hash}`, { replace: true });
-          } else {
-            window.location.replace(params.redirectTo);
-          }
-        } else {
-          navigate(params.redirectTo, { replace: true });
+        if (verifyError) {
+          console.error("verifyOtp error:", verifyError);
+          setError(verifyError.message);
+          return;
         }
-        return;
+
+        // Recovery → go to reset-password (session is now set)
+        if (type === "recovery") {
+          navigate("/reset-password", { replace: true });
+          return;
+        }
+
+        // All other types (signup confirmation, etc.) → dashboard
+        navigate("/dashboard", { replace: true });
+      } catch (err: any) {
+        if (!cancelled) {
+          console.error("AuthConfirm unexpected error:", err);
+          setError(err.message || "Error inesperado");
+        }
       }
-
-      navigate("/dashboard", { replace: true });
     };
 
-    runVerification();
-
-    return () => {
-      active = false;
-    };
+    verify();
+    return () => { cancelled = true; };
   }, [navigate, params]);
 
   if (error) {
