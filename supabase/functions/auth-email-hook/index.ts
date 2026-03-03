@@ -47,6 +47,18 @@ function buildConfirmationUrl(
   redirectTo?: string,
   token?: string
 ): string {
+  // Use the redirect_to origin (the app the user came from) as the base URL.
+  // This ensures links work on sandbox, production, and native apps.
+  let baseUrl = SITE_URL;
+  if (redirectTo) {
+    try {
+      const parsed = new URL(redirectTo);
+      baseUrl = parsed.origin;
+    } catch {
+      // keep SITE_URL fallback
+    }
+  }
+
   const params = new URLSearchParams({
     type,
     token_hash: tokenHash,
@@ -56,11 +68,7 @@ function buildConfirmationUrl(
     params.set("token", token);
   }
 
-  if (redirectTo) {
-    params.set("redirect_to", redirectTo);
-  }
-
-  return `${SITE_URL}/auth/confirm?${params.toString()}`;
+  return `${baseUrl}/auth/confirm?${params.toString()}`;
 }
 
 Deno.serve(async (req) => {
