@@ -324,7 +324,7 @@ const Auth = () => {
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Phone className="h-4 w-4" />
-                          {t('auth:register.phone', 'Teléfono')}
+                          {t('auth:register.phone', 'Teléfono')} *
                         </FormLabel>
                         <FormControl>
                           <Input type="tel" placeholder={t('auth:register.phonePlaceholder', '+54 9 11 1234-5678')} {...field} />
