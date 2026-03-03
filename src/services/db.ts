@@ -60,6 +60,9 @@ class AgroDB extends Dexie {
   // Auth session persistence
   auth_storage!: Table<{ key: string; value: string }, string>;
 
+  // Reports cache for offline access
+  reports_cache!: Table<{ key: string; data: any; updated_at: string }, string>;
+
   // Legacy compatibility (keep for existing code)
   activities_cache!: Table<any, string>;
 
@@ -109,6 +112,13 @@ class AgroDB extends Dexie {
       auth_storage: 'key'
     }).upgrade(tx => {
       console.log('Upgrading database to v4 with auth_storage for persistent sessions');
+    });
+
+    this.version(5).stores({
+      // Add reports cache table for offline reports
+      reports_cache: 'key'
+    }).upgrade(tx => {
+      console.log('Upgrading database to v5 with reports_cache for offline reports');
     });
   }
 }

@@ -19,6 +19,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
 import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
 import { getTranslatedCategory } from "@/lib/translations";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { StaleDataBanner } from "./StaleDataBanner";
 import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
 
 interface ReportFilters {
@@ -109,11 +112,35 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
   const [error, setError] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<keyof ReproductiveFemale | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+
+  const CACHE_KEY = `reproductive:${JSON.stringify(filters)}`;
 
   const fetchReproductiveData = async () => {
+    // Offline guard: load from cache
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          const { summaryMetrics: sm, reproductiveFemales: rf, yearlyRates: yr } = cached.data;
+          setSummaryMetrics(sm);
+          setReproductiveFemales(rf);
+          setYearlyRates(yr);
+          setIsStale(true);
+          setLastUpdated(cached.updated_at);
+        }
+      } catch (e) {
+        console.warn('Failed to load cached reproductive report:', e);
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
+      setIsStale(false);
 
       // Get current user and their cabaña_id
       const { data: { user } } = await supabase.auth.getUser();
@@ -364,7 +391,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         ? Math.round(validCalvingRates.reduce((sum, rate) => sum + rate, 0) / validCalvingRates.length)
         : 0;
 
-      setSummaryMetrics({
+      const computedSummary: SummaryMetrics = {
         totalFemales,
         currentlyPregnant,
         totalServices,
@@ -377,7 +404,8 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
         activePregnancies: currentlyPregnant,
         totalReproductiveYears,
         completedPregnancies: totalPregnancies
-      });
+      };
+      setSummaryMetrics(computedSummary);
 
       // Calculate yearly reproductive rates using ALL cabaña data (not filtered)
       // Pregnancy Rate = (Females who got pregnant / Total reproductive females) × 100
@@ -487,6 +515,15 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       setYearlyRates(yearlyRatesData);
 
+      // Cache the computed results for offline access
+      try {
+        await db.reports_cache.put({
+          key: CACHE_KEY,
+          data: { summaryMetrics: computedSummary, reproductiveFemales: reproductiveData, yearlyRates: yearlyRatesData },
+          updated_at: new Date().toISOString()
+        });
+      } catch (e) { console.warn('Failed to cache reproductive report:', e); }
+
     } catch (error) {
       console.error('Error in fetchReproductiveData:', error);
       setError(t('reports:reproductive.loadingError'));
@@ -589,6 +626,7 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
   return (
     <div className="space-y-6">
+      {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>

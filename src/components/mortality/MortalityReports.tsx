@@ -18,6 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { format } from "date-fns";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { StaleDataBanner } from "@/components/reports/StaleDataBanner";
 
 interface DeathRecord {
   id: string;
@@ -66,6 +69,9 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
   const isMobile = useIsMobile();
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const CACHE_KEY = `mortality:${currentUser?.cabañaId}:${JSON.stringify(globalFilters)}`;
 
   useEffect(() => {
     if (currentUser) {
@@ -79,7 +85,24 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
       return;
     }
 
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          const { deaths: d, deathsByAge: da, deathsByCause: dc } = cached.data;
+          setDeaths(d);
+          setDeathsByAge(da);
+          setDeathsByCause(dc);
+          setIsStale(true);
+          setLastUpdated(cached.updated_at);
+        }
+      } catch (e) { console.warn('Failed to load cached mortality report:', e); }
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setIsStale(false);
     try {
       // Convert global filters to the format expected by the RPC function
       const dateFrom = globalFilters?.date_from ? globalFilters.date_from.toISOString().split('T')[0] : null;
@@ -117,6 +140,11 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
       // Process causes
       const causes = processDeathsByCause(processedDeaths);
       setDeathsByCause(causes);
+
+      // Cache for offline
+      try {
+        await db.reports_cache.put({ key: CACHE_KEY, data: { deaths: processedDeaths, deathsByAge: ageGroups, deathsByCause: causes }, updated_at: new Date().toISOString() });
+      } catch (e) { console.warn('Failed to cache mortality report:', e); }
 
     } catch (error) {
       console.error('Error loading mortality data:', error);
@@ -227,6 +255,7 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
 
   return (
     <div className="space-y-6">
+      {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
