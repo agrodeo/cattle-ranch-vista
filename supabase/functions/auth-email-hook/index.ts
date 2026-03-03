@@ -11,6 +11,7 @@ import EmailChangeEmail from "../_shared/email-templates/email-change.tsx";
 import ReauthenticationEmail from "../_shared/email-templates/reauthentication.tsx";
 
 const SITE_NAME = "agrodeo";
+const FROM_EMAIL = "contact@agrodeo.farm";
 
 interface AuthEmailPayload {
   type: string;
@@ -21,6 +22,34 @@ interface AuthEmailPayload {
   token_hash?: string;
   redirect_to?: string;
   callback_url: string;
+}
+
+async function sendViaResend(to: string, subject: string, html: string) {
+  const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+  if (!RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY is not configured");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: `${SITE_NAME} <${FROM_EMAIL}>`,
+      to: [to],
+      subject,
+      html: `<!DOCTYPE html>${html}`,
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    console.error("Resend API error:", data);
+    throw new Error(`Resend error: ${JSON.stringify(data)}`);
+  }
+  return data;
 }
 
 Deno.serve(async (req) => {
@@ -35,7 +64,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify webhook signature and parse payload
     const { payload } = await verifyWebhookRequest<AuthEmailPayload>({
       req,
       secret: apiKey,
@@ -117,18 +145,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Send the email via Lovable's email API
-    await sendEmail(
-      {
-        to: email,
-        subject,
-        html: `<!DOCTYPE html>${html}`,
-      },
-      {
-        callbackUrl: callback_url,
-        apiKey,
-      }
-    );
+    // Send the email via Resend
+    await sendViaResend(email, subject, html);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
