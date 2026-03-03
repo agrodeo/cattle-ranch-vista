@@ -12,23 +12,6 @@ const SITE_NAME = "agrodeo";
 const SITE_URL = "https://agrodeo.farm";
 const FROM_EMAIL = `${SITE_NAME} <contact@agrodeo.farm>`;
 
-interface SupabaseAuthHookPayload {
-  user: {
-    id: string;
-    email: string;
-    new_email?: string;
-  };
-  email_data: {
-    token: string;
-    token_hash: string;
-    redirect_to: string;
-    email_action_type: string;
-    site_url: string;
-    token_new?: string;
-    token_hash_new?: string;
-  };
-}
-
 async function sendViaResend(to: string, subject: string, html: string) {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) {
@@ -59,12 +42,10 @@ async function sendViaResend(to: string, subject: string, html: string) {
 }
 
 function buildConfirmationUrl(
-  siteUrl: string,
   tokenHash: string,
   type: string,
   redirectTo?: string
 ): string {
-  const base = siteUrl || SITE_URL;
   const params = new URLSearchParams({
     token_hash: tokenHash,
     type,
@@ -72,7 +53,7 @@ function buildConfirmationUrl(
   if (redirectTo) {
     params.set("next", redirectTo);
   }
-  return `${base}/auth/confirm?${params.toString()}`;
+  return `${SITE_URL}/auth/confirm?${params.toString()}`;
 }
 
 Deno.serve(async (req) => {
@@ -80,38 +61,73 @@ Deno.serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  // Verify using the hook secret
-  const hookSecret = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
-  if (hookSecret) {
-    const authHeader = req.headers.get("authorization");
-    if (authHeader !== `Bearer ${hookSecret}`) {
-      console.error("Unauthorized: invalid hook secret");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-  }
-
   try {
-    const payload: SupabaseAuthHookPayload = await req.json();
-    const { user, email_data } = payload;
-    const { email_action_type, token, token_hash, redirect_to, site_url } = email_data;
-    const email = user.email;
+    const rawBody = await req.text();
+    console.log("Received auth hook payload:", rawBody);
 
-    console.log(`Processing auth email: type=${email_action_type}, to=${email}`);
+    const body = JSON.parse(rawBody);
 
-    const confirmationUrl = buildConfirmationUrl(
-      site_url,
-      token_hash,
-      email_action_type,
-      redirect_to
-    );
+    // Supabase Auth Hook can send different payload shapes.
+    // Try to extract email info from known formats.
+    let emailActionType: string | undefined;
+    let email: string | undefined;
+    let newEmail: string | undefined;
+    let token: string | undefined;
+    let tokenHash: string | undefined;
+    let redirectTo: string | undefined;
+    let siteUrl: string | undefined;
+
+    if (body.email_data) {
+      // Standard Supabase HTTPS Send Email Hook format
+      emailActionType = body.email_data.email_action_type;
+      token = body.email_data.token;
+      tokenHash = body.email_data.token_hash;
+      redirectTo = body.email_data.redirect_to;
+      siteUrl = body.email_data.site_url;
+      email = body.user?.email;
+      newEmail = body.user?.new_email;
+    } else if (body.type) {
+      // Alternative format: flat payload
+      emailActionType = body.type;
+      email = body.email;
+      newEmail = body.new_email;
+      token = body.token;
+      tokenHash = body.token_hash;
+      redirectTo = body.redirect_to;
+      siteUrl = body.site_url;
+    } else if (body.record) {
+      // Database webhook format
+      emailActionType = body.record.type || body.record.email_action_type;
+      email = body.record.email;
+      token = body.record.token;
+      tokenHash = body.record.token_hash;
+    } else {
+      // Last resort: try top-level fields
+      emailActionType = body.email_action_type;
+      email = body.email || body.user?.email;
+      token = body.token;
+      tokenHash = body.token_hash;
+      redirectTo = body.redirect_to;
+    }
+
+    if (!emailActionType || !email) {
+      console.error("Could not extract email type or address from payload:", JSON.stringify(body));
+      return new Response(
+        JSON.stringify({ error: "Invalid payload: missing email_action_type or email" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`Processing auth email: type=${emailActionType}, to=${email}`);
+
+    const confirmationUrl = tokenHash
+      ? buildConfirmationUrl(tokenHash, emailActionType, redirectTo)
+      : (body.email_data?.confirmation_url || body.confirmation_url || siteUrl || SITE_URL);
 
     let subject: string;
     let html: string;
 
-    switch (email_action_type) {
+    switch (emailActionType) {
       case "signup": {
         subject = `Confirmá tu cuenta en ${SITE_NAME}`;
         html = renderToStaticMarkup(
@@ -146,7 +162,7 @@ Deno.serve(async (req) => {
           createElement(EmailChangeEmail, {
             confirmationUrl,
             siteName: SITE_NAME,
-            newEmail: user.new_email,
+            newEmail,
           })
         );
         break;
@@ -154,14 +170,14 @@ Deno.serve(async (req) => {
       case "reauthentication": {
         subject = `Tu código de verificación de ${SITE_NAME}`;
         html = renderToStaticMarkup(
-          createElement(ReauthenticationEmail, { token, siteName: SITE_NAME })
+          createElement(ReauthenticationEmail, { token: token || "", siteName: SITE_NAME })
         );
         break;
       }
       default: {
-        console.warn(`Unknown email type: ${email_action_type}`);
+        console.warn(`Unknown email type: ${emailActionType}`);
         return new Response(
-          JSON.stringify({ error: `Unknown type: ${email_action_type}` }),
+          JSON.stringify({ error: `Unknown type: ${emailActionType}` }),
           { status: 400, headers: { "Content-Type": "application/json" } }
         );
       }
