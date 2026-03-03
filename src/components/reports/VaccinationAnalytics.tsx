@@ -9,6 +9,9 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { categorizeAnimal } from "@/lib/animalCategories";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { StaleDataBanner } from "./StaleDataBanner";
 
 interface VaccinationAnalyticsProps {
   filters?: any;
@@ -189,6 +192,9 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
   const [animalsWithErrors, setAnimalsWithErrors] = useState<any[]>([]);
   
   const [expandedAnimal, setExpandedAnimal] = useState<string | null>(null);
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const CACHE_KEY = `vaccination:${currentUser?.cabañaId}:${JSON.stringify(globalFilters)}`;
 
   useEffect(() => {
     if (user && currentUser?.cabañaId) {
@@ -200,8 +206,29 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
   const fetchVaccinationStats = async () => {
     if (!user || !currentUser?.cabañaId) return;
     
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          const { stats: s, compliant, overdue, pending, missingMandatory, noRequirements, withErrors } = cached.data;
+          setStats(s);
+          setAnimalsCompliant(compliant);
+          setAnimalsOverdue(overdue);
+          setAnimalsPending(pending);
+          setAnimalsMissingMandatory(missingMandatory);
+          setAnimalsNoRequirements(noRequirements);
+          setAnimalsWithErrors(withErrors);
+          setIsStale(true);
+          setLastUpdated(cached.updated_at);
+        }
+      } catch (e) { console.warn('Failed to load cached vaccination report:', e); }
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
+      setIsStale(false);
       console.log('🚀 Starting vaccination analytics fetch...');
       
       // Fetch active animals
@@ -404,6 +431,12 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
       setAnimalsMissingMandatory(missingMandatory);
       setAnimalsNoRequirements(noRequirements);
       setAnimalsWithErrors(withErrors);
+
+      // Cache for offline
+      try {
+        const cachedStats = { totalAnimals: animals.length, totalRequirements, mandatoryRequirements, animalsCompliant: compliant.length, animalsWithOverdue: overdue.length, animalsWithPending: pending.length, animalsWithMissingMandatory: missingMandatory.length, animalsNoRequirements: noRequirements.length, animalsWithErrors: withErrors.length, totalOverdueVaccines, totalPendingVaccines };
+        await db.reports_cache.put({ key: CACHE_KEY, data: { stats: cachedStats, compliant, overdue, pending, missingMandatory, noRequirements, withErrors }, updated_at: new Date().toISOString() });
+      } catch (e) { console.warn('Failed to cache vaccination report:', e); }
       
     } catch (error) {
       console.error("❌ Fatal error fetching vaccination stats:", error);
@@ -432,6 +465,7 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
   // ============= PHASE 7: Updated UI for All Categories =============
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       <Alert>
         <Shield className="h-4 w-4" />
         <AlertDescription>

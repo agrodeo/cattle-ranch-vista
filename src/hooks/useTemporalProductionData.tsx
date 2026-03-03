@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/hooks/useLanguage';
 import { analyzeTrend, calculateAcceleration, findBestPeriod, generateInsights, type TemporalDataPoint } from '@/lib/temporalAnalysis';
+import { isOnline } from '@/services/connectivity';
+import { db } from '@/services/db';
 
 export type GroupByPeriod = 'year' | 'semester' | 'quarter' | 'month';
 export type WeightType = 'destete' | 'final' | 'all';
@@ -35,16 +37,29 @@ export function useTemporalProductionData({
   const { toast } = useToast();
   const { lang } = useLanguage();
 
+  const CACHE_KEY = `temporal:${cabanaId}:${groupBy}:${weightType}:${dateFrom}:${dateTo}:${JSON.stringify(filters)}`;
+
   useEffect(() => {
     if (!cabanaId) {
       setLoading(false);
       return;
     }
-
     fetchTemporalData();
   }, [cabanaId, groupBy, weightType, dateFrom, dateTo, JSON.stringify(filters)]);
 
   const fetchTemporalData = async () => {
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          setData(cached.data.data);
+          setUniqueAnimalsCount(cached.data.uniqueAnimalsCount);
+        }
+      } catch (e) { console.warn('Failed to load cached temporal report:', e); }
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -96,6 +111,10 @@ export function useTemporalProductionData({
       const uniqueIds = new Set(uniqueAnimals?.map(a => a.animal_id) || []);
       setUniqueAnimalsCount(uniqueIds.size);
       setData(result || []);
+      // Cache for offline
+      try {
+        await db.reports_cache.put({ key: CACHE_KEY, data: { data: result || [], uniqueAnimalsCount: uniqueIds.size }, updated_at: new Date().toISOString() });
+      } catch (e) { console.warn('Failed to cache temporal report:', e); }
     } catch (err) {
       console.error('Error fetching temporal data:', err);
       setError(err instanceof Error ? err.message : 'Error desconocido');

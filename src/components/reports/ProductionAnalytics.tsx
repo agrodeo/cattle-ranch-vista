@@ -12,6 +12,9 @@ import { getWeightedBenchmarksWithCustom, evaluatePerformance, getBreedInfo, typ
 import { ReportsFilters, ReportFilters } from "./ReportsFilters";
 import { AnimalProductionTable } from "./AnimalProductionTable";
 import { categorizeAnimal } from "@/lib/animalCategories";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { StaleDataBanner } from "./StaleDataBanner";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -39,6 +42,10 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
   const [stats, setStats] = useState<ProductionStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [animalTableExpanded, setAnimalTableExpanded] = useState(true);
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const CACHE_KEY = `production:${currentUser?.cabañaId}:${JSON.stringify(globalFilters)}`;
+
   useEffect(() => {
     if (currentUser?.cabañaId) {
       fetchProductionStats();
@@ -46,8 +53,21 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
   }, [currentUser, globalFilters]);
 
   const fetchProductionStats = async () => {
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          setStats(cached.data);
+          setIsStale(true);
+          setLastUpdated(cached.updated_at);
+        }
+      } catch (e) { console.warn('Failed to load cached production report:', e); }
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
+      setIsStale(false);
       let animalsQuery = supabase
         .from('animals')
         .select('*, animal_weight_history(*), is_castrated')
@@ -88,6 +108,10 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
       
       const prodStats = await calculateProductionStats(filteredData);
       setStats(prodStats);
+      // Cache for offline
+      try {
+        await db.reports_cache.put({ key: CACHE_KEY, data: prodStats, updated_at: new Date().toISOString() });
+      } catch (e) { console.warn('Failed to cache production report:', e); }
     } catch (error) {
       console.error("Error fetching production stats:", error);
     } finally {
@@ -267,6 +291,7 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
 
   return (
     <div className="space-y-6">
+      {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Animal Production Table - Collapsible */}
       <Card>
         <CardHeader 

@@ -11,6 +11,9 @@ import { ReportFilters } from "./ReportsFilters";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatDateForDB, ensureDateObject } from "@/lib/dateFormatters";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { StaleDataBanner } from "./StaleDataBanner";
 
 interface FinancialStats {
   totalRevenue: number;
@@ -39,6 +42,9 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'all' | 'year' | 'quarter'>('year');
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const CACHE_KEY = `financial:${currentUser?.cabañaId}:${timeRange}:${JSON.stringify(globalFilters)}`;
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -47,7 +53,20 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
   }, [currentUser, timeRange, globalFilters]);
 
   const fetchFinancialStats = async () => {
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          setStats(cached.data);
+          setIsStale(true);
+          setLastUpdated(cached.updated_at);
+        }
+      } catch (e) { console.warn('Failed to load cached financial report:', e); }
+      setLoading(false);
+      return;
+    }
     try {
+      setIsStale(false);
       // Calculate date range - use global filters if available
       const endDate = ensureDateObject(globalFilters?.date_to) || new Date();
       let startDate = ensureDateObject(globalFilters?.date_from) || new Date();
@@ -103,6 +122,9 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
 
       const financialStats = calculateFinancialStats(finances || [], animals || []);
       setStats(financialStats);
+      try {
+        await db.reports_cache.put({ key: CACHE_KEY, data: financialStats, updated_at: new Date().toISOString() });
+      } catch (e) { console.warn('Failed to cache financial report:', e); }
     } catch (error) {
       console.error("Error fetching financial stats:", error);
     } finally {
@@ -255,7 +277,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
 
   return (
     <div className="grid gap-6">
-
+      {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>

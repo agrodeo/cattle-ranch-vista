@@ -16,6 +16,8 @@ import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
 
 export interface ReportFilters {
   season?: string;
@@ -67,6 +69,15 @@ const Reports = () => {
     const fetchCorrales = async () => {
       if (!currentUser?.cabañaId) return;
       
+      if (!isOnline()) {
+        // Load corrales from IndexedDB cache
+        try {
+          const cached = await db.corrales_cache.where('cabaña_id').equals(currentUser.cabañaId).toArray();
+          if (cached.length) setAvailableCorrales(cached.map(c => ({ id: c.id, name: c.name })));
+        } catch (e) { console.warn('Failed to load cached corrales:', e); }
+        return;
+      }
+
       const { data } = await supabase
         .from('corrales')
         .select('id, name')
