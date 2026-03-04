@@ -19,7 +19,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Skull, Eye, Activity, TrendingUp } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Users, Calendar, MapPin, ChevronDown, ChevronRight, Skull, Eye, Activity, TrendingUp, ShoppingCart } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import GenealogyTree from "@/components/GenealogyTree";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
@@ -738,13 +738,16 @@ const Animals = () => {
   const availableBreeds = Array.from(new Set(animals.map(animal => animal.breed))).filter(Boolean);
 
   // Calculate metrics
-  const totalAnimals = animals.length;
-  const activeAnimals = animals.filter(animal => {
+  const activeAnimalsList = animals.filter(animal => {
     const status = normalizeAnimalStatus(animal.status);
     return status === "active";
-  }).length;
-  const femaleAnimals = animals.filter(animal => animal.sex === "Hembra").length;
-  const maleAnimals = animals.filter(animal => animal.sex === "Macho").length;
+  });
+  const activeAnimals = activeAnimalsList.length;
+  const activeFemales = activeAnimalsList.filter(a => a.sex === "Hembra").length;
+  const activeMales = activeAnimalsList.filter(a => a.sex === "Macho").length;
+  const soldAnimals = animals.filter(a => normalizeAnimalStatus(a.status) === "sold").length;
+  const deadAnimals = animals.filter(a => normalizeAnimalStatus(a.status) === "dead").length;
+  const totalAnimals = animals.length;
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = normalizeAnimalStatus(status);
@@ -1152,12 +1155,7 @@ const Animals = () => {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title={t('animals:totalAnimals')}
-          value={totalAnimals}
-          icon={Users}
-        />
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <MetricCard
           title={t('animals:activeAnimals')}
           value={activeAnimals}
@@ -1165,13 +1163,25 @@ const Animals = () => {
         />
         <MetricCard
           title={t('animals:sex.female')}
-          value={femaleAnimals}
-          icon={TrendingUp}
+          value={activeFemales}
+          icon={Users}
+          subtitle={activeAnimals > 0 ? `${Math.round((activeFemales / activeAnimals) * 100)}%` : undefined}
         />
         <MetricCard
           title={t('animals:sex.male')}
-          value={maleAnimals}
-          icon={TrendingUp}
+          value={activeMales}
+          icon={Users}
+          subtitle={activeAnimals > 0 ? `${Math.round((activeMales / activeAnimals) * 100)}%` : undefined}
+        />
+        <MetricCard
+          title={t('animals:status.sold')}
+          value={soldAnimals}
+          icon={ShoppingCart}
+        />
+        <MetricCard
+          title={t('animals:status.dead')}
+          value={deadAnimals}
+          icon={Skull}
         />
       </div>
 
