@@ -65,7 +65,7 @@ export function Header() {
   };
 
   return (
-    <header className="border-b border-ink-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
+    <header className="bg-white/80 backdrop-blur-sm sticky top-0 z-30">
       <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Sidebar trigger only needed on mobile, but mobile uses MobileLayout */}

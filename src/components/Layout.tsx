@@ -33,7 +33,8 @@ const Layout = () => {
         {isMobile ? (
           <MobileLayout />
         ) : (
-          <div className="min-h-screen flex w-full bg-background">
+          <div className="min-h-screen flex w-full bg-background relative">
+            <div className="pointer-events-none absolute left-0 right-0 top-14 sm:top-16 border-t border-ink-200 z-20" />
             <AppSidebar />
             <div className="flex-1 flex flex-col overflow-hidden min-w-0 border-l border-ink-200">
               <Header />

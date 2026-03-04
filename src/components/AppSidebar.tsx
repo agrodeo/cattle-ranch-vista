@@ -93,7 +93,7 @@ export function AppSidebar() {
     >
       <SidebarContent className="bg-white overflow-hidden">
         {/* Header/Logo Section */}
-        <div className="h-14 sm:h-16 flex items-center px-6 border-b border-ink-200">
+        <div className="h-14 sm:h-16 flex items-center px-6">
           <span className="text-xl font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>agrodeo</span>
         </div>
 
