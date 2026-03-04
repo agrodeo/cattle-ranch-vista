@@ -36,15 +36,16 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
     const headerFontSize = userName.length > 20 ? '52px' : '64px';
     const amountStr = String(amount);
     const amountFontSize =
-      amountStr.length >= 5 ? '180px' :
-      amountStr.length >= 4 ? '240px' :
-      amountStr.length >= 3 ? '280px' : '340px';
-    // Exclamation marks slightly smaller than the number
+      amountStr.length >= 5 ? '160px' :
+      amountStr.length >= 4 ? '200px' :
+      amountStr.length >= 3 ? '240px' : '280px';
     const exclFontSize =
-      amountStr.length >= 5 ? '140px' :
-      amountStr.length >= 4 ? '180px' :
-      amountStr.length >= 3 ? '220px' : '260px';
-    const itemFontSize = itemLabel.length > 14 ? '80px' : '110px';
+      amountStr.length >= 5 ? '120px' :
+      amountStr.length >= 4 ? '150px' :
+      amountStr.length >= 3 ? '180px' : '200px';
+    const itemFontSize =
+      itemLabel.length > 20 ? '60px' :
+      itemLabel.length > 14 ? '72px' : '90px';
 
     const fontFamily = "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
@@ -106,10 +107,10 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'baseline',
               justifyContent: 'center',
               gap: '8px',
-              marginBottom: '40px',
+              marginBottom: '80px',
             }}
           >
             <span
