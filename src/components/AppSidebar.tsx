@@ -95,19 +95,21 @@ export function AppSidebar() {
         {/* Header/Logo Section */}
         <div className={cn(
           "py-4 border-b border-ink-100",
-          isCollapsed ? "px-2" : "px-3"
+          isCollapsed ? "px-0" : "px-3"
         )}>
-          <div className="flex items-center pl-6">
-            {(!isCollapsed || isMobile) && (
+          <div className={cn("flex items-center", isCollapsed ? "justify-center" : "pl-6")}>
+            {(!isCollapsed || isMobile) ? (
               <span className="text-xl font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>agrodeo</span>
+            ) : (
+              <span className="text-lg font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>a</span>
             )}
           </div>
         </div>
 
         {/* Menu Items Section */}
         <SidebarGroup>
-          <SidebarGroupContent className={cn("py-4", isCollapsed ? "px-2" : "px-3")}>
-            <SidebarMenu className="space-y-1">
+          <SidebarGroupContent className={cn("py-4", isCollapsed ? "px-0" : "px-3")}>
+            <SidebarMenu className={cn("space-y-1", isCollapsed && "items-center")}>
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
@@ -138,7 +140,7 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Logout Section */}
-        <div className={cn("mt-auto border-t border-ink-100 py-4", isCollapsed ? "px-2" : "px-3")}>
+        <div className={cn("mt-auto border-t border-ink-100 py-4", isCollapsed ? "px-0 flex justify-center" : "px-3")}>
           <button
             onClick={() => {
               if (isMobile) setOpenMobile(false);
