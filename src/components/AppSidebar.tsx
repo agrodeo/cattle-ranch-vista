@@ -89,10 +89,9 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible={isMobile ? "offcanvas" : "icon"} 
-      className="border-r border-ink-200 bg-white"
-      style={{ width: isCollapsed ? '64px' : '256px' }}
+      className="border-r border-ink-200 bg-white overflow-hidden"
     >
-      <SidebarContent className="bg-white">
+      <SidebarContent className="bg-white overflow-hidden">
         {/* Header/Logo Section */}
         <div className={cn(
           "py-4 border-b border-ink-100",
