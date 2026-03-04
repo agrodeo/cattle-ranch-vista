@@ -68,10 +68,7 @@ export function Header() {
     <header className="border-b border-ink-200 bg-white/80 backdrop-blur-sm sticky top-0 z-30">
       <div className="flex h-14 sm:h-16 items-center justify-between px-3 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-4">
-          <SidebarTrigger className="text-ink-600 hover:text-ink-900 h-10 w-10 p-2">
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle sidebar</span>
-          </SidebarTrigger>
+          {/* Sidebar trigger only needed on mobile, but mobile uses MobileLayout */}
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
