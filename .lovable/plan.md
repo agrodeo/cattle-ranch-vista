@@ -1,60 +1,52 @@
 
 
-## Plan: Bulletproof Offline Experience
+# Achievement Story Card — Tier Colors, Layout Fix & Font Upgrade
 
-### Problem Summary
-When offline, the app produces multiple user-facing error toasts and alerts because:
-1. **`useSubscription`** retries the `get_subscription_status` RPC 3 times and shows a destructive toast after all retries fail — even though it already has cached data.
-2. **`errorHandlers.ts`** opens a support dialog for unhandled promise rejections (which spike offline as network calls fail).
-3. **Various hooks** (`useAnimalVaccinations`, `useCorralVaccinationMetrics`, `useDashboardSummary`) call Supabase directly without checking `isOnline` first, producing failed fetch errors that bubble up as toasts.
-4. The **connectivity check** pings Supabase every 30s; when offline this generates repeated failed fetches that can trigger error handlers.
+## Problem
+1. **No tier differentiation**: All story cards use the same green color regardless of bronze/silver/gold tier
+2. **Text overlapping**: The number, exclamation marks, and item label collide at certain sizes
+3. **Generic font**: System font stack looks plain — not share-worthy for social media
 
-### Changes
+## Design
 
-#### 1. Silence subscription toast when cached data exists (`src/hooks/useSubscription.tsx`)
-- Remove the destructive toast on line 85-89. If `subscriptionStatus` is already populated from cache, there is no reason to alert the user. Only log to console.
-- After all retries exhaust, silently fall back to cached status without any toast.
+### Tier color palettes (applied to exclamation marks, header, item label, and accents):
+- **Bronze**: `#CD7F32` (warm bronze) with number in `#4a3728`
+- **Silver**: `#8C8C8C` (cool silver) with number in `#3d3d3d`  
+- **Gold**: `#DAA520` (rich gold) with number in `#5c4a00`
 
-#### 2. Suppress network-related errors in global error handlers (`src/lib/errorHandlers.ts`)
-- Add `"Failed to fetch"`, `"NetworkError"`, `"Network request failed"`, `"Load failed"`, `"AbortError"`, and `"error.loadFailed"` to the `shouldIgnoreErrorMessage` filter so they never open the support dialog.
+### Layout fixes:
+- Separate the number and item label with more vertical spacing
+- Reduce exclamation mark size relative to the number to prevent overlap
+- Cap item label font size more aggressively and add `wordBreak` for long labels
+- Move content block slightly upward to leave breathing room at bottom for branding
 
-#### 3. Guard hooks with `isOnline` before making Supabase calls
-Files affected:
-- **`src/hooks/useAnimalVaccinations.tsx`** — wrap fetch logic with `isOnline` check; load from cache if offline, skip toast on network errors.
-- **`src/hooks/useCorralVaccinationMetrics.tsx`** — same pattern: skip fetch + skip error toast when offline.
-- **`src/hooks/useVaccinationRequirements.tsx`** — mutating hooks should still queue to outbox offline, but avoid server calls and toasts.
+### Font:
+- Use Google Font **Montserrat** (bold, italic) — loaded via `@import` in the off-screen element's inline style. html2canvas captures computed styles so this works if the font is preloaded.
+- Fallback: keep system font stack
 
-#### 4. Prevent `autoSync.ts` from producing toast errors offline
-- The `handleOnline` / periodic sync already check `isOnline()`, but the `handleOffline` function shows a toast every time. Add a simple dedup to avoid repeated offline toasts within a short window (e.g., 30s cooldown).
+## Changes
 
-#### 5. Prevent connectivity service from triggering error handlers
-- Wrap the `fetch` in `checkConnectivity()` so that failures are fully swallowed (they already are, but verify the `TypeError` from `fetch` doesn't leak into `unhandledrejection`).
+### 1. `src/components/achievements/AchievementStoryCard.tsx`
+- Add `medalTier` prop
+- Create a `getTierColors(tier)` helper returning `{ accent, number }` colors
+- Apply tier colors to header text, exclamation marks, and item label
+- Fix layout: reduce `¡` / `!` font size to match number height, increase gap between number row and item label
+- Use Montserrat font family
 
-### Scope
-- ~5 files modified, no DB/RLS/migration changes.
-- No UI layout, route, or component structure changes.
-- No changes to plan names, limits, or trial logic.
-- All existing offline hooks (`useOfflineAnimals`, `useOfflineCorrales`, etc.) continue unchanged — they already work correctly.
+### 2. `src/components/achievements/AchievementCard.tsx`
+- Pass `medalTier` to `AchievementStoryCard`
+- Update the visible preview card to also reflect tier colors instead of hardcoded green
+- Add Montserrat font link in `<head>` via a `useEffect` on mount (ensures font loads before capture)
 
-### Technical Details
+### 3. `src/lib/achievementStoryImage.ts`
+- Add a small delay before capture to ensure fonts are loaded (`document.fonts.ready`)
 
-```text
-useSubscription.tsx
-├─ Line 85-89: Remove toast({ ... destructive })
-├─ Keep console.error for debugging
-└─ subscriptionStatus remains populated from localStorage cache
+### 4. `index.html`
+- Add `<link>` to preload Montserrat font from Google Fonts (ensures it's available for html2canvas)
 
-errorHandlers.ts
-├─ shouldIgnoreErrorMessage(): add network-error patterns
-└─ Prevents support dialog spam when offline
-
-useAnimalVaccinations.tsx / useCorralVaccinationMetrics.tsx
-├─ Import useConnectivity
-├─ Early-return from fetch when !isOnline
-└─ Suppress toast.error for load failures when offline
-
-autoSync.ts
-├─ Add 30s cooldown to handleOffline toast
-└─ Prevents repeated "working offline" toasts
-```
+## No regressions
+- Off-screen rendering approach unchanged
+- No global CSS changes (font link only in `<head>`, scoped to story card via inline style)
+- Share/download flow unchanged
+- Existing achievement definitions, DB, hooks untouched
 
