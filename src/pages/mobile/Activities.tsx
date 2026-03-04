@@ -39,10 +39,18 @@ export function MobileActivities() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
 
-  // Load from cache first
+  // Load from cache (only used when offline to avoid stale data flash)
   const loadFromCache = useCallback(async () => {
+    if (isOnline) return;
+    
+    const cabañaId = currentUser?.cabañaId;
+    if (!cabañaId) return;
+
     try {
-      const cached = await db.table('eventos_cache').toArray();
+      const cached = await db.table('eventos_cache')
+        .where('cabaña_id')
+        .equals(cabañaId)
+        .toArray();
       if (cached.length > 0) {
         const transformedData: ActivityRecord[] = cached.map((item: any) => {
           const animales = JSON.parse(item.animales || '[]');
@@ -65,7 +73,7 @@ export function MobileActivities() {
     } catch (error) {
       console.error("Error loading from cache:", error);
     }
-  }, []);
+  }, [isOnline, currentUser?.cabañaId]);
 
   // Sync from server
   const syncFromServer = useCallback(async () => {
