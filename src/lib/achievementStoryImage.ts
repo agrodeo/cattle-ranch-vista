@@ -7,6 +7,9 @@ export async function generateAchievementStoryImage(
   element: HTMLElement
 ): Promise<Blob | null> {
   try {
+    // Wait for fonts (Montserrat) to be fully loaded before capture
+    await document.fonts.ready;
+
     const canvas = await html2canvas(element, {
       backgroundColor: '#ffffff',
       scale: 2,

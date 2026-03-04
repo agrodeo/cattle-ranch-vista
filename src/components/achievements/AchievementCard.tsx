@@ -31,6 +31,22 @@ function getItemKey(achievementCode: string): StoryItemKey {
   }
 }
 
+function getTierAccentColor(tier: MedalTier): string {
+  switch (tier) {
+    case 'bronze': return '#CD7F32';
+    case 'silver': return '#8C8C8C';
+    case 'gold':   return '#DAA520';
+  }
+}
+
+function getTierNumberColor(tier: MedalTier): string {
+  switch (tier) {
+    case 'bronze': return '#4a3728';
+    case 'silver': return '#3d3d3d';
+    case 'gold':   return '#5c4a00';
+  }
+}
+
 export function AchievementCard({
   achievementCode,
   nameKey,
@@ -48,6 +64,8 @@ export function AchievementCard({
 
   const itemKey = getItemKey(achievementCode);
   const itemLabel = t(`common:achievements.story.items.${itemKey}`);
+  const accentColor = getTierAccentColor(medalTier);
+  const numberColor = getTierNumberColor(medalTier);
 
   const handleDownload = async () => {
     if (!storyRef.current) return;
@@ -100,23 +118,24 @@ export function AchievementCard({
           userName={cabañaName}
           amount={threshold}
           itemKey={itemKey}
+          medalTier={medalTier}
         />
       </div>
 
-      {/* Visible preview card (9:16 ratio) */}
+      {/* Visible preview card */}
       <div className="rounded-xl border border-border bg-background overflow-hidden">
-        <div className="flex flex-col items-center text-center py-8 px-6 space-y-3">
-          <p className="text-sm font-extrabold italic text-primary leading-snug max-w-[260px]">
+        <div className="flex flex-col items-center text-center py-8 px-6 space-y-3" style={{ fontFamily: "'Montserrat', sans-serif" }}>
+          <p className="text-sm font-extrabold italic leading-snug max-w-[260px]" style={{ color: accentColor }}>
             {t('common:achievements.story.header', { userName: cabañaName })}
           </p>
           <div className="flex items-center gap-0">
-            <span className="text-5xl font-black italic text-primary">¡</span>
-            <span className="text-6xl font-black text-muted-foreground">{threshold}</span>
-            <span className="text-5xl font-black italic text-primary">!</span>
+            <span className="text-4xl font-black italic" style={{ color: accentColor }}>¡</span>
+            <span className="text-6xl font-black" style={{ color: numberColor }}>{threshold}</span>
+            <span className="text-4xl font-black italic" style={{ color: accentColor }}>!</span>
           </div>
-          <p className="text-3xl font-extrabold text-primary">{itemLabel}</p>
+          <p className="text-3xl font-extrabold" style={{ color: accentColor }}>{itemLabel}</p>
           <div className="pt-2">
-            <p className="text-xs font-bold italic text-primary">agrodeo.farm</p>
+            <p className="text-xs font-bold italic" style={{ color: accentColor }}>agrodeo.farm</p>
           </div>
         </div>
       </div>
