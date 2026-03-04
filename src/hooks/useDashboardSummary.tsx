@@ -182,13 +182,16 @@ export const useDashboardSummary = (): DashboardSummary => {
         .toArray() as CachedEvento[];
       
       if (cachedAnimals.length > 0 || cachedCorrals.length > 0) {
-        // Calculate basic counts from cache
-        // Only use cache for display when offline; when online, keep loading state until server responds
+        // When online, skip cache entirely to avoid stale data flash (165→64 etc.)
+        if (isOnline) {
+          return;
+        }
+
+        // Offline only: use cache for display
         const today = new Date();
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
         
-        // Count reproductive females and pregnant
         let reproductiveFemalesCount = 0;
         let pregnantFemalesCount = 0;
         
@@ -209,7 +212,6 @@ export const useDashboardSummary = (): DashboardSummary => {
           ? Math.round((pregnantFemalesCount / reproductiveFemalesCount) * 100)
           : 0;
         
-        // Count recent activities from cache
         const recentEventos = cachedEventos.filter((e) => 
           new Date(e.fecha) >= thirtyDaysAgo
         );
@@ -218,13 +220,12 @@ export const useDashboardSummary = (): DashboardSummary => {
           animalsActive: activeAnimals.length,
           corrals: cachedCorrals.length,
           activitiesLast30d: recentEventos.length,
-          servicesTotal: 0, // Will be updated from server
+          servicesTotal: 0,
           pregnancyPercentage,
           reproductiveFemales: reproductiveFemalesCount,
           pregnantFemales: pregnantFemalesCount,
         });
         
-        // Parse recent activities from cache
         const recentFromCache: RecentActivity[] = cachedEventos
           .slice(0, 5)
           .map((e) => ({
@@ -236,10 +237,7 @@ export const useDashboardSummary = (): DashboardSummary => {
           }));
         
         setRecentActivities(recentFromCache);
-        // Only stop loading from cache if we're offline; otherwise wait for server data
-        if (!isOnline) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Error loading dashboard from cache:', error);
