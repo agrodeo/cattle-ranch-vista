@@ -9,8 +9,10 @@ import {
   MapPin,
   UserCog,
   Crown,
-  Trophy
+  Trophy,
+  LogOut
 } from "lucide-react";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { NavLink, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -77,6 +79,7 @@ const menuItems = [
 ];
 
 export function AppSidebar() {
+  const { signOut } = useSupabaseAuth();
   const { state, setOpenMobile } = useSidebar();
   const location = useLocation();
   const isMobile = useIsMobile();
@@ -134,6 +137,23 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Logout Section */}
+        <div className={cn("mt-auto border-t border-ink-100 py-4", isCollapsed ? "px-2" : "px-3")}>
+          <button
+            onClick={() => {
+              if (isMobile) setOpenMobile(false);
+              signOut();
+            }}
+            className={cn(
+              "flex items-center rounded-lg text-sm font-medium transition-all duration-200 w-full min-h-[44px] text-red-600 hover:bg-red-50",
+              isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5"
+            )}
+          >
+            <LogOut className="h-5 w-5 flex-shrink-0" />
+            {(!isCollapsed || isMobile) && <span>{t('menu:logout')}</span>}
+          </button>
+        </div>
       </SidebarContent>
     </Sidebar>
   );
