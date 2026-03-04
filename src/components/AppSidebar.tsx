@@ -93,17 +93,8 @@ export function AppSidebar() {
     >
       <SidebarContent className="bg-white overflow-hidden">
         {/* Header/Logo Section */}
-        <div className={cn(
-          "py-4 border-b border-ink-100",
-          isCollapsed ? "px-0" : "px-3"
-        )}>
-          <div className={cn("flex items-center", isCollapsed ? "justify-center" : "pl-6")}>
-            {(!isCollapsed || isMobile) ? (
-              <span className="text-xl font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>agrodeo</span>
-            ) : (
-              <span className="text-lg font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>a</span>
-            )}
-          </div>
+        <div className="h-14 sm:h-16 flex items-center px-6 border-b border-ink-200">
+          <span className="text-xl font-bold" style={{ color: 'hsl(142, 71%, 45%)' }}>agrodeo</span>
         </div>
 
         {/* Menu Items Section */}
