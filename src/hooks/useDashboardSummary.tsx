@@ -144,19 +144,42 @@ export const useDashboardSummary = (): DashboardSummary => {
   const [isError, setIsError] = useState(false);
 
   // Load dashboard summary from cache for instant display
-  const loadFromCache = useCallback(async () => {
+  const loadFromCache = useCallback(async (cabanaId?: string | null) => {
     try {
-      // Get cached animals
-      const cachedAnimals = await db.table('animals_cache').toArray() as CachedAnimal[];
+      // Resolve cabaña context first (prevents mixing cache from other cabañas)
+      const cachedProfile = currentUser?.id
+        ? await db.user_profile.where('user_id').equals(currentUser.id).first()
+        : (await db.user_profile.toArray())[0];
+
+      const targetCabanaId = cabanaId ?? cachedProfile?.cabañaId ?? null;
+
+      // If we don't know the user's cabaña, avoid showing global mixed cache counts
+      if (!targetCabanaId) {
+        if (!isOnline) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      // Get cached data scoped to current cabaña only
+      const cachedAnimals = await db.table('animals_cache')
+        .where('cabaña_id')
+        .equals(targetCabanaId)
+        .toArray() as CachedAnimal[];
+
       const activeAnimals = cachedAnimals.filter(a => 
         !['vendido', 'muerto', 'Vendido', 'Muerto'].includes(a.status || '')
       );
-      
-      // Get cached corrals
-      const cachedCorrals = await db.table('corrales_cache').toArray() as CachedCorral[];
-      
-      // Get cached eventos
-      const cachedEventos = await db.table('eventos_cache').toArray();
+
+      const cachedCorrals = await db.table('corrales_cache')
+        .where('cabaña_id')
+        .equals(targetCabanaId)
+        .toArray() as CachedCorral[];
+
+      const cachedEventos = await db.table('eventos_cache')
+        .where('cabaña_id')
+        .equals(targetCabanaId)
+        .toArray() as CachedEvento[];
       
       if (cachedAnimals.length > 0 || cachedCorrals.length > 0) {
         // Calculate basic counts from cache
@@ -187,7 +210,7 @@ export const useDashboardSummary = (): DashboardSummary => {
           : 0;
         
         // Count recent activities from cache
-        const recentEventos = cachedEventos.filter((e: any) => 
+        const recentEventos = cachedEventos.filter((e) => 
           new Date(e.fecha) >= thirtyDaysAgo
         );
         
@@ -204,7 +227,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         // Parse recent activities from cache
         const recentFromCache: RecentActivity[] = cachedEventos
           .slice(0, 5)
-          .map((e: any) => ({
+          .map((e) => ({
             id: e.id,
             type: normalizeActivityType(e.tipo || 'general'),
             date: e.fecha,
@@ -221,7 +244,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     } catch (error) {
       console.error('Error loading dashboard from cache:', error);
     }
-  }, []);
+  }, [currentUser?.id, isOnline]);
 
   const fetchDashboardData = useCallback(async () => {
     // Load from cache first for instant display
