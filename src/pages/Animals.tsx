@@ -732,6 +732,11 @@ const Animals = () => {
       normalizedStatus === statusFilter;
 
     return matchesSearch && matchesCategory && matchesBreed && matchesStatus;
+  }).sort((a, b) => {
+    const statusOrder: Record<string, number> = { active: 0, sold: 1, dead: 2 };
+    const aOrder = statusOrder[normalizeAnimalStatus(a.status)] ?? 3;
+    const bOrder = statusOrder[normalizeAnimalStatus(b.status)] ?? 3;
+    return aOrder - bOrder;
   });
 
   // Get unique breeds for filter
