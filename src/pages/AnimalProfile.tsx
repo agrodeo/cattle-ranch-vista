@@ -49,60 +49,28 @@ export default function AnimalProfile() {
         return;
       }
 
-      // Now get additional related data
+      // Now get additional related data in parallel
       const animalData: any = { ...data };
 
-      // Get corral info if animal has corral_id
-      if (data.corral_id) {
-        const { data: corralData } = await supabase
-          .from('corrales')
-          .select('id, name')
-          .eq('id', data.corral_id)
-          .maybeSingle();
-        
-        if (corralData) {
-          animalData.corral = corralData;
-        }
-      }
+      const [corralResult, fatherResult, motherResult, defuncionResult] = await Promise.all([
+        data.corral_id
+          ? supabase.from('corrales').select('id, name').eq('id', data.corral_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+        data.father_id
+          ? supabase.from('animals').select('id, id_tag, name').eq('id', data.father_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+        data.mother_id
+          ? supabase.from('animals').select('id, id_tag, name').eq('id', data.mother_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+        data.defuncion_id
+          ? supabase.from('defunciones').select('id, fecha_defuncion, causa_texto').eq('id', data.defuncion_id).maybeSingle()
+          : Promise.resolve({ data: null }),
+      ]);
 
-      // Get father info if animal has father_id
-      if (data.father_id) {
-        const { data: fatherData } = await supabase
-          .from('animals')
-          .select('id, id_tag, name')
-          .eq('id', data.father_id)
-          .maybeSingle();
-        
-        if (fatherData) {
-          animalData.father = fatherData;
-        }
-      }
-
-      // Get mother info if animal has mother_id
-      if (data.mother_id) {
-        const { data: motherData } = await supabase
-          .from('animals')
-          .select('id, id_tag, name')
-          .eq('id', data.mother_id)
-          .maybeSingle();
-        
-        if (motherData) {
-          animalData.mother = motherData;
-        }
-      }
-
-      // Get defuncion info if animal has defuncion_id
-      if (data.defuncion_id) {
-        const { data: defuncionData } = await supabase
-          .from('defunciones')
-          .select('id, fecha_defuncion, causa_texto')
-          .eq('id', data.defuncion_id)
-          .maybeSingle();
-        
-        if (defuncionData) {
-          animalData.defuncion = defuncionData;
-        }
-      }
+      if (corralResult.data) animalData.corral = corralResult.data;
+      if (fatherResult.data) animalData.father = fatherResult.data;
+      if (motherResult.data) animalData.mother = motherResult.data;
+      if (defuncionResult.data) animalData.defuncion = defuncionResult.data;
 
       setAnimal(animalData as Animal);
     } catch (err) {

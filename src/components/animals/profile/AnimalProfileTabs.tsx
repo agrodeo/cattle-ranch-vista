@@ -118,11 +118,9 @@ export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsP
         })}
       </TabsList>
 
-      {tabs.map((tab) => (
-        <TabsContent key={tab.id} value={tab.id} className="mt-0">
-          {renderTabContent()}
-        </TabsContent>
-      ))}
+      <div className="mt-0">
+        {renderTabContent()}
+      </div>
     </Tabs>
   );
 }
