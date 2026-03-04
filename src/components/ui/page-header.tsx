@@ -5,31 +5,26 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   action?: ReactNode;
-  actions?: ReactNode[];
   className?: string;
 }
 
-export function PageHeader({ title, subtitle, action, actions, className }: PageHeaderProps) {
-  const actionElements = actions || (action ? [action] : []);
-
+export function PageHeader({ title, subtitle, action, className }: PageHeaderProps) {
   return (
-    <div className={cn("hidden lg:block space-y-1 mb-8", className)}>
+    <div className={cn("hidden lg:block space-y-2 mb-6", className)}>
       <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <div className="space-y-2">
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-slate-900">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-base text-muted-foreground">
+            <p className="text-base text-slate-600">
               {subtitle}
             </p>
           )}
         </div>
-        {actionElements.length > 0 && (
-          <div className="flex items-center gap-2 ml-4">
-            {actionElements.map((el, i) => (
-              <div key={i}>{el}</div>
-            ))}
+        {action && (
+          <div className="ml-4">
+            {action}
           </div>
         )}
       </div>

@@ -1,48 +1,52 @@
 
 
-## Dashboard Visual Redesign
+# Achievement Story Card — Tier Colors, Layout Fix & Font Upgrade
 
-Based on the reference image, the user wants a cleaner, more polished dashboard that matches the style shown: white rounded cards with subtle shadows, prominent KPI cards with icons and trend indicators, and a well-organized grid layout.
+## Problem
+1. **No tier differentiation**: All story cards use the same green color regardless of bronze/silver/gold tier
+2. **Text overlapping**: The number, exclamation marks, and item label collide at certain sizes
+3. **Generic font**: System font stack looks plain — not share-worthy for social media
 
-### What changes
+## Design
 
-**1. Enhanced MetricCard (`src/components/ui/metric-card.tsx`)**
-- Add a subtle green circle/rounded icon background (matching reference where each KPI has a small green circle with the icon)
-- Larger, bolder value numbers
-- Add a small trend/subtitle line below (e.g., "Increased from last month") in green text
-- Remove gradients from colored variants; keep solid white bg with green accents
-- More prominent rounded corners (rounded-2xl) and clean shadow
+### Tier color palettes (applied to exclamation marks, header, item label, and accents):
+- **Bronze**: `#CD7F32` (warm bronze) with number in `#4a3728`
+- **Silver**: `#8C8C8C` (cool silver) with number in `#3d3d3d`  
+- **Gold**: `#DAA520` (rich gold) with number in `#5c4a00`
 
-**2. Dashboard Layout (`src/pages/Dashboard.tsx`)**
-- Change KPI grid to always show 4 columns on desktop (already does this)
-- Add an "Import Data" secondary button next to the primary action in the header
-- Improve spacing between sections
-- Make the right sidebar cards feel more like the reference (clean white cards with headers)
+### Layout fixes:
+- Separate the number and item label with more vertical spacing
+- Reduce exclamation mark size relative to the number to prevent overlap
+- Cap item label font size more aggressively and add `wordBreak` for long labels
+- Move content block slightly upward to leave breathing room at bottom for branding
 
-**3. SectionCard refinement (`src/components/ui/section-card.tsx`)**
-- Slightly bolder header text
-- Add a small "+ New" style button option in the header (like the "Project" card in the reference)
-- Clean divider between header and content
+### Font:
+- Use Google Font **Montserrat** (bold, italic) — loaded via `@import` in the off-screen element's inline style. html2canvas captures computed styles so this works if the font is preloaded.
+- Fallback: keep system font stack
 
-**4. RecentActivityItem polish (`src/components/dashboard/RecentActivityItem.tsx`)**
-- Add colored dot indicators (like the reference project list items) instead of just icons
-- Cleaner date formatting underneath
-- Remove the redundant badge that duplicates the activity type name
+## Changes
 
-**5. PageHeader update (`src/components/ui/page-header.tsx`)**
-- Slightly larger title with the subtitle style matching reference ("Plan, prioritize, and accomplish...")
-- Support for multiple action buttons side by side
+### 1. `src/components/achievements/AchievementStoryCard.tsx`
+- Add `medalTier` prop
+- Create a `getTierColors(tier)` helper returning `{ accent, number }` colors
+- Apply tier colors to header text, exclamation marks, and item label
+- Fix layout: reduce `¡` / `!` font size to match number height, increase gap between number row and item label
+- Use Montserrat font family
 
-### Technical scope
-- Only scoped CSS/className changes to dashboard-related components
-- No database, route, or logic changes
-- No global CSS modifications
-- Preserves all existing functionality, translations, and data flow
+### 2. `src/components/achievements/AchievementCard.tsx`
+- Pass `medalTier` to `AchievementStoryCard`
+- Update the visible preview card to also reflect tier colors instead of hardcoded green
+- Add Montserrat font link in `<head>` via a `useEffect` on mount (ensures font loads before capture)
 
-### Files to modify
-- `src/components/ui/metric-card.tsx` -- green icon circles, cleaner design
-- `src/pages/Dashboard.tsx` -- layout spacing tweaks, add import button
-- `src/components/dashboard/RecentActivityItem.tsx` -- remove duplicate badge, add dot indicator
-- `src/components/ui/section-card.tsx` -- bolder header, optional inline action
-- `src/components/ui/page-header.tsx` -- support multiple actions
+### 3. `src/lib/achievementStoryImage.ts`
+- Add a small delay before capture to ensure fonts are loaded (`document.fonts.ready`)
+
+### 4. `index.html`
+- Add `<link>` to preload Montserrat font from Google Fonts (ensures it's available for html2canvas)
+
+## No regressions
+- Off-screen rendering approach unchanged
+- No global CSS changes (font link only in `<head>`, scoped to story card via inline style)
+- Share/download flow unchanged
+- Existing achievement definitions, DB, hooks untouched
 
