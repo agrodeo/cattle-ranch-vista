@@ -41,16 +41,28 @@ async function sendViaResend(to: string, subject: string, html: string) {
   return data;
 }
 
+function isEphemeralPreviewOrigin(url: string): boolean {
+  try {
+    const host = new URL(url).hostname;
+    return (
+      host.includes("sandbox.lovable.dev") ||
+      host.includes("lovableproject.com") ||
+      host.includes("id-preview--")
+    );
+  } catch {
+    return false;
+  }
+}
+
 function buildConfirmationUrl(
-  tokenHash: string,
+  tokenHash: string | undefined,
   type: string,
   redirectTo?: string,
   token?: string
 ): string {
-  // Use the redirect_to origin (the app the user came from) as the base URL.
-  // This ensures links work on sandbox, production, and native apps.
+  // Prefer redirect_to when it's a stable host; avoid ephemeral preview/sandbox hosts.
   let baseUrl = SITE_URL;
-  if (redirectTo) {
+  if (redirectTo && !isEphemeralPreviewOrigin(redirectTo)) {
     try {
       const parsed = new URL(redirectTo);
       baseUrl = parsed.origin;
@@ -59,14 +71,13 @@ function buildConfirmationUrl(
     }
   }
 
-  const params = new URLSearchParams({
-    type,
-    token_hash: tokenHash,
-  });
+  const params = new URLSearchParams({ type });
+  if (tokenHash) params.set("token_hash", tokenHash);
+  if (token) params.set("token", token);
 
-  if (token) {
-    params.set("token", token);
-  }
+  console.log(
+    `Generated confirmation URL: base=${baseUrl}, type=${type}, token_hash=${Boolean(tokenHash)}, token=${Boolean(token)}`
+  );
 
   return `${baseUrl}/auth/confirm?${params.toString()}`;
 }
@@ -135,7 +146,7 @@ Deno.serve(async (req) => {
 
     console.log(`Processing auth email: type=${emailActionType}, to=${email}`);
 
-    const confirmationUrl = tokenHash
+    const confirmationUrl = (tokenHash || token)
       ? buildConfirmationUrl(tokenHash, emailActionType, redirectTo, token)
       : (body.email_data?.confirmation_url || body.confirmation_url || siteUrl || SITE_URL);
 
