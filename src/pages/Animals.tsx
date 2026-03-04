@@ -275,9 +275,6 @@ const Animals = () => {
   // Load animals from cache first, then sync from server
   const loadFromCache = useCallback(async () => {
     if (!userCabaña) return;
-    // When online, skip stale cache — wait for fresh server data
-    if (isOnline) return;
-    
     try {
       const cached = await db.animals_cache
         .where('cabaña_id')
@@ -285,6 +282,7 @@ const Animals = () => {
         .toArray();
       
       if (cached.length > 0) {
+        // Sort by birth_date descending
         cached.sort((a, b) => {
           if (!a.birth_date && !b.birth_date) return 0;
           if (!a.birth_date) return 1;
@@ -297,7 +295,7 @@ const Animals = () => {
     } catch (err) {
       console.error('Error loading from cache:', err);
     }
-  }, [userCabaña, isOnline]);
+  }, [userCabaña]);
 
   const syncFromServer = useCallback(async () => {
     if (!userCabaña || !isOnline) return;

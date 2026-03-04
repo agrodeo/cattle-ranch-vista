@@ -62,10 +62,8 @@ export function useAllActivities() {
   const { session } = useSupabaseAuth();
   const { isOnline } = useConnectivity(); // Fix: destructure correctly
 
-  // Load from IndexedDB cache (only when offline to avoid stale data flash)
+  // Load from IndexedDB cache first
   const loadFromCache = useCallback(async (cabañaId: string) => {
-    if (isOnline) return;
-    
     try {
       const cached = await db.table('eventos_cache')
         .where('cabaña_id')
@@ -92,7 +90,7 @@ export function useAllActivities() {
     } catch (error) {
       console.error('Error loading activities from cache:', error);
     }
-  }, [isOnline]);
+  }, []);
 
   // Sync from server and update cache — batched queries
   const syncFromServer = useCallback(async (cabañaId: string) => {

@@ -93,12 +93,9 @@ export default function Corrales() {
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
   const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
 
-  // Load from cache (only used when offline to avoid stale data flash)
+  // Load from cache first for instant display
   const loadFromCache = useCallback(async () => {
     if (!currentUser?.cabañaId) return;
-    // When online, skip stale cache — wait for fresh server data
-    if (isOnline) return;
-    
     try {
       const cachedCorrales = await db.corrales_cache
         .where('cabaña_id')
@@ -106,6 +103,7 @@ export default function Corrales() {
         .toArray();
       
       if (cachedCorrales.length > 0) {
+        // Get animal counts from cache
         const processedCorrales: Corral[] = await Promise.all(
           cachedCorrales.map(async (corral) => {
             const animals = await db.animals_cache
@@ -132,6 +130,7 @@ export default function Corrales() {
         
         setCorrales(processedCorrales);
         
+        // Count total active animals from cache
         const allCachedAnimals = await db.animals_cache
           .where('cabaña_id')
           .equals(currentUser.cabañaId)
@@ -145,7 +144,7 @@ export default function Corrales() {
     } catch (err) {
       console.error('Error loading corrales from cache:', err);
     }
-  }, [currentUser?.cabañaId, isOnline]);
+  }, [currentUser?.cabañaId]);
 
   const syncFromServer = useCallback(async () => {
     if (!currentUser?.cabañaId || !isOnline) return;
