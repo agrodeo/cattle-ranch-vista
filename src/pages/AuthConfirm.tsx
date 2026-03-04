@@ -10,29 +10,33 @@ const AuthConfirm = () => {
   const [error, setError] = useState<string | null>(null);
 
   const params = useMemo(() => {
-    const sp = new URLSearchParams(location.search);
+    const searchParams = new URLSearchParams(location.search);
+    const hashParams = new URLSearchParams(location.hash.startsWith("#") ? location.hash.slice(1) : location.hash);
+
     return {
-      tokenHash: sp.get("token_hash"),
-      type: sp.get("type"),
+      tokenHash: searchParams.get("token_hash") ?? hashParams.get("token_hash"),
+      token: searchParams.get("token") ?? hashParams.get("token"),
+      type: searchParams.get("type") ?? hashParams.get("type"),
     };
-  }, [location.search]);
+  }, [location.search, location.hash]);
 
   useEffect(() => {
     let cancelled = false;
 
     const verify = async () => {
-      const { tokenHash, type } = params;
+      const { tokenHash, token, type } = params;
 
-      if (!tokenHash || !type) {
+      if (!type || (!tokenHash && !token)) {
         setError("Enlace inválido o incompleto.");
         return;
       }
 
       try {
-        const { error: verifyError } = await supabase.auth.verifyOtp({
-          type: type as any,
-          token_hash: tokenHash,
-        });
+        const payload = tokenHash
+          ? ({ type: type as any, token_hash: tokenHash } as const)
+          : ({ type: type as any, token: token as string } as const);
+
+        const { error: verifyError } = await supabase.auth.verifyOtp(payload as any);
 
         if (cancelled) return;
 
