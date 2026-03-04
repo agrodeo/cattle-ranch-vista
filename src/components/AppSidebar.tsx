@@ -110,12 +110,10 @@ export function AppSidebar() {
                         to={item.url}
                         onClick={() => { if (isMobile) setOpenMobile(false); }}
                         className={cn(
-                          "flex items-center rounded-lg text-sm font-medium transition-all duration-200 relative min-h-[44px]",
-                          isCollapsed ? "justify-center py-3" : "gap-3 px-3 py-2.5",
+                          "flex items-center rounded-lg text-sm font-medium transition-colors duration-150 relative min-h-[44px]",
+                          "gap-3 px-3 py-2.5",
                           isActive 
-                            ? isCollapsed 
-                              ? "bg-brand-50 text-brand-900"
-                              : "bg-brand-50 text-brand-900 border-l-3 border-brand-500"
+                            ? "bg-primary text-primary-foreground"
                             : "text-ink-600 hover:bg-ink-50 hover:text-ink-900"
                         )}
                       >
