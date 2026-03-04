@@ -160,6 +160,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       
       if (cachedAnimals.length > 0 || cachedCorrals.length > 0) {
         // Calculate basic counts from cache
+        // Only use cache for display when offline; when online, keep loading state until server responds
         const today = new Date();
         const thirtyDaysAgo = new Date(today);
         thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -212,7 +213,10 @@ export const useDashboardSummary = (): DashboardSummary => {
           }));
         
         setRecentActivities(recentFromCache);
-        setIsLoading(false);
+        // Only stop loading from cache if we're offline; otherwise wait for server data
+        if (!isOnline) {
+          setIsLoading(false);
+        }
       }
     } catch (error) {
       console.error('Error loading dashboard from cache:', error);
