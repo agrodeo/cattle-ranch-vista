@@ -94,7 +94,7 @@ export const AchievementStoryCard = forwardRef<HTMLDivElement, AchievementStoryC
               fontStyle: 'italic',
               color: colors.accent,
               lineHeight: 1.15,
-              marginBottom: '80px',
+              marginBottom: '120px',
               maxWidth: '880px',
               textShadow: '0 2px 8px rgba(0,0,0,0.06)',
             }}
