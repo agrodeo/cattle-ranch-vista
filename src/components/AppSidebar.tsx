@@ -89,7 +89,7 @@ export function AppSidebar() {
   return (
     <Sidebar 
       collapsible={isMobile ? "offcanvas" : "none"} 
-      className="border-r border-ink-200 bg-white overflow-hidden"
+      className="bg-white overflow-hidden"
     >
       <SidebarContent className="bg-white overflow-hidden">
         {/* Header/Logo Section */}
