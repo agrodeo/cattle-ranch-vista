@@ -35,7 +35,7 @@ const Layout = () => {
         ) : (
           <div className="min-h-screen flex w-full bg-background">
             <AppSidebar />
-            <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+            <div className="flex-1 flex flex-col overflow-hidden min-w-0 border-l border-ink-200">
               <Header />
               <ConnectivityBanner />
               <main className="flex-1 overflow-x-hidden overflow-y-auto pt-6">
