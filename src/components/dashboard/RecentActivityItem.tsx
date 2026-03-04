@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { ChevronDown, Syringe, Heart, Stethoscope, Scale, Activity, Calendar, User, DollarSign } from "lucide-react";
+import { ChevronDown, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { BadgePill } from "@/components/ui/badge-pill";
 import { useTranslation } from 'react-i18next';
 
 interface ActivityDetail {
@@ -12,22 +11,16 @@ interface ActivityDetail {
   user?: string;
   animalCount?: number;
   details?: {
-    // Vaccination
     vacuna?: string;
     lote?: string;
     dosis?: string;
     via?: string;
-    // AI
     toro_nombre?: string;
     raza_toro?: string;
-    // Tacto
     positivos?: number;
     negativos?: number;
-    // Weighing
     peso_promedio?: number;
-    // General
     notas?: string;
-    // Sale
     amount?: number;
     buyer_name?: string;
   };
@@ -37,24 +30,14 @@ interface RecentActivityItemProps {
   activity: ActivityDetail;
 }
 
-const getActivityIcon = (type: string) => {
+const getActivityDotColor = (type: string) => {
   const lowerType = type.toLowerCase();
-  if (lowerType.includes('vacun')) return Syringe;
-  if (lowerType.includes('inseminacion') || lowerType.includes('ia')) return Heart;
-  if (lowerType.includes('tacto') || lowerType.includes('preñ')) return Stethoscope;
-  if (lowerType.includes('pesa')) return Scale;
-  if (lowerType === 'sale' || lowerType.includes('venta')) return DollarSign;
-  return Activity;
-};
-
-const getActivityColor = (type: string) => {
-  const lowerType = type.toLowerCase();
-  if (lowerType.includes('vacun') || lowerType === 'vaccination') return 'text-blue-600';
-  if (lowerType.includes('inseminacion') || lowerType.includes('ia') || lowerType === 'insemination') return 'text-pink-600';
-  if (lowerType.includes('tacto') || lowerType.includes('preñ') || lowerType === 'tacto') return 'text-purple-600';
-  if (lowerType.includes('pesa') || lowerType === 'weighing') return 'text-amber-600';
-  if (lowerType === 'sale' || lowerType.includes('venta')) return 'text-emerald-600';
-  return 'text-slate-600';
+  if (lowerType.includes('vacun') || lowerType === 'vaccination') return 'bg-blue-500';
+  if (lowerType.includes('inseminacion') || lowerType.includes('ia') || lowerType === 'insemination') return 'bg-pink-500';
+  if (lowerType.includes('tacto') || lowerType.includes('preñ') || lowerType === 'tacto') return 'bg-purple-500';
+  if (lowerType.includes('pesa') || lowerType === 'weighing') return 'bg-amber-500';
+  if (lowerType === 'sale' || lowerType.includes('venta')) return 'bg-emerald-500';
+  return 'bg-muted-foreground';
 };
 
 const getTranslatedActivityType = (type: string, t: any): string => {
@@ -64,29 +47,26 @@ const getTranslatedActivityType = (type: string, t: any): string => {
 export function RecentActivityItem({ activity }: RecentActivityItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { t } = useTranslation(['dashboard', 'activities', 'common']);
-  const Icon = getActivityIcon(activity.type);
-  const colorClass = getActivityColor(activity.type);
+  const dotColor = getActivityDotColor(activity.type);
   const hasDetails = activity.details && Object.keys(activity.details).length > 0;
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       <button
         onClick={() => hasDetails && setIsExpanded(!isExpanded)}
         className={cn(
-          "w-full flex items-center justify-between p-3 hover:bg-slate-50 transition-colors",
+          "w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors",
           !hasDetails && "cursor-default"
         )}
       >
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <div className={cn("flex-shrink-0", colorClass)}>
-            <Icon className="h-5 w-5" />
-          </div>
+          <div className={cn("h-2.5 w-2.5 rounded-full flex-shrink-0", dotColor)} />
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-sm font-medium text-slate-900 truncate">
+            <p className="text-sm font-medium text-foreground truncate">
               {getTranslatedActivityType(activity.type, t)}
             </p>
-            <div className="flex items-center gap-2 mt-1">
-              <p className="text-xs text-slate-500">
+            <div className="flex items-center gap-2 mt-0.5">
+              <p className="text-xs text-muted-foreground">
                 {new Date(activity.date).toLocaleDateString('es-ES', { 
                   day: 'numeric', 
                   month: 'short',
@@ -95,137 +75,92 @@ export function RecentActivityItem({ activity }: RecentActivityItemProps) {
               </p>
               {activity.animalCount !== undefined && activity.animalCount > 0 && (
                 <>
-                  <span className="text-slate-300">•</span>
-                  <p className="text-xs text-slate-500">
+                  <span className="text-border">·</span>
+                  <p className="text-xs text-muted-foreground">
                     {activity.animalCount} {t('dashboard:activity.animals')}
                   </p>
                 </>
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <BadgePill variant="neutral">
-              {getTranslatedActivityType(activity.type, t)}
-            </BadgePill>
-            {hasDetails && (
-              <ChevronDown 
-                className={cn(
-                  "h-4 w-4 text-slate-400 transition-transform flex-shrink-0",
-                  isExpanded && "rotate-180"
-                )}
-              />
-            )}
-          </div>
+          {hasDetails && (
+            <ChevronDown 
+              className={cn(
+                "h-4 w-4 text-muted-foreground transition-transform flex-shrink-0",
+                isExpanded && "rotate-180"
+              )}
+            />
+          )}
         </div>
       </button>
 
       {isExpanded && hasDetails && (
-        <div className="px-3 pb-3 pt-0 border-t border-slate-100">
-          <div className="mt-3 space-y-2">
-            {/* Vaccination Details */}
-            {activity.details.vacuna && (
-              <>
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">{t('dashboard:activity.vaccines')}:</span>
-                  <span className="font-medium text-slate-900">{activity.details.vacuna}</span>
-                </div>
-                {activity.details.lote && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.lot')}:</span>
-                    <span className="font-medium text-slate-900">{activity.details.lote}</span>
-                  </div>
-                )}
-                {activity.details.dosis && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.dose')}:</span>
-                    <span className="font-medium text-slate-900">{activity.details.dosis}</span>
-                  </div>
-                )}
-                {activity.details.via && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.route')}:</span>
-                    <span className="font-medium text-slate-900">{activity.details.via}</span>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* AI Details */}
-            {activity.details.toro_nombre && (
-              <>
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">{t('dashboard:activity.bullName')}:</span>
-                  <span className="font-medium text-slate-900">{activity.details.toro_nombre}</span>
-                </div>
-                {activity.details.raza_toro && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.breed')}:</span>
-                    <span className="font-medium text-slate-900">{activity.details.raza_toro}</span>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Tacto Details */}
-            {(activity.details.positivos !== undefined || activity.details.negativos !== undefined) && (
-              <>
-                {activity.details.positivos !== undefined && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.tactileExam')}:</span>
-                    <span className="font-medium text-emerald-600">{activity.details.positivos}</span>
-                  </div>
-                )}
-                {activity.details.negativos !== undefined && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.empty')}:</span>
-                    <span className="font-medium text-slate-600">{activity.details.negativos}</span>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Weighing Details */}
-            {activity.details.peso_promedio && (
-              <div className="flex justify-between text-xs">
-                <span className="text-slate-500">{t('dashboard:activity.averageWeight')}:</span>
-                <span className="font-medium text-slate-900">{activity.details.peso_promedio} kg</span>
-              </div>
-            )}
-
-            {/* Sale Details */}
-            {activity.details.amount !== undefined && (
-              <>
-                <div className="flex justify-between text-xs">
-                  <span className="text-slate-500">{t('dashboard:activity.amount')}:</span>
-                  <span className="font-medium text-emerald-600">${activity.details.amount?.toLocaleString()}</span>
-                </div>
-                {activity.details.buyer_name && (
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">{t('dashboard:activity.buyer')}:</span>
-                    <span className="font-medium text-slate-900">{activity.details.buyer_name}</span>
-                  </div>
-                )}
-              </>
-            )}
-
-            {/* Notes */}
-            {activity.details.notas && (
-              <div className="mt-3 pt-2 border-t border-slate-100">
-                <p className="text-xs text-slate-500 mb-1">{t('dashboard:activity.notes')}:</p>
-                <p className="text-xs text-slate-700">{activity.details.notas}</p>
-              </div>
-            )}
-
-            {/* User */}
-            {activity.user && (
-              <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-2">
-                <User className="h-3 w-3" />
-                <span>{t('dashboard:activity.registeredBy')}: {activity.user}</span>
-              </div>
-            )}
-          </div>
-        </div>
+        <ExpandedDetails activity={activity} t={t} />
       )}
+    </div>
+  );
+}
+
+function ExpandedDetails({ activity, t }: { activity: ActivityDetail; t: any }) {
+  const details = activity.details!;
+  return (
+    <div className="px-3 pb-3 pt-0 border-t border-border">
+      <div className="mt-3 space-y-2">
+        {details.vacuna && (
+          <>
+            <DetailRow label={t('dashboard:activity.vaccines')} value={details.vacuna} />
+            {details.lote && <DetailRow label={t('dashboard:activity.lot')} value={details.lote} />}
+            {details.dosis && <DetailRow label={t('dashboard:activity.dose')} value={details.dosis} />}
+            {details.via && <DetailRow label={t('dashboard:activity.route')} value={details.via} />}
+          </>
+        )}
+        {details.toro_nombre && (
+          <>
+            <DetailRow label={t('dashboard:activity.bullName')} value={details.toro_nombre} />
+            {details.raza_toro && <DetailRow label={t('dashboard:activity.breed')} value={details.raza_toro} />}
+          </>
+        )}
+        {(details.positivos !== undefined || details.negativos !== undefined) && (
+          <>
+            {details.positivos !== undefined && (
+              <DetailRow label={t('dashboard:activity.tactileExam')} value={String(details.positivos)} valueClass="text-primary" />
+            )}
+            {details.negativos !== undefined && (
+              <DetailRow label={t('dashboard:activity.empty')} value={String(details.negativos)} />
+            )}
+          </>
+        )}
+        {details.peso_promedio && (
+          <DetailRow label={t('dashboard:activity.averageWeight')} value={`${details.peso_promedio} kg`} />
+        )}
+        {details.amount !== undefined && (
+          <>
+            <DetailRow label={t('dashboard:activity.amount')} value={`$${details.amount?.toLocaleString()}`} valueClass="text-primary" />
+            {details.buyer_name && <DetailRow label={t('dashboard:activity.buyer')} value={details.buyer_name} />}
+          </>
+        )}
+        {details.notas && (
+          <div className="mt-3 pt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground mb-1">{t('dashboard:activity.notes')}:</p>
+            <p className="text-xs text-foreground">{details.notas}</p>
+          </div>
+        )}
+        {activity.user && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-2">
+            <User className="h-3 w-3" />
+            <span>{t('dashboard:activity.registeredBy')}: {activity.user}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({ label, value, valueClass }: { label: string; value: string; valueClass?: string }) {
+  return (
+    <div className="flex justify-between text-xs">
+      <span className="text-muted-foreground">{label}:</span>
+      <span className={cn("font-medium text-foreground", valueClass)}>{value}</span>
     </div>
   );
 }

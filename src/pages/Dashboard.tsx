@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Users, Activity, Fence, TrendingUp, Plus, Calendar, Settings, AlertTriangle, Shield, Syringe } from "lucide-react";
+import { SecondaryButton } from "@/components/ui/secondary-button";
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { PageHeader } from "@/components/ui/page-header";
@@ -108,15 +109,24 @@ const Dashboard = () => {
         <PageHeader 
           title={t('dashboard:title')}
           subtitle={t('dashboard:subtitle')}
-          action={
+          actions={[
+            <SecondaryButton 
+              key="import"
+              onClick={() => navigate('/animals')}
+              disabled={warnings.noCabana}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              {t('dashboard:actions.importData', { defaultValue: 'Importar datos' })}
+            </SecondaryButton>,
             <Button 
+              key="register"
               onClick={handleRegisterActivity}
               disabled={warnings.noCabana}
             >
               <Plus className="h-4 w-4 mr-2" />
               {t('dashboard:actions.registerActivity')}
             </Button>
-          }
+          ]}
         />
 
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-3 lg:gap-6">

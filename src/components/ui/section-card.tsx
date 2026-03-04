@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
@@ -23,6 +23,10 @@ interface SectionCardProps {
     label: string;
     onClick: () => void;
   };
+  inlineAction?: {
+    label: string;
+    onClick: () => void;
+  };
   collapsible?: boolean;
   defaultOpen?: boolean;
   className?: string;
@@ -35,28 +39,40 @@ export function SectionCard({
   children, 
   actions,
   primaryAction,
+  inlineAction,
   collapsible = false,
   defaultOpen = true,
   className 
 }: SectionCardProps) {
   return (
     <div className={cn(
-      "rounded-2xl border border-slate-200 bg-white shadow-sm",
+      "rounded-2xl border border-border bg-card shadow-sm",
       className
     )}>
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-slate-900 truncate">{title}</h3>
+          <h3 className="text-sm font-semibold text-foreground truncate">{title}</h3>
           {subtitle && (
-            <p className="text-xs text-slate-500 truncate mt-1">{subtitle}</p>
+            <p className="text-xs text-muted-foreground truncate mt-0.5">{subtitle}</p>
           )}
         </div>
         <div className="flex items-center gap-2 ml-4">
           {count !== undefined && (
-            <Badge variant="outline" className="bg-slate-50">
+            <Badge variant="outline" className="bg-muted text-muted-foreground border-border">
               {count}
             </Badge>
+          )}
+          {inlineAction && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 px-2 text-xs text-primary hover:text-primary"
+              onClick={inlineAction.onClick}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              {inlineAction.label}
+            </Button>
           )}
           {actions && actions.length > 0 && (
             <DropdownMenu>
@@ -78,7 +94,7 @@ export function SectionCard({
       </div>
       
       {/* Content */}
-      <div className="p-4">
+      <div className="p-5">
         <div className="space-y-3">
           {children}
           {primaryAction && (
