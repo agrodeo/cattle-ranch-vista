@@ -46,111 +46,95 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
   } | null>(null);
   const [latestWeight, setLatestWeight] = useState<WeightData | null>(null);
 
-  // Fetch latest weight from animal_weight_history
+  // Fetch weight and reproductive data in parallel
   useEffect(() => {
-    const fetchLatestWeight = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('animal_weight_history')
-          .select('peso_kg, fecha, ganancia_diaria')
-          .eq('animal_id', animal.id)
-          .order('fecha', { ascending: false })
-          .limit(1)
-          .maybeSingle();
+    const fetchAllData = async () => {
+      const promises: Promise<void>[] = [];
 
-        if (error) throw error;
-        if (data) {
-          setLatestWeight(data);
-        }
-      } catch (error) {
-        console.error('Error fetching latest weight:', error);
+      // Weight fetch
+      promises.push(
+        (async () => {
+          try {
+            const { data } = await supabase
+              .from('animal_weight_history')
+              .select('peso_kg, fecha, ganancia_diaria')
+              .eq('animal_id', animal.id)
+              .order('fecha', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (data) setLatestWeight(data);
+          } catch (err) {
+            console.error('Error fetching latest weight:', err);
+          }
+        })()
+      );
+
+      // Reproductive fetch (females only)
+      if (animal.sex === 'Hembra') {
+        promises.push(
+          Promise.all([
+            supabase.from('preñeces').select('*').eq('animal_id', animal.id),
+            supabase.from('ia').select('id, evento_id, animales_ids').contains('animales_ids', [animal.id]),
+            supabase.from('animals').select('id, mother_id, father_id, status').eq('mother_id', animal.id),
+          ]).then(([pregnanciesRes, servicesRes, offspringRes]) => {
+            const pregnancies = pregnanciesRes.data || [];
+            const services = servicesRes.data || [];
+            const offspring = offspringRes.data || [];
+
+            const animalData: AnimalReproductiveData = {
+              id: animal.id,
+              id_tag: animal.id_tag,
+              name: animal.name,
+              birth_date: animal.birth_date,
+              esta_preñada: animal.esta_preñada,
+              fecha_ultima_preñez: undefined,
+              fecha_probable_parto: animal.fecha_probable_parto,
+              sex: animal.sex,
+              status: animal.status,
+              corral_id: animal.corral_id
+            };
+
+            const pregnancyRecords: PregnancyRecord[] = pregnancies.map(p => ({
+              id: p.id,
+              animal_id: p.animal_id,
+              estado: p.estado,
+              estado_final: (p.estado_final as 'activa' | 'exitosa' | 'fallida') || 'activa',
+              fecha_inicio: p.fecha_inicio,
+              fecha_estimada_parto: p.fecha_estimada_parto,
+              fecha_finalizacion: p.fecha_finalizacion,
+              motivo_finalizacion: p.motivo_finalizacion,
+              cria_id: p.cria_id
+            }));
+
+            const serviceRecords: ServiceRecord[] = services.map(s => ({
+              id: s.id,
+              animales_ids: s.animales_ids,
+              evento_id: s.evento_id
+            }));
+
+            const offspringRecords: OffspringRecord[] = offspring.map(o => ({
+              id: o.id,
+              mother_id: o.mother_id,
+              father_id: o.father_id,
+              status: o.status
+            }));
+
+            const result = calculatePregnancyRate(animalData, pregnancyRecords, serviceRecords, offspringRecords);
+
+            setReproductiveData({
+              pregnancyPercentage: result.pregnancy_rate,
+              calvingPercentage: result.calving_rate,
+              totalOffspring: offspring.length,
+              liveOffspring: offspring.filter(o => o.status !== 'muerto').length
+            });
+          }).catch(err => console.error('Error fetching reproductive data:', err))
+        );
       }
+
+      await Promise.all(promises);
     };
 
-    fetchLatestWeight();
-  }, [animal.id]);
-
-  // Fetch reproductive data using the same logic as ReproductivePerformance
-  useEffect(() => {
-    const fetchReproductiveData = async () => {
-      if (animal.sex !== 'Hembra') return;
-      
-      try {
-        // Get pregnancy history from preñeces table
-        const { data: pregnancies } = await supabase
-          .from('preñeces')
-          .select('*')
-          .eq('animal_id', animal.id);
-
-        // Get services from IA table
-        const { data: services } = await supabase
-          .from('ia')
-          .select('id, evento_id, animales_ids')
-          .contains('animales_ids', [animal.id]);
-
-        // Get offspring count
-        const { data: offspring } = await supabase
-          .from('animals')
-          .select('id, mother_id, father_id, status')
-          .eq('mother_id', animal.id);
-
-        // Convert to proper types
-        const animalData: AnimalReproductiveData = {
-          id: animal.id,
-          id_tag: animal.id_tag,
-          name: animal.name,
-          birth_date: animal.birth_date,
-          esta_preñada: animal.esta_preñada,
-          fecha_ultima_preñez: undefined, // Not available in Animal type, but pregnancy detection exists in preñeces
-          fecha_probable_parto: animal.fecha_probable_parto,
-          sex: animal.sex,
-          status: animal.status,
-          corral_id: animal.corral_id
-        };
-
-        const pregnancyRecords: PregnancyRecord[] = (pregnancies || []).map(p => ({
-          id: p.id,
-          animal_id: p.animal_id,
-          estado: p.estado,
-          estado_final: (p.estado_final as 'activa' | 'exitosa' | 'fallida') || 'activa',
-          fecha_inicio: p.fecha_inicio,
-          fecha_estimada_parto: p.fecha_estimada_parto,
-          fecha_finalizacion: p.fecha_finalizacion,
-          motivo_finalizacion: p.motivo_finalizacion,
-          cria_id: p.cria_id
-        }));
-
-        const serviceRecords: ServiceRecord[] = (services || []).map(s => ({
-          id: s.id,
-          animales_ids: s.animales_ids,
-          evento_id: s.evento_id
-        }));
-
-        const offspringRecords: OffspringRecord[] = (offspring || []).map(o => ({
-          id: o.id,
-          mother_id: o.mother_id,
-          father_id: o.father_id,
-          status: o.status
-        }));
-
-        // Calculate using the same function as ReproductivePerformance
-        const result = calculatePregnancyRate(animalData, pregnancyRecords, serviceRecords, offspringRecords);
-
-        const liveOffspring = offspring?.filter(o => o.status !== 'muerto').length || 0;
-        const totalOffspring = offspring?.length || 0;
-
-        setReproductiveData({
-          pregnancyPercentage: result.pregnancy_rate,
-          calvingPercentage: result.calving_rate,
-          totalOffspring,
-          liveOffspring
-        });
-      } catch (error) {
-        console.error('Error fetching reproductive data:', error);
-      }
-    };
-
-    fetchReproductiveData();
+    fetchAllData();
   }, [animal.id, animal.sex]);
 
   const getVaccinationSummary = () => {

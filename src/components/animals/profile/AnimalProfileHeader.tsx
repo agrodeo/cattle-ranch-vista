@@ -41,18 +41,18 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'activo': return 'bg-primary';
-      case 'vendido': return 'bg-blue-500';
-      case 'muerto': return 'bg-red-500';
-      case 'transferido': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'vendido': return 'bg-accent';
+      case 'muerto': return 'bg-destructive';
+      case 'transferido': return 'bg-secondary';
+      default: return 'bg-muted';
     }
   };
 
   const getSexColor = (sex: string) => {
     switch (sex) {
-      case 'Macho': return 'bg-blue-500';
-      case 'Hembra': return 'bg-pink-500';
-      default: return 'bg-gray-500';
+      case 'Macho': return 'bg-accent';
+      case 'Hembra': return 'bg-primary';
+      default: return 'bg-muted';
     }
   };
 
@@ -109,7 +109,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
             </Badge>
 
             {animal.esta_preñada && (
-              <Badge className="bg-orange-500 text-white">
+              <Badge className="bg-secondary text-secondary-foreground">
                 {t('animals:profile.pregnant')}
                 {animal.fecha_probable_parto && (
                   <span className="ml-1 hidden sm:inline">
@@ -125,7 +125,7 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
             )}
 
             {animal.caravana_electronica && (
-              <Badge variant="outline" className="bg-blue-50">
+              <Badge variant="outline" className="bg-muted">
                 RFID: {animal.caravana_electronica}
               </Badge>
             )}
@@ -154,8 +154,8 @@ export function AnimalProfileHeader({ animal, onAnimalUpdate }: AnimalProfileHea
           {isInactive && (
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 p-3 bg-muted rounded-lg">
               <div className="flex items-center gap-2">
-                {animal.status === 'muerto' && <Skull className="h-4 w-4 text-red-500 shrink-0" />}
-                {animal.status === 'vendido' && <Truck className="h-4 w-4 text-blue-500 shrink-0" />}
+                {animal.status === 'muerto' && <Skull className="h-4 w-4 text-destructive shrink-0" />}
+                {animal.status === 'vendido' && <Truck className="h-4 w-4 text-accent-foreground shrink-0" />}
                 <span className="text-sm text-muted-foreground">
                   {animal.status === 'muerto' && t('animals:profile.deadReadOnly')}
                   {animal.status === 'vendido' && t('animals:profile.soldReadOnly')}
