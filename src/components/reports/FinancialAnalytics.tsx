@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { DollarSign, TrendingUp, TrendingDown, Calculator, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ReportFilters } from "./ReportsFilters";
 import { format } from "date-fns";
 import { ReportKpiCard } from "./shared/ReportKpiCard";
@@ -41,6 +42,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
   const { t } = useTranslation(['reports']);
   const { lang } = useLanguage();
   const { currentUser } = useSupabaseAuth();
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState<FinancialStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'all' | 'year' | 'quarter'>('year');
@@ -372,14 +374,14 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
         {/* Top Expense Categories */}
         {stats.topExpenseCategories.length > 0 && (
           <ReportChartCard title={t('reports:financial.topExpenseCategories')} icon={ArrowDownRight} iconVariant="danger">
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={isMobile ? 220 : 280}>
               <PieChart>
                 <Pie
                   data={stats.topExpenseCategories}
                   cx="50%"
                   cy="50%"
                   dataKey="amount"
-                  label={renderDonutLabel}
+                  label={isMobile ? false : renderDonutLabel}
                   labelLine={false}
                   {...DONUT_PROPS}
                 >
@@ -390,20 +392,30 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
                 <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
               </PieChart>
             </ResponsiveContainer>
+            {isMobile && (
+              <div className="flex flex-wrap gap-2 mt-2 px-1">
+                {stats.topExpenseCategories.map((entry, index) => (
+                  <div key={entry.category} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS.red[index % CHART_COLORS.red.length] }} />
+                    <span className="truncate max-w-[120px]">{entry.category} ({entry.percentage.toFixed(0)}%)</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </ReportChartCard>
         )}
 
         {/* Top Revenue Categories */}
         {stats.topRevenueCategories.length > 0 && (
           <ReportChartCard title={t('reports:financial.topRevenueCategories')} icon={ArrowUpRight} iconVariant="success">
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={isMobile ? 220 : 280}>
               <PieChart>
                 <Pie
                   data={stats.topRevenueCategories}
                   cx="50%"
                   cy="50%"
                   dataKey="amount"
-                  label={renderDonutLabel}
+                  label={isMobile ? false : renderDonutLabel}
                   labelLine={false}
                   {...DONUT_PROPS}
                 >
@@ -414,6 +426,16 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
                 <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
               </PieChart>
             </ResponsiveContainer>
+            {isMobile && (
+              <div className="flex flex-wrap gap-2 mt-2 px-1">
+                {stats.topRevenueCategories.map((entry, index) => (
+                  <div key={entry.category} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS.green[index % CHART_COLORS.green.length] }} />
+                    <span className="truncate max-w-[120px]">{entry.category} ({entry.percentage.toFixed(0)}%)</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </ReportChartCard>
         )}
 
