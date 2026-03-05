@@ -749,5 +749,11 @@
     "assistant": "AI Assistant",
     "placeholder": "Ask something about corral management...",
     "errorGettingRecommendations": "Error getting AI recommendations"
+  },
+  "move": {
+    "success": "{{count}} animal(s) moved {{destination}}",
+    "movedTo": "to {{corral}}",
+    "movedOutside": "outside corrals",
+    "errorMoving": "Could not move animals"
   }
 }

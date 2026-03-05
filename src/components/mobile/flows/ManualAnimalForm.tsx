@@ -156,11 +156,11 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
           <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Nuevo Animal</h1>
+          <h1 className="text-xl font-semibold">{t('animals:form.newAnimal')}</h1>
         </div>
         <Button onClick={handleSubmit} disabled={loading} size="sm">
           <Save className="h-4 w-4 mr-2" />
-          {loading ? "Guardando..." : "Guardar"}
+          {loading ? t('common:forms.saving') : t('common:actions.save')}
         </Button>
       </div>
 
@@ -264,15 +264,15 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="mocho">Tipo de Cuernos</Label>
+              <Label htmlFor="mocho">{t('animals:form.hornType')}</Label>
               <Select value={formData.mocho} onValueChange={(value) => handleInputChange("mocho", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar" />
+                  <SelectValue placeholder={t('common:actions.select')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin especificar</SelectItem>
-                  <SelectItem value="Mocho">Mocho (sin cuernos)</SelectItem>
-                  <SelectItem value="Astado">Astado (con cuernos)</SelectItem>
+                  <SelectItem value="none">{t('animals:hornOptions.unspecified')}</SelectItem>
+                  <SelectItem value="Mocho">{t('animals:hornOptions.polled')}</SelectItem>
+                  <SelectItem value="Astado">{t('animals:hornOptions.horned')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

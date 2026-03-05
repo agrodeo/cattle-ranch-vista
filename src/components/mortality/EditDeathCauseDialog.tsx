@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -47,6 +48,7 @@ export function EditDeathCauseDialog({
   cause,
   onSuccess,
 }: EditDeathCauseDialogProps) {
+  const { t } = useTranslation('common');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -84,7 +86,7 @@ export function EditDeathCauseDialog({
 
       if ((data as any)?.success) {
         toast({
-          title: "Éxito",
+          title: t('common:toast.success'),
           description: (data as any).message,
         });
         onSuccess();

@@ -53,6 +53,8 @@
     "cow": "fêmeas adultas"
   },
   "filters": {
+    "status": "Status",
+    "breed": "Raça",
     "allCategories": "Todas as categorias",
     "allBreeds": "Todas as raças",
     "allStatuses": "Todos os status",

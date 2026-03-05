@@ -178,7 +178,7 @@ export function MobileAnimals() {
 
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="flex-1 min-w-[120px]">
-              <SelectValue placeholder="Estado" />
+              <SelectValue placeholder={t('animals:filters.status')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('animals:filters.allStatuses')}</SelectItem>
@@ -190,7 +190,7 @@ export function MobileAnimals() {
 
           <Select value={breedFilter} onValueChange={setBreedFilter}>
             <SelectTrigger className="flex-1 min-w-[120px]">
-              <SelectValue placeholder="Raza" />
+              <SelectValue placeholder={t('animals:filters.breed')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('animals:filters.allBreeds')}</SelectItem>

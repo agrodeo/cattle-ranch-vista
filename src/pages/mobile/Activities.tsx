@@ -211,7 +211,7 @@ export function MobileActivities() {
         <div className="flex gap-2">
           <Select value={typeFilter} onValueChange={setTypeFilter}>
             <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Tipo" />
+              <SelectValue placeholder={t('activities:mobile.type')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('activities:mobile.allTypes')}</SelectItem>
@@ -225,7 +225,7 @@ export function MobileActivities() {
 
           <Select value={dateFilter} onValueChange={setDateFilter}>
             <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Fecha" />
+              <SelectValue placeholder={t('activities:mobile.date')} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('activities:mobile.allDates')}</SelectItem>

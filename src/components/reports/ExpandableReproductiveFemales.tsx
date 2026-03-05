@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronRight, Heart, Baby, Calendar, AlertTriangle, TrendingUp, Eye, Filter, TrendingDown } from "lucide-react";
@@ -16,6 +17,7 @@ interface ExpandableReproductiveFemalesProps {
 }
 
 export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiveFemalesProps) {
+  const { t } = useTranslation(['reproductive', 'common']);
   const [isOpen, setIsOpen] = useState(false);
   const [performanceFilter, setPerformanceFilter] = useState<string>("");
   const [alertFilter, setAlertFilter] = useState<string>("");
@@ -186,16 +188,16 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium whitespace-nowrap">Alertas:</label>
+                   <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium whitespace-nowrap">{t('reproductive:femalesTable.alerts')}:</label>
                     <Select value={alertFilter || "all"} onValueChange={(value) => setAlertFilter(value === "all" ? "" : value)}>
                       <SelectTrigger className="w-28 sm:w-32">
-                        <SelectValue placeholder="Todas" />
+                        <SelectValue placeholder={t('reproductive:femalesTable.allAlerts')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todas</SelectItem>
-                        <SelectItem value="with_alerts">Con Alertas</SelectItem>
-                        <SelectItem value="no_alerts">Sin Alertas</SelectItem>
+                        <SelectItem value="all">{t('reproductive:femalesTable.allAlerts')}</SelectItem>
+                        <SelectItem value="with_alerts">{t('reproductive:femalesTable.withAlerts')}</SelectItem>
+                        <SelectItem value="no_alerts">{t('reproductive:femalesTable.noAlerts')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -206,8 +208,8 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                     className="sm:ml-auto w-full sm:w-auto"
                   >
                     <AlertTriangle className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Verificar Alertas</span>
-                    <span className="sm:hidden">Verificar</span>
+                    <span className="hidden sm:inline">{t('reproductive:femalesTable.verifyAlerts')}</span>
+                    <span className="sm:hidden">{t('reproductive:femalesTable.verify')}</span>
                   </Button>
                 </div>
               </div>
@@ -216,18 +218,18 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="whitespace-nowrap">Tag</TableHead>
-                      <TableHead className="whitespace-nowrap">Nombre</TableHead>
-                      <TableHead className="whitespace-nowrap">Edad</TableHead>
-                      <TableHead className="whitespace-nowrap">Corral</TableHead>
-                      <TableHead className="whitespace-nowrap">Estado</TableHead>
-                      <TableHead className="whitespace-nowrap">% Preñez</TableHead>
-                      <TableHead className="whitespace-nowrap">% Parición</TableHead>
-                      <TableHead className="whitespace-nowrap">Años Reprod.</TableHead>
-                      <TableHead className="whitespace-nowrap">Crías</TableHead>
-                      <TableHead className="whitespace-nowrap">Días Abierta</TableHead>
-                      <TableHead className="whitespace-nowrap">Alertas</TableHead>
-                      <TableHead className="whitespace-nowrap">Acciones</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.tag')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.name')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.age')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.corral')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.status')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.pregnancyRate')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.calvingRate')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.reproYears')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.offspring')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.daysOpen')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.alerts')}</TableHead>
+                      <TableHead className="whitespace-nowrap">{t('reproductive:femalesTable.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                 <TableBody>
@@ -238,16 +240,16 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                       <TableCell>
                         {animal.age_months ? `${Math.floor(animal.age_months / 12)}a ${animal.age_months % 12}m` : "-"}
                       </TableCell>
-                      <TableCell>{animal.corral_name || "Sin corral"}</TableCell>
+                      <TableCell>{animal.corral_name || t('reproductive:femalesTable.noCorral')}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {animal.is_pregnant ? (
-                            <Badge className="bg-success/10 text-success border-success/20">
+                             <Badge className="bg-success/10 text-success border-success/20">
                               <Heart className="h-3 w-3 mr-1" />
-                              Preñada
+                              {t('reproductive:pregnancy.pregnant')}
                             </Badge>
                           ) : (
-                            <Badge variant="outline">Vacía</Badge>
+                            <Badge variant="outline">{t('reproductive:pregnancy.empty')}</Badge>
                           )}
                           {animal.expected_calving_date && (
                             <span className="text-xs text-muted-foreground">
@@ -269,8 +271,8 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                       <TableCell>{animal.total_offspring}</TableCell>
                       <TableCell>
                         {animal.days_open ? (
-                          <span className={animal.days_open > 120 ? "text-warning font-medium" : ""}>
-                            {animal.days_open} días
+                           <span className={animal.days_open > 120 ? "text-warning font-medium" : ""}>
+                            {animal.days_open} {t('reproductive:femalesTable.days')}
                           </span>
                         ) : "-"}
                       </TableCell>
@@ -284,7 +286,7 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
                           onClick={() => handleViewAnimal(animal.animal_id)}
                         >
                           <Eye className="h-4 w-4 mr-1" />
-                          Ver
+                          {t('reproductive:femalesTable.view')}
                         </Button>
                       </TableCell>
                     </TableRow>
@@ -296,28 +298,28 @@ export function ExpandableReproductiveFemales({ filters }: ExpandableReproductiv
               <div className="mt-6 space-y-4 text-sm text-muted-foreground">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">📊 Métricas Individuales (desde 18 meses):</h4>
+                    <h4 className="font-medium text-foreground mb-2">📊 {t('reproductive:femalesTable.individualMetrics')}</h4>
                     <ul className="space-y-1">
-                      <li>• <strong>% Preñez Individual:</strong> (Preñeces confirmadas / Total servicios) × 100</li>
-                      <li>• <strong>% Parición:</strong> (Partos exitosos / Preñeces confirmadas) × 100</li>
-                      <li>• <strong>Años Reproductivos:</strong> Años activos desde los 18 meses</li>
+                      <li>• <strong>{t('reproductive:femalesTable.indPregnancyRate')}</strong> {t('reproductive:femalesTable.indPregnancyFormula')}</li>
+                      <li>• <strong>{t('reproductive:femalesTable.indCalvingRate')}</strong> {t('reproductive:femalesTable.indCalvingFormula')}</li>
+                      <li>• <strong>{t('reproductive:femalesTable.reproductiveYears')}</strong> {t('reproductive:femalesTable.reproYearsDesc')}</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">🚨 Tipos de Alertas:</h4>
+                    <h4 className="font-medium text-foreground mb-2">🚨 {t('reproductive:femalesTable.alertTypes')}</h4>
                     <ul className="space-y-1">
-                      <li>• <AlertTriangle className="h-3 w-3 inline mr-1" /> <strong>FPP Vencida:</strong> +30 días sin registrar parto</li>
-                      <li>• <TrendingDown className="h-3 w-3 inline mr-1" /> <strong>Bajo Rendimiento:</strong> &lt;40% preñez</li>
-                      <li>• <Calendar className="h-3 w-3 inline mr-1" /> <strong>Sin Servicio:</strong> &gt;90 días post-parto</li>
+                      <li>• <AlertTriangle className="h-3 w-3 inline mr-1" /> <strong>{t('reproductive:femalesTable.fppOverdue')}:</strong> {t('reproductive:femalesTable.fppOverdueDesc')}</li>
+                      <li>• <TrendingDown className="h-3 w-3 inline mr-1" /> <strong>{t('reproductive:femalesTable.lowPerformance')}:</strong> {t('reproductive:femalesTable.lowPerformanceDesc')}</li>
+                      <li>• <Calendar className="h-3 w-3 inline mr-1" /> <strong>{t('reproductive:femalesTable.noService')}:</strong> {t('reproductive:femalesTable.noServiceDesc')}</li>
                     </ul>
                   </div>
                   <div>
-                    <h4 className="font-medium text-foreground mb-2">🎯 Niveles de Rendimiento:</h4>
+                    <h4 className="font-medium text-foreground mb-2">🎯 {t('reproductive:femalesTable.performanceLevels')}</h4>
                     <ul className="space-y-1">
-                      <li>• 🟢 <strong>Excelente:</strong> ≥80% preñez</li>
-                      <li>• 🔵 <strong>Bueno:</strong> 60-79% preñez</li>
-                      <li>• 🟡 <strong>Regular:</strong> 40-59% preñez</li>
-                      <li>• 🔴 <strong>Bajo:</strong> &lt;40% preñez</li>
+                      <li>• 🟢 <strong>{t('reproductive:femalesTable.excellent')}:</strong> {t('reproductive:femalesTable.excellentDesc')}</li>
+                      <li>• 🔵 <strong>{t('reproductive:femalesTable.good')}:</strong> {t('reproductive:femalesTable.goodDesc')}</li>
+                      <li>• 🟡 <strong>{t('reproductive:femalesTable.regular')}:</strong> {t('reproductive:femalesTable.regularDesc')}</li>
+                      <li>• 🔴 <strong>{t('reproductive:femalesTable.low')}:</strong> {t('reproductive:femalesTable.lowDesc')}</li>
                     </ul>
                   </div>
                 </div>

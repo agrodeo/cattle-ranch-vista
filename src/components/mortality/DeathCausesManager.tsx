@@ -82,7 +82,7 @@ export function DeathCausesManager() {
 
       if ((data as any)?.success) {
         toast({
-          title: "Éxito",
+          title: t('common:toast.success'),
           description: (data as any).message,
         });
         loadDeathCauses();
