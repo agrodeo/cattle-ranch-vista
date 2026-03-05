@@ -281,7 +281,7 @@ export function FinancesMovements() {
       queryClient.invalidateQueries({ queryKey: ["finances","reports"] });
     },
     onError: (e: any) => {
-      toast.error(e?.message || "Error al guardar");
+      toast.error(e?.message || t('finance:movements.errorSaving'));
     }
   });
 
@@ -301,7 +301,7 @@ export function FinancesMovements() {
       queryClient.invalidateQueries({ queryKey: ["finances","summary"] });
       queryClient.invalidateQueries({ queryKey: ["finances","reports"] });
     },
-    onError: (e: any) => toast.error(e?.message || "Error al eliminar"),
+    onError: (e: any) => toast.error(e?.message || t('finance:movements.errorDeleting')),
   });
 
   const onEdit = (row: FinanceRow) => {

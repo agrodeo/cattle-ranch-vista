@@ -84,7 +84,7 @@ export default function CategorySelect({
     },
     onError: (e: any) => {
       console.error("Error creando categoría:", e);
-      toast.error(e?.message || "Error al crear la categoría");
+      toast.error(e?.message || t('finance:categorySelect.categoryError'));
     },
   });
 
@@ -96,7 +96,6 @@ export default function CategorySelect({
         </SelectTrigger>
         <SelectContent>
           {isAnimalSale ? (
-            // For animal sales, only show "Venta de Animales" and option to create custom
             categories
               .filter(c => c.name === 'Venta de Animales')
               .map((c) => (
@@ -109,7 +108,7 @@ export default function CategorySelect({
           )}
           {!isAnimalSale && (
             <SelectItem value="__none__" onClick={() => onChange(undefined)}>
-              Sin categoría
+              {t('finance:categorySelect.noCategory')}
             </SelectItem>
           )}
         </SelectContent>
@@ -122,17 +121,17 @@ export default function CategorySelect({
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Nueva categoría ({type})</DialogTitle>
+                <DialogTitle>{t('finance:categorySelect.newCategory')} ({type === 'ingreso' ? t('finance:types.income') : t('finance:types.expense')})</DialogTitle>
               </DialogHeader>
               <div className="grid gap-3">
                 <div className="grid gap-1.5">
-                  <Label>Nombre</Label>
-                  <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ej. Veterinaria" />
+                  <Label>{t('finance:categorySelect.categoryName')}</Label>
+                  <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('finance:categorySelect.categoryPlaceholder')} />
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button onClick={() => createMutation.mutate()} disabled={!newName.trim()}>Crear</Button>
+                <Button variant="outline" onClick={() => setOpen(false)}>{t('finance:categorySelect.cancel')}</Button>
+                <Button onClick={() => createMutation.mutate()} disabled={!newName.trim()}>{t('finance:categorySelect.create')}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

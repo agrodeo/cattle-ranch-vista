@@ -102,7 +102,14 @@
     "everyMonths": "Every",
     "months": "months",
     "interval": "Interval",
-    "days": "days"
+    "days": "days",
+    "configure": "Configure",
+    "manage": "Manage",
+    "activeSystem": "Vaccination System Active",
+    "configuredCount": "{{count}} vaccine(s) configured.",
+    "autoMetrics": "Compliance metrics are calculated automatically.",
+    "configuredVaccines": "Configured Vaccines",
+    "configurePrompt": "Configure vaccination requirements in Settings to start tracking your herd."
   },
   "users": {
     "title": "User Management",

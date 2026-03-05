@@ -16,8 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, Search, Calendar as CalendarIcon, Heart, AlertTriangle, CheckCircle, Users } from "lucide-react";
 import { NewTactoDialog } from "./NewTactoDialog";
 import { format, addDays, differenceInMonths, differenceInDays } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, pt } from "date-fns/locale";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useTranslation } from "react-i18next";
+import { getCurrentLanguage } from "@/i18n";
 
 interface Animal {
   id: string;
@@ -40,6 +42,7 @@ interface PregnancyRecord {
 }
 
 export function PregnancyDetectionManager() {
+  const { t } = useTranslation(['reproductive', 'common']);
   const [animals, setAnimals] = useState<Animal[]>([]);
   const [corrales, setCorrales] = useState<any[]>([]);
   const [selectedCorral, setSelectedCorral] = useState<string>("all");
@@ -53,6 +56,13 @@ export function PregnancyDetectionManager() {
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
 
+  const getDateLocale = () => {
+    const lang = getCurrentLanguage();
+    if (lang === 'en') return enUS;
+    if (lang === 'pt') return pt;
+    return es;
+  };
+
   useEffect(() => {
     fetchEligibleAnimals();
     loadCorrales();
@@ -64,7 +74,6 @@ export function PregnancyDetectionManager() {
       
       if (!currentUser?.cabañaId) return;
 
-      // Obtener hembras elegibles: activas, >15 meses, no vendidas ni muertas
       const { data: animalsData, error } = await supabase
         .from("animals")
         .select("*")
@@ -74,23 +83,11 @@ export function PregnancyDetectionManager() {
 
       if (error) throw error;
 
-      // Filtrar por edad (mayores a 15 meses) y asegurar que realmente están activos
       const eligibleAnimals = animalsData?.filter(animal => {
         if (!animal.birth_date) return false;
         const ageInMonths = differenceInMonths(new Date(), new Date(animal.birth_date));
-        // Exclude sold and dead animals, allow active and null status
         const status = animal.status?.toLowerCase();
         const isInactive = status === 'vendido' || status === 'muerto';
-        
-        console.log('Filtering animal for pregnancy detection:', { 
-          id: animal.id, 
-          name: animal.name, 
-          status: animal.status, 
-          ageInMonths,
-          isInactive,
-          eligible: ageInMonths >= 15 && !isInactive 
-        });
-        
         return ageInMonths >= 15 && !isInactive;
       }) || [];
 
@@ -99,8 +96,8 @@ export function PregnancyDetectionManager() {
       console.error("Error fetching animals:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los animales elegibles",
+        title: t('common:toast.error'),
+        description: t('reproductive:detection.errorLoadAnimals'),
       });
     } finally {
       setLoading(false);
@@ -124,7 +121,6 @@ export function PregnancyDetectionManager() {
   const handleAnimalSelection = (animalId: string, checked: boolean) => {
     if (checked) {
       setSelectedAnimals(prev => [...prev, animalId]);
-      // Agregar registro inicial
       const animal = animals.find(a => a.id === animalId);
       if (animal) {
         setPregnancyRecords(prev => [...prev, {
@@ -145,14 +141,11 @@ export function PregnancyDetectionManager() {
     setPregnancyRecords(prev => prev.map(record => {
       if (record.animal.id === animalId) {
         const updated = { ...record, [field]: value };
-        
-        // Si marca como preñada, calcular fecha estimada de parto (283 días)
         if (field === 'isPregnant' && value === 'yes') {
           updated.estimatedDueDate = addDays(updated.detectionDate, 283);
         } else if (field === 'isPregnant' && value === 'no') {
           updated.estimatedDueDate = null;
         }
-        
         return updated;
       }
       return record;
@@ -163,7 +156,6 @@ export function PregnancyDetectionManager() {
     try {
       setLoading(true);
       
-      // Apply default result to animals without explicit results if set
       const finalRecords = pregnancyRecords.map(record => ({
         ...record,
         isPregnant: record.isPregnant || defaultResult
@@ -174,23 +166,22 @@ export function PregnancyDetectionManager() {
       if (validRecords.length === 0) {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "Debe marcar el estado de preñez para al menos un animal o configurar un resultado por defecto",
+          title: t('common:toast.error'),
+          description: t('reproductive:detection.errorNoResult'),
         });
         return;
       }
 
       if (!currentUser?.cabañaId) return;
 
-      // Preparar registros para insertar en reproductive_events
       const reproductiveEvents = validRecords.map(record => ({
         animal_id: record.animal.id,
         year: new Date(record.detectionDate).getFullYear(),
         pregnancy_status: record.isPregnant === 'yes' ? 'pregnant' : 'not_pregnant',
-        pregnancy_outcome: null, // Se actualizará cuando nazca la cría
+        pregnancy_outcome: null,
         calving_date: record.isPregnant === 'yes' ? format(record.estimatedDueDate!, 'yyyy-MM-dd') : null,
         linked_calf_id: null,
-        notes: record.observations || `Detección de preñez: ${record.isPregnant === 'yes' ? 'Positiva' : 'Negativa'}. ${record.observations}`.trim(),
+        notes: record.observations || '',
         cabaña_id: currentUser.cabañaId
       }));
 
@@ -201,11 +192,10 @@ export function PregnancyDetectionManager() {
       if (error) throw error;
 
       toast({
-        title: "Registro exitoso",
-        description: `Se registraron ${validRecords.length} detecciones de preñez`,
+        title: t('reproductive:detection.successTitle'),
+        description: t('reproductive:detection.successDesc', { count: validRecords.length }),
       });
 
-      // Limpiar formulario
       setSelectedAnimals([]);
       setPregnancyRecords([]);
       setDialogOpen(false);
@@ -214,8 +204,8 @@ export function PregnancyDetectionManager() {
       console.error("Error saving pregnancy detections:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se pudieron guardar las detecciones de preñez",
+        title: t('common:toast.error'),
+        description: t('reproductive:detection.errorSaving'),
       });
     } finally {
       setLoading(false);
@@ -241,7 +231,6 @@ export function PregnancyDetectionManager() {
     
     setSelectedAnimals(newSelectedAnimals);
     
-    // Add new records for animals not already selected
     const newRecords = corralAnimals
       .filter(animal => !pregnancyRecords.some(r => r.animal.id === animal.id))
       .map(animal => ({
@@ -276,9 +265,9 @@ export function PregnancyDetectionManager() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-semibold">Detección de Preñez</h3>
+          <h3 className="text-xl font-semibold">{t('reproductive:detection.title')}</h3>
           <p className="text-muted-foreground">
-            Registro de tacto rectal para detección de preñez en hembras
+            {t('reproductive:detection.subtitle')}
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -287,9 +276,9 @@ export function PregnancyDetectionManager() {
           </DialogTrigger>
           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Registro de Detección de Preñez</DialogTitle>
+              <DialogTitle>{t('reproductive:detection.dialogTitle')}</DialogTitle>
               <DialogDescription>
-                Seleccione las hembras y registre el resultado del tacto rectal
+                {t('reproductive:detection.dialogDesc')}
               </DialogDescription>
             </DialogHeader>
 
@@ -297,14 +286,14 @@ export function PregnancyDetectionManager() {
               {/* Filter by Corral */}
               {corrales.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Filtrar por Corral</Label>
+                  <Label>{t('reproductive:detection.filterByCorral')}</Label>
                   <div className="flex gap-2">
                     <Select value={selectedCorral} onValueChange={setSelectedCorral}>
                       <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Todos los corrales" />
+                        <SelectValue placeholder={t('reproductive:detection.allCorrals')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">Todos los corrales</SelectItem>
+                        <SelectItem value="all">{t('reproductive:detection.allCorrals')}</SelectItem>
                         {corrales.map((corral) => (
                           <SelectItem key={corral.id} value={corral.id}>
                             {corral.name}
@@ -319,21 +308,21 @@ export function PregnancyDetectionManager() {
                         className="flex items-center gap-2"
                       >
                         <Users className="h-4 w-4" />
-                        Agregar Corral
+                        {t('reproductive:detection.addCorral')}
                       </Button>
                     )}
                   </div>
                 </div>
               )}
-              {/* Configuración general */}
+              {/* General config */}
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label>Fecha de Detección</Label>
+                  <Label>{t('reproductive:detection.detectionDate')}</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start text-left font-normal">
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {format(detectionDate, "PPP", { locale: es })}
+                        {format(detectionDate, "PPP", { locale: getDateLocale() })}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -348,53 +337,53 @@ export function PregnancyDetectionManager() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Resultado Por Defecto</Label>
+                  <Label>{t('reproductive:detection.defaultResult')}</Label>
                   <RadioGroup
                     value={defaultResult || ""}
                     onValueChange={(value) => setDefaultResult(value as "yes" | "no" | null)}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes" id="def-pregnant" />
-                      <Label htmlFor="def-pregnant" className="text-sm">Preñada</Label>
+                      <Label htmlFor="def-pregnant" className="text-sm">{t('reproductive:detection.pregnant')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="no" id="def-empty" />
-                      <Label htmlFor="def-empty" className="text-sm">Vacía</Label>
+                      <Label htmlFor="def-empty" className="text-sm">{t('reproductive:detection.empty')}</Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="" id="def-manual" />
-                      <Label htmlFor="def-manual" className="text-sm">Manual</Label>
+                      <Label htmlFor="def-manual" className="text-sm">{t('reproductive:detection.manual')}</Label>
                     </div>
                   </RadioGroup>
                   {defaultResult && (
                     <p className="text-xs text-muted-foreground">
-                      Se aplicará automáticamente a animales seleccionados
+                      {t('reproductive:detection.autoApply')}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Observaciones Generales</Label>
+                  <Label>{t('reproductive:detection.generalObservations')}</Label>
                   <Textarea
-                    placeholder="Observaciones que aplican a todas las detecciones..."
+                    placeholder={t('reproductive:detection.generalObservationsPlaceholder')}
                     value={observations}
                     onChange={(e) => setObservations(e.target.value)}
                   />
                 </div>
               </div>
 
-              {/* Selección de animales */}
+              {/* Animal selection */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm font-medium">
-                    Hembras Elegibles ({filteredAnimals.length} {selectedCorral !== "all" ? 'en corral seleccionado' : 'disponibles'})
+                    {t('reproductive:detection.eligibleFemales')} ({filteredAnimals.length} {selectedCorral !== "all" ? t('reproductive:detection.inSelectedCorral') : t('reproductive:detection.available')})
                   </Label>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                      Seleccionar {selectedCorral !== "all" ? 'Corral' : 'Todas'}
+                      {t('reproductive:detection.selectAll')} {selectedCorral !== "all" ? t('reproductive:detection.selectCorral') : ''}
                     </Button>
                     <Button variant="outline" size="sm" onClick={clearSelection}>
-                      Limpiar
+                      {t('reproductive:detection.clear')}
                     </Button>
                   </div>
                 </div>
@@ -404,10 +393,10 @@ export function PregnancyDetectionManager() {
                     <TableHeader>
                       <TableRow>
                         <TableHead className="w-12"></TableHead>
-                        <TableHead>Animal</TableHead>
-                        <TableHead>Edad</TableHead>
-                        <TableHead>Raza</TableHead>
-                        <TableHead>Estado</TableHead>
+                        <TableHead>{t('reproductive:detection.tableAnimal')}</TableHead>
+                        <TableHead>{t('reproductive:detection.tableAge')}</TableHead>
+                        <TableHead>{t('reproductive:detection.tableBreed')}</TableHead>
+                        <TableHead>{t('reproductive:detection.tableStatus')}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -423,25 +412,25 @@ export function PregnancyDetectionManager() {
                           </TableCell>
                           <TableCell>
                             <div>
-                              <div className="font-medium">{animal.name || "Sin nombre"}</div>
+                              <div className="font-medium">{animal.name || t('reproductive:detection.noName')}</div>
                               <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
                               {animal.corral_id && (
                                 <div className="text-xs text-muted-foreground">
-                                  Corral: {corrales.find(c => c.id === animal.corral_id)?.name || 'N/A'}
+                                  {t('reproductive:detection.corralLabel')}: {corrales.find(c => c.id === animal.corral_id)?.name || 'N/A'}
                                 </div>
                               )}
                             </div>
                           </TableCell>
                           <TableCell>
                             {animal.birth_date ? 
-                              `${differenceInMonths(new Date(), new Date(animal.birth_date))} meses`
-                              : "No registrada"
+                              `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('reproductive:detection.months')}`
+                              : t('reproductive:detection.notRegistered')
                             }
                           </TableCell>
-                          <TableCell>{animal.breed || "No especificada"}</TableCell>
+                          <TableCell>{animal.breed || t('reproductive:detection.notSpecified')}</TableCell>
                           <TableCell>
                             <Badge variant="outline">
-                              {animal.status || "Activo"}
+                              {animal.status || t('reproductive:detection.active')}
                             </Badge>
                           </TableCell>
                         </TableRow>
@@ -451,12 +440,12 @@ export function PregnancyDetectionManager() {
                 </div>
               </div>
 
-              {/* Registro de resultados */}
+              {/* Detection results */}
               {pregnancyRecords.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">
-                      Resultado de Detección ({pregnancyRecords.length} animales seleccionados)
+                      {t('reproductive:detection.detectionResult')} ({pregnancyRecords.length} {t('reproductive:detection.animalsSelected')})
                     </Label>
                     <div className="flex gap-2">
                       <Button 
@@ -466,7 +455,7 @@ export function PregnancyDetectionManager() {
                         className="text-primary border-primary/20 hover:bg-primary/10"
                       >
                         <CheckCircle className="h-3 w-3 mr-1" />
-                        Todas Preñadas
+                        {t('reproductive:detection.allPregnant')}
                       </Button>
                       <Button 
                         variant="outline" 
@@ -475,7 +464,7 @@ export function PregnancyDetectionManager() {
                         className="text-red-600 border-red-200 hover:bg-red-50"
                       >
                         <AlertTriangle className="h-3 w-3 mr-1" />
-                        Todas Vacías
+                        {t('reproductive:detection.allEmpty')}
                       </Button>
                     </div>
                   </div>
@@ -486,19 +475,19 @@ export function PregnancyDetectionManager() {
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <div>
-                              <div className="font-medium">{record.animal.name || "Sin nombre"}</div>
+                              <div className="font-medium">{record.animal.name || t('reproductive:detection.noName')}</div>
                               <div className="text-sm text-muted-foreground">{record.animal.id_tag}</div>
                             </div>
                             {record.estimatedDueDate && (
                               <Badge variant="secondary" className="flex items-center gap-1">
                                 <CalendarIcon className="h-3 w-3" />
-                                Parto esperado: {format(record.estimatedDueDate, "dd/MM/yyyy")}
+                                {t('reproductive:detection.expectedCalving')}: {format(record.estimatedDueDate, "dd/MM/yyyy")}
                               </Badge>
                             )}
                           </div>
                           
                           <div className="space-y-2">
-                            <Label className="text-sm">¿Está preñada?</Label>
+                            <Label className="text-sm">{t('reproductive:detection.isPregnant')}</Label>
                             <RadioGroup
                               value={record.isPregnant || ""}
                               onValueChange={(value) => 
@@ -509,23 +498,23 @@ export function PregnancyDetectionManager() {
                                 <RadioGroupItem value="yes" id={`yes-${record.animal.id}`} />
                                 <Label htmlFor={`yes-${record.animal.id}`} className="flex items-center gap-2">
                                   <CheckCircle className="h-4 w-4 text-green-500" />
-                                  Sí - Preñada
+                                  {t('reproductive:detection.yesPregnant')}
                                 </Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="no" id={`no-${record.animal.id}`} />
                                 <Label htmlFor={`no-${record.animal.id}`} className="flex items-center gap-2">
                                   <AlertTriangle className="h-4 w-4 text-red-500" />
-                                  No - Vacía
+                                  {t('reproductive:detection.noEmpty')}
                                 </Label>
                               </div>
                             </RadioGroup>
                           </div>
 
                           <div className="space-y-2">
-                            <Label className="text-sm">Observaciones</Label>
+                            <Label className="text-sm">{t('reproductive:detection.animalObservations')}</Label>
                             <Textarea
-                              placeholder="Observaciones específicas para este animal..."
+                              placeholder={t('reproductive:detection.animalObservationsPlaceholder')}
                               value={record.observations}
                               onChange={(e) => 
                                 updatePregnancyRecord(record.animal.id, 'observations', e.target.value)
@@ -542,13 +531,13 @@ export function PregnancyDetectionManager() {
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancelar
+                  {t('reproductive:detection.cancel')}
                 </Button>
                 <Button 
                   onClick={handleSubmit} 
                   disabled={loading || pregnancyRecords.length === 0}
                 >
-                  {loading ? "Guardando..." : "Guardar Detecciones"}
+                  {loading ? t('reproductive:detection.saving') : t('reproductive:detection.saveDetections')}
                 </Button>
               </div>
             </div>
@@ -556,79 +545,79 @@ export function PregnancyDetectionManager() {
         </Dialog>
       </div>
 
-      {/* Estadísticas */}
+      {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Hembras Elegibles</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reproductive:detection.eligibleFemalesCard')}</CardTitle>
             <Search className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{animals.length}</div>
             <p className="text-xs text-muted-foreground">
-              Mayores a 15 meses
+              {t('reproductive:detection.olderThan15')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Detecciones Hoy</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reproductive:detection.detectionsToday')}</CardTitle>
             <Heart className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              Registros del día
+              {t('reproductive:detection.todayRecords')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Preñadas</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reproductive:detection.pregnantCard')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              Resultado positivo
+              {t('reproductive:detection.positiveResult')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Partos Esperados</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('reproductive:detection.expectedCalvings')}</CardTitle>
             <CalendarIcon className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              Próximos 30 días
+              {t('reproductive:detection.next30days')}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Historial de detecciones */}
+      {/* Detection history */}
       <Card>
         <CardHeader>
-          <CardTitle>Historial de Detecciones</CardTitle>
+          <CardTitle>{t('reproductive:detection.detectionHistory')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
             <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-            <h4 className="text-lg font-medium mb-2">Sistema de Detección de Preñez</h4>
+            <h4 className="text-lg font-medium mb-2">{t('reproductive:detection.systemTitle')}</h4>
             <p className="mb-4">
-              Registra y monitorea el estado reproductivo de tu ganado
+              {t('reproductive:detection.systemDesc')}
             </p>
             <div className="text-sm space-y-2">
-              <p>• Detección masiva por tacto rectal</p>
-              <p>• Cálculo automático de fechas de parto</p>
-              <p>• Seguimiento de preñeces</p>
-              <p>• Alertas de partos próximos</p>
-              <p>• Estadísticas reproductivas</p>
+              <p>• {t('reproductive:detection.feature1')}</p>
+              <p>• {t('reproductive:detection.feature2')}</p>
+              <p>• {t('reproductive:detection.feature3')}</p>
+              <p>• {t('reproductive:detection.feature4')}</p>
+              <p>• {t('reproductive:detection.feature5')}</p>
             </div>
           </div>
         </CardContent>

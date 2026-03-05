@@ -108,7 +108,14 @@
     "everyMonths": "Cada",
     "months": "meses",
     "interval": "Intervalo",
-    "days": "días"
+    "days": "días",
+    "configure": "Configurar",
+    "manage": "Gestionar",
+    "activeSystem": "Sistema de Vacunación Activo",
+    "configuredCount": "{{count}} vacuna(s) configurada(s).",
+    "autoMetrics": "Las métricas de cumplimiento se calculan automáticamente.",
+    "configuredVaccines": "Vacunas Configuradas",
+    "configurePrompt": "Configure los requisitos de vacunación en Configuración para comenzar el seguimiento del rodeo."
   },
   "users": {
     "title": "Gestión de Usuarios",
