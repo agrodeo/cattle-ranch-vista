@@ -155,6 +155,16 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
 
     } catch (error) {
       console.error('Error loading mortality data:', error);
+      const err = error as { code?: string; message?: string };
+      const isCabanaMissing = err.code === 'P0001' && /caba(ñ|n)a/i.test(err.message || '');
+
+      if (isCabanaMissing) {
+        setDeaths([]);
+        setDeathsByAge([]);
+        setDeathsByCause([]);
+        return;
+      }
+
       toast({
         title: t('common:error'),
         description: t('mortality:reports.errorLoading'),
