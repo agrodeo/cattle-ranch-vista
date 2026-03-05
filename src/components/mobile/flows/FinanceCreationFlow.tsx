@@ -195,16 +195,19 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
         queryClient.invalidateQueries({ queryKey: ["finances", "recurring"] });
         toast.success(t('mobile.recurringSuccess', 'Movimiento recurrente creado'));
       } else {
-        // Regular finance movement
-        const { error } = await supabase
-          .from("finances")
-          .insert([{
-            cabaña_id: currentUser?.cabañaId,
-            description: formData.descripcion,
-            amount: Math.abs(parseFloat(formData.monto)),
-            type: selectedType === "income" ? "ingreso" : "egreso",
-            date: formData.fecha,
-          }]);
+        // Regular finance movement via RPC (same as desktop)
+        const supabaseAny = supabase as any;
+        const { error } = await supabaseAny.rpc("create_finance_movement", {
+          _user_id: currentUser?.id,
+          _date: formData.fecha,
+          _type: selectedType === "income" ? "ingreso" : "egreso",
+          _amount: Math.abs(parseFloat(formData.monto)),
+          _description: formData.descripcion || null,
+          _category_id: null,
+          _buyer_name: null,
+          _buyer_document: null,
+          _buyer_destination: null,
+        });
 
         if (error) throw error;
         
