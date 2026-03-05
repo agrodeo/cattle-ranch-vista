@@ -201,8 +201,8 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
           .insert([{
             cabaña_id: currentUser?.cabañaId,
             description: formData.descripcion,
-            amount: selectedType === "expense" ? -Math.abs(parseFloat(formData.monto)) : Math.abs(parseFloat(formData.monto)),
-            type: selectedType,
+            amount: Math.abs(parseFloat(formData.monto)),
+            type: selectedType === "income" ? "ingreso" : "egreso",
             date: formData.fecha,
           }]);
 
