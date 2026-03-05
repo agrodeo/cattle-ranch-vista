@@ -50,11 +50,11 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
   const { t } = useTranslation(['activities', 'common']);
 
   const LOSS_TYPES = [
-    { value: 'aborto_temprano', label: t('newPregnancyLoss.lossTypes.early_abortion.label'), description: t('newPregnancyLoss.lossTypes.early_abortion.description') },
-    { value: 'aborto_tardio', label: t('newPregnancyLoss.lossTypes.late_abortion.label'), description: t('newPregnancyLoss.lossTypes.late_abortion.description') },
+    { value: 'aborto_temprano', label: t('newPregnancyLoss.lossTypes.aborto_temprano.label'), description: t('newPregnancyLoss.lossTypes.aborto_temprano.description') },
+    { value: 'aborto_tardio', label: t('newPregnancyLoss.lossTypes.aborto_tardio.label'), description: t('newPregnancyLoss.lossTypes.aborto_tardio.description') },
     { value: 'stillbirth', label: t('newPregnancyLoss.lossTypes.stillbirth.label'), description: t('newPregnancyLoss.lossTypes.stillbirth.description') },
     { value: 'neonatal', label: t('newPregnancyLoss.lossTypes.neonatal.label'), description: t('newPregnancyLoss.lossTypes.neonatal.description') },
-    { value: 'no_detectada', label: t('newPregnancyLoss.lossTypes.not_detected.label'), description: t('newPregnancyLoss.lossTypes.not_detected.description') }
+    { value: 'no_detectada', label: t('newPregnancyLoss.lossTypes.no_detectada.label'), description: t('newPregnancyLoss.lossTypes.no_detectada.description') }
   ];
 
   useEffect(() => {
@@ -289,7 +289,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
             {t('newPregnancyLoss.dialogTitle')}
           </DialogTitle>
           <DialogDescription>
-            {t('newPregnancyLoss.dialogDescription')}
+            {t('newPregnancyLoss.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -307,10 +307,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
         <div className="space-y-4 lg:space-y-6">
           {/* Animal Selection */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">{t('activities:newPregnancyLoss.pregnantAnimal')}</Label>
+            <Label className="text-base font-medium">{t('newPregnancyLoss.pregnantAnimalLabel')}</Label>
             <Select value={selectedPregnancy} onValueChange={setSelectedPregnancy}>
               <SelectTrigger className="h-12">
-                <SelectValue placeholder={t('activities:newPregnancyLoss.selectPregnantAnimal')} />
+                <SelectValue placeholder={t('newPregnancyLoss.selectPregnantAnimal')} />
               </SelectTrigger>
               <SelectContent>
                 {pregnantAnimals.map((animal) => (
@@ -346,7 +346,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Loss Date */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">{t('newPregnancyLoss.lossDate')} *</Label>
+            <Label className="text-base font-medium">{t('newPregnancyLoss.lossDateLabel')}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full h-12 justify-start text-left font-normal">
@@ -372,10 +372,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Loss Type */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">{t('activities:newPregnancyLoss.lossType')}</Label>
+            <Label className="text-base font-medium">{t('newPregnancyLoss.lossTypeLabel')}</Label>
             <Select value={lossType} onValueChange={setLossType}>
               <SelectTrigger className="h-12">
-                <SelectValue placeholder={t('activities:newPregnancyLoss.selectLossType')} />
+                <SelectValue placeholder={t('newPregnancyLoss.selectLossType')} />
               </SelectTrigger>
               <SelectContent>
                 {LOSS_TYPES.map((type) => (
@@ -393,10 +393,10 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
           {/* Specific Cause */}
           {lossType && (
             <div className="space-y-2">
-              <Label className="text-base font-medium">{t('activities:newPregnancyLoss.specificCause')}</Label>
+              <Label className="text-base font-medium">{t('newPregnancyLoss.specificCauseLabel')}</Label>
               <Select value={lossReason} onValueChange={setLossReason}>
                 <SelectTrigger className="h-12">
-                  <SelectValue placeholder={t('activities:newPregnancyLoss.selectCause')} />
+                  <SelectValue placeholder={t('newPregnancyLoss.selectCause')} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCauses.map((cause) => (
@@ -417,7 +417,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
 
           {/* Observations */}
           <div className="space-y-2">
-            <Label className="text-base font-medium">{t('newPregnancyLoss.observations')}</Label>
+            <Label className="text-base font-medium">{t('newPregnancyLoss.observationsLabel')}</Label>
             <Textarea
               placeholder={t('newPregnancyLoss.observationsPlaceholder')}
               value={observations}
