@@ -10,7 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { format } from 'date-fns';
 import { es, enUS, pt } from 'date-fns/locale';
-import { getCurrentLanguage } from '@/hooks/useLanguage';
+import { getCurrentLanguage } from '@/i18n';
 import { 
   Heart, 
   AlertTriangle, 

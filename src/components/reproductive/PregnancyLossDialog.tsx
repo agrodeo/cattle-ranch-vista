@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { es, enUS, pt } from 'date-fns/locale';
-import { getCurrentLanguage } from '@/hooks/useLanguage';
+import { getCurrentLanguage } from '@/i18n';
 import { Calendar as CalendarIcon, AlertTriangle } from 'lucide-react';
 
 interface PregnancyLossDialogProps {
