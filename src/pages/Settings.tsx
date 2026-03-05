@@ -31,7 +31,7 @@ export const SettingsPage = () => {
         />
 
         <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="flex w-full overflow-x-auto scrollbar-hide h-11 sm:h-12 bg-muted/50 rounded-xl p-1 gap-1">
+          <TabsList className="inline-flex w-auto overflow-x-auto scrollbar-hide h-11 sm:h-12 bg-muted/50 rounded-xl p-1 gap-1">
             <TabsTrigger 
               value="general" 
               className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
