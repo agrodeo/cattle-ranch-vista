@@ -13,8 +13,8 @@ interface ProtectedRouteProps {
   requiresWriteAccess?: boolean;
 }
 
-/** Branded loading screen with animated progress bar */
-const BrandedLoadingScreen = ({ message }: { message: string }) => {
+/** Clean loading screen with animated progress bar */
+const LoadingScreen = ({ message }: { message: string }) => {
   const [progress, setProgress] = useState(15);
 
   useEffect(() => {
@@ -26,18 +26,7 @@ const BrandedLoadingScreen = ({ message }: { message: string }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-6 w-64">
-        {/* Brand mark */}
-        <div className="relative">
-          <div className="h-16 w-16 rounded-2xl bg-brand-gradient flex items-center justify-center shadow-lg shadow-primary/20">
-            <span className="text-3xl font-display font-bold text-primary-foreground tracking-tight">a</span>
-          </div>
-          <div className="absolute -inset-1 rounded-2xl bg-brand-gradient opacity-20 blur-lg -z-10 animate-pulse" />
-        </div>
-
-        {/* App name */}
-        <h1 className="text-xl font-display font-semibold text-foreground tracking-tight">agrodeo</h1>
-
+      <div className="flex flex-col items-center gap-5 w-56">
         {/* Progress bar */}
         <Progress value={progress} className="h-1.5 w-full bg-muted" />
 
@@ -65,7 +54,7 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
 
   // Show branded loading while auth is being determined
   if (authLoading) {
-    return <BrandedLoadingScreen message={t('loading')} />;
+    return <LoadingScreen message={t('loading')} />;
   }
 
   // Redirect to auth if not authenticated
@@ -90,14 +79,14 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
 
   // Wait for subscription only if online AND not timed out
   if (subscriptionLoading && !subTimedOut) {
-    return <BrandedLoadingScreen message={t('loading')} />;
+    return <LoadingScreen message={t('loading')} />;
   }
 
   // Check if user is in read-only mode and trying to access write-required routes
   if (requiresWriteAccess && subscriptionStatus?.isReadOnly) {
     return (
       <>
-        <BrandedLoadingScreen message="Verificando acceso..." />
+        <LoadingScreen message="Verificando acceso..." />
         
         <ReadOnlyModeModal 
           open={true}
