@@ -367,6 +367,8 @@
     "button": "Export",
     "excel": "Export to Excel",
     "csv": "Export to CSV",
+    "toExcel": "Export to Excel",
+    "toCSV": "Export to CSV",
     "exporting": "Exporting...",
     "success": "Data exported successfully",
     "error": "Error exporting data",

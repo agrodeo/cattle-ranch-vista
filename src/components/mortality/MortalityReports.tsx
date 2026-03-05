@@ -83,8 +83,12 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
   }, [currentUser, globalFilters]);
 
   const loadMortalityData = async () => {
-    if (!currentUser) {
-      console.log('No current user available for mortality data loading');
+    if (!currentUser || !currentUser.cabañaId) {
+      console.log('No current user or cabaña available for mortality data loading');
+      setDeaths([]);
+      setDeathsByAge([]);
+      setDeathsByCause([]);
+      setLoading(false);
       return;
     }
 
