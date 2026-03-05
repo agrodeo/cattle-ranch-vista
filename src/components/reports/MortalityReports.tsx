@@ -7,6 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { ReportFilters } from "./ReportsFilters";
 import { categorizeAnimal } from "@/lib/animalCategories";
 
@@ -29,6 +30,7 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
   const { t } = useTranslation(['reports']);
   const { lang } = useLanguage();
   const { currentUser } = useSupabaseAuth();
+  const isMobile = useIsMobile();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -295,14 +297,14 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
               <CardTitle>{t('reports:mortality.mortalityByAge')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={isMobile ? 220 : 300}>
                 <PieChart>
                   <Pie
                     data={stats.deathsByAge}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ ageGroup, percentage }) => `${t(`reports:mortality.${ageGroup}`)}: ${percentage.toFixed(1)}%`}
+                    label={isMobile ? false : ({ ageGroup, percentage }) => `${t(`reports:mortality.${ageGroup}`)}: ${percentage.toFixed(1)}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="count"
@@ -314,6 +316,16 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
                   <Tooltip />
                 </PieChart>
               </ResponsiveContainer>
+              {isMobile && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {stats.deathsByAge.map((entry, index) => (
+                    <div key={entry.ageGroup} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: ['#ef4444', '#f97316', '#eab308', '#84cc16'][index % 4] }} />
+                      <span>{t(`reports:mortality.${entry.ageGroup}`)} ({entry.percentage.toFixed(0)}%)</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
