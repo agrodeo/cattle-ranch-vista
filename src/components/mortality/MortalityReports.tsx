@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { FileDown, Calendar, Skull } from "lucide-react";
+import { FileDown, Calendar, Skull, Activity } from "lucide-react";
+import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
+import { ReportChartCard } from "@/components/reports/shared/ReportChartCard";
+import { CHART_GRID_PROPS, CHART_X_AXIS_PROPS, CHART_Y_AXIS_PROPS, CHART_BAR_RADIUS, CHART_TOOLTIP_STYLE, CHART_CURSOR, CHART_COLORS, DONUT_PROPS, BAR_COLORS } from "@/components/reports/shared/chartStyles";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -58,7 +61,7 @@ interface MortalityReportsProps {
   };
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+const COLORS_PALETTE = CHART_COLORS.mixed;
 
 export function MortalityReports({ filters: globalFilters }: MortalityReportsProps) {
   const { t } = useTranslation(['mortality', 'common']);
@@ -258,75 +261,60 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-2xl font-bold">{totalDeaths}</div>
-            <p className="text-muted-foreground">{t('mortality:reports.totalDeaths')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-2xl font-bold">
-              {averageAgeAtDeath ? Math.round(averageAgeAtDeath) : 0} {t('mortality:reports.days')}
-            </div>
-            <p className="text-muted-foreground">{t('mortality:reports.avgAgeAtDeath')}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-2xl font-bold">
-              {deathsByCause[0]?.causa || 'N/A'}
-            </div>
-            <p className="text-muted-foreground">{t('mortality:reports.mainCause')}</p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('mortality:reports.totalDeaths')}
+          value={totalDeaths}
+          icon={Skull}
+          variant="danger"
+        />
+        <ReportKpiCard
+          label={t('mortality:reports.avgAgeAtDeath')}
+          value={`${averageAgeAtDeath ? Math.round(averageAgeAtDeath) : 0} ${t('mortality:reports.days')}`}
+          icon={Calendar}
+          variant="neutral"
+        />
+        <ReportKpiCard
+          label={t('mortality:reports.mainCause')}
+          value={deathsByCause[0]?.causa || 'N/A'}
+          icon={Activity}
+          variant="warning"
+        />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('mortality:reports.mortalityByAge')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={deathsByAge}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="age_group" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ReportChartCard title={t('mortality:reports.mortalityByAge')}>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={deathsByAge}>
+              <CartesianGrid {...CHART_GRID_PROPS} />
+              <XAxis dataKey="age_group" {...CHART_X_AXIS_PROPS} />
+              <YAxis {...CHART_Y_AXIS_PROPS} />
+              <Tooltip {...CHART_TOOLTIP_STYLE} cursor={CHART_CURSOR} />
+              <Bar dataKey="count" fill={BAR_COLORS.tertiary} radius={CHART_BAR_RADIUS} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('mortality:reports.mortalityByCause')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={deathsByCause.slice(0, 5)}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ causa, percent }) => `${causa} ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {deathsByCause.slice(0, 5).map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ReportChartCard title={t('mortality:reports.mortalityByCause')}>
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={deathsByCause.slice(0, 5)}
+                cx="50%"
+                cy="50%"
+                dataKey="count"
+                labelLine={false}
+                label={({ causa, percent }: any) => percent >= 0.05 ? `${causa} ${(percent * 100).toFixed(0)}%` : ''}
+                {...DONUT_PROPS}
+              >
+                {deathsByCause.slice(0, 5).map((_entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS_PALETTE[index % COLORS_PALETTE.length]} />
+                ))}
+              </Pie>
+              <Tooltip {...CHART_TOOLTIP_STYLE} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
       </div>
 
       {/* Deaths Table */}

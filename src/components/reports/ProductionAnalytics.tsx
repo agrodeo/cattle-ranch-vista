@@ -4,7 +4,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, ScatterChart, Scatter } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Scale, TrendingUp, Target, Award, ChevronDown, ChevronUp } from "lucide-react";
@@ -15,6 +15,9 @@ import { categorizeAnimal } from "@/lib/animalCategories";
 import { isOnline } from "@/services/connectivity";
 import { db } from "@/services/db";
 import { StaleDataBanner } from "./StaleDataBanner";
+import { ReportKpiCard } from "./shared/ReportKpiCard";
+import { ReportChartCard } from "./shared/ReportChartCard";
+import { CHART_GRID_PROPS, CHART_X_AXIS_PROPS, CHART_Y_AXIS_PROPS, CHART_BAR_RADIUS, CHART_TOOLTIP_STYLE, CHART_CURSOR, BAR_COLORS } from "./shared/chartStyles";
 
 interface ProductionStats {
   averageBirthWeight: number;
@@ -293,12 +296,12 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
     <div className="space-y-6">
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Animal Production Table - Collapsible */}
-      <Card>
+      <Card className="border-0 shadow-sm">
         <CardHeader 
           className="cursor-pointer hover:bg-muted/50 transition-colors"
           onClick={() => setAnimalTableExpanded(!animalTableExpanded)}
         >
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between text-sm font-semibold">
             <span>{t('reports:production.animalProduction')}</span>
             {animalTableExpanded ? (
               <ChevronUp className="h-5 w-5" />
@@ -318,212 +321,200 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
       <div className="grid gap-6">
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:production.avgBirthWeight')}</CardTitle>
-            <Scale className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.averageBirthWeight.toFixed(1)} kg</div>
-            <div className="flex items-center justify-between">
-              <Badge variant={stats.performanceIndicators[0].status === 'good' ? "default" : stats.performanceIndicators[0].status === 'average' ? "secondary" : "destructive"}>
-                {stats.performanceIndicators[0].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[0].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {t('reports:production.vs')} {stats.performanceIndicators[0].benchmark.toFixed(1)}kg
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:production.avgBirthWeight')}
+          value={`${stats.averageBirthWeight.toFixed(1)} kg`}
+          icon={Scale}
+          variant={stats.performanceIndicators[0].status === 'good' ? 'success' : stats.performanceIndicators[0].status === 'average' ? 'warning' : 'danger'}
+        >
+          <div className="flex items-center justify-between mt-1">
+            <Badge variant={stats.performanceIndicators[0].status === 'good' ? "default" : stats.performanceIndicators[0].status === 'average' ? "secondary" : "destructive"} className="text-xs">
+              {stats.performanceIndicators[0].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[0].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {t('reports:production.vs')} {stats.performanceIndicators[0].benchmark.toFixed(1)}kg
+            </span>
+          </div>
+        </ReportKpiCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:production.avgWeaningWeight')}</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.averageWeaningWeight.toFixed(1)} kg</div>
-            <div className="flex items-center justify-between">
-              <Badge variant={stats.performanceIndicators[1].status === 'good' ? "default" : stats.performanceIndicators[1].status === 'average' ? "secondary" : "destructive"}>
-                {stats.performanceIndicators[1].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[1].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {t('reports:production.vs')} {stats.performanceIndicators[1].benchmark.toFixed(1)}kg
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:production.avgWeaningWeight')}
+          value={`${stats.averageWeaningWeight.toFixed(1)} kg`}
+          icon={Target}
+          variant={stats.performanceIndicators[1].status === 'good' ? 'success' : stats.performanceIndicators[1].status === 'average' ? 'warning' : 'danger'}
+        >
+          <div className="flex items-center justify-between mt-1">
+            <Badge variant={stats.performanceIndicators[1].status === 'good' ? "default" : stats.performanceIndicators[1].status === 'average' ? "secondary" : "destructive"} className="text-xs">
+              {stats.performanceIndicators[1].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[1].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {t('reports:production.vs')} {stats.performanceIndicators[1].benchmark.toFixed(1)}kg
+            </span>
+          </div>
+        </ReportKpiCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:production.avgFinalWeight')}</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.averageFinalWeight.toFixed(1)} kg</div>
-            <p className="text-xs text-muted-foreground">
-              {t('reports:production.endOfPeriod')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:production.avgFinalWeight')}
+          value={`${stats.averageFinalWeight.toFixed(1)} kg`}
+          subtitle={t('reports:production.endOfPeriod')}
+          icon={Award}
+          variant="default"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:production.avgDailyGain')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.averageDailyGain.toFixed(2)} {t('reports:production.kgDay')}</div>
-            <div className="flex items-center justify-between">
-              <Badge variant={stats.performanceIndicators[2].status === 'good' ? "default" : stats.performanceIndicators[2].status === 'average' ? "secondary" : "destructive"}>
-                {stats.performanceIndicators[2].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[2].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                {t('reports:production.vs')} {stats.performanceIndicators[2].benchmark.toFixed(2)}{t('reports:production.kgDay')}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:production.avgDailyGain')}
+          value={`${stats.averageDailyGain.toFixed(2)} ${t('reports:production.kgDay')}`}
+          icon={TrendingUp}
+          variant={stats.performanceIndicators[2].status === 'good' ? 'success' : stats.performanceIndicators[2].status === 'average' ? 'warning' : 'danger'}
+        >
+          <div className="flex items-center justify-between mt-1">
+            <Badge variant={stats.performanceIndicators[2].status === 'good' ? "default" : stats.performanceIndicators[2].status === 'average' ? "secondary" : "destructive"} className="text-xs">
+              {stats.performanceIndicators[2].status === 'good' ? t('reports:production.excellent') : stats.performanceIndicators[2].status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {t('reports:production.vs')} {stats.performanceIndicators[2].benchmark.toFixed(2)}{t('reports:production.kgDay')}
+            </span>
+          </div>
+        </ReportKpiCard>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Weight by Age */}
         {stats.weightByAge.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('reports:production.avgWeightByAge')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={stats.weightByAge}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="ageMonths" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="avgWeight" stroke="#10b981" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ReportChartCard title={t('reports:production.avgWeightByAge')}>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={stats.weightByAge}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="ageMonths" {...CHART_X_AXIS_PROPS} />
+                <YAxis {...CHART_Y_AXIS_PROPS} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} />
+                <Line type="monotone" dataKey="avgWeight" stroke={BAR_COLORS.primary} strokeWidth={2.5} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </ReportChartCard>
         )}
 
         {/* Weight by Gender */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('reports:production.weightComparison')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.weightByGender}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="gender" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="birthWeight" fill="#8884d8" name={t('reports:production.birthWeight')} />
-                <Bar dataKey="weaningWeight" fill="#10b981" name={t('reports:production.weaningWeight')} />
-                <Bar dataKey="finalWeight" fill="#3b82f6" name={t('reports:production.finalWeight')} />
+        <ReportChartCard
+          title={t('reports:production.weightComparison')}
+          legend={[
+            { label: t('reports:production.birthWeight'), color: BAR_COLORS.tertiary },
+            { label: t('reports:production.weaningWeight'), color: BAR_COLORS.primary },
+            { label: t('reports:production.finalWeight'), color: BAR_COLORS.secondary },
+          ]}
+        >
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={stats.weightByGender} barGap={4}>
+              <CartesianGrid {...CHART_GRID_PROPS} />
+              <XAxis dataKey="gender" {...CHART_X_AXIS_PROPS} />
+              <YAxis {...CHART_Y_AXIS_PROPS} />
+              <Tooltip {...CHART_TOOLTIP_STYLE} cursor={CHART_CURSOR} />
+              <Bar dataKey="birthWeight" fill={BAR_COLORS.tertiary} name={t('reports:production.birthWeight')} radius={CHART_BAR_RADIUS} />
+              <Bar dataKey="weaningWeight" fill={BAR_COLORS.primary} name={t('reports:production.weaningWeight')} radius={CHART_BAR_RADIUS} />
+              <Bar dataKey="finalWeight" fill={BAR_COLORS.secondary} name={t('reports:production.finalWeight')} radius={CHART_BAR_RADIUS} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
+
+        {/* Weight by Breed */}
+        {stats.hasMultipleBreeds && stats.weightByBreed.length > 1 && (
+          <ReportChartCard
+            title={t('reports:production.breedPerformance')}
+            className="lg:col-span-2"
+            legend={[
+              { label: t('reports:production.birthWeight'), color: BAR_COLORS.tertiary },
+              { label: t('reports:production.weaningWeight'), color: BAR_COLORS.primary },
+              { label: t('reports:production.finalWeight'), color: BAR_COLORS.secondary },
+            ]}
+          >
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={stats.weightByBreed} barGap={4}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="breed" {...CHART_X_AXIS_PROPS} />
+                <YAxis {...CHART_Y_AXIS_PROPS} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} cursor={CHART_CURSOR} />
+                <Bar dataKey="birthWeight" fill={BAR_COLORS.tertiary} name={t('reports:production.birthWeight')} radius={CHART_BAR_RADIUS} />
+                <Bar dataKey="weaningWeight" fill={BAR_COLORS.primary} name={t('reports:production.weaningWeight')} radius={CHART_BAR_RADIUS} />
+                <Bar dataKey="finalWeight" fill={BAR_COLORS.secondary} name={t('reports:production.finalWeight')} radius={CHART_BAR_RADIUS} />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Weight by Breed - Only show if multiple breeds */}
-        {stats.hasMultipleBreeds && stats.weightByBreed.length > 1 && (
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>{t('reports:production.breedPerformance')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.weightByBreed}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="breed" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="birthWeight" fill="#8884d8" name={t('reports:production.birthWeight')} />
-                  <Bar dataKey="weaningWeight" fill="#10b981" name={t('reports:production.weaningWeight')} />
-                  <Bar dataKey="finalWeight" fill="#3b82f6" name={t('reports:production.finalWeight')} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </ReportChartCard>
         )}
 
         {/* Growth Trends */}
         {stats.growthTrends.length > 0 && (
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>{t('reports:production.growthTrends')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={stats.growthTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="avgBirthWeight" stroke="#8884d8" name="Peso al nacer" />
-                  <Line type="monotone" dataKey="avgWeaningWeight" stroke="#10b981" name="Peso al destete" />
-                  <Line type="monotone" dataKey="avgFinalWeight" stroke="#3b82f6" name="Peso final" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ReportChartCard
+            title={t('reports:production.growthTrends')}
+            className="lg:col-span-2"
+            legend={[
+              { label: t('reports:production.birthWeight'), color: BAR_COLORS.tertiary },
+              { label: t('reports:production.weaningWeight'), color: BAR_COLORS.primary },
+              { label: t('reports:production.finalWeight'), color: BAR_COLORS.secondary },
+            ]}
+          >
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={stats.growthTrends}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="month" {...CHART_X_AXIS_PROPS} />
+                <YAxis {...CHART_Y_AXIS_PROPS} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} />
+                <Line type="monotone" dataKey="avgBirthWeight" stroke={BAR_COLORS.tertiary} name={t('reports:production.birthWeight')} strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="avgWeaningWeight" stroke={BAR_COLORS.primary} name={t('reports:production.weaningWeight')} strokeWidth={2} dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="avgFinalWeight" stroke={BAR_COLORS.secondary} name={t('reports:production.finalWeight')} strokeWidth={2} dot={{ r: 2 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </ReportChartCard>
         )}
       </div>
 
       {/* Performance Indicators */}
-      <Card>
+      <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle>
-            Indicadores de Rendimiento vs Benchmarks
+          <CardTitle className="text-sm font-semibold">
+            {t('reports:production.performanceVsBenchmarks', 'Indicadores de Rendimiento vs Benchmarks')}
             {stats.breedDistribution.length > 0 && (
-              <span className="text-sm font-normal text-muted-foreground ml-2">
-                (Específicos por raza)
+              <span className="text-xs font-normal text-muted-foreground ml-2">
+                ({t('reports:production.breedSpecific', 'Específicos por raza')})
               </span>
             )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {stats.performanceIndicators.map((indicator, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
                 <div>
-                  <h4 className="font-medium">{indicator.metric}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Actual: {indicator.metric === 'Ganancia diaria' ? indicator.value.toFixed(3) : indicator.value.toFixed(1)} 
+                  <h4 className="text-sm font-medium text-foreground">{indicator.metric}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t('reports:production.actual', 'Actual')}: {indicator.metric === 'Ganancia diaria' ? indicator.value.toFixed(3) : indicator.value.toFixed(1)} 
                     {indicator.metric === 'Ganancia diaria' ? ' kg/día' : ' kg'} | 
                     Benchmark: {indicator.metric === 'Ganancia diaria' ? indicator.benchmark.toFixed(3) : indicator.benchmark.toFixed(1)}
                     {indicator.metric === 'Ganancia diaria' ? ' kg/día' : ' kg'}
                     {indicator.breedSpecific && (
-                      <span className="text-blue-600 ml-1">✓ Específico por raza</span>
+                      <span className="text-primary ml-1">✓ {t('reports:production.breedSpecific', 'Específico por raza')}</span>
                     )}
                   </p>
                 </div>
                 <Badge variant={indicator.status === 'good' ? "default" : indicator.status === 'average' ? "secondary" : "destructive"}>
-                  {indicator.status === 'good' ? "Excelente" : indicator.status === 'average' ? "Promedio" : "Mejorable"}
+                  {indicator.status === 'good' ? t('reports:production.excellent') : indicator.status === 'average' ? t('reports:production.good') : t('reports:production.improvable')}
                 </Badge>
               </div>
             ))}
           </div>
           
-          {/* Breed Distribution Info */}
           {stats.breedDistribution.length > 1 && (
-            <div className="mt-4 p-3 bg-muted rounded-lg">
-              <h5 className="font-medium text-sm mb-2">Distribución por Raza:</h5>
+            <div className="mt-4 p-3 bg-muted/30 rounded-xl">
+              <h5 className="font-medium text-xs mb-2">{t('reports:production.breedDistribution', 'Distribución por Raza')}:</h5>
               <div className="flex flex-wrap gap-2">
                 {stats.breedDistribution.map(({ breed, count }) => (
                   <Badge key={breed} variant="outline" className="text-xs">
-                    {breed}: {count} animales
+                    {breed}: {count} {t('reports:production.animals', 'animales')}
                   </Badge>
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Los benchmarks mostrados son promedios ponderados según la distribución de razas
+                {t('reports:production.weightedBenchmarks', 'Los benchmarks mostrados son promedios ponderados según la distribución de razas')}
               </p>
             </div>
           )}

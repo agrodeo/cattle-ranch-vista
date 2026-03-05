@@ -1,14 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Calendar, Users, TrendingUp, Activity } from "lucide-react";
 import { ReportFilters } from "./ReportsFilters";
 import { formatDateForDB } from "@/lib/dateFormatters";
+import { ReportKpiCard } from "./shared/ReportKpiCard";
+import { ReportChartCard } from "./shared/ReportChartCard";
+import { CHART_GRID_PROPS, CHART_X_AXIS_PROPS, CHART_Y_AXIS_PROPS, CHART_BAR_RADIUS, CHART_TOOLTIP_STYLE, CHART_CURSOR, CHART_COLORS, DONUT_PROPS, BAR_COLORS } from "./shared/chartStyles";
 
 interface HerdStats {
   totalAnimals: number;
@@ -45,13 +46,11 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
         .select("*")
         .eq("cabaña_id", currentUser?.cabañaId);
 
-      // Apply filters
       if (filters?.corral_ids?.length) {
         query = query.in("corral_id", filters.corral_ids);
       }
 
       if (filters?.category) {
-        // Filter by category based on age
         const now = new Date();
         if (filters.category === "ternero") {
           const cutoff = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
@@ -99,16 +98,13 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
     const maleCount = animals.filter(a => a.sex === 'Macho').length;
     const femaleCount = animals.filter(a => a.sex === 'Hembra').length;
 
-    // Breed distribution
     const breedCounts: { [key: string]: number } = {};
     animals.forEach(animal => {
       const breed = animal.breed || 'Sin especificar';
       breedCounts[breed] = (breedCounts[breed] || 0) + 1;
     });
     const breedDistribution = Object.entries(breedCounts).map(([breed, count]) => ({ breed, count }));
-    const uniqueBreeds = Object.keys(breedCounts).filter(breed => breed !== 'Sin especificar');
 
-    // Age distribution
     const ageGroups = {
       'Terneros (0-12m)': 0,
       'Jóvenes (1-2 años)': 0,
@@ -121,38 +117,21 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
         ageGroups['Sin fecha']++;
         return;
       }
-      
       const ageInMonths = Math.floor((new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-      
-      if (ageInMonths < 12) {
-        ageGroups['Terneros (0-12m)']++;
-      } else if (ageInMonths < 24) {
-        ageGroups['Jóvenes (1-2 años)']++;
-      } else {
-        ageGroups['Adultos (2+ años)']++;
-      }
+      if (ageInMonths < 12) ageGroups['Terneros (0-12m)']++;
+      else if (ageInMonths < 24) ageGroups['Jóvenes (1-2 años)']++;
+      else ageGroups['Adultos (2+ años)']++;
     });
 
     const ageDistribution = Object.entries(ageGroups).map(([group, count]) => ({ group, count }));
 
-    // Status distribution with colors
     const statusDistribution = [
-      { status: t('herd.status.active'), count: activeAnimals, color: '#10b981' },
-      { status: t('herd.status.sold'), count: soldAnimals, color: '#3b82f6' },
-      { status: t('herd.status.dead'), count: deadAnimals, color: '#ef4444' }
+      { status: t('herd.status.active'), count: activeAnimals, color: CHART_COLORS.status.active },
+      { status: t('herd.status.sold'), count: soldAnimals, color: CHART_COLORS.status.sold },
+      { status: t('herd.status.dead'), count: deadAnimals, color: CHART_COLORS.status.dead }
     ].filter(item => item.count > 0);
 
-    return {
-      totalAnimals,
-      activeAnimals,
-      soldAnimals,
-      deadAnimals,
-      maleCount,
-      femaleCount,
-      breedDistribution,
-      ageDistribution,
-      statusDistribution
-    };
+    return { totalAnimals, activeAnimals, soldAnimals, deadAnimals, maleCount, femaleCount, breedDistribution, ageDistribution, statusDistribution };
   };
 
   if (loading) {
@@ -163,130 +142,107 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
     return <div className="text-center p-8">{t('herd.error')}</div>;
   }
 
+  const renderDonutLabel = ({ cx, cy, midAngle, outerRadius, percent, status }: any) => {
+    if (percent < 0.05) return null;
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 24;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    return (
+      <text x={x} y={y} fill="hsl(var(--foreground))" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" className="text-xs font-medium">
+        {status} ({(percent * 100).toFixed(0)}%)
+      </text>
+    );
+  };
+
   return (
     <div className="grid gap-6">
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('herd.cards.totalAnimals')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalAnimals}</div>
-            <div className="flex gap-2 mt-2">
-              <Badge variant="secondary">{stats.maleCount} {t('common:sex.male')}</Badge>
-              <Badge variant="outline">{stats.femaleCount} {t('common:sex.female')}</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('herd.cards.totalAnimals')}
+          value={stats.totalAnimals}
+          icon={Users}
+          variant="default"
+        >
+          <div className="flex gap-2 mt-1.5">
+            <Badge variant="secondary" className="text-xs">{stats.maleCount} {t('common:sex.male')}</Badge>
+            <Badge variant="outline" className="text-xs">{stats.femaleCount} {t('common:sex.female')}</Badge>
+          </div>
+        </ReportKpiCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('herd.cards.activeAnimals')}</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.activeAnimals}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.activeAnimals / stats.totalAnimals) * 100).toFixed(1)}% {t('common:ofTotal')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('herd.cards.activeAnimals')}
+          value={stats.activeAnimals}
+          subtitle={`${((stats.activeAnimals / stats.totalAnimals) * 100).toFixed(1)}% ${t('common:ofTotal')}`}
+          icon={Activity}
+          variant="success"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('herd.cards.sales')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.soldAnimals}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.soldAnimals / stats.totalAnimals) * 100).toFixed(1)}% {t('common:ofTotal')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('herd.cards.sales')}
+          value={stats.soldAnimals}
+          subtitle={`${((stats.soldAnimals / stats.totalAnimals) * 100).toFixed(1)}% ${t('common:ofTotal')}`}
+          icon={TrendingUp}
+          variant="info"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('herd.cards.mortality')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{stats.deadAnimals}</div>
-            <p className="text-xs text-muted-foreground">
-              {((stats.deadAnimals / stats.totalAnimals) * 100).toFixed(1)}% {t('common:ofTotal')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('herd.cards.mortality')}
+          value={stats.deadAnimals}
+          subtitle={`${((stats.deadAnimals / stats.totalAnimals) * 100).toFixed(1)}% ${t('common:ofTotal')}`}
+          icon={Calendar}
+          variant="danger"
+        />
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('herd.charts.statusDistribution')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={stats.statusDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ status, count, percent }) => `${status}: ${count} (${(percent * 100).toFixed(0)}%)`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {stats.statusDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ReportChartCard title={t('herd.charts.statusDistribution')}>
+          <ResponsiveContainer width="100%" height={280}>
+            <PieChart>
+              <Pie
+                data={stats.statusDistribution}
+                cx="50%"
+                cy="50%"
+                dataKey="count"
+                label={renderDonutLabel}
+                labelLine={false}
+                {...DONUT_PROPS}
+              >
+                {stats.statusDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip {...CHART_TOOLTIP_STYLE} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
 
-        {/* Age Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('herd.charts.ageDistribution')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.ageDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="group" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#10b981" />
+        <ReportChartCard title={t('herd.charts.ageDistribution')}>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={stats.ageDistribution}>
+              <CartesianGrid {...CHART_GRID_PROPS} />
+              <XAxis dataKey="group" {...CHART_X_AXIS_PROPS} />
+              <YAxis {...CHART_Y_AXIS_PROPS} />
+              <Tooltip {...CHART_TOOLTIP_STYLE} cursor={CHART_CURSOR} />
+              <Bar dataKey="count" fill={BAR_COLORS.primary} radius={CHART_BAR_RADIUS} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
+
+        {stats.breedDistribution.length > 1 && stats.breedDistribution.filter(b => b.breed !== 'Sin especificar').length > 1 && (
+          <ReportChartCard title={t('herd.charts.breedDistribution')} className="lg:col-span-2">
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={stats.breedDistribution.filter(b => b.breed !== 'Sin especificar')}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="breed" {...CHART_X_AXIS_PROPS} />
+                <YAxis {...CHART_Y_AXIS_PROPS} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} cursor={CHART_CURSOR} />
+                <Bar dataKey="count" fill={BAR_COLORS.secondary} radius={CHART_BAR_RADIUS} />
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Breed Distribution - Only show if multiple breeds */}
-        {stats.breedDistribution.length > 1 && stats.breedDistribution.filter(b => b.breed !== 'Sin especificar').length > 1 && (
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>{t('herd.charts.breedDistribution')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.breedDistribution.filter(b => b.breed !== 'Sin especificar')}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="breed" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          </ReportChartCard>
         )}
       </div>
     </div>

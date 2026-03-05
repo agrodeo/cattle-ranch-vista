@@ -3,13 +3,15 @@ import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { DollarSign, TrendingUp, TrendingDown, Calculator } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Calculator, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { ReportFilters } from "./ReportsFilters";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { ReportKpiCard } from "./shared/ReportKpiCard";
+import { ReportChartCard } from "./shared/ReportChartCard";
+import { CHART_GRID_PROPS, CHART_X_AXIS_PROPS, CHART_Y_AXIS_PROPS, CHART_BAR_RADIUS, CHART_TOOLTIP_STYLE, CHART_CURSOR, CHART_COLORS, DONUT_PROPS, BAR_COLORS } from "./shared/chartStyles";
 import { formatDateForDB, ensureDateObject } from "@/lib/dateFormatters";
 import { isOnline } from "@/services/connectivity";
 import { db } from "@/services/db";
@@ -275,215 +277,191 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
     return <div className="text-center p-8">{t('reports:financial.error')}</div>;
   }
 
+  const renderDonutLabel = ({ cx, cy, midAngle, outerRadius, percent, name, category }: any) => {
+    if (percent < 0.05) return null;
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 24;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    return (
+      <text x={x} y={y} fill="hsl(var(--foreground))" textAnchor={x > cx ? "start" : "end"} dominantBaseline="central" className="text-xs font-medium">
+        {category || name} ({(percent * 100).toFixed(0)}%)
+      </text>
+    );
+  };
+
   return (
     <div className="grid gap-6">
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Key Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:financial.totalRevenue')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              ${stats.totalRevenue.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              ${stats.revenuePerAnimal.toFixed(0)} {t('reports:financial.perAnimal')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:financial.totalRevenue')}
+          value={`$${stats.totalRevenue.toLocaleString()}`}
+          subtitle={`$${stats.revenuePerAnimal.toFixed(0)} ${t('reports:financial.perAnimal')}`}
+          icon={TrendingUp}
+          variant="success"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:financial.totalExpenses')}</CardTitle>
-            <TrendingDown className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              ${stats.totalExpenses.toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              ${stats.costPerAnimal.toFixed(0)} {t('reports:financial.perAnimal')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:financial.totalExpenses')}
+          value={`$${stats.totalExpenses.toLocaleString()}`}
+          subtitle={`$${stats.costPerAnimal.toFixed(0)} ${t('reports:financial.perAnimal')}`}
+          icon={TrendingDown}
+          variant="danger"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:financial.netProfit')}</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${stats.netProfit.toLocaleString()}
-            </div>
-            <Badge variant={stats.netProfit >= 0 ? "default" : "destructive"}>
-              {stats.netProfit >= 0 ? t('reports:financial.profit') : t('reports:financial.loss')}
-            </Badge>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:financial.netProfit')}
+          value={`$${stats.netProfit.toLocaleString()}`}
+          icon={DollarSign}
+          variant={stats.netProfit >= 0 ? "success" : "danger"}
+        >
+          <Badge variant={stats.netProfit >= 0 ? "default" : "destructive"} className="mt-1">
+            {stats.netProfit >= 0 ? t('reports:financial.profit') : t('reports:financial.loss')}
+          </Badge>
+        </ReportKpiCard>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:financial.profitMargin')}</CardTitle>
-            <Calculator className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {stats.profitMargin.toFixed(1)}%
-            </div>
-            <Badge variant={stats.profitMargin >= 10 ? "default" : stats.profitMargin >= 0 ? "secondary" : "destructive"}>
-              {stats.profitMargin >= 10 ? t('reports:financial.excellent') : stats.profitMargin >= 0 ? t('reports:financial.acceptable') : t('reports:financial.critical')}
-            </Badge>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:financial.profitMargin')}
+          value={`${stats.profitMargin.toFixed(1)}%`}
+          icon={Calculator}
+          variant={stats.profitMargin >= 10 ? "success" : stats.profitMargin >= 0 ? "warning" : "danger"}
+        >
+          <Badge variant={stats.profitMargin >= 10 ? "default" : stats.profitMargin >= 0 ? "secondary" : "destructive"} className="mt-1">
+            {stats.profitMargin >= 10 ? t('reports:financial.excellent') : stats.profitMargin >= 0 ? t('reports:financial.acceptable') : t('reports:financial.critical')}
+          </Badge>
+        </ReportKpiCard>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Monthly Performance */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('reports:financial.monthlyPerformance')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                <Legend />
-                <Bar dataKey="revenue" fill="#10b981" name={t('reports:financial.revenue')} />
-                <Bar dataKey="expenses" fill="#ef4444" name={t('reports:financial.expenses')} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ReportChartCard
+          title={t('reports:financial.monthlyPerformance')}
+          legend={[
+            { label: t('reports:financial.revenue'), color: BAR_COLORS.primary },
+            { label: t('reports:financial.expenses'), color: BAR_COLORS.danger },
+          ]}
+        >
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={stats.monthlyData} barGap={4} barCategoryGap="20%">
+              <CartesianGrid {...CHART_GRID_PROPS} />
+              <XAxis dataKey="month" {...CHART_X_AXIS_PROPS} />
+              <YAxis {...CHART_Y_AXIS_PROPS} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+              <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} cursor={CHART_CURSOR} />
+              <Bar dataKey="revenue" fill={BAR_COLORS.primary} name={t('reports:financial.revenue')} radius={CHART_BAR_RADIUS} />
+              <Bar dataKey="expenses" fill={BAR_COLORS.danger} name={t('reports:financial.expenses')} radius={CHART_BAR_RADIUS} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
 
         {/* Profit Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('reports:financial.profitTrend')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={stats.monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                <Line type="monotone" dataKey="profit" stroke="#3b82f6" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ReportChartCard title={t('reports:financial.profitTrend')}>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={stats.monthlyData}>
+              <CartesianGrid {...CHART_GRID_PROPS} />
+              <XAxis dataKey="month" {...CHART_X_AXIS_PROPS} />
+              <YAxis {...CHART_Y_AXIS_PROPS} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+              <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
+              <Line type="monotone" dataKey="profit" stroke={BAR_COLORS.secondary} strokeWidth={2.5} dot={{ r: 3 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </ReportChartCard>
 
         {/* Top Expense Categories */}
         {stats.topExpenseCategories.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('reports:financial.topExpenseCategories')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.topExpenseCategories}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ category, percentage }) => `${category}: ${percentage.toFixed(1)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="amount"
-                  >
-                    {stats.topExpenseCategories.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e'][index % 5]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ReportChartCard title={t('reports:financial.topExpenseCategories')} icon={ArrowDownRight} iconVariant="danger">
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={stats.topExpenseCategories}
+                  cx="50%"
+                  cy="50%"
+                  dataKey="amount"
+                  label={renderDonutLabel}
+                  labelLine={false}
+                  {...DONUT_PROPS}
+                >
+                  {stats.topExpenseCategories.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS.red[index % CHART_COLORS.red.length]} />
+                  ))}
+                </Pie>
+                <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ReportChartCard>
         )}
 
         {/* Top Revenue Categories */}
         {stats.topRevenueCategories.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('reports:financial.topRevenueCategories')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={stats.topRevenueCategories}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ category, percentage }) => `${category}: ${percentage.toFixed(1)}%`}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="amount"
-                  >
-                    {stats.topRevenueCategories.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#10b981', '#059669', '#047857', '#065f46', '#064e3b'][index % 5]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ReportChartCard title={t('reports:financial.topRevenueCategories')} icon={ArrowUpRight} iconVariant="success">
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie
+                  data={stats.topRevenueCategories}
+                  cx="50%"
+                  cy="50%"
+                  dataKey="amount"
+                  label={renderDonutLabel}
+                  labelLine={false}
+                  {...DONUT_PROPS}
+                >
+                  {stats.topRevenueCategories.map((_entry, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS.green[index % CHART_COLORS.green.length]} />
+                  ))}
+                </Pie>
+                <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} />
+              </PieChart>
+            </ResponsiveContainer>
+          </ReportChartCard>
         )}
 
-        {/* Breed Profitability - Only show if multiple breeds */}
+        {/* Breed Profitability */}
         {stats.hasMultipleBreeds && stats.breedProfitability.length > 1 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('reports:financial.breedProfitability')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.breedProfitability}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="breed" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                  <Legend />
-                  <Bar dataKey="costPerAnimal" fill="#ef4444" name={t('reports:financial.costPerAnimal')} />
-                  <Bar dataKey="profitPerAnimal" fill="#10b981" name={t('reports:financial.profitPerAnimal')} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ReportChartCard
+            title={t('reports:financial.breedProfitability')}
+            legend={[
+              { label: t('reports:financial.costPerAnimal'), color: BAR_COLORS.danger },
+              { label: t('reports:financial.profitPerAnimal'), color: BAR_COLORS.primary },
+            ]}
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stats.breedProfitability} barGap={4}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="breed" {...CHART_X_AXIS_PROPS} />
+                <YAxis {...CHART_Y_AXIS_PROPS} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} cursor={CHART_CURSOR} />
+                <Bar dataKey="costPerAnimal" fill={BAR_COLORS.danger} name={t('reports:financial.costPerAnimal')} radius={CHART_BAR_RADIUS} />
+                <Bar dataKey="profitPerAnimal" fill={BAR_COLORS.primary} name={t('reports:financial.profitPerAnimal')} radius={CHART_BAR_RADIUS} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ReportChartCard>
         )}
 
         {/* Yearly Comparison */}
         {stats.yearlyComparison.length > 1 && (
-          <Card className={stats.hasMultipleBreeds && stats.breedProfitability.length > 1 ? "lg:col-span-1" : "lg:col-span-2"}>
-            <CardHeader>
-              <CardTitle>{t('reports:financial.yearlyComparison')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={stats.yearlyComparison}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="year" />
-                  <YAxis />
-                  <Tooltip formatter={(value) => `$${Number(value).toLocaleString()}`} />
-                  <Legend />
-                  <Bar dataKey="revenue" fill="#10b981" name={t('reports:financial.revenue')} />
-                  <Bar dataKey="expenses" fill="#ef4444" name={t('reports:financial.expenses')} />
-                  <Bar dataKey="profit" fill="#3b82f6" name={t('reports:financial.netProfit')} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+          <ReportChartCard
+            title={t('reports:financial.yearlyComparison')}
+            className={stats.hasMultipleBreeds && stats.breedProfitability.length > 1 ? "lg:col-span-1" : "lg:col-span-2"}
+            legend={[
+              { label: t('reports:financial.revenue'), color: BAR_COLORS.primary },
+              { label: t('reports:financial.expenses'), color: BAR_COLORS.danger },
+              { label: t('reports:financial.netProfit'), color: BAR_COLORS.secondary },
+            ]}
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={stats.yearlyComparison} barGap={4}>
+                <CartesianGrid {...CHART_GRID_PROPS} />
+                <XAxis dataKey="year" {...CHART_X_AXIS_PROPS} />
+                <YAxis {...CHART_Y_AXIS_PROPS} tickFormatter={(v) => `$${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
+                <Tooltip {...CHART_TOOLTIP_STYLE} formatter={(value: number) => [`$${value.toLocaleString()}`, '']} cursor={CHART_CURSOR} />
+                <Bar dataKey="revenue" fill={BAR_COLORS.primary} name={t('reports:financial.revenue')} radius={CHART_BAR_RADIUS} />
+                <Bar dataKey="expenses" fill={BAR_COLORS.danger} name={t('reports:financial.expenses')} radius={CHART_BAR_RADIUS} />
+                <Bar dataKey="profit" fill={BAR_COLORS.secondary} name={t('reports:financial.netProfit')} radius={CHART_BAR_RADIUS} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ReportChartCard>
         )}
       </div>
     </div>
