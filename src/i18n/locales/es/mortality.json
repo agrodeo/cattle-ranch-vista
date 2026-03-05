@@ -93,5 +93,19 @@
       "notes": "Notas"
     },
     "errorLoading": "No se pudieron cargar los datos de mortalidad"
+  },
+  "causeDialog": {
+    "createTitle": "Nueva Causa de Muerte",
+    "editTitle": "Editar Causa de Muerte",
+    "causeName": "Nombre de la causa *",
+    "causeNamePlaceholder": "Ej: Neumonía, Accidente, etc.",
+    "displayOrder": "Orden de visualización",
+    "cancel": "Cancelar",
+    "creating": "Creando...",
+    "create": "Crear Causa",
+    "updating": "Actualizando...",
+    "update": "Actualizar",
+    "errorCreate": "No se pudo crear la causa",
+    "errorUpdate": "No se pudo actualizar la causa"
   }
 }

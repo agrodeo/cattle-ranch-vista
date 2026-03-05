@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS, pt } from 'date-fns/locale';
+import { getCurrentLanguage } from '@/hooks/useLanguage';
 import { 
   Heart, 
   AlertTriangle, 
-  Search, 
-  Filter,
   TrendingDown,
-  Calendar,
-  Users
 } from 'lucide-react';
 import { PregnancyLossDialog } from './PregnancyLossDialog';
 
@@ -55,14 +52,21 @@ interface LossStats {
   loss_rate: number;
 }
 
+const getDateLocale = () => {
+  const lang = getCurrentLanguage();
+  if (lang === 'en') return enUS;
+  if (lang === 'pt') return pt;
+  return es;
+};
+
 export function ReproductiveEventManager() {
+  const { t } = useTranslation(['reproductive', 'common']);
   const [pregnantAnimals, setPregnantAnimals] = useState<PregnantAnimal[]>([]);
   const [recentLosses, setRecentLosses] = useState<ReproductiveLoss[]>([]);
   const [lossStats, setLossStats] = useState<LossStats | null>(null);
   const [selectedPregnancy, setSelectedPregnancy] = useState<PregnantAnimal | null>(null);
   const [lossDialogOpen, setLossDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(false);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
@@ -118,7 +122,7 @@ export function ReproductiveEventManager() {
         animal_name: pregnancy.animals?.name || '',
         animal_tag: pregnancy.animals?.id_tag || '',
         animal_breed: pregnancy.animals?.breed || '',
-        corral_name: pregnancy.animals?.corrales?.name || 'Sin corral',
+        corral_name: pregnancy.animals?.corrales?.name || t('reproductive:manager.noCorral'),
         fecha_inicio: pregnancy.fecha_inicio,
         fecha_estimada_parto: pregnancy.fecha_estimada_parto,
         dias_gestacion: Math.floor((new Date().getTime() - new Date(pregnancy.fecha_inicio).getTime()) / (1000 * 60 * 60 * 24)),
@@ -208,34 +212,34 @@ export function ReproductiveEventManager() {
   const handleLossSuccess = () => {
     loadData();
     toast({
-      title: "Pérdida registrada",
-      description: "La pérdida reproductiva ha sido registrada exitosamente",
+      title: t('reproductive:manager.lossRegistered'),
+      description: t('reproductive:manager.lossRegisteredDesc'),
     });
   };
 
   const getStatusBadge = (diasGestacion: number) => {
     if (diasGestacion < 100) {
-      return <Badge variant="secondary">Temprana</Badge>;
+      return <Badge variant="secondary">{t('reproductive:manager.statusEarly')}</Badge>;
     } else if (diasGestacion < 200) {
-      return <Badge className="bg-yellow-500">Media</Badge>;
+      return <Badge className="bg-yellow-500">{t('reproductive:manager.statusMid')}</Badge>;
     } else if (diasGestacion < 283) {
-      return <Badge className="bg-orange-500">Avanzada</Badge>;
+      return <Badge className="bg-orange-500">{t('reproductive:manager.statusAdvanced')}</Badge>;
     } else {
-      return <Badge className="bg-red-500">Vencida</Badge>;
+      return <Badge className="bg-red-500">{t('reproductive:manager.statusOverdue')}</Badge>;
     }
   };
 
   const getLossTypeBadge = (tipo: string) => {
-    const types = {
-      'aborto_temprano': { label: 'Aborto Temprano', color: 'bg-yellow-500' },
-      'aborto_tardio': { label: 'Aborto Tardío', color: 'bg-orange-500' },
-      'stillbirth': { label: 'Mortinato', color: 'bg-red-500' },
-      'neonatal': { label: 'Neonatal', color: 'bg-purple-500' },
-      'no_detectada': { label: 'No Detectada', color: 'bg-gray-500' }
+    const typeKey = `reproductive:manager.lossType${tipo === 'aborto_temprano' ? 'EarlyAbortion' : tipo === 'aborto_tardio' ? 'LateAbortion' : tipo === 'stillbirth' ? 'Stillbirth' : tipo === 'neonatal' ? 'Neonatal' : 'NotDetected'}`;
+    const colors: Record<string, string> = {
+      'aborto_temprano': 'bg-yellow-500',
+      'aborto_tardio': 'bg-orange-500',
+      'stillbirth': 'bg-red-500',
+      'neonatal': 'bg-purple-500',
+      'no_detectada': 'bg-gray-500'
     };
     
-    const typeInfo = types[tipo] || { label: tipo, color: 'bg-gray-500' };
-    return <Badge className={typeInfo.color}>{typeInfo.label}</Badge>;
+    return <Badge className={colors[tipo] || 'bg-gray-500'}>{t(typeKey)}</Badge>;
   };
 
   const filteredAnimals = pregnantAnimals.filter(animal => {
@@ -246,6 +250,8 @@ export function ReproductiveEventManager() {
     return matchesSearch;
   });
 
+  const dateLocale = getDateLocale();
+
   return (
     <div className="space-y-6">
       {/* Statistics Cards */}
@@ -255,7 +261,7 @@ export function ReproductiveEventManager() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Preñadas Activas</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('reproductive:manager.activePregnancies')}</p>
                   <p className="text-2xl font-bold text-green-600">{pregnantAnimals.length}</p>
                 </div>
                 <Heart className="h-4 w-4 text-green-600" />
@@ -267,7 +273,7 @@ export function ReproductiveEventManager() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Pérdidas Totales</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('reproductive:manager.totalLosses')}</p>
                   <p className="text-2xl font-bold text-red-600">{lossStats.total_losses}</p>
                 </div>
                 <TrendingDown className="h-4 w-4 text-red-600" />
@@ -279,7 +285,7 @@ export function ReproductiveEventManager() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Abortos Tempranos</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('reproductive:manager.earlyAbortions')}</p>
                   <p className="text-2xl font-bold text-yellow-600">{lossStats.aborto_temprano}</p>
                 </div>
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
@@ -291,7 +297,7 @@ export function ReproductiveEventManager() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Mortinatos</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('reproductive:manager.stillbirths')}</p>
                   <p className="text-2xl font-bold text-red-600">{lossStats.stillbirth}</p>
                 </div>
                 <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -303,7 +309,7 @@ export function ReproductiveEventManager() {
             <CardContent className="pt-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Tasa de Pérdida</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('reproductive:manager.lossRate')}</p>
                   <p className="text-2xl font-bold text-orange-600">{lossStats.loss_rate}%</p>
                 </div>
                 <TrendingDown className="h-4 w-4 text-orange-600" />
@@ -317,10 +323,10 @@ export function ReproductiveEventManager() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Preñeces Activas ({pregnantAnimals.length})</span>
+            <span>{t('reproductive:manager.activePregnanciesTitle')} ({pregnantAnimals.length})</span>
             <div className="flex gap-2">
               <Input
-                placeholder="Buscar animal..."
+                placeholder={t('reproductive:manager.searchAnimal')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
@@ -330,22 +336,22 @@ export function ReproductiveEventManager() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-4">Cargando preñeces...</div>
+            <div className="text-center py-4">{t('reproductive:manager.loadingPregnancies')}</div>
           ) : filteredAnimals.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
-              No hay preñeces activas registradas
+              {t('reproductive:manager.noActivePregnancies')}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Animal</TableHead>
-                  <TableHead>Corral</TableHead>
-                  <TableHead>Origen</TableHead>
-                  <TableHead>Días Gestación</TableHead>
-                  <TableHead>Fecha Est. Parto</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Acciones</TableHead>
+                  <TableHead>{t('reproductive:manager.animal')}</TableHead>
+                  <TableHead>{t('reproductive:manager.corral')}</TableHead>
+                  <TableHead>{t('reproductive:manager.origin')}</TableHead>
+                  <TableHead>{t('reproductive:manager.gestationDays')}</TableHead>
+                  <TableHead>{t('reproductive:manager.estimatedCalving')}</TableHead>
+                  <TableHead>{t('reproductive:manager.status')}</TableHead>
+                  <TableHead>{t('reproductive:manager.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -361,9 +367,9 @@ export function ReproductiveEventManager() {
                     <TableCell>
                       <Badge variant="outline">{pregnancy.origen}</Badge>
                     </TableCell>
-                    <TableCell>{pregnancy.dias_gestacion} días</TableCell>
+                    <TableCell>{pregnancy.dias_gestacion} {t('reproductive:manager.days')}</TableCell>
                     <TableCell>
-                      {format(new Date(pregnancy.fecha_estimada_parto), 'dd/MM/yyyy', { locale: es })}
+                      {format(new Date(pregnancy.fecha_estimada_parto), 'dd/MM/yyyy', { locale: dateLocale })}
                     </TableCell>
                     <TableCell>{getStatusBadge(pregnancy.dias_gestacion)}</TableCell>
                     <TableCell>
@@ -374,7 +380,7 @@ export function ReproductiveEventManager() {
                         className="flex items-center gap-1"
                       >
                         <AlertTriangle className="h-3 w-3" />
-                        Registrar Pérdida
+                        {t('reproductive:manager.registerLoss')}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -388,23 +394,23 @@ export function ReproductiveEventManager() {
       {/* Recent Losses */}
       <Card>
         <CardHeader>
-          <CardTitle>Pérdidas Reproductivas Recientes</CardTitle>
+          <CardTitle>{t('reproductive:manager.recentLosses')}</CardTitle>
         </CardHeader>
         <CardContent>
           {recentLosses.length === 0 ? (
             <div className="text-center py-4 text-muted-foreground">
-              No hay pérdidas reproductivas registradas
+              {t('reproductive:manager.noLosses')}
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Animal</TableHead>
-                  <TableHead>Fecha Pérdida</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Causa</TableHead>
-                  <TableHead>Días Gestación</TableHead>
-                  <TableHead>Observaciones</TableHead>
+                  <TableHead>{t('reproductive:manager.animal')}</TableHead>
+                  <TableHead>{t('reproductive:manager.lossDate')}</TableHead>
+                  <TableHead>{t('reproductive:manager.lossType')}</TableHead>
+                  <TableHead>{t('reproductive:manager.lossCause')}</TableHead>
+                  <TableHead>{t('reproductive:manager.lossGestationDays')}</TableHead>
+                  <TableHead>{t('reproductive:manager.observations')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -417,11 +423,11 @@ export function ReproductiveEventManager() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(loss.fecha_perdida), 'dd/MM/yyyy', { locale: es })}
+                      {format(new Date(loss.fecha_perdida), 'dd/MM/yyyy', { locale: dateLocale })}
                     </TableCell>
                     <TableCell>{getLossTypeBadge(loss.tipo_perdida)}</TableCell>
                     <TableCell>{loss.causa_perdida}</TableCell>
-                    <TableCell>{loss.dias_gestacion_perdida} días</TableCell>
+                    <TableCell>{loss.dias_gestacion_perdida} {t('reproductive:manager.days')}</TableCell>
                     <TableCell>
                       <div className="max-w-40 truncate" title={loss.observaciones_perdida}>
                         {loss.observaciones_perdida || '-'}
