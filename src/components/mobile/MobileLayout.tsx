@@ -142,7 +142,7 @@ export function MobileLayout() {
         </main>
       </div>
       
-      <BottomNavigation onAddClick={handleAddClick} />
+      {!showAddOverlay && <BottomNavigation onAddClick={handleAddClick} />}
       
       <AddOverlay
         isOpen={showAddOverlay}
