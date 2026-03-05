@@ -955,11 +955,11 @@
     "saving": "Saving...",
     "registering": "Registering...",
     "lossTypes": {
-      "early_abortion": {
+      "aborto_temprano": {
         "label": "Early Abortion (< 6 months)",
         "description": "Loss before 180 days"
       },
-      "late_abortion": {
+      "aborto_tardio": {
         "label": "Late Abortion (> 6 months)",
         "description": "Loss after 180 days"
       },
@@ -971,7 +971,7 @@
         "label": "Neonatal Loss",
         "description": "Calf dies in first days"
       },
-      "not_detected": {
+      "no_detectada": {
         "label": "Not Detected/False Positive",
         "description": "Error in initial detection"
       }
