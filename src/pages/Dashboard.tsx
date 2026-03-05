@@ -217,10 +217,10 @@ const Dashboard = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900">
-                          {alert.title}
+                          {alert.titleKey ? t(alert.titleKey) : alert.title}
                         </p>
                         <p className="text-xs text-slate-600 mt-1">
-                          {alert.description}
+                          {alert.descriptionKey ? String(t(alert.descriptionKey, alert.descriptionParams || {})) : alert.description}
                         </p>
                       </div>
                       {alert.affected_count && (

@@ -215,9 +215,9 @@ export function NotificationsSheet({ isOpen, onClose }: NotificationsSheetProps)
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-destructive" />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm">{alert.title}</p>
+                        <p className="font-medium text-sm">{alert.titleKey ? t(alert.titleKey) : alert.title}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {alert.description}
+                          {alert.descriptionKey ? String(t(alert.descriptionKey, alert.descriptionParams || {})) : alert.description}
                         </p>
                         {alert.affected_count && (
                           <Badge variant="secondary" className="mt-2">
