@@ -102,17 +102,17 @@ export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsP
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="flex w-full overflow-x-auto scrollbar-hide mb-4">
+      <TabsList className="flex w-full justify-start overflow-x-auto scrollbar-hide mb-4 h-11 bg-muted/50 p-1 rounded-lg">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
             <TabsTrigger 
               key={tab.id} 
               value={tab.id}
-              className="flex-shrink-0 flex items-center gap-1 text-xs px-2"
+              className="flex-shrink-0 flex items-center gap-2 text-sm px-4 py-2"
             >
-              <Icon className="h-3 w-3" />
-              <span className="hidden lg:inline">{tab.label}</span>
+              <Icon className="h-4 w-4" />
+              <span>{tab.label}</span>
             </TabsTrigger>
           );
         })}
