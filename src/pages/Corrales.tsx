@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { PageHeader } from "@/components/ui/page-header";
 import { MetricCard } from "@/components/ui/metric-card";
+import { PageLoading } from "@/components/ui/page-loading";
 import { useTranslation } from "react-i18next";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
@@ -415,12 +416,7 @@ export default function Corrales() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-            <p className="text-slate-600">{t('corrals:metrics.loading')}</p>
-          </div>
-        </div>
+        <PageLoading cards={3} message={t('corrals:metrics.loading')} />
       </div>
     );
   }

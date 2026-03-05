@@ -4,19 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Shield, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
+import { PageLoading } from "@/components/ui/page-loading";
 
 export function VaccinationDashboard() {
   const { requirements, loading } = useVaccinationRequirements();
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-muted-foreground">Cargando configuración de vacunación...</p>
-        </div>
-      </div>
-    );
+    return <PageLoading cards={2} showKpis={false} message="Cargando configuración de vacunación..." />;
   }
 
   return (
