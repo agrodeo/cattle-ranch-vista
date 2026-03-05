@@ -750,5 +750,11 @@
     "assistant": "Assistente IA",
     "placeholder": "Pergunte algo sobre manejo de currais...",
     "errorGettingRecommendations": "Erro ao obter recomendações de IA"
+  },
+  "move": {
+    "success": "{{count}} animal(is) movido(s) {{destination}}",
+    "movedTo": "para {{corral}}",
+    "movedOutside": "fora dos currais",
+    "errorMoving": "Não foi possível mover os animais"
   }
 }

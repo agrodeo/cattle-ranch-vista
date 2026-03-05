@@ -176,6 +176,8 @@
     }
   },
   "mobile": {
+    "type": "Type",
+    "date": "Date",
     "searchPlaceholder": "Search activities...",
     "filterByType": "Filter by type",
     "allTypes": "All types",

@@ -747,5 +747,11 @@
     "assistant": "Asistente IA",
     "placeholder": "Pregunta algo sobre manejo de corrales...",
     "errorGettingRecommendations": "Error al obtener recomendaciones de IA"
+  },
+  "move": {
+    "success": "{{count}} animal(es) movido(s) {{destination}}",
+    "movedTo": "al {{corral}}",
+    "movedOutside": "fuera de corrales",
+    "errorMoving": "No se pudieron mover los animales"
   }
 }

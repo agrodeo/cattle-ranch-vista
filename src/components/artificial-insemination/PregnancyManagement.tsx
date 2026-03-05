@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,6 +38,7 @@ interface PregnancyManagementProps {
 }
 
 export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementProps) {
+  const { t } = useTranslation(['reproductive', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
 
@@ -152,16 +154,19 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
       );
 
       toast({
-        title: "Éxito",
-        description: `${selectedAnimals.length} animales marcados como ${newStatus === 'preñada' ? 'preñadas' : 'vacías'}`,
+        title: t('common:toast.success'),
+        description: t('reproductive:eventDialog.markedAs', { 
+          count: selectedAnimals.length, 
+          status: newStatus === 'preñada' ? t('reproductive:eventDialog.markedPregnant') : t('reproductive:eventDialog.markedEmpty') 
+        }),
       });
 
       setSelectedAnimals([]);
     } catch (error) {
       console.error('Error updating pregnancy status:', error);
       toast({
-        title: "Error",
-        description: "Error al actualizar el estado de preñez",
+        title: t('common:toast.error'),
+        description: t('reproductive:eventDialog.errorUpdatingStatus'),
         variant: "destructive"
       });
     } finally {

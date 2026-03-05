@@ -176,6 +176,8 @@
     }
   },
   "mobile": {
+    "type": "Tipo",
+    "date": "Data",
     "searchPlaceholder": "Pesquisar atividades...",
     "filterByType": "Filtrar por tipo",
     "allTypes": "Todos os tipos",

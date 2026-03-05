@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ interface MoveAnimalDialogProps {
 }
 
 export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDialogProps) {
+  const { t } = useTranslation(['corrals', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -143,8 +145,11 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
       if (error) throw error;
 
       toast({
-        title: "Éxito",
-        description: `${selectedAnimals.length} animal(es) movido(s) ${targetCorralId === "none" ? "fuera de corrales" : `al ${targetCorralName}`}`,
+        title: t('common:toast.success'),
+        description: t('corrals:move.success', { 
+          count: selectedAnimals.length, 
+          destination: targetCorralId === "none" ? t('corrals:move.movedOutside') : t('corrals:move.movedTo', { corral: targetCorralName }) 
+        }),
       });
 
       setSelectedAnimals([]);
@@ -154,8 +159,8 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
     } catch (error) {
       console.error("Error moving animals:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron mover los animales",
+        title: t('common:toast.error'),
+        description: t('corrals:move.errorMoving'),
         variant: "destructive",
       });
     } finally {

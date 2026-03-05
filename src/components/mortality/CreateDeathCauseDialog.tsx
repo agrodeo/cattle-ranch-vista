@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,6 +39,7 @@ export function CreateDeathCauseDialog({
   onOpenChange,
   onSuccess,
 }: CreateDeathCauseDialogProps) {
+  const { t } = useTranslation('common');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -63,7 +65,7 @@ export function CreateDeathCauseDialog({
 
       if ((data as any)?.success) {
         toast({
-          title: "Éxito",
+          title: t('common:toast.success'),
           description: (data as any).message,
         });
         form.reset();

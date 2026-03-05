@@ -64,7 +64,7 @@ export function ReproductiveEventDialog({
   onSuccess,
 }: ReproductiveEventDialogProps) {
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslation(['reproductive', 'common']);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<ReproductiveEventForm>({
@@ -130,7 +130,7 @@ export function ReproductiveEventDialog({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>
-            {existingEvent ? "Editar" : "Agregar"} Evento Reproductivo
+            {existingEvent ? t('reproductive:eventDialog.editEvent') : t('reproductive:eventDialog.addEvent')}
           </DialogTitle>
         </DialogHeader>
 
@@ -278,10 +278,10 @@ export function ReproductiveEventDialog({
 
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancelar
+                {t('common:actions.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Guardando..." : "Guardar"}
+                {isSubmitting ? t('common:forms.saving') : t('common:actions.save')}
               </Button>
             </div>
           </form>

@@ -53,6 +53,8 @@
     "cow": "hembras adultas"
   },
   "filters": {
+    "status": "Estado",
+    "breed": "Raza",
     "allCategories": "Todas las categorías",
     "allBreeds": "Todas las razas",
     "allStatuses": "Todos los estados",
