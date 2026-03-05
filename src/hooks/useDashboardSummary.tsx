@@ -74,6 +74,9 @@ interface DashboardWarning {
   type: 'consanguinity' | 'vaccination' | 'vaccination_due' | 'vaccination_overdue' | 'birth_upcoming' | 'birth_overdue' | 'reproductive';
   title: string;
   description: string;
+  titleKey?: string;
+  descriptionKey?: string;
+  descriptionParams?: Record<string, any>;
   severity: 'high' | 'medium' | 'low';
   affected_count?: number;
   animal_id?: string;
@@ -626,6 +629,9 @@ export const useDashboardSummary = (): DashboardSummary => {
             type: 'consanguinity',
             title: t('dashboard:warnings.consanguinityRisk'),
             description: t('dashboard:warnings.corralsWithRisk', { count }),
+            titleKey: 'dashboard:warnings.consanguinityRisk',
+            descriptionKey: 'dashboard:warnings.corralsWithRisk',
+            descriptionParams: { count },
             severity: 'high',
             affected_count: count
           });
