@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, Check } from "lucide-react";
+import { ArrowLeft, DollarSign, TrendingUp, TrendingDown, Check, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ interface FinanceCreationFlowProps {
 }
 
 type MovementType = "income" | "expense";
+type RecurringFrequency = "monthly" | "weekly" | "yearly" | "quarterly";
 
 export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
   const { t } = useTranslation('finance');
@@ -30,6 +31,8 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
   const [selectedType, setSelectedType] = useState<MovementType | null>(null);
   const [loading, setLoading] = useState(false);
   const [isAnimalSale, setIsAnimalSale] = useState(false);
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringFrequency, setRecurringFrequency] = useState<RecurringFrequency>("monthly");
   const [selectedAnimalIds, setSelectedAnimalIds] = useState<string[]>([]);
   const [animalDialogOpen, setAnimalDialogOpen] = useState(false);
   const [animalSearch, setAnimalSearch] = useState("");
@@ -170,11 +173,27 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
 
         if (error) throw error;
         
-        // Invalidate relevant queries
         queryClient.invalidateQueries({ queryKey: ["animals"] });
         queryClient.invalidateQueries({ queryKey: ["finances"] });
         
         toast.success(t('mobile.animalSaleSuccess'));
+      } else if (isRecurring) {
+        // Create recurring finance entry
+        const supabaseAny = supabase as any;
+        const { error } = await supabaseAny.rpc('create_finance_recurring', {
+          _user_id: currentUser?.id,
+          _name: formData.descripcion.trim(),
+          _type: selectedType === "income" ? "ingreso" : "egreso",
+          _amount: Math.abs(parseFloat(formData.monto)),
+          _frequency: recurringFrequency,
+          _category_id: null,
+          _description: formData.observaciones || null,
+        });
+
+        if (error) throw error;
+        
+        queryClient.invalidateQueries({ queryKey: ["finances", "recurring"] });
+        toast.success(t('mobile.recurringSuccess', 'Movimiento recurrente creado'));
       } else {
         // Regular finance movement
         const { error } = await supabase
@@ -289,6 +308,39 @@ export function FinanceCreationFlow({ onClose }: FinanceCreationFlowProps) {
                   rows={3}
                 />
               </div>
+              {/* Recurring toggle */}
+              {!isAnimalSale && (
+                <div className="pt-4 border-t space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="h-4 w-4 text-muted-foreground" />
+                      <Label htmlFor="recurring">{t('mobile.makeRecurring', 'Hacer recurrente')}</Label>
+                    </div>
+                    <Switch
+                      id="recurring"
+                      checked={isRecurring}
+                      onCheckedChange={setIsRecurring}
+                    />
+                  </div>
+                  
+                  {isRecurring && (
+                    <div>
+                      <Label>{t('mobile.frequency', 'Frecuencia')}</Label>
+                      <Select value={recurringFrequency} onValueChange={(v) => setRecurringFrequency(v as RecurringFrequency)}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="weekly">{t('mobile.weekly', 'Semanal')}</SelectItem>
+                          <SelectItem value="monthly">{t('mobile.monthly', 'Mensual')}</SelectItem>
+                          <SelectItem value="quarterly">{t('mobile.quarterly', 'Trimestral')}</SelectItem>
+                          <SelectItem value="yearly">{t('mobile.yearly', 'Anual')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 
