@@ -7,19 +7,11 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 import { 
-  Syringe, 
-  Weight, 
-  Stethoscope, 
-  Baby, 
-  Heart, 
-  Activity,
-  Skull,
-  AlertTriangle,
-  ExternalLink,
-  User
+  Syringe, Weight, Stethoscope, Baby, Heart, Activity, Skull, AlertTriangle,
+  ExternalLink, User, Calendar
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { UnifiedActivity } from '@/hooks/useAllActivities';
@@ -31,137 +23,72 @@ interface ActivityDetailDialogProps {
   onClose: () => void;
 }
 
-const getActivityIcon = (tipo: UnifiedActivity['tipo']) => {
-  switch (tipo) {
-    case 'VACUNACION': return Syringe;
-    case 'PESAJE': return Weight;
-    case 'TACTO': return Stethoscope;
-    case 'IA': return Heart;
-    case 'PARTO': return Baby;
-    case 'MUERTE': return Skull;
-    case 'PERDIDA_PREÑEZ': return AlertTriangle;
-    default: return Activity;
-  }
-};
-
-const getActivityColor = (tipo: UnifiedActivity['tipo']) => {
-  switch (tipo) {
-    case 'VACUNACION': return 'bg-blue-100 text-blue-700';
-    case 'PESAJE': return 'bg-green-100 text-green-700';
-    case 'TACTO': return 'bg-purple-100 text-purple-700';
-    case 'IA': return 'bg-pink-100 text-pink-700';
-    case 'PARTO': return 'bg-emerald-100 text-emerald-700';
-    case 'MUERTE': return 'bg-red-100 text-red-700';
-    case 'PERDIDA_PREÑEZ': return 'bg-orange-100 text-orange-700';
-    default: return 'bg-slate-100 text-slate-700';
-  }
+const activityConfig: Record<string, { icon: any; bg: string; iconColor: string }> = {
+  VACUNACION: { icon: Syringe, bg: 'bg-blue-500/10', iconColor: 'text-blue-600' },
+  PESAJE:     { icon: Weight, bg: 'bg-primary/10', iconColor: 'text-primary' },
+  TACTO:      { icon: Stethoscope, bg: 'bg-violet-500/10', iconColor: 'text-violet-600' },
+  IA:         { icon: Heart, bg: 'bg-pink-500/10', iconColor: 'text-pink-600' },
+  PARTO:      { icon: Baby, bg: 'bg-emerald-500/10', iconColor: 'text-emerald-600' },
+  MUERTE:     { icon: Skull, bg: 'bg-destructive/10', iconColor: 'text-destructive' },
+  PERDIDA_PREÑEZ: { icon: AlertTriangle, bg: 'bg-amber-500/10', iconColor: 'text-amber-600' },
+  GENERAL:    { icon: Activity, bg: 'bg-muted', iconColor: 'text-muted-foreground' },
 };
 
 const getActivityLabel = (activity: UnifiedActivity) => {
   switch (activity.tipo) {
-    case 'VACUNACION':
-      return activity.subtipo || 'Vacunación';
-    case 'PESAJE':
-      return 'Pesaje';
-    case 'TACTO':
-      return 'Tacto';
-    case 'IA':
-      return 'Inseminación Artificial';
-    case 'PARTO':
-      return 'Parto';
-    case 'MUERTE':
-      return 'Muerte';
-    case 'PERDIDA_PREÑEZ':
-      return 'Pérdida de Preñez';
-    case 'GENERAL':
-      return activity.subtipo || 'Actividad General';
-    default:
-      return 'Actividad';
+    case 'VACUNACION': return activity.subtipo || 'Vacunación';
+    case 'PESAJE': return 'Pesaje';
+    case 'TACTO': return 'Tacto';
+    case 'IA': return 'Inseminación Artificial';
+    case 'PARTO': return 'Parto';
+    case 'MUERTE': return 'Muerte';
+    case 'PERDIDA_PREÑEZ': return 'Pérdida de Preñez';
+    case 'GENERAL': return activity.subtipo || 'Actividad General';
+    default: return 'Actividad';
   }
 };
 
 const formatDate = (fecha: string) => {
   const date = new Date(fecha);
-  return date.toLocaleDateString('es-ES', { 
-    weekday: 'long',
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+  return date.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 };
 
 const renderDetails = (activity: UnifiedActivity) => {
   const details: { label: string; value: string }[] = [];
-
   switch (activity.tipo) {
     case 'VACUNACION':
-      if (activity.detalles.vaccine_name) {
-        details.push({ label: 'Vacuna', value: activity.detalles.vaccine_name });
-      }
-      if (activity.detalles.dose) {
-        details.push({ label: 'Dosis', value: activity.detalles.dose });
-      }
-      if (activity.detalles.lot) {
-        details.push({ label: 'Lote', value: activity.detalles.lot });
-      }
-      if (activity.detalles.route) {
-        details.push({ label: 'Vía', value: activity.detalles.route });
-      }
+      if (activity.detalles.vaccine_name) details.push({ label: 'Vacuna', value: activity.detalles.vaccine_name });
+      if (activity.detalles.dose) details.push({ label: 'Dosis', value: activity.detalles.dose });
+      if (activity.detalles.lot) details.push({ label: 'Lote', value: activity.detalles.lot });
+      if (activity.detalles.route) details.push({ label: 'Vía', value: activity.detalles.route });
       break;
-
     case 'PESAJE':
-      if (activity.detalles.peso_promedio) {
-        details.push({ label: 'Peso Promedio', value: `${activity.detalles.peso_promedio} kg` });
-      }
-      if (activity.detalles.total_animals) {
-        details.push({ label: 'Total Animales', value: String(activity.detalles.total_animals) });
-      }
+      if (activity.detalles.peso_promedio) details.push({ label: 'Peso Promedio', value: `${activity.detalles.peso_promedio} kg` });
+      if (activity.detalles.total_animals) details.push({ label: 'Total Animales', value: String(activity.detalles.total_animals) });
       break;
-
     case 'TACTO':
-      if (activity.detalles.prenadas !== undefined) {
-        details.push({ label: 'Preñadas', value: String(activity.detalles.prenadas) });
-      }
-      if (activity.detalles.vacias !== undefined) {
-        details.push({ label: 'Vacías', value: String(activity.detalles.vacias) });
-      }
+      if (activity.detalles.prenadas !== undefined) details.push({ label: 'Preñadas', value: String(activity.detalles.prenadas) });
+      if (activity.detalles.vacias !== undefined) details.push({ label: 'Vacías', value: String(activity.detalles.vacias) });
       break;
-
     case 'IA':
-      if (activity.detalles.bull_name) {
-        details.push({ label: 'Toro', value: activity.detalles.bull_name });
-      }
+      if (activity.detalles.bull_name) details.push({ label: 'Toro', value: activity.detalles.bull_name });
       break;
-
     case 'PARTO':
-      if (activity.detalles.tipo_parto) {
-        details.push({ label: 'Tipo', value: activity.detalles.tipo_parto });
-      }
-      if (activity.detalles.crias) {
-        details.push({ label: 'Crías', value: String(activity.detalles.crias) });
-      }
+      if (activity.detalles.tipo_parto) details.push({ label: 'Tipo', value: activity.detalles.tipo_parto });
+      if (activity.detalles.crias) details.push({ label: 'Crías', value: String(activity.detalles.crias) });
       break;
-
     case 'MUERTE':
     case 'PERDIDA_PREÑEZ':
-      if (activity.detalles.causa) {
-        details.push({ label: 'Causa', value: activity.detalles.causa });
-      }
+      if (activity.detalles.causa) details.push({ label: 'Causa', value: activity.detalles.causa });
       break;
-
     case 'GENERAL':
-      // For general activities, show all non-system details
       Object.entries(activity.detalles).forEach(([key, value]) => {
         if (key !== 'animales_ids' && value != null) {
-          details.push({ 
-            label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), 
-            value: String(value) 
-          });
+          details.push({ label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()), value: String(value) });
         }
       });
       break;
   }
-
   return details;
 };
 
@@ -171,8 +98,8 @@ export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetail
 
   if (!activity) return null;
 
-  const IconComponent = getActivityIcon(activity.tipo);
-  const colorClass = getActivityColor(activity.tipo);
+  const config = activityConfig[activity.tipo] || activityConfig.GENERAL;
+  const IconComponent = config.icon;
   const label = getActivityLabel(activity);
   const details = renderDetails(activity);
 
@@ -183,59 +110,49 @@ export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetail
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div className={`p-2 rounded-full ${colorClass}`}>
-              <IconComponent className="h-5 w-5" />
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        {/* Header with tinted background */}
+        <div className={cn("px-6 pt-6 pb-4 rounded-t-lg", config.bg)}>
+          <DialogHeader className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className={cn("flex h-11 w-11 items-center justify-center rounded-xl", config.bg.replace('/10', '/20'))}>
+                <IconComponent className={cn("h-5 w-5", config.iconColor)} />
+              </div>
+              <div className="flex-1">
+                <DialogTitle className="text-lg font-bold">{label}</DialogTitle>
+                <DialogDescription className="flex items-center gap-1.5 mt-0.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {formatDate(activity.fecha)}
+                </DialogDescription>
+              </div>
             </div>
-            <div className="flex-1">
-              <DialogTitle className="text-xl">{label}</DialogTitle>
-              <DialogDescription>
-                {formatDate(activity.fecha)}
-              </DialogDescription>
-            </div>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
+        </div>
 
-        <div className="space-y-4">
+        <div className="px-6 pb-6 space-y-5">
           {/* Animals List */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-foreground">
-                Animales ({activity.animales.length})
-              </h3>
-            </div>
-            
-            <div className="grid gap-2 max-h-[300px] overflow-y-auto">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Animales ({activity.animales.length})
+            </h3>
+            <div className="grid gap-1.5 max-h-[300px] overflow-y-auto">
               {activity.animales.map(animal => (
-                <Card 
-                  key={animal.id} 
-                  className="hover:bg-accent transition-colors cursor-pointer"
+                <button
+                  key={animal.id}
+                  type="button"
                   onClick={() => handleAnimalClick(animal.id)}
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-accent transition-colors text-left group"
                 >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="font-mono">
-                          {animal.id_tag}
-                        </Badge>
-                        {animal.name && (
-                          <span className="text-sm text-foreground">
-                            {animal.name}
-                          </span>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="font-mono text-xs">
+                      {animal.id_tag}
+                    </Badge>
+                    {animal.name && (
+                      <span className="text-sm text-foreground">{animal.name}</span>
+                    )}
+                  </div>
+                  <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
+                </button>
               ))}
             </div>
           </div>
@@ -245,12 +162,12 @@ export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetail
             <>
               <Separator />
               <div>
-                <h3 className="text-sm font-semibold text-foreground mb-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
                   Detalles
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-0">
                   {details.map((detail, index) => (
-                    <div key={index} className="flex justify-between py-2 border-b last:border-0">
+                    <div key={index} className="flex justify-between py-2.5 border-b border-border/50 last:border-0">
                       <span className="text-sm text-muted-foreground">{detail.label}</span>
                       <span className="text-sm font-medium text-foreground">{detail.value}</span>
                     </div>
@@ -260,7 +177,7 @@ export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetail
             </>
           )}
 
-          {/* Responsible Person */}
+          {/* Responsible */}
           {activity.responsable && (
             <>
               <Separator />
@@ -277,10 +194,10 @@ export function ActivityDetailDialog({ activity, open, onClose }: ActivityDetail
             <>
               <Separator />
               <div>
-                <h3 className="text-sm font-semibold text-foreground mb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
                   {t('activities:common.notes')}
                 </h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {activity.notas}
                 </p>
               </div>
