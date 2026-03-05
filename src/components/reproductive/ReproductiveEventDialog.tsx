@@ -117,7 +117,7 @@ export function ReproductiveEventDialog({
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error",
+        title: t('common:error'),
         description: error.message,
       });
     } finally {
@@ -142,7 +142,7 @@ export function ReproductiveEventDialog({
                 name="year"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Año</FormLabel>
+                    <FormLabel>{t('reproductive:eventDialog.year')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -160,17 +160,17 @@ export function ReproductiveEventDialog({
                 name="pregnancy_status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Estado de Preñez</FormLabel>
+                    <FormLabel>{t('reproductive:eventDialog.pregnancyStatus')}</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar estado" />
+                          <SelectValue placeholder={t('reproductive:eventDialog.selectStatus')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="pregnant">✅ Preñada</SelectItem>
-                        <SelectItem value="not_pregnant">❌ No Preñada</SelectItem>
-                        <SelectItem value="unknown">❓ Desconocido</SelectItem>
+                        <SelectItem value="pregnant">✅ {t('reproductive:eventDialog.statusPregnant')}</SelectItem>
+                        <SelectItem value="not_pregnant">❌ {t('reproductive:eventDialog.statusNotPregnant')}</SelectItem>
+                        <SelectItem value="unknown">❓ {t('reproductive:eventDialog.statusUnknown')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -186,18 +186,18 @@ export function ReproductiveEventDialog({
                   name="pregnancy_outcome"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Resultado del Embarazo</FormLabel>
+                      <FormLabel>{t('reproductive:eventDialog.pregnancyOutcome')}</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar resultado" />
+                            <SelectValue placeholder={t('reproductive:eventDialog.selectOutcome')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="live_calf">🟢 Ternero vivo</SelectItem>
-                          <SelectItem value="stillborn">🔴 Mortinato</SelectItem>
-                          <SelectItem value="calf_died_shortly">⚠️ Ternero murió poco después</SelectItem>
-                          <SelectItem value="lost_pregnancy">🟡 Perdió el embarazo</SelectItem>
+                          <SelectItem value="live_calf">🟢 {t('reproductive:eventDialog.outcomeLiveCalf')}</SelectItem>
+                          <SelectItem value="stillborn">🔴 {t('reproductive:eventDialog.outcomeStillborn')}</SelectItem>
+                          <SelectItem value="calf_died_shortly">⚠️ {t('reproductive:eventDialog.outcomeCalfDied')}</SelectItem>
+                          <SelectItem value="lost_pregnancy">🟡 {t('reproductive:eventDialog.outcomeLostPregnancy')}</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -211,7 +211,7 @@ export function ReproductiveEventDialog({
                     name="calving_date"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Fecha de Parto</FormLabel>
+                        <FormLabel>{t('reproductive:eventDialog.calvingDate')}</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -225,7 +225,7 @@ export function ReproductiveEventDialog({
                                 {field.value ? (
                                   format(field.value, "PPP")
                                 ) : (
-                                  <span>Seleccionar fecha</span>
+                                  <span>{t('reproductive:eventDialog.selectDate')}</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -250,9 +250,9 @@ export function ReproductiveEventDialog({
                     name="linked_calf_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>ID del Ternero</FormLabel>
+                        <FormLabel>{t('reproductive:eventDialog.calfId')}</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="ID del ternero (opcional)" />
+                          <Input {...field} placeholder={t('reproductive:eventDialog.calfIdPlaceholder')} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -267,9 +267,9 @@ export function ReproductiveEventDialog({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notas</FormLabel>
+                  <FormLabel>{t('reproductive:eventDialog.notes')}</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder="Observaciones adicionales..." />
+                    <Textarea {...field} placeholder={t('reproductive:eventDialog.notesPlaceholder')} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

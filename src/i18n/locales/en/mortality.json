@@ -93,5 +93,19 @@
       "notes": "Notes"
     },
     "errorLoading": "Could not load mortality data"
+  },
+  "causeDialog": {
+    "createTitle": "New Death Cause",
+    "editTitle": "Edit Death Cause",
+    "causeName": "Cause name *",
+    "causeNamePlaceholder": "E.g.: Pneumonia, Accident, etc.",
+    "displayOrder": "Display order",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "create": "Create Cause",
+    "updating": "Updating...",
+    "update": "Update",
+    "errorCreate": "Could not create cause",
+    "errorUpdate": "Could not update cause"
   }
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,7 +10,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import { es, enUS, pt } from 'date-fns/locale';
+import { getCurrentLanguage } from '@/hooks/useLanguage';
 import { Calendar as CalendarIcon, AlertTriangle } from 'lucide-react';
 
 interface PregnancyLossDialogProps {
@@ -30,13 +32,12 @@ interface LossCause {
   categoria: string;
 }
 
-const LOSS_TYPES = [
-  { value: 'aborto_temprano', label: 'Aborto Temprano (< 6 meses)', description: 'Pérdida antes de los 180 días' },
-  { value: 'aborto_tardio', label: 'Aborto Tardío (> 6 meses)', description: 'Pérdida después de los 180 días' },
-  { value: 'stillbirth', label: 'Mortinato', description: 'Cría nace muerta' },
-  { value: 'neonatal', label: 'Pérdida Neonatal', description: 'Cría muere en primeros días' },
-  { value: 'no_detectada', label: 'No Detectada/Falso Positivo', description: 'Error en detección inicial' }
-];
+const getDateLocale = () => {
+  const lang = getCurrentLanguage();
+  if (lang === 'en') return enUS;
+  if (lang === 'pt') return pt;
+  return es;
+};
 
 export function PregnancyLossDialog({
   open,
@@ -47,6 +48,7 @@ export function PregnancyLossDialog({
   pregnancyStartDate,
   onSuccess
 }: PregnancyLossDialogProps) {
+  const { t } = useTranslation(['reproductive', 'common']);
   const [lossDate, setLossDate] = useState<Date>(new Date());
   const [lossType, setLossType] = useState<string>('');
   const [lossReason, setLossReason] = useState<string>('');
@@ -55,25 +57,25 @@ export function PregnancyLossDialog({
   const [lossCauses, setLossCauses] = useState<LossCause[]>([]);
   const { toast } = useToast();
 
+  const LOSS_TYPES = [
+    { value: 'aborto_temprano', label: t('reproductive:pregnancyLoss.lossTypes.aborto_temprano.label'), description: t('reproductive:pregnancyLoss.lossTypes.aborto_temprano.description') },
+    { value: 'aborto_tardio', label: t('reproductive:pregnancyLoss.lossTypes.aborto_tardio.label'), description: t('reproductive:pregnancyLoss.lossTypes.aborto_tardio.description') },
+    { value: 'stillbirth', label: t('reproductive:pregnancyLoss.lossTypes.stillbirth.label'), description: t('reproductive:pregnancyLoss.lossTypes.stillbirth.description') },
+    { value: 'neonatal', label: t('reproductive:pregnancyLoss.lossTypes.neonatal.label'), description: t('reproductive:pregnancyLoss.lossTypes.neonatal.description') },
+    { value: 'no_detectada', label: t('reproductive:pregnancyLoss.lossTypes.no_detectada.label'), description: t('reproductive:pregnancyLoss.lossTypes.no_detectada.description') }
+  ];
+
   useEffect(() => {
-    if (open) {
-      loadLossCauses();
-    }
+    if (open) loadLossCauses();
   }, [open]);
 
   useEffect(() => {
-    // Auto-determine loss type based on gestational days
     if (lossDate && pregnancyStartDate) {
       const startDate = new Date(pregnancyStartDate);
       const gestationalDays = Math.floor((lossDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (gestationalDays < 180) {
-        setLossType('aborto_temprano');
-      } else if (gestationalDays < 283) {
-        setLossType('aborto_tardio');
-      } else {
-        setLossType('stillbirth');
-      }
+      if (gestationalDays < 180) setLossType('aborto_temprano');
+      else if (gestationalDays < 283) setLossType('aborto_tardio');
+      else setLossType('stillbirth');
     }
   }, [lossDate, pregnancyStartDate]);
 
@@ -84,7 +86,6 @@ export function PregnancyLossDialog({
         .select('*')
         .eq('is_active', true)
         .order('tipo, causa');
-
       if (error) throw error;
       setLossCauses(data || []);
     } catch (error) {
@@ -94,11 +95,7 @@ export function PregnancyLossDialog({
 
   const handleSubmit = async () => {
     if (!lossType || !lossReason) {
-      toast({
-        title: "Error",
-        description: "Debe seleccionar el tipo y causa de la pérdida",
-        variant: "destructive"
-      });
+      toast({ title: t('common:error'), description: t('reproductive:pregnancyLoss.errorRequired'), variant: "destructive" });
       return;
     }
 
@@ -107,7 +104,6 @@ export function PregnancyLossDialog({
       const startDate = new Date(pregnancyStartDate);
       const gestationalDays = Math.floor((lossDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-      // Update pregnancy record to mark as failed with detailed loss information
       const { error: updateError } = await supabase
         .from('preñeces')
         .update({
@@ -124,16 +120,6 @@ export function PregnancyLossDialog({
 
       if (updateError) throw updateError;
 
-      // Update animal status if currently pregnant
-      const { error: animalError } = await supabase
-        .from('animals')
-        .update({
-          esta_preñada: false,
-          fecha_probable_parto: null
-        })
-        .eq('id', pregnancyId); // This should be animal_id, but we'll need to get it from pregnancy
-
-      // Get animal ID from pregnancy record first
       const { data: pregnancyData, error: pregnancyError } = await supabase
         .from('preñeces')
         .select('animal_id')
@@ -143,29 +129,21 @@ export function PregnancyLossDialog({
       if (!pregnancyError && pregnancyData) {
         await supabase
           .from('animals')
-          .update({
-            esta_preñada: false,
-            fecha_probable_parto: null
-          })
+          .update({ esta_preñada: false, fecha_probable_parto: null })
           .eq('id', pregnancyData.animal_id);
       }
 
       toast({
-        title: "Pérdida registrada",
-        description: `Se registró la pérdida reproductiva para ${animalName || animalTag}`,
+        title: t('reproductive:pregnancyLoss.successTitle'),
+        description: t('reproductive:pregnancyLoss.successDesc', { animal: animalName || animalTag }),
       });
 
       onSuccess?.();
       onOpenChange(false);
       resetForm();
-
     } catch (error) {
       console.error('Error registering pregnancy loss:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo registrar la pérdida reproductiva",
-        variant: "destructive"
-      });
+      toast({ title: t('common:error'), description: t('reproductive:pregnancyLoss.errorSaving'), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -182,9 +160,8 @@ export function PregnancyLossDialog({
     ? Math.floor((lossDate.getTime() - new Date(pregnancyStartDate).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
 
-  const filteredCauses = lossType 
-    ? lossCauses.filter(cause => cause.tipo === lossType)
-    : [];
+  const filteredCauses = lossType ? lossCauses.filter(cause => cause.tipo === lossType) : [];
+  const dateLocale = getDateLocale();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -192,35 +169,33 @@ export function PregnancyLossDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-orange-500" />
-            Registrar Pérdida Reproductiva
+            {t('reproductive:pregnancyLoss.title')}
           </DialogTitle>
           <DialogDescription>
-            Registrar pérdida de preñez para {animalName || animalTag}
+            {t('reproductive:pregnancyLoss.description', { animal: animalName || animalTag })}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Información de la preñez */}
           <div className="bg-muted p-4 rounded-lg">
-            <h4 className="font-medium mb-2">Información de la Preñez</h4>
+            <h4 className="font-medium mb-2">{t('reproductive:pregnancyLoss.pregnancyInfo')}</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-muted-foreground">Inicio:</span> {format(new Date(pregnancyStartDate), 'dd/MM/yyyy', { locale: es })}
+                <span className="text-muted-foreground">{t('reproductive:pregnancyLoss.startDate')}:</span> {format(new Date(pregnancyStartDate), 'dd/MM/yyyy', { locale: dateLocale })}
               </div>
               <div>
-                <span className="text-muted-foreground">Días de gestación:</span> {gestationalDays} días
+                <span className="text-muted-foreground">{t('reproductive:pregnancyLoss.gestationDays')}:</span> {gestationalDays} {t('reproductive:pregnancyLoss.days')}
               </div>
             </div>
           </div>
 
-          {/* Fecha de pérdida */}
           <div className="space-y-2">
-            <Label>Fecha de Pérdida *</Label>
+            <Label>{t('reproductive:pregnancyLoss.lossDate')} *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal">
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {format(lossDate, "PPP", { locale: es })}
+                  {format(lossDate, "PPP", { locale: dateLocale })}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0">
@@ -228,21 +203,18 @@ export function PregnancyLossDialog({
                   mode="single"
                   selected={lossDate}
                   onSelect={(date) => date && setLossDate(date)}
-                  disabled={(date) => 
-                    date < new Date(pregnancyStartDate) || date > new Date()
-                  }
+                  disabled={(date) => date < new Date(pregnancyStartDate) || date > new Date()}
                   initialFocus
                 />
               </PopoverContent>
             </Popover>
           </div>
 
-          {/* Tipo de pérdida */}
           <div className="space-y-2">
-            <Label>Tipo de Pérdida *</Label>
+            <Label>{t('reproductive:pregnancyLoss.lossType')} *</Label>
             <Select value={lossType} onValueChange={setLossType}>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar tipo de pérdida" />
+                <SelectValue placeholder={t('reproductive:pregnancyLoss.selectLossType')} />
               </SelectTrigger>
               <SelectContent>
                 {LOSS_TYPES.map((type) => (
@@ -257,22 +229,19 @@ export function PregnancyLossDialog({
             </Select>
           </div>
 
-          {/* Causa específica */}
           {lossType && (
             <div className="space-y-2">
-              <Label>Causa Específica *</Label>
+              <Label>{t('reproductive:pregnancyLoss.specificCause')} *</Label>
               <Select value={lossReason} onValueChange={setLossReason}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar causa" />
+                  <SelectValue placeholder={t('reproductive:pregnancyLoss.selectCause')} />
                 </SelectTrigger>
                 <SelectContent>
                   {filteredCauses.map((cause) => (
                     <SelectItem key={cause.id} value={cause.causa}>
                       <div>
                         <div className="font-medium">{cause.causa}</div>
-                        {cause.descripcion && (
-                          <div className="text-xs text-muted-foreground">{cause.descripcion}</div>
-                        )}
+                        {cause.descripcion && <div className="text-xs text-muted-foreground">{cause.descripcion}</div>}
                         <div className="text-xs text-blue-600">{cause.categoria}</div>
                       </div>
                     </SelectItem>
@@ -282,32 +251,26 @@ export function PregnancyLossDialog({
             </div>
           )}
 
-          {/* Observaciones */}
           <div className="space-y-2">
-            <Label>Observaciones</Label>
+            <Label>{t('reproductive:pregnancyLoss.observations')}</Label>
             <Textarea
-              placeholder="Detalles adicionales sobre la pérdida reproductiva..."
+              placeholder={t('reproductive:pregnancyLoss.observationsPlaceholder')}
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
               rows={3}
             />
           </div>
 
-          {/* Botones */}
           <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
-              Cancelar
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+              {t('reproductive:pregnancyLoss.cancel')}
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={loading || !lossType || !lossReason}
               className="bg-orange-600 hover:bg-orange-700"
             >
-              {loading ? 'Registrando...' : 'Registrar Pérdida'}
+              {loading ? t('reproductive:pregnancyLoss.registering') : t('reproductive:pregnancyLoss.registerLoss')}
             </Button>
           </div>
         </div>
