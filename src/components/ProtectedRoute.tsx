@@ -3,14 +3,50 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ReadOnlyModeModal } from "@/components/subscription/ReadOnlyModeModal";
 import { useState, useEffect } from "react";
-import { Loader2, WifiOff } from "lucide-react";
+import { WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useConnectivity } from "@/services/connectivity";
+import { Progress } from "@/components/ui/progress";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiresWriteAccess?: boolean;
 }
+
+/** Branded loading screen with animated progress bar */
+const BrandedLoadingScreen = ({ message }: { message: string }) => {
+  const [progress, setProgress] = useState(15);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setProgress(45), 400);
+    const t2 = setTimeout(() => setProgress(70), 900);
+    const t3 = setTimeout(() => setProgress(85), 1800);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, []);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-6 w-64">
+        {/* Brand mark */}
+        <div className="relative">
+          <div className="h-16 w-16 rounded-2xl bg-brand-gradient flex items-center justify-center shadow-lg shadow-primary/20">
+            <span className="text-3xl font-display font-bold text-primary-foreground tracking-tight">a</span>
+          </div>
+          <div className="absolute -inset-1 rounded-2xl bg-brand-gradient opacity-20 blur-lg -z-10 animate-pulse" />
+        </div>
+
+        {/* App name */}
+        <h1 className="text-xl font-display font-semibold text-foreground tracking-tight">agrodeo</h1>
+
+        {/* Progress bar */}
+        <Progress value={progress} className="h-1.5 w-full bg-muted" />
+
+        {/* Message */}
+        <p className="text-sm text-muted-foreground">{message}</p>
+      </div>
+    </div>
+  );
+};
 
 const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRouteProps) => {
   const { isAuthenticated, loading: authLoading } = useSupabaseAuth();
@@ -27,16 +63,9 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
     return () => clearTimeout(timer);
   }, [subscriptionLoading]);
 
-  // Show loading spinner while auth is being determined
+  // Show branded loading while auth is being determined
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground text-sm">{t('loading')}</p>
-        </div>
-      </div>
-    );
+    return <BrandedLoadingScreen message={t('loading')} />;
   }
 
   // Redirect to auth if not authenticated
@@ -61,26 +90,14 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
 
   // Wait for subscription only if online AND not timed out
   if (subscriptionLoading && !subTimedOut) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground text-sm">{t('loading')}</p>
-        </div>
-      </div>
-    );
+    return <BrandedLoadingScreen message={t('loading')} />;
   }
 
   // Check if user is in read-only mode and trying to access write-required routes
   if (requiresWriteAccess && subscriptionStatus?.isReadOnly) {
     return (
       <>
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <div className="text-center space-y-4">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-            <p className="text-muted-foreground">Verificando acceso...</p>
-          </div>
-        </div>
+        <BrandedLoadingScreen message="Verificando acceso..." />
         
         <ReadOnlyModeModal 
           open={true}
