@@ -83,8 +83,8 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
     } catch (error) {
       console.error('Error loading service animals:', error);
       toast({
-        title: "Error",
-        description: "Error al cargar los animales del servicio",
+        title: t('common:toast.error'),
+        description: t('activities:artificialInsemination.errorLoadingFemales'),
         variant: "destructive"
       });
     } finally {
@@ -135,8 +135,8 @@ export function PregnancyManagement({ serviceId, onClose }: PregnancyManagementP
   const updatePregnancyStatus = async (newStatus: 'preñada' | 'vacía') => {
     if (selectedAnimals.length === 0) {
       toast({
-        title: "Error",
-        description: "Seleccione al menos un animal",
+        title: t('common:toast.error'),
+        description: t('activities:artificialInsemination.selectAtLeastOneFemale'),
         variant: "destructive"
       });
       return;

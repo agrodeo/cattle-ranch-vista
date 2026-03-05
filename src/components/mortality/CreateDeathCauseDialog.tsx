@@ -23,11 +23,6 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const formSchema = z.object({
-  nombre: z.string().min(1, "El nombre es requerido"),
-  orden: z.number().min(0, "El orden debe ser mayor o igual a 0"),
-});
-
 interface CreateDeathCauseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -39,9 +34,14 @@ export function CreateDeathCauseDialog({
   onOpenChange,
   onSuccess,
 }: CreateDeathCauseDialogProps) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['mortality', 'common']);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const formSchema = z.object({
+    nombre: z.string().min(1, t('common:validation.required')),
+    orden: z.number().min(0),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -71,13 +71,13 @@ export function CreateDeathCauseDialog({
         form.reset();
         onSuccess();
       } else {
-        throw new Error((data as any)?.error || 'Error desconocido');
+        throw new Error((data as any)?.error || t('common:toast.error'));
       }
     } catch (error: any) {
       console.error('Error creating death cause:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo crear la causa",
+        title: t('common:toast.error'),
+        description: error.message || t('mortality:causeDialog.errorCreate'),
         variant: "destructive",
       });
     } finally {
@@ -89,7 +89,7 @@ export function CreateDeathCauseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Nueva Causa de Muerte</DialogTitle>
+          <DialogTitle>{t('mortality:causeDialog.createTitle')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -99,10 +99,10 @@ export function CreateDeathCauseDialog({
               name="nombre"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre de la causa *</FormLabel>
+                  <FormLabel>{t('mortality:causeDialog.causeName')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ej: Neumonía, Accidente, etc."
+                      placeholder={t('mortality:causeDialog.causeNamePlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -116,7 +116,7 @@ export function CreateDeathCauseDialog({
               name="orden"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Orden de visualización</FormLabel>
+                  <FormLabel>{t('mortality:causeDialog.displayOrder')}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -138,10 +138,10 @@ export function CreateDeathCauseDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={loading}
               >
-                Cancelar
+                {t('mortality:causeDialog.cancel')}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Creando..." : "Crear Causa"}
+                {loading ? t('mortality:causeDialog.creating') : t('mortality:causeDialog.create')}
               </Button>
             </DialogFooter>
           </form>

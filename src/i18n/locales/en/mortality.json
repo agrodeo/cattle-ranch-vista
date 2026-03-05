@@ -48,7 +48,23 @@
   "manager": {
     "title": "Death Causes Management",
     "noCauses": "No death causes configured",
-    "addFirst": "Add first cause"
+    "addFirst": "Add first cause",
+    "loading": "Loading causes...",
+    "noCausesConfigured": "No causes configured",
+    "order": "Order",
+    "name": "Name",
+    "status": "Status",
+    "actions": "Actions",
+    "active": "Active",
+    "inactive": "Inactive",
+    "confirmDeactivate": "Are you sure you want to deactivate this death cause?",
+    "errorLoad": "Could not load death causes",
+    "errorDeactivate": "Could not deactivate cause",
+    "corralActivity": "Corral Activity",
+    "createCorral": "Create Corral",
+    "createCorralDesc": "Create a new corral",
+    "moveAnimalsTitle": "Move Animals",
+    "moveAnimalsDesc": "Move animals between corrals"
   },
   "reports": {
     "totalDeaths": "Total deaths",

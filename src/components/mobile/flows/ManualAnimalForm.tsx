@@ -52,10 +52,8 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   const loadAnimalsAndCorrales = async () => {
     try {
       const { data: cabanaId } = await supabase.rpc('get_current_user_cabana_id');
-      
       if (!cabanaId) return;
 
-      // Load animals for parents selection - using filter instead of eq
       const { data: animalsData } = await supabase
         .from('animals')
         .select('id, id_tag, name, sex')
@@ -63,7 +61,6 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         .in('status', ['activo'])
         .order('id_tag');
       
-      // Load corrales - using filter instead of eq
       const { data: corralesData } = await supabase
         .from('corrales')
         .select('id, name')
@@ -89,13 +86,12 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
     setLoading(true);
     try {
-      // Get current user's cabaña_id using RPC function
       const { data: cabanaData, error: cabanaError } = await supabase.rpc(
         'get_current_user_cabana_id'
       );
 
       if (cabanaError || !cabanaData) {
-        throw new Error("No se pudo obtener la cabaña del usuario");
+        throw new Error(t('animals:form.errorNoCabana'));
       }
 
       const animalData: any = {
@@ -122,7 +118,6 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         ...(formData.caravana_electronica && { caravana_electronica: formData.caravana_electronica })
       };
 
-      // Add cabaña_id using bracket notation to avoid TypeScript issues with ñ
       animalData["cabaña_id"] = cabanaData;
 
       const { error } = await supabase
@@ -150,7 +145,6 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
       onTouchMove={(e) => e.stopPropagation()}
       style={{ touchAction: 'auto' }}
     >
-      {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
         <div className="flex items-center">
           <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
@@ -164,51 +158,50 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
         </Button>
       </div>
 
-      {/* Content */}
       <div 
         className="flex-1 p-4 space-y-6 overflow-y-auto pb-20"
         style={{ touchAction: 'pan-y' }}
       >
         <Card>
           <CardHeader>
-            <CardTitle>Información Básica</CardTitle>
+            <CardTitle>{t('animals:form.basicInfo')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="id_tag">Identificación *</Label>
+              <Label htmlFor="id_tag">{t('animals:form.identificationRequired')}</Label>
               <Input
                 id="id_tag"
                 value={formData.id_tag}
                 onChange={(e) => handleInputChange("id_tag", e.target.value)}
-                placeholder="Ej: A001"
+                placeholder={t('animals:form.identificationPlaceholder')}
               />
             </div>
 
             <div>
-              <Label htmlFor="caravana_electronica">Caravana Electrónica</Label>
+              <Label htmlFor="caravana_electronica">{t('animals:form.electronicTag')}</Label>
               <Input
                 id="caravana_electronica"
                 value={formData.caravana_electronica}
                 onChange={(e) => handleInputChange("caravana_electronica", e.target.value)}
-                placeholder="Ej: RFID123456"
+                placeholder={t('animals:form.electronicTagPlaceholder')}
               />
             </div>
 
             <div>
-              <Label htmlFor="name">Nombre</Label>
+              <Label htmlFor="name">{t('common:name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => handleInputChange("name", e.target.value)}
-                placeholder="Nombre del animal"
+                placeholder={t('animals:form.animalName')}
               />
             </div>
 
             <div>
-              <Label htmlFor="sex">Sexo *</Label>
+              <Label htmlFor="sex">{t('animals:form.sexRequired')}</Label>
               <Select value={formData.sex} onValueChange={(value) => handleInputChange("sex", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar sexo" />
+                  <SelectValue placeholder={t('animals:form.selectSex')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Macho">Macho</SelectItem>
@@ -218,10 +211,10 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="breed">Raza *</Label>
+              <Label htmlFor="breed">{t('animals:form.breedRequired')}</Label>
               <Select value={formData.breed} onValueChange={(value) => handleInputChange("breed", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar raza" />
+                  <SelectValue placeholder={t('animals:form.selectBreed')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Aberdeen Angus">Aberdeen Angus</SelectItem>
@@ -236,7 +229,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="birth_date">Fecha de Nacimiento</Label>
+              <Label htmlFor="birth_date">{t('animals:form.birthDate')}</Label>
               <Input
                 id="birth_date"
                 type="date"
@@ -246,13 +239,13 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="color">Color</Label>
+              <Label htmlFor="color">{t('common:color')}</Label>
               <Select value={formData.color} onValueChange={(value) => handleInputChange("color", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar color" />
+                  <SelectValue placeholder={t('animals:form.selectColor')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin especificar</SelectItem>
+                  <SelectItem value="none">{t('animals:form.unspecified')}</SelectItem>
                   <SelectItem value="Negro">Negro</SelectItem>
                   <SelectItem value="Colorado">Colorado</SelectItem>
                   <SelectItem value="Bayo">Bayo</SelectItem>
@@ -264,7 +257,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="mocho">{t('animals:form.hornType')}</Label>
+              <Label htmlFor="mocho">{t('animals:form.hornCondition')}</Label>
               <Select value={formData.mocho} onValueChange={(value) => handleInputChange("mocho", value)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('common:actions.select')} />
@@ -279,7 +272,7 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
             {formData.sex === 'Macho' && (
               <div className="flex items-center justify-between">
-                <Label htmlFor="is_castrated">Castrado</Label>
+                <Label htmlFor="is_castrated">{t('animals:form.castrated')}</Label>
                 <Switch
                   id="is_castrated"
                   checked={formData.is_castrated}
@@ -292,17 +285,17 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Genealogía</CardTitle>
+            <CardTitle>{t('animals:form.genealogy')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="father_id">Padre</Label>
+              <Label htmlFor="father_id">{t('animals:form.father')}</Label>
               <Select value={formData.father_id} onValueChange={(value) => handleInputChange("father_id", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar padre" />
+                  <SelectValue placeholder={t('animals:form.selectFather')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin padre</SelectItem>
+                  <SelectItem value="none">{t('animals:form.noFather')}</SelectItem>
                   {fatherOptions.map(animal => (
                     <SelectItem key={animal.id} value={animal.id}>
                       {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
@@ -313,13 +306,13 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="mother_id">Madre</Label>
+              <Label htmlFor="mother_id">{t('animals:form.mother')}</Label>
               <Select value={formData.mother_id} onValueChange={(value) => handleInputChange("mother_id", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar madre" />
+                  <SelectValue placeholder={t('animals:form.selectMother')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin madre</SelectItem>
+                  <SelectItem value="none">{t('animals:form.noMother')}</SelectItem>
                   {motherOptions.map(animal => (
                     <SelectItem key={animal.id} value={animal.id}>
                       {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
@@ -333,17 +326,17 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>Ubicación y Pesos</CardTitle>
+            <CardTitle>{t('animals:form.locationAndWeights')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="corral_id">Corral</Label>
+              <Label htmlFor="corral_id">{t('animals:form.corral')}</Label>
               <Select value={formData.corral_id} onValueChange={(value) => handleInputChange("corral_id", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar corral" />
+                  <SelectValue placeholder={t('animals:form.selectCorral')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin corral</SelectItem>
+                  <SelectItem value="none">{t('animals:form.noCorral')}</SelectItem>
                   {corrales.map(corral => (
                     <SelectItem key={corral.id} value={corral.id}>
                       {corral.name}
@@ -354,19 +347,19 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="peso_nacimiento">Peso al Nacer (kg)</Label>
+              <Label htmlFor="peso_nacimiento">{t('animals:form.birthWeightKg')}</Label>
               <Input
                 id="peso_nacimiento"
                 type="number"
                 step="0.1"
                 value={formData.peso_nacimiento}
                 onChange={(e) => handleInputChange("peso_nacimiento", e.target.value)}
-                placeholder="Ej: 35.5"
+                placeholder="35.5"
               />
             </div>
 
             <div>
-              <Label htmlFor="fecha_destete">Fecha de Destete</Label>
+              <Label htmlFor="fecha_destete">{t('animals:form.weaningDate')}</Label>
               <Input
                 id="fecha_destete"
                 type="date"
@@ -376,80 +369,80 @@ export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="peso_destete">Peso al Destete (kg)</Label>
+              <Label htmlFor="peso_destete">{t('animals:form.weaningWeightKg')}</Label>
               <Input
                 id="peso_destete"
                 type="number"
                 step="0.1"
                 value={formData.peso_destete}
                 onChange={(e) => handleInputChange("peso_destete", e.target.value)}
-                placeholder="Ej: 180.5"
+                placeholder="180.5"
               />
             </div>
 
             <div>
-              <Label htmlFor="peso_final">Peso Final (kg)</Label>
+              <Label htmlFor="peso_final">{t('animals:form.finalWeightKg')}</Label>
               <Input
                 id="peso_final"
                 type="number"
                 step="0.1"
                 value={formData.peso_final}
                 onChange={(e) => handleInputChange("peso_final", e.target.value)}
-                placeholder="Ej: 450.0"
+                placeholder="450.0"
               />
             </div>
 
             <div>
-              <Label htmlFor="peso_actual_kg">Peso Actual (kg)</Label>
+              <Label htmlFor="peso_actual_kg">{t('animals:form.currentWeightKg')}</Label>
               <Input
                 id="peso_actual_kg"
                 type="number"
                 step="0.1"
                 value={formData.peso_actual_kg}
                 onChange={(e) => handleInputChange("peso_actual_kg", e.target.value)}
-                placeholder="Ej: 320.5"
+                placeholder="320.5"
               />
             </div>
 
             <div>
-              <Label htmlFor="condicion_corporal">Condición Corporal</Label>
+              <Label htmlFor="condicion_corporal">{t('animals:form.bodyCondition')}</Label>
               <Select value={formData.condicion_corporal} onValueChange={(value) => handleInputChange("condicion_corporal", value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar condición" />
+                  <SelectValue placeholder={t('animals:form.selectCondition')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Sin especificar</SelectItem>
-                  <SelectItem value="1">1 - Muy flaco</SelectItem>
-                  <SelectItem value="2">2 - Flaco</SelectItem>
-                  <SelectItem value="3">3 - Moderado</SelectItem>
-                  <SelectItem value="4">4 - Bueno</SelectItem>
-                  <SelectItem value="5">5 - Gordo</SelectItem>
-                  <SelectItem value="6">6 - Muy gordo</SelectItem>
+                  <SelectItem value="none">{t('animals:form.unspecified')}</SelectItem>
+                  <SelectItem value="1">{t('animals:form.conditionScores.1')}</SelectItem>
+                  <SelectItem value="2">{t('animals:form.conditionScores.2')}</SelectItem>
+                  <SelectItem value="3">{t('animals:form.conditionScores.3')}</SelectItem>
+                  <SelectItem value="4">{t('animals:form.conditionScores.4')}</SelectItem>
+                  <SelectItem value="5">{t('animals:form.conditionScores.5')}</SelectItem>
+                  <SelectItem value="6">{t('animals:form.conditionScores.6')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {formData.sex === 'Macho' && (
               <div>
-                <Label htmlFor="circunferencia_escrotal">Circunferencia Escrotal (cm)</Label>
+                <Label htmlFor="circunferencia_escrotal">{t('animals:form.scrotalCircumference')}</Label>
                 <Input
                   id="circunferencia_escrotal"
                   type="number"
                   step="0.1"
                   value={formData.circunferencia_escrotal}
                   onChange={(e) => handleInputChange("circunferencia_escrotal", e.target.value)}
-                  placeholder="Ej: 34.5"
+                  placeholder="34.5"
                 />
               </div>
             )}
 
             <div>
-              <Label htmlFor="observaciones">Observaciones</Label>
+              <Label htmlFor="observaciones">{t('animals:form.observations')}</Label>
               <Textarea
                 id="observaciones"
                 value={formData.observaciones}
                 onChange={(e) => handleInputChange("observaciones", e.target.value)}
-                placeholder="Observaciones adicionales..."
+                placeholder={t('animals:form.observationsPlaceholder')}
                 rows={3}
               />
             </div>

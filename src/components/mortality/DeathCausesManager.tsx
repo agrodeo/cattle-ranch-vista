@@ -58,8 +58,8 @@ export function DeathCausesManager() {
     } catch (error) {
       console.error('Error loading death causes:', error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar las causas de muerte",
+        title: t('common:toast.error'),
+        description: t('mortality:manager.errorLoad'),
         variant: "destructive",
       });
     } finally {
@@ -68,7 +68,7 @@ export function DeathCausesManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Está seguro de que desea desactivar esta causa de muerte?')) {
+    if (!confirm(t('mortality:manager.confirmDeactivate'))) {
       return;
     }
 
@@ -87,13 +87,13 @@ export function DeathCausesManager() {
         });
         loadDeathCauses();
       } else {
-        throw new Error((data as any)?.error || 'Error desconocido');
+        throw new Error((data as any)?.error || t('common:toast.error'));
       }
     } catch (error: any) {
       console.error('Error deleting death cause:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo desactivar la causa",
+        title: t('common:toast.error'),
+        description: error.message || t('mortality:manager.errorDeactivate'),
         variant: "destructive",
       });
     }
@@ -138,20 +138,20 @@ export function DeathCausesManager() {
           <div className="space-y-4">
             {loading ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">Cargando causas...</p>
+                <p className="text-muted-foreground">{t('mortality:manager.loading')}</p>
               </div>
             ) : causes.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">No hay causas configuradas</p>
+                <p className="text-muted-foreground">{t('mortality:manager.noCausesConfigured')}</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Orden</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    <TableHead>{t('mortality:manager.order')}</TableHead>
+                    <TableHead>{t('mortality:manager.name')}</TableHead>
+                    <TableHead>{t('mortality:manager.status')}</TableHead>
+                    <TableHead className="text-right">{t('mortality:manager.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -165,7 +165,7 @@ export function DeathCausesManager() {
                       </TableCell>
                       <TableCell>
                         <Badge variant={cause.activo ? "default" : "secondary"}>
-                          {cause.activo ? "Activa" : "Inactiva"}
+                          {cause.activo ? t('mortality:manager.active') : t('mortality:manager.inactive')}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
