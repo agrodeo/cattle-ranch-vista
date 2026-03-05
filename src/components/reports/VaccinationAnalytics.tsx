@@ -475,91 +475,93 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
 
       {/* Summary Cards - 6 categories */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{t('reports:vaccination.totalAnimals')}</p>
+        <Card className="relative overflow-hidden border-0 shadow-sm bg-primary/5">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('reports:vaccination.totalAnimals')}</p>
+                <p className="text-2xl font-bold tracking-tight text-foreground">{stats?.totalAnimals || 0}</p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
                 <Shield className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-2xl font-bold">{stats?.totalAnimals || 0}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200 dark:border-green-900">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{t('reports:vaccination.upToDate')}</p>
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              </div>
-              <p className="text-2xl font-bold text-green-600">{stats?.animalsCompliant || 0}</p>
-              <p className="text-xs text-muted-foreground">
-                {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% {t('reports:vaccination.ofTotal')}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-red-200 dark:border-red-900">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {t('reports:vaccination.expiredTitle')}
+        <Card className="relative overflow-hidden border-0 shadow-sm bg-primary/5">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('reports:vaccination.upToDate')}</p>
+                <p className="text-2xl font-bold tracking-tight text-primary">{stats?.animalsCompliant || 0}</p>
+                <p className="text-xs text-muted-foreground">
+                  {stats?.totalAnimals > 0 ? Math.round((stats?.animalsCompliant / stats?.totalAnimals) * 100) : 0}% {t('reports:vaccination.ofTotal')}
                 </p>
-                <AlertTriangle className="h-5 w-5 text-red-600" />
               </div>
-              <p className="text-2xl font-bold text-red-600">{stats?.animalsWithOverdue || 0}</p>
-              <p className="text-xs text-muted-foreground">
-                {stats?.totalOverdueVaccines || 0} {t('reports:vaccination.vaccinesCount')}
-              </p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <CheckCircle className="h-5 w-5 text-primary" />
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-amber-200 dark:border-amber-900">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{t('reports:vaccination.pendingTitle')}</p>
+        <Card className="relative overflow-hidden border-0 shadow-sm bg-destructive/5">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('reports:vaccination.expiredTitle')}</p>
+                <p className="text-2xl font-bold tracking-tight text-destructive">{stats?.animalsWithOverdue || 0}</p>
+                <p className="text-xs text-muted-foreground">{stats?.totalOverdueVaccines || 0} {t('reports:vaccination.vaccinesCount')}</p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="relative overflow-hidden border-0 shadow-sm bg-amber-500/5">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('reports:vaccination.pendingTitle')}</p>
+                <p className="text-2xl font-bold tracking-tight text-amber-600">{stats?.animalsWithPending || 0}</p>
+                <p className="text-xs text-muted-foreground">{stats?.totalPendingVaccines || 0} {t('reports:vaccination.vaccinesCount')}</p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10">
                 <Clock className="h-5 w-5 text-amber-600" />
               </div>
-              <p className="text-2xl font-bold text-amber-600">{stats?.animalsWithPending || 0}</p>
-              <p className="text-xs text-muted-foreground">
-                {stats?.totalPendingVaccines || 0} {t('reports:vaccination.vaccinesCount')}
-              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 dark:border-blue-900">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{t('reports:vaccination.needsApplication')}</p>
+        <Card className="relative overflow-hidden border-0 shadow-sm bg-blue-500/5">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('reports:vaccination.needsApplication')}</p>
+                <p className="text-2xl font-bold tracking-tight text-blue-600">{stats?.animalsWithMissingMandatory || 0}</p>
+                <p className="text-xs text-muted-foreground">{t('reports:vaccination.mandatoryNotApplied')}</p>
+              </div>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
                 <AlertCircle className="h-5 w-5 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-blue-600">{stats?.animalsWithMissingMandatory || 0}</p>
-              <p className="text-xs text-muted-foreground">
-                {t('reports:vaccination.mandatoryNotApplied')}
-              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 dark:border-slate-700">
-          <CardContent className="p-6">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">{t('reports:vaccination.noRequirements')}</p>
-                <Info className="h-5 w-5 text-slate-500" />
+        <Card className="relative overflow-hidden border-0 shadow-sm bg-muted/50">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('reports:vaccination.noRequirements')}</p>
+                <p className="text-2xl font-bold tracking-tight text-foreground">{stats?.animalsNoRequirements || 0}</p>
+                <p className="text-xs text-muted-foreground">{t('reports:vaccination.notApplicable')}</p>
               </div>
-              <p className="text-2xl font-bold text-slate-600">{stats?.animalsNoRequirements || 0}</p>
-              <p className="text-xs text-muted-foreground">
-                {t('reports:vaccination.notApplicable')}
-              </p>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted">
+                <Info className="h-5 w-5 text-muted-foreground" />
+              </div>
             </div>
           </CardContent>
         </Card>

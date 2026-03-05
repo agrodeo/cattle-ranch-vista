@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertTriangle, Heart, TrendingUp, Calendar, Users, ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
+import { ReportKpiCard } from "./shared/ReportKpiCard";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
@@ -629,65 +630,37 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:reproductive.reproductiveFemales')}</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryMetrics.totalFemales}</div>
-            <p className="text-xs text-muted-foreground">
-              {t('reports:reproductive.ageMinimum')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:reproductive.reproductiveFemales')}
+          value={summaryMetrics.totalFemales}
+          subtitle={t('reports:reproductive.ageMinimum')}
+          icon={Users}
+          variant="default"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:reproductive.pregnancyRate')}</CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {summaryMetrics.pregnancyRate !== undefined && !isNaN(summaryMetrics.pregnancyRate) 
-                ? summaryMetrics.pregnancyRate 
-                : 0}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t('reports:reproductive.confirmedPregnancies')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:reproductive.pregnancyRate')}
+          value={`${summaryMetrics.pregnancyRate !== undefined && !isNaN(summaryMetrics.pregnancyRate) ? summaryMetrics.pregnancyRate : 0}%`}
+          subtitle={t('reports:reproductive.confirmedPregnancies')}
+          icon={Heart}
+          variant="success"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:reproductive.calvingRate')}</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {summaryMetrics.calvingRate !== undefined && !isNaN(summaryMetrics.calvingRate) 
-                ? summaryMetrics.calvingRate 
-                : 0}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t('reports:reproductive.successfulCalvings')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:reproductive.calvingRate')}
+          value={`${summaryMetrics.calvingRate !== undefined && !isNaN(summaryMetrics.calvingRate) ? summaryMetrics.calvingRate : 0}%`}
+          subtitle={t('reports:reproductive.successfulCalvings')}
+          icon={TrendingUp}
+          variant="info"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:reproductive.currentlyPregnant')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{summaryMetrics.currentlyPregnant}</div>
-            <p className="text-xs text-muted-foreground">
-              {t('reports:reproductive.activePregancy')}
-            </p>
-          </CardContent>
-        </Card>
+        <ReportKpiCard
+          label={t('reports:reproductive.currentlyPregnant')}
+          value={summaryMetrics.currentlyPregnant}
+          subtitle={t('reports:reproductive.activePregancy')}
+          icon={Calendar}
+          variant="default"
+        />
       </div>
 
       {/* Yearly Reproductive Rates */}
