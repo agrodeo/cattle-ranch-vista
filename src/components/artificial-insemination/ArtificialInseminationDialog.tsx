@@ -544,13 +544,13 @@ export function ArtificialInseminationDialog({
                 
                 {/* Basic Information */}
                   <div className="space-y-4">
-                  <h4 className="text-base font-medium">Información Básica</h4>
+                  <h4 className="text-base font-medium">{t('activities:artificialInsemination.bullDetails')}</h4>
                   <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="bull-breed" className="text-sm font-medium">Raza *</Label>
+                      <Label htmlFor="bull-breed" className="text-sm font-medium">{t('activities:artificialInsemination.breedRequired')}</Label>
                       <Select value={bullBreed} onValueChange={setBullBreed}>
                         <SelectTrigger className="text-base h-10">
-                          <SelectValue placeholder="Seleccionar raza del toro" />
+                          <SelectValue placeholder={t('activities:artificialInsemination.selectBreed')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
                           <SelectItem value="Braford">Braford</SelectItem>
@@ -564,10 +564,10 @@ export function ArtificialInseminationDialog({
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="bull-registration" className="text-sm font-medium">Registro Racial</Label>
+                      <Label htmlFor="bull-registration" className="text-sm font-medium">{t('activities:artificialInsemination.registrationLevel')}</Label>
                       <Select value={bullRegistrationLevel} onValueChange={setBullRegistrationLevel}>
                         <SelectTrigger className="text-base h-10">
-                          <SelectValue placeholder="Seleccionar nivel de registro" />
+                          <SelectValue placeholder={t('activities:artificialInsemination.selectLevel')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
                           <SelectItem value="advanced">Avanzado</SelectItem>
@@ -581,7 +581,7 @@ export function ArtificialInseminationDialog({
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="bull-official-number" className="text-sm font-medium">Número de Registro Oficial</Label>
+                      <Label htmlFor="bull-official-number" className="text-sm font-medium">{t('activities:artificialInsemination.officialNumber')}</Label>
                       <Input
                         id="bull-official-number"
                         value={bullOfficialNumber}
@@ -596,12 +596,12 @@ export function ArtificialInseminationDialog({
                 {/* Breed-specific genetic fields */}
                 {shouldShowBrafordFields() && (
                   <div className="space-y-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="text-base font-medium text-blue-800">🐂 Características Genéticas - Braford</h4>
+                    <h4 className="text-base font-medium text-blue-800">🐂 {t('activities:artificialInsemination.hornStatus')} - Braford</h4>
                     <div className="space-y-2">
-                      <Label htmlFor="bull-horn-status" className="text-sm font-medium">Estado de Cuernos</Label>
+                      <Label htmlFor="bull-horn-status" className="text-sm font-medium">{t('activities:artificialInsemination.hornStatus')}</Label>
                       <Select value={bullHornStatus} onValueChange={setBullHornStatus}>
                         <SelectTrigger className="text-base h-10">
-                          <SelectValue placeholder="Seleccionar estado de cuernos" />
+                          <SelectValue placeholder={t('activities:artificialInsemination.selectHornStatus')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
                           <SelectItem value="astado">Astado</SelectItem>
@@ -615,12 +615,12 @@ export function ArtificialInseminationDialog({
                 
                 {shouldShowAngusFields() && (
                   <div className="space-y-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <h4 className="text-base font-medium text-purple-800">🐮 Características Genéticas - {bullBreed.includes("Brangus") ? "Brangus" : "Angus"}</h4>
+                    <h4 className="text-base font-medium text-purple-800">🐮 {t('activities:artificialInsemination.coatColor')} - {bullBreed.includes("Brangus") ? "Brangus" : "Angus"}</h4>
                     <div className="space-y-2">
-                      <Label htmlFor="bull-coat-color" className="text-sm font-medium">Color del Pelaje</Label>
+                      <Label htmlFor="bull-coat-color" className="text-sm font-medium">{t('activities:artificialInsemination.coatColor')}</Label>
                       <Select value={bullCoatColor} onValueChange={setBullCoatColor}>
                         <SelectTrigger className="text-base h-10">
-                          <SelectValue placeholder="Seleccionar color del pelaje" />
+                          <SelectValue placeholder={t('activities:artificialInsemination.selectCoatColor')} />
                         </SelectTrigger>
                         <SelectContent className="bg-background">
                           <SelectItem value="negro">Negro</SelectItem>

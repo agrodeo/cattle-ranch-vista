@@ -23,11 +23,6 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const formSchema = z.object({
-  nombre: z.string().min(1, "El nombre es requerido"),
-  orden: z.number().min(0, "El orden debe ser mayor o igual a 0"),
-});
-
 interface DeathCause {
   id: string;
   nombre: string;
@@ -48,9 +43,14 @@ export function EditDeathCauseDialog({
   cause,
   onSuccess,
 }: EditDeathCauseDialogProps) {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['mortality', 'common']);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const formSchema = z.object({
+    nombre: z.string().min(1, t('common:validation.required')),
+    orden: z.number().min(0),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,13 +91,13 @@ export function EditDeathCauseDialog({
         });
         onSuccess();
       } else {
-        throw new Error((data as any)?.error || 'Error desconocido');
+        throw new Error((data as any)?.error || t('common:toast.error'));
       }
     } catch (error: any) {
       console.error('Error updating death cause:', error);
       toast({
-        title: "Error",
-        description: error.message || "No se pudo actualizar la causa",
+        title: t('common:toast.error'),
+        description: error.message || t('mortality:causeDialog.errorUpdate'),
         variant: "destructive",
       });
     } finally {
@@ -109,7 +109,7 @@ export function EditDeathCauseDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Editar Causa de Muerte</DialogTitle>
+          <DialogTitle>{t('mortality:causeDialog.editTitle')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -119,10 +119,10 @@ export function EditDeathCauseDialog({
               name="nombre"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre de la causa *</FormLabel>
+                  <FormLabel>{t('mortality:causeDialog.causeName')}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Ej: Neumonía, Accidente, etc."
+                      placeholder={t('mortality:causeDialog.causeNamePlaceholder')}
                       {...field}
                     />
                   </FormControl>
@@ -136,7 +136,7 @@ export function EditDeathCauseDialog({
               name="orden"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Orden de visualización</FormLabel>
+                  <FormLabel>{t('mortality:causeDialog.displayOrder')}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -158,10 +158,10 @@ export function EditDeathCauseDialog({
                 onClick={() => onOpenChange(false)}
                 disabled={loading}
               >
-                Cancelar
+                {t('mortality:causeDialog.cancel')}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Actualizando..." : "Actualizar"}
+                {loading ? t('mortality:causeDialog.updating') : t('mortality:causeDialog.update')}
               </Button>
             </DialogFooter>
           </form>

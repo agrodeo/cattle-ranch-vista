@@ -62,14 +62,10 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
     try {
       setLoading(true);
       
-      // Fetch animals and corrals in parallel
       const [animalsResponse, corralsResponse] = await Promise.all([
         supabase
           .from("animals")
-          .select(`
-            id, name, id_tag, sex, breed, corral_id,
-            corrales:corral_id(name)
-          `)
+          .select(`id, name, id_tag, sex, breed, corral_id, corrales:corral_id(name)`)
           .eq("cabaña_id", currentUser.cabañaId)
           .neq("status", "Vendido")
           .neq("status", "Muerto"),
@@ -94,8 +90,8 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
     } catch (error) {
       console.error("Error fetching data:", error);
       toast({
-        title: "Error",
-        description: "No se pudieron cargar los datos",
+        title: t('common:toast.error'),
+        description: t('corrals:move.errorMoving'),
         variant: "destructive",
       });
     } finally {
@@ -135,7 +131,7 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
     try {
       setLoading(true);
 
-      const targetCorralName = corrals.find(c => c.id === targetCorralId)?.name || "corral seleccionado";
+      const targetCorralName = corrals.find(c => c.id === targetCorralId)?.name || "";
       
       const { error } = await supabase
         .from("animals")
@@ -183,17 +179,16 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Move className="h-5 w-5" />
-            Mover Animales entre Corrales
+            {t('corrals:move.dialogTitle')}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Search and Filters */}
           <div className="grid gap-4 md:grid-cols-2">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar animales..."
+                placeholder={t('corrals:move.searchAnimals')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -202,11 +197,11 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
             
             <Select value={sourceCorralFilter} onValueChange={setSourceCorralFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Filtrar por corral actual" />
+                <SelectValue placeholder={t('corrals:move.filterByCorral')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos los corrales</SelectItem>
-                <SelectItem value="unassigned">Sin asignar</SelectItem>
+                <SelectItem value="all">{t('corrals:move.allCorrals')}</SelectItem>
+                <SelectItem value="unassigned">{t('corrals:move.unassigned')}</SelectItem>
                 {corrals.map(corral => (
                   <SelectItem key={corral.id} value={corral.id}>
                     {corral.name}
@@ -216,18 +211,17 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
             </Select>
           </div>
 
-          {/* Target Corral Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Destino:</label>
+            <label className="text-sm font-medium">{t('corrals:move.destination')}</label>
             <Select value={targetCorralId} onValueChange={setTargetCorralId}>
               <SelectTrigger>
-                <SelectValue placeholder="Seleccionar corral destino" />
+                <SelectValue placeholder={t('corrals:move.selectDestination')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    Sin corral asignado
+                    {t('corrals:move.noCorralAssigned')}
                   </div>
                 </SelectItem>
                 {corrals.map(corral => (
@@ -242,25 +236,23 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
             </Select>
           </div>
 
-          {/* Selection Actions */}
           <div className="flex items-center justify-between">
             <div className="text-sm text-muted-foreground">
-              {selectedAnimals.length} animal(es) seleccionado(s) de {filteredAnimals.length} mostrados
+              {t('corrals:move.selectedCount', { count: selectedAnimals.length, total: filteredAnimals.length })}
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={selectAllVisible}>
-                Seleccionar Visibles
+                {t('corrals:move.selectVisible')}
               </Button>
               <Button variant="outline" size="sm" onClick={clearSelection}>
-                Limpiar
+                {t('corrals:move.clear')}
               </Button>
             </div>
           </div>
 
-          {/* Selected Animals Summary */}
           {selectedAnimals.length > 0 && (
             <div className="space-y-2">
-              <label className="text-sm font-medium">Animales seleccionados:</label>
+              <label className="text-sm font-medium">{t('corrals:move.selectedAnimals')}</label>
               <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto p-2 border rounded">
                 {selectedAnimals.slice(0, 20).map(animalId => {
                   const animal = animals.find(a => a.id === animalId);
@@ -273,24 +265,23 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
                       className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
                       onClick={() => handleAnimalToggle(animalId)}
                     >
-                      {animal.name || animal.id_tag || 'Sin ID'} ×
+                      {animal.name || animal.id_tag || t('corrals:move.noId')} ×
                     </Badge>
                   );
                 })}
                 {selectedAnimals.length > 20 && (
                   <Badge variant="outline">
-                    +{selectedAnimals.length - 20} más
+                    {t('corrals:move.more', { count: selectedAnimals.length - 20 })}
                   </Badge>
                 )}
               </div>
             </div>
           )}
 
-          {/* Animals List */}
           <div className="max-h-96 overflow-y-auto space-y-2 border rounded-lg p-4">
             {filteredAnimals.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
-                No se encontraron animales con los filtros aplicados
+                {t('corrals:move.noAnimalsFound')}
               </p>
             ) : (
               filteredAnimals.map((animal) => (
@@ -319,7 +310,7 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
                           </Badge>
                         ) : (
                           <Badge variant="outline">
-                            Sin asignar
+                            {t('corrals:move.unassigned')}
                           </Badge>
                         )}
                       </div>
@@ -337,13 +328,13 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess }: MoveAnimalDi
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Cancelar
+            {t('corrals:move.cancel')}
           </Button>
           <Button
             onClick={handleMove}
             disabled={loading || selectedAnimals.length === 0 || !targetCorralId}
           >
-            {loading ? "Moviendo..." : `Mover ${selectedAnimals.length} Animal(es)`}
+            {loading ? t('corrals:move.moving') : t('corrals:move.moveCount', { count: selectedAnimals.length })}
           </Button>
         </DialogFooter>
       </DialogContent>

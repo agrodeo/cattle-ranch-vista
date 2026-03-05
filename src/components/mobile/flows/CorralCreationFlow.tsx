@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { ArrowLeft, Home, Move, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { ArrowLeft, Move, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateCorralDialog } from "@/components/corrales/CreateCorralDialog";
 import { AnimalMoveTypeSelector } from "@/components/corrales/AnimalMoveTypeSelector";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -13,21 +14,22 @@ interface CorralCreationFlowProps {
 type CorralAction = "create" | "move";
 
 export function CorralCreationFlow({ onClose }: CorralCreationFlowProps) {
+  const { t } = useTranslation(['corrals']);
   const [selectedAction, setSelectedAction] = useState<CorralAction | null>(null);
   const { currentUser } = useSupabaseAuth();
 
   const corralActions = [
     {
       id: "create" as CorralAction,
-      title: "Crear Corral",
-      description: "Crear un nuevo corral",
+      title: t('corrals:actions.create'),
+      description: t('corrals:dialogs.create.title'),
       icon: Plus,
       color: "bg-blue-500",
     },
     {
       id: "move" as CorralAction,
-      title: "Mover Animales",
-      description: "Mover animales entre corrales",
+      title: t('corrals:actions.moveAnimals'),
+      description: t('corrals:mobile.moveAnimalsBetween'),
       icon: Move,
       color: "bg-orange-500",
     },
@@ -49,15 +51,13 @@ export function CorralCreationFlow({ onClose }: CorralCreationFlowProps) {
   return (
     <>
       <div className="fixed inset-0 z-50 bg-background lg:hidden">
-        {/* Header */}
         <div className="flex items-center p-4 border-b border-border">
           <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">Actividad de Corral</h1>
+          <h1 className="text-xl font-semibold">{t('corrals:title')}</h1>
         </div>
 
-        {/* Content */}
         <div className="flex-1 p-4 space-y-4">
           {corralActions.map((action) => (
             <Card
@@ -81,7 +81,6 @@ export function CorralCreationFlow({ onClose }: CorralCreationFlowProps) {
         </div>
       </div>
 
-      {/* Dialogs */}
       <CreateCorralDialog
         open={selectedAction === "create"}
         onOpenChange={handleDialogClose}

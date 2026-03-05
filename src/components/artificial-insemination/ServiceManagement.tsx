@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +35,7 @@ interface ServiceManagementProps {
 }
 
 export function ServiceManagement({ onServiceSelect, selectedServiceId }: ServiceManagementProps) {
+  const { t } = useTranslation(['activities', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
   
@@ -111,8 +113,8 @@ export function ServiceManagement({ onServiceSelect, selectedServiceId }: Servic
     } catch (error) {
       console.error('Error loading services:', error);
       toast({
-        title: "Error",
-        description: "Error al cargar los servicios",
+        title: t('common:toast.error'),
+        description: t('activities:artificialInsemination.errorLoadingRecords'),
         variant: "destructive"
       });
     } finally {
