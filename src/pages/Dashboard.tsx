@@ -94,11 +94,11 @@ const Dashboard = () => {
             variant="neutral"
           />
           <ReportKpiCard
-            label={t('dashboard:kpis.pregnancyRate')}
-            value={`${counts.pregnancyPercentage}%`}
-            subtitle={`${counts.pregnantFemales}/${counts.reproductiveFemales} ${t('animals:sex.female')}`}
-            icon={TrendingUp}
-            variant={counts.pregnancyPercentage >= 60 ? "success" : counts.pregnancyPercentage >= 40 ? "warning" : "danger"}
+            label={t('dashboard:kpis.vaccinationCoverage')}
+            value={`${counts.vaccinationCoverage}%`}
+            subtitle={`${counts.vaccinatedAnimals}/${counts.animalsActive} ${t('dashboard:gauge.vaccinated')}`}
+            icon={Syringe}
+            variant={counts.vaccinationCoverage >= 70 ? "success" : counts.vaccinationCoverage >= 40 ? "warning" : "danger"}
           />
         </div>
 
