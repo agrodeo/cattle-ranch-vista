@@ -24,15 +24,42 @@ export function useAnimalActivities(animalId: string) {
       setIsLoading(true);
       const allActivities: ActivityItem[] = [];
 
-      // Fetch AI records
-      const { data: aiData } = await supabase
-        .from("artificial_inseminations")
-        .select("*")
-        .eq("female_id", animalId)
-        .order("insemination_date", { ascending: false });
+      // Run all independent queries in parallel
+      const [aiResult, vacResult, reproResult, eventResult, weightResult] = await Promise.all([
+        // AI records
+        supabase
+          .from("artificial_inseminations")
+          .select("*")
+          .eq("female_id", animalId)
+          .order("insemination_date", { ascending: false }),
+        // Vaccination records
+        supabase
+          .from("animal_vaccines")
+          .select("*")
+          .eq("animal_id", animalId)
+          .order("date", { ascending: false }),
+        // Reproductive events
+        supabase
+          .from("reproductive_events")
+          .select("*")
+          .eq("animal_id", animalId)
+          .order("year", { ascending: false }),
+        // General events (no invalid joins - just payload data)
+        supabase
+          .from("eventos")
+          .select("id, tipo, fecha, notas, payload, creado_por")
+          .order("fecha", { ascending: false }),
+        // Weight history
+        supabase
+          .from("animal_weight_history")
+          .select("id, fecha, peso_kg, ganancia_diaria, tipo_pesaje, notas, evento_id")
+          .eq("animal_id", animalId)
+          .order("fecha", { ascending: false }),
+      ]);
 
-      if (aiData) {
-        aiData.forEach(record => {
+      // Process AI
+      if (aiResult.data) {
+        aiResult.data.forEach(record => {
           allActivities.push({
             id: record.id,
             date: record.insemination_date,
@@ -48,16 +75,9 @@ export function useAnimalActivities(animalId: string) {
         });
       }
 
-      // Fetch vaccination records from animal_vaccines
-      const { data: vaccinationData } = await supabase
-        .from("animal_vaccines")
-        .select("*")
-        .eq("animal_id", animalId)
-        .order("date", { ascending: false });
-
-      if (vaccinationData) {
-        // Get requirement names
-        const requirementIds = [...new Set(vaccinationData.map(v => v.requirement_id).filter(Boolean))];
+      // Process vaccinations
+      if (vacResult.data) {
+        const requirementIds = [...new Set(vacResult.data.map(v => v.requirement_id).filter(Boolean))];
         let requirementMap = new Map<string, string>();
         
         if (requirementIds.length > 0) {
@@ -65,13 +85,12 @@ export function useAnimalActivities(animalId: string) {
             .from('cabaña_vaccination_requirements')
             .select('id, vaccine_name')
             .in('id', requirementIds);
-          
           if (requirements) {
             requirementMap = new Map(requirements.map(r => [r.id, r.vaccine_name]));
           }
         }
 
-        vaccinationData.forEach(record => {
+        vacResult.data.forEach(record => {
           const vaccineName = (record.requirement_id && requirementMap.get(record.requirement_id)) || record.vaccine_code;
           allActivities.push({
             id: record.id,
@@ -88,15 +107,9 @@ export function useAnimalActivities(animalId: string) {
         });
       }
 
-      // Fetch reproductive events
-      const { data: reproductiveData } = await supabase
-        .from("reproductive_events")
-        .select("*")
-        .eq("animal_id", animalId)
-        .order("year", { ascending: false });
-
-      if (reproductiveData) {
-        reproductiveData.forEach(record => {
+      // Process reproductive events
+      if (reproResult.data) {
+        reproResult.data.forEach(record => {
           allActivities.push({
             id: record.id,
             date: record.calving_date || `${record.year}-01-01`,
@@ -113,23 +126,32 @@ export function useAnimalActivities(animalId: string) {
         });
       }
 
-      // Fetch general events - fetch all and filter in code
-      const { data: eventData } = await supabase
-        .from("eventos")
-        .select(`
-          *,
-          pesajes(*),
-          vacunaciones(*),
-          tactos(*)
-        `)
-        .order("fecha", { ascending: false });
+      // Process weight history
+      const weightEventIds = new Set<string>();
+      if (weightResult.data) {
+        weightResult.data.forEach(record => {
+          if (record.evento_id) weightEventIds.add(record.evento_id);
+          allActivities.push({
+            id: record.id,
+            date: record.fecha,
+            type: "pesaje",
+            description: "Pesaje",
+            details: {
+              Peso: `${record.peso_kg} kg`,
+              ...(record.ganancia_diaria ? { 'Ganancia diaria': `${record.ganancia_diaria} kg/día` } : {}),
+              ...(record.tipo_pesaje ? { Tipo: record.tipo_pesaje } : {}),
+            },
+            notes: record.notas || undefined
+          });
+        });
+      }
 
-      if (eventData) {
-        eventData.forEach(event => {
+      // Process eventos (general, tacto, etc.)
+      if (eventResult.data) {
+        eventResult.data.forEach(event => {
           const details: Record<string, string> = {};
           let shouldInclude = false;
           
-          // Check if animal is in the event
           if (event.payload) {
             const payload = event.payload as any;
             
@@ -137,44 +159,39 @@ export function useAnimalActivities(animalId: string) {
             if (payload.animales_ids && Array.isArray(payload.animales_ids)) {
               shouldInclude = payload.animales_ids.includes(animalId);
             }
-            
-            // Process event details based on type
-            if (shouldInclude && event.tipo === "GENERAL") {
-              // General management activities
-              if (payload.tipo_actividad) {
-                details['Tipo de Actividad'] = getManagementActivityLabel(payload.tipo_actividad);
+
+            if (shouldInclude) {
+              // Skip PESAJE events if we already have them from weight_history
+              if (event.tipo === "PESAJE" && weightEventIds.has(event.id)) {
+                return; // Already covered by weight history
               }
-              if (payload.responsable) {
-                details['Responsable'] = payload.responsable;
-              }
-              if (payload.detalles) {
-                Object.entries(payload.detalles).forEach(([key, value]) => {
-                  details[formatDetailKey(key)] = String(value);
-                });
-              }
-            } else if (event.tipo === "PESAJE" && event.pesajes && event.pesajes.length > 0) {
-              const pesaje = event.pesajes[0];
-              if (pesaje.mediciones) {
-                const mediciones = Array.isArray(pesaje.mediciones) ? pesaje.mediciones : [pesaje.mediciones];
-                const medicion = mediciones.find((m: any) => m.animal_id === animalId);
-                if (medicion && typeof medicion === 'object') {
-                  shouldInclude = true;
-                  const pesoKg = (medicion as any).peso_kg;
-                  if (pesoKg) {
-                    details['Peso'] = `${pesoKg} kg`;
+
+              if (event.tipo === "GENERAL") {
+                if (payload.tipo_actividad) {
+                  details['Tipo de Actividad'] = getManagementActivityLabel(payload.tipo_actividad);
+                }
+                if (payload.responsable) {
+                  details['Responsable'] = payload.responsable;
+                }
+                if (payload.detalles) {
+                  Object.entries(payload.detalles).forEach(([key, value]) => {
+                    details[formatDetailKey(key)] = String(value);
+                  });
+                }
+              } else if (event.tipo === "TACTO") {
+                // Extract tacto results from payload
+                if (payload.resultados && Array.isArray(payload.resultados)) {
+                  const resultado = payload.resultados.find((r: any) => r.animal_id === animalId);
+                  if (resultado) {
+                    details['Resultado'] = resultado.resultado === 'preñada' ? 'Preñada' : 'Vacía';
                   }
                 }
-              }
-            } else if (event.tipo === "TACTO" && event.tactos && event.tactos.length > 0) {
-              const tacto = event.tactos[0];
-              if (tacto.resultados) {
-                const resultados = Array.isArray(tacto.resultados) ? tacto.resultados : [tacto.resultados];
-                const resultado = resultados.find((r: any) => r.animal_id === animalId);
-                if (resultado && typeof resultado === 'object') {
-                  shouldInclude = true;
-                  const res = (resultado as any).resultado;
-                  if (res) {
-                    details['Resultado'] = res === 'preñada' ? 'Preñada' : 'Vacía';
+              } else if (event.tipo === "PESAJE") {
+                // Extract weight from payload if not in weight_history
+                if (payload.mediciones && Array.isArray(payload.mediciones)) {
+                  const medicion = payload.mediciones.find((m: any) => m.animal_id === animalId);
+                  if (medicion?.peso_kg) {
+                    details['Peso'] = `${medicion.peso_kg} kg`;
                   }
                 }
               }
@@ -257,7 +274,6 @@ export function useAnimalActivities(animalId: string) {
     if (tipo === "GENERAL" && tipoActividad) {
       return getManagementActivityLabel(tipoActividad);
     }
-    
     const descriptions: { [key: string]: string } = {
       "PESAJE": "Pesaje",
       "VACUNACION": "Vacunación",
