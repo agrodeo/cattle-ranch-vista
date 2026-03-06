@@ -31,24 +31,24 @@ export const SettingsPage = () => {
         />
 
         <Tabs defaultValue={defaultTab} className="w-full">
-          <TabsList className="inline-flex w-auto overflow-x-auto scrollbar-hide h-11 sm:h-12 bg-muted/50 rounded-xl p-1 gap-1">
+          <TabsList className="bg-transparent border-b border-border rounded-none w-auto justify-start gap-0 h-auto p-0 inline-flex overflow-x-auto scrollbar-hide">
             <TabsTrigger 
               value="general" 
-              className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+              className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground font-medium transition-all"
             >
               <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {t('settings:tabs.general')}
             </TabsTrigger>
             <TabsTrigger 
               value="benchmarks" 
-              className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+              className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground font-medium transition-all"
             >
               <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {t('settings:tabs.benchmarks')}
             </TabsTrigger>
             <TabsTrigger 
               value="vaccines" 
-              className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all"
+              className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground font-medium transition-all"
             >
               <Syringe className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               {t('settings:tabs.vaccines')}
