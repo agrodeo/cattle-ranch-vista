@@ -70,14 +70,14 @@ const Finances = () => {
 
       <SectionCard>
         <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="summary">
+          <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start gap-0 h-auto p-0 mb-4">
+            <TabsTrigger value="summary" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-5 py-2.5 text-muted-foreground font-medium">
               {t('finance:tabs.summary', 'Resumen')}
             </TabsTrigger>
-            <TabsTrigger value="movements">
+            <TabsTrigger value="movements" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-5 py-2.5 text-muted-foreground font-medium">
               {t('finance:tabs.movements', 'Movimientos')}
             </TabsTrigger>
-            <TabsTrigger value="recurring">
+            <TabsTrigger value="recurring" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-5 py-2.5 text-muted-foreground font-medium">
               {t('finance:tabs.recurring', 'Recurrentes')}
             </TabsTrigger>
           </TabsList>
