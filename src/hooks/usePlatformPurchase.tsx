@@ -6,6 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useEntitlements } from '@/hooks/useEntitlements';
 import { getRevenueCatProductId, type PlanId } from '@/config/revenueCatProducts';
+import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
+import { getPaddlePriceId } from '@/config/paddleProducts';
 
 export interface PurchaseData {
   planId: string;
