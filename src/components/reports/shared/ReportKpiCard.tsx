@@ -54,7 +54,7 @@ export function ReportKpiCard({ label, value, subtitle, icon: Icon, variant = "d
   const styles = variantStyles[variant];
 
   return (
-    <Card className={cn("relative overflow-hidden border-0 shadow-sm", styles.bg)}>
+    <Card className={cn("relative overflow-hidden border border-border/40 shadow-sm", styles.bg)}>
       <CardContent className="p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1.5 min-w-0 flex-1">
