@@ -800,11 +800,13 @@ export const useDashboardSummary = (): DashboardSummary => {
       let vaccinationCoverage = 0;
       let vaccinated = 0;
       try {
-        // Try reading the vaccination report cache (no filters)
-        const vacCacheKey = `vaccination:${cabanaId}:{}`;
-        const cachedVacReport = await db.reports_cache.get(vacCacheKey);
-        if (cachedVacReport?.data?.stats) {
-          const vacStats = cachedVacReport.data.stats;
+        // Search for any vaccination report cache entry for this cabaña
+        const allCacheEntries = await db.reports_cache.toArray();
+        const vacCache = allCacheEntries.find(entry => 
+          entry.key.startsWith(`vaccination:${cabanaId}:`)
+        );
+        if (vacCache?.data?.stats) {
+          const vacStats = vacCache.data.stats;
           vaccinated = vacStats.animalsCompliant || 0;
           const vacTotal = vacStats.totalAnimals || 0;
           vaccinationCoverage = vacTotal > 0
