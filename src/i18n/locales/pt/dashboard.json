@@ -6,6 +6,7 @@
     "activitiesLast30Days": "Atividades (30d)",
     "averageWeight": "Peso Médio",
     "pregnancyRate": "Taxa de Prenhez",
+    "vaccinationCoverage": "Cobertura Vacinal",
     "upcomingActivities": "Próximas Atividades"
   },
   "sections": {
@@ -85,5 +86,10 @@
     "treatment": "Tratamento",
     "movement": "Movimento",
     "sale": "Venda de Animais"
+  },
+  "gauge": {
+    "pregnant": "{{count}} prenhes",
+    "open": "{{count}} vazias",
+    "vaccinated": "animais"
   }
 }

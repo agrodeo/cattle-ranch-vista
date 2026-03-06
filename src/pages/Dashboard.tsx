@@ -5,6 +5,7 @@ import { cowHead } from "@lucide/lab";
 const CowHeadIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => <Icon iconNode={cowHead} ref={ref} {...props} />);
 CowHeadIcon.displayName = 'CowHeadIcon';
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
+import { PregnancyGauge } from "@/components/dashboard/PregnancyGauge";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -93,11 +94,11 @@ const Dashboard = () => {
             variant="neutral"
           />
           <ReportKpiCard
-            label={t('dashboard:kpis.pregnancyRate')}
-            value={`${counts.pregnancyPercentage}%`}
-            subtitle={`${counts.pregnantFemales}/${counts.reproductiveFemales} ${t('animals:sex.female')}`}
-            icon={TrendingUp}
-            variant={counts.pregnancyPercentage >= 60 ? "success" : counts.pregnancyPercentage >= 40 ? "warning" : "danger"}
+            label={t('dashboard:kpis.vaccinationCoverage')}
+            value={`${counts.vaccinationCoverage}%`}
+            subtitle={`${counts.vaccinatedAnimals}/${counts.animalsActive} ${t('dashboard:gauge.vaccinated')}`}
+            icon={Syringe}
+            variant={counts.vaccinationCoverage >= 70 ? "success" : counts.vaccinationCoverage >= 40 ? "warning" : "danger"}
           />
         </div>
 
@@ -155,6 +156,15 @@ const Dashboard = () => {
 
             {/* Right Sidebar */}
             <aside className="space-y-6">
+              {/* Pregnancy Rate Gauge */}
+              {counts.reproductiveFemales > 0 && (
+                <PregnancyGauge
+                  percentage={counts.pregnancyPercentage}
+                  pregnantCount={counts.pregnantFemales}
+                  totalCount={counts.reproductiveFemales}
+                />
+              )}
+
               {/* Vaccination Setup Prompt */}
               {vaccinationRequirements.length === 0 && <VaccinationPrompt />}
 

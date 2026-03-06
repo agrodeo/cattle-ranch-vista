@@ -36,6 +36,8 @@ interface DashboardCounts {
   pregnancyPercentage: number;
   reproductiveFemales: number;
   pregnantFemales: number;
+  vaccinationCoverage: number;
+  vaccinatedAnimals: number;
 }
 
 interface RecentActivity {
@@ -132,6 +134,8 @@ export const useDashboardSummary = (): DashboardSummary => {
     pregnancyPercentage: 0,
     reproductiveFemales: 0,
     pregnantFemales: 0,
+    vaccinationCoverage: 0,
+    vaccinatedAnimals: 0,
   });
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [upcoming, setUpcoming] = useState<{ activitiesNext7d: UpcomingActivity[] }>({
@@ -227,6 +231,8 @@ export const useDashboardSummary = (): DashboardSummary => {
           pregnancyPercentage,
           reproductiveFemales: reproductiveFemalesCount,
           pregnantFemales: pregnantFemalesCount,
+          vaccinationCoverage: 0,
+          vaccinatedAnimals: 0,
         });
         
         const recentFromCache: RecentActivity[] = cachedEventos
@@ -790,15 +796,39 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       }
 
+      // Compute vaccination coverage: unique animals with at least one vaccine / total active
+      const allVaccineAnimalIds = new Set<string>();
+      (vaccinesData || []).forEach((v: any) => {
+        if (v.animal_id) allVaccineAnimalIds.add(v.animal_id);
+      });
+      // Also check broader set from the 30d batch query
+      (vaccinesResult.data || []).forEach((v: any) => {
+        if (v.animal_id) allVaccineAnimalIds.add(v.animal_id);
+      });
+      
+      // For a more accurate count, fetch distinct vaccinated animal count
+      const { count: vaccinatedCount } = await supabase
+        .from('animal_vaccines')
+        .select('animal_id', { count: 'exact', head: true })
+        .eq('cabaña_id', cabanaId);
+
+      const totalActive = animalsCount || 0;
+      const vaccinated = Math.min(vaccinatedCount || 0, totalActive);
+      const vaccinationCoverage = totalActive > 0
+        ? Math.round((vaccinated / totalActive) * 100)
+        : 0;
+
       // Update counts
       setCounts({
-        animalsActive: animalsCount || 0,
+        animalsActive: totalActive,
         corrals: corralsCount || 0,
         activitiesLast30d: activitiesCount || 0,
         servicesTotal: servicesCount || 0,
         pregnancyPercentage,
         reproductiveFemales: reproductiveFemalesCount,
         pregnantFemales: pregnantFemalesCount,
+        vaccinationCoverage,
+        vaccinatedAnimals: vaccinated,
       });
 
       // Update recent activities with detailed information
