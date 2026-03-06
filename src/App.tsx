@@ -75,6 +75,7 @@ const App = () => (
          </TooltipProvider>
           </GlobalErrorBoundary>
         </SupportProvider>
+        </PaddleProvider>
       </RevenueCatProvider>
     </AuthProvider>
   </QueryClientProvider>

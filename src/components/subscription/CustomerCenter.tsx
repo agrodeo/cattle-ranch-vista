@@ -56,7 +56,12 @@ export function CustomerCenter({ open, onOpenChange }: CustomerCenterProps) {
   };
   
   const openManageSubscriptions = () => {
-    window.open('https://apps.apple.com/account/subscriptions', '_blank');
+    if (isNativeApp()) {
+      window.open('https://apps.apple.com/account/subscriptions', '_blank');
+    } else {
+      // Paddle customer portal — users manage billing here
+      window.open('https://customer-portal.paddle.com', '_blank');
+    }
   };
   
   const formatDate = (dateString: string | null) => {

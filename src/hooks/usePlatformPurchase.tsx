@@ -203,29 +203,30 @@ export const usePlatformPurchase = () => {
   };
 
   /**
-   * Web purchase via MercadoPago
+   * Web purchase via Paddle overlay checkout
    */
   const purchaseWeb = async (data: PurchaseData): Promise<PurchaseResult> => {
     const cabanaId = currentUser?.cabañaId;
     if (!cabanaId) throw new Error('No se encontró la cabaña del usuario');
-    
-    const { data: response, error } = await supabase.functions.invoke('mp-sub-create-link', {
-      body: {
-        cabanaId,
-        productCode: data.planId,
-        payerEmail: session?.user?.email
-      }
+
+    const priceId = getPaddlePriceId(data.planId, data.billingCycle);
+    if (!priceId) {
+      throw new Error(`No se encontró precio Paddle para "${data.planId}" (${data.billingCycle})`);
+    }
+
+    const customerEmail = session?.user?.email || '';
+
+    openCheckout({
+      priceId,
+      customerEmail,
+      cabanaId,
+      onSuccess: () => {
+        window.dispatchEvent(new CustomEvent('subscription-updated'));
+      },
     });
 
-    if (error) throw error;
-
-    const paymentUrl = response?.url || response?.init_point;
-    if (paymentUrl) {
-      window.open(paymentUrl, '_blank');
-      return { success: false, pending: true };
-    }
-    
-    throw new Error('No se recibió el link de pago');
+    // Paddle overlay handles the rest; webhook finalizes the subscription
+    return { success: false, pending: true };
   };
 
   /**
