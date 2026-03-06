@@ -6,7 +6,6 @@
     "activitiesLast30Days": "Activities (30d)",
     "averageWeight": "Average Weight",
     "pregnancyRate": "Pregnancy Rate",
-    "vaccinationCoverage": "Vaccination Coverage",
     "upcomingActivities": "Upcoming Activities"
   },
   "sections": {
@@ -84,11 +83,6 @@
     "treatment": "Treatment",
     "movement": "Movement",
     "sale": "Animal Sale"
-  },
-  "gauge": {
-    "pregnant": "{{count}} pregnant",
-    "open": "{{count}} open",
-    "vaccinated": "animals"
   },
   "activity": {
     "animals": "animals",

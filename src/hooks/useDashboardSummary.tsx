@@ -36,9 +36,6 @@ interface DashboardCounts {
   pregnancyPercentage: number;
   reproductiveFemales: number;
   pregnantFemales: number;
-  vaccinationCoverage: number;
-  vaccinatedAnimals: number;
-  vaccinationTotalAnimals: number;
 }
 
 interface RecentActivity {
@@ -135,9 +132,6 @@ export const useDashboardSummary = (): DashboardSummary => {
     pregnancyPercentage: 0,
     reproductiveFemales: 0,
     pregnantFemales: 0,
-    vaccinationCoverage: 0,
-    vaccinatedAnimals: 0,
-    vaccinationTotalAnimals: 0,
   });
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [upcoming, setUpcoming] = useState<{ activitiesNext7d: UpcomingActivity[] }>({
@@ -233,9 +227,6 @@ export const useDashboardSummary = (): DashboardSummary => {
           pregnancyPercentage,
           reproductiveFemales: reproductiveFemalesCount,
           pregnantFemales: pregnantFemalesCount,
-          vaccinationCoverage: 0,
-          vaccinatedAnimals: 0,
-          vaccinationTotalAnimals: 0,
         });
         
         const recentFromCache: RecentActivity[] = cachedEventos
@@ -799,42 +790,15 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       }
 
-      // Compute vaccination coverage from cached vaccination report (same logic as Reports > Vaccination)
-      let vaccinationCoverage = 0;
-      let vaccinated = 0;
-      let vaccinationTotalAnimals = 0;
-      try {
-        // Search for any vaccination report cache entry for this cabaña
-        const allCacheEntries = await db.reports_cache.toArray();
-        const vacCache = allCacheEntries.find(entry => 
-          entry.key.startsWith(`vaccination:${cabanaId}:`)
-        );
-        if (vacCache?.data?.stats) {
-          const vacStats = vacCache.data.stats;
-          vaccinated = vacStats.animalsCompliant || 0;
-          vaccinationTotalAnimals = vacStats.totalAnimals || 0;
-          vaccinationCoverage = vaccinationTotalAnimals > 0
-            ? Math.round((vaccinated / vaccinationTotalAnimals) * 100)
-            : 0;
-        }
-      } catch (e) {
-        console.warn('Could not read vaccination cache for dashboard:', e);
-      }
-
-      const totalActive = animalsCount || 0;
-
       // Update counts
       setCounts({
-        animalsActive: totalActive,
+        animalsActive: animalsCount || 0,
         corrals: corralsCount || 0,
         activitiesLast30d: activitiesCount || 0,
         servicesTotal: servicesCount || 0,
         pregnancyPercentage,
         reproductiveFemales: reproductiveFemalesCount,
         pregnantFemales: pregnantFemalesCount,
-        vaccinationCoverage,
-        vaccinatedAnimals: vaccinated,
-        vaccinationTotalAnimals,
       });
 
       // Update recent activities with detailed information
