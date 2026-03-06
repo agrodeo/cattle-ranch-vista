@@ -156,6 +156,15 @@ const Dashboard = () => {
 
             {/* Right Sidebar */}
             <aside className="space-y-6">
+              {/* Pregnancy Rate Gauge */}
+              {counts.reproductiveFemales > 0 && (
+                <PregnancyGauge
+                  percentage={counts.pregnancyPercentage}
+                  pregnantCount={counts.pregnantFemales}
+                  totalCount={counts.reproductiveFemales}
+                />
+              )}
+
               {/* Vaccination Setup Prompt */}
               {vaccinationRequirements.length === 0 && <VaccinationPrompt />}
 
