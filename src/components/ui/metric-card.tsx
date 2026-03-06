@@ -17,60 +17,72 @@ interface MetricCardProps {
 
 export function MetricCard({ title, value, subtitle, icon: Icon, trend, colored, percentage, className }: MetricCardProps) {
   const getColorClass = () => {
-    if (!colored || percentage === undefined) return "";
-    if (percentage >= 80) return "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-200";
-    if (percentage >= 60) return "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200";
-    if (percentage >= 40) return "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200";
-    return "bg-gradient-to-br from-red-50 to-red-100 border-red-200";
+    if (!colored || percentage === undefined) return "bg-primary/5";
+    if (percentage >= 80) return "bg-primary/5";
+    if (percentage >= 60) return "bg-blue-500/5";
+    if (percentage >= 40) return "bg-amber-500/5";
+    return "bg-destructive/5";
   };
 
-  const getTextColor = () => {
-    if (!colored || percentage === undefined) return "text-slate-900";
-    if (percentage >= 80) return "text-emerald-900";
-    if (percentage >= 60) return "text-blue-900";
-    if (percentage >= 40) return "text-amber-900";
-    return "text-red-900";
+  const getIconBg = () => {
+    if (!colored || percentage === undefined) return "bg-primary/10";
+    if (percentage >= 80) return "bg-primary/10";
+    if (percentage >= 60) return "bg-blue-500/10";
+    if (percentage >= 40) return "bg-amber-500/10";
+    return "bg-destructive/10";
+  };
+
+  const getIconColor = () => {
+    if (!colored || percentage === undefined) return "text-primary";
+    if (percentage >= 80) return "text-primary";
+    if (percentage >= 60) return "text-blue-600";
+    if (percentage >= 40) return "text-amber-600";
+    return "text-destructive";
+  };
+
+  const getValueColor = () => {
+    if (!colored || percentage === undefined) return "text-foreground";
+    if (percentage >= 80) return "text-primary";
+    if (percentage >= 60) return "text-blue-600";
+    if (percentage >= 40) return "text-amber-600";
+    return "text-destructive";
   };
 
   return (
     <div className={cn(
-      "rounded-2xl border p-4 shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 animate-fade-in",
-      colored ? getColorClass() : "border-slate-200 bg-white/80 backdrop-blur-sm",
+      "relative overflow-hidden rounded-2xl border border-border/40 p-4 sm:p-6 shadow-sm transition-all duration-300",
+      colored ? getColorClass() : "bg-primary/5",
       className
     )}>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="space-y-1.5 min-w-0 flex-1">
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground leading-tight">
+            {title}
+          </p>
+          <p className={cn("text-2xl sm:text-3xl font-bold tracking-tight", getValueColor())}>
+            {value}
+          </p>
+          {subtitle && (
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">{subtitle}</p>
+          )}
+          {trend && (
+            <span className={cn(
+              "inline-flex text-xs font-medium px-2 py-0.5 rounded-full",
+              trend.direction === "up" ? "text-primary bg-primary/10" :
+              trend.direction === "down" ? "text-destructive bg-destructive/10" :
+              "text-muted-foreground bg-muted"
+            )}>
+              {trend.value}
+            </span>
+          )}
+        </div>
         {Icon && (
           <div className={cn(
-            "p-2 rounded-lg",
-            colored ? "bg-white/50" : "bg-primary/10"
+            "flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl",
+            colored ? getIconBg() : "bg-primary/10"
           )}>
-            <Icon className={cn("h-4 w-4", colored ? getTextColor() : "text-primary")} />
+            <Icon className={cn("h-5 w-5 sm:h-6 sm:w-6", colored ? getIconColor() : "text-primary")} />
           </div>
-        )}
-        {trend && (
-          <span className={cn(
-            "text-xs font-medium px-2 py-1 rounded-full",
-            trend.direction === "up" ? "text-emerald-700 bg-emerald-100" : 
-            trend.direction === "down" ? "text-red-700 bg-red-100" : 
-            "text-slate-700 bg-slate-100"
-          )}>
-            {trend.value}
-          </span>
-        )}
-      </div>
-      <div className="space-y-1">
-        <p className={cn("text-2xl font-display font-bold", getTextColor())}>{value}</p>
-        <p className={cn("text-xs font-medium", 
-          colored ? getTextColor().replace('900', '700') : "text-slate-600"
-        )}>
-          {title}
-        </p>
-        {subtitle && (
-          <p className={cn("text-[10px]",
-            colored ? getTextColor().replace('900', '600') : "text-slate-500"
-          )}>
-            {subtitle}
-          </p>
         )}
       </div>
     </div>
