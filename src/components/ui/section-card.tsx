@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 
 interface SectionCardProps {
-  title: string;
+  title?: string;
   subtitle?: string;
   count?: number;
   children: ReactNode;
