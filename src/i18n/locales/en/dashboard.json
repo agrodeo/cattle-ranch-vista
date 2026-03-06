@@ -65,7 +65,9 @@
     "route": "Route",
     "breed": "Breed",
     "empty": "Empty",
-    "notes": "Notes"
+    "notes": "Notes",
+    "amount": "Amount",
+    "buyer": "Buyer"
   },
   "warnings": {
     "consanguinityRisk": "Consanguinity Risk",
@@ -83,22 +85,5 @@
     "treatment": "Treatment",
     "movement": "Movement",
     "sale": "Animal Sale"
-  },
-  "activity": {
-    "animals": "animals",
-    "vaccines": "Vaccines",
-    "bullName": "Bull",
-    "tactileExam": "Palpation",
-    "weighing": "Weighing",
-    "averageWeight": "Average weight",
-    "registeredBy": "Registered by",
-    "lot": "Lot",
-    "dose": "Dose",
-    "route": "Route",
-    "breed": "Breed",
-    "empty": "Empty",
-    "notes": "Notes",
-    "amount": "Amount",
-    "buyer": "Buyer"
   }
 }
