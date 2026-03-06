@@ -34,6 +34,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <RevenueCatProvider>
+        <PaddleProvider>
         <SupportProvider>
           <GlobalErrorBoundary>
             <TooltipProvider>
