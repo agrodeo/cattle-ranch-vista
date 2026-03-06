@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, Icon, LucideProps } from "lucide-react";
 import { cowHead } from "@lucide/lab";
 
