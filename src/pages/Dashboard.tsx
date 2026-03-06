@@ -156,13 +156,15 @@ const Dashboard = () => {
 
             {/* Right Sidebar */}
             <aside className="space-y-6">
-              {/* Pregnancy Rate Gauge */}
+              {/* Pregnancy Rate Gauge - desktop only */}
               {counts.reproductiveFemales > 0 && (
-                <PregnancyGauge
-                  percentage={counts.pregnancyPercentage}
-                  pregnantCount={counts.pregnantFemales}
-                  totalCount={counts.reproductiveFemales}
-                />
+                <div className="hidden lg:block">
+                  <PregnancyGauge
+                    percentage={counts.pregnancyPercentage}
+                    pregnantCount={counts.pregnantFemales}
+                    totalCount={counts.reproductiveFemales}
+                  />
+                </div>
               )}
 
               {/* Vaccination Setup Prompt */}
