@@ -17,6 +17,7 @@ import { revenueCatService } from '@/services/revenueCatService';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { isNativeApp } from '@/lib/platformDetection';
 
 interface CustomerCenterProps {
   open: boolean;
