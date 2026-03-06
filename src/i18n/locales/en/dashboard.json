@@ -65,38 +65,6 @@
     "route": "Route",
     "breed": "Breed",
     "empty": "Empty",
-    "notes": "Notes"
-  },
-  "warnings": {
-    "consanguinityRisk": "Consanguinity Risk",
-    "corralsWithRisk_one": "{{count}} corral with possible consanguinity detected",
-    "corralsWithRisk_other": "{{count}} corrals with possible consanguinity detected"
-  },
-  "activityTypes": {
-    "general": "General",
-    "vaccination": "Vaccination",
-    "weighing": "Weighing",
-    "insemination": "Insemination",
-    "tacto": "Pregnancy Check",
-    "birth": "Birth",
-    "death": "Death",
-    "treatment": "Treatment",
-    "movement": "Movement",
-    "sale": "Animal Sale"
-  },
-  "activity": {
-    "animals": "animals",
-    "vaccines": "Vaccines",
-    "bullName": "Bull",
-    "tactileExam": "Palpation",
-    "weighing": "Weighing",
-    "averageWeight": "Average weight",
-    "registeredBy": "Registered by",
-    "lot": "Lot",
-    "dose": "Dose",
-    "route": "Route",
-    "breed": "Breed",
-    "empty": "Empty",
     "notes": "Notes",
     "amount": "Amount",
     "buyer": "Buyer"
