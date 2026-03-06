@@ -55,7 +55,7 @@ const Dashboard = () => {
         )}
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="hidden lg:flex items-center justify-between">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
               {t('dashboard:title')}
@@ -64,7 +64,7 @@ const Dashboard = () => {
               {t('dashboard:subtitle')}
             </p>
           </div>
-          <div className="hidden lg:block">
+          <div>
             <Button onClick={handleRegisterActivity} size="lg" className="gap-2 shadow-sm" disabled={warnings.noCabana}>
               <Plus className="h-4 w-4" />
               {t('dashboard:actions.registerActivity')}
