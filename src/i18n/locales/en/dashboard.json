@@ -68,5 +68,22 @@
     "notes": "Notes",
     "amount": "Amount",
     "buyer": "Buyer"
+  },
+  "warnings": {
+    "consanguinityRisk": "Consanguinity Risk",
+    "corralsWithRisk_one": "{{count}} corral with possible consanguinity detected",
+    "corralsWithRisk_other": "{{count}} corrals with possible consanguinity detected"
+  },
+  "activityTypes": {
+    "general": "General",
+    "vaccination": "Vaccination",
+    "weighing": "Weighing",
+    "insemination": "Insemination",
+    "tacto": "Pregnancy Check",
+    "birth": "Birth",
+    "death": "Death",
+    "treatment": "Treatment",
+    "movement": "Movement",
+    "sale": "Animal Sale"
   }
 }
