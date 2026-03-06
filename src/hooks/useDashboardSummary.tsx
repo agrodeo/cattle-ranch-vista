@@ -137,6 +137,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     pregnantFemales: 0,
     vaccinationCoverage: 0,
     vaccinatedAnimals: 0,
+    vaccinationTotalAnimals: 0,
   });
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [upcoming, setUpcoming] = useState<{ activitiesNext7d: UpcomingActivity[] }>({
