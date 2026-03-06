@@ -38,6 +38,7 @@ interface DashboardCounts {
   pregnantFemales: number;
   vaccinationCoverage: number;
   vaccinatedAnimals: number;
+  vaccinationTotalAnimals: number;
 }
 
 interface RecentActivity {
@@ -136,6 +137,7 @@ export const useDashboardSummary = (): DashboardSummary => {
     pregnantFemales: 0,
     vaccinationCoverage: 0,
     vaccinatedAnimals: 0,
+    vaccinationTotalAnimals: 0,
   });
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [upcoming, setUpcoming] = useState<{ activitiesNext7d: UpcomingActivity[] }>({
@@ -233,6 +235,7 @@ export const useDashboardSummary = (): DashboardSummary => {
           pregnantFemales: pregnantFemalesCount,
           vaccinationCoverage: 0,
           vaccinatedAnimals: 0,
+          vaccinationTotalAnimals: 0,
         });
         
         const recentFromCache: RecentActivity[] = cachedEventos
@@ -799,6 +802,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       // Compute vaccination coverage from cached vaccination report (same logic as Reports > Vaccination)
       let vaccinationCoverage = 0;
       let vaccinated = 0;
+      let vaccinationTotalAnimals = 0;
       try {
         // Search for any vaccination report cache entry for this cabaña
         const allCacheEntries = await db.reports_cache.toArray();
@@ -808,9 +812,9 @@ export const useDashboardSummary = (): DashboardSummary => {
         if (vacCache?.data?.stats) {
           const vacStats = vacCache.data.stats;
           vaccinated = vacStats.animalsCompliant || 0;
-          const vacTotal = vacStats.totalAnimals || 0;
-          vaccinationCoverage = vacTotal > 0
-            ? Math.round((vaccinated / vacTotal) * 100)
+          vaccinationTotalAnimals = vacStats.totalAnimals || 0;
+          vaccinationCoverage = vaccinationTotalAnimals > 0
+            ? Math.round((vaccinated / vaccinationTotalAnimals) * 100)
             : 0;
         }
       } catch (e) {
@@ -830,6 +834,7 @@ export const useDashboardSummary = (): DashboardSummary => {
         pregnantFemales: pregnantFemalesCount,
         vaccinationCoverage,
         vaccinatedAnimals: vaccinated,
+        vaccinationTotalAnimals,
       });
 
       // Update recent activities with detailed information

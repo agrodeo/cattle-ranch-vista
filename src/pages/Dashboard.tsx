@@ -98,7 +98,7 @@ const Dashboard = () => {
             <ReportKpiCard
               label={t('dashboard:kpis.vaccinationCoverage')}
               value={`${counts.vaccinationCoverage}%`}
-              subtitle={`${counts.vaccinatedAnimals}/${counts.animalsActive} ${t('dashboard:gauge.vaccinated')}`}
+              subtitle={`${counts.vaccinatedAnimals}/${counts.vaccinationTotalAnimals || counts.animalsActive} ${t('dashboard:gauge.vaccinated')}`}
               icon={Syringe}
               variant={counts.vaccinationCoverage >= 70 ? "success" : counts.vaccinationCoverage >= 40 ? "warning" : "danger"}
             />
