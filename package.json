@@ -18,6 +18,7 @@
     "@despia/local": "^1.0.8",
     "@hookform/resolvers": "^3.9.0",
     "@lucide/lab": "^0.1.2",
+    "@paddle/paddle-js": "^1.6.2",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-aspect-ratio": "^1.1.0",

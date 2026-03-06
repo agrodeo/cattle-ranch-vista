@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import SupportProvider from "@/components/SupportProvider";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { RevenueCatProvider } from "@/providers/RevenueCatProvider";
+import { PaddleProvider } from "@/providers/PaddleProvider";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
@@ -34,6 +35,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <RevenueCatProvider>
+        <PaddleProvider>
         <SupportProvider>
           <GlobalErrorBoundary>
             <TooltipProvider>
@@ -74,6 +76,7 @@ const App = () => (
          </TooltipProvider>
           </GlobalErrorBoundary>
         </SupportProvider>
+        </PaddleProvider>
       </RevenueCatProvider>
     </AuthProvider>
   </QueryClientProvider>
