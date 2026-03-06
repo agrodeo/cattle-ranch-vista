@@ -796,21 +796,26 @@ export const useDashboardSummary = (): DashboardSummary => {
         });
       }
 
-      // Compute vaccination coverage: unique animals with at least one vaccine / total active
-      const { data: vaccinatedAnimalsData } = await supabase
-        .from('animal_vaccines')
-        .select('animal_id')
-        .eq('cabaña_id', cabanaId);
-
-      const uniqueVaccinatedIds = new Set(
-        (vaccinatedAnimalsData || []).map((v: any) => v.animal_id)
-      );
+      // Compute vaccination coverage from cached vaccination report (same logic as Reports > Vaccination)
+      let vaccinationCoverage = 0;
+      let vaccinated = 0;
+      try {
+        // Try reading the vaccination report cache (no filters)
+        const vacCacheKey = `vaccination:${cabanaId}:{}`;
+        const cachedVacReport = await db.reports_cache.get(vacCacheKey);
+        if (cachedVacReport?.data?.stats) {
+          const vacStats = cachedVacReport.data.stats;
+          vaccinated = vacStats.animalsCompliant || 0;
+          const vacTotal = vacStats.totalAnimals || 0;
+          vaccinationCoverage = vacTotal > 0
+            ? Math.round((vaccinated / vacTotal) * 100)
+            : 0;
+        }
+      } catch (e) {
+        console.warn('Could not read vaccination cache for dashboard:', e);
+      }
 
       const totalActive = animalsCount || 0;
-      const vaccinated = Math.min(uniqueVaccinatedIds.size, totalActive);
-      const vaccinationCoverage = totalActive > 0
-        ? Math.round((vaccinated / totalActive) * 100)
-        : 0;
 
       // Update counts
       setCounts({
