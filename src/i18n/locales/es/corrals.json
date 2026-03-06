@@ -7,7 +7,9 @@
   "totalCorrals": "Total de Corrales",
   "totalAnimals": "Total de Animales",
   "capacity": "Capacidad",
-  "occupancy": "Ocupación",
+  "occupancy": {
+    "label": "Ocupación"
+  },
   "fields": {
     "name": "Nombre",
     "capacity": "Capacidad",
