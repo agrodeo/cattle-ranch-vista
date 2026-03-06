@@ -85,6 +85,11 @@
     "movement": "Movement",
     "sale": "Animal Sale"
   },
+  "gauge": {
+    "pregnant": "{{count}} pregnant",
+    "open": "{{count}} open",
+    "vaccinated": "animals"
+  },
   "activity": {
     "animals": "animals",
     "vaccines": "Vaccines",

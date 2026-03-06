@@ -231,6 +231,8 @@ export const useDashboardSummary = (): DashboardSummary => {
           pregnancyPercentage,
           reproductiveFemales: reproductiveFemalesCount,
           pregnantFemales: pregnantFemalesCount,
+          vaccinationCoverage: 0,
+          vaccinatedAnimals: 0,
         });
         
         const recentFromCache: RecentActivity[] = cachedEventos
