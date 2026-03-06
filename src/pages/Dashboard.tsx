@@ -5,6 +5,7 @@ import { cowHead } from "@lucide/lab";
 const CowHeadIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => <Icon iconNode={cowHead} ref={ref} {...props} />);
 CowHeadIcon.displayName = 'CowHeadIcon';
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
+import { PregnancyGauge } from "@/components/dashboard/PregnancyGauge";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
 import { EmptyState } from "@/components/ui/empty-state";
