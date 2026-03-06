@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight } from "lucide-react";
-import { Beef } from "lucide-react";
+import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, Icon, LucideProps } from "lucide-react";
+import { cowHead } from "@lucide/lab";
+
+const CowHeadIcon = (props: LucideProps) => <Icon iconNode={cowHead} {...props} />;
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
