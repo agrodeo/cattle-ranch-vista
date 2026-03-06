@@ -45,9 +45,10 @@ export function SectionCard({
       className
     )}>
       {/* Header */}
+      {(title || actions || count !== undefined) && (
       <div className="flex items-center justify-between p-4 border-b border-slate-200">
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-medium text-slate-900 truncate">{title}</h3>
+          {title && <h3 className="text-sm font-medium text-slate-900 truncate">{title}</h3>}
           {subtitle && (
             <p className="text-xs text-slate-500 truncate mt-1">{subtitle}</p>
           )}
@@ -76,6 +77,7 @@ export function SectionCard({
           )}
         </div>
       </div>
+      )}
       
       {/* Content */}
       <div className="p-4">
