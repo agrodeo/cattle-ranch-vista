@@ -36,6 +36,8 @@ interface DashboardCounts {
   pregnancyPercentage: number;
   reproductiveFemales: number;
   pregnantFemales: number;
+  vaccinationCoverage: number;
+  vaccinatedAnimals: number;
 }
 
 interface RecentActivity {
