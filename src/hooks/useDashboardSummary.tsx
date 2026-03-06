@@ -797,23 +797,17 @@ export const useDashboardSummary = (): DashboardSummary => {
       }
 
       // Compute vaccination coverage: unique animals with at least one vaccine / total active
-      const allVaccineAnimalIds = new Set<string>();
-      (vaccinesData || []).forEach((v: any) => {
-        if (v.animal_id) allVaccineAnimalIds.add(v.animal_id);
-      });
-      // Also check broader set from the 30d batch query
-      (vaccinesResult.data || []).forEach((v: any) => {
-        if (v.animal_id) allVaccineAnimalIds.add(v.animal_id);
-      });
-      
-      // For a more accurate count, fetch distinct vaccinated animal count
-      const { count: vaccinatedCount } = await supabase
+      const { data: vaccinatedAnimalsData } = await supabase
         .from('animal_vaccines')
-        .select('animal_id', { count: 'exact', head: true })
+        .select('animal_id')
         .eq('cabaña_id', cabanaId);
 
+      const uniqueVaccinatedIds = new Set(
+        (vaccinatedAnimalsData || []).map((v: any) => v.animal_id)
+      );
+
       const totalActive = animalsCount || 0;
-      const vaccinated = Math.min(vaccinatedCount || 0, totalActive);
+      const vaccinated = Math.min(uniqueVaccinatedIds.size, totalActive);
       const vaccinationCoverage = totalActive > 0
         ? Math.round((vaccinated / totalActive) * 100)
         : 0;
