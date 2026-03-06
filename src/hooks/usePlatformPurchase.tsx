@@ -25,6 +25,7 @@ export const usePlatformPurchase = () => {
   const { toast } = useToast();
   const { session, currentUser } = useSupabaseAuth();
   const { offerings, refreshCustomerInfo } = useEntitlements();
+  const { openCheckout } = usePaddleCheckout();
 
   // Register global callback for Despia purchase completion
   useEffect(() => {
