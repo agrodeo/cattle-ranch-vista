@@ -31,14 +31,14 @@ const Finances = () => {
         
         <div className="p-4">
           <Tabs defaultValue="summary" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="summary" className="text-sm">
+            <TabsList className="bg-transparent border-b border-border rounded-none w-full justify-start gap-0 h-auto p-0 mb-6">
+              <TabsTrigger value="summary" className="text-sm rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-4 py-2.5 text-muted-foreground">
                 {t('finance:tabs.summary', 'Resumen')}
               </TabsTrigger>
-              <TabsTrigger value="movements" className="text-sm">
+              <TabsTrigger value="movements" className="text-sm rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-4 py-2.5 text-muted-foreground">
                 {t('finance:tabs.movements', 'Movimientos')}
               </TabsTrigger>
-              <TabsTrigger value="recurring" className="text-sm">
+              <TabsTrigger value="recurring" className="text-sm rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary px-4 py-2.5 text-muted-foreground">
                 {t('finance:tabs.recurring', 'Recurrentes')}
               </TabsTrigger>
             </TabsList>
