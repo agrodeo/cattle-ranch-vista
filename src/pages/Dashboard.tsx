@@ -76,7 +76,7 @@ const Dashboard = () => {
           <ReportKpiCard
             label={t('dashboard:kpis.totalAnimals')}
             value={counts.animalsActive}
-            icon={Beef}
+            icon={CowHeadIcon}
             variant="default"
           />
           <ReportKpiCard
