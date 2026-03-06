@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, Icon, LucideProps } from "lucide-react";
 import { cowHead } from "@lucide/lab";
 
-const CowHeadIcon = (props: LucideProps) => <Icon iconNode={cowHead} {...props} />;
+const CowHeadIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => <Icon iconNode={cowHead} ref={ref} {...props} />);
+CowHeadIcon.displayName = 'CowHeadIcon';
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
