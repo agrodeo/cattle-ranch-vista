@@ -1,23 +1,52 @@
 
 
+# Achievement Story Card — Tier Colors, Layout Fix & Font Upgrade
+
 ## Problem
-The "Total Animals" KPI uses the `Beef` icon (a piece of meat). The user wants a bovine/cow icon instead.
+1. **No tier differentiation**: All story cards use the same green color regardless of bronze/silver/gold tier
+2. **Text overlapping**: The number, exclamation marks, and item label collide at certain sizes
+3. **Generic font**: System font stack looks plain — not share-worthy for social media
 
-## Solution
-Use `cowHead` from `@lucide/lab` (already installed). Since `ReportKpiCard` expects a `LucideIcon` component but lab icons are `IconNode` arrays, I need to either:
+## Design
 
-1. **Wrap the lab icon** into a component that matches the `LucideIcon` signature, OR
-2. **Update `ReportKpiCard`** to accept both types.
+### Tier color palettes (applied to exclamation marks, header, item label, and accents):
+- **Bronze**: `#CD7F32` (warm bronze) with number in `#4a3728`
+- **Silver**: `#8C8C8C` (cool silver) with number in `#3d3d3d`  
+- **Gold**: `#DAA520` (rich gold) with number in `#5c4a00`
 
-**Chosen approach**: Create a small wrapper component inline in Dashboard.tsx that converts `cowHead` from `@lucide/lab` into a standard React component compatible with the `LucideIcon` prop type. This avoids modifying the shared `ReportKpiCard`.
+### Layout fixes:
+- Separate the number and item label with more vertical spacing
+- Reduce exclamation mark size relative to the number to prevent overlap
+- Cap item label font size more aggressively and add `wordBreak` for long labels
+- Move content block slightly upward to leave breathing room at bottom for branding
 
-### Changes
+### Font:
+- Use Google Font **Montserrat** (bold, italic) — loaded via `@import` in the off-screen element's inline style. html2canvas captures computed styles so this works if the font is preloaded.
+- Fallback: keep system font stack
 
-**`src/pages/Dashboard.tsx`**:
-- Import `Icon` from `lucide-react` and `cowHead` from `@lucide/lab`
-- Remove `Beef` import
-- Create a wrapper: `const CowHeadIcon = (props) => <Icon iconNode={cowHead} {...props} />`
-- Use `CowHeadIcon` as the icon prop for the Total Animals KPI card
+## Changes
 
-This is a single-file, ~5-line change.
+### 1. `src/components/achievements/AchievementStoryCard.tsx`
+- Add `medalTier` prop
+- Create a `getTierColors(tier)` helper returning `{ accent, number }` colors
+- Apply tier colors to header text, exclamation marks, and item label
+- Fix layout: reduce `¡` / `!` font size to match number height, increase gap between number row and item label
+- Use Montserrat font family
+
+### 2. `src/components/achievements/AchievementCard.tsx`
+- Pass `medalTier` to `AchievementStoryCard`
+- Update the visible preview card to also reflect tier colors instead of hardcoded green
+- Add Montserrat font link in `<head>` via a `useEffect` on mount (ensures font loads before capture)
+
+### 3. `src/lib/achievementStoryImage.ts`
+- Add a small delay before capture to ensure fonts are loaded (`document.fonts.ready`)
+
+### 4. `index.html`
+- Add `<link>` to preload Montserrat font from Google Fonts (ensures it's available for html2canvas)
+
+## No regressions
+- Off-screen rendering approach unchanged
+- No global CSS changes (font link only in `<head>`, scoped to story card via inline style)
+- Share/download flow unchanged
+- Existing achievement definitions, DB, hooks untouched
 

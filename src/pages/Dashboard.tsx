@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight } from "lucide-react";
-import { Beef } from "lucide-react";
+import React, { useState } from "react";
+import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, Icon, LucideProps } from "lucide-react";
+import { cowHead } from "@lucide/lab";
+
+const CowHeadIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => <Icon iconNode={cowHead} ref={ref} {...props} />);
+CowHeadIcon.displayName = 'CowHeadIcon';
 import { VaccinationPrompt } from "@/components/dashboard/VaccinationPrompt";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
@@ -74,7 +77,7 @@ const Dashboard = () => {
           <ReportKpiCard
             label={t('dashboard:kpis.totalAnimals')}
             value={counts.animalsActive}
-            icon={Beef}
+            icon={CowHeadIcon}
             variant="default"
           />
           <ReportKpiCard
