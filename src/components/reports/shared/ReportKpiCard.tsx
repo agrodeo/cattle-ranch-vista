@@ -55,22 +55,22 @@ export function ReportKpiCard({ label, value, subtitle, icon: Icon, variant = "d
 
   return (
     <Card className={cn("relative overflow-hidden border-0 shadow-sm", styles.bg)}>
-      <CardContent className="p-5">
-        <div className="flex items-center justify-between">
+      <CardContent className="p-3 sm:p-5">
+        <div className="flex items-start justify-between gap-2">
           <div className="space-y-1 min-w-0 flex-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground truncate">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground leading-tight">
               {label}
             </p>
-            <p className={cn("text-2xl font-bold tracking-tight", styles.valueColor)}>
+            <p className={cn("text-xl sm:text-2xl font-bold tracking-tight", styles.valueColor)}>
               {value}
             </p>
             {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground">{subtitle}</p>
             )}
             {children}
           </div>
-          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", styles.iconBg)}>
-            <Icon className={cn("h-5 w-5", styles.iconColor)} />
+          <div className={cn("flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl", styles.iconBg)}>
+            <Icon className={cn("h-4 w-4 sm:h-5 sm:w-5", styles.iconColor)} />
           </div>
         </div>
       </CardContent>
