@@ -17,7 +17,7 @@ export function PaddleProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Only initialize Paddle on web, not on native
     if (isNativeApp()) return;
-    if (PADDLE_CLIENT_TOKEN === 'test_XXXXX') {
+    if (!PADDLE_CLIENT_TOKEN || PADDLE_CLIENT_TOKEN.includes('XXXXX')) {
       console.warn('[Paddle] Client token is a placeholder — skipping initialization');
       return;
     }
