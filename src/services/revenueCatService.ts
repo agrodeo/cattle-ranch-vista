@@ -78,7 +78,7 @@ class RevenueCatService {
     let apiKey: string | undefined;
     
     const REVENUECAT_IOS_KEY = 'appl_UBiuqNanQpBmPXTYgwPDzNSzznY';
-    const REVENUECAT_ANDROID_KEY = 'test_TyRsiXbFUgYLiOrgpoVsRBGuAYf';
+    const REVENUECAT_ANDROID_KEY = 'goog_zhWmiLXrHhfKmiDyXgeryOVODhJ';
 
     if (platform === 'ios') {
       apiKey = REVENUECAT_IOS_KEY;
