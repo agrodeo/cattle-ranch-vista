@@ -1,6 +1,6 @@
 // Paddle configuration — replace placeholders with real IDs from your Paddle dashboard
 export const PADDLE_CLIENT_TOKEN = 'live_b6aac267389501222e626273a8a';
-export const PADDLE_ENV: 'sandbox' | 'production' = 'sandbox';
+export const PADDLE_ENV: 'sandbox' | 'production' = 'production';
 
 export interface PaddlePriceIds {
   monthly: string;
