@@ -1,20 +1,20 @@
 // RevenueCat product IDs from RevenueCat Dashboard
 export const REVENUECAT_PRODUCTS = {
   personal: {
-    monthly: 'Personal_Monthly',
-    annual: 'Personal_Yearly'
+    monthly: 'personal_monthly',
+    annual: 'personal_yearly'
   },
   avanzado: {
-    monthly: 'Advanced_Monthly',
-    annual: 'Advanced_Yearly'
+    monthly: 'advanced_monthly',
+    annual: 'advanced_yearly'
   },
   productor: {
-    monthly: 'Producer_Monthly',
-    annual: 'Producer_Yearly'
+    monthly: 'producer_monthly',
+    annual: 'producer_yearly'
   },
   cabana: {
-    monthly: 'Herd_Monthly',
-    annual: 'Herd_Yearly'
+    monthly: 'herd_monthly',
+    annual: 'herd_yearly'
   },
   corporativo: {
     monthly: '', // TODO: Add when available
