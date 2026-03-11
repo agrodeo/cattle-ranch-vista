@@ -23,6 +23,9 @@ import Finances from "./pages/Finances";
 import Reports from "./pages/Reports";
 import Achievements from "./pages/Achievements";
 import { SettingsPage } from "./pages/Settings";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import RefundPolicy from "./pages/RefundPolicy";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
