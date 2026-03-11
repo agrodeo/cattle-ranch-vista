@@ -47,7 +47,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/auth/confirm" element={<AuthConfirm />} />
+             <Route path="/auth/confirm" element={<AuthConfirm />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             {/* Single shared Layout for all protected routes */}
             <Route element={
               <ProtectedRoute>
