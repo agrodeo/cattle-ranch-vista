@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.agrodeo.app',
+  appId: 'com.despia.agrodeo',
   appName: 'agrodeo',
   webDir: 'dist',
   plugins: {
