@@ -51,7 +51,7 @@ export const useEntitlements = () => {
   }, []);
 
   const loadOfferings = useCallback(async () => {
-    if (!isNativeApp()) return;
+    if (!isCapacitorNative()) return;
     
     try {
       // ensureInitialized() inside getOfferings will auto-retry if needed
