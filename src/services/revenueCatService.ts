@@ -60,7 +60,16 @@ class RevenueCatService {
    * Returns true if configuration succeeded, false otherwise.
    */
   async configure(userId?: string): Promise<boolean> {
-    if (!Capacitor.isNativePlatform() && !isDespiaRuntime()) {
+    // In Despia runtime, skip Capacitor plugin configuration entirely.
+    // RevenueCat is managed by the native bridge (despia('revenuecat://...')).
+    if (isDespiaRuntime()) {
+      console.log('[RevenueCat] Despia runtime — skipping Capacitor SDK configure');
+      this.initialized = true;
+      this.configureFailed = false;
+      return true;
+    }
+    
+    if (!Capacitor.isNativePlatform()) {
       console.log('[RevenueCat] Not a native platform, skipping');
       return false;
     }
