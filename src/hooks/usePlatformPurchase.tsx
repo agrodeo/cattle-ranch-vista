@@ -182,20 +182,26 @@ export const usePlatformPurchase = () => {
       throw new Error(`No se encontró producto para el plan "${data.planId}" (${data.billingCycle})`);
     }
     
+    // Despia's native RevenueCat bridge expects just the subscription ID
+    // (without the :basePlanId suffix). The native SDK resolves the base plan
+    // automatically from the Google Play product configuration.
+    const despiaProductId = productId.includes(':') 
+      ? productId.split(':')[0] 
+      : productId;
+    
     console.log('[Purchase:Despia] Triggering purchase', { 
       userId, 
-      productId, 
+      productId,
+      despiaProductId,
       planId: data.planId, 
       billingCycle: data.billingCycle 
     });
     
-    // Store the product ID so the callback can use it for sync
+    // Store the full product ID so the callback can use it for sync
     (window as any).__pendingDespiaProductId = productId;
     
-    // Keep ':' unescaped for Android subscriptionId:basePlanId IDs,
-    // because some native bridge parsers don't decode %3A correctly.
-    const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${productId}`;
-    console.log('[Purchase:Despia] Purchase URL prepared', { productId, purchaseUrl });
+    const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(despiaProductId)}`;
+    console.log('[Purchase:Despia] Purchase URL prepared', { despiaProductId, purchaseUrl });
 
     despia(purchaseUrl);
     
