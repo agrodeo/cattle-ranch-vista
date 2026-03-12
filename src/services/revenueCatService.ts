@@ -157,10 +157,7 @@ class RevenueCatService {
    * Log in a user (identifies them to RevenueCat)
    */
   async login(userId: string): Promise<CustomerInfo> {
-    if (!this.initialized) {
-      await this.configure(userId);
-    }
-    
+    await this.ensureInitialized();
     const { customerInfo } = await Purchases.logIn({ appUserID: userId });
     return customerInfo;
   }
