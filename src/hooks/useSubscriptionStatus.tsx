@@ -159,7 +159,7 @@ export function useSubscriptionStatus(): SubscriptionState {
       } | null = null;
 
       // Try to get fresh data from RevenueCat if online and native
-      if (isOnline && isNativeApp()) {
+      if (isOnline && isCapacitorNative()) {
         freshData = await fetchRevenueCatStatus();
         if (freshData) {
           freshPremiumStatus = freshData.isPremium;
