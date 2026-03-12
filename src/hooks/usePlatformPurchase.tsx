@@ -192,11 +192,12 @@ export const usePlatformPurchase = () => {
     // Store the product ID so the callback can use it for sync
     (window as any).__pendingDespiaProductId = productId;
     
-    // Use the documented Despia purchase command:
-    // revenuecat://purchase?external_id={USER_ID}&product={PRODUCT_ID}
-    despia(
-      `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(productId)}`
-    );
+    // Keep ':' unescaped for Android subscriptionId:basePlanId IDs,
+    // because some native bridge parsers don't decode %3A correctly.
+    const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${productId}`;
+    console.log('[Purchase:Despia] Purchase URL prepared', { productId, purchaseUrl });
+
+    despia(purchaseUrl);
     
     // Purchase completion comes via onRevenueCatPurchase callback
     return { success: false, pending: true };
