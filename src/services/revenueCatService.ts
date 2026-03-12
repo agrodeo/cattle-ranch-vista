@@ -65,13 +65,20 @@ class RevenueCatService {
     // RevenueCat is managed by the native bridge (despia('revenuecat://...')).
     if (isDespiaRuntime()) {
       console.log('[RevenueCat] Despia runtime — skipping Capacitor SDK configure');
-      this.initialized = true;
+      this.initialized = false;
       this.configureFailed = false;
-      return true;
+      return false;
     }
     
     if (!Capacitor.isNativePlatform()) {
       console.log('[RevenueCat] Not a native platform, skipping');
+      return false;
+    }
+
+    if (!isRevenueCatCapacitorAvailable()) {
+      console.warn('[RevenueCat] Purchases plugin unavailable in this runtime, skipping configure');
+      this.initialized = false;
+      this.configureFailed = true;
       return false;
     }
     
