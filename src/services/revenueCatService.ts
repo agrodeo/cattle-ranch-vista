@@ -16,7 +16,7 @@ import {
 } from '@revenuecat/purchases-capacitor';
 import { Capacitor } from '@capacitor/core';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
-import { isDespiaRuntime } from '@/lib/platformDetection';
+import { isDespiaRuntime, isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
 
 class RevenueCatService {
   private initialized = false;
