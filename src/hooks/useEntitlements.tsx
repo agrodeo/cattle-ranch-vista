@@ -26,7 +26,7 @@ export const useEntitlements = () => {
   });
 
   const refreshCustomerInfo = useCallback(async () => {
-    if (!isCapacitorNative()) {
+    if (!isRevenueCatCapacitorAvailable()) {
       setState(prev => ({ ...prev, isLoading: false }));
       return;
     }
