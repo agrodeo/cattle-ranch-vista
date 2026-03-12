@@ -31,16 +31,17 @@ class RevenueCatService {
   private async ensureInitialized(): Promise<void> {
     if (this.initialized) return;
     
-    // In Despia runtime, RevenueCat is managed by the native bridge,
-    // not via the Capacitor plugin. Skip SDK initialization entirely.
+    // In Despia runtime, the Capacitor Purchases plugin is intentionally not used.
     if (isDespiaRuntime()) {
-      console.log('[RevenueCat] Despia runtime — SDK managed by native bridge, skipping.');
-      this.initialized = true;
-      return;
+      throw new Error('RevenueCat Capacitor SDK is disabled in Despia runtime. Use the native Despia purchase bridge.');
     }
-    
+
     if (!Capacitor.isNativePlatform()) {
       throw new Error('RevenueCat is only available on native platforms (iOS/Android).');
+    }
+
+    if (!isRevenueCatCapacitorAvailable()) {
+      throw new Error('RevenueCat Purchases plugin is not available in this native runtime.');
     }
     
     console.log('[RevenueCat] Not initialized, attempting auto-configure...');
