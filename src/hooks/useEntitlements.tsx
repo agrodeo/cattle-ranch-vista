@@ -26,7 +26,7 @@ export const useEntitlements = () => {
   });
 
   const refreshCustomerInfo = useCallback(async () => {
-    if (!isNativeApp()) {
+    if (!isCapacitorNative()) {
       setState(prev => ({ ...prev, isLoading: false }));
       return;
     }
