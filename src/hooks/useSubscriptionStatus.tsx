@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useConnectivity } from '@/services/connectivity';
-import { isCapacitorNative } from '@/lib/platformDetection';
+import { isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
 import { revenueCatService } from '@/services/revenueCatService';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';

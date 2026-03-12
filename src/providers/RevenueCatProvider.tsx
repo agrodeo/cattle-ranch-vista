@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { revenueCatService } from '@/services/revenueCatService';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { isCapacitorNative, isNativeApp } from '@/lib/platformDetection';
+import { isNativeApp, isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
 
 interface RevenueCatContextType {
   isConfigured: boolean;
