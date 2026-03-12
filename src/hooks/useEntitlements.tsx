@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { revenueCatService } from '@/services/revenueCatService';
 import { useRevenueCat } from '@/providers/RevenueCatProvider';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
-import { isNativeApp, isCapacitorNative } from '@/lib/platformDetection';
+import { isCapacitorNative } from '@/lib/platformDetection';
 import type { CustomerInfo, PurchasesOfferings } from '@revenuecat/purchases-capacitor';
 
 export interface EntitlementState {
