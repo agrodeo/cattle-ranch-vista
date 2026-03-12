@@ -285,7 +285,7 @@ class RevenueCatService {
     this.listeners.push(callback);
     
     // Set up native listener if not already — only when SDK is initialized
-    if (this.listeners.length === 1 && this.initialized) {
+    if (this.listeners.length === 1 && this.initialized && isRevenueCatCapacitorAvailable()) {
       try {
         Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
           this.listeners.forEach(listener => listener(info));
