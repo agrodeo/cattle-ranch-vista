@@ -31,7 +31,15 @@ class RevenueCatService {
   private async ensureInitialized(): Promise<void> {
     if (this.initialized) return;
     
-    if (!Capacitor.isNativePlatform() && !isDespiaRuntime()) {
+    // In Despia runtime, RevenueCat is managed by the native bridge,
+    // not via the Capacitor plugin. Skip SDK initialization entirely.
+    if (isDespiaRuntime()) {
+      console.log('[RevenueCat] Despia runtime — SDK managed by native bridge, skipping.');
+      this.initialized = true;
+      return;
+    }
+    
+    if (!Capacitor.isNativePlatform()) {
       throw new Error('RevenueCat is only available on native platforms (iOS/Android).');
     }
     
@@ -52,7 +60,16 @@ class RevenueCatService {
    * Returns true if configuration succeeded, false otherwise.
    */
   async configure(userId?: string): Promise<boolean> {
-    if (!Capacitor.isNativePlatform() && !isDespiaRuntime()) {
+    // In Despia runtime, skip Capacitor plugin configuration entirely.
+    // RevenueCat is managed by the native bridge (despia('revenuecat://...')).
+    if (isDespiaRuntime()) {
+      console.log('[RevenueCat] Despia runtime — skipping Capacitor SDK configure');
+      this.initialized = true;
+      this.configureFailed = false;
+      return true;
+    }
+    
+    if (!Capacitor.isNativePlatform()) {
       console.log('[RevenueCat] Not a native platform, skipping');
       return false;
     }
