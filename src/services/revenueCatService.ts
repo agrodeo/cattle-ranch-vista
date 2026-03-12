@@ -166,6 +166,7 @@ class RevenueCatService {
    * Log out (resets to anonymous)
    */
   async logout(): Promise<CustomerInfo> {
+    await this.ensureInitialized();
     const { customerInfo } = await Purchases.logOut();
     return customerInfo;
   }
