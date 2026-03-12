@@ -115,7 +115,7 @@ export function useSubscriptionStatus(): SubscriptionState {
     activeSubscriptions: string[];
     customerInfo: CustomerInfo | null;
   } | null> => {
-    if (!isCapacitorNative()) return null;
+    if (!isRevenueCatCapacitorAvailable()) return null;
     
     try {
       const customerInfo = await revenueCatService.getCustomerInfo();
