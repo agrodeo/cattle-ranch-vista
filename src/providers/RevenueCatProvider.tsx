@@ -28,10 +28,18 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
+      if (!isRevenueCatCapacitorAvailable()) {
+        // Despia runtime or plugin not linked in native shell.
+        // Mark configured so app boot never blocks.
+        setIsConfigured(true);
+        setConfigFailed(false);
+        return;
+      }
+
       try {
         const success = await revenueCatService.configure(session?.user?.id);
         
-        if (success && session?.user?.id && isCapacitorNative()) {
+        if (success && session?.user?.id) {
           await revenueCatService.login(session.user.id);
         }
         
