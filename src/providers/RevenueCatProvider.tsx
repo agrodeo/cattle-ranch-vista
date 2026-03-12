@@ -31,7 +31,7 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
       try {
         const success = await revenueCatService.configure(session?.user?.id);
         
-        if (success && session?.user?.id) {
+        if (success && session?.user?.id && isCapacitorNative()) {
           await revenueCatService.login(session.user.id);
         }
         

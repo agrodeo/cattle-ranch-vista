@@ -69,7 +69,7 @@ export const useEntitlements = () => {
     refreshCustomerInfo();
     loadOfferings();
 
-    if (isNativeApp() && revenueCatService.isInitialized()) {
+    if (isCapacitorNative() && revenueCatService.isInitialized()) {
       const cleanup = revenueCatService.addCustomerInfoUpdateListener((customerInfo) => {
         const proEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PRO];
         setState(prev => ({
