@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import despia from 'despia-native';
 import { isNativeApp, getNativePlatform, isDespiaRuntime } from '@/lib/platformDetection';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +7,11 @@ import { useEntitlements } from '@/hooks/useEntitlements';
 import { getRevenueCatProductId, type PlanId } from '@/config/revenueCatProducts';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { getPaddlePriceId } from '@/config/paddleProducts';
+
+const getDespiaClient = async () => {
+  const module = await import('despia-native');
+  return module.default;
+};
 
 export interface PurchaseData {
   planId: string;
@@ -45,7 +49,8 @@ export const usePlatformPurchase = () => {
         // to construct the payload for sync-ios-purchase.
         try {
           // Get purchase history from Despia bridge
-          const data = await despia("getpurchasehistory://", ["restoredData"]);
+          const despiaClient = await getDespiaClient();
+          const data = await despiaClient("getpurchasehistory://", ["restoredData"]);
           const purchases = (data as any)?.restoredData || [];
           console.log('[Purchase:Despia] Purchase history for sync:', purchases);
 
@@ -203,7 +208,8 @@ export const usePlatformPurchase = () => {
     const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(despiaProductId)}`;
     console.log('[Purchase:Despia] Purchase URL prepared', { despiaProductId, purchaseUrl });
 
-    despia(purchaseUrl);
+    const despiaClient = await getDespiaClient();
+    await despiaClient(purchaseUrl);
     
     // Purchase completion comes via onRevenueCatPurchase callback
     return { success: false, pending: true };
@@ -244,7 +250,8 @@ export const usePlatformPurchase = () => {
       setLoading(true);
       try {
         console.log('[Purchase:Despia] Restoring purchases...');
-        const data = await despia("getpurchasehistory://", ["restoredData"]);
+        const despiaClient = await getDespiaClient();
+        const data = await despiaClient("getpurchasehistory://", ["restoredData"]);
         const purchases = (data as any)?.restoredData || [];
         console.log('[Purchase:Despia] Restored purchases:', purchases);
         
