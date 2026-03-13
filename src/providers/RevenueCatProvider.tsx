@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { revenueCatService } from '@/services/revenueCatService';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { isCapacitorNative, isNativeApp } from '@/lib/platformDetection';
+import { isNativeApp, isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
 
 interface RevenueCatContextType {
   isConfigured: boolean;
@@ -28,10 +28,26 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
+      if (!isRevenueCatCapacitorAvailable()) {
+        // Despia runtime or plugin not linked in native shell.
+        // Mark configured so app boot never blocks.
+        setIsConfigured(true);
+        setConfigFailed(false);
+        return;
+      }
+
+      if (!session?.user?.id) {
+        // Don't initialize Purchases during unauthenticated app boot.
+        // This prevents startup crashes before login.
+        setIsConfigured(true);
+        setConfigFailed(false);
+        return;
+      }
+
       try {
-        const success = await revenueCatService.configure(session?.user?.id);
+        const success = await revenueCatService.configure(session.user.id);
         
-        if (success && session?.user?.id && isCapacitorNative()) {
+        if (success) {
           await revenueCatService.login(session.user.id);
         }
         

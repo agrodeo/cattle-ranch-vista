@@ -16,7 +16,7 @@ import {
 } from '@revenuecat/purchases-capacitor';
 import { Capacitor } from '@capacitor/core';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
-import { isDespiaRuntime } from '@/lib/platformDetection';
+import { isDespiaRuntime, isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
 
 class RevenueCatService {
   private initialized = false;
@@ -31,16 +31,17 @@ class RevenueCatService {
   private async ensureInitialized(): Promise<void> {
     if (this.initialized) return;
     
-    // In Despia runtime, RevenueCat is managed by the native bridge,
-    // not via the Capacitor plugin. Skip SDK initialization entirely.
+    // In Despia runtime, the Capacitor Purchases plugin is intentionally not used.
     if (isDespiaRuntime()) {
-      console.log('[RevenueCat] Despia runtime — SDK managed by native bridge, skipping.');
-      this.initialized = true;
-      return;
+      throw new Error('RevenueCat Capacitor SDK is disabled in Despia runtime. Use the native Despia purchase bridge.');
     }
-    
+
     if (!Capacitor.isNativePlatform()) {
       throw new Error('RevenueCat is only available on native platforms (iOS/Android).');
+    }
+
+    if (!isRevenueCatCapacitorAvailable()) {
+      throw new Error('RevenueCat Purchases plugin is not available in this native runtime.');
     }
     
     console.log('[RevenueCat] Not initialized, attempting auto-configure...');
@@ -64,13 +65,20 @@ class RevenueCatService {
     // RevenueCat is managed by the native bridge (despia('revenuecat://...')).
     if (isDespiaRuntime()) {
       console.log('[RevenueCat] Despia runtime — skipping Capacitor SDK configure');
-      this.initialized = true;
+      this.initialized = false;
       this.configureFailed = false;
-      return true;
+      return false;
     }
     
     if (!Capacitor.isNativePlatform()) {
       console.log('[RevenueCat] Not a native platform, skipping');
+      return false;
+    }
+
+    if (!isRevenueCatCapacitorAvailable()) {
+      console.warn('[RevenueCat] Purchases plugin unavailable in this runtime, skipping configure');
+      this.initialized = false;
+      this.configureFailed = true;
       return false;
     }
     
@@ -149,10 +157,7 @@ class RevenueCatService {
    * Log in a user (identifies them to RevenueCat)
    */
   async login(userId: string): Promise<CustomerInfo> {
-    if (!this.initialized) {
-      await this.configure(userId);
-    }
-    
+    await this.ensureInitialized();
     const { customerInfo } = await Purchases.logIn({ appUserID: userId });
     return customerInfo;
   }
@@ -161,6 +166,7 @@ class RevenueCatService {
    * Log out (resets to anonymous)
    */
   async logout(): Promise<CustomerInfo> {
+    await this.ensureInitialized();
     const { customerInfo } = await Purchases.logOut();
     return customerInfo;
   }
@@ -279,7 +285,7 @@ class RevenueCatService {
     this.listeners.push(callback);
     
     // Set up native listener if not already — only when SDK is initialized
-    if (this.listeners.length === 1 && this.initialized) {
+    if (this.listeners.length === 1 && this.initialized && isRevenueCatCapacitorAvailable()) {
       try {
         Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
           this.listeners.forEach(listener => listener(info));

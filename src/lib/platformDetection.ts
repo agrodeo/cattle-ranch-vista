@@ -96,10 +96,22 @@ export const getNativePlatform = (): 'ios' | 'android' | null => {
 };
 
 /**
- * Check if Capacitor native bridge is truly available (for RevenueCat calls).
+ * Check if RevenueCat Capacitor plugin can be used in this runtime.
+ * Despia uses a different native bridge and should never use Purchases.*
  */
-export const isCapacitorNative = (): boolean => {
-  return Capacitor.isNativePlatform();
+export const isRevenueCatCapacitorAvailable = (): boolean => {
+  if (!Capacitor.isNativePlatform()) return false;
+  if (isDespiaRuntime()) return false;
+
+  try {
+    const checker = (Capacitor as any).isPluginAvailable;
+    if (typeof checker === 'function') {
+      return checker.call(Capacitor, 'Purchases');
+    }
+  } catch {}
+
+  // Fallback for runtimes where isPluginAvailable is not exposed
+  return true;
 };
 
 export const getPlatformStoreName = (platform: Platform): string => {
