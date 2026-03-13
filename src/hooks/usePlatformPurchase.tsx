@@ -49,7 +49,8 @@ export const usePlatformPurchase = () => {
         // to construct the payload for sync-ios-purchase.
         try {
           // Get purchase history from Despia bridge
-          const data = await despia("getpurchasehistory://", ["restoredData"]);
+          const despiaClient = await getDespiaClient();
+          const data = await despiaClient("getpurchasehistory://", ["restoredData"]);
           const purchases = (data as any)?.restoredData || [];
           console.log('[Purchase:Despia] Purchase history for sync:', purchases);
 
