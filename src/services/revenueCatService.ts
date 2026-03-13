@@ -5,18 +5,33 @@
  * - Platform-specific API key handling
  * - Offline-aware initialization
  * - Error handling with fallbacks
+ * - Lazy-loaded SDK to prevent iOS Despia startup crashes
  */
 
-import { 
-  Purchases, 
-  LOG_LEVEL,
-  type CustomerInfo,
-  type PurchasesOfferings,
-  type PurchasesPackage 
+import type {
+  CustomerInfo,
+  PurchasesOfferings,
+  PurchasesPackage 
 } from '@revenuecat/purchases-capacitor';
 import { Capacitor } from '@capacitor/core';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
 import { isDespiaRuntime, isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
+
+/**
+ * Lazily load the Purchases runtime object.
+ * On iOS Despia the @revenuecat/purchases-capacitor module can crash at
+ * import time because the native Purchases plugin is not registered.
+ * By deferring the import we guarantee the module is only evaluated when
+ * we have already confirmed the plugin is available.
+ */
+let _purchasesModule: typeof import('@revenuecat/purchases-capacitor') | null = null;
+
+const getPurchases = async () => {
+  if (!_purchasesModule) {
+    _purchasesModule = await import('@revenuecat/purchases-capacitor');
+  }
+  return _purchasesModule;
+};
 
 class RevenueCatService {
   private initialized = false;
@@ -62,7 +77,6 @@ class RevenueCatService {
    */
   async configure(userId?: string): Promise<boolean> {
     // In Despia runtime, skip Capacitor plugin configuration entirely.
-    // RevenueCat is managed by the native bridge (despia('revenuecat://...')).
     if (isDespiaRuntime()) {
       console.log('[RevenueCat] Despia runtime — skipping Capacitor SDK configure');
       this.initialized = false;
@@ -90,7 +104,7 @@ class RevenueCatService {
       return this.initialized;
     }
     
-    // Get platform-specific API key — check Capacitor first, fall back to Despia detection
+    // Get platform-specific API key
     let platform = Capacitor.getPlatform();
     
     // If Capacitor reports 'web' but we're in Despia, infer from user agent
@@ -120,6 +134,8 @@ class RevenueCatService {
     
     this.configuring = (async () => {
       try {
+        const { Purchases, LOG_LEVEL } = await getPurchases();
+
         await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
         
         await Purchases.configure({
@@ -138,7 +154,6 @@ class RevenueCatService {
           domain: error?.domain,
           raw: JSON.stringify(error)
         });
-        // Re-throw so callers know configuration failed
         throw error;
       } finally {
         this.configuring = null;
@@ -158,6 +173,7 @@ class RevenueCatService {
    */
   async login(userId: string): Promise<CustomerInfo> {
     await this.ensureInitialized();
+    const { Purchases } = await getPurchases();
     const { customerInfo } = await Purchases.logIn({ appUserID: userId });
     return customerInfo;
   }
@@ -167,6 +183,7 @@ class RevenueCatService {
    */
   async logout(): Promise<CustomerInfo> {
     await this.ensureInitialized();
+    const { Purchases } = await getPurchases();
     const { customerInfo } = await Purchases.logOut();
     return customerInfo;
   }
@@ -176,6 +193,7 @@ class RevenueCatService {
    */
   async getOfferings(): Promise<PurchasesOfferings> {
     await this.ensureInitialized();
+    const { Purchases } = await getPurchases();
     return await Purchases.getOfferings();
   }
   
@@ -184,6 +202,7 @@ class RevenueCatService {
    */
   async getCustomerInfo(): Promise<CustomerInfo> {
     await this.ensureInitialized();
+    const { Purchases } = await getPurchases();
     const { customerInfo } = await Purchases.getCustomerInfo();
     return customerInfo;
   }
@@ -213,6 +232,7 @@ class RevenueCatService {
    */
   async purchasePackage(pkg: PurchasesPackage): Promise<CustomerInfo> {
     await this.ensureInitialized();
+    const { Purchases } = await getPurchases();
     console.log('[RevenueCat] purchasePackage:', pkg.identifier);
     
     const { customerInfo } = await Purchases.purchasePackage({ 
@@ -230,6 +250,7 @@ class RevenueCatService {
     }
     
     await this.ensureInitialized();
+    const { Purchases } = await getPurchases();
     console.log('[RevenueCat] purchaseProduct:', productId);
     
     const offerings = await this.getOfferings();
@@ -262,7 +283,7 @@ class RevenueCatService {
    */
   async restorePurchases(): Promise<CustomerInfo> {
     await this.ensureInitialized();
-    
+    const { Purchases } = await getPurchases();
     const { customerInfo } = await Purchases.restorePurchases();
     return customerInfo;
   }
@@ -272,6 +293,7 @@ class RevenueCatService {
    */
   async setUserAttributes(attributes: Record<string, string | null>): Promise<void> {
     if (!this.initialized) return;
+    const { Purchases } = await getPurchases();
     await Purchases.setAttributes(attributes);
   }
   
@@ -286,13 +308,18 @@ class RevenueCatService {
     
     // Set up native listener if not already — only when SDK is initialized
     if (this.listeners.length === 1 && this.initialized && isRevenueCatCapacitorAvailable()) {
-      try {
-        Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
-          this.listeners.forEach(listener => listener(info));
-        });
-      } catch (error) {
-        console.error('[RevenueCat] Failed to add listener:', error);
-      }
+      // Lazy-load and attach listener
+      getPurchases().then(({ Purchases }) => {
+        try {
+          Purchases.addCustomerInfoUpdateListener((info: CustomerInfo) => {
+            this.listeners.forEach(listener => listener(info));
+          });
+        } catch (error) {
+          console.error('[RevenueCat] Failed to add listener:', error);
+        }
+      }).catch(err => {
+        console.error('[RevenueCat] Failed to load SDK for listener:', err);
+      });
     }
     
     // Return cleanup function
