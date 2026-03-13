@@ -36,10 +36,18 @@ export function RevenueCatProvider({ children }: { children: React.ReactNode }) 
         return;
       }
 
+      if (!session?.user?.id) {
+        // Don't initialize Purchases during unauthenticated app boot.
+        // This prevents startup crashes before login.
+        setIsConfigured(true);
+        setConfigFailed(false);
+        return;
+      }
+
       try {
-        const success = await revenueCatService.configure(session?.user?.id);
+        const success = await revenueCatService.configure(session.user.id);
         
-        if (success && session?.user?.id) {
+        if (success) {
           await revenueCatService.login(session.user.id);
         }
         
