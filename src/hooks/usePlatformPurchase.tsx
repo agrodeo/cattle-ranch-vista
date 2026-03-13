@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import despia from 'despia-native';
 import { isNativeApp, getNativePlatform, isDespiaRuntime } from '@/lib/platformDetection';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -8,6 +7,11 @@ import { useEntitlements } from '@/hooks/useEntitlements';
 import { getRevenueCatProductId, type PlanId } from '@/config/revenueCatProducts';
 import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
 import { getPaddlePriceId } from '@/config/paddleProducts';
+
+const getDespiaClient = async () => {
+  const module = await import('despia-native');
+  return module.default;
+};
 
 export interface PurchaseData {
   planId: string;
