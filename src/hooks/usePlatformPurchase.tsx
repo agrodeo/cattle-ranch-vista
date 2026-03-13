@@ -208,7 +208,8 @@ export const usePlatformPurchase = () => {
     const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(despiaProductId)}`;
     console.log('[Purchase:Despia] Purchase URL prepared', { despiaProductId, purchaseUrl });
 
-    despia(purchaseUrl);
+    const despiaClient = await getDespiaClient();
+    await despiaClient(purchaseUrl);
     
     // Purchase completion comes via onRevenueCatPurchase callback
     return { success: false, pending: true };
