@@ -19,6 +19,7 @@ interface AnimalProduccionProps {
 export function AnimalProduccion({ animal }: AnimalProduccionProps) {
   const { t } = useTranslation(['animals', 'common']);
   const { weights, isLoading } = useAnimalWeights(animal.id);
+  const { estimation, isLoading: estimationLoading } = useEstimatedWeight(animal);
 
   // Calculate average daily gain (ADG)
   const calculateADG = () => {
