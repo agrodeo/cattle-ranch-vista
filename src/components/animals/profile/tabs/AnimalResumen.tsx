@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHistory";
 import { useAnimalVaccinations } from "@/hooks/useAnimalVaccinations";
+import { useEstimatedWeight } from "@/hooks/useEstimatedWeight";
+import { EstimatedWeightCard } from "@/components/animals/EstimatedWeightCard";
 import { calculateAge } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
