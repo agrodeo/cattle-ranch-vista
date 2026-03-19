@@ -124,6 +124,9 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
         </Card>
       </div>
 
+      {/* Estimated Weight */}
+      <EstimatedWeightCard estimation={estimation} isLoading={estimationLoading} />
+
       {/* Weight Chart */}
       {chartData.length > 0 ? (
         <Card>

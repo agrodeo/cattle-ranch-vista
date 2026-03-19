@@ -249,6 +249,9 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
         </Card>
       </div>
 
+      {/* Estimated Weight */}
+      <EstimatedWeightCard estimation={estimation} isLoading={estimationLoading} />
+
       {/* Performance Metrics */}
       {animal.sex === 'Hembra' && reproductiveData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
