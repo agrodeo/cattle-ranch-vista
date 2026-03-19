@@ -40,6 +40,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
   const { t } = useTranslation(['common', 'animals']);
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const { status: vaccinationStatus, loading: vaccinationLoading } = useAnimalVaccinations(animal.id);
+  const { estimation, isLoading: estimationLoading } = useEstimatedWeight(animal);
   const [reproductiveData, setReproductiveData] = useState<{
     pregnancyPercentage: number;
     calvingPercentage: number;
