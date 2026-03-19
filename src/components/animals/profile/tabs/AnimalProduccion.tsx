@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Scale, TrendingUp, Calendar, Target } from "lucide-react";
 import { useAnimalWeights } from "@/hooks/useAnimalWeights";
+import { useEstimatedWeight } from "@/hooks/useEstimatedWeight";
+import { EstimatedWeightCard } from "@/components/animals/EstimatedWeightCard";
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 
