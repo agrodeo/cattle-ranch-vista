@@ -468,7 +468,7 @@ export default function Corrales() {
           {/* Main Content */}
           <section className="lg:col-span-3 space-y-6">
             {/* KPIs */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {stats.map((stat, index) => (
                 <MetricCard
                   key={index}
