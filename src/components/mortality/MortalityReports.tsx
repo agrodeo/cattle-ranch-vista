@@ -310,15 +310,15 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
         </ReportChartCard>
 
         <ReportChartCard title={t('mortality:reports.mortalityByCause')}>
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="100%" height={isMobile ? 220 : 280}>
             <PieChart>
               <Pie
                 data={deathsByCause.slice(0, 5)}
                 cx="50%"
                 cy="50%"
                 dataKey="count"
-                labelLine={false}
-                label={({ causa, percent }: any) => percent >= 0.05 ? `${causa} ${(percent * 100).toFixed(0)}%` : ''}
+                labelLine={!isMobile}
+                label={isMobile ? false : ({ causa, percent }: any) => percent >= 0.05 ? `${causa} ${(percent * 100).toFixed(0)}%` : ''}
                 {...DONUT_PROPS}
               >
                 {deathsByCause.slice(0, 5).map((_entry, index) => (
@@ -328,6 +328,24 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
               <Tooltip {...CHART_TOOLTIP_STYLE} />
             </PieChart>
           </ResponsiveContainer>
+          {isMobile && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 px-1">
+              {deathsByCause.slice(0, 5).map((entry, index) => {
+                const total = deathsByCause.slice(0, 5).reduce((s, e) => s + e.count, 0);
+                const pct = total > 0 ? ((entry.count / total) * 100).toFixed(0) : '0';
+                return (
+                  <div key={index} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <span
+                      className="inline-block h-2.5 w-2.5 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: COLORS_PALETTE[index % COLORS_PALETTE.length] }}
+                    />
+                    <span className="truncate max-w-[120px]">{entry.causa}</span>
+                    <span className="font-medium text-foreground">{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </ReportChartCard>
       </div>
 
