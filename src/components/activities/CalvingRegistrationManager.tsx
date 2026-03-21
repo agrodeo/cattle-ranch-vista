@@ -135,7 +135,7 @@ export function CalvingRegistrationManager({ isCompact }: CalvingRegistrationMan
         } else {
           // Check duplicate in batch
           const tag = row.calfTag.trim().toLowerCase();
-          if (tagsInBatch.filter(t => t === tag).length > 1) {
+          if (tagsInBatch.filter(tag2 => tag2 === tag).length > 1) {
             errors.calfTag = t('reproductive:calvingRegistration.validation.tagDuplicateInBatch');
           }
           // Check existing in DB
