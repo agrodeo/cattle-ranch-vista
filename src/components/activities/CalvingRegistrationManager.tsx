@@ -60,9 +60,8 @@ export function CalvingRegistrationManager({ isCompact }: CalvingRegistrationMan
       const { data: profile } = await supabase.from('profiles' as any).select('cabaña_id').eq('user_id', (await supabase.auth.getUser()).data.user?.id).single();
       const cabanaId = (profile as any)?.cabaña_id;
       if (!cabanaId) return [];
-      const { data } = await supabase.from('animals').select('id, id_tag, name, sex, breed, birth_date, status, toro_servicio_id, corral_id, esta_preñada, fecha_probable_parto, cabaña_id');
-      // Filter by cabana client-side since the select with ñ columns works via RLS
-      return (data || []).filter((a: any) => a.cabaña_id === cabanaId);
+      const { data } = await supabase.from('animals').select('*').eq('cabaña_id', cabanaId);
+      return (data || []) as any[];
     },
   });
 
