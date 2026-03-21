@@ -250,5 +250,56 @@
     "lowDesc": "<40% prenhez",
     "performance": "Rendimento",
     "allPerformance": "Todos"
+  },
+  "calvingRegistration": {
+    "title": "Registro de Partos",
+    "addRow": "Adicionar Parto",
+    "selectMother": "Selecionar Mãe",
+    "searchPlaceholder": "Pesquisar por tag ou nome...",
+    "filterByCorral": "Filtrar por curral",
+    "allCorrals": "Todos os currais",
+    "showAllFemales": "Pesquisar outra fêmea",
+    "columns": {
+      "mother": "Mãe",
+      "birthDate": "Data do Parto",
+      "result": "Resultado",
+      "calfSex": "Sexo da Cria",
+      "calfTag": "Tag da Cria",
+      "birthWeight": "Peso (kg)",
+      "electronicTag": "Brinco Eletrônico",
+      "father": "Pai",
+      "notes": "Notas"
+    },
+    "results": {
+      "successful": "Bem-sucedido",
+      "abortion": "Aborto",
+      "stillbirth": "Natimorto",
+      "neonatal": "Morte Neonatal"
+    },
+    "saveAll": "Salvar Tudo",
+    "saving": "Salvando...",
+    "success": "partos registrados com sucesso",
+    "errors": "com erros",
+    "validation": {
+      "sexRequired": "Sexo é obrigatório para parto bem-sucedido",
+      "tagRequired": "Tag da cria é obrigatório para parto bem-sucedido",
+      "tagDuplicate": "Este tag já existe",
+      "tagDuplicateInBatch": "Tag duplicado neste lote",
+      "dateInFuture": "A data não pode ser futura",
+      "noRows": "Adicione pelo menos um parto"
+    },
+    "dueDate": "Data estimada",
+    "daysOverdue": "dias de atraso",
+    "daysUntilDue": "dias para a data",
+    "pregnantFemales": "Fêmeas Prenhas",
+    "otherFemales": "Outras Fêmeas",
+    "noPregnantFemales": "Nenhuma fêmea prenha registrada",
+    "fatherFromService": "Do serviço",
+    "fatherManual": "Manual",
+    "confirmSave": "Confirmar o registro de {{count}} partos?",
+    "summary": "Resumo: {{success}} bem-sucedidos, {{failed}} perdas",
+    "noRows": "Adicione partos usando o botão +",
+    "selectFather": "Selecionar pai",
+    "noFather": "Sem pai"
   }
 }
