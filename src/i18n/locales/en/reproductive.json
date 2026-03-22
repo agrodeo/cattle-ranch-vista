@@ -298,7 +298,9 @@
     "fatherManual": "Manual",
     "confirmSave": "Confirm registration of {{count}} births?",
     "summary": "Summary: {{success}} successful, {{failed}} losses",
-    "noRows": "Add births using the + button",
+    "noRows": "Search for a female by tag or name to register a birth",
+    "searchMotherPlaceholder": "Type mother's tag or name...",
+    "noMatchingFemales": "No matching females found",
     "selectFather": "Select father",
     "noFather": "No father"
   }
