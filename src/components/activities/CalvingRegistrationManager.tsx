@@ -112,7 +112,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const otherFemales = useMemo(() => {
     return animals.filter(a =>
       (a.sex === 'Hembra' || a.sex === 'hembra') &&
-      a.status === 'Activo' &&
+      (a.status === 'Activo' || a.status === 'activo') &&
       !a.esta_preñada &&
       !alreadySelectedIds.includes(a.id)
     );
