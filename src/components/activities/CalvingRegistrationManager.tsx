@@ -36,6 +36,7 @@ interface CalvingRow {
 
 interface CalvingRegistrationManagerProps {
   isCompact?: boolean;
+  onSuccess?: () => void;
 }
 
 const RESULT_TO_MOTIVO: Record<ResultType, string> = {
