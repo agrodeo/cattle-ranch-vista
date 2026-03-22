@@ -46,7 +46,7 @@ const RESULT_TO_MOTIVO: Record<ResultType, string> = {
   neonatal: 'neonatal',
 };
 
-export function CalvingRegistrationManager({ isCompact }: CalvingRegistrationManagerProps) {
+export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegistrationManagerProps) {
   const { t } = useTranslation(['reproductive', 'common']);
   const { registerCalvingEvent } = useReproductiveSystem();
   const { toast } = useToast();
