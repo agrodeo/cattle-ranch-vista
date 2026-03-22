@@ -62,10 +62,13 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const { data: animals = [] } = useQuery({
     queryKey: ['animals-for-calving'],
     queryFn: async () => {
-      const { data: profile } = await supabase.from('profiles' as any).select('cabaña_id').eq('user_id', (await supabase.auth.getUser()).data.user?.id).single();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data: profile } = await supabase.from('profiles' as any).select('cabaña_id').eq('user_id', user.id).single();
       const cabanaId = (profile as any)?.cabaña_id;
       if (!cabanaId) return [];
-      const { data } = await supabase.from('animals').select('*').eq('cabaña_id', cabanaId);
+      const { data, error } = await supabase.from('animals').select('*').eq('cabaña_id', cabanaId);
+      if (error) { console.error('Error fetching animals for calving:', error); return []; }
       return (data || []) as any[];
     },
   });
