@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope } from "lucide-react";
+import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewVaccinationDialog } from "@/components/activities/NewVaccinationDialog";
 import { WeighingFlowDialog } from "@/components/activities/WeighingFlowDialog";
 import { NewInseminationDialog } from "@/components/activities/NewInseminationDialog";
 import { NewGeneralActivityDialog } from "@/components/activities/NewGeneralActivityDialog";
 import { NewPregnancyLossDialog } from "@/components/activities/NewPregnancyLossDialog";
 import { NewTactoDialog } from "@/components/activities/NewTactoDialog";
+import { CalvingRegistrationManager } from "@/components/activities/CalvingRegistrationManager";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ActivityCreationFlowProps {
   onClose: () => void;
 }
 
-type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto";
+type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto" | "calving";
 
 export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   const { t } = useTranslation('activities');
@@ -41,6 +43,13 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       description: t('activityCreation.insemination.description'),
       icon: Heart,
       color: "bg-pink-500",
+    },
+    {
+      id: "calving" as ActivityType,
+      title: t('activityCreation.calving.title'),
+      description: t('activityCreation.calving.description'),
+      icon: Baby,
+      color: "bg-green-600",
     },
     {
       id: "general" as ActivityType,
@@ -79,74 +88,75 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     onClose();
   };
 
+  // Full-screen calving flow
+  if (selectedActivity === "calving") {
+    return (
+      <div className="fixed inset-0 z-50 bg-background flex flex-col">
+        <div className="flex items-center p-4 border-b border-border shrink-0">
+          <Button variant="ghost" size="icon" onClick={handleDialogClose} className="mr-2">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-semibold">{t('activityCreation.calving.title')}</h1>
+        </div>
+        <ScrollArea className="flex-1">
+          <div className="p-4">
+            <CalvingRegistrationManager isCompact onSuccess={handleSuccess} />
+          </div>
+        </ScrollArea>
+      </div>
+    );
+  }
+
+  const activityCards = (
+    <>
+      {activities.map((activity) => (
+        <Card
+          key={activity.id}
+          className="cursor-pointer border-2 hover:border-primary/50 transition-colors"
+          onClick={() => handleActivitySelect(activity.id)}
+        >
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-lg text-white ${activity.color}`}>
+                <activity.icon className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle>{activity.title}</CardTitle>
+                <CardDescription>{activity.description}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+      ))}
+    </>
+  );
+
   return (
     <>
       {/* Mobile view - Full screen */}
       <div className="fixed inset-0 z-50 bg-background lg:hidden">
-        {/* Header */}
         <div className="flex items-center p-4 border-b border-border">
           <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-xl font-semibold">{t('activityCreation.title')}</h1>
         </div>
-
-        {/* Content */}
         <div className="flex-1 p-4 space-y-4">
-          {activities.map((activity) => (
-            <Card
-              key={activity.id}
-              className="cursor-pointer border-2 hover:border-primary/50 transition-colors"
-              onClick={() => handleActivitySelect(activity.id)}
-            >
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-lg text-white ${activity.color}`}>
-                    <activity.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <CardTitle>{activity.title}</CardTitle>
-                    <CardDescription>{activity.description}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
+          {activityCards}
         </div>
       </div>
 
       {/* Desktop view - Modal overlay */}
       <div className="hidden lg:block fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background rounded-lg shadow-xl">
-          {/* Header */}
           <div className="flex items-center p-6 border-b border-border">
             <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-xl font-semibold">{t('activityCreation.title')}</h1>
           </div>
-
-          {/* Content */}
           <div className="p-6 space-y-4">
-            {activities.map((activity) => (
-              <Card
-                key={activity.id}
-                className="cursor-pointer border-2 hover:border-primary/50 transition-colors"
-                onClick={() => handleActivitySelect(activity.id)}
-              >
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-lg text-white ${activity.color}`}>
-                      <activity.icon className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <CardTitle>{activity.title}</CardTitle>
-                      <CardDescription>{activity.description}</CardDescription>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
+            {activityCards}
           </div>
         </div>
       </div>
