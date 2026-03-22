@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,10 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, X, CalendarIcon, Save, Baby } from 'lucide-react';
-import { SelectMotherDialog } from './SelectMotherDialog';
+import { Badge } from '@/components/ui/badge';
+import { Plus, X, CalendarIcon, Save, Baby, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 
 type ResultType = 'exitoso' | 'aborto' | 'stillbirth' | 'neonatal';
 
