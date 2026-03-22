@@ -121,12 +121,22 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const filteredSuggestions = useMemo(() => {
     const searchLower = motherSearch.toLowerCase().trim();
     const allFemales = [...pregnantFemales, ...otherFemales];
-    if (!searchLower) return pregnantFemales.slice(0, 10);
-    return allFemales.filter(a =>
+    
+    // Apply corral filter first
+    const corralFiltered = corralFilter === 'all' 
+      ? allFemales 
+      : allFemales.filter(a => a.corral_id === corralFilter);
+    
+    const corralFilteredPregnant = corralFilter === 'all'
+      ? pregnantFemales
+      : pregnantFemales.filter(a => a.corral_id === corralFilter);
+
+    if (!searchLower) return corralFilteredPregnant.slice(0, 10);
+    return corralFiltered.filter(a =>
       (a.id_tag?.toLowerCase().includes(searchLower)) ||
       (a.name?.toLowerCase().includes(searchLower))
     ).slice(0, 10);
-  }, [motherSearch, pregnantFemales, otherFemales]);
+  }, [motherSearch, pregnantFemales, otherFemales, corralFilter]);
 
   const handleSelectMother = useCallback((animal: any) => {
     const fatherId = animal.toro_servicio_id || '';
