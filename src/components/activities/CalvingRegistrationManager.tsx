@@ -325,7 +325,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
                   <>
                     {!motherSearch.trim() && (
                       <p className="text-[10px] font-medium text-muted-foreground px-3 pt-2 pb-1 uppercase tracking-wide">
-                        {t('reproductive:calvingRegistration.pregnantFemales')} ({pregnantFemales.length})
+                        {t('reproductive:calvingRegistration.pregnantFemales')} ({corralFilter === 'all' ? pregnantFemales.length : pregnantFemales.filter(a => a.corral_id === corralFilter).length})
                       </p>
                     )}
                     {filteredSuggestions.map(animal => {
