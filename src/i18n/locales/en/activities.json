@@ -259,6 +259,10 @@
     "pregnancyLoss": {
       "title": "Pregnancy Loss",
       "description": "Record reproductive losses"
+    },
+    "calving": {
+      "title": "Calving Registration",
+      "description": "Register births and calvings"
     }
   },
   "activityCard": {

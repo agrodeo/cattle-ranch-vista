@@ -36,6 +36,7 @@ interface CalvingRow {
 
 interface CalvingRegistrationManagerProps {
   isCompact?: boolean;
+  onSuccess?: () => void;
 }
 
 const RESULT_TO_MOTIVO: Record<ResultType, string> = {
@@ -45,7 +46,7 @@ const RESULT_TO_MOTIVO: Record<ResultType, string> = {
   neonatal: 'neonatal',
 };
 
-export function CalvingRegistrationManager({ isCompact }: CalvingRegistrationManagerProps) {
+export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegistrationManagerProps) {
   const { t } = useTranslation(['reproductive', 'common']);
   const { registerCalvingEvent } = useReproductiveSystem();
   const { toast } = useToast();
@@ -196,6 +197,7 @@ export function CalvingRegistrationManager({ isCompact }: CalvingRegistrationMan
       setRows([]);
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-for-calving'] });
+      onSuccess?.();
     }
   };
 

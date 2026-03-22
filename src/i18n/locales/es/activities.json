@@ -270,6 +270,10 @@
     "pregnancyLoss": {
       "title": "Pérdida de Preñez",
       "description": "Registrar pérdidas reproductivas"
+    },
+    "calving": {
+      "title": "Registro de Partos",
+      "description": "Registrar nacimientos y partos"
     }
   },
   "activityCard": {
