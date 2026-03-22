@@ -56,6 +56,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const [saving, setSaving] = useState(false);
   const [motherSearch, setMotherSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [corralFilter, setCorralFilter] = useState<string>('all');
   const searchRef = useRef<HTMLInputElement>(null);
 
   const { data: animals = [] } = useQuery({
@@ -120,12 +121,22 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const filteredSuggestions = useMemo(() => {
     const searchLower = motherSearch.toLowerCase().trim();
     const allFemales = [...pregnantFemales, ...otherFemales];
-    if (!searchLower) return pregnantFemales.slice(0, 10);
-    return allFemales.filter(a =>
+    
+    // Apply corral filter first
+    const corralFiltered = corralFilter === 'all' 
+      ? allFemales 
+      : allFemales.filter(a => a.corral_id === corralFilter);
+    
+    const corralFilteredPregnant = corralFilter === 'all'
+      ? pregnantFemales
+      : pregnantFemales.filter(a => a.corral_id === corralFilter);
+
+    if (!searchLower) return corralFilteredPregnant.slice(0, 10);
+    return corralFiltered.filter(a =>
       (a.id_tag?.toLowerCase().includes(searchLower)) ||
       (a.name?.toLowerCase().includes(searchLower))
     ).slice(0, 10);
-  }, [motherSearch, pregnantFemales, otherFemales]);
+  }, [motherSearch, pregnantFemales, otherFemales, corralFilter]);
 
   const handleSelectMother = useCallback((animal: any) => {
     const fatherId = animal.toro_servicio_id || '';
@@ -274,18 +285,31 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
           )}
         </div>
 
-        {/* Inline mother search combobox */}
+        {/* Inline mother search with corral filter */}
         <div className="relative">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              placeholder={t('reproductive:calvingRegistration.searchMotherPlaceholder')}
-              value={motherSearch}
-              onChange={(e) => { setMotherSearch(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-              className="pl-8"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                ref={searchRef}
+                placeholder={t('reproductive:calvingRegistration.searchMotherPlaceholder')}
+                value={motherSearch}
+                onChange={(e) => { setMotherSearch(e.target.value); setShowSuggestions(true); }}
+                onFocus={() => setShowSuggestions(true)}
+                className="pl-8"
+              />
+            </div>
+            <Select value={corralFilter} onValueChange={(v) => { setCorralFilter(v); setShowSuggestions(true); }}>
+              <SelectTrigger className="w-[140px] sm:w-[180px] shrink-0">
+                <SelectValue placeholder={t('reproductive:calvingRegistration.filterByCorral')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('reproductive:calvingRegistration.allCorrals')}</SelectItem>
+                {corrales.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {showSuggestions && (
@@ -301,7 +325,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
                   <>
                     {!motherSearch.trim() && (
                       <p className="text-[10px] font-medium text-muted-foreground px-3 pt-2 pb-1 uppercase tracking-wide">
-                        {t('reproductive:calvingRegistration.pregnantFemales')} ({pregnantFemales.length})
+                        {t('reproductive:calvingRegistration.pregnantFemales')} ({corralFilter === 'all' ? pregnantFemales.length : pregnantFemales.filter(a => a.corral_id === corralFilter).length})
                       </p>
                     )}
                     {filteredSuggestions.map(animal => {
