@@ -93,7 +93,7 @@ export function SelectMotherDialog({ open, onClose, onSelect, animals, corrales,
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col w-[calc(100%-1.5rem)] sm:w-full">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Baby className="h-5 w-5" />
@@ -101,7 +101,7 @@ export function SelectMotherDialog({ open, onClose, onSelect, animals, corrales,
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -112,7 +112,7 @@ export function SelectMotherDialog({ open, onClose, onSelect, animals, corrales,
             />
           </div>
           <Select value={corralFilter} onValueChange={setCorralFilter}>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-full sm:w-[160px]">
               <SelectValue placeholder={t('reproductive:calvingRegistration.filterByCorral')} />
             </SelectTrigger>
             <SelectContent>
@@ -143,21 +143,21 @@ export function SelectMotherDialog({ open, onClose, onSelect, animals, corrales,
               <button
                 key={animal.id}
                 onClick={() => { onSelect(animal); onClose(); }}
-                className="w-full flex items-center justify-between gap-2 p-2.5 rounded-md hover:bg-accent text-left transition-colors"
+                className="w-full flex items-center justify-between gap-2 p-2.5 rounded-md hover:bg-accent active:bg-accent/80 text-left transition-colors"
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm">{animal.id_tag || '-'}</span>
                     {animal.name && <span className="text-sm text-muted-foreground truncate">{animal.name}</span>}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5 flex-wrap">
                     <span>{getCorralName(animal.corral_id)}</span>
                     {animal.esta_preñada && <Badge variant="secondary" className="text-[10px] h-4">{t('reproductive:pregnancy.pregnant')}</Badge>}
                   </div>
                 </div>
                 {dueInfo && (
                   <div className={cn(
-                    'text-xs text-right whitespace-nowrap',
+                    'text-xs text-right whitespace-nowrap shrink-0',
                     dueInfo.days < 0 ? 'text-destructive font-medium' : 'text-muted-foreground'
                   )}>
                     <div>{dueInfo.date}</div>
