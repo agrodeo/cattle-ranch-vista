@@ -80,6 +80,12 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
     },
   });
 
+  const corralesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    corrales.forEach(c => { map[c.id] = c.name; });
+    return map;
+  }, [corrales]);
+
   const males = useMemo(() =>
     animals.filter(a => (a.sex === 'Macho' || a.sex === 'macho') && a.status === 'Activo'),
     [animals]
