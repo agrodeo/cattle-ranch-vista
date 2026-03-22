@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,10 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, X, CalendarIcon, Save, Baby } from 'lucide-react';
-import { SelectMotherDialog } from './SelectMotherDialog';
+import { Badge } from '@/components/ui/badge';
+import { Plus, X, CalendarIcon, Save, Baby, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 
 type ResultType = 'exitoso' | 'aborto' | 'stillbirth' | 'neonatal';
 
@@ -53,8 +53,10 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [rows, setRows] = useState<CalvingRow[]>([]);
-  const [showMotherDialog, setShowMotherDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [motherSearch, setMotherSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const { data: animals = [] } = useQuery({
     queryKey: ['animals-for-calving'],
@@ -84,6 +86,40 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   );
 
   const alreadySelectedIds = useMemo(() => rows.map(r => r.mother.id), [rows]);
+
+  const pregnantFemales = useMemo(() => {
+    return animals
+      .filter(a =>
+        (a.sex === 'Hembra' || a.sex === 'hembra') &&
+        a.status === 'Activo' &&
+        a.esta_preñada &&
+        !alreadySelectedIds.includes(a.id)
+      )
+      .sort((a, b) => {
+        if (!a.fecha_probable_parto) return 1;
+        if (!b.fecha_probable_parto) return -1;
+        return new Date(a.fecha_probable_parto).getTime() - new Date(b.fecha_probable_parto).getTime();
+      });
+  }, [animals, alreadySelectedIds]);
+
+  const otherFemales = useMemo(() => {
+    return animals.filter(a =>
+      (a.sex === 'Hembra' || a.sex === 'hembra') &&
+      a.status === 'Activo' &&
+      !a.esta_preñada &&
+      !alreadySelectedIds.includes(a.id)
+    );
+  }, [animals, alreadySelectedIds]);
+
+  const filteredSuggestions = useMemo(() => {
+    const searchLower = motherSearch.toLowerCase().trim();
+    const allFemales = [...pregnantFemales, ...otherFemales];
+    if (!searchLower) return pregnantFemales.slice(0, 10);
+    return allFemales.filter(a =>
+      (a.id_tag?.toLowerCase().includes(searchLower)) ||
+      (a.name?.toLowerCase().includes(searchLower))
+    ).slice(0, 10);
+  }, [motherSearch, pregnantFemales, otherFemales]);
 
   const handleSelectMother = useCallback((animal: any) => {
     const fatherId = animal.toro_servicio_id || '';
@@ -201,26 +237,114 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
     }
   };
 
+  const today = new Date();
+
+  const getDueDateInfo = (fpp: string | null) => {
+    if (!fpp) return null;
+    const dueDate = new Date(fpp);
+    const days = differenceInDays(dueDate, today);
+    return { days, date: format(dueDate, 'dd/MM/yyyy') };
+  };
+
+  const handleSuggestionSelect = (animal: any) => {
+    handleSelectMother(animal);
+    setMotherSearch('');
+    setShowSuggestions(false);
+  };
+
   return (
     <Card>
-      <CardHeader className={cn('flex flex-row items-center justify-between space-y-0', isMobile && 'flex-col items-start gap-3')}>
-        <CardTitle className={cn('text-lg flex items-center gap-2', isCompact && 'text-base')}>
-          <Baby className="h-5 w-5" />
-          {t('reproductive:calvingRegistration.title')}
-        </CardTitle>
-        <div className={cn('flex gap-2', isMobile && 'w-full')}>
-          <Button size="sm" variant="outline" onClick={() => setShowMotherDialog(true)} className={cn(isMobile && 'flex-1')}>
-            <Plus className="h-4 w-4 mr-1" />
-            {t('reproductive:calvingRegistration.addRow')}
-          </Button>
+      <CardHeader className={cn('flex flex-col gap-3 space-y-0')}>
+        <div className="flex items-center justify-between">
+          <CardTitle className={cn('text-lg flex items-center gap-2', isCompact && 'text-base')}>
+            <Baby className="h-5 w-5" />
+            {t('reproductive:calvingRegistration.title')}
+          </CardTitle>
           {rows.length > 0 && (
-            <Button size="sm" onClick={handleSaveAll} disabled={saving} className={cn(isMobile && 'flex-1')}>
+            <Button size="sm" onClick={handleSaveAll} disabled={saving}>
               <Save className="h-4 w-4 mr-1" />
               {saving ? t('reproductive:calvingRegistration.saving') : t('reproductive:calvingRegistration.saveAll')}
             </Button>
           )}
         </div>
+
+        {/* Inline mother search combobox */}
+        <div className="relative">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={searchRef}
+              placeholder={t('reproductive:calvingRegistration.searchMotherPlaceholder')}
+              value={motherSearch}
+              onChange={(e) => { setMotherSearch(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              className="pl-8"
+            />
+          </div>
+
+          {showSuggestions && (
+            <>
+              {/* Backdrop to close suggestions */}
+              <div className="fixed inset-0 z-10" onClick={() => setShowSuggestions(false)} />
+              <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-popover border border-border rounded-md shadow-lg max-h-[280px] overflow-y-auto">
+                {filteredSuggestions.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    {t('reproductive:calvingRegistration.noMatchingFemales')}
+                  </p>
+                ) : (
+                  <>
+                    {!motherSearch.trim() && (
+                      <p className="text-[10px] font-medium text-muted-foreground px-3 pt-2 pb-1 uppercase tracking-wide">
+                        {t('reproductive:calvingRegistration.pregnantFemales')} ({pregnantFemales.length})
+                      </p>
+                    )}
+                    {filteredSuggestions.map(animal => {
+                      const dueInfo = getDueDateInfo(animal.fecha_probable_parto);
+                      return (
+                        <button
+                          key={animal.id}
+                          onClick={() => handleSuggestionSelect(animal)}
+                          className="w-full flex items-center justify-between gap-2 px-3 py-2.5 hover:bg-accent active:bg-accent/80 text-left transition-colors border-b border-border/50 last:border-0"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm">{animal.id_tag || '-'}</span>
+                              {animal.name && <span className="text-sm text-muted-foreground truncate">{animal.name}</span>}
+                            </div>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              {animal.esta_preñada && (
+                                <Badge variant="secondary" className="text-[10px] h-4 bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
+                                  {t('reproductive:pregnancy.pregnant')}
+                                </Badge>
+                              )}
+                              {animal.breed && <span className="text-[11px] text-muted-foreground">{animal.breed}</span>}
+                            </div>
+                          </div>
+                          {dueInfo && (
+                            <div className={cn(
+                              'text-xs text-right whitespace-nowrap shrink-0',
+                              dueInfo.days < 0 ? 'text-destructive font-medium' : 'text-muted-foreground'
+                            )}>
+                              <div>{dueInfo.date}</div>
+                              <div className="text-[10px]">
+                                {dueInfo.days < 0
+                                  ? `${Math.abs(dueInfo.days)}d ${t('reproductive:calvingRegistration.daysOverdue')}`
+                                  : `${dueInfo.days}d ${t('reproductive:calvingRegistration.daysUntilDue')}`
+                                }
+                              </div>
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       </CardHeader>
+
       <CardContent className={cn(isMobile && 'px-3')}>
         {rows.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-6">
@@ -264,15 +388,6 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
           </div>
         )}
       </CardContent>
-
-      <SelectMotherDialog
-        open={showMotherDialog}
-        onClose={() => setShowMotherDialog(false)}
-        onSelect={handleSelectMother}
-        animals={animals as any}
-        corrales={corrales}
-        alreadySelectedIds={alreadySelectedIds}
-      />
     </Card>
   );
 }

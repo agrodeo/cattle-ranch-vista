@@ -298,7 +298,9 @@
     "fatherManual": "Manual",
     "confirmSave": "Confirmar o registro de {{count}} partos?",
     "summary": "Resumo: {{success}} bem-sucedidos, {{failed}} perdas",
-    "noRows": "Adicione partos usando o botão +",
+    "noRows": "Pesquise uma fêmea por tag ou nome para registrar um parto",
+    "searchMotherPlaceholder": "Digite o tag ou nome da mãe...",
+    "noMatchingFemales": "Nenhuma fêmea encontrada",
     "selectFather": "Selecionar pai",
     "noFather": "Sem pai"
   }
