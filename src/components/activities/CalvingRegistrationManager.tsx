@@ -233,6 +233,15 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
               esta_preñada: false,
               fecha_probable_parto: null,
             }).eq('id', row.mother.id);
+            // Also update reproductive state tables to avoid stale state
+            await supabase.from('reproductive_states' as any).update({
+              current_state: 'post_parto',
+              last_update: new Date().toISOString(),
+            }).eq('animal_id', row.mother.id);
+            await supabase.from('reproductive_current_state' as any).update({
+              estado: 'post_parto',
+              updated_at: new Date().toISOString(),
+            }).eq('animal_id', row.mother.id);
           }
           successCount++;
         } else {
