@@ -285,18 +285,31 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
           )}
         </div>
 
-        {/* Inline mother search combobox */}
+        {/* Inline mother search with corral filter */}
         <div className="relative">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              ref={searchRef}
-              placeholder={t('reproductive:calvingRegistration.searchMotherPlaceholder')}
-              value={motherSearch}
-              onChange={(e) => { setMotherSearch(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-              className="pl-8"
-            />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                ref={searchRef}
+                placeholder={t('reproductive:calvingRegistration.searchMotherPlaceholder')}
+                value={motherSearch}
+                onChange={(e) => { setMotherSearch(e.target.value); setShowSuggestions(true); }}
+                onFocus={() => setShowSuggestions(true)}
+                className="pl-8"
+              />
+            </div>
+            <Select value={corralFilter} onValueChange={(v) => { setCorralFilter(v); setShowSuggestions(true); }}>
+              <SelectTrigger className="w-[140px] sm:w-[180px] shrink-0">
+                <SelectValue placeholder={t('reproductive:calvingRegistration.filterByCorral')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t('reproductive:calvingRegistration.allCorrals')}</SelectItem>
+                {corrales.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {showSuggestions && (
