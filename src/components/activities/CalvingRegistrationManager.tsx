@@ -53,8 +53,10 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const queryClient = useQueryClient();
   const isMobile = useIsMobile();
   const [rows, setRows] = useState<CalvingRow[]>([]);
-  const [showMotherDialog, setShowMotherDialog] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [motherSearch, setMotherSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const { data: animals = [] } = useQuery({
     queryKey: ['animals-for-calving'],
