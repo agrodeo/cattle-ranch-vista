@@ -233,6 +233,15 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
               esta_preñada: false,
               fecha_probable_parto: null,
             }).eq('id', row.mother.id);
+            // Also update reproductive state tables to avoid stale state
+            await supabase.from('reproductive_states' as any).update({
+              current_state: 'post_parto',
+              last_update: new Date().toISOString(),
+            }).eq('animal_id', row.mother.id);
+            await supabase.from('reproductive_current_state' as any).update({
+              estado: 'post_parto',
+              updated_at: new Date().toISOString(),
+            }).eq('animal_id', row.mother.id);
           }
           successCount++;
         } else {
@@ -245,6 +254,27 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
             await markPregnancyAsFailed(activePregnancy.id, RESULT_TO_MOTIVO[row.result]);
           } else {
             await supabase.from('animals').update({ esta_preñada: false, fecha_probable_parto: null }).eq('id', row.mother.id);
+          }
+          // Create evento record for non-successful calvings so they appear in activity timeline
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.from('eventos').insert({
+                cabaña_id: cabanaId,
+                tipo: 'PARTO',
+                fecha: format(row.birthDate, 'yyyy-MM-dd'),
+                creado_por: user.id,
+                notas: row.notes || null,
+                payload: {
+                  animal_id: row.mother.id,
+                  animal_tag: row.mother.id_tag,
+                  resultado: row.result,
+                  motivo: RESULT_TO_MOTIVO[row.result],
+                },
+              });
+            }
+          } catch (eventoError) {
+            console.warn('Failed to create evento for failed calving:', eventoError);
           }
           failedCount++;
         }
@@ -262,6 +292,10 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       setRows([]);
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-for-calving'] });
+      queryClient.invalidateQueries({ queryKey: ['reproductive-alerts'] });
+      queryClient.invalidateQueries({ queryKey: ['reproductive-kpis'] });
+      queryClient.invalidateQueries({ queryKey: ['activities'] });
+      queryClient.invalidateQueries({ queryKey: ['corrales'] });
       onSuccess?.();
     }
   };
