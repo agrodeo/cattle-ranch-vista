@@ -1,52 +1,24 @@
 
 
-# Achievement Story Card — Tier Colors, Layout Fix & Font Upgrade
+## Plan: Add "Registro de Partos" to the Activity Creation Flow
 
-## Problem
-1. **No tier differentiation**: All story cards use the same green color regardless of bronze/silver/gold tier
-2. **Text overlapping**: The number, exclamation marks, and item label collide at certain sizes
-3. **Generic font**: System font stack looks plain — not share-worthy for social media
+### Problem
+The calving registration activity exists in the ReproductivasTab but is not accessible from the mobile "Add Activity" flow (`ActivityCreationFlow.tsx`), where all other activities (vaccination, weighing, insemination, etc.) are listed.
 
-## Design
+### Changes
 
-### Tier color palettes (applied to exclamation marks, header, item label, and accents):
-- **Bronze**: `#CD7F32` (warm bronze) with number in `#4a3728`
-- **Silver**: `#8C8C8C` (cool silver) with number in `#3d3d3d`  
-- **Gold**: `#DAA520` (rich gold) with number in `#5c4a00`
+**1. Modify `src/components/mobile/flows/ActivityCreationFlow.tsx`**
+- Add `"calving"` to the `ActivityType` union
+- Add a new card entry: icon `Baby` (from lucide-react), title from `t('activityCreation.calving.title')`, green color (`bg-green-600`)
+- When selected, navigate to a full-screen view rendering `<CalvingRegistrationManager />` (the existing component) instead of opening a dialog
+- Add back button + close handling for the calving flow
 
-### Layout fixes:
-- Separate the number and item label with more vertical spacing
-- Reduce exclamation mark size relative to the number to prevent overlap
-- Cap item label font size more aggressively and add `wordBreak` for long labels
-- Move content block slightly upward to leave breathing room at bottom for branding
+**2. Add i18n strings to all 3 locale files**
+- `src/i18n/locales/es/activities.json` — add `activityCreation.calving.title`: "Registro de Partos", `description`: "Registrar nacimientos y partos"
+- `src/i18n/locales/en/activities.json` — add `activityCreation.calving.title`: "Calving Registration", `description`: "Register births and calvings"
+- `src/i18n/locales/pt/activities.json` — add `activityCreation.calving.title`: "Registro de Partos", `description`: "Registrar nascimentos e partos"
 
-### Font:
-- Use Google Font **Montserrat** (bold, italic) — loaded via `@import` in the off-screen element's inline style. html2canvas captures computed styles so this works if the font is preloaded.
-- Fallback: keep system font stack
-
-## Changes
-
-### 1. `src/components/achievements/AchievementStoryCard.tsx`
-- Add `medalTier` prop
-- Create a `getTierColors(tier)` helper returning `{ accent, number }` colors
-- Apply tier colors to header text, exclamation marks, and item label
-- Fix layout: reduce `¡` / `!` font size to match number height, increase gap between number row and item label
-- Use Montserrat font family
-
-### 2. `src/components/achievements/AchievementCard.tsx`
-- Pass `medalTier` to `AchievementStoryCard`
-- Update the visible preview card to also reflect tier colors instead of hardcoded green
-- Add Montserrat font link in `<head>` via a `useEffect` on mount (ensures font loads before capture)
-
-### 3. `src/lib/achievementStoryImage.ts`
-- Add a small delay before capture to ensure fonts are loaded (`document.fonts.ready`)
-
-### 4. `index.html`
-- Add `<link>` to preload Montserrat font from Google Fonts (ensures it's available for html2canvas)
-
-## No regressions
-- Off-screen rendering approach unchanged
-- No global CSS changes (font link only in `<head>`, scoped to story card via inline style)
-- Share/download flow unchanged
-- Existing achievement definitions, DB, hooks untouched
+### Technical Notes
+- CalvingRegistrationManager is a standalone component (not a dialog), so when selected it will render inline in a full-screen container with a back/close button, similar to how other full-screen flows work in mobile
+- The existing CalvingRegistrationManager already has mobile optimization, so no additional responsive work needed
 
