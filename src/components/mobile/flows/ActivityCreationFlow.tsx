@@ -125,7 +125,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     );
   }
 
-  const renderCards = (items: typeof mainActivities, onSelect: (id: string) => void) => (
+  const renderCards = (items: Array<{id: string; title: string; description: string; icon: React.ComponentType<{className?: string}>; color: string}>, onSelect: (id: string) => void) => (
     <>
       {items.map((item) => (
         <Card
