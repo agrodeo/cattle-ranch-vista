@@ -263,6 +263,10 @@
     "calving": {
       "title": "Calving Registration",
       "description": "Register births and calvings"
+    },
+    "reproductive": {
+      "title": "Reproductive Activities",
+      "description": "Insemination, calving, pregnancy check & more"
     }
   },
   "activityCard": {
