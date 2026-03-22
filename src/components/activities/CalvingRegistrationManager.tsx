@@ -80,6 +80,12 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
     },
   });
 
+  const corralesMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    corrales.forEach(c => { map[c.id] = c.name; });
+    return map;
+  }, [corrales]);
+
   const males = useMemo(() =>
     animals.filter(a => (a.sex === 'Macho' || a.sex === 'macho') && a.status === 'Activo'),
     [animals]
@@ -311,11 +317,16 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
                               <span className="font-medium text-sm">{animal.id_tag || '-'}</span>
                               {animal.name && <span className="text-sm text-muted-foreground truncate">{animal.name}</span>}
                             </div>
-                            <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                               {animal.esta_preñada && (
                                 <Badge variant="secondary" className="text-[10px] h-4 bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
                                   {t('reproductive:pregnancy.pregnant')}
                                 </Badge>
+                              )}
+                              {animal.corral_id && corralesMap[animal.corral_id] && (
+                                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 rounded">
+                                  {corralesMap[animal.corral_id]}
+                                </span>
                               )}
                               {animal.breed && <span className="text-[11px] text-muted-foreground">{animal.breed}</span>}
                             </div>
