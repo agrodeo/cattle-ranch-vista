@@ -197,6 +197,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       setRows([]);
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-for-calving'] });
+      onSuccess?.();
     }
   };
 
