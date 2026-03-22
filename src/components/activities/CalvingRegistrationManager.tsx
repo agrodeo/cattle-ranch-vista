@@ -88,7 +88,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   }, [corrales]);
 
   const males = useMemo(() =>
-    animals.filter(a => (a.sex === 'Macho' || a.sex === 'macho') && a.status === 'Activo'),
+    animals.filter(a => (a.sex === 'Macho' || a.sex === 'macho') && (a.status === 'Activo' || a.status === 'activo')),
     [animals]
   );
 
