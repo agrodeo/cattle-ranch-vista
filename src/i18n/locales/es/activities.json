@@ -274,6 +274,10 @@
     "calving": {
       "title": "Registro de Partos",
       "description": "Registrar nacimientos y partos"
+    },
+    "reproductive": {
+      "title": "Actividades Reproductivas",
+      "description": "Inseminación, partos, tacto y más"
     }
   },
   "activityCard": {

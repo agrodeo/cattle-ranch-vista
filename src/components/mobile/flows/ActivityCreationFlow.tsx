@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby } from "lucide-react";
+import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewVaccinationDialog } from "@/components/activities/NewVaccinationDialog";
@@ -21,52 +21,63 @@ type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "p
 export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   const { t } = useTranslation('activities');
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
+  const [showReproductive, setShowReproductive] = useState(false);
 
-  const activities = [
+  const mainActivities = [
     {
-      id: "vaccination" as ActivityType,
+      id: "vaccination" as const,
       title: t('activityCreation.vaccination.title'),
       description: t('activityCreation.vaccination.description'),
       icon: Syringe,
       color: "bg-red-500",
     },
     {
-      id: "weighing" as ActivityType,
+      id: "weighing" as const,
       title: t('activityCreation.weighing.title'),
       description: t('activityCreation.weighing.description'),
       icon: Weight,
       color: "bg-blue-500",
     },
     {
-      id: "insemination" as ActivityType,
+      id: "reproductive" as const,
+      title: t('activityCreation.reproductive.title'),
+      description: t('activityCreation.reproductive.description'),
+      icon: HeartPulse,
+      color: "bg-pink-500",
+    },
+    {
+      id: "general" as const,
+      title: t('activityCreation.general.title'),
+      description: t('activityCreation.general.description'),
+      icon: Activity,
+      color: "bg-primary",
+    },
+  ];
+
+  const reproductiveActivities: Array<{id: string; title: string; description: string; icon: typeof Heart; color: string}> = [
+    {
+      id: "insemination",
       title: t('activityCreation.insemination.title'),
       description: t('activityCreation.insemination.description'),
       icon: Heart,
       color: "bg-pink-500",
     },
     {
-      id: "calving" as ActivityType,
+      id: "calving",
       title: t('activityCreation.calving.title'),
       description: t('activityCreation.calving.description'),
       icon: Baby,
       color: "bg-green-600",
     },
     {
-      id: "general" as ActivityType,
-      title: t('activityCreation.general.title'),
-      description: t('activityCreation.general.description'),
-      icon: Activity,
-      color: "bg-primary",
-    },
-    {
-      id: "tacto" as ActivityType,
+      id: "tacto",
       title: t('activityCreation.tacto.title'),
       description: t('activityCreation.tacto.description'),
       icon: Stethoscope,
       color: "bg-purple-500",
     },
     {
-      id: "pregnancy_loss" as ActivityType,
+      id: "pregnancy_loss",
       title: t('activityCreation.pregnancyLoss.title'),
       description: t('activityCreation.pregnancyLoss.description'),
       icon: AlertTriangle,
@@ -74,9 +85,12 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     },
   ];
 
-  const handleActivitySelect = (activityId: ActivityType) => {
-    console.log('Activity selected:', activityId);
-    setSelectedActivity(activityId);
+  const handleMainSelect = (id: string) => {
+    if (id === "reproductive") {
+      setShowReproductive(true);
+    } else {
+      setSelectedActivity(id as ActivityType);
+    }
   };
 
   const handleDialogClose = () => {
@@ -86,6 +100,10 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   const handleSuccess = () => {
     setSelectedActivity(null);
     onClose();
+  };
+
+  const handleBackFromReproductive = () => {
+    setShowReproductive(false);
   };
 
   // Full-screen calving flow
@@ -107,22 +125,22 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     );
   }
 
-  const activityCards = (
+  const renderCards = (items: Array<{id: string; title: string; description: string; icon: React.ComponentType<{className?: string}>; color: string}>, onSelect: (id: string) => void) => (
     <>
-      {activities.map((activity) => (
+      {items.map((item) => (
         <Card
-          key={activity.id}
+          key={item.id}
           className="cursor-pointer border-2 hover:border-primary/50 transition-colors"
-          onClick={() => handleActivitySelect(activity.id)}
+          onClick={() => onSelect(item.id)}
         >
           <CardHeader>
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-lg text-white ${activity.color}`}>
-                <activity.icon className="h-6 w-6" />
+              <div className={`p-3 rounded-lg text-white ${item.color}`}>
+                <item.icon className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle>{activity.title}</CardTitle>
-                <CardDescription>{activity.description}</CardDescription>
+                <CardTitle>{item.title}</CardTitle>
+                <CardDescription>{item.description}</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -131,18 +149,28 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     </>
   );
 
+  const currentTitle = showReproductive
+    ? t('activityCreation.reproductive.title')
+    : t('activityCreation.title');
+
+  const handleBack = showReproductive ? handleBackFromReproductive : onClose;
+
+  const currentCards = showReproductive
+    ? renderCards(reproductiveActivities, (id) => setSelectedActivity(id as ActivityType))
+    : renderCards(mainActivities, handleMainSelect);
+
   return (
     <>
       {/* Mobile view - Full screen */}
       <div className="fixed inset-0 z-50 bg-background lg:hidden">
         <div className="flex items-center p-4 border-b border-border">
-          <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
+          <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">{t('activityCreation.title')}</h1>
+          <h1 className="text-xl font-semibold">{currentTitle}</h1>
         </div>
-        <div className="flex-1 p-4 space-y-4">
-          {activityCards}
+        <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+          {currentCards}
         </div>
       </div>
 
@@ -150,13 +178,13 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       <div className="hidden lg:block fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-background rounded-lg shadow-xl">
           <div className="flex items-center p-6 border-b border-border">
-            <Button variant="ghost" size="icon" onClick={onClose} className="mr-2">
+            <Button variant="ghost" size="icon" onClick={handleBack} className="mr-2">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-semibold">{t('activityCreation.title')}</h1>
+            <h1 className="text-xl font-semibold">{currentTitle}</h1>
           </div>
           <div className="p-6 space-y-4">
-            {activityCards}
+            {currentCards}
           </div>
         </div>
       </div>
@@ -167,31 +195,26 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
-      
       <WeighingFlowDialog
         open={selectedActivity === "weighing"}
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
-      
       <NewInseminationDialog
         open={selectedActivity === "insemination"}
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
-      
       <NewGeneralActivityDialog
         open={selectedActivity === "general"}
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
-      
       <NewTactoDialog
         open={selectedActivity === "tacto"}
         onOpenChange={handleDialogClose}
         onSuccess={handleSuccess}
       />
-      
       <NewPregnancyLossDialog
         open={selectedActivity === "pregnancy_loss"}
         onOpenChange={handleDialogClose}
