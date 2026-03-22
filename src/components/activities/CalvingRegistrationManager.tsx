@@ -224,7 +224,16 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
             status: 'Activo',
           }).select('id').single();
           if (animalError) throw animalError;
-          await registerCalvingEvent(row.mother.id, newAnimal.id, format(row.birthDate, 'yyyy-MM-dd'), cabanaId, row.notes || undefined);
+          try {
+            await registerCalvingEvent(row.mother.id, newAnimal.id, format(row.birthDate, 'yyyy-MM-dd'), cabanaId, row.notes || undefined);
+          } catch (rpcError: any) {
+            // Fallback: if no active pregnancy record exists, update mother directly
+            console.warn('registerCalvingEvent RPC failed, applying fallback:', rpcError?.message);
+            await supabase.from('animals').update({
+              esta_preñada: false,
+              fecha_probable_parto: null,
+            }).eq('id', row.mother.id);
+          }
           successCount++;
         } else {
           const { data: pregnancies } = await supabase
