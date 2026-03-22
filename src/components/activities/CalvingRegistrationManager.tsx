@@ -87,6 +87,40 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
 
   const alreadySelectedIds = useMemo(() => rows.map(r => r.mother.id), [rows]);
 
+  const pregnantFemales = useMemo(() => {
+    return animals
+      .filter(a =>
+        (a.sex === 'Hembra' || a.sex === 'hembra') &&
+        a.status === 'Activo' &&
+        a.esta_preñada &&
+        !alreadySelectedIds.includes(a.id)
+      )
+      .sort((a, b) => {
+        if (!a.fecha_probable_parto) return 1;
+        if (!b.fecha_probable_parto) return -1;
+        return new Date(a.fecha_probable_parto).getTime() - new Date(b.fecha_probable_parto).getTime();
+      });
+  }, [animals, alreadySelectedIds]);
+
+  const otherFemales = useMemo(() => {
+    return animals.filter(a =>
+      (a.sex === 'Hembra' || a.sex === 'hembra') &&
+      a.status === 'Activo' &&
+      !a.esta_preñada &&
+      !alreadySelectedIds.includes(a.id)
+    );
+  }, [animals, alreadySelectedIds]);
+
+  const filteredSuggestions = useMemo(() => {
+    const searchLower = motherSearch.toLowerCase().trim();
+    const allFemales = [...pregnantFemales, ...otherFemales];
+    if (!searchLower) return pregnantFemales.slice(0, 10);
+    return allFemales.filter(a =>
+      (a.id_tag?.toLowerCase().includes(searchLower)) ||
+      (a.name?.toLowerCase().includes(searchLower))
+    ).slice(0, 10);
+  }, [motherSearch, pregnantFemales, otherFemales]);
+
   const handleSelectMother = useCallback((animal: any) => {
     const fatherId = animal.toro_servicio_id || '';
     const newRow: CalvingRow = {
