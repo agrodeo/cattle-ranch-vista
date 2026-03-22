@@ -56,6 +56,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const [saving, setSaving] = useState(false);
   const [motherSearch, setMotherSearch] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [corralFilter, setCorralFilter] = useState<string>('all');
   const searchRef = useRef<HTMLInputElement>(null);
 
   const { data: animals = [] } = useQuery({
