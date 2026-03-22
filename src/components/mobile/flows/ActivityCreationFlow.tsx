@@ -54,30 +54,30 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     },
   ];
 
-  const reproductiveActivities = [
+  const reproductiveActivities: Array<{id: string; title: string; description: string; icon: typeof Heart; color: string}> = [
     {
-      id: "insemination" as ActivityType,
+      id: "insemination",
       title: t('activityCreation.insemination.title'),
       description: t('activityCreation.insemination.description'),
       icon: Heart,
       color: "bg-pink-500",
     },
     {
-      id: "calving" as ActivityType,
+      id: "calving",
       title: t('activityCreation.calving.title'),
       description: t('activityCreation.calving.description'),
       icon: Baby,
       color: "bg-green-600",
     },
     {
-      id: "tacto" as ActivityType,
+      id: "tacto",
       title: t('activityCreation.tacto.title'),
       description: t('activityCreation.tacto.description'),
       icon: Stethoscope,
       color: "bg-purple-500",
     },
     {
-      id: "pregnancy_loss" as ActivityType,
+      id: "pregnancy_loss",
       title: t('activityCreation.pregnancyLoss.title'),
       description: t('activityCreation.pregnancyLoss.description'),
       icon: AlertTriangle,
