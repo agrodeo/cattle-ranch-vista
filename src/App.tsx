@@ -32,6 +32,24 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import AuthConfirm from "./pages/AuthConfirm";
 
+import { Capacitor } from '@capacitor/core';
+import { 
+  isDespiaRuntime, 
+  isRevenueCatCapacitorAvailable, 
+  detectPlatform 
+} from '@/lib/platformDetection';
+
+console.log('=== PLATFORM DEBUG ===');
+console.log('isNativePlatform:', Capacitor.isNativePlatform());
+console.log('getPlatform:', Capacitor.getPlatform());
+console.log('isDespiaRuntime:', isDespiaRuntime());
+console.log('isRevenueCatAvailable:', isRevenueCatCapacitorAvailable());
+console.log('detectPlatform:', detectPlatform());
+console.log('hostname:', window.location.hostname);
+console.log('port:', window.location.port);
+console.log('userAgent:', navigator.userAgent);
+console.log('======================');
+
 const queryClient = new QueryClient();
 
 const App = () => (

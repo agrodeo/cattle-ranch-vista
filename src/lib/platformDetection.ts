@@ -1,34 +1,36 @@
-import { Capacitor } from '@capacitor/core';
+import { Capacitor } from "@capacitor/core";
 
-export type Platform = 'web' | 'ios' | 'android';
+export type Platform = "web" | "ios" | "android";
 
-const inferPlatformFromNavigator = (): 'ios' | 'android' | null => {
-  if (typeof navigator === 'undefined') return null;
+const inferPlatformFromNavigator = (): "ios" | "android" | null => {
+  if (typeof navigator === "undefined") return null;
 
-  const ua = navigator.userAgent?.toLowerCase() || '';
-  const uaDataPlatform = ((navigator as any).userAgentData?.platform as string | undefined)?.toLowerCase() || '';
-  const navPlatform = navigator.platform?.toLowerCase() || '';
+  const ua = navigator.userAgent?.toLowerCase() || "";
+  const uaDataPlatform =
+    (
+      (navigator as any).userAgentData?.platform as string | undefined
+    )?.toLowerCase() || "";
+  const navPlatform = navigator.platform?.toLowerCase() || "";
 
   const isAndroid =
     /android/.test(ua) ||
-    uaDataPlatform.includes('android') ||
-    navPlatform.includes('android') ||
-    navPlatform.includes('linux arm');
-
-  if (isAndroid) return 'android';
+    uaDataPlatform.includes("android") ||
+    navPlatform.includes("android") ||
+    navPlatform.includes("linux arm");
 
   const isiOS =
     /iphone|ipad|ipod/.test(ua) ||
-    uaDataPlatform.includes('ios') ||
-    uaDataPlatform.includes('iphone') ||
-    uaDataPlatform.includes('ipad') ||
-    navPlatform.includes('iphone') ||
-    navPlatform.includes('ipad') ||
-    navPlatform.includes('ipod') ||
+    uaDataPlatform.includes("ios") ||
+    uaDataPlatform.includes("iphone") ||
+    uaDataPlatform.includes("ipad") ||
+    navPlatform.includes("iphone") ||
+    navPlatform.includes("ipad") ||
+    navPlatform.includes("ipod") ||
     // iPadOS can report itself as MacIntel with touch support
-    (navPlatform === 'macintel' && navigator.maxTouchPoints > 1);
+    (navPlatform === "macintel" && navigator.maxTouchPoints > 1);
 
-  if (isiOS) return 'ios';
+  if (isAndroid) return "android";
+  if (isiOS) return "ios";
 
   return null;
 };
@@ -39,9 +41,9 @@ const inferPlatformFromNavigator = (): 'ios' | 'android' | null => {
  */
 export const isDespiaRuntime = (): boolean => {
   try {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if ((window as any).bundleNumber != null) return true;
-      if (window.location.hostname === 'localhost' && window.location.port === '') return true;
+      // if (window.location.hostname === 'localhost' && window.location.port === '') return true;
     }
   } catch {}
   return false;
@@ -50,7 +52,7 @@ export const isDespiaRuntime = (): boolean => {
 /**
  * Infer the platform when running inside Despia.
  */
-export const getDespiaPlatform = (): 'ios' | 'android' | null => {
+export const getDespiaPlatform = (): "ios" | "android" | null => {
   if (!isDespiaRuntime()) return null;
   return inferPlatformFromNavigator();
 };
@@ -62,14 +64,14 @@ export const getDespiaPlatform = (): 'ios' | 'android' | null => {
 export const detectPlatform = (): Platform => {
   if (Capacitor.isNativePlatform()) {
     const platform = Capacitor.getPlatform();
-    if (platform === 'ios') return 'ios';
-    if (platform === 'android') return 'android';
+    if (platform === "ios") return "ios";
+    if (platform === "android") return "android";
   }
 
   const despiaPlatform = getDespiaPlatform();
   if (despiaPlatform) return despiaPlatform;
 
-  return 'web';
+  return "web";
 };
 
 /**
@@ -84,11 +86,11 @@ export const isNativeApp = (): boolean => {
  * Get the native platform only when running natively (Capacitor or Despia).
  * Returns null on web.
  */
-export const getNativePlatform = (): 'ios' | 'android' | null => {
+export const getNativePlatform = (): "ios" | "android" | null => {
   if (Capacitor.isNativePlatform()) {
     const p = Capacitor.getPlatform();
-    if (p === 'ios') return 'ios';
-    if (p === 'android') return 'android';
+    if (p === "ios") return "ios";
+    if (p === "android") return "android";
     return null;
   }
 
@@ -105,8 +107,8 @@ export const isRevenueCatCapacitorAvailable = (): boolean => {
 
   try {
     const checker = (Capacitor as any).isPluginAvailable;
-    if (typeof checker === 'function') {
-      return checker.call(Capacitor, 'Purchases');
+    if (typeof checker === "function") {
+      return checker.call(Capacitor, "Purchases");
     }
   } catch {}
 
@@ -116,21 +118,27 @@ export const isRevenueCatCapacitorAvailable = (): boolean => {
 
 export const getPlatformStoreName = (platform: Platform): string => {
   switch (platform) {
-    case 'ios': return 'App Store';
-    case 'android': return 'Google Play';
-    case 'web': return 'Mercado Pago';
+    case "ios":
+      return "App Store";
+    case "android":
+      return "Google Play";
+    case "web":
+      return "Mercado Pago";
   }
 };
 
 export const openPlatformStore = (platform: Platform, planId?: string) => {
   switch (platform) {
-    case 'ios':
-      window.open('https://apps.apple.com/app/agrodeo/id123456789', '_blank');
+    case "ios":
+      window.open("https://apps.apple.com/app/agrodeo/id123456789", "_blank");
       break;
-    case 'android':
-      window.open('https://play.google.com/store/apps/details?id=com.agrodeo.app', '_blank');
+    case "android":
+      window.open(
+        "https://play.google.com/store/apps/details?id=com.agrodeo.app",
+        "_blank",
+      );
       break;
-    case 'web':
+    case "web":
       break;
   }
 };
