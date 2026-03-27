@@ -31,9 +31,8 @@ const inferPlatformFromNavigator = (): "ios" | "android" | null => {
 
   if (isAndroid) return "android";
   if (isiOS) return "ios";
-  return "ios";
 
-  // return null;
+  return null;
 };
 
 /**
