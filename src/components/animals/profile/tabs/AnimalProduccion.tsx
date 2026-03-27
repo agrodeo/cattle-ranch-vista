@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { Scale, TrendingUp, Calendar, Target } from "lucide-react";
 import { useAnimalWeights } from "@/hooks/useAnimalWeights";
+import { useEstimatedWeight } from "@/hooks/useEstimatedWeight";
+import { EstimatedWeightCard } from "@/components/animals/EstimatedWeightCard";
 import { format, differenceInDays } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -17,6 +19,7 @@ interface AnimalProduccionProps {
 export function AnimalProduccion({ animal }: AnimalProduccionProps) {
   const { t } = useTranslation(['animals', 'common']);
   const { weights, isLoading } = useAnimalWeights(animal.id);
+  const { estimation, isLoading: estimationLoading } = useEstimatedWeight(animal);
 
   // Calculate average daily gain (ADG)
   const calculateADG = () => {
@@ -120,6 +123,9 @@ export function AnimalProduccion({ animal }: AnimalProduccionProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Estimated Weight */}
+      <EstimatedWeightCard estimation={estimation} isLoading={estimationLoading} />
 
       {/* Weight Chart */}
       {chartData.length > 0 ? (

@@ -14,7 +14,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useConnectivity } from '@/services/connectivity';
-import { isNativeApp } from '@/lib/platformDetection';
+import { isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
 import { revenueCatService } from '@/services/revenueCatService';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
@@ -115,7 +115,7 @@ export function useSubscriptionStatus(): SubscriptionState {
     activeSubscriptions: string[];
     customerInfo: CustomerInfo | null;
   } | null> => {
-    if (!isNativeApp()) return null;
+    if (!isRevenueCatCapacitorAvailable()) return null;
     
     try {
       const customerInfo = await revenueCatService.getCustomerInfo();
@@ -159,7 +159,7 @@ export function useSubscriptionStatus(): SubscriptionState {
       } | null = null;
 
       // Try to get fresh data from RevenueCat if online and native
-      if (isOnline && isNativeApp()) {
+      if (isOnline && isRevenueCatCapacitorAvailable()) {
         freshData = await fetchRevenueCatStatus();
         if (freshData) {
           freshPremiumStatus = freshData.isPremium;
@@ -252,7 +252,7 @@ export function useSubscriptionStatus(): SubscriptionState {
 
   // Listen for RevenueCat updates
   useEffect(() => {
-    if (!isNativeApp() || !revenueCatService.isInitialized()) return;
+    if (!isRevenueCatCapacitorAvailable() || !revenueCatService.isInitialized()) return;
     
     const cleanup = revenueCatService.addCustomerInfoUpdateListener(async (customerInfo) => {
       const proEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PRO];

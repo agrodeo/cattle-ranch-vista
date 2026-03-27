@@ -8,6 +8,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import SupportProvider from "@/components/SupportProvider";
 import { GlobalErrorBoundary } from "@/components/GlobalErrorBoundary";
 import { RevenueCatProvider } from "@/providers/RevenueCatProvider";
+import { PaddleProvider } from "@/providers/PaddleProvider";
 import Animals from "./pages/Animals";
 import Corrales from "./pages/Corrales";
 import Activities from "./pages/Activities";
@@ -22,6 +23,9 @@ import Finances from "./pages/Finances";
 import Reports from "./pages/Reports";
 import Achievements from "./pages/Achievements";
 import { SettingsPage } from "./pages/Settings";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import RefundPolicy from "./pages/RefundPolicy";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -34,6 +38,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <RevenueCatProvider>
+        <PaddleProvider>
         <SupportProvider>
           <GlobalErrorBoundary>
             <TooltipProvider>
@@ -45,7 +50,10 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/auth/confirm" element={<AuthConfirm />} />
+             <Route path="/auth/confirm" element={<AuthConfirm />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             {/* Single shared Layout for all protected routes */}
             <Route element={
               <ProtectedRoute>
@@ -74,6 +82,7 @@ const App = () => (
          </TooltipProvider>
           </GlobalErrorBoundary>
         </SupportProvider>
+        </PaddleProvider>
       </RevenueCatProvider>
     </AuthProvider>
   </QueryClientProvider>

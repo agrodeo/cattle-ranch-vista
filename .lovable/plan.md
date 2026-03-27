@@ -1,52 +1,59 @@
 
 
-# Achievement Story Card — Tier Colors, Layout Fix & Font Upgrade
+## Plan: Ensure Pregnancy Flow End-to-End Integrity
 
-## Problem
-1. **No tier differentiation**: All story cards use the same green color regardless of bronze/silver/gold tier
-2. **Text overlapping**: The number, exclamation marks, and item label collide at certain sizes
-3. **Generic font**: System font stack looks plain — not share-worthy for social media
+### Issues Found
 
-## Design
+After auditing the full reproductive flow (Insemination → Tacto → Calving / Pregnancy Loss), I found these problems:
 
-### Tier color palettes (applied to exclamation marks, header, item label, and accents):
-- **Bronze**: `#CD7F32` (warm bronze) with number in `#4a3728`
-- **Silver**: `#8C8C8C` (cool silver) with number in `#3d3d3d`  
-- **Gold**: `#DAA520` (rich gold) with number in `#5c4a00`
+---
 
-### Layout fixes:
-- Separate the number and item label with more vertical spacing
-- Reduce exclamation mark size relative to the number to prevent overlap
-- Cap item label font size more aggressively and add `wordBreak` for long labels
-- Move content block slightly upward to leave breathing room at bottom for branding
+### 1. Pregnancy Loss Dialog: Case-Sensitive Status Filter
+**File:** `NewPregnancyLossDialog.tsx` line 93
+- Queries `.eq('status', 'activo')` (lowercase only)
+- Animals may have `'Activo'` (capitalized), so pregnant animals won't appear
+- **Fix:** Use `.ilike('status', 'activo')` or `.or('status.eq.activo,status.eq.Activo')`
 
-### Font:
-- Use Google Font **Montserrat** (bold, italic) — loaded via `@import` in the off-screen element's inline style. html2canvas captures computed styles so this works if the font is preloaded.
-- Fallback: keep system font stack
+### 2. Calving Fallback Missing Reproductive State Update
+**File:** `CalvingRegistrationManager.tsx` lines 229-236
+- When `registerCalvingEvent` RPC fails and fallback runs, it only clears `esta_preñada` on the `animals` table
+- It does NOT update `reproductive_states` or `reproductive_current_state` to `'post_parto'`
+- This leaves the animal in a stale reproductive state (`preñez_activa`)
+- **Fix:** Add an update to `reproductive_states` and `reproductive_current_state` in the fallback block
 
-## Changes
+### 3. Calving: Missing Query Invalidations
+**File:** `CalvingRegistrationManager.tsx` lines 263-264
+- After saving, only `animals` and `animals-for-calving` queries are invalidated
+- Missing invalidations for `reproductive-alerts`, `reproductive-kpis`, `activities`, and `corrales` queries that other parts of the app depend on
+- **Fix:** Add broader query invalidation
 
-### 1. `src/components/achievements/AchievementStoryCard.tsx`
-- Add `medalTier` prop
-- Create a `getTierColors(tier)` helper returning `{ accent, number }` colors
-- Apply tier colors to header text, exclamation marks, and item label
-- Fix layout: reduce `¡` / `!` font size to match number height, increase gap between number row and item label
-- Use Montserrat font family
+### 4. Calving: Non-Successful Results Don't Register Activity Event
+**File:** `CalvingRegistrationManager.tsx` lines 238-249
+- When result is `aborto`, `stillbirth`, or `neonatal`, no `eventos` record is created
+- Other activity types (tacto, insemination) always create an event via `createEvent()`
+- This means these losses won't appear in the activity timeline
+- **Fix:** Create an evento record for non-successful calvings too, using supabase insert to `eventos` with type `'parto_fallido'`
 
-### 2. `src/components/achievements/AchievementCard.tsx`
-- Pass `medalTier` to `AchievementStoryCard`
-- Update the visible preview card to also reflect tier colors instead of hardcoded green
-- Add Montserrat font link in `<head>` via a `useEffect` on mount (ensures font loads before capture)
+### 5. Pregnancy Loss Dialog: Missing `preñeces` Record Handling
+**File:** `NewPregnancyLossDialog.tsx` line 93
+- The dialog also queries `status = 'activo'` which might miss animals — same case-sensitivity bug
+- But it already handles the case where no `preñeces` record exists (creates one on the fly) — this part is correct
 
-### 3. `src/lib/achievementStoryImage.ts`
-- Add a small delay before capture to ensure fonts are loaded (`document.fonts.ready`)
+---
 
-### 4. `index.html`
-- Add `<link>` to preload Montserrat font from Google Fonts (ensures it's available for html2canvas)
+### Implementation Steps
 
-## No regressions
-- Off-screen rendering approach unchanged
-- No global CSS changes (font link only in `<head>`, scoped to story card via inline style)
-- Share/download flow unchanged
-- Existing achievement definitions, DB, hooks untouched
+1. **Fix `NewPregnancyLossDialog.tsx`**
+   - Change status filter to handle both `'activo'` and `'Activo'` cases
+
+2. **Fix `CalvingRegistrationManager.tsx` fallback**
+   - Update `reproductive_states` and `reproductive_current_state` tables to `'post_parto'` / `'sin_actividad'` in the catch block
+   - Add query invalidations for `reproductive-alerts`, `reproductive-kpis`, `activities`
+
+3. **Add evento creation for non-successful calving results**
+   - Insert into `eventos` table with appropriate type so all reproductive events appear in activity history
+
+### Files to Modify
+- `src/components/activities/NewPregnancyLossDialog.tsx` (case-sensitivity fix)
+- `src/components/activities/CalvingRegistrationManager.tsx` (fallback state update, query invalidations, evento creation)
 

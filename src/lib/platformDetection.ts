@@ -2,13 +2,43 @@ import { Capacitor } from '@capacitor/core';
 
 export type Platform = 'web' | 'ios' | 'android';
 
+const inferPlatformFromNavigator = (): 'ios' | 'android' | null => {
+  if (typeof navigator === 'undefined') return null;
+
+  const ua = navigator.userAgent?.toLowerCase() || '';
+  const uaDataPlatform = ((navigator as any).userAgentData?.platform as string | undefined)?.toLowerCase() || '';
+  const navPlatform = navigator.platform?.toLowerCase() || '';
+
+  const isAndroid =
+    /android/.test(ua) ||
+    uaDataPlatform.includes('android') ||
+    navPlatform.includes('android') ||
+    navPlatform.includes('linux arm');
+
+  if (isAndroid) return 'android';
+
+  const isiOS =
+    /iphone|ipad|ipod/.test(ua) ||
+    uaDataPlatform.includes('ios') ||
+    uaDataPlatform.includes('iphone') ||
+    uaDataPlatform.includes('ipad') ||
+    navPlatform.includes('iphone') ||
+    navPlatform.includes('ipad') ||
+    navPlatform.includes('ipod') ||
+    // iPadOS can report itself as MacIntel with touch support
+    (navPlatform === 'macintel' && navigator.maxTouchPoints > 1);
+
+  if (isiOS) return 'ios';
+
+  return null;
+};
+
 /**
  * Detect if running inside a Despia native container.
  * Despia serves from http://localhost and may expose window.bundleNumber.
  */
 export const isDespiaRuntime = (): boolean => {
   try {
-    // Despia local server serves from http://localhost
     if (typeof window !== 'undefined') {
       if ((window as any).bundleNumber != null) return true;
       if (window.location.hostname === 'localhost' && window.location.port === '') return true;
@@ -19,14 +49,10 @@ export const isDespiaRuntime = (): boolean => {
 
 /**
  * Infer the platform when running inside Despia.
- * Uses user-agent as a best-effort fallback.
  */
 export const getDespiaPlatform = (): 'ios' | 'android' | null => {
   if (!isDespiaRuntime()) return null;
-  const ua = navigator.userAgent.toLowerCase();
-  if (/iphone|ipad|ipod/.test(ua)) return 'ios';
-  if (/android/.test(ua)) return 'android';
-  return null;
+  return inferPlatformFromNavigator();
 };
 
 /**
@@ -39,10 +65,10 @@ export const detectPlatform = (): Platform => {
     if (platform === 'ios') return 'ios';
     if (platform === 'android') return 'android';
   }
-  // Fallback: Despia runtime
+
   const despiaPlatform = getDespiaPlatform();
   if (despiaPlatform) return despiaPlatform;
-  
+
   return 'web';
 };
 
@@ -65,14 +91,27 @@ export const getNativePlatform = (): 'ios' | 'android' | null => {
     if (p === 'android') return 'android';
     return null;
   }
+
   return getDespiaPlatform();
 };
 
 /**
- * Check if Capacitor native bridge is truly available (for RevenueCat calls).
+ * Check if RevenueCat Capacitor plugin can be used in this runtime.
+ * Despia uses a different native bridge and should never use Purchases.*
  */
-export const isCapacitorNative = (): boolean => {
-  return Capacitor.isNativePlatform();
+export const isRevenueCatCapacitorAvailable = (): boolean => {
+  if (!Capacitor.isNativePlatform()) return false;
+  if (isDespiaRuntime()) return false;
+
+  try {
+    const checker = (Capacitor as any).isPluginAvailable;
+    if (typeof checker === 'function') {
+      return checker.call(Capacitor, 'Purchases');
+    }
+  } catch {}
+
+  // Fallback for runtimes where isPluginAvailable is not exposed
+  return true;
 };
 
 export const getPlatformStoreName = (platform: Platform): string => {

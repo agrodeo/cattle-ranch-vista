@@ -250,5 +250,58 @@
     "lowDesc": "<40% preñez",
     "performance": "Rendimiento",
     "allPerformance": "Todos"
+  },
+  "calvingRegistration": {
+    "title": "Registro de Partos",
+    "addRow": "Agregar Parto",
+    "selectMother": "Seleccionar Madre",
+    "searchPlaceholder": "Buscar por tag o nombre...",
+    "filterByCorral": "Filtrar por corral",
+    "allCorrals": "Todos los corrales",
+    "showAllFemales": "Buscar otra hembra",
+    "columns": {
+      "mother": "Madre",
+      "birthDate": "Fecha Parto",
+      "result": "Resultado",
+      "calfSex": "Sexo Cría",
+      "calfTag": "Tag Cría",
+      "birthWeight": "Peso (kg)",
+      "electronicTag": "Caravana Electrónica",
+      "father": "Padre",
+      "notes": "Notas"
+    },
+    "results": {
+      "successful": "Exitoso",
+      "abortion": "Aborto",
+      "stillbirth": "Mortinato",
+      "neonatal": "Muerte Neonatal"
+    },
+    "saveAll": "Guardar Todo",
+    "saving": "Guardando...",
+    "success": "partos registrados exitosamente",
+    "errors": "con errores",
+    "validation": {
+      "sexRequired": "Sexo es requerido para parto exitoso",
+      "tagRequired": "Tag de cría es requerido para parto exitoso",
+      "tagDuplicate": "Este tag ya existe",
+      "tagDuplicateInBatch": "Tag duplicado en este lote",
+      "dateInFuture": "La fecha no puede ser futura",
+      "noRows": "Agregá al menos un parto"
+    },
+    "dueDate": "Fecha estimada",
+    "daysOverdue": "días de atraso",
+    "daysUntilDue": "días para la fecha",
+    "pregnantFemales": "Hembras Preñadas",
+    "otherFemales": "Otras Hembras",
+    "noPregnantFemales": "No hay hembras preñadas registradas",
+    "fatherFromService": "Del servicio",
+    "fatherManual": "Manual",
+    "confirmSave": "¿Confirmar el registro de {{count}} partos?",
+    "summary": "Resumen: {{success}} exitosos, {{failed}} pérdidas",
+    "noRows": "Buscá una hembra por tag o nombre para registrar un parto",
+    "searchMotherPlaceholder": "Escribí el tag o nombre de la madre...",
+    "noMatchingFemales": "No se encontraron hembras",
+    "selectFather": "Seleccionar padre",
+    "noFather": "Sin padre"
   }
 }

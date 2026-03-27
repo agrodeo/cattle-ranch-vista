@@ -90,7 +90,7 @@ export function NewPregnancyLossDialog({ open: externalOpen, onOpenChange, onSuc
         .select('id, id_tag, name, fecha_ultima_preñez')
         .eq('cabaña_id', cabanaData)
         .eq('esta_preñada', true)
-        .eq('status', 'activo')
+        .or('status.eq.activo,status.eq.Activo')
         .order('fecha_ultima_preñez', { ascending: false });
 
       if (animalError) throw animalError;
