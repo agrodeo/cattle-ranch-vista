@@ -15,8 +15,6 @@ import {
 } from "lucide-react";
 import { AnimalActivitiesHistory } from "@/components/animals/AnimalActivitiesHistory";
 import { useAnimalVaccinations } from "@/hooks/useAnimalVaccinations";
-import { useEstimatedWeight } from "@/hooks/useEstimatedWeight";
-import { EstimatedWeightCard } from "@/components/animals/EstimatedWeightCard";
 import { calculateAge } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -40,7 +38,6 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
   const { t } = useTranslation(['common', 'animals']);
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const { status: vaccinationStatus, loading: vaccinationLoading } = useAnimalVaccinations(animal.id);
-  const { estimation, isLoading: estimationLoading } = useEstimatedWeight(animal);
   const [reproductiveData, setReproductiveData] = useState<{
     pregnancyPercentage: number;
     calvingPercentage: number;
@@ -248,9 +245,6 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
           </CardContent>
         </Card>
       </div>
-
-      {/* Estimated Weight */}
-      <EstimatedWeightCard estimation={estimation} isLoading={estimationLoading} />
 
       {/* Performance Metrics */}
       {animal.sex === 'Hembra' && reproductiveData && (

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { revenueCatService } from '@/services/revenueCatService';
 import { useRevenueCat } from '@/providers/RevenueCatProvider';
 import { ENTITLEMENTS } from '@/config/revenueCatProducts';
-import { isRevenueCatCapacitorAvailable } from '@/lib/platformDetection';
+import { isNativeApp, isCapacitorNative } from '@/lib/platformDetection';
 import type { CustomerInfo, PurchasesOfferings } from '@revenuecat/purchases-capacitor';
 
 export interface EntitlementState {
@@ -26,7 +26,7 @@ export const useEntitlements = () => {
   });
 
   const refreshCustomerInfo = useCallback(async () => {
-    if (!isRevenueCatCapacitorAvailable()) {
+    if (!isNativeApp()) {
       setState(prev => ({ ...prev, isLoading: false }));
       return;
     }
@@ -51,7 +51,7 @@ export const useEntitlements = () => {
   }, []);
 
   const loadOfferings = useCallback(async () => {
-    if (!isRevenueCatCapacitorAvailable()) return;
+    if (!isNativeApp()) return;
     
     try {
       // ensureInitialized() inside getOfferings will auto-retry if needed
@@ -69,7 +69,7 @@ export const useEntitlements = () => {
     refreshCustomerInfo();
     loadOfferings();
 
-    if (isRevenueCatCapacitorAvailable() && revenueCatService.isInitialized()) {
+    if (isNativeApp() && revenueCatService.isInitialized()) {
       const cleanup = revenueCatService.addCustomerInfoUpdateListener((customerInfo) => {
         const proEntitlement = customerInfo.entitlements.active[ENTITLEMENTS.PRO];
         setState(prev => ({

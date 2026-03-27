@@ -261,14 +261,6 @@
     "pregnancyLoss": {
       "title": "Perda de Gestação",
       "description": "Registrar perdas reprodutivas"
-    },
-    "calving": {
-      "title": "Registro de Partos",
-      "description": "Registrar nascimentos e partos"
-    },
-    "reproductive": {
-      "title": "Atividades Reprodutivas",
-      "description": "Inseminação, partos, exame gestacional e mais"
     }
   },
   "activityCard": {

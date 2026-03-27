@@ -250,58 +250,5 @@
     "lowDesc": "<40% pregnancy",
     "performance": "Performance",
     "allPerformance": "All"
-  },
-  "calvingRegistration": {
-    "title": "Calving Registration",
-    "addRow": "Add Birth",
-    "selectMother": "Select Mother",
-    "searchPlaceholder": "Search by tag or name...",
-    "filterByCorral": "Filter by corral",
-    "allCorrals": "All corrals",
-    "showAllFemales": "Search other female",
-    "columns": {
-      "mother": "Mother",
-      "birthDate": "Birth Date",
-      "result": "Result",
-      "calfSex": "Calf Sex",
-      "calfTag": "Calf Tag",
-      "birthWeight": "Weight (kg)",
-      "electronicTag": "Electronic Tag",
-      "father": "Father",
-      "notes": "Notes"
-    },
-    "results": {
-      "successful": "Successful",
-      "abortion": "Abortion",
-      "stillbirth": "Stillbirth",
-      "neonatal": "Neonatal Death"
-    },
-    "saveAll": "Save All",
-    "saving": "Saving...",
-    "success": "births registered successfully",
-    "errors": "with errors",
-    "validation": {
-      "sexRequired": "Sex is required for successful birth",
-      "tagRequired": "Calf tag is required for successful birth",
-      "tagDuplicate": "This tag already exists",
-      "tagDuplicateInBatch": "Duplicate tag in this batch",
-      "dateInFuture": "Date cannot be in the future",
-      "noRows": "Add at least one birth"
-    },
-    "dueDate": "Due date",
-    "daysOverdue": "days overdue",
-    "daysUntilDue": "days until due",
-    "pregnantFemales": "Pregnant Females",
-    "otherFemales": "Other Females",
-    "noPregnantFemales": "No pregnant females registered",
-    "fatherFromService": "From service",
-    "fatherManual": "Manual",
-    "confirmSave": "Confirm registration of {{count}} births?",
-    "summary": "Summary: {{success}} successful, {{failed}} losses",
-    "noRows": "Search for a female by tag or name to register a birth",
-    "searchMotherPlaceholder": "Type mother's tag or name...",
-    "noMatchingFemales": "No matching females found",
-    "selectFather": "Select father",
-    "noFather": "No father"
   }
 }

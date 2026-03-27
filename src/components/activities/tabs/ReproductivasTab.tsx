@@ -1,7 +1,6 @@
 import { ArtificialInseminationManager } from '@/components/artificial-insemination/ArtificialInseminationManager';
 import { PregnancyManagement } from '@/components/artificial-insemination/PregnancyManagement';
 import { ServiceManagement } from '@/components/artificial-insemination/ServiceManagement';
-import { CalvingRegistrationManager } from '@/components/activities/CalvingRegistrationManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useActivityPreferences } from '@/hooks/useActivityPreferences';
 import { cn } from '@/lib/utils';
@@ -52,9 +51,6 @@ export function ReproductivasTab() {
           />
         </CardContent>
       </Card>
-
-      {/* Calving Registration - Full Width */}
-      <CalvingRegistrationManager isCompact={isCompact} />
     </div>
   );
 }
