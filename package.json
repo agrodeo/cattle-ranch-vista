@@ -15,7 +15,7 @@
     "@capacitor/cli": "^7.4.3",
     "@capacitor/core": "^7.4.3",
     "@capacitor/ios": "^7.4.3",
-    "@despia/local": "^1.0.8",
+    "@despia/local": "^1.0.9",
     "@hookform/resolvers": "^3.9.0",
     "@lucide/lab": "^0.1.2",
     "@paddle/paddle-js": "^1.6.2",
