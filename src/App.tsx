@@ -55,7 +55,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <RevenueCatProvider>
+      {/* <RevenueCatProvider> */}
         <PaddleProvider>
         <SupportProvider>
           <GlobalErrorBoundary>
@@ -101,7 +101,7 @@ const App = () => (
           </GlobalErrorBoundary>
         </SupportProvider>
         </PaddleProvider>
-      </RevenueCatProvider>
+      {/* </RevenueCatProvider> */}
     </AuthProvider>
   </QueryClientProvider>
 );
