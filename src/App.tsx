@@ -56,14 +56,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <RevenueCatProvider>
-        <h1>Prueba</h1>
-        <h1>Prueba</h1>
-        <h1>Prueba</h1>
-        <h1>Prueba</h1>
-        <h1>Prueba</h1>
-        <h1>Prueba</h1>
-        <h1>Prueba</h1>
-        {/* <PaddleProvider>
+        <PaddleProvider>
           <SupportProvider>
             <GlobalErrorBoundary>
               <TooltipProvider>
@@ -117,7 +110,7 @@ const App = () => (
               </TooltipProvider>
             </GlobalErrorBoundary>
           </SupportProvider>
-        </PaddleProvider> */}
+        </PaddleProvider>
       </RevenueCatProvider>
     </AuthProvider>
   </QueryClientProvider>
