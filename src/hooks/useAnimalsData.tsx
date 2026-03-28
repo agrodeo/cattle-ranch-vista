@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { Animal } from "@/types/animal";
 import { normalizeAnimalStatus } from "@/lib/statusUtils";
 import { categorizeAnimal } from "@/lib/animalCategories";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
-import { db } from "@/services/db";
-import { useConnectivity } from "@/services/connectivity";
+import { db, isTempId } from "@/services/db";
+import { enqueue } from "@/services/outbox";
+import { isOnline as checkOnline, useConnectivity } from "@/services/connectivity";
 import type { CachedAnimal } from "@/services/offlineTypes";
 import { useTranslation } from "react-i18next";
 
@@ -162,22 +164,34 @@ export function useAnimalsData() {
   const deleteAnimal = async (animalId: string) => {
     if (!confirm(t('animals:messages.confirmDelete'))) return;
     try {
-      await supabase.from("animal_vaccines").delete().eq("animal_id", animalId);
-      await supabase.from("activities").delete().eq("animal_id", animalId);
-      await supabase.from("reproductive_events").delete().eq("animal_id", animalId);
-      await supabase.from("preñeces").delete().eq("animal_id", animalId);
-      await supabase.from("reproductive_current_state").delete().eq("animal_id", animalId);
-      await supabase.from("verification_tasks").delete().eq("animal_id", animalId);
-      await supabase.from("reproductive_alerts").delete().eq("animal_id", animalId);
-      await supabase.from("vaccination_alerts").delete().eq("animal_id", animalId);
-      await supabase.from("finances_animal_sales").delete().eq("animal_id", animalId);
-      await supabase.from("animal_weight_history").delete().eq("animal_id", animalId);
-      await supabase.from("individual_reproductive_kpis").delete().eq("animal_id", animalId);
-      await supabase.from("reproductive_active_years").delete().eq("animal_id", animalId);
-      await supabase.from("reproductive_activities").delete().eq("animal_id", animalId);
-      const { error } = await supabase.from("animals").delete().eq("id", animalId);
-      if (error) throw error;
-      toast({ title: t('common:status.success'), description: t('animals:messages.deleted') });
+      if (checkOnline()) {
+        await supabase.from("animal_vaccines").delete().eq("animal_id", animalId);
+        await supabase.from("activities").delete().eq("animal_id", animalId);
+        await supabase.from("reproductive_events").delete().eq("animal_id", animalId);
+        await supabase.from("preñeces").delete().eq("animal_id", animalId);
+        await supabase.from("reproductive_current_state").delete().eq("animal_id", animalId);
+        await supabase.from("verification_tasks").delete().eq("animal_id", animalId);
+        await supabase.from("reproductive_alerts").delete().eq("animal_id", animalId);
+        await supabase.from("vaccination_alerts").delete().eq("animal_id", animalId);
+        await supabase.from("finances_animal_sales").delete().eq("animal_id", animalId);
+        await supabase.from("animal_weight_history").delete().eq("animal_id", animalId);
+        await supabase.from("individual_reproductive_kpis").delete().eq("animal_id", animalId);
+        await supabase.from("reproductive_active_years").delete().eq("animal_id", animalId);
+        await supabase.from("reproductive_activities").delete().eq("animal_id", animalId);
+        const { error } = await supabase.from("animals").delete().eq("id", animalId);
+        if (error) throw error;
+        toast({ title: t('common:status.success'), description: t('animals:messages.deleted') });
+      } else {
+        // Offline: remove from local cache and queue for sync
+        await db.animals_cache.delete(animalId);
+        await db.vaccines_cache.where('animal_id').equals(animalId).delete();
+        await db.weights_cache.where('animal_id').equals(animalId).delete();
+        await db.inseminations_cache.where('female_id').equals(animalId).delete();
+        if (!isTempId(animalId)) {
+          await enqueue({ type: 'ANIMAL_DELETE', payload: { id: animalId } });
+        }
+        sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
+      }
       fetchAnimals();
     } catch (error) {
       console.error("Error deleting animal:", error);
