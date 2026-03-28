@@ -64,19 +64,20 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
     <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-background border-t border-border w-full max-w-full overflow-hidden">
       {/* Safe area for iOS */}
       <div className="px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2">
-        <nav className="flex items-center justify-around h-16">
+        <nav className="flex items-center h-16">
           {tabs.map((tab) => {
             if (tab.isAction) {
               return (
-                <Button
-                  key={tab.key}
-                  onClick={onAddClick}
-                  size="lg"
-                  className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-                >
-                  <tab.icon className="h-6 w-6" />
-                  <span className="sr-only">{tab.label}</span>
-                </Button>
+                <div key={tab.key} className="flex-1 flex items-center justify-center">
+                  <Button
+                    onClick={onAddClick}
+                    size="lg"
+                    className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                  >
+                    <tab.icon className="h-6 w-6" />
+                    <span className="sr-only">{tab.label}</span>
+                  </Button>
+                </div>
               );
             }
 
@@ -87,7 +88,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
                 key={tab.key}
                 to={tab.path}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-1 py-1 transition-colors",
+                  "flex-1 flex flex-col items-center justify-center min-h-[44px] py-1 transition-colors",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
