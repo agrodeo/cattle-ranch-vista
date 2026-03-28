@@ -9,7 +9,7 @@ import { categorizeAnimal } from "@/lib/animalCategories";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 import { db, isTempId } from "@/services/db";
 import { enqueue } from "@/services/outbox";
-import { isOnline, useConnectivity } from "@/services/connectivity";
+import { isOnline as checkOnline, useConnectivity } from "@/services/connectivity";
 import type { CachedAnimal } from "@/services/offlineTypes";
 import { useTranslation } from "react-i18next";
 
@@ -164,7 +164,7 @@ export function useAnimalsData() {
   const deleteAnimal = async (animalId: string) => {
     if (!confirm(t('animals:messages.confirmDelete'))) return;
     try {
-      if (isOnline()) {
+      if (checkOnline()) {
         await supabase.from("animal_vaccines").delete().eq("animal_id", animalId);
         await supabase.from("activities").delete().eq("animal_id", animalId);
         await supabase.from("reproductive_events").delete().eq("animal_id", animalId);

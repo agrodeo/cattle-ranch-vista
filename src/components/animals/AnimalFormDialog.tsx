@@ -184,7 +184,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         // Offline: save to IndexedDB + outbox
         const now = new Date().toISOString();
         if (editingAnimal) {
-          await db.animals_cache.update(editingAnimal.id, { ...submitData, updated_at: now, sync_status: 'pending' as const });
+          await db.animals_cache.update(editingAnimal.id, { ...submitData, sex: submitData.sex as 'Macho' | 'Hembra', status: (submitData.status || 'activo') as any, cabaña_id: submitData.cabaña_id || '', updated_at: now, sync_status: 'pending' as const });
           await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: editingAnimal.id, ...submitData } });
         } else {
           const tempId = generateTempId();
