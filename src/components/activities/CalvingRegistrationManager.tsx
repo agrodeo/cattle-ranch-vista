@@ -222,74 +222,111 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
 
     for (const row of rows) {
       try {
-        if (row.result === 'exitoso') {
-          const { data: newAnimal, error: animalError } = await supabase.from('animals').insert({
-            id_tag: row.calfTag.trim(),
-            sex: row.calfSex === 'Macho' ? 'Macho' : 'Hembra',
-            breed: row.mother.breed,
-            birth_date: format(row.birthDate, 'yyyy-MM-dd'),
-            mother_id: row.mother.id,
-            father_id: row.fatherId || null,
-            peso_nacimiento: row.birthWeight ? parseFloat(row.birthWeight) : null,
-            caravana_electronica: row.electronicTag || null,
-            corral_id: row.mother.corral_id,
-            cabaña_id: cabanaId,
-            status: 'Activo',
-          }).select('id').single();
-          if (animalError) throw animalError;
-          try {
-            await registerCalvingEvent(row.mother.id, newAnimal.id, format(row.birthDate, 'yyyy-MM-dd'), cabanaId, row.notes || undefined);
-          } catch (rpcError: any) {
-            // Fallback: if no active pregnancy record exists, update mother directly
-            console.warn('registerCalvingEvent RPC failed, applying fallback:', rpcError?.message);
-            await supabase.from('animals').update({
-              esta_preñada: false,
-              fecha_probable_parto: null,
-            }).eq('id', row.mother.id);
-            // Also update reproductive state tables to avoid stale state
-            await supabase.from('reproductive_states' as any).update({
-              current_state: 'post_parto',
-              last_update: new Date().toISOString(),
-            }).eq('animal_id', row.mother.id);
-            await supabase.from('reproductive_current_state' as any).update({
-              estado: 'post_parto',
-              updated_at: new Date().toISOString(),
-            }).eq('animal_id', row.mother.id);
+        if (!isOnline()) {
+          // ── OFFLINE PATH: queue all operations to outbox ──
+          const now = new Date().toISOString();
+          if (row.result === 'exitoso') {
+            const tempId = generateTempId();
+            const calfData = {
+              id_tag: row.calfTag.trim(),
+              sex: row.calfSex === 'Macho' ? 'Macho' : 'Hembra',
+              breed: row.mother.breed,
+              birth_date: format(row.birthDate, 'yyyy-MM-dd'),
+              mother_id: row.mother.id,
+              father_id: row.fatherId || null,
+              peso_nacimiento: row.birthWeight ? parseFloat(row.birthWeight) : null,
+              caravana_electronica: row.electronicTag || null,
+              corral_id: row.mother.corral_id,
+              cabaña_id: cabanaId,
+              status: 'Activo',
+            };
+            await db.animals_cache.add({
+              ...calfData, id: tempId, sex: calfData.sex as 'Macho' | 'Hembra',
+              status: 'activo' as const, cabaña_id: cabanaId!, updated_at: now, sync_status: 'pending' as const,
+            });
+            await enqueue({ type: 'ANIMAL_INSERT', payload: calfData, tempIds: { animalId: tempId } });
+            // Queue mother update
+            await db.animals_cache.update(row.mother.id, { esta_preñada: false, fecha_probable_parto: null, updated_at: now, sync_status: 'pending' as const });
+            await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: row.mother.id, esta_preñada: false, fecha_probable_parto: null } });
+            // Queue evento
+            const cached = await db.user_profile.toArray();
+            const userId = cached[0]?.user_id || 'offline';
+            await enqueue({
+              type: 'EVENTO_INSERT',
+              payload: {
+                cabaña_id: cabanaId, tipo: 'PARTO', fecha: format(row.birthDate, 'yyyy-MM-dd'),
+                creado_por: userId, notas: row.notes || null,
+                payload: { animal_id: row.mother.id, animal_tag: row.mother.id_tag, resultado: 'exitoso', calf_tag: row.calfTag.trim() },
+              },
+            });
+          } else {
+            // Non-successful calving: update mother offline
+            await db.animals_cache.update(row.mother.id, { esta_preñada: false, fecha_probable_parto: null, updated_at: now, sync_status: 'pending' as const });
+            await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: row.mother.id, esta_preñada: false, fecha_probable_parto: null } });
+            const cached = await db.user_profile.toArray();
+            const userId = cached[0]?.user_id || 'offline';
+            await enqueue({
+              type: 'EVENTO_INSERT',
+              payload: {
+                cabaña_id: cabanaId, tipo: 'PARTO', fecha: format(row.birthDate, 'yyyy-MM-dd'),
+                creado_por: userId, notas: row.notes || null,
+                payload: { animal_id: row.mother.id, animal_tag: row.mother.id_tag, resultado: row.result, motivo: RESULT_TO_MOTIVO[row.result] },
+              },
+            });
+            failedCount++;
           }
           successCount++;
         } else {
-          const { data: pregnancies } = await supabase
-            .from('preñeces' as any).select('id')
-            .eq('animal_id', row.mother.id).eq('estado_final', 'activa')
-            .order('fecha_inicio', { ascending: false }).limit(1);
-          const activePregnancy = (pregnancies as any)?.[0];
-          if (activePregnancy) {
-            await markPregnancyAsFailed(activePregnancy.id, RESULT_TO_MOTIVO[row.result]);
-          } else {
-            await supabase.from('animals').update({ esta_preñada: false, fecha_probable_parto: null }).eq('id', row.mother.id);
-          }
-          // Create evento record for non-successful calvings so they appear in activity timeline
-          try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-              await supabase.from('eventos').insert({
-                cabaña_id: cabanaId,
-                tipo: 'PARTO',
-                fecha: format(row.birthDate, 'yyyy-MM-dd'),
-                creado_por: user.id,
-                notas: row.notes || null,
-                payload: {
-                  animal_id: row.mother.id,
-                  animal_tag: row.mother.id_tag,
-                  resultado: row.result,
-                  motivo: RESULT_TO_MOTIVO[row.result],
-                },
-              });
+          // ── ONLINE PATH: original Supabase calls ──
+          if (row.result === 'exitoso') {
+            const { data: newAnimal, error: animalError } = await supabase.from('animals').insert({
+              id_tag: row.calfTag.trim(),
+              sex: row.calfSex === 'Macho' ? 'Macho' : 'Hembra',
+              breed: row.mother.breed,
+              birth_date: format(row.birthDate, 'yyyy-MM-dd'),
+              mother_id: row.mother.id,
+              father_id: row.fatherId || null,
+              peso_nacimiento: row.birthWeight ? parseFloat(row.birthWeight) : null,
+              caravana_electronica: row.electronicTag || null,
+              corral_id: row.mother.corral_id,
+              cabaña_id: cabanaId,
+              status: 'Activo',
+            }).select('id').single();
+            if (animalError) throw animalError;
+            try {
+              await registerCalvingEvent(row.mother.id, newAnimal.id, format(row.birthDate, 'yyyy-MM-dd'), cabanaId!, row.notes || undefined);
+            } catch (rpcError: any) {
+              console.warn('registerCalvingEvent RPC failed, applying fallback:', rpcError?.message);
+              await supabase.from('animals').update({ esta_preñada: false, fecha_probable_parto: null }).eq('id', row.mother.id);
+              await supabase.from('reproductive_states' as any).update({ current_state: 'post_parto', last_update: new Date().toISOString() }).eq('animal_id', row.mother.id);
+              await supabase.from('reproductive_current_state' as any).update({ estado: 'post_parto', updated_at: new Date().toISOString() }).eq('animal_id', row.mother.id);
             }
-          } catch (eventoError) {
-            console.warn('Failed to create evento for failed calving:', eventoError);
+            successCount++;
+          } else {
+            const { data: pregnancies } = await supabase
+              .from('preñeces' as any).select('id')
+              .eq('animal_id', row.mother.id).eq('estado_final', 'activa')
+              .order('fecha_inicio', { ascending: false }).limit(1);
+            const activePregnancy = (pregnancies as any)?.[0];
+            if (activePregnancy) {
+              await markPregnancyAsFailed(activePregnancy.id, RESULT_TO_MOTIVO[row.result]);
+            } else {
+              await supabase.from('animals').update({ esta_preñada: false, fecha_probable_parto: null }).eq('id', row.mother.id);
+            }
+            try {
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                await supabase.from('eventos').insert({
+                  cabaña_id: cabanaId, tipo: 'PARTO', fecha: format(row.birthDate, 'yyyy-MM-dd'),
+                  creado_por: user.id, notas: row.notes || null,
+                  payload: { animal_id: row.mother.id, animal_tag: row.mother.id_tag, resultado: row.result, motivo: RESULT_TO_MOTIVO[row.result] },
+                });
+              }
+            } catch (eventoError) {
+              console.warn('Failed to create evento for failed calving:', eventoError);
+            }
+            failedCount++;
           }
-          failedCount++;
         }
       } catch (error) {
         console.error('Error processing calving row:', error);
