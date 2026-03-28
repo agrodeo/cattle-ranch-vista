@@ -34,38 +34,37 @@ export function useAnimalsData() {
   const [userCabaña, setUserCabaña] = useState<string>("");
   const [parentAnimals, setParentAnimals] = useState<ParentAnimal[]>([]);
 
+  // Use cabañaId from auth context directly (works offline via cached profile)
   useEffect(() => {
-    fetchCabañas();
-    fetchUserCabaña();
-  }, [currentUser]);
+    if (currentUser?.cabañaId) {
+      setUserCabaña(currentUser.cabañaId);
+    }
+  }, [currentUser?.cabañaId]);
+
+  useEffect(() => {
+    if (isOnline) {
+      fetchCabañas();
+    }
+  }, [currentUser, isOnline]);
 
   useEffect(() => {
     if (userCabaña) {
       fetchAnimals();
-      fetchParentAnimals();
+      if (isOnline) {
+        fetchParentAnimals();
+      }
     }
   }, [userCabaña]);
 
   const fetchUserCabaña = async () => {
-    if (!currentUser?.id) return;
-    try {
-      const { data, error } = await supabase.rpc("get_user_cabana_info", {
-        user_uuid: currentUser.id,
-      });
-      if (error) throw error;
-      if (!data) {
-        toast({ title: t('animals:errors.configRequired'), description: t('animals:errors.contactAdmin'), variant: "destructive" });
-        return;
-      }
-      setUserCabaña(data[0]?.cabana_id || "");
-    } catch (error) {
-      console.error("Error fetching user cabaña:", error);
-      toast({ title: t('common:errors.generic'), description: t('animals:errors.loadUserInfo'), variant: "destructive" });
-    }
+    // This is now handled via currentUser.cabañaId from auth context
+    // Kept for backward compatibility but no longer makes network calls
+    if (!currentUser?.cabañaId) return;
+    setUserCabaña(currentUser.cabañaId);
   };
 
   const fetchParentAnimals = async () => {
-    if (!userCabaña) return;
+    if (!userCabaña || !isOnline) return;
     try {
       const { data, error } = await supabase
         .from("animals")
@@ -96,9 +95,10 @@ export function useAnimalsData() {
         });
         setAnimals(cached as unknown as Animal[]);
       }
-      setLoading(false);
     } catch (err) {
       console.error('Error loading from cache:', err);
+    } finally {
+      setLoading(false);
     }
   }, [userCabaña]);
 
