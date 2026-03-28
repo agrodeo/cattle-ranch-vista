@@ -59,8 +59,8 @@ async function batchFetchAnimals(animalIds: string[]): Promise<Map<string, { id:
 export function useAllActivities() {
   const [activities, setActivities] = useState<UnifiedActivity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { session } = useSupabaseAuth();
-  const { isOnline } = useConnectivity(); // Fix: destructure correctly
+  const { currentUser } = useSupabaseAuth();
+  const { isOnline } = useConnectivity();
 
   // Load from IndexedDB cache first
   const loadFromCache = useCallback(async (cabañaId: string) => {
@@ -350,7 +350,7 @@ export function useAllActivities() {
   }, [isOnline]);
 
   const fetchActivities = useCallback(async () => {
-    if (!session?.user?.id) {
+    if (!currentUser?.cabañaId) {
       setActivities([]);
       setIsLoading(false);
       return;
@@ -358,29 +358,21 @@ export function useAllActivities() {
 
     try {
       setIsLoading(true);
+      const cabañaId = currentUser.cabañaId;
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .single();
-
-      const cabañaId = (profile as any)?.cabaña_id;
-      
-      if (!cabañaId) {
-        setActivities([]);
-        setIsLoading(false);
-        return;
-      }
-
+      // Always load from cache first (works offline)
       await loadFromCache(cabañaId);
-      await syncFromServer(cabañaId);
+      
+      // Only sync from server if online
+      if (isOnline) {
+        await syncFromServer(cabañaId);
+      }
     } catch (error) {
       console.error('Error fetching activities:', error);
-      setActivities([]);
+      // Don't clear activities — keep cached data
       setIsLoading(false);
     }
-  }, [session?.user?.id, loadFromCache, syncFromServer]);
+  }, [currentUser?.cabañaId, isOnline, loadFromCache, syncFromServer]);
 
   useEffect(() => {
     fetchActivities();
