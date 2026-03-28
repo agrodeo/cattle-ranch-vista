@@ -70,25 +70,24 @@ export function useAllActivities() {
         .equals(cabañaId)
         .toArray();
 
-      if (cached.length > 0) {
-        const parsedActivities: UnifiedActivity[] = cached.map((c: CachedActivity) => ({
-          id: c.id,
-          tipo: c.tipo as UnifiedActivity['tipo'],
-          subtipo: c.subtipo,
-          fecha: c.fecha,
-          responsable: c.responsable,
-          notas: c.notas,
-          animales: JSON.parse(c.animales || '[]'),
-          detalles: JSON.parse(c.detalles || '{}'),
-          created_at: c.created_at
-        }));
-        
-        parsedActivities.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
-        setActivities(parsedActivities);
-        setIsLoading(false);
-      }
+      const parsedActivities: UnifiedActivity[] = cached.map((c: CachedActivity) => ({
+        id: c.id,
+        tipo: c.tipo as UnifiedActivity['tipo'],
+        subtipo: c.subtipo,
+        fecha: c.fecha,
+        responsable: c.responsable,
+        notas: c.notas,
+        animales: JSON.parse(c.animales || '[]'),
+        detalles: JSON.parse(c.detalles || '{}'),
+        created_at: c.created_at
+      }));
+      
+      parsedActivities.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+      setActivities(parsedActivities);
     } catch (error) {
       console.error('Error loading activities from cache:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
