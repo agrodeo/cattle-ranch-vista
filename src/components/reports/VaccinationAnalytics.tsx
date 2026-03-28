@@ -199,6 +199,8 @@ export const VaccinationAnalytics = ({ filters: globalFilters }: VaccinationAnal
   useEffect(() => {
     if (user && currentUser?.cabañaId) {
       fetchVaccinationStats();
+    } else if (!isOnline()) {
+      setLoading(false);
     }
   }, [user, currentUser?.cabañaId, globalFilters]);
 
