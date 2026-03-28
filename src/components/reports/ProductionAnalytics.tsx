@@ -52,6 +52,8 @@ export const ProductionAnalytics = ({ filters: globalFilters }: ProductionAnalyt
   useEffect(() => {
     if (currentUser?.cabañaId) {
       fetchProductionStats();
+    } else if (!isOnline()) {
+      setLoading(false);
     }
   }, [currentUser, globalFilters]);
 

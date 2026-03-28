@@ -53,6 +53,8 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
   useEffect(() => {
     if (currentUser?.cabañaId) {
       fetchFinancialStats();
+    } else if (!isOnline()) {
+      setLoading(false);
     }
   }, [currentUser, timeRange, globalFilters]);
 
