@@ -88,7 +88,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
                 key={tab.key}
                 to={tab.path}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[44px] min-h-[44px] px-1 py-1 transition-colors",
+                  "flex-1 flex flex-col items-center justify-center min-h-[44px] py-1 transition-colors",
                   active
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
