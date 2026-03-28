@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { usePaddle } from '@/providers/PaddleProvider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -9,9 +9,27 @@ interface CheckoutOptions {
   onSuccess?: () => void;
 }
 
+const triggerSubscriptionRefresh = () => {
+  [0, 2500, 6000, 10000].forEach((delay) => {
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('subscription-updated'));
+    }, delay);
+  });
+};
+
 export function usePaddleCheckout() {
   const { paddle } = usePaddle();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') !== 'success') return;
+
+    triggerSubscriptionRefresh();
+
+    const nextUrl = `${window.location.origin}${window.location.pathname}`;
+    window.history.replaceState({}, '', nextUrl);
+  }, []);
 
   const openCheckout = useCallback((options: CheckoutOptions) => {
     if (!paddle) {
@@ -34,10 +52,7 @@ export function usePaddleCheckout() {
       },
     });
 
-    // Listen for checkout events via Paddle's event callback
-    // Paddle.js fires events through the EventEmitter on the paddle instance
-    // The actual completion is handled by the webhook; we use the success URL redirect
-    // and the subscription-updated CustomEvent pattern for UI refresh.
+    options.onSuccess?.();
   }, [paddle, toast]);
 
   return { openCheckout, isPaddleReady: !!paddle };
