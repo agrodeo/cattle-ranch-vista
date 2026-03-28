@@ -68,15 +68,16 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
           {tabs.map((tab) => {
             if (tab.isAction) {
               return (
-                <Button
-                  key={tab.key}
-                  onClick={onAddClick}
-                  size="lg"
-                  className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
-                >
-                  <tab.icon className="h-6 w-6" />
-                  <span className="sr-only">{tab.label}</span>
-                </Button>
+                <div key={tab.key} className="flex-1 flex items-center justify-center">
+                  <Button
+                    onClick={onAddClick}
+                    size="lg"
+                    className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                  >
+                    <tab.icon className="h-6 w-6" />
+                    <span className="sr-only">{tab.label}</span>
+                  </Button>
+                </div>
               );
             }
 
