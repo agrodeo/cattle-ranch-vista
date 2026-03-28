@@ -31,7 +31,7 @@ export function PaddleProvider({ children }: { children: React.ReactNode }) {
           environment: PADDLE_ENV,
           token: PADDLE_CLIENT_TOKEN,
           eventCallback: (event) => {
-            if (event.name === 'checkout.completed' || event.name === 'transaction.completed') {
+            if (event.name === 'checkout.completed') {
               [0, 2500, 6000, 10000].forEach((delay) => {
                 setTimeout(() => {
                   window.dispatchEvent(new CustomEvent('subscription-updated'));
