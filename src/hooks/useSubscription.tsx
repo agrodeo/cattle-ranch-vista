@@ -125,8 +125,9 @@ export const useSubscription = () => {
   useEffect(() => {
     const handler = () => {
       console.log('🔄 subscription-updated event received, refreshing...');
-      // Small delay to let the backend finish writing
-      setTimeout(() => fetchSubscriptionStatus(), 1500);
+      [0, 2500, 6000, 10000].forEach((delay) => {
+        setTimeout(() => fetchSubscriptionStatus(), delay);
+      });
     };
     window.addEventListener('subscription-updated', handler);
     return () => window.removeEventListener('subscription-updated', handler);
