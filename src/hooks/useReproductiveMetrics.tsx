@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
+import { isOnline } from "@/services/connectivity";
 import type {
   ReproductiveMetric,
   ReproductiveAlert,
@@ -20,6 +21,12 @@ export function useReproductiveMetrics(filters: Filters = {}) {
   }, [filters]);
 
   const fetchMetrics = async () => {
+    // Skip network calls when offline
+    if (!isOnline()) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       
