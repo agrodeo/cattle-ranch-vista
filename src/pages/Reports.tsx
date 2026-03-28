@@ -185,22 +185,30 @@ const Reports = () => {
   }, [appliedFilters]);
 
   const renderTabContent = () => {
-    switch (activeTab) {
-      case "reproductive":
-        return <ReproductiveAnalytics filters={stableAppliedFilters} />;
-      case "production":
-        return <ProductionAnalytics filters={stableAppliedFilters} />;
-      case "evolution":
-        return <TemporalEvolutionAnalytics cabanaId={currentUser?.cabañaId || null} filters={stableAppliedFilters} />;
-      case "mortality":
-        return <MortalityReports filters={stableAppliedFilters} />;
-      case "vaccines":
-        return <VaccinationAnalytics filters={stableAppliedFilters} />;
-      case "financial":
-        return <FinancialAnalytics filters={stableAppliedFilters} />;
-      default:
-        return <ReproductiveAnalytics filters={stableAppliedFilters} />;
-    }
+    const content = (() => {
+      switch (activeTab) {
+        case "reproductive":
+          return <ReproductiveAnalytics filters={stableAppliedFilters} />;
+        case "production":
+          return <ProductionAnalytics filters={stableAppliedFilters} />;
+        case "evolution":
+          return <TemporalEvolutionAnalytics cabanaId={currentUser?.cabañaId || null} filters={stableAppliedFilters} />;
+        case "mortality":
+          return <MortalityReports filters={stableAppliedFilters} />;
+        case "vaccines":
+          return <VaccinationAnalytics filters={stableAppliedFilters} />;
+        case "financial":
+          return <FinancialAnalytics filters={stableAppliedFilters} />;
+        default:
+          return <ReproductiveAnalytics filters={stableAppliedFilters} />;
+      }
+    })();
+
+    return (
+      <ReportErrorBoundary key={activeTab}>
+        {content}
+      </ReportErrorBoundary>
+    );
   };
 
   if (isMobile) {
