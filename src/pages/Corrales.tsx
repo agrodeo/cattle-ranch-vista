@@ -104,7 +104,6 @@ export default function Corrales() {
         .toArray();
       
       if (cachedCorrales.length > 0) {
-        // Get animal counts from cache
         const processedCorrales: Corral[] = await Promise.all(
           cachedCorrales.map(async (corral) => {
             const animals = await db.animals_cache
@@ -131,7 +130,6 @@ export default function Corrales() {
         
         setCorrales(processedCorrales);
         
-        // Count total active animals from cache
         const allCachedAnimals = await db.animals_cache
           .where('cabaña_id')
           .equals(currentUser.cabañaId)
@@ -141,9 +139,10 @@ export default function Corrales() {
         ).length;
         setTotalActiveAnimals(activeCount);
       }
-      setLoading(false);
     } catch (err) {
       console.error('Error loading corrales from cache:', err);
+    } finally {
+      setLoading(false);
     }
   }, [currentUser?.cabañaId]);
 
