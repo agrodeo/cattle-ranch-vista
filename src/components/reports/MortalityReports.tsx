@@ -129,6 +129,10 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
       // Calculate statistics
       const mortalityData = calculateMortalityStats(filteredDeaths, animals || []);
       setStats(mortalityData);
+      // Cache for offline
+      try {
+        await db.reports_cache.put({ key: CACHE_KEY, data: mortalityData, updated_at: new Date().toISOString() });
+      } catch (e) { console.warn('Failed to cache mortality report:', e); }
     } catch (error) {
       console.error("Error fetching mortality stats:", error);
     } finally {
