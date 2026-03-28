@@ -335,10 +335,14 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
     }
     setSaving(false);
     if (successCount > 0 || failedCount > 0) {
-      toast({
-        title: `${successCount + failedCount} ${t('reproductive:calvingRegistration.success')}`,
-        description: t('reproductive:calvingRegistration.summary', { success: successCount, failed: failedCount }),
-      });
+      if (!isOnline()) {
+        sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
+      } else {
+        toast({
+          title: `${successCount + failedCount} ${t('reproductive:calvingRegistration.success')}`,
+          description: t('reproductive:calvingRegistration.summary', { success: successCount, failed: failedCount }),
+        });
+      }
       setRows([]);
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-for-calving'] });
