@@ -212,8 +212,8 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       cabanaId = (profile as any)?.cabaña_id;
     } else {
       // Offline: get cabañaId from local cache
-      const cached = await db.user_profile.toCollection().first();
-      cabanaId = cached?.cabañaId || null;
+      const cached = await db.user_profile.toArray();
+      cabanaId = cached[0]?.cabañaId || null;
     }
     if (!cabanaId) { setSaving(false); return; }
 
