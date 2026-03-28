@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { Animal } from "@/types/animal";
 import { normalizeAnimalStatus } from "@/lib/statusUtils";
 import { categorizeAnimal } from "@/lib/animalCategories";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
-import { db } from "@/services/db";
-import { useConnectivity } from "@/services/connectivity";
+import { db, isTempId } from "@/services/db";
+import { enqueue } from "@/services/outbox";
+import { isOnline, useConnectivity } from "@/services/connectivity";
 import type { CachedAnimal } from "@/services/offlineTypes";
 import { useTranslation } from "react-i18next";
 
