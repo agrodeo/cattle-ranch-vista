@@ -4,20 +4,20 @@ import { getNativePlatform } from "@/lib/platformDetection";
 // iOS uses simple product IDs; Android uses subscriptionId:basePlanId format
 export const REVENUECAT_PRODUCTS = {
   personal: {
-    monthly: { ios: "personal_monthly", android: "personal_monthly:personal-monhly" },
-    annual: { ios: "personal_yearly", android: "personal_yearly:personal-yearly" },
+    monthly: { ios: "Personal_Monthly", android: "personal_monthly:personal-monhly" },
+    annual: { ios: "Personal_Yearly", android: "personal_yearly:personal-yearly" },
   },
   avanzado: {
-    monthly: { ios: "advanced_monthly", android: "advanced_monthly:advanced-monthly" },
-    annual: { ios: "advanced_yearly", android: "advanced_yearly:advanced-yearly" },
+    monthly: { ios: "Advanced_Monthly", android: "advanced_monthly:advanced-monthly" },
+    annual: { ios: "Advanced_Yearly", android: "advanced_yearly:advanced-yearly" },
   },
   productor: {
-    monthly: { ios: "producer_monthly", android: "producer_monthly:producer-monthly" },
-    annual: { ios: "producer_yearly", android: "producer_yearly:producer-yearly" },
+    monthly: { ios: "Producer_Monthly", android: "producer_monthly:producer-monthly" },
+    annual: { ios: "Producer_Yearly", android: "producer_yearly:producer-yearly" },
   },
   cabana: {
-    monthly: { ios: "herd_monthly", android: "herd_monthly:herd-monthly" },
-    annual: { ios: "herd_yearly", android: "herd_yearly:herd-yearly" },
+    monthly: { ios: "Herd_Monthly", android: "herd_monthly:herd-monthly" },
+    annual: { ios: "Herd_Yearly", android: "herd_yearly:herd-yearly" },
   },
   corporativo: {
     monthly: { ios: "", android: "" },
