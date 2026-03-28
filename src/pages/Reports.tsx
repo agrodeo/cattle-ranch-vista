@@ -11,6 +11,7 @@ import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
 import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
 import { TemporalEvolutionAnalytics } from "@/components/reports/TemporalEvolutionAnalytics";
 import { QuickFilterChips, QuickFilter } from "@/components/reports/QuickFilterChips";
+import { ReportErrorBoundary } from "@/components/reports/ReportErrorBoundary";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { formatFiltersForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
