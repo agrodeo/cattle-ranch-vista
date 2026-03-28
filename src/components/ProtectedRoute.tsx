@@ -7,6 +7,7 @@ import { WifiOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useConnectivity } from "@/services/connectivity";
 import { Progress } from "@/components/ui/progress";
+import { db } from "@/services/db";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -57,8 +58,24 @@ const ProtectedRoute = ({ children, requiresWriteAccess = false }: ProtectedRout
     return <LoadingScreen message={t('loading')} />;
   }
 
-  // Redirect to auth if not authenticated
+  // Redirect to auth if not authenticated — BUT NEVER when offline with a cached session
   if (!isAuthenticated) {
+    // If offline, check for cached session before redirecting
+    if (!isOnline) {
+      // The auth provider should have loaded from cache already.
+      // If still not authenticated offline, show offline message instead of redirecting.
+      return (
+        <>
+          <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500 text-amber-950 px-4 py-2 text-center text-sm font-medium flex items-center justify-center gap-2">
+            <WifiOff className="h-4 w-4" />
+            <span>{t('sync.offline')}</span>
+          </div>
+          <div className="pt-10 flex items-center justify-center min-h-screen">
+            <p className="text-muted-foreground text-sm">{t('sync.offline')}</p>
+          </div>
+        </>
+      );
+    }
     return <Navigate to="/auth" replace />;
   }
 

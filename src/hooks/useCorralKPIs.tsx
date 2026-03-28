@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useConnectivity } from '@/services/connectivity';
 
 export interface CorralKPI {
   corral_id: string;
@@ -27,11 +28,15 @@ export interface CorralKPI {
 export function useCorralKPIs() {
   const { currentUser } = useSupabaseAuth();
   const { toast } = useToast();
+  const { isOnline } = useConnectivity();
   const [kpis, setKpis] = useState<CorralKPI[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchKPIs = async () => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id || !isOnline) {
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -68,7 +73,7 @@ export function useCorralKPIs() {
 
   useEffect(() => {
     fetchKPIs();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, isOnline]);
 
   const getVaccinationStatusColor = (status: string) => {
     switch (status) {

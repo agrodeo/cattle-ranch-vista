@@ -22,16 +22,23 @@ export function useAchievements() {
   const [loading, setLoading] = useState(true);
 
   const fetchAchievements = async () => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.id) {
+      setLoading(false);
+      return;
+    }
 
-    const { data, error } = await supabase
-      .from('user_achievements')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('unlocked_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('user_achievements')
+        .select('*')
+        .eq('user_id', currentUser.id)
+        .order('unlocked_at', { ascending: false });
 
-    if (!error && data) {
-      setAchievements(data as UnlockedAchievement[]);
+      if (!error && data) {
+        setAchievements(data as UnlockedAchievement[]);
+      }
+    } catch (err) {
+      console.warn('Error fetching achievements (likely offline):', err);
     }
     setLoading(false);
   };
