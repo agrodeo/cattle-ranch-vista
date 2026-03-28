@@ -10,6 +10,9 @@ import { AlertTriangle, Skull, Calendar, TrendingDown } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ReportFilters } from "./ReportsFilters";
 import { categorizeAnimal } from "@/lib/animalCategories";
+import { isOnline } from "@/services/connectivity";
+import { db } from "@/services/db";
+import { StaleDataBanner } from "./StaleDataBanner";
 
 interface MortalityStats {
   totalDeaths: number;
@@ -33,6 +36,9 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
   const isMobile = useIsMobile();
   const [stats, setStats] = useState<MortalityStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isStale, setIsStale] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const CACHE_KEY = `mortality:${currentUser?.cabañaId}:${JSON.stringify(globalFilters)}`;
 
   useEffect(() => {
     if (currentUser?.cabañaId) {
@@ -41,6 +47,20 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
   }, [currentUser, globalFilters]);
 
   const fetchMortalityStats = async () => {
+    // Offline guard: load from cache
+    if (!isOnline()) {
+      try {
+        const cached = await db.reports_cache.get(CACHE_KEY);
+        if (cached) {
+          setStats(cached.data);
+          setIsStale(true);
+          setLastUpdated(cached.updated_at);
+        }
+      } catch (e) { console.warn('Failed to load cached mortality report:', e); }
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch death records with animal and cause info
       let query = supabase

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { isOnline } from "@/services/connectivity";
 
 interface ActivityStats {
   totalActivities: number;
@@ -44,6 +45,12 @@ export function useActivities() {
       
       // Check if user is authenticated and has cabaña_id
       if (!currentUser?.cabañaId) {
+        return;
+      }
+
+      // Skip network calls when offline
+      if (!isOnline()) {
+        setIsLoading(false);
         return;
       }
 
