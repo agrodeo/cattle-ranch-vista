@@ -314,11 +314,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setLoading(false);
             }
           }, 0);
-        } else {
-          console.log('👤 No user session');
+        } else if (event === 'SIGNED_OUT') {
+          // Only clear auth on EXPLICIT sign-out events
+          console.log('👤 Explicit SIGNED_OUT — clearing auth state');
           setCurrentUser(null);
           setIsAuthenticated(false);
           setLoading(false);
+        } else {
+          // Session is null but NOT an explicit sign-out (e.g., failed token refresh while offline).
+          // If we're offline, keep the user authenticated using cached profile.
+          const currentlyOffline = !navigator.onLine;
+          if (currentlyOffline) {
+            console.log('📴 Offline + no session — preserving auth from cache');
+            // Load cached profile if we don't already have one
+            if (!currentUser) {
+              loadCachedUserProfile().then(cached => {
+                if (cached && mounted) {
+                  setCurrentUser(cached);
+                  setIsAuthenticated(true);
+                  if (cached.cabañaId) setCabañaId(cached.cabañaId);
+                }
+                if (mounted) setLoading(false);
+              });
+            } else {
+              setLoading(false);
+            }
+          } else {
+            // Online but no session and not SIGNED_OUT — treat as unauthenticated
+            console.log('👤 No user session (online)');
+            setCurrentUser(null);
+            setIsAuthenticated(false);
+            setLoading(false);
+          }
         }
       }
     );
@@ -347,9 +374,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         console.log('🔍 Initial session check:', session ? 'session exists' : 'no session', sessionError ? `error: ${sessionError.message}` : '');
         
-        // If there's a session error (e.g. stale/corrupt token), clear everything and go to login
+        // If there's a session error (e.g. stale/corrupt token)
         if (sessionError) {
-          console.warn('⚠️ Stale session detected, clearing caches...');
+          // If offline, don't clear caches — the error is likely a network failure, not corruption
+          if (!navigator.onLine) {
+            console.warn('📴 Offline + session error — preserving cached auth');
+            const cachedProfile = await loadCachedUserProfile();
+            if (cachedProfile && mounted) {
+              setCurrentUser(cachedProfile);
+              setIsAuthenticated(true);
+              if (cachedProfile.cabañaId) setCabañaId(cachedProfile.cabañaId);
+            }
+            if (mounted) setLoading(false);
+            return;
+          }
+          
+          console.warn('⚠️ Stale session detected (online), clearing caches...');
           try {
             await db.auth_storage.clear();
             await db.user_profile.clear();
@@ -375,7 +415,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // If session exists, onAuthStateChange callback handles the rest
       } catch (error) {
         console.error('❌ Failed to get session:', error);
-        // Clear potentially corrupt session data
+        // If offline, don't clear caches — use cached profile
+        if (!navigator.onLine) {
+          console.warn('📴 Offline + getSession failed — preserving cached auth');
+          const cachedProfile = await loadCachedUserProfile();
+          if (cachedProfile && mounted) {
+            setCurrentUser(cachedProfile);
+            setIsAuthenticated(true);
+            if (cachedProfile.cabañaId) setCabañaId(cachedProfile.cabañaId);
+          }
+          if (mounted) setLoading(false);
+          return;
+        }
+        // Online: clear potentially corrupt session data
         try {
           await db.auth_storage.clear();
         } catch (_) {}
