@@ -31,6 +31,14 @@
     const { offerings, refreshCustomerInfo } = useEntitlements();
     const { openCheckout } = usePaddleCheckout();
 
+    const triggerSubscriptionRefresh = useCallback(() => {
+      [0, 2500, 6000].forEach((delay) => {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('subscription-updated'));
+        }, delay);
+      });
+    }, []);
+
     // Register global callback for Despia purchase completion
     useEffect(() => {
       if (!isDespiaRuntime()) return;
@@ -87,12 +95,12 @@
               console.log('[Purchase:Despia] Backend sync completed');
             }
 
-            // Signal useSubscription to refresh from Supabase
-            window.dispatchEvent(new CustomEvent('subscription-updated'));
+            // Signal useSubscription to refresh from Supabase (with retries)
+            triggerSubscriptionRefresh();
           } catch (syncError) {
             console.error('[Purchase:Despia] Backend sync failed (non-blocking):', syncError);
             // Still dispatch the event so UI tries to refresh
-            window.dispatchEvent(new CustomEvent('subscription-updated'));
+            triggerSubscriptionRefresh();
           }
 
           // Try refreshing entitlements (may fail in Despia, that's ok)
@@ -108,7 +116,7 @@
       return () => {
         delete (window as any).onRevenueCatPurchase;
       };
-    }, [refreshCustomerInfo, toast, session?.user?.id]);
+    }, [refreshCustomerInfo, toast, session?.user?.id, triggerSubscriptionRefresh]);
 
     /**
      * Unified purchase entry point.
@@ -202,10 +210,11 @@
         billingCycle: data.billingCycle 
       });
       
-      // Store the full product ID so the callback can use it for sync
-      (window as any).__pendingDespiaProductId = productId;
+      // Store normalized product ID so callback can always sync consistently
+      (window as any).__pendingDespiaProductId = despiaProductId;
       
-      const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(productId)}`;
+      // IMPORTANT: Despia bridge expects raw `product` (no URI encoding, no base-plan suffix)
+      const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${despiaProductId}`;
       console.log('[Purchase:Despia] Purchase URL prepared', { despiaProductId, purchaseUrl });
 
       const despiaClient = await getDespiaClient();
@@ -234,7 +243,7 @@
         customerEmail,
         cabanaId,
         onSuccess: () => {
-          window.dispatchEvent(new CustomEvent('subscription-updated'));
+          triggerSubscriptionRefresh();
         },
       });
 

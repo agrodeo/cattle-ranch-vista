@@ -90,23 +90,34 @@ serve(async (req) => {
 
     const activeSubscriptions = customerInfo.activeSubscriptions || [];
 
+    const resolveProductCode = (rawProductId: string): string => {
+      const productId = rawProductId?.trim();
+      if (!productId) return 'free';
+
+      const directMatch = PRODUCT_ID_TO_PLAN[productId];
+      if (directMatch) return directMatch;
+
+      const normalized = productId.toLowerCase();
+      if (normalized.includes('personal')) return 'personal';
+      if (normalized.includes('avanzado') || normalized.includes('advanced')) return 'avanzado';
+      if (normalized.includes('productor') || normalized.includes('producer')) return 'productor';
+      if (normalized.includes('cabana') || normalized.includes('herd')) return 'cabana';
+      if (normalized.includes('corporativo') || normalized.includes('corporate')) return 'corporativo';
+
+      return 'free';
+    };
+
     let productCode = 'free';
     let status = 'active';
-    
+
     if (activeSubscriptions.length > 0) {
-      const productId = activeSubscriptions[0];
-      
-      if (PRODUCT_ID_TO_PLAN[productId]) {
-        productCode = PRODUCT_ID_TO_PLAN[productId];
-      } else {
-        console.log('Product ID not found in map, using fallback matching:', productId);
-        if (productId.includes('personal')) productCode = 'personal';
-        else if (productId.includes('avanzado') || productId.includes('advanced')) productCode = 'avanzado';
-        else if (productId.includes('productor') || productId.includes('producer')) productCode = 'productor';
-        else if (productId.includes('cabana') || productId.includes('herd')) productCode = 'cabana';
-        else if (productId.includes('corporativo') || productId.includes('corporate')) productCode = 'corporativo';
+      const productId = String(activeSubscriptions[0] ?? '');
+      productCode = resolveProductCode(productId);
+
+      if (productCode === 'free') {
+        console.warn('Could not map product ID to internal plan code:', productId);
       }
-      
+
       console.log('Mapped product ID', productId, 'to product code:', productCode);
     } else {
       status = 'cancelled';
