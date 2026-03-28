@@ -2,6 +2,10 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { isOnline } from '@/services/connectivity';
+import { db, generateTempId } from '@/services/db';
+import { enqueue } from '@/services/outbox';
+import { toast as sonnerToast } from 'sonner';
 import { useReproductiveSystem } from '@/hooks/useReproductiveSystem';
 import { markPregnancyAsFailed } from '@/lib/pregnancyManagement';
 import { useToast } from '@/hooks/use-toast';
@@ -200,8 +204,17 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
   const handleSaveAll = async () => {
     if (!validate()) return;
     setSaving(true);
-    const { data: profile } = await supabase.from('profiles' as any).select('cabaña_id').eq('user_id', (await supabase.auth.getUser()).data.user?.id).single();
-    const cabanaId = (profile as any)?.cabaña_id;
+
+    let cabanaId: string | null = null;
+
+    if (isOnline()) {
+      const { data: profile } = await supabase.from('profiles' as any).select('cabaña_id').eq('user_id', (await supabase.auth.getUser()).data.user?.id).single();
+      cabanaId = (profile as any)?.cabaña_id;
+    } else {
+      // Offline: get cabañaId from local cache
+      const cached = await db.user_profile.toCollection().first();
+      cabanaId = cached?.cabañaId || null;
+    }
     if (!cabanaId) { setSaving(false); return; }
 
     let successCount = 0;
