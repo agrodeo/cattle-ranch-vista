@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
+import { db, generateTempId } from "@/services/db";
+import { enqueue } from "@/services/outbox";
+import { trySync } from "@/services/sync";
+import { toast as sonnerToast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,36 +108,49 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
     }
 
     try {
-      let motherUUID = null;
-      let fatherUUID = null;
       const cabId = editingAnimal ? formData.cabaña_id : userCabaña;
 
-      if (formData.mother_id) {
-        const { data } = await supabase.from("animals").select("id").eq("id_tag", formData.mother_id).eq("cabaña_id", cabId).eq("sex", "Hembra").maybeSingle();
-        motherUUID = data?.id || null;
-      }
-      if (formData.father_id) {
-        const { data } = await supabase.from("animals").select("id").eq("id_tag", formData.father_id).eq("cabaña_id", cabId).eq("sex", "Macho").maybeSingle();
-        fatherUUID = data?.id || null;
-      }
-
+      // Build submit data — skip parent lookups when offline
+      let motherUUID = null;
+      let fatherUUID = null;
       let registrationData = {};
-      if (formData.breed === 'Braford') {
-        let fatherInfo: ParentInfo | undefined;
-        let motherInfo: ParentInfo | undefined;
-        if (fatherUUID) {
-          const { data } = await supabase.from("animals").select("registration_level, registration_level_override, birth_date, dna_verified").eq("id", fatherUUID).single();
-          if (data) fatherInfo = { level: (data.registration_level_override || data.registration_level) as RegistrationLevel, hasDNA: data.dna_verified || false };
+
+      if (isOnline()) {
+        if (formData.mother_id) {
+          const { data } = await supabase.from("animals").select("id").eq("id_tag", formData.mother_id).eq("cabaña_id", cabId).eq("sex", "Hembra").maybeSingle();
+          motherUUID = data?.id || null;
         }
-        if (motherUUID) {
-          const { data } = await supabase.from("animals").select("registration_level, registration_level_override, birth_date, breed").eq("id", motherUUID).single();
-          if (data) {
-            const birthYear = data.birth_date ? new Date(data.birth_date).getFullYear() : undefined;
-            motherInfo = { level: (data.registration_level_override || data.registration_level) as RegistrationLevel, isBoMother: data.breed === 'Bo', birthYear };
+        if (formData.father_id) {
+          const { data } = await supabase.from("animals").select("id").eq("id_tag", formData.father_id).eq("cabaña_id", cabId).eq("sex", "Macho").maybeSingle();
+          fatherUUID = data?.id || null;
+        }
+        if (formData.breed === 'Braford') {
+          let fatherInfo: ParentInfo | undefined;
+          let motherInfo: ParentInfo | undefined;
+          if (fatherUUID) {
+            const { data } = await supabase.from("animals").select("registration_level, registration_level_override, birth_date, dna_verified").eq("id", fatherUUID).single();
+            if (data) fatherInfo = { level: (data.registration_level_override || data.registration_level) as RegistrationLevel, hasDNA: data.dna_verified || false };
           }
+          if (motherUUID) {
+            const { data } = await supabase.from("animals").select("registration_level, registration_level_override, birth_date, breed").eq("id", motherUUID).single();
+            if (data) {
+              const birthYear = data.birth_date ? new Date(data.birth_date).getFullYear() : undefined;
+              motherInfo = { level: (data.registration_level_override || data.registration_level) as RegistrationLevel, isBoMother: data.breed === 'Bo', birthYear };
+            }
+          }
+          const result = calculateBrafordRegistration(formData.breed, fatherInfo, motherInfo, false);
+          registrationData = { registration_level: result.level, registration_father_level: fatherInfo?.level || null, registration_mother_level: motherInfo?.level || null };
         }
-        const result = calculateBrafordRegistration(formData.breed, fatherInfo, motherInfo, false);
-        registrationData = { registration_level: result.level, registration_father_level: fatherInfo?.level || null, registration_mother_level: motherInfo?.level || null };
+      } else {
+        // Offline: try to resolve parents from local cache
+        if (formData.mother_id) {
+          const cached = await db.animals_cache.where('cabaña_id').equals(cabId || '').filter(a => a.id_tag === formData.mother_id && a.sex === 'Hembra').first();
+          motherUUID = cached?.id || null;
+        }
+        if (formData.father_id) {
+          const cached = await db.animals_cache.where('cabaña_id').equals(cabId || '').filter(a => a.id_tag === formData.father_id && a.sex === 'Macho').first();
+          fatherUUID = cached?.id || null;
+        }
       }
 
       const submitData = {
@@ -148,17 +166,32 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         registration_level: formData.registration_level || null, ...registrationData,
       };
 
-      if (editingAnimal) {
-        const { error } = await supabase.from("animals").update(submitData).eq("id", editingAnimal.id);
-        if (error) throw error;
-        toast({ title: t('common:status.success'), description: t('animals:messages.updated') });
-        if (submitData.status === "vendido" || submitData.status === "muerto" || submitData.status === "Vendido" || submitData.status === "Muerto") {
-          await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
+      if (isOnline()) {
+        // Online: write directly to Supabase
+        if (editingAnimal) {
+          const { error } = await supabase.from("animals").update(submitData).eq("id", editingAnimal.id);
+          if (error) throw error;
+          toast({ title: t('common:status.success'), description: t('animals:messages.updated') });
+          if (submitData.status === "vendido" || submitData.status === "muerto" || submitData.status === "Vendido" || submitData.status === "Muerto") {
+            await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
+          }
+        } else {
+          const { error } = await supabase.from("animals").insert([submitData]);
+          if (error) throw error;
+          toast({ title: t('common:status.success'), description: t('animals:messages.created') });
         }
       } else {
-        const { error } = await supabase.from("animals").insert([submitData]);
-        if (error) throw error;
-        toast({ title: t('common:status.success'), description: t('animals:messages.created') });
+        // Offline: save to IndexedDB + outbox
+        const now = new Date().toISOString();
+        if (editingAnimal) {
+          await db.animals_cache.update(editingAnimal.id, { ...submitData, updated_at: now, sync_status: 'pending' });
+          await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: editingAnimal.id, ...submitData } });
+        } else {
+          const tempId = generateTempId();
+          await db.animals_cache.add({ ...submitData, id: tempId, updated_at: now, sync_status: 'pending' } as any);
+          await enqueue({ type: 'ANIMAL_INSERT', payload: submitData, tempIds: { animalId: tempId } });
+        }
+        sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
       }
 
       onOpenChange(false);

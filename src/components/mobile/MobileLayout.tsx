@@ -137,6 +137,14 @@ export function MobileLayout() {
           </div>
         </header>
         
+        {!isOnline && (
+          <div className="mx-3 mt-2 flex items-center gap-2 rounded-md bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 px-3 py-2">
+            <CloudOff className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="text-xs text-amber-800 dark:text-amber-200">
+              Sin conexión — Los cambios se guardarán localmente
+            </span>
+          </div>
+        )}
         <main className="flex-1 bg-background overflow-x-hidden pb-20">
           <Outlet />
         </main>
