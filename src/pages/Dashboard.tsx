@@ -172,63 +172,88 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <div className="space-y-2">
-                    {warnings.alerts.map((alert) => (
-                      <Collapsible key={alert.id}>
-                        <CollapsibleTrigger className="w-full text-left">
-                          <div
-                            className={`flex items-center gap-3 p-4 rounded-xl border-0 shadow-sm cursor-pointer transition-colors ${
-                              alert.severity === 'high'
-                                ? 'bg-destructive/5 hover:bg-destructive/10'
-                                : alert.severity === 'medium'
-                                ? 'bg-amber-500/5 hover:bg-amber-500/10'
-                                : 'bg-blue-500/5 hover:bg-blue-500/10'
-                            }`}
-                          >
-                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                              alert.severity === 'high'
-                                ? 'bg-destructive/10'
-                                : alert.severity === 'medium'
-                                ? 'bg-amber-500/10'
-                                : 'bg-blue-500/10'
-                            }`}>
-                              {alert.type === 'consanguinity' ? (
-                                <Shield className={`h-5 w-5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
+                    {warnings.alerts.map((alert) => {
+                      const bgColor = alert.severity === 'high'
+                        ? 'bg-destructive/5' : alert.severity === 'medium'
+                        ? 'bg-amber-500/5' : 'bg-blue-500/5';
+                      const hoverBg = alert.severity === 'high'
+                        ? 'hover:bg-destructive/10' : alert.severity === 'medium'
+                        ? 'hover:bg-amber-500/10' : 'hover:bg-blue-500/10';
+                      const iconBg = alert.severity === 'high'
+                        ? 'bg-destructive/10' : alert.severity === 'medium'
+                        ? 'bg-amber-500/10' : 'bg-blue-500/10';
+                      const iconColor = alert.severity === 'high'
+                        ? 'text-destructive' : alert.severity === 'medium'
+                        ? 'text-amber-600' : 'text-blue-600';
+                      const countBg = alert.severity === 'high'
+                        ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-700';
+
+                      const alertIcon = alert.type === 'consanguinity' ? Shield
+                        : (alert.type === 'birth_upcoming' || alert.type === 'birth_overdue') ? Baby
+                        : alert.type === 'reproductive' ? Heart
+                        : Syringe;
+                      const AlertIcon = alertIcon;
+
+                      const hasAnimals = alert.animals && alert.animals.length > 0;
+
+                      return (
+                        <Collapsible key={alert.id}>
+                          <CollapsibleTrigger className="w-full text-left">
+                            <div className={`flex items-center gap-3 p-4 rounded-xl border-0 shadow-sm cursor-pointer transition-colors ${bgColor} ${hoverBg}`}>
+                              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+                                <AlertIcon className={`h-5 w-5 ${iconColor}`} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground">
+                                  {alert.titleKey ? t(alert.titleKey) : alert.title}
+                                </p>
+                                {alert.vaccine_name && (
+                                  <p className="text-xs text-muted-foreground mt-0.5">{alert.vaccine_name}</p>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                {alert.affected_count && (
+                                  <span className={`text-xs font-medium px-2 py-1 rounded-lg ${countBg}`}>
+                                    {alert.affected_count}
+                                  </span>
+                                )}
+                                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className={`px-4 pb-3 pt-1 -mt-2 rounded-b-xl ${bgColor}`}>
+                              {hasAnimals ? (
+                                <ul className="space-y-1.5 pt-1">
+                                  {alert.animals!.map((a) => (
+                                    <li
+                                      key={a.animal_id}
+                                      className="flex items-center justify-between text-xs bg-background/60 rounded-lg px-3 py-2 cursor-pointer hover:bg-background transition-colors"
+                                      onClick={() => navigate(`/animals/${a.animal_id}`)}
+                                    >
+                                      <span className="font-medium text-foreground">
+                                        {a.animal_name || a.animal_tag || a.animal_id.slice(0, 8)}
+                                      </span>
+                                      <span className="text-muted-foreground">
+                                        {a.days_overdue != null
+                                          ? `${a.days_overdue}d ${t('dashboard:warnings.overdue', { defaultValue: 'vencida' })}`
+                                          : a.days_until != null
+                                          ? `${a.days_until}d`
+                                          : ''}
+                                      </span>
+                                    </li>
+                                  ))}
+                                </ul>
                               ) : (
-                                <Syringe className={`h-5 w-5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
+                                <p className="text-xs text-muted-foreground pt-1">
+                                  {alert.descriptionKey ? String(t(alert.descriptionKey, alert.descriptionParams || {})) : alert.description}
+                                </p>
                               )}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-foreground">
-                                {alert.titleKey ? t(alert.titleKey) : alert.title}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-2 shrink-0">
-                              {alert.affected_count && (
-                                <span className={`text-xs font-medium px-2 py-1 rounded-lg ${
-                                  alert.severity === 'high' ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-700'
-                                }`}>
-                                  {alert.affected_count}
-                                </span>
-                              )}
-                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-                            </div>
-                          </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className={`px-4 pb-4 pt-2 -mt-2 rounded-b-xl ${
-                            alert.severity === 'high'
-                              ? 'bg-destructive/5'
-                              : alert.severity === 'medium'
-                              ? 'bg-amber-500/5'
-                              : 'bg-blue-500/5'
-                          }`}>
-                            <p className="text-xs text-muted-foreground">
-                              {alert.descriptionKey ? String(t(alert.descriptionKey, alert.descriptionParams || {})) : alert.description}
-                            </p>
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ))}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      );
+                    })}
                   </div>
                 </div>
               )}
