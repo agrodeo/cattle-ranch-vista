@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, Icon, LucideProps } from "lucide-react";
+import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, ChevronDown, Icon, LucideProps } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cowHead } from "@lucide/lab";
 
 const CowHeadIcon = React.forwardRef<SVGSVGElement, LucideProps>((props, ref) => <Icon iconNode={cowHead} ref={ref} {...props} />);
