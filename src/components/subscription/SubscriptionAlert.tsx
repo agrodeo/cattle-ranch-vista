@@ -155,22 +155,32 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
             </div>
           )}
 
-          {/* Subscription days remaining */}
-          {subscriptionStatus.isSubscriptionActive && subscriptionStatus.subscriptionDaysRemaining != null && (
+          {/* Subscription info */}
+          {subscriptionStatus.isSubscriptionActive && (
             <div className="rounded-xl bg-primary/5 border border-primary/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                   <CalendarDays className="h-4 w-4 text-primary" />
                   {t('plan.subscriptionLabel', { defaultValue: 'Suscripción' })}
                 </div>
-                <Badge variant="default" className="text-xs">
-                  {subscriptionStatus.subscriptionDaysRemaining} {t('common:days', { defaultValue: 'días' })}
-                </Badge>
+                {subscriptionStatus.subscriptionDaysRemaining != null ? (
+                  <Badge variant="default" className="text-xs">
+                    {subscriptionStatus.subscriptionDaysRemaining} {t('common:days', { defaultValue: 'días' })}
+                  </Badge>
+                ) : (
+                  <Badge variant="default" className="text-xs">
+                    {t('plan.activeLabel', { defaultValue: 'Activa' })}
+                  </Badge>
+                )}
               </div>
-              {subscriptionStatus.subscriptionEndDate && (
+              {subscriptionStatus.subscriptionEndDate ? (
                 <p className="text-xs text-muted-foreground">
                   {t('plan.renewsOn', { defaultValue: 'Se renueva el' })}{' '}
                   {format(new Date(subscriptionStatus.subscriptionEndDate), "d 'de' MMMM, yyyy", { locale: es })}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {t('plan.noExpiration', { defaultValue: 'Sin fecha de vencimiento configurada' })}
                 </p>
               )}
             </div>
