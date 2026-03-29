@@ -2915,8 +2915,10 @@ export type Database = {
           is_subscription_active: boolean
           is_trial_active: boolean
           max_animals: number
-          plan: Database["public"]["Enums"]["subscription_plan"]
+          plan: string
+          subscription_end_date: string
           trial_days_remaining: number
+          trial_end_date: string
         }[]
       }
       get_temporal_production_analysis: {
