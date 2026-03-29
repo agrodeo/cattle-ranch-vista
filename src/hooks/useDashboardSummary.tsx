@@ -69,6 +69,16 @@ interface UpcomingActivity {
   animal_name?: string;
 }
 
+interface DashboardWarningAnimal {
+  animal_id: string;
+  animal_name?: string;
+  animal_tag?: string;
+  expected_date?: string;
+  days_until?: number;
+  days_overdue?: number;
+  alert_type?: string;
+}
+
 interface DashboardWarning {
   id: string;
   type: 'consanguinity' | 'vaccination' | 'vaccination_due' | 'vaccination_overdue' | 'birth_upcoming' | 'birth_overdue' | 'reproductive';
@@ -87,6 +97,7 @@ interface DashboardWarning {
   days_overdue?: number;
   vaccine_name?: string;
   alert_type?: string;
+  animals?: DashboardWarningAnimal[];
 }
 
 interface DashboardWarnings {
