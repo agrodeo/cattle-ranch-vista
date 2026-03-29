@@ -731,43 +731,51 @@ export const useDashboardSummary = (): DashboardSummary => {
         .not('fecha_estimada_parto', 'is', null);
 
       if (!pregnancyError && pregnancyAlerts) {
+        const birthOverdueAnimals: DashboardWarningAnimal[] = [];
+        const birthUpcomingAnimals: DashboardWarningAnimal[] = [];
+
         pregnancyAlerts.forEach((pregnancy: any) => {
           if (pregnancy.fecha_estimada_parto && pregnancy.animals) {
             const expectedDate = new Date(pregnancy.fecha_estimada_parto);
             const diffTime = expectedDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            if (diffDays < 0) {
-              // Overdue birth
-              warnings.push({
-                id: `birth_overdue_${pregnancy.id}`,
-                type: 'birth_overdue',
-                title: t('common:notifications.overdueBirths'),
-                description: `${pregnancy.animals.name || pregnancy.animals.id_tag}`,
-                severity: 'high',
-                animal_id: pregnancy.animal_id,
-                animal_name: pregnancy.animals.name,
-                animal_tag: pregnancy.animals.id_tag,
-                expected_date: pregnancy.fecha_estimada_parto,
-                days_overdue: Math.abs(diffDays),
-              });
-            } else if (diffDays <= 14) {
-              // Upcoming birth
-              warnings.push({
-                id: `birth_upcoming_${pregnancy.id}`,
-                type: 'birth_upcoming',
-                title: t('common:notifications.upcomingBirths'),
-                description: `${pregnancy.animals.name || pregnancy.animals.id_tag}`,
-                severity: 'medium',
-                animal_id: pregnancy.animal_id,
-                animal_name: pregnancy.animals.name,
-                animal_tag: pregnancy.animals.id_tag,
-                expected_date: pregnancy.fecha_estimada_parto,
-                days_until: diffDays,
-              });
-            }
+            const animalEntry: DashboardWarningAnimal = {
+              animal_id: pregnancy.animal_id,
+              animal_name: pregnancy.animals.name,
+              animal_tag: pregnancy.animals.id_tag,
+              expected_date: pregnancy.fecha_estimada_parto,
+              days_overdue: diffDays < 0 ? Math.abs(diffDays) : undefined,
+              days_until: diffDays >= 0 ? diffDays : undefined,
+            };
+
+            if (diffDays < 0) birthOverdueAnimals.push(animalEntry);
+            else if (diffDays <= 14) birthUpcomingAnimals.push(animalEntry);
           }
         });
+
+        if (birthOverdueAnimals.length > 0) {
+          warnings.push({
+            id: 'birth_overdue',
+            type: 'birth_overdue',
+            title: t('common:notifications.overdueBirths'),
+            description: '',
+            severity: 'high',
+            affected_count: birthOverdueAnimals.length,
+            animals: birthOverdueAnimals,
+          });
+        }
+        if (birthUpcomingAnimals.length > 0) {
+          warnings.push({
+            id: 'birth_upcoming',
+            type: 'birth_upcoming',
+            title: t('common:notifications.upcomingBirths'),
+            description: '',
+            severity: 'medium',
+            affected_count: birthUpcomingAnimals.length,
+            animals: birthUpcomingAnimals,
+          });
+        }
       }
 
       // Fetch reproductive alerts
