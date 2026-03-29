@@ -93,18 +93,29 @@ export const useSubscription = () => {
       if (data && data.length > 0) {
         const status = data[0];
         console.log('✅ Subscription status:', status);
+        
+        // Calculate subscription days remaining
+        let subDaysRemaining: number | null = null;
+        if (status.is_subscription_active && status.subscription_end_date) {
+          const endDate = new Date(status.subscription_end_date);
+          const now = new Date();
+          subDaysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+        }
+        
         const newStatus: SubscriptionStatus = {
-          plan: status.plan,
+          plan: status.plan as SubscriptionStatus['plan'],
           isTrialActive: status.is_trial_active,
           trialDaysRemaining: status.trial_days_remaining,
           isSubscriptionActive: status.is_subscription_active,
           maxAnimals: status.max_animals,
           currentAnimalsCount: status.current_animals_count,
           canAddAnimals: status.can_add_animals,
-          isReadOnly: status.is_read_only
+          isReadOnly: status.is_read_only,
+          subscriptionEndDate: status.subscription_end_date || null,
+          trialEndDate: status.trial_end_date || null,
+          subscriptionDaysRemaining: subDaysRemaining,
         };
         setSubscriptionStatus(newStatus);
-        // Cache to localStorage for offline access
         try {
           localStorage.setItem('cached_subscription_status', JSON.stringify(newStatus));
         } catch {}
