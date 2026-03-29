@@ -14,6 +14,9 @@ export interface SubscriptionStatus {
   currentAnimalsCount: number;
   canAddAnimals: boolean;
   isReadOnly: boolean;
+  subscriptionEndDate: string | null;
+  trialEndDate: string | null;
+  subscriptionDaysRemaining: number | null;
 }
 
 const PLAN_NAMES: Record<string, string> = {
