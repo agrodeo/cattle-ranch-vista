@@ -2,9 +2,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Users, Zap, Crown, Building2, Briefcase } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Clock, Users, Zap, Crown, Building2, Briefcase, CalendarDays, WifiOff } from "lucide-react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useConnectivity } from "@/services/connectivity";
 import { useTranslation } from 'react-i18next';
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 interface SubscriptionAlertProps {
   onUpgrade?: () => void;
@@ -12,6 +16,7 @@ interface SubscriptionAlertProps {
 
 export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
   const { subscriptionStatus, planNames } = useSubscription();
+  const { isOnline } = useConnectivity();
   const { t } = useTranslation('subscription');
 
   if (!subscriptionStatus) return null;
@@ -29,17 +34,18 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
   const getPlanColor = (plan: string) => {
     switch (plan) {
       case 'personal': return 'bg-blue-500';
+      case 'avanzado': return 'bg-primary';
       case 'productor': return 'bg-primary';
       case 'cabana': return 'bg-purple-500';
       case 'corporativo': return 'bg-orange-500';
-      default: return 'bg-gray-500';
+      default: return 'bg-muted-foreground';
     }
   };
 
   // Trial ending soon warning
   if (subscriptionStatus.isTrialActive && subscriptionStatus.trialDaysRemaining <= 7) {
     return (
-      <Alert className="mb-4 border-orange-200 bg-orange-50">
+      <Alert className="mb-4 border-orange-200 bg-orange-50 dark:border-orange-800 dark:bg-orange-950/30">
         <Clock className="h-4 w-4" />
         <AlertTitle>{t('trial.ending', { days: subscriptionStatus.trialDaysRemaining })}</AlertTitle>
         <AlertDescription className="flex items-center justify-between">
@@ -57,13 +63,11 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
   // Read-only mode warning
   if (subscriptionStatus.isReadOnly) {
     return (
-      <Alert className="mb-4 border-red-200 bg-red-50">
+      <Alert className="mb-4 border-destructive/30 bg-destructive/5">
         <Clock className="h-4 w-4" />
         <AlertTitle>{t('trial.readOnlyMode')}</AlertTitle>
         <AlertDescription className="flex items-center justify-between">
-          <span>
-            {t('trial.expired')}
-          </span>
+          <span>{t('trial.expired')}</span>
           <Button onClick={onUpgrade} variant="outline" size="sm">
             {t('plan.upgradePlan')}
           </Button>
@@ -75,56 +79,115 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
   // Limit warnings
   const animalUsagePercent = (subscriptionStatus.currentAnimalsCount / subscriptionStatus.maxAnimals) * 100;
 
-  if (animalUsagePercent >= 80) {
-    return (
-      <Alert className="mb-4 border-yellow-200 bg-yellow-50">
-        <Clock className="h-4 w-4" />
-        <AlertTitle>{t('plan.approachingLimit')}</AlertTitle>
-        <AlertDescription className="flex items-center justify-between">
-          <span>
-            {t('animals.count', { current: subscriptionStatus.currentAnimalsCount, max: subscriptionStatus.maxAnimals })}
-          </span>
-          <Button onClick={onUpgrade} variant="outline" size="sm">
-            {t('plan.upgradePlan')}
-          </Button>
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  // Current plan status
   return (
-    <Card className="mb-4">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className={`p-2 rounded-lg ${getPlanColor(subscriptionStatus.plan)} text-white`}>
-              {getPlanIcon(subscriptionStatus.plan)}
+    <div className="space-y-4">
+      {/* Offline indicator */}
+      {!isOnline && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+          <WifiOff className="h-3.5 w-3.5" />
+          <span>{t('offline.cachedData', { defaultValue: 'Mostrando datos en caché' })}</span>
+        </div>
+      )}
+
+      {/* Animal limit warning */}
+      {animalUsagePercent >= 80 && (
+        <Alert className="border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30">
+          <Clock className="h-4 w-4" />
+          <AlertTitle>{t('plan.approachingLimit')}</AlertTitle>
+          <AlertDescription className="flex items-center justify-between">
+            <span>
+              {t('animals.count', { current: subscriptionStatus.currentAnimalsCount, max: subscriptionStatus.maxAnimals })}
+            </span>
+            <Button onClick={onUpgrade} variant="outline" size="sm">
+              {t('plan.upgradePlan')}
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Current plan card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`p-2.5 rounded-xl ${getPlanColor(subscriptionStatus.plan)} text-white`}>
+                {getPlanIcon(subscriptionStatus.plan)}
+              </div>
+              <div>
+                <CardTitle className="text-lg">Plan {planNames[subscriptionStatus.plan]}</CardTitle>
+                <CardDescription className="text-xs mt-0.5">
+                  {subscriptionStatus.isSubscriptionActive
+                    ? t('plan.active', { defaultValue: 'Suscripción activa' })
+                    : subscriptionStatus.isTrialActive
+                    ? t('trial.active', { defaultValue: 'Prueba gratuita activa' })
+                    : t('plan.free', { defaultValue: 'Plan gratuito' })}
+                </CardDescription>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-lg">Plan {planNames[subscriptionStatus.plan]}</CardTitle>
-              {subscriptionStatus.isTrialActive && (
-                <Badge variant="secondary">
-                  {t('trial.daysRemaining', { days: subscriptionStatus.trialDaysRemaining })}
+            <Button onClick={onUpgrade} variant="outline" size="sm">
+              {t('plan.viewPlans')}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Trial days remaining */}
+          {subscriptionStatus.isTrialActive && (
+            <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  {t('trial.freeTrialLabel', { defaultValue: 'Prueba gratuita' })}
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {subscriptionStatus.trialDaysRemaining} {t('common:days', { defaultValue: 'días' })}
                 </Badge>
+              </div>
+              <Progress
+                value={Math.max(0, ((14 - subscriptionStatus.trialDaysRemaining) / 14) * 100)}
+                className="h-1.5"
+              />
+              {subscriptionStatus.trialEndDate && (
+                <p className="text-xs text-muted-foreground">
+                  {t('trial.endsOn', { defaultValue: 'Vence el' })}{' '}
+                  {format(new Date(subscriptionStatus.trialEndDate), "d 'de' MMMM, yyyy", { locale: es })}
+                </p>
               )}
             </div>
+          )}
+
+          {/* Subscription days remaining */}
+          {subscriptionStatus.isSubscriptionActive && subscriptionStatus.subscriptionDaysRemaining != null && (
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                  {t('plan.subscriptionLabel', { defaultValue: 'Suscripción' })}
+                </div>
+                <Badge variant="default" className="text-xs">
+                  {subscriptionStatus.subscriptionDaysRemaining} {t('common:days', { defaultValue: 'días' })}
+                </Badge>
+              </div>
+              {subscriptionStatus.subscriptionEndDate && (
+                <p className="text-xs text-muted-foreground">
+                  {t('plan.renewsOn', { defaultValue: 'Se renueva el' })}{' '}
+                  {format(new Date(subscriptionStatus.subscriptionEndDate), "d 'de' MMMM, yyyy", { locale: es })}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Animal usage */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{t('animals.label', { defaultValue: 'Animales' })}</span>
+              <span className="font-medium">
+                {subscriptionStatus.currentAnimalsCount} / {subscriptionStatus.maxAnimals}
+              </span>
+            </div>
+            <Progress value={Math.min(100, animalUsagePercent)} className="h-1.5" />
           </div>
-          <Button onClick={onUpgrade} variant="outline" size="sm">
-            {t('plan.viewPlans')}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 gap-4 text-sm">
-          <div>
-            <CardDescription>{t('animals.count', { current: subscriptionStatus.currentAnimalsCount, max: subscriptionStatus.maxAnimals })}</CardDescription>
-            <p className="font-medium">
-              {subscriptionStatus.currentAnimalsCount} / {subscriptionStatus.maxAnimals}
-            </p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
