@@ -172,45 +172,61 @@ const Dashboard = () => {
                   </div>
                   <div className="space-y-2">
                     {warnings.alerts.map((alert) => (
-                      <div
-                        key={alert.id}
-                        className={`flex items-center gap-3 p-4 rounded-xl border-0 shadow-sm ${
-                          alert.severity === 'high'
-                            ? 'bg-destructive/5'
-                            : alert.severity === 'medium'
-                            ? 'bg-amber-500/5'
-                            : 'bg-blue-500/5'
-                        }`}
-                      >
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                          alert.severity === 'high'
-                            ? 'bg-destructive/10'
-                            : alert.severity === 'medium'
-                            ? 'bg-amber-500/10'
-                            : 'bg-blue-500/10'
-                        }`}>
-                          {alert.type === 'consanguinity' ? (
-                            <Shield className={`h-5 w-5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
-                          ) : (
-                            <Syringe className={`h-5 w-5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground">
-                            {alert.titleKey ? t(alert.titleKey) : alert.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {alert.descriptionKey ? String(t(alert.descriptionKey, alert.descriptionParams || {})) : alert.description}
-                          </p>
-                        </div>
-                        {alert.affected_count && (
-                          <span className={`text-xs font-medium px-2 py-1 rounded-lg shrink-0 ${
-                            alert.severity === 'high' ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-700'
+                      <Collapsible key={alert.id}>
+                        <CollapsibleTrigger className="w-full text-left">
+                          <div
+                            className={`flex items-center gap-3 p-4 rounded-xl border-0 shadow-sm cursor-pointer transition-colors ${
+                              alert.severity === 'high'
+                                ? 'bg-destructive/5 hover:bg-destructive/10'
+                                : alert.severity === 'medium'
+                                ? 'bg-amber-500/5 hover:bg-amber-500/10'
+                                : 'bg-blue-500/5 hover:bg-blue-500/10'
+                            }`}
+                          >
+                            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                              alert.severity === 'high'
+                                ? 'bg-destructive/10'
+                                : alert.severity === 'medium'
+                                ? 'bg-amber-500/10'
+                                : 'bg-blue-500/10'
+                            }`}>
+                              {alert.type === 'consanguinity' ? (
+                                <Shield className={`h-5 w-5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
+                              ) : (
+                                <Syringe className={`h-5 w-5 ${alert.severity === 'high' ? 'text-destructive' : alert.severity === 'medium' ? 'text-amber-600' : 'text-blue-600'}`} />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-foreground">
+                                {alert.titleKey ? t(alert.titleKey) : alert.title}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {alert.affected_count && (
+                                <span className={`text-xs font-medium px-2 py-1 rounded-lg ${
+                                  alert.severity === 'high' ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-700'
+                                }`}>
+                                  {alert.affected_count}
+                                </span>
+                              )}
+                              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                            </div>
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className={`px-4 pb-4 pt-2 -mt-2 rounded-b-xl ${
+                            alert.severity === 'high'
+                              ? 'bg-destructive/5'
+                              : alert.severity === 'medium'
+                              ? 'bg-amber-500/5'
+                              : 'bg-blue-500/5'
                           }`}>
-                            {alert.affected_count}
-                          </span>
-                        )}
-                      </div>
+                            <p className="text-xs text-muted-foreground">
+                              {alert.descriptionKey ? String(t(alert.descriptionKey, alert.descriptionParams || {})) : alert.description}
+                            </p>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     ))}
                   </div>
                 </div>
