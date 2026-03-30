@@ -214,7 +214,7 @@
       (window as any).__pendingDespiaProductId = despiaProductId;
       
       // IMPORTANT: Despia bridge expects raw `product` (no URI encoding, no base-plan suffix)
-      const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${despiaProductId}`;
+      const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(productId)}`;
       console.log('[Purchase:Despia] Purchase URL prepared', { despiaProductId, purchaseUrl });
 
       const despiaClient = await getDespiaClient();
