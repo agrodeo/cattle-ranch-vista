@@ -102,9 +102,9 @@ Output style:
       try {
         const cabanaContext = await getCabanaContext(authHeader);
         if (cabanaContext) {
-          systemPrompt += `\n\n## DATOS ACTUALES DE LA CABAÑA:\n${cabanaContext}\n\nIMPORTANTE: Usa ÚNICAMENTE estos datos para responder. Analiza los números específicos y responde basándote solo en esta información real de la cabaña.`;
+          systemPrompt += `\n\n## CURRENT RANCH DATA:\n${cabanaContext}\n\nIMPORTANT: Use ONLY this data to answer. Analyze the specific numbers and respond based solely on this real ranch information. Remember: ALWAYS respond in the same language the user writes in.`;
         } else {
-          systemPrompt += `\n\nNo hay datos disponibles de la cabaña. Indica que necesitas acceso a los datos para poder ayudar con recomendaciones específicas.`;
+          systemPrompt += `\n\nNo ranch data is currently available. Indicate that you need access to the data to provide specific recommendations. Remember: ALWAYS respond in the same language the user writes in.`;
         }
       } catch (error) {
         console.log('Error getting cabaña context:', error);
