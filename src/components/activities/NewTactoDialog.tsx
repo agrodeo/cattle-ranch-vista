@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
 import { Plus, Calendar as CalendarIcon, Stethoscope, CheckCircle, AlertTriangle, Users } from "lucide-react";
 import { format, differenceInMonths, addDays } from "date-fns";
 import { es } from "date-fns/locale";

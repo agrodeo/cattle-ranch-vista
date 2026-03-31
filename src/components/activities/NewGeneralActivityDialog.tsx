@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
 import { categorizeAnimal } from "@/lib/animalCategories";
 import { getTranslatedSex } from "@/lib/translations";
 
