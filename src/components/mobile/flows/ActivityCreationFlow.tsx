@@ -93,8 +93,10 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     }
   };
 
-  const handleDialogClose = () => {
-    setSelectedActivity(null);
+  const handleDialogOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setSelectedActivity(null);
+    }
   };
 
   const handleSuccess = () => {
@@ -111,7 +113,7 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col">
         <div className="flex items-center p-4 border-b border-border shrink-0">
-          <Button variant="ghost" size="icon" onClick={handleDialogClose} className="mr-2">
+          <Button variant="ghost" size="icon" onClick={() => handleDialogOpenChange(false)} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-xl font-semibold">{t('activityCreation.calving.title')}</h1>
@@ -192,32 +194,32 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       {/* Dialogs */}
       <NewVaccinationDialog
         open={selectedActivity === "vaccination"}
-        onOpenChange={handleDialogClose}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={handleSuccess}
       />
       <WeighingFlowDialog
         open={selectedActivity === "weighing"}
-        onOpenChange={handleDialogClose}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={handleSuccess}
       />
       <NewInseminationDialog
         open={selectedActivity === "insemination"}
-        onOpenChange={handleDialogClose}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={handleSuccess}
       />
       <NewGeneralActivityDialog
         open={selectedActivity === "general"}
-        onOpenChange={handleDialogClose}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={handleSuccess}
       />
       <NewTactoDialog
         open={selectedActivity === "tacto"}
-        onOpenChange={handleDialogClose}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={handleSuccess}
       />
       <NewPregnancyLossDialog
         open={selectedActivity === "pregnancy_loss"}
-        onOpenChange={handleDialogClose}
+        onOpenChange={handleDialogOpenChange}
         onSuccess={handleSuccess}
       />
     </>
