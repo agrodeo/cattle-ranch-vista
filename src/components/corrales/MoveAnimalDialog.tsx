@@ -167,19 +167,16 @@ export function MoveAnimalDialog({ open, onOpenChange, onSuccess, sourceCorralId
 
       if (!isOnline()) {
         // ── OFFLINE: update cache + queue to outbox ──
-        const { enqueueEvent } = await import('@/services/syncEngine');
+        const { enqueue } = await import('@/services/syncEngine');
         for (const animalId of selectedAnimals) {
           const animal = animals.find(a => a.id === animalId);
-          // Update local cache
           await db.animals_cache.update(animalId, { corral_id: newCorralId || undefined });
-          // Queue animal update
-          await enqueueEvent({
+          await enqueue({
             type: 'ANIMAL_UPDATE',
             payload: { id: animalId, corral_id: newCorralId },
           });
-          // Queue corral movement record
           if (currentUser?.cabañaId && currentUser?.id) {
-            await enqueueEvent({
+            await enqueue({
               type: 'CORRAL_MOVEMENT_INSERT',
               payload: {
                 animal_id: animalId,
