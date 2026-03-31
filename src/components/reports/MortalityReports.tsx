@@ -258,9 +258,9 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:mortality.totalDeaths')}</CardTitle>
-            <Skull className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium min-w-0 pr-2 leading-tight">{t('reports:mortality.totalDeaths')}</CardTitle>
+            <Skull className="h-4 w-4 shrink-0 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{stats.totalDeaths}</div>
