@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Search, Filter, Users, CheckCircle2, X, Eye, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
