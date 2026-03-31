@@ -1,6 +1,7 @@
 import { differenceInDays } from 'date-fns';
 import { calculateIndividualAdg } from './individualAdg';
 import { estimateFromBreedCurve } from './breedCurve';
+import { getBreedGrowthParams } from '@/data/breedGrowthCurves';
 import type { WeightEstimation, WeightRecord, AnimalWeightInput } from './types';
 
 export type { WeightEstimation, AnimalWeightInput };
@@ -76,6 +77,17 @@ export function estimateWeight(
     confidence = layer1Usable && adgResult
       ? nw1 * adgResult.confidence + nw2 * (breedResult?.confidence || 0)
       : breedResult?.confidence || 0.4;
+  }
+
+  // Cap estimated weight to breed asymptotic maximum (A * 1.15)
+  // No animal should realistically exceed ~115% of its breed's mature weight
+  const breedParams = getBreedGrowthParams(animal.breed, animal.sex);
+  const maxRealisticWeight = breedParams.A * 1.15;
+  if (estimatedWeight > maxRealisticWeight) {
+    estimatedWeight = maxRealisticWeight;
+    // Lower confidence when capping is needed — the estimate was unreliable
+    confidence = Math.min(confidence, 0.35);
+    dataSources.push(`Peso limitado al máximo fisiológico (${Math.round(maxRealisticWeight)} kg)`);
   }
 
   // Pregnancy offset
