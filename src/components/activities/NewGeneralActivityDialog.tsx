@@ -6,9 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Plus, Search, CheckSquare, Users, ClipboardList } from "lucide-react";
+import { Plus, Search, CheckSquare, Users, ClipboardList, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -292,7 +291,17 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
                       onClick={() => handleAnimalToggle(animal.id)}
                       className={cn("flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors", selected ? "bg-primary/5" : "hover:bg-muted/50")}
                     >
-                      <Checkbox checked={selected} onCheckedChange={() => handleAnimalToggle(animal.id)} />
+                      <div
+                        aria-hidden="true"
+                        className={cn(
+                          "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border ring-offset-background transition-colors",
+                          selected
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background text-transparent"
+                        )}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-sm font-semibold">{animal.id_tag}</span>
