@@ -55,7 +55,7 @@ const getActivityTypes = (t: any) => [
 export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, preselectedType, onClose, onSuccess }: NewGeneralActivityDialogProps) {
   const { t } = useTranslation('activities');
   const activityTypes = getActivityTypes(t);
-  const [open, setOpen] = useState(externalOpen || false);
+  const open = externalOpen ?? false;
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAnimals, setLoadingAnimals] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -70,19 +70,8 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
   const { toast } = useToast();
   const { createEvent } = useActivities();
 
-  useEffect(() => {
-    if (externalOpen !== undefined) setOpen(externalOpen);
-  }, [externalOpen]);
-
-  useEffect(() => {
-    if (open) {
-      loadAnimals();
-      if (preselectedType) setSelectedType(preselectedType);
-    }
-  }, [open, preselectedType]);
-
   const handleOpenChange = (newOpen: boolean) => {
-    setOpen(newOpen); onOpenChange?.(newOpen);
+    onOpenChange?.(newOpen);
     if (!newOpen) onClose?.();
   };
 
@@ -138,7 +127,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
       toast({ title: "✓ " + t('activities:newGeneralActivity.success'), description: `${selectedType} — ${selectedAnimals.length} animales` });
       onSuccess?.();
       setSelectedDate(new Date()); setSelectedType(""); setNotes(""); setResponsiblePerson(""); setSelectedAnimals([]); setActivityData({});
-      setOpen(false); onOpenChange?.(false); onClose?.();
+      handleOpenChange(false);
     } catch (error) {
       toast({ title: t('activities:newGeneralActivity.errorTitle'), description: t('activities:newGeneralActivity.errorSaving'), variant: "destructive" });
     } finally {
