@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useTranslation } from 'react-i18next';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
 import { isOnline } from "@/services/connectivity";
-import { Plus, Calendar as CalendarIcon, Stethoscope, CheckCircle, AlertTriangle, Users } from "lucide-react";
+import { Stethoscope, CheckCircle, XCircle, Search, CheckSquare, Users, Calendar as CalendarIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { format, differenceInMonths, addDays } from "date-fns";
-import { es } from "date-fns/locale";
-import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
+import { ActivityFormHeader } from "./shared/ActivityFormHeader";
+import { ActivityDatePicker } from "./shared/ActivityDatePicker";
 
 interface TactoRecord {
   animalId: string;
@@ -41,9 +41,8 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   const [selectedCorral, setSelectedCorral] = useState<string>("all");
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
   const [tactoRecords, setTactoRecords] = useState<TactoRecord[]>([]);
-  const [defaultResult, setDefaultResult] = useState<"preñada" | "vacia" | null>(null);
-  
-  // Form data
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [fecha, setFecha] = useState<Date>(new Date());
   const [notas, setNotas] = useState("");
 
@@ -51,16 +50,11 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   const { getEligibleAnimals, createEvent } = useActivities();
 
   useEffect(() => {
-    if (externalOpen !== undefined) {
-      setOpen(externalOpen);
-    }
+    if (externalOpen !== undefined) setOpen(externalOpen);
   }, [externalOpen]);
 
   useEffect(() => {
-    if (open) {
-      loadAnimals();
-      loadCorrales();
-    }
+    if (open) { loadAnimals(); loadCorrales(); }
   }, [open]);
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -88,92 +82,58 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
         setCorrales(cached.map(c => ({ id: c.id, name: c.name })));
         return;
       }
-      const { data: corralesData, error } = await supabase
-        .from('corrales').select('id, name').order('name');
+      const { data, error } = await supabase.from('corrales').select('id, name').order('name');
       if (error) throw error;
-      setCorrales(corralesData || []);
+      setCorrales(data || []);
     } catch (error) {
       console.error("Error loading corrales:", error);
     }
   };
 
-  const handleAnimalSelection = (animalId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedAnimals(prev => [...prev, animalId]);
-      setTactoRecords(prev => [...prev, { 
-        animalId, 
-        resultado: null, 
-        observaciones: "",
-        fechaEstimadaParto: undefined 
-      }]);
-    } else {
-      setSelectedAnimals(prev => prev.filter(id => id !== animalId));
-      setTactoRecords(prev => prev.filter(record => record.animalId !== animalId));
+  const filteredAnimals = (() => {
+    let list = selectedCorral && selectedCorral !== "all"
+      ? animals.filter(a => a.corral_id === selectedCorral) : animals;
+    if (searchTerm) {
+      const q = searchTerm.toLowerCase();
+      list = list.filter(a => a.name?.toLowerCase().includes(q) || a.id_tag?.toLowerCase().includes(q));
     }
-  };
+    return list;
+  })();
 
-  const updateTactoRecord = (animalId: string, field: keyof TactoRecord, value: any) => {
-    setTactoRecords(prev => prev.map(record => {
-      if (record.animalId === animalId) {
-        const updated = { ...record, [field]: value };
-        
-        // If marking as pregnant, calculate estimated due date (283 days from detection)
-        if (field === 'resultado' && value === 'preñada') {
-          updated.fechaEstimadaParto = addDays(fecha, 283);
-        } else if (field === 'resultado' && value === 'vacia') {
-          updated.fechaEstimadaParto = undefined;
-        }
-        
-        return updated;
-      }
-      return record;
-    }));
+  const handleAnimalToggle = (animalId: string) => {
+    if (selectedAnimals.includes(animalId)) {
+      setSelectedAnimals(prev => prev.filter(id => id !== animalId));
+      setTactoRecords(prev => prev.filter(r => r.animalId !== animalId));
+    } else {
+      setSelectedAnimals(prev => [...prev, animalId]);
+      setTactoRecords(prev => [...prev, { animalId, resultado: null, observaciones: "" }]);
+    }
   };
 
   const selectAllAnimals = () => {
     const allIds = filteredAnimals.map(a => a.id);
     setSelectedAnimals(allIds);
-    setTactoRecords(allIds.map(id => ({ 
-      animalId: id, 
-      resultado: defaultResult, 
-      observaciones: "",
-      fechaEstimadaParto: defaultResult === 'preñada' ? addDays(fecha, 283) : undefined 
-    })));
+    setTactoRecords(allIds.map(id => {
+      const existing = tactoRecords.find(r => r.animalId === id);
+      return existing || { animalId: id, resultado: null, observaciones: "" };
+    }));
   };
 
-  const selectCorralAnimals = (corralId: string) => {
-    const corralAnimals = filteredAnimals.filter(a => a.corral_id === corralId);
-    const corralIds = corralAnimals.map(a => a.id);
-    const newSelectedAnimals = [...new Set([...selectedAnimals, ...corralIds])];
-    
-    setSelectedAnimals(newSelectedAnimals);
-    
-    // Add new records for animals not already selected
-    const newRecords = corralIds
-      .filter(id => !tactoRecords.some(r => r.animalId === id))
-      .map(id => ({ 
-        animalId: id, 
-        resultado: defaultResult, 
-        observaciones: "",
-        fechaEstimadaParto: defaultResult === 'preñada' ? addDays(fecha, 283) : undefined 
-      }));
-    
-    setTactoRecords(prev => [...prev, ...newRecords]);
-  };
+  const clearSelection = () => { setSelectedAnimals([]); setTactoRecords([]); };
 
-  const clearSelection = () => {
-    setSelectedAnimals([]);
-    setTactoRecords([]);
+  const updateTactoRecord = (animalId: string, field: keyof TactoRecord, value: any) => {
+    setTactoRecords(prev => prev.map(record => {
+      if (record.animalId !== animalId) return record;
+      const updated = { ...record, [field]: value };
+      if (field === 'resultado' && value === 'preñada') updated.fechaEstimadaParto = addDays(fecha, 283);
+      else if (field === 'resultado' && value === 'vacia') updated.fechaEstimadaParto = undefined;
+      return updated;
+    }));
   };
-
-  const filteredAnimals = selectedCorral && selectedCorral !== "all"
-    ? animals.filter(a => a.corral_id === selectedCorral)
-    : animals;
 
   const markAllAs = (result: "preñada" | "vacia") => {
-    setTactoRecords(prev => prev.map(record => ({
-      ...record,
-      resultado: result,
+    setTactoRecords(prev => prev.map(r => ({
+      ...r, resultado: result,
       fechaEstimadaParto: result === 'preñada' ? addDays(fecha, 283) : undefined
     })));
   };
@@ -181,451 +141,259 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
   const handleSubmit = async () => {
     try {
       if (selectedAnimals.length === 0) {
-        toast({
-          variant: "destructive",
-          title: t('tacto.errorTitle'), 
-          description: t('tacto.errorSelectFemale'),
-        });
+        toast({ variant: "destructive", title: t('tacto.errorTitle'), description: t('tacto.errorSelectFemale') });
         return;
       }
-
-      // Apply default result to animals without explicit results if set
-      const finalRecords = tactoRecords.map(record => ({
-        ...record,
-        resultado: record.resultado || defaultResult
-      }));
-
-      // Validate that all selected animals have results
-      const invalidRecords = finalRecords.filter(record => record.resultado === null);
-
+      const invalidRecords = tactoRecords.filter(r => r.resultado === null);
       if (invalidRecords.length > 0) {
-        toast({
-          variant: "destructive",
-          title: t('tacto.errorTitle'),
-          description: `${invalidRecords.length} ${t('tacto.errorNoResults')}`,
-        });
+        toast({ variant: "destructive", title: t('tacto.errorTitle'), description: `${invalidRecords.length} ${t('tacto.errorNoResults')}` });
         return;
       }
-
       setLoading(true);
-
-      // Create the event
       const event = await createEvent('TACTO', fecha, notas);
-
-      // Prepare results data
-      const resultados = finalRecords.map(record => ({
-        animal_id: record.animalId,
-        resultado: record.resultado,
-        observaciones: record.observaciones || null
-      }));
-
-      // Create the tacto record
-      const { error } = await supabase
-        .from("tactos")
-        .insert({
-          evento_id: event.id,
-          resultados,
-        });
-
+      const resultados = tactoRecords.map(r => ({ animal_id: r.animalId, resultado: r.resultado, observaciones: r.observaciones || null }));
+      const { error } = await supabase.from("tactos").insert({ evento_id: event.id, resultados });
       if (error) throw error;
 
-      // Get user's cabaña
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error("Usuario no autenticado");
-
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.data.user.id)
-        .single();
-
+      const { data: userData } = await supabase.from('profiles').select('*').eq('user_id', user.data.user.id).single();
       const cabanaId = (userData as any)?.cabaña_id;
       if (!cabanaId) throw new Error("Usuario sin cabaña asignada");
 
-      // Process pregnancy detection using new function
-      for (const record of finalRecords) {
+      for (const record of tactoRecords) {
         const { error: detectionError } = await supabase.rpc('process_pregnancy_detection', {
-          _animal_id: record.animalId,
-          _fecha_tacto: format(fecha, 'yyyy-MM-dd'),
-          _resultado: record.resultado,
-          _cabana_id: cabanaId,
-          _observaciones: record.observaciones
+          _animal_id: record.animalId, _fecha_tacto: format(fecha, 'yyyy-MM-dd'),
+          _resultado: record.resultado, _cabana_id: cabanaId, _observaciones: record.observaciones
         });
-
-        if (detectionError) {
-          console.error('Error processing pregnancy detection:', detectionError);
-          // Don't fail the whole operation, just log the error
-        }
+        if (detectionError) console.error('Error processing pregnancy detection:', detectionError);
       }
 
-      const pregnantCount = finalRecords.filter(r => r.resultado === 'preñada').length;
-      const emptyCount = finalRecords.filter(r => r.resultado === 'vacia').length;
+      const pregnantCount = tactoRecords.filter(r => r.resultado === 'preñada').length;
+      const emptyCount = tactoRecords.filter(r => r.resultado === 'vacia').length;
+      toast({ title: t('tacto.successTitle'), description: t('tacto.successDescription', { pregnant: pregnantCount, empty: emptyCount }) });
 
-      toast({
-        title: t('tacto.successTitle'),
-        description: t('tacto.successDescription', { pregnant: pregnantCount, empty: emptyCount }),
-      });
-
-      // Reset form
-      setNotas("");
-      setSelectedAnimals([]);
-      setTactoRecords([]);
-      setOpen(false);
-      onOpenChange?.(false);
-      
+      setNotas(""); setSelectedAnimals([]); setTactoRecords([]); setOpen(false); onOpenChange?.(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error saving tacto:", error);
-      toast({
-        variant: "destructive",
-        title: t('tacto.errorTitle'),
-        description: t('tacto.errorDescription'),
-      });
+      toast({ variant: "destructive", title: t('tacto.errorTitle'), description: t('tacto.errorDescription') });
     } finally {
       setLoading(false);
     }
   };
 
+  const pregnantCount = tactoRecords.filter(r => r.resultado === 'preñada').length;
+  const emptyCount = tactoRecords.filter(r => r.resultado === 'vacia').length;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl h-full max-h-[100vh] lg:max-h-[90vh] lg:h-auto overflow-y-auto overflow-x-hidden p-0 lg:p-6 lg:rounded-lg">
-        {/* Mobile Header */}
-        <div className="lg:hidden sticky top-0 z-50 bg-background border-b border-border p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Stethoscope className="h-5 w-5 text-brand-600" />
-            <h2 className="font-semibold text-lg">{t('tacto.title')}</h2>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => handleOpenChange(false)}
-            className="h-8 w-8 p-0"
-          >
-            ✕
-          </Button>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-border">
+          <ActivityFormHeader
+            icon={Stethoscope}
+            iconColor="text-violet-600"
+            title={t('tacto.registerTitle')}
+            subtitle={t('tacto.description')}
+          />
         </div>
 
-        {/* Content wrapper */}
-        <div className="p-4 lg:p-0">
-        {/* Desktop Header */}
-        <DialogHeader className="hidden lg:block">
-          <DialogTitle>{t('tacto.registerTitle')}</DialogTitle>
-          <DialogDescription>
-            {t('tacto.description')}
-          </DialogDescription>
-        </DialogHeader>
-        
-        {animals.length === 0 && !loading && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-2">
-              {t('tacto.noEligibleFemales')}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('tacto.requiresFemales')}
-            </p>
-          </div>
-        )}
-
-        <div className="space-y-6">
-          {/* Filter by Corral */}
-          {corrales.length > 0 && (
-            <div className="space-y-2">
-              <Label>{t('tacto.filterByCorral')}</Label>
-              <div className="flex gap-2">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {/* Date + Corral filter + Notes */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <ActivityDatePicker label={t('tacto.detectionDate')} date={fecha} onDateChange={setFecha} />
+            {corrales.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">{t('tacto.filterByCorral')}</Label>
                 <Select value={selectedCorral} onValueChange={setSelectedCorral}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder={t('tacto.allCorrals')} />
-                  </SelectTrigger>
+                  <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">{t('tacto.allCorrals')}</SelectItem>
-                    {corrales.map((corral) => (
-                      <SelectItem key={corral.id} value={corral.id}>
-                        {corral.name}
-                      </SelectItem>
-                    ))}
+                    {corrales.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                {selectedCorral && selectedCorral !== "all" && (
-                  <Button
-                    variant="outline"
-                    onClick={() => selectCorralAnimals(selectedCorral)}
-                    className="flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    {t('tacto.addCorral')}
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Detection Details & Default Result */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="fecha">{t('tacto.detectionDate')}</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(fecha, "PPP", { locale: es })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={fecha}
-                    onSelect={(date) => date && setFecha(date)}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t('tacto.defaultResult')}</Label>
-              <RadioGroup
-                value={defaultResult || ""}
-                onValueChange={(value) => setDefaultResult(value as "preñada" | "vacia" | null)}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="preñada" id="default-pregnant" />
-                  <Label htmlFor="default-pregnant" className="text-sm">{t('tacto.pregnant')}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="vacia" id="default-empty" />
-                  <Label htmlFor="default-empty" className="text-sm">{t('tacto.empty')}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="" id="default-none" />
-                  <Label htmlFor="default-none" className="text-sm">{t('tacto.manual')}</Label>
-                </div>
-              </RadioGroup>
-              {defaultResult && (
-                <p className="text-xs text-muted-foreground">
-                  {t('tacto.autoApply')}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="notas">{t('tacto.generalObservations')}</Label>
-              <Textarea
-                id="notas"
-                value={notas}
-                onChange={(e) => setNotas(e.target.value)}
-                placeholder={t('tacto.observationsPlaceholder')}
-                rows={3}
-              />
-            </div>
-          </div>
-
-          {/* Animal Selection */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">
-                {t('tacto.eligibleFemales')} ({filteredAnimals.length} {selectedCorral !== "all" ? t('tacto.inSelectedCorral') : t('tacto.available')})
-              </Label>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  {t('tacto.selectAll')} {selectedCorral !== "all" ? t('tacto.selectCorral') : t('tacto.selectAllFemales')}
-                </Button>
-                <Button variant="outline" size="sm" onClick={clearSelection}>
-                  {t('tacto.clear')}
-                </Button>
-              </div>
-            </div>
-
-            {/* Mobile: Card List */}
-            <div className="lg:hidden space-y-2 max-h-60 overflow-y-auto">
-              {filteredAnimals.map((animal) => (
-                <div key={animal.id} className="flex items-start gap-3 p-3 border rounded-lg">
-                  <Checkbox
-                    checked={selectedAnimals.includes(animal.id)}
-                    onCheckedChange={(checked) => 
-                      handleAnimalSelection(animal.id, checked as boolean)
-                    }
-                    className="mt-1"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{animal.name || t('tacto.noName')}</div>
-                    <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
-                    {animal.corral && (
-                      <div className="text-xs text-muted-foreground">{t('animalSelector.corral')}: {animal.corral.name}</div>
-                    )}
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {animal.birth_date ? 
-                        `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('tacto.months')}`
-                        : t('tacto.notRegistered')
-                      } • {animal.breed || t('animalSelector.all')}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop: Table */}
-            <div className="hidden lg:block border rounded-lg max-h-60 overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>{t('tacto.animal')}</TableHead>
-                    <TableHead>{t('tacto.age')}</TableHead>
-                    <TableHead>{t('tacto.breed')}</TableHead>
-                    <TableHead>{t('tacto.currentStatus')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAnimals.map((animal) => (
-                    <TableRow key={animal.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedAnimals.includes(animal.id)}
-                          onCheckedChange={(checked) => 
-                            handleAnimalSelection(animal.id, checked as boolean)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{animal.name || t('tacto.noName')}</div>
-                          <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
-                          {animal.corral && (
-                            <div className="text-xs text-muted-foreground">{t('animalSelector.corral')}: {animal.corral.name}</div>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {animal.birth_date ? 
-                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('tacto.months')}`
-                          : t('tacto.notRegistered')
-                        }
-                      </TableCell>
-                      <TableCell>{animal.breed || t('animalSelector.all')}</TableCell>
-                      <TableCell>
-                        <span className="text-sm">
-                          {animal.esta_preñada ? t('tacto.pregnant') : t('tacto.empty')}
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            {selectedAnimals.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                {selectedAnimals.length} {t('tacto.animalsCount')}
               </div>
             )}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('tacto.generalObservations')}</Label>
+              <Textarea value={notas} onChange={e => setNotas(e.target.value)} placeholder={t('tacto.observationsPlaceholder')} rows={2} className="resize-none" />
+            </div>
           </div>
 
-          {/* Tacto Results */}
-          {tactoRecords.length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
-                  {t('tacto.result')} ({tactoRecords.length} {t('tacto.animalsCount')})
+          {animals.length === 0 && !loading ? (
+            <div className="text-center py-8 space-y-2">
+              <Stethoscope className="h-12 w-12 mx-auto text-muted-foreground/30" />
+              <p className="text-muted-foreground">{t('tacto.noEligibleFemales')}</p>
+            </div>
+          ) : (
+            <>
+              {/* Animal selector */}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">
+                  {t('tacto.eligibleFemales')} ({filteredAnimals.length})
                 </Label>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => markAllAs('preñada')}
-                    className="text-primary border-primary/20 hover:bg-primary/10"
-                  >
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    {t('tacto.pregnant')}
+
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 h-10" />
+                  </div>
+                  <Button type="button" variant="outline" size="sm" onClick={selectAllAnimals} className="shrink-0 gap-1.5">
+                    <CheckSquare className="h-3.5 w-3.5" />
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => markAllAs('vacia')}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    {t('tacto.empty')}
-                  </Button>
+                  {selectedAnimals.length > 0 && (
+                    <Button type="button" variant="ghost" size="sm" onClick={clearSelection} className="shrink-0 text-muted-foreground">
+                      {t('tacto.clear')}
+                    </Button>
+                  )}
                 </div>
-              </div>
-              
-              <div className="space-y-4 max-h-60 overflow-y-auto">
-                {tactoRecords.map((record) => {
-                  const animal = animals.find(a => a.id === record.animalId);
-                  if (!animal) return null;
 
-                  return (
-                    <Card key={record.animalId} className="p-4">
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">{animal.name || t('tacto.noName')}</div>
-                            <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
+                {selectedAnimals.length > 0 && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-violet-500/5 border border-violet-500/20">
+                    <Users className="h-4 w-4 text-violet-600" />
+                    <span className="text-sm font-semibold text-violet-700">{selectedAnimals.length}</span>
+                    <span className="text-sm text-violet-600/80">seleccionadas</span>
+                  </div>
+                )}
+
+                <div className="max-h-48 overflow-y-auto rounded-xl border border-border divide-y divide-border/50">
+                  {filteredAnimals.map(animal => {
+                    const selected = selectedAnimals.includes(animal.id);
+                    return (
+                      <div
+                        key={animal.id}
+                        onClick={() => handleAnimalToggle(animal.id)}
+                        className={cn("flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors", selected ? "bg-violet-500/5" : "hover:bg-muted/50")}
+                      >
+                        <Checkbox checked={selected} onCheckedChange={() => handleAnimalToggle(animal.id)} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-sm font-semibold">{animal.id_tag}</span>
+                            {animal.name && <span className="text-sm text-muted-foreground truncate">{animal.name}</span>}
                           </div>
-                          {record.fechaEstimadaParto && (
-                            <div className="text-sm text-green-600">
-                              {format(record.fechaEstimadaParto, "dd/MM/yyyy")}
-                            </div>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label className="text-sm">{t('tacto.resultForAnimal')}</Label>
-                          <RadioGroup
-                            value={record.resultado || ""}
-                            onValueChange={(value) => 
-                              updateTactoRecord(record.animalId, 'resultado', value as "preñada" | "vacia")
-                            }
-                          >
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="preñada" id={`preg-${record.animalId}`} />
-                              <Label htmlFor={`preg-${record.animalId}`} className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                {t('tacto.pregnant')}
-                              </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <RadioGroupItem value="vacia" id={`empty-${record.animalId}`} />
-                              <Label htmlFor={`empty-${record.animalId}`} className="flex items-center gap-2">
-                                <AlertTriangle className="h-4 w-4 text-red-500" />
-                                {t('tacto.empty')}
-                              </Label>
-                            </div>
-                          </RadioGroup>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label className="text-sm">{t('tacto.observations')}</Label>
-                          <Textarea
-                            placeholder={t('tacto.observationsForAnimal')}
-                            value={record.observaciones}
-                            onChange={(e) => 
-                              updateTactoRecord(record.animalId, 'observaciones', e.target.value)
-                            }
-                            rows={2}
-                          />
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {animal.birth_date && (
+                              <span className="text-xs text-muted-foreground">{differenceInMonths(new Date(), new Date(animal.birth_date))}m</span>
+                            )}
+                            {animal.breed && <span className="text-xs text-muted-foreground">{animal.breed}</span>}
+                          </div>
                         </div>
                       </div>
-                    </Card>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => handleOpenChange(false)}>
-              {t('tacto.cancel')}
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={loading || (tactoRecords.length === 0)}
-            >
-              {loading ? t('tacto.saving') : t('tacto.save')}
-            </Button>
-          </div>
+              {/* Results section */}
+              {tactoRecords.length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">{t('tacto.result')} ({tactoRecords.length})</Label>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => markAllAs('preñada')} className="text-emerald-700 border-emerald-200 hover:bg-emerald-50 gap-1">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        {t('tacto.allPregnant', 'Todas Preñadas')}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => markAllAs('vacia')} className="text-red-600 border-red-200 hover:bg-red-50 gap-1">
+                        <XCircle className="h-3.5 w-3.5" />
+                        {t('tacto.allEmpty', 'Todas Vacías')}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Summary counters */}
+                  {(pregnantCount > 0 || emptyCount > 0) && (
+                    <div className="flex gap-3">
+                      {pregnantCount > 0 && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                          <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                          <span className="text-xs font-semibold text-emerald-700">{pregnantCount} Preñadas</span>
+                        </div>
+                      )}
+                      {emptyCount > 0 && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+                          <XCircle className="h-3.5 w-3.5 text-red-600" />
+                          <span className="text-xs font-semibold text-red-700">{emptyCount} Vacías</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {tactoRecords.map(record => {
+                      const animal = animals.find(a => a.id === record.animalId);
+                      if (!animal) return null;
+                      return (
+                        <Card key={record.animalId} className={cn(
+                          "p-3 border-l-[3px] transition-colors",
+                          record.resultado === 'preñada' ? "border-l-emerald-500 bg-emerald-500/5" :
+                          record.resultado === 'vacia' ? "border-l-red-500 bg-red-500/5" :
+                          "border-l-muted"
+                        )}>
+                          <div className="flex items-center gap-3">
+                            {/* Animal info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono text-sm font-semibold">{animal.id_tag}</span>
+                                {animal.name && <span className="text-sm text-muted-foreground">{animal.name}</span>}
+                              </div>
+                              {record.fechaEstimadaParto && (
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <CalendarIcon className="h-3 w-3 text-emerald-600" />
+                                  <span className="text-xs text-emerald-700">FPP: {format(record.fechaEstimadaParto, "dd/MM/yyyy")}</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Result toggle */}
+                            <div className="flex gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => updateTactoRecord(record.animalId, 'resultado', 'preñada')}
+                                className={cn(
+                                  "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border",
+                                  record.resultado === 'preñada'
+                                    ? "bg-emerald-500 text-white border-emerald-500"
+                                    : "bg-background text-muted-foreground border-border hover:border-emerald-300"
+                                )}
+                              >
+                                <CheckCircle className="h-3.5 w-3.5" />
+                                P
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateTactoRecord(record.animalId, 'resultado', 'vacia')}
+                                className={cn(
+                                  "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors border",
+                                  record.resultado === 'vacia'
+                                    ? "bg-red-500 text-white border-red-500"
+                                    : "bg-background text-muted-foreground border-border hover:border-red-300"
+                                )}
+                              >
+                                <XCircle className="h-3.5 w-3.5" />
+                                V
+                              </button>
+                            </div>
+                          </div>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-border flex items-center gap-2">
+          <div className="flex-1" />
+          <Button variant="outline" onClick={() => handleOpenChange(false)}>{t('tacto.cancel')}</Button>
+          <Button onClick={handleSubmit} disabled={loading || tactoRecords.length === 0} className="gap-1.5">
+            <Stethoscope className="h-4 w-4" />
+            {loading ? t('tacto.saving') : t('tacto.save')}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

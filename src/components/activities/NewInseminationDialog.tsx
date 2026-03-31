@@ -6,18 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Calendar as CalendarIcon, Heart, Info, ArrowLeft } from "lucide-react";
+import { Plus, Heart, Info, ArrowLeft, Search, CheckSquare, Users } from "lucide-react";
 import { format, differenceInMonths } from "date-fns";
-import { es, enUS, ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { getCurrentLanguage } from "@/i18n";
+import { ActivityFormHeader } from "./shared/ActivityFormHeader";
+import { ActivityDatePicker } from "./shared/ActivityDatePicker";
 
 interface InseminationDialogProps {
   open?: boolean;
@@ -33,21 +32,14 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [selectedAnimals, setSelectedAnimals] = useState<string[]>([]);
-  
-  // Form data
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [fecha, setFecha] = useState<Date>(new Date());
   const [toroNombre, setToroNombre] = useState("");
   const [razaToro, setRazaToro] = useState("");
   const [extrasToro, setExtrasToro] = useState({
-    cuernos: "",
-    pelaje: "",
-    peso_nacimiento: "",
-    peso_destete: "",
-    peso_final: "",
-    ce: "",
-    registro: "",
-    adn: false,
-    origen: "",
+    cuernos: "", pelaje: "", peso_nacimiento: "", peso_destete: "",
+    peso_final: "", ce: "", registro: "", adn: false, origen: "",
   });
   const [notas, setNotas] = useState("");
 
@@ -55,11 +47,7 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
   const { getEligibleAnimals, createEvent } = useActivities();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    if (open) {
-      loadAnimals();
-    }
-  }, [open]);
+  useEffect(() => { if (open) loadAnimals(); }, [open]);
 
   const loadAnimals = async () => {
     try {
@@ -73,123 +61,66 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
     }
   };
 
-  const handleAnimalSelection = (animalId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedAnimals(prev => [...prev, animalId]);
-    } else {
-      setSelectedAnimals(prev => prev.filter(id => id !== animalId));
-    }
+  const filteredAnimals = animals.filter(a => {
+    if (!searchTerm) return true;
+    const q = searchTerm.toLowerCase();
+    return a.name?.toLowerCase().includes(q) || a.id_tag?.toLowerCase().includes(q);
+  });
+
+  const handleAnimalToggle = (id: string) => {
+    setSelectedAnimals(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const selectAllAnimals = () => {
-    setSelectedAnimals(animals.map(a => a.id));
-  };
-
-  const clearSelection = () => {
-    setSelectedAnimals([]);
-  };
+  const selectAllAnimals = () => setSelectedAnimals(filteredAnimals.map(a => a.id));
+  const clearSelection = () => setSelectedAnimals([]);
 
   const handleSubmit = async () => {
     try {
       if (!toroNombre.trim()) {
-        toast({
-          variant: "destructive",
-          title: t('activities:newInsemination.errorTitle'),
-          description: t('activities:newInsemination.errorBullName'),
-        });
+        toast({ variant: "destructive", title: t('activities:newInsemination.errorTitle'), description: t('activities:newInsemination.errorBullName') });
         return;
       }
-
       if (selectedAnimals.length === 0) {
-        toast({
-          variant: "destructive",
-          title: t('activities:newInsemination.errorTitle'), 
-          description: t('activities:newInsemination.errorSelectFemale'),
-        });
+        toast({ variant: "destructive", title: t('activities:newInsemination.errorTitle'), description: t('activities:newInsemination.errorSelectFemale') });
         return;
       }
-
       setLoading(true);
 
-      // Get user's cabaña
       const user = await supabase.auth.getUser();
       if (!user.data.user) throw new Error("Usuario no autenticado");
-
-      const { data: userData } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.data.user.id)
-        .single();
-
+      const { data: userData } = await supabase.from('profiles').select('*').eq('user_id', user.data.user.id).single();
       const cabanaId = (userData as any)?.cabaña_id;
       if (!cabanaId) throw new Error("Usuario sin cabaña asignada");
 
-      // Create the event
       const event = await createEvent('IA', fecha, notas);
 
-      // Create the AI records in artificial_inseminations table for each female
       for (const femaleId of selectedAnimals) {
-        const { error: aiError } = await supabase
-          .from("artificial_inseminations")
-          .insert({
-            cabaña_id: cabanaId,
-            female_id: femaleId,
-            bull_name: toroNombre.trim(),
-            insemination_date: format(fecha, 'yyyy-MM-dd'),
-            notes: notas || null,
-            created_by: user.data.user.id,
-          });
-
+        const { error: aiError } = await supabase.from("artificial_inseminations").insert({
+          cabaña_id: cabanaId, female_id: femaleId, bull_name: toroNombre.trim(),
+          insemination_date: format(fecha, 'yyyy-MM-dd'), notes: notas || null, created_by: user.data.user.id,
+        });
         if (aiError) throw aiError;
       }
 
-      // Update reproductive states for each animal using new function
       for (const animalId of selectedAnimals) {
         const { error: stateError } = await supabase.rpc('register_reproductive_activity', {
-          _animal_id: animalId,
-          _tipo_actividad: 'inseminacion_artificial',
-          _fecha_actividad: format(fecha, 'yyyy-MM-dd'),
-          _cabana_id: cabanaId,
-          _detalle: extrasToro
+          _animal_id: animalId, _tipo_actividad: 'inseminacion_artificial',
+          _fecha_actividad: format(fecha, 'yyyy-MM-dd'), _cabana_id: cabanaId, _detalle: extrasToro
         });
-
-        if (stateError) {
-          console.error('Error updating reproductive state:', stateError);
-          // Don't fail the whole operation, just log the error
-        }
+        if (stateError) console.error('Error updating reproductive state:', stateError);
       }
 
       toast({
-        title: t('activities:newInsemination.registered'),
+        title: "✓ " + t('activities:newInsemination.registered'),
         description: `${t('activities:newInsemination.registeredDesc')} ${selectedAnimals.length} ${t('activities:newInsemination.femalesWithBull')} ${toroNombre}`,
       });
 
-      // Reset form
-      setToroNombre("");
-      setRazaToro("");
-      setExtrasToro({
-        cuernos: "",
-        pelaje: "",
-        peso_nacimiento: "",
-        peso_destete: "",
-        peso_final: "",
-        ce: "",
-        registro: "",
-        adn: false,
-        origen: "",
-      });
-      setNotas("");
-      setSelectedAnimals([]);
-      setOpen(false);
-      
+      setToroNombre(""); setRazaToro(""); setExtrasToro({ cuernos: "", pelaje: "", peso_nacimiento: "", peso_destete: "", peso_final: "", ce: "", registro: "", adn: false, origen: "" });
+      setNotas(""); setSelectedAnimals([]); setOpen(false);
       onSuccess?.();
     } catch (error) {
       console.error("Error saving insemination:", error);
-      toast({
-        variant: "destructive",
-        title: t('activities:newInsemination.errorTitle'),
-        description: t('activities:newInsemination.errorSaving'),
-      });
+      toast({ variant: "destructive", title: t('activities:newInsemination.errorTitle'), description: t('activities:newInsemination.errorSaving') });
     } finally {
       setLoading(false);
     }
@@ -198,15 +129,10 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
   const renderBreedSpecificFields = () => {
     if (razaToro === "Braford") {
       return (
-        <div className="space-y-2">
-          <Label>{t('activities:newInsemination.horns')}</Label>
-          <Select 
-            value={extrasToro.cuernos} 
-            onValueChange={(value) => setExtrasToro(prev => ({ ...prev, cuernos: value }))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('activities:common.selectHornType')} />
-            </SelectTrigger>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">{t('activities:newInsemination.horns')}</Label>
+          <Select value={extrasToro.cuernos} onValueChange={v => setExtrasToro(prev => ({ ...prev, cuernos: v }))}>
+            <SelectTrigger className="h-11"><SelectValue placeholder={t('activities:common.selectHornType')} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="astado">{t('activities:newInsemination.horned')}</SelectItem>
               <SelectItem value="mocho">{t('activities:newInsemination.polled')}</SelectItem>
@@ -214,26 +140,19 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
             </SelectContent>
           </Select>
           {extrasToro.cuernos === "mocho_homocigota" && (
-            <div className="flex items-center gap-2 text-sm text-blue-600">
-              <Info className="h-4 w-4" />
-              <span>{t('activities:newInsemination.hornInfo')}</span>
+            <div className="flex items-center gap-2 text-xs text-blue-600">
+              <Info className="h-3.5 w-3.5" /><span>{t('activities:newInsemination.hornInfo')}</span>
             </div>
           )}
         </div>
       );
     }
-
     if (["Brangus", "Angus"].includes(razaToro)) {
       return (
-        <div className="space-y-2">
-          <Label>{t('activities:newInsemination.coat')}</Label>
-          <Select 
-            value={extrasToro.pelaje} 
-            onValueChange={(value) => setExtrasToro(prev => ({ ...prev, pelaje: value }))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t('activities:common.selectCoatColor')} />
-            </SelectTrigger>
+        <div className="space-y-1.5">
+          <Label className="text-sm font-medium">{t('activities:newInsemination.coat')}</Label>
+          <Select value={extrasToro.pelaje} onValueChange={v => setExtrasToro(prev => ({ ...prev, pelaje: v }))}>
+            <SelectTrigger className="h-11"><SelectValue placeholder={t('activities:common.selectCoatColor')} /></SelectTrigger>
             <SelectContent>
               <SelectItem value="negro">{t('activities:newInsemination.black')}</SelectItem>
               <SelectItem value="colorado">{t('activities:newInsemination.red')}</SelectItem>
@@ -241,239 +160,130 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
               <SelectItem value="colorado_homocigota">{t('activities:newInsemination.homozygousRed')}</SelectItem>
             </SelectContent>
           </Select>
-          {(extrasToro.pelaje === "negro_homocigota" || extrasToro.pelaje === "colorado_homocigota") && (
-            <div className="flex items-center gap-2 text-sm text-blue-600">
-              <Info className="h-4 w-4" />
-              <span>{t('activities:newInsemination.coatInfo')}</span>
-            </div>
-          )}
         </div>
       );
     }
-
     return null;
   };
 
+  // Mobile full-screen version
   if (isMobile && open) {
     return (
       <div className="fixed inset-0 z-50 bg-background lg:hidden">
-        {/* Mobile Header */}
         <div className="flex items-center p-4 border-b border-border">
           <Button variant="ghost" size="icon" onClick={() => setOpen(false)} className="mr-2">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-semibold">{t('activities:newInsemination.mobileTitle')}</h1>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-500/10">
+              <Heart className="h-4 w-4 text-pink-600" />
+            </div>
+            <h1 className="text-lg font-bold">{t('activities:newInsemination.mobileTitle')}</h1>
+          </div>
         </div>
 
-        {/* Mobile Content */}
-        <div className="flex-1 p-4 overflow-y-auto pb-20">
+        <div className="flex-1 p-4 overflow-y-auto pb-24 space-y-5">
           {animals.length === 0 && !loading && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground mb-2">
-                {t('activities:newInsemination.noEligibleFemales')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t('activities:newInsemination.eligibilityRequirements')}
-              </p>
+            <div className="text-center py-8 space-y-2">
+              <Heart className="h-12 w-12 mx-auto text-muted-foreground/30" />
+              <p className="text-muted-foreground">{t('activities:newInsemination.noEligibleFemales')}</p>
+              <p className="text-sm text-muted-foreground">{t('activities:newInsemination.eligibilityRequirements')}</p>
             </div>
           )}
 
-          <div className="space-y-6">
-            {/* Service Details */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="fecha">{t('activities:newInsemination.serviceDate')}</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {format(fecha, "PPP", { locale: getCurrentLanguage() === 'en' ? enUS : getCurrentLanguage() === 'pt' ? ptBR : es })}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={fecha}
-                      onSelect={(date) => date && setFecha(date)}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+          <div className="space-y-5">
+            <ActivityDatePicker label={t('activities:newInsemination.serviceDate')} date={fecha} onDateChange={setFecha} />
 
-              <div className="space-y-2">
-                <Label htmlFor="toro_nombre">{t('activities:newInsemination.bullNameLabel')}</Label>
-                <Input
-                  id="toro_nombre"
-                  value={toroNombre}
-                  onChange={(e) => setToroNombre(e.target.value)}
-                  placeholder={t('activities:newInsemination.bullNamePlaceholder')}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="raza_toro">{t('activities:newInsemination.bullBreed')}</Label>
-                <Select value={razaToro} onValueChange={setRazaToro}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('activities:common.selectBreed')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Braford">Braford</SelectItem>
-                    <SelectItem value="Brangus">Brangus</SelectItem>
-                    <SelectItem value="Angus">Angus</SelectItem>
-                    <SelectItem value="Hereford">Hereford</SelectItem>
-                    <SelectItem value="Limousin">Limousin</SelectItem>
-                    <SelectItem value="Charolais">Charolais</SelectItem>
-                    <SelectItem value="Otra">Otra</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {renderBreedSpecificFields()}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('activities:newInsemination.bullNameLabel')}</Label>
+              <Input value={toroNombre} onChange={e => setToroNombre(e.target.value)} placeholder={t('activities:newInsemination.bullNamePlaceholder')} className="h-12 text-base" />
             </div>
 
-            {/* Bull Additional Details */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">{t('activities:newInsemination.additionalData')}</Label>
-              <div className="grid gap-4 grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('activities:newInsemination.birthWeight')}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={extrasToro.peso_nacimiento}
-                    onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_nacimiento: e.target.value }))}
-                    placeholder="35.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('activities:newInsemination.weaningWeight')}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={extrasToro.peso_destete}
-                    onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_destete: e.target.value }))}
-                    placeholder="200.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('activities:newInsemination.finalWeight')}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={extrasToro.peso_final}
-                    onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_final: e.target.value }))}
-                    placeholder="450.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('activities:newInsemination.ce')}</Label>
-                  <Input
-                    type="number"
-                    step="0.1"
-                    value={extrasToro.ce}
-                    onChange={(e) => setExtrasToro(prev => ({ ...prev, ce: e.target.value }))}
-                    placeholder="34.0"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('activities:newInsemination.registration')}</Label>
-                  <Input
-                    value={extrasToro.registro}
-                    onChange={(e) => setExtrasToro(prev => ({ ...prev, registro: e.target.value }))}
-                    placeholder={t('activities:newInsemination.registrationPlaceholder')}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-xs">{t('activities:newInsemination.origin')}</Label>
-                  <Input
-                    value={extrasToro.origen}
-                    onChange={(e) => setExtrasToro(prev => ({ ...prev, origen: e.target.value }))}
-                    placeholder={t('activities:newInsemination.originPlaceholder')}
-                  />
-                </div>
-              </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('activities:newInsemination.bullBreed')}</Label>
+              <Select value={razaToro} onValueChange={setRazaToro}>
+                <SelectTrigger className="h-11"><SelectValue placeholder={t('activities:common.selectBreed')} /></SelectTrigger>
+                <SelectContent>
+                  {["Braford", "Brangus", "Angus", "Hereford", "Limousin", "Charolais", "Otra"].map(b => (
+                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notas">{t('activities:common.observations')}</Label>
-              <Textarea
-                id="notas"
-                value={notas}
-                onChange={(e) => setNotas(e.target.value)}
-                placeholder={t('activities:newInsemination.serviceObservations')}
-                rows={3}
-              />
-            </div>
+            {renderBreedSpecificFields()}
 
-            {/* Animal Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">
-                  {t('activities:newInsemination.eligibleFemalesCount', { count: animals.length })}
-                </Label>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                    {t('activities:newInsemination.all')}
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={clearSelection}>
-                    {t('activities:newInsemination.clear')}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {animals.map((animal) => (
-                  <div key={animal.id} className="flex items-center gap-3 p-3 border rounded-lg">
-                    <Checkbox
-                      checked={selectedAnimals.includes(animal.id)}
-                      onCheckedChange={(checked) => 
-                        handleAnimalSelection(animal.id, checked as boolean)
-                      }
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium">{animal.name || t('activities:newInsemination.noName')}</div>
-                      <div className="text-sm text-muted-foreground">{animal.id_tag}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {animal.birth_date ? 
-                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('activities:newInsemination.months')}`
-                          : t('activities:newInsemination.notRecorded')
-                        } • {animal.breed || t('activities:newInsemination.notSpecified')}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Heart className={`h-3 w-3 ${animal.esta_preñada ? 'text-red-500' : 'text-gray-400'}`} />
-                    </div>
+            {/* Bull extras */}
+            <div className="space-y-3 p-4 rounded-xl border border-border bg-muted/30">
+              <Label className="text-sm font-semibold">{t('activities:newInsemination.additionalData')}</Label>
+              <div className="grid gap-3 grid-cols-2">
+                {[
+                  { key: 'peso_nacimiento', label: t('activities:newInsemination.birthWeight'), ph: '35.0' },
+                  { key: 'peso_destete', label: t('activities:newInsemination.weaningWeight'), ph: '200.0' },
+                  { key: 'peso_final', label: t('activities:newInsemination.finalWeight'), ph: '450.0' },
+                  { key: 'ce', label: t('activities:newInsemination.ce'), ph: '34.0' },
+                ].map(f => (
+                  <div key={f.key} className="space-y-1">
+                    <Label className="text-xs">{f.label}</Label>
+                    <Input type="number" step="0.1" value={(extrasToro as any)[f.key]} onChange={e => setExtrasToro(prev => ({ ...prev, [f.key]: e.target.value }))} placeholder={f.ph} className="h-10" />
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('activities:common.observations')}</Label>
+              <Textarea value={notas} onChange={e => setNotas(e.target.value)} placeholder={t('activities:newInsemination.serviceObservations')} rows={2} className="resize-none" />
+            </div>
+
+            {/* Animal Selection */}
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">{t('activities:newInsemination.eligibleFemalesCount', { count: animals.length })}</Label>
+
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input placeholder="Buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 h-10" />
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={selectAllAnimals}><CheckSquare className="h-3.5 w-3.5" /></Button>
+              </div>
 
               {selectedAnimals.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                {t('activities:common.femalesSelected', { count: selectedAnimals.length })}
-              </div>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-pink-500/5 border border-pink-500/20">
+                  <Users className="h-4 w-4 text-pink-600" />
+                  <span className="text-sm font-semibold text-pink-700">{selectedAnimals.length}</span>
+                  <span className="text-sm text-pink-600/80">seleccionadas</span>
+                </div>
               )}
+
+              <div className="max-h-64 overflow-y-auto rounded-xl border border-border divide-y divide-border/50">
+                {filteredAnimals.map(animal => {
+                  const selected = selectedAnimals.includes(animal.id);
+                  return (
+                    <div key={animal.id} onClick={() => handleAnimalToggle(animal.id)}
+                      className={cn("flex items-center gap-3 px-3 py-3 cursor-pointer transition-colors", selected ? "bg-pink-500/5" : "hover:bg-muted/50")}>
+                      <Checkbox checked={selected} onCheckedChange={() => handleAnimalToggle(animal.id)} />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-mono text-sm font-semibold">{animal.id_tag}</span>
+                        {animal.name && <span className="text-sm text-muted-foreground ml-2">{animal.name}</span>}
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {animal.birth_date && <span className="text-xs text-muted-foreground">{differenceInMonths(new Date(), new Date(animal.birth_date))}m</span>}
+                          {animal.breed && <span className="text-xs text-muted-foreground">{animal.breed}</span>}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Fixed Bottom Actions */}
         <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border p-4">
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">
-              {t('activities:common.cancel')}
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()}
-              className="flex-1"
-            >
+            <Button variant="outline" onClick={() => setOpen(false)} className="flex-1">{t('activities:common.cancel')}</Button>
+            <Button onClick={handleSubmit} disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()} className="flex-1 gap-1.5">
+              <Heart className="h-4 w-4" />
               {loading ? t('activities:newInsemination.saving') : t('activities:newInsemination.registerButton')}
             </Button>
           </div>
@@ -482,259 +292,139 @@ export function NewInseminationDialog({ open: controlledOpen, onOpenChange, onSu
     );
   }
 
+  // Desktop dialog
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Only show trigger if not controlled externally */}
       {controlledOpen === undefined && (
         <DialogTrigger asChild>
-          <Button className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            {t('activities:newInsemination.newInsemination')}
-          </Button>
+          <Button className="flex items-center gap-2"><Plus className="h-4 w-4" />{t('activities:newInsemination.newInsemination')}</Button>
         </DialogTrigger>
       )}
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
-        <DialogHeader>
-          <DialogTitle>{t('activities:newInsemination.title')}</DialogTitle>
-          <DialogDescription>
-            {t('activities:newInsemination.description')}
-          </DialogDescription>
-        </DialogHeader>
-        
-        {animals.length === 0 && !loading && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground mb-2">
-              {t('activities:newInsemination.noEligibleAnimals')}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {t('activities:newInsemination.requiresFemales')}
-            </p>
-          </div>
-        )}
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden">
+        <div className="px-6 pt-6 pb-4 border-b border-border">
+          <ActivityFormHeader icon={Heart} iconColor="text-pink-600" title={t('activities:newInsemination.title')} subtitle={t('activities:newInsemination.description')} />
+        </div>
 
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+          {animals.length === 0 && !loading && (
+            <div className="text-center py-8 space-y-2">
+              <Heart className="h-12 w-12 mx-auto text-muted-foreground/30" />
+              <p className="text-muted-foreground">{t('activities:newInsemination.noEligibleAnimals')}</p>
+            </div>
+          )}
+
           {/* Service Details */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="fecha">{t('activities:newInsemination.serviceDate')}</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(fecha, "PPP", { locale: getCurrentLanguage() === 'en' ? enUS : getCurrentLanguage() === 'pt' ? ptBR : es })}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={fecha}
-                    onSelect={(date) => date && setFecha(date)}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ActivityDatePicker label={t('activities:newInsemination.serviceDate')} date={fecha} onDateChange={setFecha} />
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('activities:newInsemination.bullNameLabel')}</Label>
+              <Input value={toroNombre} onChange={e => setToroNombre(e.target.value)} placeholder={t('activities:newInsemination.bullNamePlaceholder')} className="h-11" />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="toro_nombre">{t('activities:newInsemination.bullNameLabel')}</Label>
-              <Input
-                id="toro_nombre"
-                value={toroNombre}
-                onChange={(e) => setToroNombre(e.target.value)}
-                placeholder={t('activities:newInsemination.bullNamePlaceholder')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="raza_toro">{t('activities:newInsemination.bullBreed')}</Label>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{t('activities:newInsemination.bullBreed')}</Label>
               <Select value={razaToro} onValueChange={setRazaToro}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('activities:common.selectBreed')} />
-                </SelectTrigger>
+                <SelectTrigger className="h-11"><SelectValue placeholder={t('activities:common.selectBreed')} /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Braford">Braford</SelectItem>
-                  <SelectItem value="Brangus">Brangus</SelectItem>
-                  <SelectItem value="Angus">Angus</SelectItem>
-                  <SelectItem value="Hereford">Hereford</SelectItem>
-                  <SelectItem value="Limousin">Limousin</SelectItem>
-                  <SelectItem value="Charolais">Charolais</SelectItem>
-                  <SelectItem value="Otra">Otra</SelectItem>
+                  {["Braford", "Brangus", "Angus", "Hereford", "Limousin", "Charolais", "Otra"].map(b => (
+                    <SelectItem key={b} value={b}>{b}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-
             {renderBreedSpecificFields()}
           </div>
 
-          {/* Bull Additional Details */}
-          <div className="space-y-4">
-            <Label className="text-sm font-medium">{t('activities:newInsemination.additionalData')}</Label>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <Label className="text-xs">{t('activities:newInsemination.birthWeight')}</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={extrasToro.peso_nacimiento}
-                  onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_nacimiento: e.target.value }))}
-                  placeholder="35.0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs">{t('activities:newInsemination.weaningWeight')}</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={extrasToro.peso_destete}
-                  onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_destete: e.target.value }))}
-                  placeholder="200.0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs">{t('activities:newInsemination.finalWeight')}</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={extrasToro.peso_final}
-                  onChange={(e) => setExtrasToro(prev => ({ ...prev, peso_final: e.target.value }))}
-                  placeholder="450.0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs">{t('activities:newInsemination.ce')}</Label>
-                <Input
-                  type="number"
-                  step="0.1"
-                  value={extrasToro.ce}
-                  onChange={(e) => setExtrasToro(prev => ({ ...prev, ce: e.target.value }))}
-                  placeholder="34.0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs">{t('activities:newInsemination.registration')}</Label>
-                <Input
-                  value={extrasToro.registro}
-                  onChange={(e) => setExtrasToro(prev => ({ ...prev, registro: e.target.value }))}
-                  placeholder={t('activities:newInsemination.registrationPlaceholder')}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs">{t('activities:newInsemination.origin')}</Label>
-                <Input
-                  value={extrasToro.origen}
-                  onChange={(e) => setExtrasToro(prev => ({ ...prev, origen: e.target.value }))}
-                  placeholder={t('activities:newInsemination.originPlaceholder')}
-                />
-              </div>
+          {/* Bull extras */}
+          <div className="space-y-3 p-4 rounded-xl border border-border bg-muted/30">
+            <Label className="text-sm font-semibold">{t('activities:newInsemination.additionalData')}</Label>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { key: 'peso_nacimiento', label: t('activities:newInsemination.birthWeight'), ph: '35.0' },
+                { key: 'peso_destete', label: t('activities:newInsemination.weaningWeight'), ph: '200.0' },
+                { key: 'peso_final', label: t('activities:newInsemination.finalWeight'), ph: '450.0' },
+                { key: 'ce', label: t('activities:newInsemination.ce'), ph: '34.0' },
+                { key: 'registro', label: t('activities:newInsemination.registration'), ph: t('activities:newInsemination.registrationPlaceholder'), type: 'text' },
+                { key: 'origen', label: t('activities:newInsemination.origin'), ph: t('activities:newInsemination.originPlaceholder'), type: 'text' },
+              ].map(f => (
+                <div key={f.key} className="space-y-1">
+                  <Label className="text-xs">{f.label}</Label>
+                  <Input
+                    type={(f as any).type || 'number'}
+                    step={(f as any).type === 'text' ? undefined : '0.1'}
+                    value={(extrasToro as any)[f.key]}
+                    onChange={e => setExtrasToro(prev => ({ ...prev, [f.key]: e.target.value }))}
+                    placeholder={f.ph}
+                    className="h-10"
+                  />
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notas">{t('activities:common.observations')}</Label>
-            <Textarea
-              id="notas"
-              value={notas}
-              onChange={(e) => setNotas(e.target.value)}
-              placeholder={t('activities:newInsemination.serviceObservations')}
-              rows={3}
-            />
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium">{t('activities:common.observations')}</Label>
+            <Textarea value={notas} onChange={e => setNotas(e.target.value)} placeholder={t('activities:newInsemination.serviceObservations')} rows={2} className="resize-none" />
           </div>
 
           {/* Animal Selection */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium">
-                {t('activities:common.eligibleFemales', { count: animals.length })}
-              </Label>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={selectAllAnimals}>
-                  {t('activities:common.selectAllFemale')}
-                </Button>
-                <Button variant="outline" size="sm" onClick={clearSelection}>
-                  {t('activities:common.clear')}
-                </Button>
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">{t('activities:common.eligibleFemales', { count: animals.length })}</Label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Buscar..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 h-10" />
               </div>
-            </div>
-
-            <div className="border rounded-lg max-h-60 overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-12"></TableHead>
-                    <TableHead>{t('activities:newInsemination.tableHeaders.animal')}</TableHead>
-                    <TableHead className="hidden sm:table-cell">{t('activities:newInsemination.tableHeaders.age')}</TableHead>
-                    <TableHead className="hidden md:table-cell">{t('activities:newInsemination.tableHeaders.breed')}</TableHead>
-                    <TableHead className="hidden lg:table-cell">{t('activities:newInsemination.tableHeaders.status')}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {animals.map((animal) => (
-                    <TableRow key={animal.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedAnimals.includes(animal.id)}
-                          onCheckedChange={(checked) => 
-                            handleAnimalSelection(animal.id, checked as boolean)
-                          }
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium text-sm">{animal.name || t('activities:newInsemination.noName')}</div>
-                          <div className="text-xs text-muted-foreground">{animal.id_tag}</div>
-                          <div className="sm:hidden text-xs text-muted-foreground mt-0.5">
-                            {animal.birth_date ? 
-                              `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('activities:newInsemination.months')}`
-                              : t('activities:newInsemination.notRecorded')
-                            } • {animal.breed || t('activities:newInsemination.notSpecified')}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="hidden sm:table-cell text-sm">
-                        {animal.birth_date ? 
-                          `${differenceInMonths(new Date(), new Date(animal.birth_date))} ${t('activities:newInsemination.months')}`
-                          : t('activities:newInsemination.notRecorded')
-                        }
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell text-sm">{animal.breed || t('activities:newInsemination.notSpecified')}</TableCell>
-                      <TableCell className="hidden lg:table-cell">
-                        <div className="flex items-center gap-2">
-                          <Heart className={`h-3 w-3 ${animal.esta_preñada ? 'text-red-500' : 'text-gray-400'}`} />
-                          <span className="text-sm">
-                            {animal.esta_preñada ? t('activities:newInsemination.pregnant') : t('activities:newInsemination.available')}
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <Button variant="outline" size="sm" onClick={selectAllAnimals} className="shrink-0 gap-1.5">
+                <CheckSquare className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t('activities:common.selectAllFemale')}</span>
+              </Button>
+              {selectedAnimals.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearSelection} className="shrink-0 text-muted-foreground">{t('activities:common.clear')}</Button>
+              )}
             </div>
 
             {selectedAnimals.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                {t('activities:common.femalesSelected', { count: selectedAnimals.length })}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-pink-500/5 border border-pink-500/20">
+                <Users className="h-4 w-4 text-pink-600" />
+                <span className="text-sm font-semibold text-pink-700">{selectedAnimals.length}</span>
+                <span className="text-sm text-pink-600/80">{t('activities:common.femalesSelected', { count: selectedAnimals.length })}</span>
               </div>
             )}
-          </div>
 
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              {t('activities:common.cancel')}
-            </Button>
-            <Button 
-              onClick={handleSubmit} 
-              disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()}
-            >
-              {loading ? t('activities:newInsemination.saving') : t('activities:newInsemination.registerButton')}
-            </Button>
+            <div className="max-h-60 overflow-y-auto rounded-xl border border-border divide-y divide-border/50">
+              {filteredAnimals.map(animal => {
+                const selected = selectedAnimals.includes(animal.id);
+                return (
+                  <div key={animal.id} onClick={() => handleAnimalToggle(animal.id)}
+                    className={cn("flex items-center gap-3 px-3 py-2.5 cursor-pointer transition-colors", selected ? "bg-pink-500/5" : "hover:bg-muted/50")}>
+                    <Checkbox checked={selected} onCheckedChange={() => handleAnimalToggle(animal.id)} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-semibold">{animal.id_tag}</span>
+                        {animal.name && <span className="text-sm text-muted-foreground truncate">{animal.name}</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {animal.birth_date && <span className="text-xs text-muted-foreground">{differenceInMonths(new Date(), new Date(animal.birth_date))}m</span>}
+                        {animal.breed && <><span className="text-xs text-muted-foreground/40">·</span><span className="text-xs text-muted-foreground">{animal.breed}</span></>}
+                      </div>
+                    </div>
+                    {animal.esta_preñada !== undefined && (
+                      <Heart className={cn("h-3.5 w-3.5 shrink-0", animal.esta_preñada ? "text-red-500" : "text-muted-foreground/30")} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-border flex items-center gap-2">
+          <div className="flex-1" />
+          <Button variant="outline" onClick={() => setOpen(false)}>{t('activities:common.cancel')}</Button>
+          <Button onClick={handleSubmit} disabled={loading || selectedAnimals.length === 0 || !toroNombre.trim()} className="gap-1.5">
+            <Heart className="h-4 w-4" />
+            {loading ? t('activities:newInsemination.saving') : t('activities:newInsemination.registerButton')}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
