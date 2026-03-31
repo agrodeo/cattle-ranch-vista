@@ -127,7 +127,7 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
       toast({ title: "✓ " + t('activities:newGeneralActivity.success'), description: `${selectedType} — ${selectedAnimals.length} animales` });
       onSuccess?.();
       setSelectedDate(new Date()); setSelectedType(""); setNotes(""); setResponsiblePerson(""); setSelectedAnimals([]); setActivityData({});
-      setOpen(false); onOpenChange?.(false); onClose?.();
+      handleOpenChange(false);
     } catch (error) {
       toast({ title: t('activities:newGeneralActivity.errorTitle'), description: t('activities:newGeneralActivity.errorSaving'), variant: "destructive" });
     } finally {
