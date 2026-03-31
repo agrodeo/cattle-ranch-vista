@@ -271,6 +271,11 @@
       "description": "Inseminação, partos, exame gestacional e mais"
     }
   },
+  "filters": {
+    "all": "Todas",
+    "noResults": "Nenhuma atividade de {{type}}",
+    "noResultsDesc": "Nenhuma atividade deste tipo foi registrada ainda"
+  },
   "activityCard": {
     "animal": "animal",
     "animals": "animais",

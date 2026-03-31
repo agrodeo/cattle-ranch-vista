@@ -280,6 +280,11 @@
       "description": "Inseminación, partos, tacto y más"
     }
   },
+  "filters": {
+    "all": "Todas",
+    "noResults": "No hay actividades de {{type}}",
+    "noResultsDesc": "Aún no se han registrado actividades de este tipo"
+  },
   "activityCard": {
     "animal": "animal",
     "animals": "animales",

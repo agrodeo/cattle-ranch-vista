@@ -269,6 +269,11 @@
       "description": "Insemination, calving, pregnancy check & more"
     }
   },
+  "filters": {
+    "all": "All",
+    "noResults": "No {{type}} activities",
+    "noResultsDesc": "No activities of this type have been recorded yet"
+  },
   "activityCard": {
     "animal": "animal",
     "animals": "animals",
