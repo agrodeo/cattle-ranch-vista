@@ -274,7 +274,7 @@ export function MortalityReports({ filters: globalFilters }: MortalityReportsPro
     <div className="space-y-6">
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <ReportKpiCard
           label={t('mortality:reports.totalDeaths')}
           value={totalDeaths}
