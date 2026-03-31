@@ -97,58 +97,53 @@ export function AnimalSelector({
   const loadData = async () => {
     try {
       setLoading(true);
-      
-      // Load animals and corrals in parallel
-      const [animalsResponse, corralsResponse] = await Promise.all([
-        supabase
-          .from('animals')
-          .select(`
-            *,
-            corrales:corral_id(name)
-          `)
-          .eq('cabaña_id', currentUser?.cabañaId)
-          .order('name'),
-        
-        supabase
-          .from('corrales')
-          .select('*')
-          .eq('cabaña_id', currentUser?.cabañaId)
-          .order('name')
-      ]);
 
-      if (animalsResponse.error) throw animalsResponse.error;
-      if (corralsResponse.error) throw corralsResponse.error;
+      let rawAnimals: any[] = [];
+      let rawCorrals: any[] = [];
 
-      // Process animals with calculated fields
-      const processedAnimals = (animalsResponse.data || []).map(animal => {
+      if (!isOnline()) {
+        // ── OFFLINE: load from IndexedDB ──
+        const { db } = await import('@/services/db');
+        const cachedAnimals = await db.animals_cache
+          .where('cabaña_id').equals(currentUser?.cabañaId || '')
+          .toArray();
+        const cachedCorrals = await db.corrales_cache
+          .where('cabaña_id').equals(currentUser?.cabañaId || '')
+          .toArray();
+        const corralMap = new Map(cachedCorrals.map(c => [c.id, { name: c.name }]));
+        rawAnimals = cachedAnimals.map(a => ({ ...a, corrales: a.corral_id ? corralMap.get(a.corral_id) : undefined }));
+        rawCorrals = cachedCorrals;
+      } else {
+        // ── ONLINE ──
+        const [animalsResponse, corralsResponse] = await Promise.all([
+          supabase.from('animals').select('*, corrales:corral_id(name)')
+            .eq('cabaña_id', currentUser?.cabañaId).order('name'),
+          supabase.from('corrales').select('*')
+            .eq('cabaña_id', currentUser?.cabañaId).order('name')
+        ]);
+        if (animalsResponse.error) throw animalsResponse.error;
+        if (corralsResponse.error) throw corralsResponse.error;
+        rawAnimals = animalsResponse.data || [];
+        rawCorrals = corralsResponse.data || [];
+      }
+
+      const processedAnimals = rawAnimals.map(animal => {
         const ageInMonths = animal.birth_date 
           ? Math.floor((new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44))
           : 0;
-        
         const category = categorizeAnimal(animal, ageInMonths);
-        
-        return {
-          ...animal,
-          ageInMonths,
-          category,
-          corral: animal.corrales
-        };
+        return { ...animal, ageInMonths, category, corral: animal.corrales };
       });
 
-      // Apply eligibility filter if provided
       const eligibleAnimals = eligibilityFilter 
         ? processedAnimals.filter(eligibilityFilter)
         : processedAnimals;
 
       setAnimals(eligibleAnimals);
-      setCorrals(corralsResponse.data || []);
+      setCorrals(rawCorrals);
     } catch (error) {
       console.error("Error loading data:", error);
-      toast({
-        variant: "destructive",
-        title: t('animalSelector.errorLoading'),
-        description: t('animalSelector.errorLoading')
-      });
+      toast({ variant: "destructive", title: t('animalSelector.errorLoading'), description: t('animalSelector.errorLoading') });
     } finally {
       setLoading(false);
     }
