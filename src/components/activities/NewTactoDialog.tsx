@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
 import { Plus, Calendar as CalendarIcon, Stethoscope, CheckCircle, AlertTriangle, Users } from "lucide-react";
 import { format, differenceInMonths, addDays } from "date-fns";
 import { es } from "date-fns/locale";
@@ -81,11 +82,14 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
   const loadCorrales = async () => {
     try {
+      if (!isOnline()) {
+        const { db } = await import('@/services/db');
+        const cached = await db.corrales_cache.toArray();
+        setCorrales(cached.map(c => ({ id: c.id, name: c.name })));
+        return;
+      }
       const { data: corralesData, error } = await supabase
-        .from('corrales')
-        .select('id, name')
-        .order('name');
-      
+        .from('corrales').select('id, name').order('name');
       if (error) throw error;
       setCorrales(corralesData || []);
     } catch (error) {

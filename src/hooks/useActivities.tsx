@@ -96,75 +96,78 @@ export function useActivities() {
 
   const getEligibleAnimals = async (activityType: 'IA' | 'TACTO' | 'PESAJE' | 'VACUNACION') => {
     try {
-      // Check if user is authenticated and has cabaña_id
-      if (!currentUser?.cabañaId) {
-        return [];
-      }
-      
-      let query = supabase
-        .from("animals")
-        .select(`
-          *,
-          corrales:corral_id (
-            name
-          )
-        `)
-        .eq("cabaña_id", currentUser.cabañaId);
+      if (!currentUser?.cabañaId) return [];
 
-      // Apply specific filters based on activity type - exclude sold and dead animals
-      console.log(`Loading animals for ${activityType} - excluding sold/dead animals`);
-      query = query
-        .not('status', 'ilike', 'vendido')
-        .not('status', 'ilike', 'muerto');
+      let rawAnimals: any[] = [];
 
-      if (activityType === 'IA') {
-        // Only females >= 15 months, not pregnant
-        query = query
-          .eq("sex", "Hembra")
-          .eq("esta_preñada", false);
-      } else if (activityType === 'TACTO') {
-        // Only females >= 15 months, not pregnant (can't detect pregnancy on already pregnant females)
-        query = query
-          .eq("sex", "Hembra")
-          .eq("esta_preñada", false);
-      }
-
-      const { data: animals, error } = await query;
-
-      if (error) throw error;
-
-      // Map animals to include corral_name from the joined corrales table
-      const mappedAnimals = animals?.map(animal => ({
-        ...animal,
-        corral_name: animal.corrales?.name || null
-      })) || [];
-
-      // Filter by age (>= 15 months for reproductive activities)
-      const eligibleAnimals = mappedAnimals.filter(animal => {
-        if (['IA', 'TACTO'].includes(activityType) && animal.birth_date) {
-          const ageInMonths = Math.floor(
-            (new Date().getTime() - new Date(animal.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
-          );
-          return ageInMonths >= 15;
+      if (!isOnline()) {
+        // ── OFFLINE: load from IndexedDB cache ──
+        try {
+          const { db } = await import('@/services/db');
+          const cached = await db.animals_cache
+            .where('cabaña_id')
+            .equals(currentUser.cabañaId)
+            .toArray();
+          rawAnimals = cached.filter(a => {
+            const s = (a.status || '').toLowerCase();
+            return s !== 'vendido' && s !== 'muerto';
+          });
+          // Resolve corral names from cache
+          const corrales = await db.corrales_cache
+            .where('cabaña_id')
+            .equals(currentUser.cabañaId)
+            .toArray();
+          const corralMap = new Map(corrales.map(c => [c.id, c.name]));
+          rawAnimals = rawAnimals.map(a => ({
+            ...a,
+            corral_name: a.corral_id ? corralMap.get(a.corral_id) || null : null,
+          }));
+        } catch (e) {
+          console.warn('Failed to load animals from offline cache:', e);
+          return [];
         }
-        return true;
-      }) || [];
-      
-      // Debug: Log what animals are being returned
-      console.log(`getEligibleAnimals(${activityType}) results:`, {
-        totalAnimals: animals?.length || 0,
-        filteredAnimals: eligibleAnimals.length,
-        animalStatuses: eligibleAnimals.map(a => ({ id: a.id, name: a.name, status: a.status }))
-      });
-      
-      return eligibleAnimals as EligibleAnimal[];
+      } else {
+        // ── ONLINE: load from Supabase ──
+        let query = supabase
+          .from("animals")
+          .select(`*, corrales:corral_id(name)`)
+          .eq("cabaña_id", currentUser.cabañaId)
+          .not('status', 'ilike', 'vendido')
+          .not('status', 'ilike', 'muerto');
+
+        if (activityType === 'IA' || activityType === 'TACTO') {
+          query = query.eq("sex", "Hembra").eq("esta_preñada", false);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        rawAnimals = (data || []).map(animal => ({
+          ...animal,
+          corral_name: animal.corrales?.name || null,
+        }));
+      }
+
+      // Apply activity-specific filters (also needed for offline data)
+      let eligible = rawAnimals;
+      if (activityType === 'IA' || activityType === 'TACTO') {
+        eligible = eligible.filter(a => {
+          if (a.sex !== 'Hembra') return false;
+          if (a.esta_preñada) return false;
+          if (a.birth_date) {
+            const ageMonths = Math.floor(
+              (Date.now() - new Date(a.birth_date).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+            );
+            return ageMonths >= 15;
+          }
+          return true;
+        });
+      }
+
+      return eligible as EligibleAnimal[];
     } catch (error) {
       console.error("Error fetching eligible animals:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron cargar los animales elegibles",
-      });
+      toast({ variant: "destructive", title: "Error", description: "No se pudieron cargar los animales elegibles" });
       return [];
     }
   };

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
+import { isOnline } from "@/services/connectivity";
 import { categorizeAnimal } from "@/lib/animalCategories";
 import { getTranslatedSex } from "@/lib/translations";
 
@@ -158,33 +159,29 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
   const loadAnimals = async () => {
     setLoadingAnimals(true);
     try {
-      const { data, error } = await supabase
-        .from('animals')
-        .select(`
-          id,
-          name,
-          id_tag,
-          sex,
-          breed,
-          birth_date,
-          status,
-          corral_id,
-          is_castrated,
-          corral:corrales(name)
-        `)
-        .not('status', 'ilike', 'vendido')
-        .not('status', 'ilike', 'muerto')
-        .order('id_tag');
-
-      if (error) throw error;
-      setAnimals(data || []);
+      if (!isOnline()) {
+        const { db } = await import('@/services/db');
+        const cached = await db.animals_cache.toArray();
+        const filtered = cached.filter(a => {
+          const s = (a.status || '').toLowerCase();
+          return s !== 'vendido' && s !== 'muerto';
+        });
+        const corrales = await db.corrales_cache.toArray();
+        const corralMap = new Map(corrales.map(c => [c.id, { name: c.name }]));
+        setAnimals(filtered.map(a => ({ ...a, corral: a.corral_id ? corralMap.get(a.corral_id) : undefined })) as Animal[]);
+      } else {
+        const { data, error } = await supabase
+          .from('animals')
+          .select('id, name, id_tag, sex, breed, birth_date, status, corral_id, is_castrated, corral:corrales(name)')
+          .not('status', 'ilike', 'vendido')
+          .not('status', 'ilike', 'muerto')
+          .order('id_tag');
+        if (error) throw error;
+        setAnimals(data || []);
+      }
     } catch (error) {
       console.error('Error loading animals:', error);
-      toast({
-        title: t('activities:newGeneralActivity.errorTitle'),
-        description: t('activities:newGeneralActivity.errorRequired'),
-        variant: "destructive",
-      });
+      toast({ title: t('activities:newGeneralActivity.errorTitle'), description: t('activities:newGeneralActivity.errorRequired'), variant: "destructive" });
     } finally {
       setLoadingAnimals(false);
     }
@@ -192,13 +189,15 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
 
   const loadCorrales = async () => {
     try {
-      const { data, error } = await supabase
-        .from('corrales')
-        .select('id, name')
-        .order('name');
-
-      if (error) throw error;
-      setCorrales(data || []);
+      if (!isOnline()) {
+        const { db } = await import('@/services/db');
+        const cached = await db.corrales_cache.toArray();
+        setCorrales(cached.map(c => ({ id: c.id, name: c.name })));
+      } else {
+        const { data, error } = await supabase.from('corrales').select('id, name').order('name');
+        if (error) throw error;
+        setCorrales(data || []);
+      }
     } catch (error) {
       console.error('Error loading corrales:', error);
     }
