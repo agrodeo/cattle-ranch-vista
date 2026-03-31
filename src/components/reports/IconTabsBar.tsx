@@ -27,7 +27,7 @@ export function IconTabsBar({ tabs, activeTab, onTabChange }: IconTabsBarProps) 
   return (
     <div className="lg:hidden">
       <div className="flex justify-center">
-        <div className="flex bg-background border border-border rounded-lg p-1 gap-1">
+        <div className="inline-flex bg-background border border-border rounded-lg p-1 gap-0.5 sm:gap-1 overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => {
             const IconComponent = tabIcons[tab.id as keyof typeof tabIcons];
             return (
@@ -35,8 +35,8 @@ export function IconTabsBar({ tabs, activeTab, onTabChange }: IconTabsBarProps) 
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "flex items-center justify-center w-12 h-10 rounded-md transition-all duration-200",
-                  "hover:bg-muted/50",
+                  "flex flex-col items-center justify-center min-w-[3rem] sm:min-w-[3.5rem] h-10 sm:h-11 rounded-md transition-all duration-200 px-1.5",
+                  "hover:bg-muted/50 shrink-0",
                   activeTab === tab.id
                     ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -44,7 +44,7 @@ export function IconTabsBar({ tabs, activeTab, onTabChange }: IconTabsBarProps) 
                 aria-label={tab.label}
                 title={tab.label}
               >
-                {IconComponent && <IconComponent size={20} />}
+                {IconComponent && <IconComponent size={18} className="sm:w-5 sm:h-5" />}
               </button>
             );
           })}
