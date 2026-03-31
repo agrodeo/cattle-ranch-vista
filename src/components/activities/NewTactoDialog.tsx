@@ -81,11 +81,14 @@ export function NewTactoDialog({ open: externalOpen, onOpenChange, onSuccess }: 
 
   const loadCorrales = async () => {
     try {
+      if (!isOnline()) {
+        const { db } = await import('@/services/db');
+        const cached = await db.corrales_cache.toArray();
+        setCorrales(cached.map(c => ({ id: c.id, name: c.name })));
+        return;
+      }
       const { data: corralesData, error } = await supabase
-        .from('corrales')
-        .select('id, name')
-        .order('name');
-      
+        .from('corrales').select('id, name').order('name');
       if (error) throw error;
       setCorrales(corralesData || []);
     } catch (error) {
