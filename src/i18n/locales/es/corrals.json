@@ -777,6 +777,13 @@
     "bulkMove": "Movimiento Masivo",
     "bulkMoveDesc": "Mover animales usando filtros automáticos y selección específica",
     "manualMove": "Movimiento Manual",
-    "manualMoveDesc": "Seleccionar animales individualmente para mover"
+    "manualMoveDesc": "Seleccionar animales individualmente para mover",
+    "destinationRequired": "Debes seleccionar un corral destino",
+    "selectAnimalsLabel": "Seleccionar animales",
+    "animalsShown": "animales",
+    "selectAll": "Seleccionar todos",
+    "animalsMovedTo": "animales movidos a",
+    "moveAction": "Mover",
+    "animalsLabel": "animales"
   }
 }
