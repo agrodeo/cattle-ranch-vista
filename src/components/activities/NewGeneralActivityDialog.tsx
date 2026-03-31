@@ -75,6 +75,13 @@ export function NewGeneralActivityDialog({ open: externalOpen, onOpenChange, pre
     if (!newOpen) onClose?.();
   };
 
+  useEffect(() => {
+    if (open) {
+      loadAnimals();
+      if (preselectedType) setSelectedType(preselectedType);
+    }
+  }, [open, preselectedType]);
+
   const loadAnimals = async () => {
     setLoadingAnimals(true);
     try {
