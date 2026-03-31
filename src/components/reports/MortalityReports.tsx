@@ -284,9 +284,9 @@ export const MortalityReports = ({ filters: globalFilters }: MortalityReportsPro
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{t('reports:mortality.avgDeathAge')}</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium min-w-0 pr-2 leading-tight">{t('reports:mortality.avgDeathAge')}</CardTitle>
+            <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{Math.round(stats.averageDeathAge / 30.44)} {t('reports:mortality.months')}</div>
