@@ -164,7 +164,7 @@ export function SimpleActivitiesList() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="overflow-x-auto -mx-3 px-3 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: 'none' }}>
+      <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
         <div className="flex items-center gap-2 min-w-max pb-1">
           {filterConfig.map(({ type, labelKey, icon: Icon, color }) => {
             const isActive = activeFilter === type;
