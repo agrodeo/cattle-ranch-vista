@@ -53,7 +53,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i} className="border-0 shadow-sm">
               <CardContent className="p-5">
@@ -163,7 +163,7 @@ export function TemporalEvolutionAnalytics({ cabanaId, filters = {} }: TemporalE
       </ReportChartCard>
 
       {/* KPIs */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <ReportKpiCard
           label={t('reports:temporal.avgImprovement')}
           value=""

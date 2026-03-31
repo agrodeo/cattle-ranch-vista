@@ -29,7 +29,7 @@ export function CorralReproductiveKPIs({ filters }: CorralReproductiveKPIsProps)
           <CardTitle>Indicadores Reproductivos por Corrales</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-20" />
             ))}
@@ -68,7 +68,7 @@ export function CorralReproductiveKPIs({ filters }: CorralReproductiveKPIsProps)
       </CardHeader>
       <CardContent>
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <MetricCard
             title="Total Corrales"
             value={totalCorrals}

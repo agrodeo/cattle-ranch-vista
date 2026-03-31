@@ -298,7 +298,7 @@ export const FinancialAnalytics = ({ filters: globalFilters }: FinancialAnalytic
     <div className="grid gap-6">
       {isStale && <StaleDataBanner lastUpdated={lastUpdated} />}
       {/* Key Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <ReportKpiCard
           label={t('reports:financial.totalRevenue')}
           value={`$${stats.totalRevenue.toLocaleString()}`}
