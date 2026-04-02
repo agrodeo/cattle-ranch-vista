@@ -44,6 +44,7 @@ import settingsEn from './locales/en/settings.json';
 import subscriptionEn from './locales/en/subscription.json';
 import reproductiveEn from './locales/en/reproductive.json';
 import breedingEn from './locales/en/breeding.json';
+import legalEn from './locales/en/legal.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
