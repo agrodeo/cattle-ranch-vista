@@ -56,6 +56,8 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/terminos-de-uso" element={<TermsOfUsePage />} />
+            <Route path="/politica-de-privacidad" element={<PrivacyPolicyPage />} />
             {/* Single shared Layout for all protected routes */}
             <Route element={
               <ProtectedRoute>
