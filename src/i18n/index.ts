@@ -110,6 +110,7 @@ const resources = {
     subscription: subscriptionEs,
     reproductive: reproductiveEs,
     breeding: breedingEs,
+    legal: legalEs,
   },
   en: {
     common: commonEn,
