@@ -26,6 +26,7 @@ import settingsEs from './locales/es/settings.json';
 import subscriptionEs from './locales/es/subscription.json';
 import reproductiveEs from './locales/es/reproductive.json';
 import breedingEs from './locales/es/breeding.json';
+import legalEs from './locales/es/legal.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
