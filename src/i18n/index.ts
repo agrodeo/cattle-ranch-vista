@@ -62,6 +62,7 @@ import settingsPt from './locales/pt/settings.json';
 import subscriptionPt from './locales/pt/subscription.json';
 import reproductivePt from './locales/pt/reproductive.json';
 import breedingPt from './locales/pt/breeding.json';
+import legalPt from './locales/pt/legal.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
