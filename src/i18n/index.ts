@@ -129,6 +129,7 @@ const resources = {
     subscription: subscriptionEn,
     reproductive: reproductiveEn,
     breeding: breedingEn,
+    legal: legalEn,
   },
   pt: {
     common: commonPt,
