@@ -26,6 +26,8 @@ import { SettingsPage } from "./pages/Settings";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import RefundPolicy from "./pages/RefundPolicy";
+import TermsOfUsePage from "./pages/TermsOfUsePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
