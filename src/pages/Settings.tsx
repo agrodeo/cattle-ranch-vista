@@ -7,7 +7,8 @@ import { BenchmarkSettings } from "@/components/settings/BenchmarkSettings";
 import { VaccinationRequirementsManager } from "@/components/settings/VaccinationRequirementsManager";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Syringe, Globe } from "lucide-react";
+import { Target, Syringe, Globe, Scale } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const SettingsPage = () => {
   const { t } = useTranslation(['settings']);
