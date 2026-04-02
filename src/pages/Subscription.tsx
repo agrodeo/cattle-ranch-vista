@@ -8,6 +8,7 @@ import { CustomerCenter } from "@/components/subscription/CustomerCenter";
 import { CreditCard, Settings } from "lucide-react";
 import { isNativeApp } from "@/lib/platformDetection";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 export default function Subscription() {
   const { t } = useTranslation(['subscription', 'common']);
