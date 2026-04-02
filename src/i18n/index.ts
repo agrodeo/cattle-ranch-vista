@@ -148,6 +148,7 @@ const resources = {
     subscription: subscriptionPt,
     reproductive: reproductivePt,
     breeding: breedingPt,
+    legal: legalPt,
   },
 };
 
