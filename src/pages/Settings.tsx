@@ -7,7 +7,8 @@ import { BenchmarkSettings } from "@/components/settings/BenchmarkSettings";
 import { VaccinationRequirementsManager } from "@/components/settings/VaccinationRequirementsManager";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Syringe, Globe } from "lucide-react";
+import { Target, Syringe, Globe, Scale } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const SettingsPage = () => {
   const { t } = useTranslation(['settings']);
@@ -84,6 +85,30 @@ export const SettingsPage = () => {
             <VaccinationRequirementsManager />
           </TabsContent>
         </Tabs>
+
+        <Card className="border-0 shadow-sm sm:border sm:shadow-md mt-4 sm:mt-6">
+          <CardHeader className="pb-3 sm:pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <Scale className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base sm:text-lg">{t('settings:legal.title', 'Legal')}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-0.5">
+                  {t('settings:legal.description', 'Términos y políticas de la aplicación')}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <Link to="/terminos-de-uso" className="text-sm text-primary hover:underline">
+              {t('settings:legal.termsOfUse', 'Términos de Uso')}
+            </Link>
+            <Link to="/politica-de-privacidad" className="text-sm text-primary hover:underline">
+              {t('settings:legal.privacyPolicy', 'Política de Privacidad')}
+            </Link>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

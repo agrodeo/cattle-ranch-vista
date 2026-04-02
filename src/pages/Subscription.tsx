@@ -8,6 +8,7 @@ import { CustomerCenter } from "@/components/subscription/CustomerCenter";
 import { CreditCard, Settings } from "lucide-react";
 import { isNativeApp } from "@/lib/platformDetection";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 export default function Subscription() {
   const { t } = useTranslation(['subscription', 'common']);
@@ -54,6 +55,20 @@ export default function Subscription() {
         >
           <SubscriptionAlert onUpgrade={() => setShowPlansModal(true)} />
         </SectionCard>
+
+        <div className="text-center space-y-2 pt-2">
+          <p className="text-xs text-muted-foreground">
+            La suscripción se renueva automáticamente. Puedes cancelarla en cualquier momento desde la configuración de tu dispositivo.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link to="/terminos-de-uso" className="text-xs text-muted-foreground hover:text-foreground underline">
+              Términos de Uso
+            </Link>
+            <Link to="/politica-de-privacidad" className="text-xs text-muted-foreground hover:text-foreground underline">
+              Política de Privacidad
+            </Link>
+          </div>
+        </div>
 
         <SubscriptionPlansModal 
           open={showPlansModal} 

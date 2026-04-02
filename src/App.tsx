@@ -26,6 +26,8 @@ import { SettingsPage } from "./pages/Settings";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import RefundPolicy from "./pages/RefundPolicy";
+import TermsOfUsePage from "./pages/TermsOfUsePage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 import NotFound from "./pages/NotFound";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -54,6 +56,8 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/terminos-de-uso" element={<TermsOfUsePage />} />
+            <Route path="/politica-de-privacidad" element={<PrivacyPolicyPage />} />
             {/* Single shared Layout for all protected routes */}
             <Route element={
               <ProtectedRoute>
