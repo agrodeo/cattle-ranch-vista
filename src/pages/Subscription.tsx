@@ -16,6 +16,7 @@ export default function Subscription() {
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showCustomerCenter, setShowCustomerCenter] = useState(false);
   const isNative = isNativeApp();
+  const { managementUrl } = useManagementUrl();
 
   useEffect(() => {
     document.title = "Suscripción | agrodeo";
