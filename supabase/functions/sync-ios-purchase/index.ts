@@ -33,6 +33,7 @@ const CustomerInfoSchema = z.object({
       active: z.record(z.any()).optional(),
     }).optional(),
     originalAppUserId: z.string().max(500).optional(),
+    latestExpirationDate: z.string().max(100).optional().nullable(),
   }),
 });
 
@@ -159,11 +160,19 @@ serve(async (req) => {
     }
 
     // Upsert billing_subscriptions with the correct cabaña_id
-    const { data: existingSubscription } = await supabase
-      .from('billing_subscriptions')
-      .select('id')
-      .eq('cabana_id', cabanaId)
-      .single();
+    // Extract expiration date from RevenueCat customerInfo
+    const expirationDate = customerInfo.latestExpirationDate || null;
+    // Also try entitlements for expiration
+    let effectiveExpiration = expirationDate;
+    if (!effectiveExpiration && customerInfo.entitlements?.active) {
+      const activeEntitlements = Object.values(customerInfo.entitlements.active);
+      for (const ent of activeEntitlements) {
+        if (ent?.expirationDate) {
+          effectiveExpiration = ent.expirationDate;
+          break;
+        }
+      }
+    }
 
     const subscriptionData = {
       cabana_id: cabanaId,
@@ -171,31 +180,22 @@ serve(async (req) => {
       provider: 'ios',
       status: status,
       external_id: customerInfo.originalAppUserId,
+      current_period_end: effectiveExpiration,
+      current_period_start: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
-    if (!existingSubscription) {
-      const { error: subError } = await supabase
-        .from('billing_subscriptions')
-        .insert(subscriptionData);
+    const { error: subError } = await supabase
+      .from('billing_subscriptions')
+      .upsert(subscriptionData, {
+        onConflict: 'cabana_id,provider'
+      });
 
-      if (subError) {
-        console.error('Failed to create subscription:', subError);
-        throw subError;
-      }
-      console.log('Subscription created successfully for cabaña:', cabanaId);
-    } else {
-      const { error: updateError } = await supabase
-        .from('billing_subscriptions')
-        .update(subscriptionData)
-        .eq('cabana_id', cabanaId);
-
-      if (updateError) {
-        console.error('Failed to update subscription:', updateError);
-        throw updateError;
-      }
-      console.log('Subscription updated successfully for cabaña:', cabanaId);
+    if (subError) {
+      console.error('Failed to upsert subscription:', subError);
+      throw subError;
     }
+    console.log('Subscription upserted for cabaña:', cabanaId);
 
     // Also update the `subscriptions` table (used by get_subscription_status RPC)
     // so the plan, limits, and trial state stay in sync.
@@ -212,14 +212,19 @@ serve(async (req) => {
       }
 
       // 2. Deactivate the backend trial — Apple/Google handle their own trials
+      //    Also persist the subscription_end_date so the UI can display it.
+      const subscriptionUpdate: Record<string, unknown> = {
+        is_trial_active: false,
+        is_active: true,
+        subscription_start_date: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      if (effectiveExpiration) {
+        subscriptionUpdate.subscription_end_date = effectiveExpiration;
+      }
       const { error: trialError } = await supabase
         .from('subscriptions')
-        .update({
-          is_trial_active: false,
-          is_active: true,
-          subscription_start_date: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+        .update(subscriptionUpdate)
         .eq('cabaña_id', cabanaId);
       if (trialError) {
         console.error('Failed to deactivate trial:', trialError);

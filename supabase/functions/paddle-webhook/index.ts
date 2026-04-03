@@ -162,14 +162,19 @@ Deno.serve(async (req) => {
             console.error('Failed to update subscription plan from Paddle webhook:', planError);
           }
 
+          const subscriptionUpdate: Record<string, unknown> = {
+            is_trial_active: false,
+            is_active: true,
+            subscription_start_date: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          if (currentPeriodEnd) {
+            subscriptionUpdate.subscription_end_date = currentPeriodEnd;
+          }
+
           const { error: trialError } = await supabaseClient
             .from('subscriptions')
-            .update({
-              is_trial_active: false,
-              is_active: true,
-              subscription_start_date: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
+            .update(subscriptionUpdate)
             .eq('cabaña_id', cabanaId);
 
           if (trialError) {
