@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -293,9 +294,22 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
           })}
         </div>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>{t('plansModal.allPlansInclude')}</p>
-          <p>{t('plansModal.pricesDisclaimer')}</p>
+        <div className="mt-6 text-center space-y-2">
+          <div className="text-sm text-muted-foreground">
+            <p>{t('plansModal.allPlansInclude')}</p>
+            <p>{t('plansModal.pricesDisclaimer')}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            La suscripción se renueva automáticamente. Puedes cancelarla en cualquier momento desde la configuración de tu dispositivo.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Link to="/terminos-de-uso" className="text-xs text-muted-foreground hover:text-foreground underline">
+              Términos de Uso
+            </Link>
+            <Link to="/politica-de-privacidad" className="text-xs text-muted-foreground hover:text-foreground underline">
+              Política de Privacidad
+            </Link>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
