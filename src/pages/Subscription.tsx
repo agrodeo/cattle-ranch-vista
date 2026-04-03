@@ -30,13 +30,21 @@ export default function Subscription() {
           subtitle={t('subscription:subtitle', 'Gestiona tu plan y límites de uso')}
           action={
             <div className="flex gap-2">
-              {isNative && (
+              {isNative ? (
                 <Button 
                   onClick={() => setShowCustomerCenter(true)}
                   variant="outline"
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   {t('subscription:customerCenter', 'Centro de Suscripción')}
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => window.open('https://customer-portal.paddle.com', '_blank')}
+                  variant="outline"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  {t('subscription:manageSubscription', 'Administrar Suscripción')}
                 </Button>
               )}
               <Button 
