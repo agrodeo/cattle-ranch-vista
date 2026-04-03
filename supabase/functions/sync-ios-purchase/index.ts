@@ -33,6 +33,7 @@ const CustomerInfoSchema = z.object({
       active: z.record(z.any()).optional(),
     }).optional(),
     originalAppUserId: z.string().max(500).optional(),
+    latestExpirationDate: z.string().max(100).optional().nullable(),
   }),
 });
 
