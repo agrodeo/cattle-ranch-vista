@@ -1,0 +1,1 @@
+ALTER TABLE public.billing_subscriptions ADD COLUMN IF NOT EXISTS management_url text;
