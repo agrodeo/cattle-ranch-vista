@@ -9,7 +9,8 @@ import EmailChangeEmail from "../_shared/email-templates/email-change.tsx";
 import ReauthenticationEmail from "../_shared/email-templates/reauthentication.tsx";
 
 const SITE_NAME = "agrodeo";
-const SITE_URL = "https://agrodeo.farm";
+const SITE_URL = "https://app.agrodeo.farm";
+const LEGACY_APP_HOSTS = new Set(["agrodeo.farm", "www.agrodeo.farm"]);
 const FROM_EMAIL = `${SITE_NAME} <contact@agrodeo.farm>`;
 
 async function sendViaResend(to: string, subject: string, html: string) {
@@ -54,22 +55,26 @@ function isEphemeralPreviewOrigin(url: string): boolean {
   }
 }
 
+function resolveAuthAppOrigin(redirectTo?: string): string {
+  if (!redirectTo || isEphemeralPreviewOrigin(redirectTo)) {
+    return SITE_URL;
+  }
+
+  try {
+    const parsed = new URL(redirectTo);
+    return LEGACY_APP_HOSTS.has(parsed.hostname) ? SITE_URL : parsed.origin;
+  } catch {
+    return SITE_URL;
+  }
+}
+
 function buildConfirmationUrl(
   tokenHash: string | undefined,
   type: string,
   redirectTo?: string,
   token?: string
 ): string {
-  // Prefer redirect_to when it's a stable host; avoid ephemeral preview/sandbox hosts.
-  let baseUrl = SITE_URL;
-  if (redirectTo && !isEphemeralPreviewOrigin(redirectTo)) {
-    try {
-      const parsed = new URL(redirectTo);
-      baseUrl = parsed.origin;
-    } catch {
-      // keep SITE_URL fallback
-    }
-  }
+  const baseUrl = resolveAuthAppOrigin(redirectTo);
 
   const params = new URLSearchParams({ type });
   if (tokenHash) params.set("token_hash", tokenHash);
