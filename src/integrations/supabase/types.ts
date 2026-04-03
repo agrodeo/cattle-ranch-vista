@@ -681,6 +681,7 @@ export type Database = {
           current_period_start: string | null
           external_id: string | null
           id: string
+          management_url: string | null
           product_code: string
           provider: string
           status: string
@@ -695,6 +696,7 @@ export type Database = {
           current_period_start?: string | null
           external_id?: string | null
           id?: string
+          management_url?: string | null
           product_code: string
           provider: string
           status: string
@@ -709,6 +711,7 @@ export type Database = {
           current_period_start?: string | null
           external_id?: string | null
           id?: string
+          management_url?: string | null
           product_code?: string
           provider?: string
           status?: string

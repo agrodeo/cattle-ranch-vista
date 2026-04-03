@@ -58,9 +58,6 @@ export function CustomerCenter({ open, onOpenChange }: CustomerCenterProps) {
   const openManageSubscriptions = () => {
     if (isNativeApp()) {
       window.open('https://apps.apple.com/account/subscriptions', '_blank');
-    } else {
-      // Paddle customer portal — users manage billing here
-      window.open('https://customer-portal.paddle.com', '_blank');
     }
   };
   

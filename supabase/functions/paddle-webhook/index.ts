@@ -123,6 +123,7 @@ Deno.serve(async (req) => {
 
         const currentPeriodStart = data.current_billing_period?.starts_at || new Date().toISOString();
         const currentPeriodEnd = data.current_billing_period?.ends_at || null;
+        const managementUrl = data.management_urls?.update_payment_method || data.management_urls?.cancel || null;
 
         const { error: subscriptionError } = await supabaseClient
           .from('billing_subscriptions')
@@ -135,6 +136,7 @@ Deno.serve(async (req) => {
             current_period_start: currentPeriodStart,
             current_period_end: currentPeriodEnd,
             currency: data.currency_code || 'USD',
+            management_url: managementUrl,
           }, {
             onConflict: 'cabana_id,provider'
           });
