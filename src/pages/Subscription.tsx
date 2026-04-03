@@ -42,8 +42,9 @@ export default function Subscription() {
                 </Button>
               ) : (
                 <Button 
-                  onClick={() => window.open('https://customer-portal.paddle.com', '_blank')}
+                  onClick={() => managementUrl && window.open(managementUrl, '_blank')}
                   variant="outline"
+                  disabled={!managementUrl}
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   {t('subscription:manageSubscription', 'Administrar Suscripción')}

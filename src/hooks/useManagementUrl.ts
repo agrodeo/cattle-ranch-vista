@@ -10,16 +10,17 @@ export function useManagementUrl() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("cabaña_id")
+        .select("cabaña_id" as any)
         .eq("user_id", user.id)
         .maybeSingle();
 
-      if (!profile?.cabaña_id) return null;
+      const cabanaId = (profile as any)?.cabaña_id;
+      if (!cabanaId) return null;
 
       const { data: sub } = await supabase
         .from("billing_subscriptions")
-        .select("management_url")
-        .eq("cabana_id", profile.cabaña_id)
+        .select("management_url" as any)
+        .eq("cabana_id", cabanaId)
         .eq("provider", "paddle")
         .eq("status", "active")
         .maybeSingle();
