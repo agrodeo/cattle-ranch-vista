@@ -166,12 +166,28 @@ serve(async (req) => {
       .eq('cabana_id', cabanaId)
       .single();
 
+    // Extract expiration date from RevenueCat customerInfo
+    const expirationDate = customerInfo.latestExpirationDate || null;
+    // Also try entitlements for expiration
+    let effectiveExpiration = expirationDate;
+    if (!effectiveExpiration && customerInfo.entitlements?.active) {
+      const activeEntitlements = Object.values(customerInfo.entitlements.active);
+      for (const ent of activeEntitlements) {
+        if (ent?.expirationDate) {
+          effectiveExpiration = ent.expirationDate;
+          break;
+        }
+      }
+    }
+
     const subscriptionData = {
       cabana_id: cabanaId,
       product_code: productCode,
       provider: 'ios',
       status: status,
       external_id: customerInfo.originalAppUserId,
+      current_period_end: effectiveExpiration,
+      current_period_start: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
 
