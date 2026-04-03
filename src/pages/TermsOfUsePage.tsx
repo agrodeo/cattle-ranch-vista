@@ -85,7 +85,7 @@ export default function TermsOfUsePage() {
         <h3>{t('termsOfUse.section13Title')}</h3>
         <p>{t('termsOfUse.section13Content')}</p>
         <p>
-          📧 <a href="mailto:faustosicilia123@gmail.com">faustosicilia123@gmail.com</a>
+          📧 <a href="mailto:fausto@agrodeo.farm">fausto@agrodeo.farm</a>
         </p>
 
         <hr />

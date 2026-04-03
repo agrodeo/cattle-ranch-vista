@@ -98,7 +98,7 @@
     "section6Title": "6. User Rights",
     "section6Intro": "You have the right to:",
     "section6Items": ["<strong>Access</strong> all your data stored in the application", "<strong>Export</strong> your data in standard formats (Excel/CSV)", "<strong>Delete</strong> your account and all associated data", "<strong>Rectify</strong> incorrect information", "<strong>Request</strong> a copy of your personal data"],
-    "section6Outro": "To exercise these rights, contact us at <a href=\"mailto:faustosicilia123@gmail.com\">faustosicilia123@gmail.com</a>.",
+    "section6Outro": "To exercise these rights, contact us at <a href=\"mailto:fausto@agrodeo.farm\">fausto@agrodeo.farm</a>.",
     "section7Title": "7. Cookies and Local Storage",
     "section7Intro": "agrodeo uses browser and device local storage to:",
     "section7Items": ["Keep your session active", "Store language and configuration preferences", "Cache data for offline functionality (Dexie/IndexedDB)", "Save subscription status for offline access"],

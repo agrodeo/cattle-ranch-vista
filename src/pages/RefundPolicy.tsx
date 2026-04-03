@@ -54,7 +54,7 @@ export default function RefundPolicy() {
 
         <h2>Contact</h2>
         <p>
-          For refund requests or questions about this policy, email us at: <strong>soporte@agrodeo.com</strong>
+          For refund requests or questions about this policy, email us at: <strong>fausto@agrodeo.farm</strong>
         </p>
       </div>
     </div>
