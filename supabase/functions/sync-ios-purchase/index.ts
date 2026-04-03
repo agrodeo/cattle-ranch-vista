@@ -160,12 +160,6 @@ serve(async (req) => {
     }
 
     // Upsert billing_subscriptions with the correct cabaña_id
-    const { data: existingSubscription } = await supabase
-      .from('billing_subscriptions')
-      .select('id')
-      .eq('cabana_id', cabanaId)
-      .single();
-
     // Extract expiration date from RevenueCat customerInfo
     const expirationDate = customerInfo.latestExpirationDate || null;
     // Also try entitlements for expiration
@@ -191,28 +185,17 @@ serve(async (req) => {
       updated_at: new Date().toISOString()
     };
 
-    if (!existingSubscription) {
-      const { error: subError } = await supabase
-        .from('billing_subscriptions')
-        .insert(subscriptionData);
+    const { error: subError } = await supabase
+      .from('billing_subscriptions')
+      .upsert(subscriptionData, {
+        onConflict: 'cabana_id,provider'
+      });
 
-      if (subError) {
-        console.error('Failed to create subscription:', subError);
-        throw subError;
-      }
-      console.log('Subscription created successfully for cabaña:', cabanaId);
-    } else {
-      const { error: updateError } = await supabase
-        .from('billing_subscriptions')
-        .update(subscriptionData)
-        .eq('cabana_id', cabanaId);
-
-      if (updateError) {
-        console.error('Failed to update subscription:', updateError);
-        throw updateError;
-      }
-      console.log('Subscription updated successfully for cabaña:', cabanaId);
+    if (subError) {
+      console.error('Failed to upsert subscription:', subError);
+      throw subError;
     }
+    console.log('Subscription upserted for cabaña:', cabanaId);
 
     // Also update the `subscriptions` table (used by get_subscription_status RPC)
     // so the plan, limits, and trial state stay in sync.
