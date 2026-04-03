@@ -9,6 +9,7 @@ import { CreditCard, Settings } from "lucide-react";
 import { isNativeApp } from "@/lib/platformDetection";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { useManagementUrl } from "@/hooks/useManagementUrl";
 
 export default function Subscription() {
   const { t } = useTranslation(['subscription', 'common']);
