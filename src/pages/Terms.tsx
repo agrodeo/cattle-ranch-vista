@@ -91,7 +91,7 @@ export default function Terms() {
 
         <h2>8. Contacto</h2>
         <p>
-          Para preguntas sobre estos términos, contáctanos en: soporte@agrodeo.com
+          Para preguntas sobre estos términos, contáctanos en: fausto@agrodeo.farm
         </p>
 
         <h2>9. Términos de Compra en App Store</h2>

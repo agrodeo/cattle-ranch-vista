@@ -92,7 +92,7 @@ export default function PrivacyPolicyPage() {
         <h3>{t('privacyPolicy.section11Title')}</h3>
         <p>{t('privacyPolicy.section11Content')}</p>
         <p>
-          📧 <a href="mailto:faustosicilia123@gmail.com">faustosicilia123@gmail.com</a>
+          📧 <a href="mailto:fausto@agrodeo.farm">fausto@agrodeo.farm</a>
         </p>
 
         <hr />

@@ -98,7 +98,7 @@
     "section6Title": "6. Derechos del Usuario",
     "section6Intro": "Tienes derecho a:",
     "section6Items": ["<strong>Acceder</strong> a todos tus datos almacenados en la aplicación", "<strong>Exportar</strong> tus datos en formatos estándar (Excel/CSV)", "<strong>Eliminar</strong> tu cuenta y todos los datos asociados", "<strong>Rectificar</strong> información incorrecta", "<strong>Solicitar</strong> una copia de tus datos personales"],
-    "section6Outro": "Para ejercer estos derechos, contáctanos a <a href=\"mailto:faustosicilia123@gmail.com\">faustosicilia123@gmail.com</a>.",
+    "section6Outro": "Para ejercer estos derechos, contáctanos a <a href=\"mailto:fausto@agrodeo.farm\">fausto@agrodeo.farm</a>.",
     "section7Title": "7. Cookies y Almacenamiento Local",
     "section7Intro": "agrodeo utiliza almacenamiento local del navegador y del dispositivo para:",
     "section7Items": ["Mantener tu sesión activa", "Almacenar preferencias de idioma y configuración", "Cachear datos para funcionamiento offline (Dexie/IndexedDB)", "Guardar el estado de suscripción para acceso sin conexión"],

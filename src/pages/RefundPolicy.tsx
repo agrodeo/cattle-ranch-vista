@@ -34,7 +34,7 @@ export default function RefundPolicy() {
 
         <h2>How to Request a Refund</h2>
         <p>
-          To request a refund, contact us at <strong>soporte@agrodeo.com</strong> within 14 days of your purchase. Please include the email address associated with your account.
+          To request a refund, contact us at <strong>fausto@agrodeo.farm</strong> within 14 days of your purchase. Please include the email address associated with your account.
         </p>
 
         <h2>Refund Processing</h2>
@@ -54,7 +54,7 @@ export default function RefundPolicy() {
 
         <h2>Contact</h2>
         <p>
-          For refund requests or questions about this policy, email us at: <strong>soporte@agrodeo.com</strong>
+          For refund requests or questions about this policy, email us at: <strong>fausto@agrodeo.farm</strong>
         </p>
       </div>
     </div>
