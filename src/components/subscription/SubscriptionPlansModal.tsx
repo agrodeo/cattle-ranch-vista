@@ -139,8 +139,8 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
   const currentPlan = subscriptionStatus?.plan;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!isPurchasing) onOpenChange(v); }}>
-      <DialogContent className="w-[calc(100vw-2rem)] max-w-7xl max-h-[90vh] overflow-y-auto overflow-x-hidden" onInteractOutside={(e) => { if (isPurchasing) e.preventDefault(); }}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="w-[calc(100vw-2rem)] max-w-7xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl">{t('plansModal.title')}</DialogTitle>
           <DialogDescription>
