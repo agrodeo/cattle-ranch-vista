@@ -3,8 +3,10 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const AuthConfirm = () => {
+  const { t } = useTranslation(['auth']);
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +29,7 @@ const AuthConfirm = () => {
       const { tokenHash, token, type } = params;
 
       if (!type || (!tokenHash && !token)) {
-        setError("Enlace inválido o incompleto.");
+        setError(t('auth:messages.invalidLink'));
         return;
       }
 
@@ -57,26 +59,26 @@ const AuthConfirm = () => {
       } catch (err: any) {
         if (!cancelled) {
           console.error("AuthConfirm unexpected error:", err);
-          setError(err.message || "Error inesperado");
+          setError(err.message || t('auth:messages.invalidLink'));
         }
       }
     };
 
     verify();
     return () => { cancelled = true; };
-  }, [navigate, params]);
+  }, [navigate, params, t]);
 
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle>Enlace inválido o expirado</CardTitle>
-            <CardDescription>{error}</CardDescription>
+            <CardTitle>{t('auth:messages.invalidLink')}</CardTitle>
+            <CardDescription>{t('auth:messages.requestNew')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Link to="/forgot-password" className="text-primary hover:underline">
-              Volver a recuperar contraseña
+              {t('auth:forgotPassword.backToReset')}
             </Link>
           </CardContent>
         </Card>
