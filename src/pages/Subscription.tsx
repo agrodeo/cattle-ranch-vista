@@ -42,9 +42,14 @@ export default function Subscription() {
                 </Button>
               ) : (
                 <Button 
-                  onClick={() => managementUrl && window.open(managementUrl, '_blank')}
+                  onClick={() => {
+                    if (managementUrl) {
+                      window.open(managementUrl, '_blank');
+                    } else {
+                      window.location.href = `mailto:fausto@agrodeo.farm?subject=${encodeURIComponent('[Agrodeo] Solicitud de cancelación de suscripción')}&body=${encodeURIComponent('Hola, me gustaría cancelar mi suscripción de agrodeo.\n\nGracias.')}`;
+                    }
+                  }}
                   variant="outline"
-                  disabled={!managementUrl}
                 >
                   <Settings className="h-4 w-4 mr-2" />
                   {t('subscription:manageSubscription', 'Administrar Suscripción')}

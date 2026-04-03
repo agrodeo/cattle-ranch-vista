@@ -148,7 +148,7 @@ export function CustomerCenter({ open, onOpenChange }: CustomerCenterProps) {
           <Button 
             variant="outline" 
             className="w-full justify-start"
-            onClick={() => window.open('mailto:soporte@agrodeo.farm', '_blank')}
+            onClick={() => window.location.href = `mailto:fausto@agrodeo.farm?subject=${encodeURIComponent('[Agrodeo] Consulta sobre suscripción')}&body=${encodeURIComponent('Hola, necesito ayuda con mi suscripción.\n\nGracias.')}`}
           >
             <Mail className="h-4 w-4 mr-2" />
             Contactar Soporte
