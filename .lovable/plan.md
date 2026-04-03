@@ -1,59 +1,35 @@
 
 
-## Plan: Ensure Pregnancy Flow End-to-End Integrity
+## Fix: Paddle Customer Portal 404
 
-### Issues Found
+### Problem
+The "Administrar Suscripcion" button links to `https://customer-portal.paddle.com`, which is a generic placeholder that returns 404. Paddle requires opening the customer portal programmatically via their JS SDK's `Paddle.Checkout.open()` or the dedicated `Paddle.CustomerPortal.open()` method — not a bare URL.
 
-After auditing the full reproductive flow (Insemination → Tacto → Calving / Pregnancy Loss), I found these problems:
+### Solution
+Use the Paddle JS SDK (already initialized in `PaddleProvider`) to open the customer portal. The SDK method is `paddle.CustomerPortal.open()`, which requires a `customer_id` or an active `subscription_id`.
 
----
+### Changes
 
-### 1. Pregnancy Loss Dialog: Case-Sensitive Status Filter
-**File:** `NewPregnancyLossDialog.tsx` line 93
-- Queries `.eq('status', 'activo')` (lowercase only)
-- Animals may have `'Activo'` (capitalized), so pregnant animals won't appear
-- **Fix:** Use `.ilike('status', 'activo')` or `.or('status.eq.activo,status.eq.Activo')`
+**1. `src/pages/Subscription.tsx`**
+- Replace `window.open('https://customer-portal.paddle.com', '_blank')` with a call that uses the Paddle SDK to open the portal.
+- Import `usePaddle` hook and retrieve the paddle instance.
+- Look up the user's Paddle subscription ID (from `billing_subscriptions` table or the existing subscription hook) and call `paddle.Checkout.open` with the cancel/update URL, or use the Paddle-provided cancel/update links stored in the subscription record.
 
-### 2. Calving Fallback Missing Reproductive State Update
-**File:** `CalvingRegistrationManager.tsx` lines 229-236
-- When `registerCalvingEvent` RPC fails and fallback runs, it only clears `esta_preñada` on the `animals` table
-- It does NOT update `reproductive_states` or `reproductive_current_state` to `'post_parto'`
-- This leaves the animal in a stale reproductive state (`preñez_activa`)
-- **Fix:** Add an update to `reproductive_states` and `reproductive_current_state` in the fallback block
+**2. `src/components/subscription/CustomerCenter.tsx`**
+- Same fix: replace the hardcoded URL with the SDK-based portal open.
 
-### 3. Calving: Missing Query Invalidations
-**File:** `CalvingRegistrationManager.tsx` lines 263-264
-- After saving, only `animals` and `animals-for-calving` queries are invalidated
-- Missing invalidations for `reproductive-alerts`, `reproductive-kpis`, `activities`, and `corrales` queries that other parts of the app depend on
-- **Fix:** Add broader query invalidation
+**3. Alternative approach (simpler):**
+If the Paddle subscription record stores a `management_url` or `update_url` (which Paddle webhooks provide in `subscription.created` / `subscription.updated` events), we can:
+- Store those URLs in `billing_subscriptions` during webhook processing
+- Use them directly as the link target — no SDK call needed
 
-### 4. Calving: Non-Successful Results Don't Register Activity Event
-**File:** `CalvingRegistrationManager.tsx` lines 238-249
-- When result is `aborto`, `stillbirth`, or `neonatal`, no `eventos` record is created
-- Other activity types (tacto, insemination) always create an event via `createEvent()`
-- This means these losses won't appear in the activity timeline
-- **Fix:** Create an evento record for non-successful calvings too, using supabase insert to `eventos` with type `'parto_fallido'`
+I'll check the webhook and billing_subscriptions schema to determine which approach fits best.
 
-### 5. Pregnancy Loss Dialog: Missing `preñeces` Record Handling
-**File:** `NewPregnancyLossDialog.tsx` line 93
-- The dialog also queries `status = 'activo'` which might miss animals — same case-sensitivity bug
-- But it already handles the case where no `preñeces` record exists (creates one on the fly) — this part is correct
-
----
-
-### Implementation Steps
-
-1. **Fix `NewPregnancyLossDialog.tsx`**
-   - Change status filter to handle both `'activo'` and `'Activo'` cases
-
-2. **Fix `CalvingRegistrationManager.tsx` fallback**
-   - Update `reproductive_states` and `reproductive_current_state` tables to `'post_parto'` / `'sin_actividad'` in the catch block
-   - Add query invalidations for `reproductive-alerts`, `reproductive-kpis`, `activities`
-
-3. **Add evento creation for non-successful calving results**
-   - Insert into `eventos` table with appropriate type so all reproductive events appear in activity history
-
-### Files to Modify
-- `src/components/activities/NewPregnancyLossDialog.tsx` (case-sensitivity fix)
-- `src/components/activities/CalvingRegistrationManager.tsx` (fallback state update, query invalidations, evento creation)
+### Files affected
+| File | Change |
+|------|--------|
+| `src/pages/Subscription.tsx` | Replace hardcoded URL with SDK or stored management URL |
+| `src/components/subscription/CustomerCenter.tsx` | Same replacement |
+| `supabase/functions/paddle-webhook/index.ts` | Possibly store `management_urls` from Paddle events |
+| Migration (if needed) | Add `management_url` column to `billing_subscriptions` |
 
