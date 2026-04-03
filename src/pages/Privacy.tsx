@@ -129,8 +129,8 @@ export default function Privacy() {
           Para ejercer tus derechos, preguntas sobre privacidad o reportar problemas, contáctanos en:
         </p>
         <p>
-          <strong>Email:</strong> privacidad@agrodeo.com<br />
-          <strong>Soporte:</strong> soporte@agrodeo.com
+          <strong>Email:</strong> fausto@agrodeo.farm<br />
+          <strong>Soporte:</strong> fausto@agrodeo.farm
         </p>
 
         <h2>12. Cumplimiento Legal</h2>
