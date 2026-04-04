@@ -100,7 +100,7 @@ export function AppSidebar() {
         {/* Menu Items Section */}
         <SidebarGroup>
           <SidebarGroupContent className={cn("py-4", isCollapsed ? "px-0" : "px-3")}>
-            <SidebarMenu className={cn("space-y-1", isCollapsed && "items-center")}>
+            <SidebarMenu className={cn("space-y-1", isCollapsed && !isMobile && "items-center")}>
               {menuItems.map((item) => {
                 const isActive = location.pathname === item.url;
                 return (
