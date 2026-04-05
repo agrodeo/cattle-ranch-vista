@@ -78,7 +78,7 @@ export function CorralKPIsCard({ filters, onViewCorralAnimals }: CorralKPIsCardP
   };
 
   const formatAdg = (adg: number) => {
-    return `${adg.toFixed(3)}kg/d`;
+    return `${adg.toFixed(3)} kg/${t('corrals:production.perDayShort', 'day')}`;
   };
 
   if (loading) {
