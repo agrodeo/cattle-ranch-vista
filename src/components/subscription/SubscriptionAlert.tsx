@@ -118,7 +118,7 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
                 <CardDescription className="text-xs mt-0.5">
                   {subscriptionStatus.isSubscriptionActive
                     ? t('plan.active', { defaultValue: 'Suscripción activa' })
-                    : subscriptionStatus.isTrialActive
+                    : subscriptionStatus.isTrialActive && subscriptionStatus.plan !== 'free'
                     ? t('trial.active', { defaultValue: 'Prueba gratuita activa' })
                     : t('plan.free', { defaultValue: 'Plan gratuito' })}
                 </CardDescription>
