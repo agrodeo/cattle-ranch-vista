@@ -130,8 +130,8 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Trial days remaining */}
-          {subscriptionStatus.isTrialActive && (
+          {/* Trial days remaining — hide for free plan (free is forever, no trial) */}
+          {subscriptionStatus.isTrialActive && subscriptionStatus.plan !== 'free' && (
             <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm font-medium text-foreground">
