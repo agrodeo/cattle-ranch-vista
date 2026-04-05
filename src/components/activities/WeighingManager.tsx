@@ -80,7 +80,7 @@ export function WeighingManager() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {summaryLoading ? '...' : `${summary?.ganancia_diaria_promedio?.toFixed(3) || 0} kg/día`}
+              {summaryLoading ? '...' : `${summary?.ganancia_diaria_promedio?.toFixed(3) || 0} ${t('managers.weighing.perDay')}`}
             </div>
             <p className="text-xs text-muted-foreground">
               {t('managers.weighing.last90Days')}

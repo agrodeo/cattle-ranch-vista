@@ -1028,6 +1028,7 @@
       "currentHerd": "Do rebanho atual",
       "averageDailyGain": "Ganho Diário Médio",
       "last90Days": "Últimos 90 dias",
+      "perDay": "kg/dia",
       "animalsWeighed": "Animais Pesados",
       "totalWeighings": "Total de Pesagens",
       "systemTitle": "Sistema de Pesagens",
