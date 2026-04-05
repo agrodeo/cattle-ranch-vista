@@ -1026,6 +1026,7 @@
       "currentHerd": "Current herd",
       "averageDailyGain": "Average Daily Gain",
       "last90Days": "Last 90 days",
+      "perDay": "kg/day",
       "animalsWeighed": "Animals Weighed",
       "totalWeighings": "Total Weighings",
       "systemTitle": "Weighing System",

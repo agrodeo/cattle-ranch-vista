@@ -1052,6 +1052,7 @@
       "currentHerd": "Del rodeo actual",
       "averageDailyGain": "Ganancia Diaria Promedio",
       "last90Days": "Últimos 90 días",
+      "perDay": "kg/día",
       "animalsWeighed": "Animales Pesados",
       "totalWeighings": "Total Pesajes",
       "systemTitle": "Sistema de Pesajes",
