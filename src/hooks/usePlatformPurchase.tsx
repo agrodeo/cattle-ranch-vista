@@ -43,75 +43,77 @@
     useEffect(() => {
       if (!isDespiaRuntime()) return;
 
-      (window as any).onRevenueCatPurchase = async () => {
-        console.log('[Purchase:Despia] onRevenueCatPurchase callback fired');
+    (window as any).onRevenueCatPurchase = async () => {
+      console.log('[Purchase:Despia] onRevenueCatPurchase callback fired');
 
-        try {
+      try {
+        // Get purchase history from Despia bridge
+        const despiaClient = await getDespiaClient();
+        const data = await despiaClient("getpurchasehistory://", ["restoredData"]);
+        const purchases = (data as any)?.restoredData || [];
+        console.log('[Purchase:Despia] Purchase history for sync:', purchases);
+
+        // Extract active product IDs from purchase history
+        const activeSubscriptions = purchases
+          .filter((p: any) => p.isActive)
+          .map((p: any) => p.productIdentifier || p.productId || p.product_id)
+          .filter(Boolean);
+
+        console.log('[Purchase:Despia] Active subscriptions for sync:', activeSubscriptions);
+
+        // If no active subscriptions found, do NOT sync — inform the user
+        if (activeSubscriptions.length === 0) {
+          console.log('[Purchase:Despia] No active subscriptions detected, aborting sync');
           toast({
-            title: "¡Compra exitosa!",
-            description: "Tu suscripción ha sido activada.",
+            title: "Compra no completada",
+            description: "No se detectó una suscripción activa. Si ya pagaste, usa 'Restaurar compras'.",
+            variant: "destructive",
           });
-
-          // In Despia runtime, the Capacitor RevenueCat SDK is NOT available.
-          // We retrieve purchase history via the Despia bridge and use that
-          // to construct the payload for sync-ios-purchase.
-          try {
-            // Get purchase history from Despia bridge
-            const despiaClient = await getDespiaClient();
-            const data = await despiaClient("getpurchasehistory://", ["restoredData"]);
-            const purchases = (data as any)?.restoredData || [];
-            console.log('[Purchase:Despia] Purchase history for sync:', purchases);
-
-            // Extract active product IDs from purchase history
-            const activeSubscriptions = purchases
-              .filter((p: any) => p.isActive)
-              .map((p: any) => p.productIdentifier || p.productId || p.product_id)
-              .filter(Boolean);
-
-            // If no active subscriptions found from history, try using the
-            // last purchase data we stored before initiating the purchase
-            const pendingProduct = (window as any).__pendingDespiaProductId;
-            if (activeSubscriptions.length === 0 && pendingProduct) {
-              activeSubscriptions.push(pendingProduct);
-            }
-
-            console.log('[Purchase:Despia] Active subscriptions for sync:', activeSubscriptions);
-
-            const userId = session?.user?.id;
-            // Call sync-ios-purchase directly with constructed customerInfo
-            const { error } = await supabase.functions.invoke('sync-ios-purchase', {
-              body: {
-                customerInfo: {
-                  originalAppUserId: userId || 'anonymous',
-                  activeSubscriptions,
-                  entitlements: { active: {} }
-                }
-              }
-            });
-
-            if (error) {
-              console.error('[Purchase:Despia] sync-ios-purchase error:', error);
-            } else {
-              console.log('[Purchase:Despia] Backend sync completed');
-            }
-
-            // Signal useSubscription to refresh from Supabase (with retries)
-            triggerSubscriptionRefresh();
-          } catch (syncError) {
-            console.error('[Purchase:Despia] Backend sync failed (non-blocking):', syncError);
-            // Still dispatch the event so UI tries to refresh
-            triggerSubscriptionRefresh();
-          }
-
-          // Try refreshing entitlements (may fail in Despia, that's ok)
-          try { await refreshCustomerInfo(); } catch {}
-        } catch (callbackError) {
-          console.error('[Purchase:Despia] onRevenueCatPurchase failed:', callbackError);
+          return;
         }
 
+        const userId = session?.user?.id;
+        // Call sync-ios-purchase directly with constructed customerInfo
+        const { error } = await supabase.functions.invoke('sync-ios-purchase', {
+          body: {
+            customerInfo: {
+              originalAppUserId: userId || 'anonymous',
+              activeSubscriptions,
+              entitlements: { active: {} }
+            }
+          }
+        });
+
+        if (error) {
+          console.error('[Purchase:Despia] sync-ios-purchase error:', error);
+          toast({
+            title: "Error al sincronizar",
+            description: "La compra se procesó pero hubo un error al activarla. Intenta 'Restaurar compras'.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log('[Purchase:Despia] Backend sync completed');
+
+        // Only show success after verified active subscription AND successful sync
+        toast({
+          title: "¡Compra exitosa!",
+          description: "Tu suscripción ha sido activada.",
+        });
+
+        // Signal useSubscription to refresh from Supabase (with retries)
+        triggerSubscriptionRefresh();
+
+        // Try refreshing entitlements (may fail in Despia, that's ok)
+        try { await refreshCustomerInfo(); } catch {}
+      } catch (callbackError) {
+        console.error('[Purchase:Despia] onRevenueCatPurchase failed:', callbackError);
+      } finally {
         // Clean up pending product
         delete (window as any).__pendingDespiaProductId;
-      };
+      }
+    };
 
       return () => {
         delete (window as any).onRevenueCatPurchase;
