@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AnimalFieldMapping, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
 import { convertToISODate, isValidBirthDate, detectPartialDate } from '@/lib/dateUtils';
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
+import { useSubscription } from "@/hooks/useSubscription";
 
 // Registration levels by breed
 const REGISTRATION_OPTIONS = {
@@ -96,6 +97,7 @@ export const PreviewAndEditStep = ({
 }: PreviewAndEditStepProps) => {
   const [editingAnimal, setEditingAnimal] = useState<AnimalFieldMapping | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const { subscriptionStatus, planNames } = useSubscription();
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const validAnimals = animals.filter(a => a._isValid);
@@ -230,6 +232,21 @@ export const PreviewAndEditStep = ({
 
     setIsUploading(true);
     setUploadProgress(0);
+
+    // Check subscription animal limit before bulk upload
+    if (subscriptionStatus) {
+      const activeAnimalsToAdd = validAnimals.filter(a => normalizeAnimalStatus(a.estado) === 'Activo').length;
+      const wouldHave = subscriptionStatus.currentAnimalsCount + activeAnimalsToAdd;
+      if (wouldHave > subscriptionStatus.maxAnimals) {
+        toast({
+          title: "Límite de animales superado",
+          description: `Esta importación agregaría ${activeAnimalsToAdd} animales activos, superando el límite de ${subscriptionStatus.maxAnimals} del plan ${planNames[subscriptionStatus.plan]}. Tienes ${subscriptionStatus.currentAnimalsCount} actualmente. Actualiza tu plan para continuar.`,
+          variant: "destructive",
+        });
+        setIsUploading(false);
+        return;
+      }
+    }
 
     try {
       // Check for existing IDs in the database

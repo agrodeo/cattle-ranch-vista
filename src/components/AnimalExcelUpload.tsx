@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface AnimalRow {
   identificacion: string;
@@ -51,6 +52,7 @@ const AnimalExcelUpload = ({ userCabañaId, onUploadComplete }: AnimalExcelUploa
   const [failureCount, setFailureCount] = useState(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { subscriptionStatus, planNames } = useSubscription();
 
   // Column mapping (case-insensitive)
   const normalizeColumnName = (name: string): string => {
@@ -334,6 +336,21 @@ const AnimalExcelUpload = ({ userCabañaId, onUploadComplete }: AnimalExcelUploa
     setUploadProgress(0);
     setSuccessCount(0);
     setFailureCount(0);
+
+    // Check subscription animal limit before bulk upload
+    if (subscriptionStatus) {
+      const activeAnimalsToAdd = validAnimals.filter(a => (a.estado || 'Activo') === 'Activo' || a.estado === 'activo').length;
+      const wouldHave = subscriptionStatus.currentAnimalsCount + activeAnimalsToAdd;
+      if (wouldHave > subscriptionStatus.maxAnimals) {
+        toast({
+          title: "Límite de animales superado",
+          description: `Esta importación agregaría ${activeAnimalsToAdd} animales activos, superando el límite de ${subscriptionStatus.maxAnimals} del plan ${planNames[subscriptionStatus.plan]}. Tienes ${subscriptionStatus.currentAnimalsCount} actualmente. Actualiza tu plan para continuar.`,
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+    }
 
     try {
       // Check for existing IDs in the database

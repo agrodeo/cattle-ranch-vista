@@ -18,6 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { Animal } from "@/types/animal";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";
+import { useSubscription } from "@/hooks/useSubscription";
 
 // Argentine cattle breeds
 const ARGENTINE_BREEDS = [
@@ -64,6 +65,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
   const { t } = useTranslation(['animals', 'common', 'forms']);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [formData, setFormData] = useState(INITIAL_FORM);
+  const { checkAnimalLimit } = useSubscription();
 
   const resetForm = () => {
     setFormData(INITIAL_FORM);
@@ -96,6 +98,10 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
     e.preventDefault();
     if (!editingAnimal && !userCabaña) {
       toast({ title: t('animals:errors.configRequired'), description: t('animals:errors.noCabana'), variant: "destructive" });
+      return;
+    }
+    // Block new animal creation if plan limit reached (skip for edits)
+    if (!editingAnimal && !checkAnimalLimit()) {
       return;
     }
     if (formData.birth_date && new Date(formData.birth_date) > new Date()) {

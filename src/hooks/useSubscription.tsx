@@ -158,8 +158,8 @@ export const useSubscription = () => {
     if (!subscriptionStatus) return false;
     if (!subscriptionStatus.canAddAnimals) {
       toast({
-        title: "Límite alcanzado",
-        description: `Has alcanzado el límite de ${subscriptionStatus.maxAnimals} animales para el plan ${PLAN_NAMES[subscriptionStatus.plan]}. Actualiza tu plan para agregar más animales.`,
+        title: "Límite de animales alcanzado",
+        description: `Has alcanzado el límite de ${subscriptionStatus.maxAnimals} animales para el plan ${PLAN_NAMES[subscriptionStatus.plan]}. Tienes ${subscriptionStatus.currentAnimalsCount} animales activos. Actualiza tu plan para agregar más.`,
         variant: "destructive"
       });
       return false;
