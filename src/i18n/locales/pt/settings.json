@@ -120,5 +120,25 @@
     "title": "Faturamento e Assinatura",
     "subtitle": "Gerencie seu plano e faturamento",
     "comingSoon": "Esta seção estará disponível em breve."
+  },
+  "deleteAccount": {
+    "sectionTitle": "Excluir Conta",
+    "sectionDescription": "Exclua permanentemente sua conta e todos os dados associados.",
+    "button": "Excluir Conta",
+    "title": "Excluir Conta",
+    "warning": "Esta ação é PERMANENTE e não pode ser desfeita.",
+    "description": "Todos os seus dados serão excluídos permanentemente, incluindo:",
+    "dataFarm": "Sua fazenda e todas as configurações",
+    "dataAnimals": "Todos os animais e seus registros",
+    "dataActivities": "Atividades, pesagens e dados reprodutivos",
+    "dataFinance": "Registros financeiros",
+    "dataSub": "Sua assinatura",
+    "confirmInstruction": "Digite \"{{word}}\" para confirmar:",
+    "confirmWord": "EXCLUIR",
+    "cancel": "Cancelar",
+    "confirmButton": "Excluir conta permanentemente",
+    "success": "Conta excluída com sucesso",
+    "errorNotAuth": "Você precisa estar logado",
+    "errorGeneral": "Erro ao excluir a conta. Tente novamente."
   }
 }

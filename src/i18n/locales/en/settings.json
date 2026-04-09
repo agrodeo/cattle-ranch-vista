@@ -120,5 +120,25 @@
     "title": "Billing and Subscription",
     "subtitle": "Manage your plan and billing",
     "comingSoon": "This section will be available soon."
+  },
+  "deleteAccount": {
+    "sectionTitle": "Delete Account",
+    "sectionDescription": "Permanently delete your account and all associated data.",
+    "button": "Delete Account",
+    "title": "Delete Account",
+    "warning": "This action is PERMANENT and cannot be undone.",
+    "description": "All your data will be permanently deleted, including:",
+    "dataFarm": "Your farm and all its settings",
+    "dataAnimals": "All animals and their records",
+    "dataActivities": "Activities, weighings, and reproductive data",
+    "dataFinance": "Financial records",
+    "dataSub": "Your subscription",
+    "confirmInstruction": "Type \"{{word}}\" to confirm:",
+    "confirmWord": "DELETE",
+    "cancel": "Cancel",
+    "confirmButton": "Delete account permanently",
+    "success": "Account deleted successfully",
+    "errorNotAuth": "You must be logged in",
+    "errorGeneral": "Failed to delete account. Please try again."
   }
 }

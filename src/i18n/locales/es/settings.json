@@ -126,5 +126,25 @@
     "title": "Facturación y Suscripción",
     "subtitle": "Gestiona tu plan y facturación",
     "comingSoon": "Esta sección estará disponible próximamente."
+  },
+  "deleteAccount": {
+    "sectionTitle": "Eliminar Cuenta",
+    "sectionDescription": "Elimina permanentemente tu cuenta y todos los datos asociados.",
+    "button": "Eliminar Cuenta",
+    "title": "Eliminar Cuenta",
+    "warning": "Esta acción es PERMANENTE y no se puede deshacer.",
+    "description": "Todos tus datos serán eliminados permanentemente, incluyendo:",
+    "dataFarm": "Tu cabaña y todas sus configuraciones",
+    "dataAnimals": "Todos los animales y sus registros",
+    "dataActivities": "Actividades, pesajes y datos reproductivos",
+    "dataFinance": "Registros financieros",
+    "dataSub": "Tu suscripción",
+    "confirmInstruction": "Escribí \"{{word}}\" para confirmar:",
+    "confirmWord": "ELIMINAR",
+    "cancel": "Cancelar",
+    "confirmButton": "Eliminar cuenta permanentemente",
+    "success": "Cuenta eliminada exitosamente",
+    "errorNotAuth": "Debés estar logueado",
+    "errorGeneral": "Error al eliminar la cuenta. Intentá de nuevo."
   }
 }
