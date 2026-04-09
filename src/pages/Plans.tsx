@@ -83,7 +83,12 @@ export default function Plans() {
   const [loading, setLoading] = useState(false);
   
   const { initiatePurchase, restorePurchases } = usePlatformPurchase();
+  const { subscriptionStatus } = useSubscription();
   const isNative = isNativeApp() || isDespiaRuntime();
+  
+  const PLAN_MAX_ANIMALS: Record<string, number> = {
+    free: 50, personal: 125, avanzado: 250, productor: 500, cabana: 1000, corporativo: Infinity,
+  };
   
   const PLANS_DATA = getPlanData(t);
   const displayPlans = PLANS_DATA;
