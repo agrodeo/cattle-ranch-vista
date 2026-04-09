@@ -11,6 +11,7 @@ import { FAQAccordion } from '@/components/subscription/FAQAccordion';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp, isDespiaRuntime } from '@/lib/platformDetection';
 import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export type BillingCycle = 'monthly' | 'annual';
 export type Platform = 'web' | 'ios' | 'android';
@@ -82,7 +83,12 @@ export default function Plans() {
   const [loading, setLoading] = useState(false);
   
   const { initiatePurchase, restorePurchases } = usePlatformPurchase();
+  const { subscriptionStatus } = useSubscription();
   const isNative = isNativeApp() || isDespiaRuntime();
+  
+  const PLAN_MAX_ANIMALS: Record<string, number> = {
+    free: 50, personal: 125, avanzado: 250, productor: 500, cabana: 1000, corporativo: Infinity,
+  };
   
   const PLANS_DATA = getPlanData(t);
   const displayPlans = PLANS_DATA;
@@ -108,6 +114,19 @@ export default function Plans() {
     if (selectedPlan.id === 'free') {
       navigate('/dashboard');
       return;
+    }
+
+    // Block downgrade if current animals exceed the target plan's limit
+    if (subscriptionStatus) {
+      const targetMax = PLAN_MAX_ANIMALS[selectedPlan.id] ?? Infinity;
+      if (subscriptionStatus.currentAnimalsCount > targetMax) {
+        toast({
+          title: "No puedes cambiar a este plan",
+          description: `Tenés ${subscriptionStatus.currentAnimalsCount} animales activos y el plan ${selectedPlan.nombre} solo permite ${targetMax}. Reducí la cantidad de animales o elegí un plan superior.`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setLoading(true);
