@@ -116,6 +116,19 @@ export default function Plans() {
       return;
     }
 
+    // Block downgrade if current animals exceed the target plan's limit
+    if (subscriptionStatus) {
+      const targetMax = PLAN_MAX_ANIMALS[selectedPlan.id] ?? Infinity;
+      if (subscriptionStatus.currentAnimalsCount > targetMax) {
+        toast({
+          title: "No puedes cambiar a este plan",
+          description: `Tenés ${subscriptionStatus.currentAnimalsCount} animales activos y el plan ${selectedPlan.nombre} solo permite ${targetMax}. Reducí la cantidad de animales o elegí un plan superior.`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     console.log('Event: purchase_started', { plan: selectedPlan.id, billingCycle });
 
