@@ -11,6 +11,7 @@ import { FAQAccordion } from '@/components/subscription/FAQAccordion';
 import { useToast } from '@/hooks/use-toast';
 import { isNativeApp, isDespiaRuntime } from '@/lib/platformDetection';
 import { usePlatformPurchase } from '@/hooks/usePlatformPurchase';
+import { useSubscription } from '@/hooks/useSubscription';
 
 export type BillingCycle = 'monthly' | 'annual';
 export type Platform = 'web' | 'ios' | 'android';

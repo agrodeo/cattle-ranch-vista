@@ -102,10 +102,25 @@ export const SubscriptionPlansModal = ({ open, onOpenChange }: SubscriptionPlans
   
   const plans = getPlansData(t);
 
+  const PLAN_MAX_ANIMALS: Record<string, number> = {
+    free: 50, personal: 125, avanzado: 250, productor: 500, cabana: 1000, corporativo: Infinity,
+  };
+
   const handleSelectPlan = async (planId: string) => {
     if (planId === 'corporativo') {
       window.open('mailto:ventas@agrodeo.com?subject=Plan Corporativo', '_blank');
       return;
+    }
+
+    // Block downgrade if current animals exceed the target plan's limit
+    if (subscriptionStatus) {
+      const targetMax = PLAN_MAX_ANIMALS[planId] ?? Infinity;
+      if (subscriptionStatus.currentAnimalsCount > targetMax) {
+        toast.error(
+          `No puedes cambiar al plan ${planId.charAt(0).toUpperCase() + planId.slice(1)} porque tenés ${subscriptionStatus.currentAnimalsCount} animales activos y ese plan solo permite ${targetMax}. Reducí la cantidad de animales o elegí un plan superior.`
+        );
+        return;
+      }
     }
 
     setIsPurchasing(true);
