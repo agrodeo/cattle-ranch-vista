@@ -233,13 +233,31 @@
       
       // Store normalized product ID so callback can always sync consistently
       (window as any).__pendingDespiaProductId = despiaProductId;
+
+      // CRITICAL: Snapshot current active subscriptions BEFORE opening payment sheet.
+      // This allows onRevenueCatPurchase to detect genuinely NEW purchases and avoid
+      // false positives from pre-existing subscriptions.
+      try {
+        const despiaClient = await getDespiaClient();
+        const historyData = await despiaClient("getpurchasehistory://", ["restoredData"]);
+        const currentPurchases = (historyData as any)?.restoredData || [];
+        const currentActiveSubs = currentPurchases
+          .filter((p: any) => p.isActive)
+          .map((p: any) => p.productIdentifier || p.productId || p.product_id)
+          .filter(Boolean);
+        (window as any).__prePurchaseActiveSubscriptions = currentActiveSubs;
+        console.log('[Purchase:Despia] Pre-purchase active subs snapshot:', currentActiveSubs);
+      } catch (snapshotErr) {
+        console.warn('[Purchase:Despia] Could not snapshot pre-purchase subs:', snapshotErr);
+        (window as any).__prePurchaseActiveSubscriptions = [];
+      }
       
       // IMPORTANT: Despia bridge expects raw `product` (no URI encoding, no base-plan suffix)
       const purchaseUrl = `revenuecat://purchase?external_id=${encodeURIComponent(userId)}&product=${encodeURIComponent(productId)}`;
       console.log('[Purchase:Despia] Purchase URL prepared', { despiaProductId, purchaseUrl });
 
-      const despiaClient = await getDespiaClient();
-      await despiaClient(purchaseUrl);
+      const despiaClientForPurchase = await getDespiaClient();
+      await despiaClientForPurchase(purchaseUrl);
       
       // Purchase completion comes via onRevenueCatPurchase callback
       return { success: false, pending: true };
