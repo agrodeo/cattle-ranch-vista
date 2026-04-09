@@ -47,6 +47,10 @@
       console.log('[Purchase:Despia] onRevenueCatPurchase callback fired');
 
       try {
+        // Get the snapshot of subs that existed BEFORE this purchase was initiated
+        const prePurchaseSubs: string[] = (window as any).__prePurchaseActiveSubscriptions || [];
+        console.log('[Purchase:Despia] Pre-purchase active subs snapshot:', prePurchaseSubs);
+
         // Get purchase history from Despia bridge
         const despiaClient = await getDespiaClient();
         const data = await despiaClient("getpurchasehistory://", ["restoredData"]);
@@ -61,7 +65,13 @@
 
         console.log('[Purchase:Despia] Active subscriptions for sync:', activeSubscriptions);
 
-        // If no active subscriptions found, do NOT sync — inform the user
+        // Determine if there are genuinely NEW subscriptions compared to pre-purchase snapshot
+        const newSubscriptions = activeSubscriptions.filter(
+          (sub: string) => !prePurchaseSubs.includes(sub)
+        );
+        console.log('[Purchase:Despia] NEW subscriptions (not in pre-purchase snapshot):', newSubscriptions);
+
+        // If no active subscriptions at all, inform the user
         if (activeSubscriptions.length === 0) {
           console.log('[Purchase:Despia] No active subscriptions detected, aborting sync');
           toast({
@@ -69,6 +79,14 @@
             description: "No se detectó una suscripción activa. Si ya pagaste, usa 'Restaurar compras'.",
             variant: "destructive",
           });
+          return;
+        }
+
+        // If active subs exist but are ALL the same as before the purchase,
+        // the user likely cancelled or the payment sheet was dismissed without paying.
+        if (newSubscriptions.length === 0 && prePurchaseSubs.length > 0) {
+          console.log('[Purchase:Despia] No NEW subscriptions detected — purchase was likely cancelled');
+          // Don't show any toast — the user simply dismissed the payment sheet
           return;
         }
 
@@ -96,7 +114,7 @@
 
         console.log('[Purchase:Despia] Backend sync completed');
 
-        // Only show success after verified active subscription AND successful sync
+        // Only show success after verified NEW subscription AND successful sync
         toast({
           title: "¡Compra exitosa!",
           description: "Tu suscripción ha sido activada.",
@@ -110,8 +128,9 @@
       } catch (callbackError) {
         console.error('[Purchase:Despia] onRevenueCatPurchase failed:', callbackError);
       } finally {
-        // Clean up pending product
+        // Clean up pending state
         delete (window as any).__pendingDespiaProductId;
+        delete (window as any).__prePurchaseActiveSubscriptions;
       }
     };
 
