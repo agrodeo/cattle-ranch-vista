@@ -7,7 +7,8 @@ import { BenchmarkSettings } from "@/components/settings/BenchmarkSettings";
 import { VaccinationRequirementsManager } from "@/components/settings/VaccinationRequirementsManager";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Syringe, Globe, Scale } from "lucide-react";
+import { Target, Syringe, Globe, Scale, Trash2 } from "lucide-react";
+import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { Link } from "react-router-dom";
 
 export const SettingsPage = () => {
@@ -107,6 +108,25 @@ export const SettingsPage = () => {
             <Link to="/politica-de-privacidad" className="text-sm text-primary hover:underline">
               {t('settings:legal.privacyPolicy', 'Política de Privacidad')}
             </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="border-0 shadow-sm sm:border sm:shadow-md mt-4 sm:mt-6 border-destructive/30">
+          <CardHeader className="pb-3 sm:pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                <Trash2 className="h-5 w-5 text-destructive" />
+              </div>
+              <div>
+                <CardTitle className="text-base sm:text-lg text-destructive">{t('settings:deleteAccount.sectionTitle', 'Delete Account')}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm mt-0.5">
+                  {t('settings:deleteAccount.sectionDescription', 'Permanently delete your account and all associated data.')}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DeleteAccountDialog />
           </CardContent>
         </Card>
       </div>
