@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface AnimalRow {
   identificacion: string;
