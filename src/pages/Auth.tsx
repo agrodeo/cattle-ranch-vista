@@ -336,7 +336,7 @@ const Auth = () => {
                     name="country_code"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('auth:register.country', 'País')} *</FormLabel>
+                        <FormLabel>{t('auth:register.country', 'País')}</FormLabel>
                         <Select
                           key="country"
                           disabled={!isReady}
