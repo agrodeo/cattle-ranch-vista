@@ -9,6 +9,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Target, Syringe, Globe, Scale, Trash2 } from "lucide-react";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
+import { BreedMixingToggle } from "@/components/settings/BreedMixingToggle";
 import { Link } from "react-router-dom";
 
 export const SettingsPage = () => {
@@ -76,6 +77,9 @@ export const SettingsPage = () => {
                 <LanguageSwitcher variant="full" />
               </CardContent>
             </Card>
+            <div className="mt-4">
+              <BreedMixingToggle />
+            </div>
           </TabsContent>
 
           <TabsContent value="benchmarks" className="mt-4 sm:mt-6">
