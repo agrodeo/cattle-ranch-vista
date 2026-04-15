@@ -2930,6 +2930,14 @@ serve(async (req) => {
             return score > best ? score : best;
           }, 0);
           
+          // Skip if breed mixing prevented and breeds don't match
+          if (preventBreedMixing && female.breed) {
+            const existingBreeds = (workingDistribution[corral.id] || [])
+              .filter(a => a.breed)
+              .map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(female.breed)) continue;
+          }
+          
           if (bestBullInCorral > bestBullScore && corral.availableCapacity > 0) {
             bestCorral = corral;
             bestBullScore = bestBullInCorral;
