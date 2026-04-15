@@ -127,6 +127,15 @@
     "subtitle": "Gestiona tu plan y facturación",
     "comingSoon": "Esta sección estará disponible próximamente."
   },
+  "breedMixing": {
+    "title": "Protección de Razas",
+    "description": "Evita que el optimizador de corrales mezcle animales de distintas razas",
+    "label": "No cruzar animales de distintas razas en corrales",
+    "hint": "Cuando está activado, el optimizador nunca sugerirá mover animales a corrales con otra raza y se generarán alertas si detecta mezcla existente.",
+    "enabled": "Protección de mezcla de razas activada",
+    "disabled": "Protección de mezcla de razas desactivada",
+    "errorSaving": "Error al guardar la configuración"
+  },
   "deleteAccount": {
     "sectionTitle": "Eliminar Cuenta",
     "sectionDescription": "Elimina permanentemente tu cuenta y todos los datos asociados.",

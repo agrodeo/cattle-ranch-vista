@@ -121,6 +121,15 @@
     "subtitle": "Manage your plan and billing",
     "comingSoon": "This section will be available soon."
   },
+  "breedMixing": {
+    "title": "Breed Protection",
+    "description": "Prevents the corral optimizer from mixing animals of different breeds",
+    "label": "Do not mix different breeds in corrals",
+    "hint": "When enabled, the optimizer will never suggest moving animals to corrals with a different breed, and alerts will be generated if existing breed mixing is detected.",
+    "enabled": "Breed mixing protection enabled",
+    "disabled": "Breed mixing protection disabled",
+    "errorSaving": "Error saving configuration"
+  },
   "deleteAccount": {
     "sectionTitle": "Delete Account",
     "sectionDescription": "Permanently delete your account and all associated data.",

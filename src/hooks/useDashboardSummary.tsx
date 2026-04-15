@@ -649,7 +649,72 @@ export const useDashboardSummary = (): DashboardSummary => {
         }
       }
 
-      // Fetch vaccination alerts (due soon and overdue)
+      // =========================================================================
+      // BREED MIXING ALERTS - Detect different breeds in same corral
+      // =========================================================================
+      {
+        // Check herd settings for breed mixing preference
+        const { data: herdSettings } = await supabase
+          .from('herd_settings')
+          .select('prevent_breed_mixing')
+          .eq('cabaña_id', cabanaId)
+          .maybeSingle();
+        
+        const preventBreedMixing = (herdSettings as any)?.prevent_breed_mixing ?? true;
+        
+        if (preventBreedMixing) {
+          // Fetch active animals with breed and corral info
+          const { data: breedData } = await supabase
+            .from('animals')
+            .select('id, breed, corral_id, sex, name, id_tag, corrales!inner(name)')
+            .eq('cabaña_id', cabanaId)
+            .eq('status', 'activo')
+            .not('breed', 'is', null)
+            .not('corral_id', 'is', null);
+
+          if (breedData && breedData.length > 0) {
+            // Group by corral and check for mixed breeds
+            const corralBreeds = new Map<string, { corralName: string; breeds: Set<string>; animals: any[] }>();
+            
+            breedData.forEach((animal: any) => {
+              const corralId = animal.corral_id;
+              if (!corralBreeds.has(corralId)) {
+                corralBreeds.set(corralId, {
+                  corralName: animal.corrales?.name || corralId,
+                  breeds: new Set(),
+                  animals: [],
+                });
+              }
+              const group = corralBreeds.get(corralId)!;
+              group.breeds.add(animal.breed);
+              group.animals.push(animal);
+            });
+
+            const mixedCorrals: string[] = [];
+            corralBreeds.forEach((group, corralId) => {
+              if (group.breeds.size > 1) {
+                mixedCorrals.push(group.corralName);
+              }
+            });
+
+            if (mixedCorrals.length > 0) {
+              warnings.push({
+                id: 'breed_mixing',
+                type: 'breed_mixing' as any,
+                title: t('dashboard:warnings.breedMixingRisk', 'Mezcla de razas detectada'),
+                description: t('dashboard:warnings.corralsWithBreedMixing', {
+                  count: mixedCorrals.length,
+                  corrals: mixedCorrals.slice(0, 3).join(', '),
+                  defaultValue: `${mixedCorrals.length} corral(es) con mezcla de razas: ${mixedCorrals.slice(0, 3).join(', ')}`,
+                }),
+                severity: 'medium' as any,
+                affected_count: mixedCorrals.length,
+              });
+            }
+          }
+        }
+      }
+
       const sevenDaysFromToday = new Date(today);
       sevenDaysFromToday.setDate(today.getDate() + 7);
 

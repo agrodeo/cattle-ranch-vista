@@ -87,6 +87,7 @@ interface Animal {
   peso_destete: number | null;
   peso_nacimiento: number | null;
   peso_final: number | null;
+  breed: string | null;
 }
 
 interface Corral {
@@ -1388,10 +1389,20 @@ serve(async (req) => {
     // Fetch ALL animals (including inactive for ancestry reference)
     const { data: allAnimals, error: animalsError } = await supabase
       .from('animals')
-      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, is_castrated, peso_actual_kg, ganancia_diaria_kg, peso_destete')
+      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, is_castrated, peso_actual_kg, ganancia_diaria_kg, peso_destete, breed')
       .eq('cabaña_id', cabanaId);
 
     if (animalsError) throw animalsError;
+
+    // Fetch herd settings for breed mixing preference
+    const { data: herdSettings } = await supabase
+      .from('herd_settings')
+      .select('prevent_breed_mixing')
+      .eq('cabaña_id', cabanaId)
+      .maybeSingle();
+    
+    const preventBreedMixing = herdSettings?.prevent_breed_mixing ?? true;
+    console.log(`Breed mixing prevention: ${preventBreedMixing}`);
 
     // Build ancestry map from ALL animals
     const ancestryMap = buildAncestryMap(allAnimals || []);
@@ -1922,6 +1933,14 @@ serve(async (req) => {
             // Skip if full
             if (currentCount >= capacity) continue;
             
+            // Skip if breed mixing is prevented and corral has animals of different breed
+            if (preventBreedMixing && animal.breed) {
+              const existingBreeds = consolidationDistribution[targetCorral.id]
+                .filter(a => a.breed)
+                .map(a => a.breed!);
+              if (existingBreeds.length > 0 && !existingBreeds.includes(animal.breed)) continue;
+            }
+            
             // Calculate risk if placing animal here
             const riskScore = calculatePlacementRisk(animal, consolidationDistribution[targetCorral.id]);
             
@@ -2181,6 +2200,12 @@ serve(async (req) => {
           const currentCount = workingDistribution[targetCorral.id]?.length || 0;
           if (currentCount >= capacity) continue;
           
+          // Skip if breed mixing prevented
+          if (preventBreedMixing && animalToMove.breed) {
+            const existingBreeds = animalsInTarget.filter(a => a.breed).map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(animalToMove.breed)) continue;
+          }
+          
           // Check if moving there creates new risks
           const animalsInTarget = workingDistribution[targetCorral.id] || [];
           let createsNewRisk = false;
@@ -2301,6 +2326,12 @@ serve(async (req) => {
           const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
           const currentCount = workingDistribution[targetCorral.id]?.length || 0;
           if (currentCount >= capacity) continue;
+          
+          // Skip if breed mixing prevented
+          if (preventBreedMixing && animal1.breed) {
+            const existingBreeds = (workingDistribution[targetCorral.id] || []).filter(a => a.breed).map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(animal1.breed)) continue;
+          }
 
           const newRisk = simulateMove(animal1, targetCorral.id, workingDistribution);
           if (currentRisk - newRisk > 0.001) {
@@ -2335,6 +2366,12 @@ serve(async (req) => {
           const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
           const currentCount = workingDistribution[targetCorral.id]?.length || 0;
           if (currentCount >= capacity) continue;
+          
+          // Skip if breed mixing prevented
+          if (preventBreedMixing && animal2.breed) {
+            const existingBreeds = (workingDistribution[targetCorral.id] || []).filter(a => a.breed).map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(animal2.breed)) continue;
+          }
 
           const newRisk = simulateMove(animal2, targetCorral.id, workingDistribution);
           if (currentRisk - newRisk > 0.001) {
@@ -2910,6 +2947,14 @@ serve(async (req) => {
             const score = maleFertilityScores[bull.id] || 50;
             return score > best ? score : best;
           }, 0);
+          
+          // Skip if breed mixing prevented and breeds don't match
+          if (preventBreedMixing && female.breed) {
+            const existingBreeds = (workingDistribution[corral.id] || [])
+              .filter(a => a.breed)
+              .map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(female.breed)) continue;
+          }
           
           if (bestBullInCorral > bestBullScore && corral.availableCapacity > 0) {
             bestCorral = corral;

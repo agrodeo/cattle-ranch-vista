@@ -121,6 +121,15 @@
     "subtitle": "Gerencie seu plano e faturamento",
     "comingSoon": "Esta seção estará disponível em breve."
   },
+  "breedMixing": {
+    "title": "Proteção de Raças",
+    "description": "Impede que o otimizador de currais misture animais de raças diferentes",
+    "label": "Não misturar raças diferentes nos currais",
+    "hint": "Quando ativado, o otimizador nunca sugerirá mover animais para currais com outra raça e alertas serão gerados se mistura existente for detectada.",
+    "enabled": "Proteção de mistura de raças ativada",
+    "disabled": "Proteção de mistura de raças desativada",
+    "errorSaving": "Erro ao salvar a configuração"
+  },
   "deleteAccount": {
     "sectionTitle": "Excluir Conta",
     "sectionDescription": "Exclua permanentemente sua conta e todos os dados associados.",
