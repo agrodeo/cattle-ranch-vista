@@ -2326,6 +2326,12 @@ serve(async (req) => {
           const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
           const currentCount = workingDistribution[targetCorral.id]?.length || 0;
           if (currentCount >= capacity) continue;
+          
+          // Skip if breed mixing prevented
+          if (preventBreedMixing && animal1.breed) {
+            const existingBreeds = (workingDistribution[targetCorral.id] || []).filter(a => a.breed).map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(animal1.breed)) continue;
+          }
 
           const newRisk = simulateMove(animal1, targetCorral.id, workingDistribution);
           if (currentRisk - newRisk > 0.001) {
@@ -2360,6 +2366,12 @@ serve(async (req) => {
           const capacity = targetCorral.capacity || (targetCorral.hectareas ? Math.round(targetCorral.hectareas * 2) : 999);
           const currentCount = workingDistribution[targetCorral.id]?.length || 0;
           if (currentCount >= capacity) continue;
+          
+          // Skip if breed mixing prevented
+          if (preventBreedMixing && animal2.breed) {
+            const existingBreeds = (workingDistribution[targetCorral.id] || []).filter(a => a.breed).map(a => a.breed!);
+            if (existingBreeds.length > 0 && !existingBreeds.includes(animal2.breed)) continue;
+          }
 
           const newRisk = simulateMove(animal2, targetCorral.id, workingDistribution);
           if (currentRisk - newRisk > 0.001) {
