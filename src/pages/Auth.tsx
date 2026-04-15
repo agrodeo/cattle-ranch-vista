@@ -274,7 +274,6 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="companyName"
-                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t('auth:register.companyName', 'Nombre de la Empresa')}</FormLabel>
@@ -319,12 +318,11 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="phone"
-                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="flex items-center gap-2">
                           <Phone className="h-4 w-4" />
-                          {t('auth:register.phone', 'Teléfono')} *
+                          {t('auth:register.phone', 'Teléfono')}
                         </FormLabel>
                         <FormControl>
                           <Input type="tel" placeholder={t('auth:register.phonePlaceholder', '+54 9 11 1234-5678')} {...field} />
@@ -336,7 +334,6 @@ const Auth = () => {
                   <FormField
                     control={signUpForm.control}
                     name="country_code"
-                    rules={{ required: t('common:validation.required') }}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>{t('auth:register.country', 'País')} *</FormLabel>
