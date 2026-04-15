@@ -1,0 +1,1 @@
+ALTER TABLE public.herd_settings ADD COLUMN IF NOT EXISTS prevent_breed_mixing boolean NOT NULL DEFAULT true;

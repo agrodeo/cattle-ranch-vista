@@ -1399,6 +1399,7 @@ export type Database = {
           id: string
           lat: number | null
           lng: number | null
+          prevent_breed_mixing: boolean
           region: string | null
           service_type: string | null
           updated_at: string
@@ -1412,6 +1413,7 @@ export type Database = {
           id?: string
           lat?: number | null
           lng?: number | null
+          prevent_breed_mixing?: boolean
           region?: string | null
           service_type?: string | null
           updated_at?: string
@@ -1425,6 +1427,7 @@ export type Database = {
           id?: string
           lat?: number | null
           lng?: number | null
+          prevent_breed_mixing?: boolean
           region?: string | null
           service_type?: string | null
           updated_at?: string
