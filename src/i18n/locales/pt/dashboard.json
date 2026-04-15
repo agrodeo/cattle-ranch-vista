@@ -72,7 +72,9 @@
   "warnings": {
     "consanguinityRisk": "Risco de Consanguinidade",
     "corralsWithRisk_one": "{{count}} curral com possível consanguinidade detectada",
-    "corralsWithRisk_other": "{{count}} currais com possível consanguinidade detectada"
+    "corralsWithRisk_other": "{{count}} currais com possível consanguinidade detectada",
+    "breedMixingRisk": "Mistura de Raças Detectada",
+    "corralsWithBreedMixing": "{{count}} curral(is) com mistura de raças: {{corrals}}"
   },
   "activityTypes": {
     "general": "Geral",
