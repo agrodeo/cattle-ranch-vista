@@ -87,6 +87,7 @@ interface Animal {
   peso_destete: number | null;
   peso_nacimiento: number | null;
   peso_final: number | null;
+  breed: string | null;
 }
 
 interface Corral {
