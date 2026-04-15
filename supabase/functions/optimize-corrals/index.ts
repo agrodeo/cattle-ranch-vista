@@ -1389,10 +1389,20 @@ serve(async (req) => {
     // Fetch ALL animals (including inactive for ancestry reference)
     const { data: allAnimals, error: animalsError } = await supabase
       .from('animals')
-      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, is_castrated, peso_actual_kg, ganancia_diaria_kg, peso_destete')
+      .select('id, name, id_tag, sex, birth_date, corral_id, father_id, mother_id, status, is_castrated, peso_actual_kg, ganancia_diaria_kg, peso_destete, breed')
       .eq('cabaña_id', cabanaId);
 
     if (animalsError) throw animalsError;
+
+    // Fetch herd settings for breed mixing preference
+    const { data: herdSettings } = await supabase
+      .from('herd_settings')
+      .select('prevent_breed_mixing')
+      .eq('cabaña_id', cabanaId)
+      .maybeSingle();
+    
+    const preventBreedMixing = herdSettings?.prevent_breed_mixing ?? true;
+    console.log(`Breed mixing prevention: ${preventBreedMixing}`);
 
     // Build ancestry map from ALL animals
     const ancestryMap = buildAncestryMap(allAnimals || []);
