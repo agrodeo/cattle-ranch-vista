@@ -1933,6 +1933,14 @@ serve(async (req) => {
             // Skip if full
             if (currentCount >= capacity) continue;
             
+            // Skip if breed mixing is prevented and corral has animals of different breed
+            if (preventBreedMixing && animal.breed) {
+              const existingBreeds = consolidationDistribution[targetCorral.id]
+                .filter(a => a.breed)
+                .map(a => a.breed!);
+              if (existingBreeds.length > 0 && !existingBreeds.includes(animal.breed)) continue;
+            }
+            
             // Calculate risk if placing animal here
             const riskScore = calculatePlacementRisk(animal, consolidationDistribution[targetCorral.id]);
             
