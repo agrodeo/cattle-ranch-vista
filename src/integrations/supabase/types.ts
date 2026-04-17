@@ -3103,6 +3103,16 @@ export type Database = {
             }
             Returns: Json
           }
+        | {
+            Args: {
+              _action: string
+              _causa_id?: string
+              _nombre?: string
+              _orden?: number
+              _user_id: string
+            }
+            Returns: Json
+          }
       marcar_defuncion:
         | {
             Args: {
