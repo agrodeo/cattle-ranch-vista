@@ -46,6 +46,7 @@ import subscriptionEn from './locales/en/subscription.json';
 import reproductiveEn from './locales/en/reproductive.json';
 import breedingEn from './locales/en/breeding.json';
 import legalEn from './locales/en/legal.json';
+import onboardingEn from './locales/en/onboarding.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -64,6 +65,7 @@ import subscriptionPt from './locales/pt/subscription.json';
 import reproductivePt from './locales/pt/reproductive.json';
 import breedingPt from './locales/pt/breeding.json';
 import legalPt from './locales/pt/legal.json';
+import onboardingPt from './locales/pt/onboarding.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
