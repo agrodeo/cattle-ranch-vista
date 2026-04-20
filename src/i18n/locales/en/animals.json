@@ -200,7 +200,7 @@
       "vaccines": "Vaccines",
       "production": "Production",
       "genealogy": "Genealogy",
-      "corrals": "Corrals", 
+      "corrals": "Corrals",
       "documents": "Documents",
       "finances": "Finances"
     },
@@ -543,5 +543,16 @@
     "rec3": "Maintain detailed health and performance records",
     "rec4": "Consult with a veterinary geneticist for critical cases",
     "nextFamilyTree": "Next: Family Tree"
+  },
+  "estimatedWeightCard": {
+    "title": "Estimated Weight",
+    "dataSources": "Data sources:",
+    "lowDataHint": "Log at least 2 weighings for a better estimate.",
+    "perKg": "kg",
+    "daysWithoutWeighing": "{{days}} days since last weighing",
+    "confidence": "{{percent}}% confidence",
+    "needsWeighing": "Needs weighing",
+    "anomaly": "Anomaly",
+    "logWeightHint": "Log a weight for a better estimate"
   }
 }
