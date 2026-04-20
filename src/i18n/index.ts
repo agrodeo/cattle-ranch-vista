@@ -114,6 +114,7 @@ const resources = {
     reproductive: reproductiveEs,
     breeding: breedingEs,
     legal: legalEs,
+    onboarding: onboardingEs,
   },
   en: {
     common: commonEn,
@@ -133,6 +134,7 @@ const resources = {
     reproductive: reproductiveEn,
     breeding: breedingEn,
     legal: legalEn,
+    onboarding: onboardingEn,
   },
   pt: {
     common: commonPt,
@@ -152,6 +154,7 @@ const resources = {
     reproductive: reproductivePt,
     breeding: breedingPt,
     legal: legalPt,
+    onboarding: onboardingPt,
   },
 };
 
@@ -162,7 +165,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal', 'onboarding'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],
