@@ -13,5 +13,66 @@
   "needOtherVaccines": "¿Necesitas otras vacunas específicas?",
   "addLaterDescription": "Podrás agregarlas más tarde desde la configuración",
   "configuring": "Configurando...",
-  "configureVaccines": "Configurar Vacunas"
+  "configureVaccines": "Configurar Vacunas",
+
+  "wizard": {
+    "back": "Atrás",
+    "skip": "Completar más tarde",
+    "continue": "Continuar",
+    "finish": "¡Comenzar a usar Agrodeo! 🎉",
+    "stepLabel": "Paso {{current}} de {{total}}",
+    "labels": {
+      "vaccines": "Vacunas",
+      "corrals": "Corrales",
+      "animals": "Animales"
+    },
+    "success": {
+      "title": "¡Todo listo!",
+      "subtitle": "Tu establecimiento está configurado"
+    }
+  },
+
+  "vaccinesStep": {
+    "title": "Configurá tus vacunas",
+    "subtitle": "Definí qué vacunas aplicás en tu establecimiento",
+    "savingError": "Error al guardar las vacunas"
+  },
+
+  "corralStep": {
+    "title": "Creá tu primer corral",
+    "subtitle": "Los corrales te ayudan a organizar tu ganado",
+    "nameLabel": "Nombre del corral",
+    "namePlaceholder": "Ej: Corral Norte",
+    "capacityLabel": "Capacidad máxima",
+    "capacityPlaceholder": "Ej: 50",
+    "hectaresLabel": "Hectáreas (opcional)",
+    "hectaresPlaceholder": "Ej: 10",
+    "nameRequired": "Ingresá un nombre para el corral",
+    "savedSuccess": "¡Corral creado!",
+    "savedError": "Error al crear el corral"
+  },
+
+  "animalStep": {
+    "title": "Registrá tu primer animal",
+    "subtitle": "Podés agregar más animales después",
+    "tagLabel": "Nombre o número de caravana",
+    "tagPlaceholder": "Ej: 0123 o Estrella",
+    "categoryLabel": "Categoría",
+    "categoryPlaceholder": "Seleccioná una categoría",
+    "categories": {
+      "Toro": "Toro",
+      "Vaca": "Vaca",
+      "Ternero": "Ternero",
+      "Ternera": "Ternera",
+      "Vaquillona": "Vaquillona",
+      "Novillo": "Novillo"
+    },
+    "breedLabel": "Raza (opcional)",
+    "breedPlaceholder": "Ej: Angus",
+    "birthDateLabel": "Fecha de nacimiento (opcional)",
+    "tagRequired": "Ingresá un nombre o caravana",
+    "categoryRequired": "Seleccioná una categoría",
+    "savedSuccess": "¡Animal registrado!",
+    "savedError": "Error al registrar el animal"
+  }
 }
