@@ -78,7 +78,7 @@
   "actions": {
     "view": "Ver",
     "edit": "Editar",
-    "delete": "Excluir", 
+    "delete": "Excluir",
     "markDead": "Marcar Morto"
   },
   "form": {
@@ -201,7 +201,7 @@
       "production": "Produção",
       "genealogy": "Genealogia",
       "corrals": "Currais",
-      "documents": "Documentos", 
+      "documents": "Documentos",
       "finances": "Finanças"
     },
     "summary": {
@@ -543,5 +543,16 @@
     "rec3": "Mantenha registros detalhados de saúde e desempenho",
     "rec4": "Consulte um geneticista veterinário para casos críticos",
     "nextFamilyTree": "Próximo: Árvore Genealógica"
+  },
+  "estimatedWeightCard": {
+    "title": "Peso Estimado",
+    "dataSources": "Fontes de dados:",
+    "lowDataHint": "Registre pelo menos 2 pesagens para melhor estimativa.",
+    "perKg": "kg",
+    "daysWithoutWeighing": "{{days}} dias sem pesar",
+    "confidence": "{{percent}}% confiança",
+    "needsWeighing": "Precisa pesagem",
+    "anomaly": "Anomalia",
+    "logWeightHint": "Registre um peso para melhor estimativa"
   }
 }

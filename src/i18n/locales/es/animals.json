@@ -199,7 +199,7 @@
       "reproduction": "Reproducción",
       "vaccines": "Vacunas",
       "production": "Producción",
-      "genealogy": "Genealogía", 
+      "genealogy": "Genealogía",
       "corrals": "Corrales",
       "documents": "Documentos",
       "finances": "Finanzas"
@@ -322,7 +322,7 @@
     },
     "production": {
       "currentWeight": "Peso Actual",
-      "dailyGain": "Ganancia Diaria", 
+      "dailyGain": "Ganancia Diaria",
       "lastWeighing": "Último Pesaje",
       "totalWeighings": "Pesajes Totales",
       "notRegistered": "No registrado",
@@ -543,5 +543,16 @@
     "rec3": "Mantenga registros detallados de salud y rendimiento",
     "rec4": "Consulte con un genetista veterinario para casos críticos",
     "nextFamilyTree": "Siguiente: Árbol Genealógico"
+  },
+  "estimatedWeightCard": {
+    "title": "Peso Estimado",
+    "dataSources": "Fuentes de datos:",
+    "lowDataHint": "Registra al menos 2 pesajes para mejor estimación.",
+    "perKg": "kg",
+    "daysWithoutWeighing": "{{days}} días sin pesar",
+    "confidence": "{{percent}}% confianza",
+    "needsWeighing": "Necesita pesaje",
+    "anomaly": "Anomalía",
+    "logWeightHint": "Registra un peso para mejor estimación"
   }
 }

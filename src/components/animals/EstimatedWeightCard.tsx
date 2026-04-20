@@ -9,6 +9,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useTranslation } from 'react-i18next';
 
 interface EstimatedWeightCardProps {
   estimation: WeightEstimation | null;
@@ -17,6 +18,7 @@ interface EstimatedWeightCardProps {
 }
 
 export function EstimatedWeightCard({ estimation, isLoading, compact = false }: EstimatedWeightCardProps) {
+  const { t } = useTranslation('animals');
   if (isLoading) {
     return (
       <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20 dark:border-green-800">
@@ -50,7 +52,7 @@ export function EstimatedWeightCard({ estimation, isLoading, compact = false }: 
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
               <span className="text-sm font-medium text-green-800 dark:text-green-300">
-                Peso Estimado
+                {t('estimatedWeightCard.title')}
               </span>
               <TooltipProvider>
                 <Tooltip>
@@ -58,7 +60,7 @@ export function EstimatedWeightCard({ estimation, isLoading, compact = false }: 
                     <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help shrink-0" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="max-w-xs">
-                    <p className="text-xs font-medium mb-1">Fuentes de datos:</p>
+                    <p className="text-xs font-medium mb-1">{t('estimatedWeightCard.dataSources')}</p>
                     <ul className="text-xs space-y-0.5">
                       {estimation.dataSources.map((src, i) => (
                         <li key={i}>• {src}</li>
@@ -66,7 +68,7 @@ export function EstimatedWeightCard({ estimation, isLoading, compact = false }: 
                     </ul>
                     {!estimation.layer1Available && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Registra al menos 2 pesajes para mejor estimación.
+                        {t('estimatedWeightCard.lowDataHint')}
                       </p>
                     )}
                   </TooltipContent>
@@ -83,7 +85,7 @@ export function EstimatedWeightCard({ estimation, isLoading, compact = false }: 
             <p className="text-xs text-muted-foreground">
               ± {estimation.confidenceRange} kg
               {estimation.daysSinceLastWeigh !== null && (
-                <> · {estimation.daysSinceLastWeigh} días sin pesar</>
+                <> · {t('estimatedWeightCard.daysWithoutWeighing', { days: estimation.daysSinceLastWeigh })}</>
               )}
             </p>
           </div>
@@ -91,18 +93,18 @@ export function EstimatedWeightCard({ estimation, isLoading, compact = false }: 
           {/* Right side badges */}
           <div className="flex flex-col items-end gap-1.5 shrink-0">
             <Badge variant={confidenceBadgeVariant} className="text-xs">
-              {estimation.confidencePercent}% confianza
+              {t('estimatedWeightCard.confidence', { percent: estimation.confidencePercent })}
             </Badge>
             {estimation.needsWeighing && (
               <Badge variant="destructive" className="text-xs flex items-center gap-1">
                 <Scale className="h-3 w-3" />
-                Necesita pesaje
+                {t('estimatedWeightCard.needsWeighing')}
               </Badge>
             )}
             {estimation.hasAnomaly && (
               <Badge variant="outline" className="text-xs flex items-center gap-1 border-yellow-500 text-yellow-700 dark:text-yellow-400">
                 <AlertTriangle className="h-3 w-3" />
-                Anomalía
+                {t('estimatedWeightCard.anomaly')}
               </Badge>
             )}
           </div>
@@ -112,7 +114,7 @@ export function EstimatedWeightCard({ estimation, isLoading, compact = false }: 
         {!estimation.layer1Available && (
           <p className="text-xs text-amber-700 dark:text-amber-400 mt-2 flex items-center gap-1">
             <AlertTriangle className="h-3 w-3 shrink-0" />
-            Registra un peso para mejor estimación
+            {t('estimatedWeightCard.logWeightHint')}
           </p>
         )}
       </CardContent>
