@@ -5,6 +5,7 @@
   "vaccinationConfiguration": "Configuração de Vacinas",
   "selectVaccinesDescription": "Selecione as vacinas obrigatórias ou opcionais para seu rebanho",
   "mandatory": "Obrigatória",
+  "optional": "Opcional",
   "onlyGender": "Apenas {{gender}}s",
   "fromMonths": "A partir de {{months}} meses",
   "untilMonths": "Até {{months}} meses",
@@ -19,7 +20,7 @@
     "back": "Voltar",
     "skip": "Completar mais tarde",
     "continue": "Continuar",
-    "finish": "Começar a usar o Agrodeo! 🎉",
+    "finish": "Começar a usar o Agrodeo",
     "stepLabel": "Etapa {{current}} de {{total}}",
     "labels": {
       "vaccines": "Vacinas",
@@ -34,8 +35,34 @@
 
   "vaccinesStep": {
     "title": "Configure suas vacinas",
-    "subtitle": "Defina quais vacinas você aplica na sua fazenda",
-    "savingError": "Erro ao salvar as vacinas"
+    "subtitle": "Defina quais vacinas você aplica e a quais animais correspondem",
+    "savingError": "Erro ao salvar as vacinas",
+    "configure": "Configurar",
+    "applyTo": "Para quem se aplica?",
+    "sexFilter": "Sexo",
+    "sexAll": "Todos",
+    "sexMale": "Apenas machos",
+    "sexFemale": "Apenas fêmeas",
+    "ageFilter": "Idade (meses)",
+    "minAge": "A partir",
+    "maxAge": "Até",
+    "anyAge": "Qualquer idade",
+    "mandatory": "Marcar como obrigatória",
+    "selectedCount": "{{count}} vacinas selecionadas",
+    "addCustom": "Adicionar vacina personalizada",
+    "customVaccineName": "Nome da vacina",
+    "customVaccineNamePlaceholder": "Ex: Ceratoconjuntivite",
+    "customDescription": "Descrição (opcional)",
+    "customDescriptionPlaceholder": "Breve descrição",
+    "remove": "Remover",
+    "saveCustom": "Adicionar",
+    "cancel": "Cancelar",
+    "summary": {
+      "all": "Todos os animais",
+      "ageRange": "{{min}}–{{max}} meses",
+      "fromAge": "A partir de {{min}} meses",
+      "untilAge": "Até {{max}} meses"
+    }
   },
 
   "corralStep": {

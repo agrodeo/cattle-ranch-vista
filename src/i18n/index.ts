@@ -27,6 +27,7 @@ import subscriptionEs from './locales/es/subscription.json';
 import reproductiveEs from './locales/es/reproductive.json';
 import breedingEs from './locales/es/breeding.json';
 import legalEs from './locales/es/legal.json';
+import onboardingEs from './locales/es/onboarding.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
@@ -45,6 +46,7 @@ import subscriptionEn from './locales/en/subscription.json';
 import reproductiveEn from './locales/en/reproductive.json';
 import breedingEn from './locales/en/breeding.json';
 import legalEn from './locales/en/legal.json';
+import onboardingEn from './locales/en/onboarding.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -63,6 +65,7 @@ import subscriptionPt from './locales/pt/subscription.json';
 import reproductivePt from './locales/pt/reproductive.json';
 import breedingPt from './locales/pt/breeding.json';
 import legalPt from './locales/pt/legal.json';
+import onboardingPt from './locales/pt/onboarding.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -111,6 +114,7 @@ const resources = {
     reproductive: reproductiveEs,
     breeding: breedingEs,
     legal: legalEs,
+    onboarding: onboardingEs,
   },
   en: {
     common: commonEn,
@@ -130,6 +134,7 @@ const resources = {
     reproductive: reproductiveEn,
     breeding: breedingEn,
     legal: legalEn,
+    onboarding: onboardingEn,
   },
   pt: {
     common: commonPt,
@@ -149,6 +154,7 @@ const resources = {
     reproductive: reproductivePt,
     breeding: breedingPt,
     legal: legalPt,
+    onboarding: onboardingPt,
   },
 };
 
@@ -159,7 +165,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal', 'onboarding'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],

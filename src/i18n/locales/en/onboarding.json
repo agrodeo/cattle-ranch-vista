@@ -5,6 +5,7 @@
   "vaccinationConfiguration": "Vaccine Configuration",
   "selectVaccinesDescription": "Select vaccines that are mandatory or optional for your herd",
   "mandatory": "Mandatory",
+  "optional": "Optional",
   "onlyGender": "Only {{gender}}s",
   "fromMonths": "From {{months}} months",
   "untilMonths": "Until {{months}} months",
@@ -19,7 +20,7 @@
     "back": "Back",
     "skip": "Complete later",
     "continue": "Continue",
-    "finish": "Start using Agrodeo! 🎉",
+    "finish": "Start using Agrodeo",
     "stepLabel": "Step {{current}} of {{total}}",
     "labels": {
       "vaccines": "Vaccines",
@@ -34,8 +35,34 @@
 
   "vaccinesStep": {
     "title": "Configure your vaccines",
-    "subtitle": "Define which vaccines you apply in your ranch",
-    "savingError": "Error saving vaccines"
+    "subtitle": "Define which vaccines you apply and which animals they target",
+    "savingError": "Error saving vaccines",
+    "configure": "Configure",
+    "applyTo": "Who is it for?",
+    "sexFilter": "Sex",
+    "sexAll": "All",
+    "sexMale": "Males only",
+    "sexFemale": "Females only",
+    "ageFilter": "Age (months)",
+    "minAge": "From",
+    "maxAge": "Until",
+    "anyAge": "Any age",
+    "mandatory": "Mark as mandatory",
+    "selectedCount": "{{count}} vaccines selected",
+    "addCustom": "Add custom vaccine",
+    "customVaccineName": "Vaccine name",
+    "customVaccineNamePlaceholder": "e.g. Pinkeye",
+    "customDescription": "Description (optional)",
+    "customDescriptionPlaceholder": "Short description",
+    "remove": "Remove",
+    "saveCustom": "Add",
+    "cancel": "Cancel",
+    "summary": {
+      "all": "All animals",
+      "ageRange": "{{min}}–{{max}} months",
+      "fromAge": "From {{min}} months",
+      "untilAge": "Until {{max}} months"
+    }
   },
 
   "corralStep": {

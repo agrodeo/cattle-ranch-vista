@@ -47,7 +47,6 @@ export const CorralStep = ({ onComplete, onSkip, onBack }: CorralStepProps) => {
 
   return (
     <WizardStepShell
-      icon="🐄"
       title={t("onboarding:corralStep.title")}
       subtitle={t("onboarding:corralStep.subtitle")}
       onBack={onBack}

@@ -5,6 +5,7 @@
   "vaccinationConfiguration": "Configuración de Vacunas",
   "selectVaccinesDescription": "Selecciona las vacunas que son obligatorias u opcionales para tu cabaña",
   "mandatory": "Obligatoria",
+  "optional": "Opcional",
   "onlyGender": "Solo {{gender}}s",
   "fromMonths": "Desde {{months}} meses",
   "untilMonths": "Hasta {{months}} meses",
@@ -19,7 +20,7 @@
     "back": "Atrás",
     "skip": "Completar más tarde",
     "continue": "Continuar",
-    "finish": "¡Comenzar a usar Agrodeo! 🎉",
+    "finish": "Comenzar a usar Agrodeo",
     "stepLabel": "Paso {{current}} de {{total}}",
     "labels": {
       "vaccines": "Vacunas",
@@ -34,8 +35,34 @@
 
   "vaccinesStep": {
     "title": "Configurá tus vacunas",
-    "subtitle": "Definí qué vacunas aplicás en tu establecimiento",
-    "savingError": "Error al guardar las vacunas"
+    "subtitle": "Definí qué vacunas aplicás y a qué animales corresponden",
+    "savingError": "Error al guardar las vacunas",
+    "configure": "Configurar",
+    "applyTo": "¿A quién se aplica?",
+    "sexFilter": "Sexo",
+    "sexAll": "Todos",
+    "sexMale": "Solo machos",
+    "sexFemale": "Solo hembras",
+    "ageFilter": "Edad (meses)",
+    "minAge": "Desde",
+    "maxAge": "Hasta",
+    "anyAge": "Cualquier edad",
+    "mandatory": "Marcar como obligatoria",
+    "selectedCount": "{{count}} vacunas seleccionadas",
+    "addCustom": "Agregar vacuna personalizada",
+    "customVaccineName": "Nombre de la vacuna",
+    "customVaccineNamePlaceholder": "Ej: Querato",
+    "customDescription": "Descripción (opcional)",
+    "customDescriptionPlaceholder": "Breve descripción",
+    "remove": "Quitar",
+    "saveCustom": "Agregar",
+    "cancel": "Cancelar",
+    "summary": {
+      "all": "Todos los animales",
+      "ageRange": "{{min}}–{{max}} meses",
+      "fromAge": "Desde {{min}} meses",
+      "untilAge": "Hasta {{max}} meses"
+    }
   },
 
   "corralStep": {
