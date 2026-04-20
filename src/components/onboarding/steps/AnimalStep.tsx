@@ -11,57 +11,44 @@ interface AnimalStepProps {
   onBack: () => void;
 }
 
-const CATEGORIES = ["Toro", "Vaca", "Ternero", "Ternera", "Vaquillona", "Novillo"] as const;
-type Category = (typeof CATEGORIES)[number];
-
-// Map category → sex/status flags compatible with the rest of the app
-const categoryToFields = (cat: Category) => {
-  switch (cat) {
-    case "Toro":
-      return { sex: "Macho", status: "Activo", is_castrated: false };
-    case "Vaca":
-      return { sex: "Hembra", status: "Activo", is_castrated: false };
-    case "Ternero":
-      return { sex: "Macho", status: "Activo", is_castrated: false };
-    case "Ternera":
-      return { sex: "Hembra", status: "Activo", is_castrated: false };
-    case "Vaquillona":
-      return { sex: "Hembra", status: "Activo", is_castrated: false };
-    case "Novillo":
-      return { sex: "Macho", status: "Activo", is_castrated: true };
-  }
-};
+// Match the breed list used in AnimalFormDialog so onboarding stays consistent with the rest of the app
+const BREEDS = [
+  "Angus", "Hereford", "Shorthorn", "Charolais", "Limousin", "Simmental",
+  "Brahman", "Nelore", "Braford", "Brangus", "Santa Gertrudis", "Senepol",
+  "Bonsmara", "Holando Argentino", "Jersey", "Criollo", "Wagyu", "Corriente", "Otro",
+];
 
 export const AnimalStep = ({ onComplete, onSkip, onBack }: AnimalStepProps) => {
   const { t } = useTranslation(["onboarding"]);
   const { currentUser } = useSupabaseAuth();
-  const [tag, setTag] = useState("");
-  const [category, setCategory] = useState<Category | "">("");
+  const [name, setName] = useState("");
+  const [idTag, setIdTag] = useState("");
+  const [sex, setSex] = useState<"" | "Macho" | "Hembra">("");
   const [breed, setBreed] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const canContinue = !!idTag.trim() && !!sex && !!breed && !!birthDate;
+
   const handleSubmit = async () => {
-    if (!tag.trim()) {
-      toast.error(t("onboarding:animalStep.tagRequired"));
-      return;
-    }
-    if (!category) {
-      toast.error(t("onboarding:animalStep.categoryRequired"));
-      return;
-    }
+    if (!idTag.trim()) return toast.error(t("onboarding:animalStep.tagRequired"));
+    if (!sex) return toast.error(t("onboarding:animalStep.sexRequired"));
+    if (!breed) return toast.error(t("onboarding:animalStep.breedRequired"));
+    if (!birthDate) return toast.error(t("onboarding:animalStep.birthDateRequired"));
     if (!currentUser?.cabañaId) return;
+
     setLoading(true);
     try {
-      const fields = categoryToFields(category as Category);
       const { error } = await supabase.from("animals").insert([
         {
-          id_tag: tag.trim(),
-          name: tag.trim(),
-          breed: breed.trim() || null,
-          birth_date: birthDate || null,
+          id_tag: idTag.trim(),
+          name: name.trim() || null,
+          breed,
+          birth_date: birthDate,
+          sex,
+          status: "Activo",
+          is_castrated: false,
           cabaña_id: currentUser.cabañaId,
-          ...fields,
         },
       ]);
       if (error) throw error;
@@ -75,6 +62,9 @@ export const AnimalStep = ({ onComplete, onSkip, onBack }: AnimalStepProps) => {
     }
   };
 
+  const inputClass =
+    "w-full min-h-[48px] px-4 text-base rounded-xl border-2 border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors";
+
   return (
     <WizardStepShell
       title={t("onboarding:animalStep.title")}
@@ -83,66 +73,81 @@ export const AnimalStep = ({ onComplete, onSkip, onBack }: AnimalStepProps) => {
       onSkip={onSkip}
       onContinue={handleSubmit}
       loading={loading}
-      continueDisabled={!tag.trim() || !category}
+      continueDisabled={!canContinue}
       isFinal
     >
       <div className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="animal-tag" className="block text-base font-medium text-foreground">
-            {t("onboarding:animalStep.tagLabel")}
+            {t("onboarding:animalStep.tagLabel")} *
           </label>
           <input
             id="animal-tag"
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
+            value={idTag}
+            onChange={(e) => setIdTag(e.target.value)}
             placeholder={t("onboarding:animalStep.tagPlaceholder")}
             autoFocus
-            className="w-full min-h-[48px] px-4 text-base rounded-xl border-2 border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+            className={inputClass}
           />
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="animal-category" className="block text-base font-medium text-foreground">
-            {t("onboarding:animalStep.categoryLabel")}
+          <label htmlFor="animal-name" className="block text-base font-medium text-foreground">
+            {t("onboarding:animalStep.nameLabel")}
+          </label>
+          <input
+            id="animal-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("onboarding:animalStep.namePlaceholder")}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label htmlFor="animal-sex" className="block text-base font-medium text-foreground">
+            {t("onboarding:animalStep.sexLabel")} *
           </label>
           <select
-            id="animal-category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value as Category)}
-            className="w-full min-h-[48px] px-4 text-base rounded-xl border-2 border-border bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+            id="animal-sex"
+            value={sex}
+            onChange={(e) => setSex(e.target.value as "Macho" | "Hembra")}
+            className={inputClass}
           >
-            <option value="">{t("onboarding:animalStep.categoryPlaceholder")}</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {t(`onboarding:animalStep.categories.${c}`)}
-              </option>
-            ))}
+            <option value="">{t("onboarding:animalStep.sexPlaceholder")}</option>
+            <option value="Macho">{t("onboarding:animalStep.sexMale")}</option>
+            <option value="Hembra">{t("onboarding:animalStep.sexFemale")}</option>
           </select>
         </div>
 
         <div className="space-y-2">
           <label htmlFor="animal-breed" className="block text-base font-medium text-foreground">
-            {t("onboarding:animalStep.breedLabel")}
+            {t("onboarding:animalStep.breedLabel")} *
           </label>
-          <input
+          <select
             id="animal-breed"
             value={breed}
             onChange={(e) => setBreed(e.target.value)}
-            placeholder={t("onboarding:animalStep.breedPlaceholder")}
-            className="w-full min-h-[48px] px-4 text-base rounded-xl border-2 border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
-          />
+            className={inputClass}
+          >
+            <option value="">{t("onboarding:animalStep.breedPlaceholder")}</option>
+            {BREEDS.map((b) => (
+              <option key={b} value={b}>{b}</option>
+            ))}
+          </select>
         </div>
 
         <div className="space-y-2">
           <label htmlFor="animal-birth" className="block text-base font-medium text-foreground">
-            {t("onboarding:animalStep.birthDateLabel")}
+            {t("onboarding:animalStep.birthDateLabel")} *
           </label>
           <input
             id="animal-birth"
             type="date"
             value={birthDate}
+            max={new Date().toISOString().split("T")[0]}
             onChange={(e) => setBirthDate(e.target.value)}
-            className="w-full min-h-[48px] px-4 text-base rounded-xl border-2 border-border bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+            className={inputClass}
           />
         </div>
       </div>
