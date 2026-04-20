@@ -26,7 +26,6 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
   };
   const goBack = () => setStepIndex((i) => Math.max(0, i - 1));
 
-  // Auto-redirect after success animation
   useEffect(() => {
     if (!showSuccess) return;
     const id = setTimeout(onComplete, 2000);
@@ -56,39 +55,45 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col sm:items-center sm:justify-center p-0 sm:p-6">
       <div className="w-full sm:max-w-md sm:rounded-3xl sm:shadow-xl sm:border sm:border-border bg-card flex flex-col min-h-[100dvh] sm:min-h-0">
-        {/* Progress */}
-        <div className="px-6 pt-8 pb-4 sm:pt-6">
-          <div className="flex items-center gap-2 mb-3">
-            {STEP_ORDER.map((_, i) => {
-              const completed = i < stepIndex;
-              const active = i === stepIndex;
-              return (
-                <div
-                  key={i}
-                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-                    completed || active ? "bg-primary" : "bg-muted"
-                  }`}
-                />
-              );
-            })}
-          </div>
-          <div className="flex items-center justify-between text-xs">
+        {/* Functional dot progress indicator */}
+        <div className="px-6 pt-8 pb-2 sm:pt-6">
+          <div className="flex items-center justify-center gap-3">
             {STEP_ORDER.map((key, i) => {
               const completed = i < stepIndex;
               const active = i === stepIndex;
               return (
-                <div
-                  key={key}
-                  className={`flex items-center gap-1 font-medium transition-colors ${
-                    active
-                      ? "text-foreground"
-                      : completed
-                      ? "text-primary"
-                      : "text-muted-foreground"
-                  }`}
-                >
-                  {completed && <Check className="h-3 w-3" />}
-                  {t(`onboarding:wizard.labels.${key}`)}
+                <div key={key} className="flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-1.5">
+                    <div
+                      className={`flex items-center justify-center w-9 h-9 rounded-full text-sm font-semibold transition-all ${
+                        completed
+                          ? "bg-primary text-primary-foreground"
+                          : active
+                          ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
+                          : "bg-muted text-muted-foreground border border-border"
+                      }`}
+                    >
+                      {completed ? <Check className="h-4 w-4" /> : i + 1}
+                    </div>
+                    <span
+                      className={`text-[11px] font-medium ${
+                        active
+                          ? "text-foreground"
+                          : completed
+                          ? "text-primary"
+                          : "text-muted-foreground"
+                      }`}
+                    >
+                      {t(`onboarding:wizard.labels.${key}`)}
+                    </span>
+                  </div>
+                  {i < STEP_ORDER.length - 1 && (
+                    <div
+                      className={`w-8 h-0.5 -mt-5 ${
+                        completed ? "bg-primary" : "bg-border"
+                      }`}
+                    />
+                  )}
                 </div>
               );
             })}
@@ -96,7 +101,7 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
         </div>
 
         {/* Step body */}
-        <div className="flex-1 px-6 pb-8 overflow-y-auto">
+        <div className="flex-1 px-6 pb-8 pt-4 overflow-y-auto">
           {currentKey === "vaccines" && (
             <VaccinesStep onComplete={goNext} onSkip={goNext} />
           )}

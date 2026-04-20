@@ -77,7 +77,6 @@ export const AnimalStep = ({ onComplete, onSkip, onBack }: AnimalStepProps) => {
 
   return (
     <WizardStepShell
-      icon="🐂"
       title={t("onboarding:animalStep.title")}
       subtitle={t("onboarding:animalStep.subtitle")}
       onBack={onBack}
