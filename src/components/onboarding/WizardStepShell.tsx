@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 
 interface WizardStepShellProps {
-  icon: string;
   title: string;
   subtitle: string;
   children: ReactNode;
@@ -16,14 +15,10 @@ interface WizardStepShellProps {
 }
 
 /**
- * Shared layout for every onboarding step:
- * - Big emoji + title + subtitle
- * - Body slot
- * - Full-width primary button
- * - Optional skip link
+ * Shared layout for every onboarding step.
+ * Title + subtitle (no decorative emoji), body slot, full-width button, optional skip link.
  */
 export const WizardStepShell = ({
-  icon,
   title,
   subtitle,
   children,
@@ -49,12 +44,9 @@ export const WizardStepShell = ({
         </button>
       )}
 
-      <div className="text-center space-y-3">
-        <div className="text-6xl leading-none" aria-hidden>
-          {icon}
-        </div>
+      <div className="space-y-2">
         <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{title}</h2>
-        <p className="text-base text-muted-foreground px-2">{subtitle}</p>
+        <p className="text-base text-muted-foreground">{subtitle}</p>
       </div>
 
       <div>{children}</div>
