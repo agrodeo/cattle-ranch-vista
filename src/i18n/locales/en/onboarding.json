@@ -13,5 +13,66 @@
   "needOtherVaccines": "Need other specific vaccines?",
   "addLaterDescription": "You can add them later from settings",
   "configuring": "Configuring...",
-  "configureVaccines": "Configure Vaccines"
+  "configureVaccines": "Configure Vaccines",
+
+  "wizard": {
+    "back": "Back",
+    "skip": "Complete later",
+    "continue": "Continue",
+    "finish": "Start using Agrodeo! 🎉",
+    "stepLabel": "Step {{current}} of {{total}}",
+    "labels": {
+      "vaccines": "Vaccines",
+      "corrals": "Corrals",
+      "animals": "Animals"
+    },
+    "success": {
+      "title": "All set!",
+      "subtitle": "Your ranch is configured"
+    }
+  },
+
+  "vaccinesStep": {
+    "title": "Configure your vaccines",
+    "subtitle": "Define which vaccines you apply in your ranch",
+    "savingError": "Error saving vaccines"
+  },
+
+  "corralStep": {
+    "title": "Create your first corral",
+    "subtitle": "Corrals help you organize your herd",
+    "nameLabel": "Corral name",
+    "namePlaceholder": "e.g. North Corral",
+    "capacityLabel": "Max capacity",
+    "capacityPlaceholder": "e.g. 50",
+    "hectaresLabel": "Hectares (optional)",
+    "hectaresPlaceholder": "e.g. 10",
+    "nameRequired": "Enter a name for the corral",
+    "savedSuccess": "Corral created!",
+    "savedError": "Error creating corral"
+  },
+
+  "animalStep": {
+    "title": "Register your first animal",
+    "subtitle": "You can add more animals later",
+    "tagLabel": "Name or tag number",
+    "tagPlaceholder": "e.g. 0123 or Star",
+    "categoryLabel": "Category",
+    "categoryPlaceholder": "Select a category",
+    "categories": {
+      "Toro": "Bull",
+      "Vaca": "Cow",
+      "Ternero": "Male calf",
+      "Ternera": "Female calf",
+      "Vaquillona": "Heifer",
+      "Novillo": "Steer"
+    },
+    "breedLabel": "Breed (optional)",
+    "breedPlaceholder": "e.g. Angus",
+    "birthDateLabel": "Birth date (optional)",
+    "tagRequired": "Enter a name or tag",
+    "categoryRequired": "Select a category",
+    "savedSuccess": "Animal registered!",
+    "savedError": "Error registering animal"
+  }
 }

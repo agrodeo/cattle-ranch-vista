@@ -13,5 +13,66 @@
   "needOtherVaccines": "Precisa de outras vacinas específicas?",
   "addLaterDescription": "Você poderá adicioná-las mais tarde nas configurações",
   "configuring": "Configurando...",
-  "configureVaccines": "Configurar Vacinas"
+  "configureVaccines": "Configurar Vacinas",
+
+  "wizard": {
+    "back": "Voltar",
+    "skip": "Completar mais tarde",
+    "continue": "Continuar",
+    "finish": "Começar a usar o Agrodeo! 🎉",
+    "stepLabel": "Etapa {{current}} de {{total}}",
+    "labels": {
+      "vaccines": "Vacinas",
+      "corrals": "Currais",
+      "animals": "Animais"
+    },
+    "success": {
+      "title": "Tudo pronto!",
+      "subtitle": "Sua fazenda está configurada"
+    }
+  },
+
+  "vaccinesStep": {
+    "title": "Configure suas vacinas",
+    "subtitle": "Defina quais vacinas você aplica na sua fazenda",
+    "savingError": "Erro ao salvar as vacinas"
+  },
+
+  "corralStep": {
+    "title": "Crie seu primeiro curral",
+    "subtitle": "Os currais ajudam a organizar seu rebanho",
+    "nameLabel": "Nome do curral",
+    "namePlaceholder": "Ex: Curral Norte",
+    "capacityLabel": "Capacidade máxima",
+    "capacityPlaceholder": "Ex: 50",
+    "hectaresLabel": "Hectares (opcional)",
+    "hectaresPlaceholder": "Ex: 10",
+    "nameRequired": "Insira um nome para o curral",
+    "savedSuccess": "Curral criado!",
+    "savedError": "Erro ao criar o curral"
+  },
+
+  "animalStep": {
+    "title": "Registre seu primeiro animal",
+    "subtitle": "Você pode adicionar mais animais depois",
+    "tagLabel": "Nome ou número do brinco",
+    "tagPlaceholder": "Ex: 0123 ou Estrela",
+    "categoryLabel": "Categoria",
+    "categoryPlaceholder": "Selecione uma categoria",
+    "categories": {
+      "Toro": "Touro",
+      "Vaca": "Vaca",
+      "Ternero": "Bezerro",
+      "Ternera": "Bezerra",
+      "Vaquillona": "Novilha",
+      "Novillo": "Novilho"
+    },
+    "breedLabel": "Raça (opcional)",
+    "breedPlaceholder": "Ex: Angus",
+    "birthDateLabel": "Data de nascimento (opcional)",
+    "tagRequired": "Insira um nome ou brinco",
+    "categoryRequired": "Selecione uma categoria",
+    "savedSuccess": "Animal registrado!",
+    "savedError": "Erro ao registrar o animal"
+  }
 }
