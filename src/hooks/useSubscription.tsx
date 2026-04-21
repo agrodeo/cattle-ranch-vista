@@ -5,8 +5,14 @@ import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { toast } from '@/hooks/use-toast';
 import { useConnectivity } from '@/services/connectivity';
 
+export type SubscriptionAccessLevel = 'paid' | 'trial' | 'free' | 'blocked';
+
 export interface SubscriptionStatus {
   plan: 'free' | 'personal' | 'avanzado' | 'productor' | 'cabana' | 'corporativo';
+  /** Backend-resolved status: none | trial | active | past_due | canceled | expired */
+  status: 'none' | 'trial' | 'active' | 'past_due' | 'canceled' | 'expired';
+  /** True once the user has ever consumed their 14-day trial. NEVER goes back to false. */
+  trialUsed: boolean;
   isTrialActive: boolean;
   trialDaysRemaining: number;
   isSubscriptionActive: boolean;
@@ -17,6 +23,8 @@ export interface SubscriptionStatus {
   subscriptionEndDate: string | null;
   trialEndDate: string | null;
   subscriptionDaysRemaining: number | null;
+  /** Derived single-value access level the UI can switch on. */
+  accessLevel: SubscriptionAccessLevel;
 }
 
 const PLAN_NAMES: Record<string, string> = {
@@ -102,8 +110,25 @@ export const useSubscription = () => {
           subDaysRemaining = Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
         }
         
+        // The RPC now also returns subscription_status and trial_used.
+        // We cast through `any` because the generated types lag the migration.
+        const raw = status as any;
+        const resolvedStatus: SubscriptionStatus['status'] =
+          raw.subscription_status ?? (raw.is_subscription_active ? 'active' : raw.is_trial_active ? 'trial' : 'none');
+
+        const accessLevel: SubscriptionAccessLevel =
+          resolvedStatus === 'active'
+            ? 'paid'
+            : resolvedStatus === 'trial'
+            ? 'trial'
+            : raw.is_read_only
+            ? 'blocked'
+            : 'free';
+
         const newStatus: SubscriptionStatus = {
           plan: status.plan as SubscriptionStatus['plan'],
+          status: resolvedStatus,
+          trialUsed: raw.trial_used ?? false,
           isTrialActive: status.is_trial_active,
           trialDaysRemaining: status.trial_days_remaining,
           isSubscriptionActive: status.is_subscription_active,
@@ -114,6 +139,7 @@ export const useSubscription = () => {
           subscriptionEndDate: status.subscription_end_date || null,
           trialEndDate: status.trial_end_date || null,
           subscriptionDaysRemaining: subDaysRemaining,
+          accessLevel,
         };
         setSubscriptionStatus(newStatus);
         try {
