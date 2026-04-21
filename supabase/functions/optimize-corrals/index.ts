@@ -1408,13 +1408,25 @@ serve(async (req) => {
     const ancestryMap = buildAncestryMap(allAnimals || []);
     console.log(`Built ancestry map for ${ancestryMap.size} animals`);
 
+    // Normalize sex and status to canonical capitalized form so downstream
+    // comparisons (=== 'Macho' / 'Hembra' / 'activo') are case-insensitive-safe.
+    const normalizeSex = (s: any): string => {
+      const v = String(s || '').toLowerCase();
+      if (v === 'macho' || v === 'm' || v === 'male') return 'Macho';
+      if (v === 'hembra' || v === 'h' || v === 'f' || v === 'female') return 'Hembra';
+      return s;
+    };
+    const normalizeStatus = (s: any): string => String(s || '').toLowerCase();
+
     // Filter active animals for optimization (exclude castrated males from breeding analysis)
-    const animals = (allAnimals || []).filter(a => {
-      if (a.status !== 'activo') return false;
-      // Exclude castrated males - they cannot breed
-      if (a.sex === 'Macho' && a.is_castrated === true) return false;
-      return true;
-    });
+    const animals = (allAnimals || [])
+      .map((a: any) => ({ ...a, sex: normalizeSex(a.sex), status: normalizeStatus(a.status) }))
+      .filter((a: any) => {
+        if (a.status !== 'activo') return false;
+        // Exclude castrated males - they cannot breed
+        if (a.sex === 'Macho' && a.is_castrated === true) return false;
+        return true;
+      });
 
     // Fetch corrals
     const { data: corrals, error: corralsError } = await supabase
