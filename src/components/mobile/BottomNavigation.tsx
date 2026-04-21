@@ -71,11 +71,11 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
                 <div key={tab.key} className="flex-1 flex items-center justify-center">
                   <Button
                     onClick={onAddClick}
-                    size="lg"
-                    className="h-12 w-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg"
+                    size="icon"
+                    aria-label={tab.label}
+                    className="h-12 w-12 p-0 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg flex items-center justify-center shrink-0"
                   >
                     <tab.icon className="h-6 w-6" />
-                    <span className="sr-only">{tab.label}</span>
                   </Button>
                 </div>
               );
