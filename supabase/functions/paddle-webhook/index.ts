@@ -215,25 +215,6 @@ Deno.serve(async (req) => {
               updated_at: new Date().toISOString(),
             })
             .eq('cabaña_id', cabanaId);
-        } else if (false) {
-          // Flip to paid and update plan tier limits
-          await supabase.rpc('update_subscription_plan', {
-            cabana_uuid: cabanaId,
-            new_plan: productCode,
-          });
-          await supabase
-            .from('subscriptions')
-            .update({
-              is_trial_active: false,
-              is_active: true,
-              subscription_status: 'active',
-              subscription_start_date: new Date().toISOString(),
-              subscription_end_date: periodEnd,
-              paddle_customer_id: paddleCustomerId,
-              paddle_subscription_id: paddleSubscriptionId,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('cabaña_id', cabanaId);
         } else if (status === 'past_due' || status === 'paused') {
           await supabase
             .from('subscriptions')
