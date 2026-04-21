@@ -185,8 +185,22 @@ Deno.serve(async (req) => {
           });
           if (trialErr) {
             console.error('start_trial_for_cabana failed:', trialErr);
+          } else if (trialEnd) {
+            console.log(`Trial granted for cabana ${cabanaId} until ${trialEnd}`);
           } else {
-            console.log(`Trial decision for cabana ${cabanaId}:`, trialEnd ? `granted until ${trialEnd}` : 'REFUSED (already consumed)');
+            // Trial already consumed — DO NOT block the new subscription.
+            // Paddle will charge at the end of its own trial window and send
+            // `subscription.updated` with status=active. Until then we just
+            // record the Paddle IDs so the active event can find this cabaña.
+            console.log(`Trial REFUSED for cabana ${cabanaId} (already consumed). Waiting for Paddle to send active.`);
+            await supabase
+              .from('subscriptions')
+              .update({
+                paddle_customer_id: paddleCustomerId,
+                paddle_subscription_id: paddleSubscriptionId,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('cabaña_id', cabanaId);
           }
         } else if (status === 'active') {
           // Flip to paid and update plan tier limits
