@@ -2266,11 +2266,16 @@ export type Database = {
           is_trial_active: boolean | null
           max_animals: number
           max_users: number
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
           subscription_end_date: string | null
           subscription_start_date: string | null
+          subscription_status: string
+          trial_consumed_at: string | null
           trial_end_date: string | null
           trial_start_date: string | null
+          trial_used: boolean
           updated_at: string | null
         }
         Insert: {
@@ -2281,11 +2286,16 @@ export type Database = {
           is_trial_active?: boolean | null
           max_animals?: number
           max_users?: number
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           subscription_end_date?: string | null
           subscription_start_date?: string | null
+          subscription_status?: string
+          trial_consumed_at?: string | null
           trial_end_date?: string | null
           trial_start_date?: string | null
+          trial_used?: boolean
           updated_at?: string | null
         }
         Update: {
@@ -2296,11 +2306,16 @@ export type Database = {
           is_trial_active?: boolean | null
           max_animals?: number
           max_users?: number
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           subscription_end_date?: string | null
           subscription_start_date?: string | null
+          subscription_status?: string
+          trial_consumed_at?: string | null
           trial_end_date?: string | null
           trial_start_date?: string | null
+          trial_used?: boolean
           updated_at?: string | null
         }
         Relationships: [
@@ -2344,6 +2359,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      trial_consumed_identities: {
+        Row: {
+          cabana_id: string | null
+          consumed_at: string
+          email: string | null
+          id: string
+          paddle_customer_id: string | null
+        }
+        Insert: {
+          cabana_id?: string | null
+          consumed_at?: string
+          email?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+        }
+        Update: {
+          cabana_id?: string | null
+          consumed_at?: string
+          email?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+        }
+        Relationships: []
       }
       user_achievements: {
         Row: {
@@ -2923,8 +2962,10 @@ export type Database = {
           max_animals: number
           plan: string
           subscription_end_date: string
+          subscription_status: string
           trial_days_remaining: number
           trial_end_date: string
+          trial_used: boolean
         }[]
       }
       get_temporal_production_analysis: {
@@ -2992,6 +3033,14 @@ export type Database = {
       increment_achievement_share: {
         Args: { achievement_id: string }
         Returns: undefined
+      }
+      is_trial_consumed: {
+        Args: {
+          p_cabana_id?: string
+          p_email?: string
+          p_paddle_customer_id?: string
+        }
+        Returns: boolean
       }
       is_valid_password_reset_token: {
         Args: { _token: string }
@@ -3377,6 +3426,17 @@ export type Database = {
           tag: string
           total_offspring: number
         }[]
+      }
+      start_trial_for_cabana: {
+        Args: {
+          p_cabana_id: string
+          p_email: string
+          p_paddle_customer_id?: string
+          p_paddle_subscription_id?: string
+          p_plan: string
+          p_trial_days?: number
+        }
+        Returns: string
       }
       update_finance_movement: {
         Args: {
