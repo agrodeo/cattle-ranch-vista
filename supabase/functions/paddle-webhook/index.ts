@@ -173,37 +173,31 @@ Deno.serve(async (req) => {
         }, { onConflict: 'cabana_id' });
 
         // ----- Drive the canonical `subscriptions` row -----
-        if (status === 'trial') {
-          // Atomic, trial-once. Will refuse to grant a second trial.
-          const { data: trialEnd, error: trialErr } = await supabase.rpc('start_trial_for_cabana', {
-            p_cabana_id: cabanaId,
-            p_plan: productCode,
-            p_email: customerEmail,
-            p_paddle_customer_id: paddleCustomerId,
-            p_paddle_subscription_id: paddleSubscriptionId,
-            p_trial_days: 14,
-          });
-          if (trialErr) {
-            console.error('start_trial_for_cabana failed:', trialErr);
-          } else if (trialEnd) {
-            console.log(`Trial granted for cabana ${cabanaId} until ${trialEnd}`);
-          } else {
-            // Trial already consumed — DO NOT block the new subscription.
-            // Paddle will charge at the end of its own trial window and send
-            // `subscription.updated` with status=active. Until then we just
-            // record the Paddle IDs so the active event can find this cabaña.
-            console.log(`Trial REFUSED for cabana ${cabanaId} (already consumed). Waiting for Paddle to send active.`);
-            await supabase
-              .from('subscriptions')
-              .update({
-                paddle_customer_id: paddleCustomerId,
-                paddle_subscription_id: paddleSubscriptionId,
-                updated_at: new Date().toISOString(),
-              })
-              .eq('cabaña_id', cabanaId);
+        // IMPORTANT: A Paddle `trialing` status means the user has a real
+        // subscription with a card on file — Paddle will auto-charge at the
+        // end of its trial window. We MUST grant full paid access immediately
+        // regardless of our internal `trial_used` flag (which only governs the
+        // legacy in-app free trial, not Paddle-managed trials).
+        if (status === 'trial' || status === 'active') {
+          // Best-effort: record the trial-once ledger so other platforms
+          // (iOS/Android) can see this identity has consumed a trial. We do
+          // NOT block access if it's already consumed.
+          if (status === 'trial') {
+            const { error: trialErr } = await supabase.rpc('start_trial_for_cabana', {
+              p_cabana_id: cabanaId,
+              p_plan: productCode,
+              p_email: customerEmail,
+              p_paddle_customer_id: paddleCustomerId,
+              p_paddle_subscription_id: paddleSubscriptionId,
+              p_trial_days: 14,
+            });
+            if (trialErr) {
+              console.warn('start_trial_for_cabana ledger update failed (non-fatal):', trialErr);
+            }
           }
-        } else if (status === 'active') {
-          // Flip to paid and update plan tier limits
+
+          // Grant access immediately. periodEnd from Paddle covers both the
+          // trial window (for status=trial) and the paid window (for active).
           await supabase.rpc('update_subscription_plan', {
             cabana_uuid: cabanaId,
             new_plan: productCode,
@@ -211,10 +205,10 @@ Deno.serve(async (req) => {
           await supabase
             .from('subscriptions')
             .update({
-              is_trial_active: false,
+              is_trial_active: status === 'trial',
               is_active: true,
-              subscription_status: 'active',
-              subscription_start_date: new Date().toISOString(),
+              subscription_status: status === 'trial' ? 'trial' : 'active',
+              subscription_start_date: periodStart,
               subscription_end_date: periodEnd,
               paddle_customer_id: paddleCustomerId,
               paddle_subscription_id: paddleSubscriptionId,
