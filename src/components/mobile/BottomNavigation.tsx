@@ -62,9 +62,16 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
 
   return (
     <div className="lg:hidden fixed inset-x-0 bottom-0 z-50 bg-background border-t border-border w-full max-w-full overflow-hidden">
-      {/* Safe area for iOS */}
-      <div className="px-3 pb-[max(env(safe-area-inset-bottom),12px)] pt-2">
-        <nav className="flex items-center h-16">
+      {/* Safe area for iOS/Android (bottom, left, right) */}
+      <div
+        className="pt-2"
+        style={{
+          paddingLeft: 'max(env(safe-area-inset-left), 12px)',
+          paddingRight: 'max(env(safe-area-inset-right), 12px)',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+        }}
+      >
+        <nav className="flex items-center h-16 w-full">
           {tabs.map((tab) => {
             if (tab.isAction) {
               return (
