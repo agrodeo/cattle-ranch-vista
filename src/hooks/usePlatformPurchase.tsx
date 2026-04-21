@@ -7,6 +7,7 @@
   import { getRevenueCatProductId, type PlanId } from '@/config/revenueCatProducts';
   import { usePaddleCheckout } from '@/hooks/usePaddleCheckout';
   import { getPaddlePriceId } from '@/config/paddleProducts';
+  import { useUserAccess } from '@/hooks/useUserAccess';
 
   const getDespiaClient = async () => {
     const module = await import('despia-native');
@@ -30,6 +31,7 @@
     const { session, currentUser } = useSupabaseAuth();
     const { offerings, refreshCustomerInfo } = useEntitlements();
     const { openCheckout } = usePaddleCheckout();
+    const { trialUsed } = useUserAccess();
 
     const triggerSubscriptionRefresh = useCallback(() => {
       [0, 2500, 6000].forEach((delay) => {
@@ -270,10 +272,11 @@
       const cabanaId = currentUser?.cabañaId;
       if (!cabanaId) throw new Error('No se encontró la cabaña del usuario');
 
-      const priceId = getPaddlePriceId(data.planId, data.billingCycle);
+      const priceId = getPaddlePriceId(data.planId, data.billingCycle, { trialUsed });
       if (!priceId) {
         throw new Error(`No se encontró precio Paddle para "${data.planId}" (${data.billingCycle})`);
       }
+      console.log('[Purchase:Web] Using Paddle price', { planId: data.planId, billingCycle: data.billingCycle, trialUsed, priceId });
 
       const customerEmail = session?.user?.email || '';
 
