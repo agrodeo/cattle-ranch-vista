@@ -86,6 +86,16 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
 
   // Populate form when editing
   const populateForEdit = (animal: Animal) => {
+    // The form uses id_tag (caravana) as the value for mother_id/father_id
+    // selects. If the animal has a UUID parent reference, look up its id_tag
+    // from the parentAnimals list; otherwise fall back to the stored name.
+    const motherTag = animal.mother_id
+      ? (parentAnimals.find(p => p.id === animal.mother_id)?.id_tag || animal.mother_name || "")
+      : (animal.mother_name || "");
+    const fatherTag = animal.father_id
+      ? (parentAnimals.find(p => p.id === animal.father_id)?.id_tag || animal.father_name || "")
+      : (animal.father_name || "");
+
     setFormData({
       name: animal.name || "",
       id_tag: animal.id_tag || "",
@@ -94,8 +104,8 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
       breed: animal.breed || "",
       birth_date: animal.birth_date || "",
       status: normalizeStatusForForm(animal.status),
-      mother_id: animal.mother_name || "",
-      father_id: animal.father_name || "",
+      mother_id: motherTag,
+      father_id: fatherTag,
       mother_name: animal.mother_name || "",
       father_name: animal.father_name || "",
       mother_breed: animal.mother_breed || "",
@@ -110,6 +120,13 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
       observaciones: animal.observaciones || "",
       registration_level: animal.registration_level || "",
     });
+    // Auto-expand optional fields if any of them have data so the user sees them
+    const hasOptional = !!(
+      animal.caravana_electronica || animal.name || animal.mother_id || animal.father_id ||
+      animal.mother_name || animal.father_name || animal.peso_nacimiento ||
+      animal.mocho || animal.color || animal.condicion_corporal || animal.observaciones
+    );
+    if (hasOptional) setShowOptionalFields(true);
   };
 
   // Populate the form whenever the dialog opens or the editing target changes
