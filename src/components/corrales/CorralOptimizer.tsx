@@ -151,7 +151,7 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
         .from('animals')
         .select('id, corral_id')
         .eq('cabaña_id', currentUser.cabañaId)
-        .eq('status', 'activo');
+        .in('status', ['activo', 'Activo']);
 
       const animalCounts: Record<string, number> = {};
       (animalsData || []).forEach(animal => {

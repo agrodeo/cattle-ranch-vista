@@ -155,7 +155,7 @@ export default function Corrales() {
         .from('animals')
         .select('*', { count: 'exact', head: true })
         .eq('cabaña_id', currentUser.cabañaId)
-        .eq('status', 'activo');
+        .in('status', ['activo', 'Activo']);
 
       if (countError) throw countError;
       setTotalActiveAnimals(activeCount || 0);

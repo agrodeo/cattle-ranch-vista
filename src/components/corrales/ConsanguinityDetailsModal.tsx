@@ -32,7 +32,7 @@ export function ConsanguinityDetailsModal({ corralId }: ConsanguinityDetailsModa
         .from("animals")
         .select("id, sex, birth_date, father_id, mother_id, id_tag, name, status")
         .eq("corral_id", corralId)
-        .eq("status", "activo");
+        .in("status", ["activo", "Activo"]);
 
       if (error) throw error;
 

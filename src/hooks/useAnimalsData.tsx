@@ -72,7 +72,7 @@ export function useAnimalsData() {
         .from("animals")
         .select("id, name, id_tag, sex")
         .eq("cabaña_id", userCabaña)
-        .eq("status", "Activo")
+        .in("status", ["activo", "Activo"])
         .order("name");
       if (error) throw error;
       setParentAnimals(data || []);
