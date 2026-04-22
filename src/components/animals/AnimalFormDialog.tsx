@@ -48,7 +48,7 @@ const getMochoOptions = (t: any) => [
 
 const INITIAL_FORM = {
   name: "", id_tag: "", caravana_electronica: "", sex: "", breed: "", birth_date: "",
-  status: "Activo", mother_id: "", father_id: "", mother_name: "", father_name: "",
+  status: "activo", mother_id: "", father_id: "", mother_name: "", father_name: "",
   mother_breed: "", father_breed: "", mother_registration: "", father_registration: "",
   cabaña_id: "", peso_nacimiento: "", mocho: "", color: "", condicion_corporal: "",
   observaciones: "", registration_level: ""
@@ -74,14 +74,14 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
     setShowOptionalFields(false);
   };
 
-  // Normalize status from DB (lowercase) to form values (capitalized)
+  // Normalize status to database values
   const normalizeStatusForForm = (status?: string | null): string => {
-    if (!status) return "Activo";
+    if (!status) return "activo";
     const lower = status.toLowerCase();
-    if (lower === "activo") return "Activo";
-    if (lower === "vendido") return "Vendido";
-    if (lower === "muerto") return "Muerto";
-    return "Activo";
+    if (lower === "activo") return "activo";
+    if (lower === "vendido") return "vendido";
+    if (lower === "muerto") return "muerto";
+    return "activo";
   };
 
   // Populate form when editing
@@ -185,30 +185,47 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         }
       }
 
-      const submitData = {
-        name: formData.name || null, id_tag: formData.id_tag, sex: formData.sex, breed: formData.breed,
-        birth_date: formData.birth_date || null, status: formData.status, mother_id: motherUUID, father_id: fatherUUID,
+      const normalizedStatus = normalizeStatusForForm(formData.status);
+      const baseSubmitData = {
+        name: formData.name || null,
+        id_tag: formData.id_tag,
+        sex: formData.sex,
+        breed: formData.breed,
+        birth_date: formData.birth_date || null,
+        status: normalizedStatus,
+        mother_id: motherUUID,
+        father_id: fatherUUID,
         mother_name: !motherUUID && formData.mother_id ? formData.mother_id : null,
         father_name: !fatherUUID && formData.father_id ? formData.father_id : null,
-        mother_breed: formData.mother_breed || null, father_breed: formData.father_breed || null,
-        mother_registration: formData.mother_registration || null, father_registration: formData.father_registration || null,
-        cabaña_id: cabId, peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
-        mocho: formData.mocho || null, color: formData.color || null,
-        condicion_corporal: formData.condicion_corporal || null, observaciones: formData.observaciones || null,
-        registration_level: formData.registration_level || null, ...registrationData,
+        mother_breed: formData.mother_breed || null,
+        father_breed: formData.father_breed || null,
+        mother_registration: formData.mother_registration || null,
+        father_registration: formData.father_registration || null,
+        peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
+        mocho: formData.mocho || null,
+        color: formData.color || null,
+        condicion_corporal: formData.condicion_corporal || null,
+        observaciones: formData.observaciones || null,
+        registration_level: formData.registration_level || null,
+        ...registrationData,
+      };
+
+      const createSubmitData = {
+        ...baseSubmitData,
+        cabaña_id: cabId,
       };
 
       if (isOnline()) {
         // Online: write directly to Supabase
         if (editingAnimal) {
-          const { error } = await supabase.from("animals").update(submitData).eq("id", editingAnimal.id);
+          const { error } = await supabase.from("animals").update(baseSubmitData).eq("id", editingAnimal.id);
           if (error) throw error;
           toast({ title: t('common:status.success'), description: t('animals:messages.updated') });
-          if (submitData.status === "vendido" || submitData.status === "muerto" || submitData.status === "Vendido" || submitData.status === "Muerto") {
+          if (baseSubmitData.status === "vendido" || baseSubmitData.status === "muerto") {
             await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
           }
         } else {
-          const { error } = await supabase.from("animals").insert([submitData]);
+          const { error } = await supabase.from("animals").insert([createSubmitData]);
           if (error) throw error;
           toast({ title: t('common:status.success'), description: t('animals:messages.created') });
         }
@@ -216,22 +233,29 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         // Offline: save to IndexedDB + outbox
         const now = new Date().toISOString();
         if (editingAnimal) {
-          await db.animals_cache.update(editingAnimal.id, { ...submitData, sex: submitData.sex as 'Macho' | 'Hembra', status: (submitData.status || 'activo') as any, cabaña_id: submitData.cabaña_id || '', updated_at: now, sync_status: 'pending' as const });
-          await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: editingAnimal.id, ...submitData } });
-        } else {
-          const tempId = generateTempId();
-          await db.animals_cache.add({
-            ...submitData,
-            id: tempId,
-            sex: submitData.sex as 'Macho' | 'Hembra',
-            status: (submitData.status || 'activo') as 'activo' | 'vendido' | 'muerto',
-            cabaña_id: submitData.cabaña_id || '',
+          await db.animals_cache.update(editingAnimal.id, {
+            ...baseSubmitData,
+            sex: baseSubmitData.sex as 'Macho' | 'Hembra',
+            status: (baseSubmitData.status || 'activo') as any,
+            cabaña_id: editingAnimal.cabaña_id || userCabaña || '',
             updated_at: now,
             sync_status: 'pending' as const,
           });
-          await enqueue({ type: 'ANIMAL_INSERT', payload: submitData, tempIds: { animalId: tempId } });
-          await db.animals_cache.add({ ...submitData, id: tempId, updated_at: now, sync_status: 'pending' } as any);
-          await enqueue({ type: 'ANIMAL_INSERT', payload: submitData, tempIds: { animalId: tempId } });
+          await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: editingAnimal.id, ...baseSubmitData } });
+        } else {
+          const tempId = generateTempId();
+          await db.animals_cache.add({
+            ...createSubmitData,
+            id: tempId,
+            sex: createSubmitData.sex as 'Macho' | 'Hembra',
+            status: (createSubmitData.status || 'activo') as 'activo' | 'vendido' | 'muerto',
+            cabaña_id: createSubmitData.cabaña_id || '',
+            updated_at: now,
+            sync_status: 'pending' as const,
+          });
+          await enqueue({ type: 'ANIMAL_INSERT', payload: createSubmitData, tempIds: { animalId: tempId } });
+          await db.animals_cache.add({ ...createSubmitData, id: tempId, updated_at: now, sync_status: 'pending' } as any);
+          await enqueue({ type: 'ANIMAL_INSERT', payload: createSubmitData, tempIds: { animalId: tempId } });
         }
         sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
       }
@@ -416,14 +440,14 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
 
             <div className="space-y-2">
               <Label>{t('animals:fields.status')}</Label>
-              <Select value={f.status} onValueChange={v => setF({ status: v })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-50">
-                  <SelectItem value="Activo">{t('animals:status.active')}</SelectItem>
-                  <SelectItem value="Vendido">{t('animals:status.sold')}</SelectItem>
-                  <SelectItem value="Muerto">{t('animals:status.dead')}</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={f.status} onValueChange={v => setF({ status: v })}>
+                  <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    <SelectItem value="activo">{t('animals:status.active')}</SelectItem>
+                    <SelectItem value="vendido">{t('animals:status.sold')}</SelectItem>
+                    <SelectItem value="muerto">{t('animals:status.dead')}</SelectItem>
+                  </SelectContent>
+                </Select>
             </div>
           </div>
 
