@@ -254,9 +254,20 @@ export function MobileAnimals() {
                               </div>
                             </CardTitle>
                             <div className="flex items-center gap-2 shrink-0">
-                              <Badge variant="outline" className="text-xs">
-                                {animal.status}
-                              </Badge>
+                              {(() => {
+                                const normalized = normalizeAnimalStatus(animal.status);
+                                const className =
+                                  normalized === "active"
+                                    ? "bg-emerald-100 text-emerald-800 border-emerald-200"
+                                    : normalized === "sold"
+                                    ? "bg-amber-100 text-amber-800 border-amber-200"
+                                    : "bg-red-100 text-red-800 border-red-200";
+                                return (
+                                  <Badge variant="outline" className={`text-xs ${className}`}>
+                                    {getDisplayStatus(normalized)}
+                                  </Badge>
+                                );
+                              })()}
                               {isExpanded ? (
                                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
                               ) : (

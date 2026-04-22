@@ -89,10 +89,13 @@ const Animals = () => {
   const getStatusBadge = (status: string) => {
     const normalized = normalizeAnimalStatus(status);
     const display = getTranslatedStatus(normalized, t);
-    let variant: "default" | "secondary" | "destructive" | "outline" = "default";
-    if (normalized === "sold") variant = "secondary";
-    else if (normalized === "dead") variant = "destructive";
-    return <Badge variant={variant}>{display}</Badge>;
+    const className =
+      normalized === "active"
+        ? "bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+        : normalized === "sold"
+        ? "bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100"
+        : "bg-red-100 text-red-800 border-red-200 hover:bg-red-100";
+    return <Badge variant="outline" className={className}>{display}</Badge>;
   };
 
   const handleEdit = (animal: Animal) => {
