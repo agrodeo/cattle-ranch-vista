@@ -74,14 +74,14 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
     setShowOptionalFields(false);
   };
 
-  // Normalize status from DB (lowercase) to form values (capitalized)
+  // Normalize status to database values
   const normalizeStatusForForm = (status?: string | null): string => {
-    if (!status) return "Activo";
+    if (!status) return "activo";
     const lower = status.toLowerCase();
-    if (lower === "activo") return "Activo";
-    if (lower === "vendido") return "Vendido";
-    if (lower === "muerto") return "Muerto";
-    return "Activo";
+    if (lower === "activo") return "activo";
+    if (lower === "vendido") return "vendido";
+    if (lower === "muerto") return "muerto";
+    return "activo";
   };
 
   // Populate form when editing
