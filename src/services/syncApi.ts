@@ -21,6 +21,19 @@ export interface SyncResponse {
   }>;
 }
 
+// Strip client-only fields and PK before sending to Supabase UPDATE.
+// Sending `id` in the SET clause (even with same value) plus stale cache-only
+// fields like `sync_status` causes "could not save" errors.
+function sanitizeUpdatePayload(payload: any): any {
+  if (!payload || typeof payload !== 'object') return payload;
+  const { id, sync_status, _local, ...rest } = payload;
+  // Remove keys whose value is undefined (Supabase rejects those)
+  Object.keys(rest).forEach((k) => {
+    if (rest[k] === undefined) delete rest[k];
+  });
+  return rest;
+}
+
 export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> {
   const results: SyncResponse['results'] = [];
   const idMap: SyncResponse['idMap'] = [];
