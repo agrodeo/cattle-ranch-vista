@@ -186,7 +186,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
       }
 
       const normalizedStatus = normalizeStatusForForm(formData.status);
-      const submitData = {
+      const baseSubmitData = {
         name: formData.name || null,
         id_tag: formData.id_tag,
         sex: formData.sex,
@@ -210,17 +210,22 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         ...registrationData,
       };
 
+      const createSubmitData = {
+        ...baseSubmitData,
+        cabaña_id: cabId,
+      };
+
       if (isOnline()) {
         // Online: write directly to Supabase
         if (editingAnimal) {
-          const { error } = await supabase.from("animals").update(submitData).eq("id", editingAnimal.id);
+          const { error } = await supabase.from("animals").update(baseSubmitData).eq("id", editingAnimal.id);
           if (error) throw error;
           toast({ title: t('common:status.success'), description: t('animals:messages.updated') });
-          if (submitData.status === "vendido" || submitData.status === "muerto" || submitData.status === "Vendido" || submitData.status === "Muerto") {
+          if (baseSubmitData.status === "vendido" || baseSubmitData.status === "muerto") {
             await cleanupInactiveAnimalsFromCorrals(editingAnimal.cabaña_id || userCabaña);
           }
         } else {
-          const { error } = await supabase.from("animals").insert([submitData]);
+          const { error } = await supabase.from("animals").insert([createSubmitData]);
           if (error) throw error;
           toast({ title: t('common:status.success'), description: t('animals:messages.created') });
         }
@@ -228,22 +233,29 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         // Offline: save to IndexedDB + outbox
         const now = new Date().toISOString();
         if (editingAnimal) {
-          await db.animals_cache.update(editingAnimal.id, { ...submitData, sex: submitData.sex as 'Macho' | 'Hembra', status: (submitData.status || 'activo') as any, cabaña_id: submitData.cabaña_id || '', updated_at: now, sync_status: 'pending' as const });
-          await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: editingAnimal.id, ...submitData } });
-        } else {
-          const tempId = generateTempId();
-          await db.animals_cache.add({
-            ...submitData,
-            id: tempId,
-            sex: submitData.sex as 'Macho' | 'Hembra',
-            status: (submitData.status || 'activo') as 'activo' | 'vendido' | 'muerto',
-            cabaña_id: submitData.cabaña_id || '',
+          await db.animals_cache.update(editingAnimal.id, {
+            ...baseSubmitData,
+            sex: baseSubmitData.sex as 'Macho' | 'Hembra',
+            status: (baseSubmitData.status || 'activo') as any,
+            cabaña_id: editingAnimal.cabaña_id || userCabaña || '',
             updated_at: now,
             sync_status: 'pending' as const,
           });
-          await enqueue({ type: 'ANIMAL_INSERT', payload: submitData, tempIds: { animalId: tempId } });
-          await db.animals_cache.add({ ...submitData, id: tempId, updated_at: now, sync_status: 'pending' } as any);
-          await enqueue({ type: 'ANIMAL_INSERT', payload: submitData, tempIds: { animalId: tempId } });
+          await enqueue({ type: 'ANIMAL_UPDATE', payload: { id: editingAnimal.id, ...baseSubmitData } });
+        } else {
+          const tempId = generateTempId();
+          await db.animals_cache.add({
+            ...createSubmitData,
+            id: tempId,
+            sex: createSubmitData.sex as 'Macho' | 'Hembra',
+            status: (createSubmitData.status || 'activo') as 'activo' | 'vendido' | 'muerto',
+            cabaña_id: createSubmitData.cabaña_id || '',
+            updated_at: now,
+            sync_status: 'pending' as const,
+          });
+          await enqueue({ type: 'ANIMAL_INSERT', payload: createSubmitData, tempIds: { animalId: tempId } });
+          await db.animals_cache.add({ ...createSubmitData, id: tempId, updated_at: now, sync_status: 'pending' } as any);
+          await enqueue({ type: 'ANIMAL_INSERT', payload: createSubmitData, tempIds: { animalId: tempId } });
         }
         sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
       }
