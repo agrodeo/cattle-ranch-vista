@@ -74,19 +74,41 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
     setShowOptionalFields(false);
   };
 
+  // Normalize status from DB (lowercase) to form values (capitalized)
+  const normalizeStatusForForm = (status?: string | null): string => {
+    if (!status) return "Activo";
+    const lower = status.toLowerCase();
+    if (lower === "activo") return "Activo";
+    if (lower === "vendido") return "Vendido";
+    if (lower === "muerto") return "Muerto";
+    return "Activo";
+  };
+
   // Populate form when editing
   const populateForEdit = (animal: Animal) => {
     setFormData({
-      name: animal.name || "", id_tag: animal.id_tag, caravana_electronica: animal.caravana_electronica || "",
-      sex: animal.sex, breed: animal.breed, birth_date: animal.birth_date || "", status: animal.status,
-      mother_id: animal.mother_name || "", father_id: animal.father_name || "",
-      mother_name: animal.mother_name || "", father_name: animal.father_name || "",
-      mother_breed: animal.mother_breed || "", father_breed: animal.father_breed || "",
-      mother_registration: animal.mother_registration || "", father_registration: animal.father_registration || "",
-      cabaña_id: animal.cabaña_id, peso_nacimiento: animal.peso_nacimiento?.toString() || "",
-      mocho: animal.mocho || "", color: animal.color || "",
-      condicion_corporal: animal.condicion_corporal || "", observaciones: animal.observaciones || "",
-      registration_level: animal.registration_level || ""
+      name: animal.name || "",
+      id_tag: animal.id_tag || "",
+      caravana_electronica: animal.caravana_electronica || "",
+      sex: animal.sex || "",
+      breed: animal.breed || "",
+      birth_date: animal.birth_date || "",
+      status: normalizeStatusForForm(animal.status),
+      mother_id: animal.mother_name || "",
+      father_id: animal.father_name || "",
+      mother_name: animal.mother_name || "",
+      father_name: animal.father_name || "",
+      mother_breed: animal.mother_breed || "",
+      father_breed: animal.father_breed || "",
+      mother_registration: animal.mother_registration || "",
+      father_registration: animal.father_registration || "",
+      cabaña_id: animal.cabaña_id || "",
+      peso_nacimiento: animal.peso_nacimiento?.toString() || "",
+      mocho: animal.mocho || "",
+      color: animal.color || "",
+      condicion_corporal: animal.condicion_corporal || "",
+      observaciones: animal.observaciones || "",
+      registration_level: animal.registration_level || "",
     });
   };
 
