@@ -48,7 +48,7 @@ const getMochoOptions = (t: any) => [
 
 const INITIAL_FORM = {
   name: "", id_tag: "", caravana_electronica: "", sex: "", breed: "", birth_date: "",
-  status: "Activo", mother_id: "", father_id: "", mother_name: "", father_name: "",
+  status: "activo", mother_id: "", father_id: "", mother_name: "", father_name: "",
   mother_breed: "", father_breed: "", mother_registration: "", father_registration: "",
   cabaña_id: "", peso_nacimiento: "", mocho: "", color: "", condicion_corporal: "",
   observaciones: "", registration_level: ""
