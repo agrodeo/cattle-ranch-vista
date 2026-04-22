@@ -440,14 +440,14 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
 
             <div className="space-y-2">
               <Label>{t('animals:fields.status')}</Label>
-              <Select value={f.status} onValueChange={v => setF({ status: v })}>
-                <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-background border shadow-md z-50">
-                  <SelectItem value="Activo">{t('animals:status.active')}</SelectItem>
-                  <SelectItem value="Vendido">{t('animals:status.sold')}</SelectItem>
-                  <SelectItem value="Muerto">{t('animals:status.dead')}</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={f.status} onValueChange={v => setF({ status: v })}>
+                  <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    <SelectItem value="activo">{t('animals:status.active')}</SelectItem>
+                    <SelectItem value="vendido">{t('animals:status.sold')}</SelectItem>
+                    <SelectItem value="muerto">{t('animals:status.dead')}</SelectItem>
+                  </SelectContent>
+                </Select>
             </div>
           </div>
 
