@@ -69,7 +69,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
                 className={cn(
                   "relative z-10 flex-1 flex flex-col items-center justify-center min-h-[44px] py-1 rounded-full",
                   "transition-all duration-200 active:scale-95",
-                  active ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                  active ? "text-white" : "text-white/60 hover:text-white/90"
                 )}
               >
                 <tab.icon className={cn("h-5 w-5 mb-0.5", active && "text-primary")} />
