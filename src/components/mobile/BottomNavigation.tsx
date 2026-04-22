@@ -41,22 +41,22 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
       }}
     >
       <div className="pointer-events-auto mx-auto flex w-full max-w-md items-center justify-center gap-2 px-3">
-        {/* Main glass pill - liquid glass outline */}
+        {/* Main glass pill - dark liquid glass */}
         <nav
           className={cn(
             "relative flex-1 flex items-center justify-around gap-1 h-16 px-2",
             "rounded-full isolate",
-            "bg-white/55 dark:bg-white/[0.08]",
+            "bg-slate-900/40 dark:bg-slate-950/55",
             "backdrop-blur-2xl backdrop-saturate-200",
-            "border border-white/50 dark:border-white/20",
-            // Layered glass: outer soft glow + crisp lift shadow + inner top highlight + inner bottom depth
-            "shadow-[0_0_0_0.5px_rgba(255,255,255,0.35),0_1px_0_0_rgba(255,255,255,0.6)_inset,0_-1px_2px_0_rgba(15,23,42,0.08)_inset,0_8px_32px_rgba(15,23,42,0.12),0_0_40px_rgba(255,255,255,0.25)]",
-            // Top light reflection
-            "before:content-[''] before:absolute before:inset-x-3 before:top-px before:h-1/2 before:rounded-full before:pointer-events-none",
-            "before:bg-gradient-to-b before:from-white/50 before:to-transparent before:opacity-70",
-            // Edge gradient overlay (rim light)
+            "border border-white/30",
+            // Outer halo + lift + inset top highlight + inset bottom darkness for depth
+            "shadow-[0_0_0_0.5px_rgba(255,255,255,0.2),0_1px_0_0_rgba(255,255,255,0.4)_inset,0_-10px_18px_-10px_rgba(0,0,0,0.5)_inset,0_12px_32px_rgba(0,0,0,0.28),0_0_30px_rgba(255,255,255,0.08)]",
+            // Top specular reflection
+            "before:content-[''] before:absolute before:inset-x-4 before:top-0 before:h-1/2 before:rounded-full before:pointer-events-none",
+            "before:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.4),rgba(255,255,255,0)_75%)]",
+            // Rim light gradient (masked ring)
             "after:content-[''] after:absolute after:inset-0 after:rounded-full after:pointer-events-none after:p-px",
-            "after:bg-gradient-to-b after:from-white/60 after:via-white/10 after:to-white/25",
+            "after:bg-[linear-gradient(to_bottom,rgba(255,255,255,0.75),rgba(255,255,255,0.05)_45%,rgba(255,255,255,0.3))]",
             "after:[mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] after:[mask-composite:exclude] after:[-webkit-mask-composite:xor]"
           )}
         >
