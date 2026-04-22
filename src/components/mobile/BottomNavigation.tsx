@@ -46,7 +46,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
           className={cn(
             "flex-1 flex items-center justify-around gap-1 h-16 px-2",
             "rounded-full",
-            "bg-white/60 dark:bg-white/10",
+            "bg-white/35 dark:bg-white/5",
             "backdrop-blur-2xl backdrop-saturate-150",
             "border border-white/40 dark:border-white/15",
             "shadow-[0_8px_32px_rgba(15,23,42,0.12)]"
@@ -77,7 +77,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
           aria-label="Cargar"
           className={cn(
             "shrink-0 h-16 w-16 rounded-full flex items-center justify-center",
-            "bg-primary/90 text-primary-foreground",
+            "bg-primary/70 text-primary-foreground",
             "backdrop-blur-2xl backdrop-saturate-150",
             "border border-white/40 dark:border-white/15",
             "shadow-[0_8px_32px_rgba(34,197,94,0.35)]",
