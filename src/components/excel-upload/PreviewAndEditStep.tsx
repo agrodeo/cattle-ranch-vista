@@ -471,7 +471,7 @@ export const PreviewAndEditStep = ({
         )}
 
         {/* Preview table - Desktop only */}
-        <div className="hidden lg:block max-h-96 overflow-y-auto border rounded">
+        <div className="hidden lg:block max-h-96 overflow-auto border rounded">
           <Table>
             <TableHeader>
               <TableRow>
