@@ -486,28 +486,6 @@ export default function Corrales() {
             />
 
 
-            {/* Sticky Action Bar for Mobile */}
-            <StickyActionBar>
-              <div className="flex gap-2 w-full">
-                <Button 
-                  variant="outline"
-                  onClick={() => setMoveDialogOpen(true)}
-                  className="flex-1 h-11"
-                >
-                  <Move className="h-4 w-4 mr-1" />
-                  {t('corrals:buttons.move')}
-                </Button>
-                <ReadOnlyProtectedAction>
-                  <Button 
-                    onClick={() => setCreateDialogOpen(true)}
-                    className="flex-1 h-11"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    {t('corrals:buttons.new')}
-                  </Button>
-                </ReadOnlyProtectedAction>
-              </div>
-            </StickyActionBar>
 
             {/* Corrales List */}
             <div className="space-y-4">
