@@ -10,6 +10,8 @@ interface ExcelAnimalUploadProps {
 }
 
 export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps) {
+  const { currentUser } = useSupabaseAuth();
+  const cabañaId = currentUser?.cabañaId || "";
   return (
     <div 
       className="fixed inset-0 z-50 bg-background lg:hidden"
