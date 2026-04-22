@@ -45,7 +45,7 @@ export function ExcelAnimalUpload({ onBack, onSuccess }: ExcelAnimalUploadProps)
           </CardHeader>
           <CardContent className="px-3 pb-4">
             <AnimalExcelUploadAdvanced 
-              userCabañaId="" 
+              userCabañaId={cabañaId} 
               onUploadComplete={onSuccess}
               isMobileMode={true}
             />
