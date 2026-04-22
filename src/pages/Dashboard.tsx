@@ -340,8 +340,11 @@ const Dashboard = () => {
         )}
 
         {/* Floating Action Button - Mobile */}
-        <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none">
-          <div className="mx-auto max-w-screen-sm px-3 pb-[env(safe-area-inset-bottom)] pointer-events-auto">
+        <div
+          className="lg:hidden fixed inset-x-0 z-40 pointer-events-none"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}
+        >
+          <div className="mx-auto max-w-screen-sm px-3 pointer-events-auto">
             <div className="rounded-full bg-background/95 shadow-lg backdrop-blur border border-border p-2 mb-3">
               <Button
                 onClick={handleRegisterActivity}

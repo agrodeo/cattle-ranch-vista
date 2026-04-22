@@ -23,8 +23,11 @@ export function FloatingActionBar({ onRegisterActivity }: FloatingActionBarProps
       </div>
 
       {/* Mobile: Floating Action Bar */}
-      <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 pointer-events-none">
-        <div className="mx-auto max-w-screen-sm px-3 pb-[max(env(safe-area-inset-bottom),12px)] pointer-events-auto">
+      <div
+        className="lg:hidden fixed inset-x-0 z-40 pointer-events-none"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)' }}
+      >
+        <div className="mx-auto max-w-screen-sm px-3 pointer-events-auto">
           <div className="rounded-full bg-white/95 shadow-lg backdrop-blur border border-slate-200 p-2 mb-3">
             <Button 
               onClick={onRegisterActivity}
