@@ -668,7 +668,7 @@ export const useDashboardSummary = (): DashboardSummary => {
             .from('animals')
             .select('id, breed, corral_id, sex, name, id_tag, corrales!inner(name)')
             .eq('cabaña_id', cabanaId)
-            .eq('status', 'activo')
+            .in('status', ['activo', 'Activo'])
             .not('breed', 'is', null)
             .not('corral_id', 'is', null);
 
