@@ -17,7 +17,10 @@ export function AIChatButton() {
 
   return (
     <>
-      <div className="fixed bottom-24 right-6 z-50 lg:bottom-6 flex flex-col items-end gap-1">
+      <div
+        className="fixed right-4 z-50 lg:bottom-6 lg:right-6 flex flex-col items-end gap-1"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)' }}
+      >
         {/* Usage counter badge for limited plans */}
         {!isUnlimited && !limitReached && (
           <Badge variant="secondary" className="text-xs shadow-sm">
