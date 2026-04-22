@@ -53,7 +53,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'ANIMAL_UPDATE':
-          result = await supabase.from('animals').update(payload).eq('id', payload.id).select().single();
+          result = await supabase.from('animals').update(sanitizeUpdatePayload(payload)).eq('id', payload.id).select().single();
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
