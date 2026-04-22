@@ -60,7 +60,6 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
             "after:[mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] after:[mask-composite:exclude] after:[-webkit-mask-composite:xor]"
           )}
         >
-          <span className="relative z-10 flex flex-1 items-center justify-around gap-1 w-full">{null}</span>
           {tabs.map((tab) => {
             const active = isActive(tab.path);
             return (
@@ -68,7 +67,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
                 key={tab.key}
                 to={tab.path}
                 className={cn(
-                  "flex-1 flex flex-col items-center justify-center min-h-[44px] py-1 rounded-full",
+                  "relative z-10 flex-1 flex flex-col items-center justify-center min-h-[44px] py-1 rounded-full",
                   "transition-all duration-200 active:scale-95",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
@@ -80,20 +79,28 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
           })}
         </nav>
 
-        {/* Separated floating + button */}
+        {/* Separated floating + button - liquid glass with brand tint */}
         <button
           onClick={onAddClick}
           aria-label="Cargar"
           className={cn(
-            "shrink-0 h-16 w-16 rounded-full flex items-center justify-center",
-            "bg-primary/90 text-primary-foreground",
-            "backdrop-blur-2xl backdrop-saturate-150",
-            "border border-white/40 dark:border-white/15",
-            "shadow-[0_8px_32px_rgba(34,197,94,0.35)]",
+            "relative shrink-0 h-16 w-16 rounded-full flex items-center justify-center isolate",
+            "bg-primary/95 text-primary-foreground",
+            "backdrop-blur-2xl backdrop-saturate-200",
+            "border border-white/60 dark:border-white/25",
+            // Stronger layered glass: rim + top highlight inset + bottom depth inset + lift + colored glow + outer white halo
+            "shadow-[0_0_0_0.5px_rgba(255,255,255,0.45),0_1px_0_0_rgba(255,255,255,0.7)_inset,0_-2px_3px_0_rgba(0,0,0,0.12)_inset,0_10px_28px_rgba(34,197,94,0.45),0_0_50px_rgba(255,255,255,0.3)]",
+            // Top reflection
+            "before:content-[''] before:absolute before:inset-x-2 before:top-0.5 before:h-1/2 before:rounded-full before:pointer-events-none",
+            "before:bg-gradient-to-b before:from-white/55 before:to-transparent",
+            // Rim light
+            "after:content-[''] after:absolute after:inset-0 after:rounded-full after:pointer-events-none after:p-px",
+            "after:bg-gradient-to-b after:from-white/70 after:via-white/15 after:to-white/30",
+            "after:[mask:linear-gradient(#000_0_0)_content-box,linear-gradient(#000_0_0)] after:[mask-composite:exclude] after:[-webkit-mask-composite:xor]",
             "transition-all duration-200 active:scale-95 hover:bg-primary"
           )}
         >
-          <Plus className="h-7 w-7" strokeWidth={2.5} />
+          <Plus className="relative z-10 h-7 w-7" strokeWidth={2.5} />
         </button>
       </div>
     </div>
