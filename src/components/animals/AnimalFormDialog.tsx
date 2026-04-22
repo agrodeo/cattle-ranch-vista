@@ -28,6 +28,8 @@ const ARGENTINE_BREEDS = [
 ];
 
 const HORNED_BREEDS = ["Hereford", "Braford", "Charolais", "Limousin", "Simmental", "Brahman", "Nelore", "Santa Gertrudis", "Criollo", "Corriente"];
+const COAT_COLOR_BREEDS = ["Angus", "Brangus", "Brahman"];
+const COAT_COLOR_OPTIONS = ["Negro", "Colorado", "Negro homocigota", "Colorado homocigota"];
 const BODY_CONDITION_SCORES = ["1", "2", "3", "4", "5"];
 
 const REGISTRATION_OPTIONS: Record<string, string[]> = {
@@ -281,6 +283,18 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
                   <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
                   <SelectContent className="bg-background border shadow-md z-50">
                     {getMochoOptions(t).map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {f.breed && COAT_COLOR_BREEDS.includes(f.breed) && (
+              <div className="space-y-2">
+                <Label>Pelaje</Label>
+                <Select value={f.color} onValueChange={v => setF({ color: v })}>
+                  <SelectTrigger className="bg-background"><SelectValue placeholder="Seleccionar pelaje" /></SelectTrigger>
+                  <SelectContent className="bg-background border shadow-md z-50">
+                    {COAT_COLOR_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

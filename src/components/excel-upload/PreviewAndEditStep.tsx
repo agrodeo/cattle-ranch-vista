@@ -280,6 +280,7 @@ export const PreviewAndEditStep = ({
         circunferencia_escrotal: animal.circunferencia_escrotal || null,
         status: normalizeAnimalStatus(animal.estado),
         mocho: animal.mocho || null,
+        color: (animal as any).pelaje || null,
         observaciones: animal.observaciones || null,
         tipo_parto: animal.tipo_parto || null,
         condicion_corporal: animal.condicion_corporal?.toString() || null,

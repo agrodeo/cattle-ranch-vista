@@ -23,6 +23,7 @@ export interface AnimalFieldMapping {
   
   // Optional fields
   caravana_electronica?: string; // NEW: Electronic tag support
+  pelaje?: string; // For Angus / Brangus / Brahman
   nombre?: string;
   peso_nacer?: number;
   peso_final?: number;
@@ -92,6 +93,7 @@ export const SUPPORTED_FIELDS = {
   padre_id: { label: "Padre ID", required: false, type: "text" },
   madre_id: { label: "Madre ID", required: false, type: "text" },
   mocho: { label: "¿Mocho?", required: false, type: "select", options: ["Mocho", "Con Cuernos", "Desconocido"] },
+  pelaje: { label: "Pelaje (Angus/Brangus/Brahman)", required: false, type: "select", options: ["Negro", "Colorado", "Negro homocigota", "Colorado homocigota"] },
   observaciones: { label: "Observaciones / Notas", required: false, type: "textarea" },
   tipo_parto: { label: "Tipo de Parto", required: false, type: "select", options: ["Simple", "Gemelar", "Dificultoso", "Natural"] },
   condicion_corporal: { label: "Condición Corporal (1-5)", required: false, type: "number" },
@@ -249,7 +251,11 @@ const AnimalExcelUploadAdvanced = ({ userCabañaId, onUploadComplete, isMobileMo
         'madre_id': 'madre_id',
         'madre id': 'madre_id',
         'mother': 'madre_id',
-        'madre': 'madre_id'
+        'madre': 'madre_id',
+        'pelaje': 'pelaje',
+        'color': 'pelaje',
+        'coat_color': 'pelaje',
+        'coat color': 'pelaje',
       };
       
       if (mappings[normalizedHeader]) {
