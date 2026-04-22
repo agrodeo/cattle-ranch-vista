@@ -73,7 +73,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'CORRAL_UPDATE':
-          result = await supabase.from('corrales').update(payload).eq('id', payload.id);
+          result = await supabase.from('corrales').update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
@@ -105,7 +105,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'VACCINE_UPDATE':
-          result = await supabase.from('animal_vaccines').update(payload).eq('id', payload.id);
+          result = await supabase.from('animal_vaccines').update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
@@ -125,7 +125,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'WEIGHT_UPDATE':
-          result = await supabase.from('animal_weight_history').update(payload).eq('id', payload.id);
+          result = await supabase.from('animal_weight_history').update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
@@ -145,7 +145,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'INSEMINATION_UPDATE':
-          result = await supabase.from('artificial_inseminations').update(payload).eq('id', payload.id);
+          result = await supabase.from('artificial_inseminations').update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
@@ -165,7 +165,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'PREGNANCY_UPDATE':
-          result = await supabase.from('preñeces' as any).update(payload).eq('id', payload.id);
+          result = await supabase.from('preñeces' as any).update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
@@ -179,7 +179,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'FINANCE_UPDATE':
-          result = await supabase.from('finances').update(payload).eq('id', payload.id);
+          result = await supabase.from('finances').update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
@@ -215,7 +215,7 @@ export async function postSyncBatch(events: SyncEvent[]): Promise<SyncResponse> 
           break;
 
         case 'EVENTO_UPDATE':
-          result = await supabase.from('eventos').update(payload).eq('id', payload.id);
+          result = await supabase.from('eventos').update(sanitizeUpdatePayload(payload)).eq('id', payload.id);
           if (result.error) throw new Error(result.error.message);
           results.push({ id: eventId, success: true });
           break;
