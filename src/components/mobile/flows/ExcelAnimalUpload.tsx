@@ -1,8 +1,8 @@
-import { useState } from "react";
-import { ArrowLeft, Upload, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 interface ExcelAnimalUploadProps {
   onBack: () => void;
