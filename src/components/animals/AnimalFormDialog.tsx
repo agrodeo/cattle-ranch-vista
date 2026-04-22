@@ -185,17 +185,29 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
         }
       }
 
+      const normalizedStatus = normalizeStatusForForm(formData.status);
       const submitData = {
-        name: formData.name || null, id_tag: formData.id_tag, sex: formData.sex, breed: formData.breed,
-        birth_date: formData.birth_date || null, status: formData.status, mother_id: motherUUID, father_id: fatherUUID,
+        name: formData.name || null,
+        id_tag: formData.id_tag,
+        sex: formData.sex,
+        breed: formData.breed,
+        birth_date: formData.birth_date || null,
+        status: normalizedStatus,
+        mother_id: motherUUID,
+        father_id: fatherUUID,
         mother_name: !motherUUID && formData.mother_id ? formData.mother_id : null,
         father_name: !fatherUUID && formData.father_id ? formData.father_id : null,
-        mother_breed: formData.mother_breed || null, father_breed: formData.father_breed || null,
-        mother_registration: formData.mother_registration || null, father_registration: formData.father_registration || null,
-        cabaña_id: cabId, peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
-        mocho: formData.mocho || null, color: formData.color || null,
-        condicion_corporal: formData.condicion_corporal || null, observaciones: formData.observaciones || null,
-        registration_level: formData.registration_level || null, ...registrationData,
+        mother_breed: formData.mother_breed || null,
+        father_breed: formData.father_breed || null,
+        mother_registration: formData.mother_registration || null,
+        father_registration: formData.father_registration || null,
+        peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
+        mocho: formData.mocho || null,
+        color: formData.color || null,
+        condicion_corporal: formData.condicion_corporal || null,
+        observaciones: formData.observaciones || null,
+        registration_level: formData.registration_level || null,
+        ...registrationData,
       };
 
       if (isOnline()) {
