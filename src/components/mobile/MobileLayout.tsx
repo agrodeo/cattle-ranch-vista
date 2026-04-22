@@ -145,10 +145,7 @@ export function MobileLayout() {
             </span>
           </div>
         )}
-        <main
-          className="flex-1 bg-background overflow-x-hidden"
-          style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 7rem)' }}
-        >
+        <main className="flex-1 bg-background overflow-x-hidden pb-20">
           <Outlet />
         </main>
       </div>
