@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { isOnline } from "@/services/connectivity";
@@ -88,11 +88,13 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
     });
   };
 
-  // Expose populateForEdit via effect
-  useState(() => {
+  // Populate the form whenever the dialog opens or the editing target changes
+  useEffect(() => {
+    if (!open) return;
     if (editingAnimal) populateForEdit(editingAnimal);
     else resetForm();
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editingAnimal?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
