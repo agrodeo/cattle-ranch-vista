@@ -42,15 +42,26 @@ export function estimateWeight(
   let layer1Est = 0, layer2Est = 0;
 
   if (layer1Usable && adgResult) {
-    w1 = 0.80;
-    w2 = 0.20;
-    // If data is old (>90 days), reduce Layer 1 weight
-    if (adgResult.daysSinceLast > 90) {
-      w1 *= 0.7;
-      w2 = 1 - w1;
+    // Weight Layer 1 by recency of last weighing.
+    // Recent weighings (≤7 days) → Layer 1 dominates almost entirely (98%).
+    // Older weighings → breed curve gradually contributes more.
+    const d = adgResult.daysSinceLast;
+    if (d <= 7) {
+      w1 = 0.98;
+    } else if (d <= 30) {
+      w1 = 0.92;
+    } else if (d <= 90) {
+      w1 = 0.80;
+    } else if (d <= 180) {
+      w1 = 0.60;
+    } else if (d <= 365) {
+      w1 = 0.40;
+    } else {
+      w1 = 0.25;
     }
-    layer1Est = adgResult.lastWeight + adgResult.weightedAdg * adgResult.daysSinceLast;
-    dataSources.push(`Ganancia diaria individual (${adgResult.weightedAdg.toFixed(3)} kg/día)`);
+    w2 = 1 - w1;
+    layer1Est = adgResult.lastWeight + adgResult.weightedAdg * d;
+    dataSources.push(`Último pesaje: ${adgResult.lastWeight} kg hace ${d} día${d === 1 ? '' : 's'} (GDP ${adgResult.weightedAdg.toFixed(3)} kg/día)`);
   } else {
     w1 = 0;
     w2 = 1.0;
