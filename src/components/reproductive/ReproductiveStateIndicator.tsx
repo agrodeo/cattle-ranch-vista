@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface ReproductiveStateIndicatorProps {
   state: string;
@@ -27,64 +28,65 @@ export function ReproductiveStateIndicator({
   serviceType, 
   notes 
 }: ReproductiveStateIndicatorProps) {
+  const { t } = useTranslation('animals');
   
   const getStateInfo = (estado: string) => {
     switch (estado) {
       case 'sin_actividad':
         return {
           icon: Clock,
-          label: 'Sin Actividad',
+          label: t('profile.reproduction.states.noActivity'),
           variant: 'secondary' as const,
           color: 'text-muted-foreground',
-          description: 'Sin servicios registrados'
+          description: t('profile.reproduction.stateDescriptions.noActivity')
         };
       case 'servicio_pendiente':
         return {
           icon: Clock,
-          label: 'Servicio Pendiente',
+          label: t('profile.reproduction.states.pendingService'),
           variant: 'default' as const,
           color: 'text-blue-600',
-          description: 'Esperando confirmación de preñez'
+          description: t('profile.reproduction.stateDescriptions.pendingService')
         };
       case 'ia_pendiente':
         return {
           icon: Clock,
-          label: 'IA Pendiente',
+          label: t('profile.reproduction.states.pendingAI'),
           variant: 'default' as const,
           color: 'text-purple-600',
-          description: 'Inseminación artificial esperando confirmación'
+          description: t('profile.reproduction.stateDescriptions.pendingAI')
         };
       case 'preñez_servicio':
         return {
           icon: Heart,
-          label: 'Preñada por Servicio',
+          label: t('profile.reproduction.states.pregnantByService'),
           variant: 'default' as const,
           color: 'text-green-600',
-          description: 'Preñez confirmada por servicio natural'
+          description: t('profile.reproduction.stateDescriptions.pregnantByService')
         };
       case 'preñez_ia':
         return {
           icon: Heart,
-          label: 'Preñada por IA',
+          label: t('profile.reproduction.states.pregnantByAI'),
           variant: 'default' as const,
           color: 'text-green-600',
-          description: 'Preñez confirmada por inseminación artificial'
+          description: t('profile.reproduction.stateDescriptions.pregnantByAI')
         };
       case 'preñez_activa':
         return {
           icon: Heart,
-          label: 'Preñez Activa',
+          label: t('profile.reproduction.states.activePregnancy'),
           variant: 'default' as const,
           color: 'text-green-600',
-          description: 'Preñez confirmada sin origen específico'
+          description: t('profile.reproduction.stateDescriptions.activePregnancy')
         };
       case 'servicio_fallido':
         return {
           icon: XCircle,
-          label: 'Servicio Fallido',
+          label: t('profile.reproduction.states.failedService'),
           variant: 'destructive' as const,
           color: 'text-red-600',
-          description: 'Servicio no resultó en preñez'
+          description: t('profile.reproduction.stateDescriptions.failedService')
         };
       case 'ia_fallida':
         return {
