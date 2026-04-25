@@ -271,8 +271,6 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
             sync_status: 'pending' as const,
           });
           await enqueue({ type: 'ANIMAL_INSERT', payload: createSubmitData, tempIds: { animalId: tempId } });
-          await db.animals_cache.add({ ...createSubmitData, id: tempId, updated_at: now, sync_status: 'pending' } as any);
-          await enqueue({ type: 'ANIMAL_INSERT', payload: createSubmitData, tempIds: { animalId: tempId } });
         }
         sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
       }
