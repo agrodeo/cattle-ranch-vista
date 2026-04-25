@@ -91,50 +91,50 @@ export function ReproductiveStateIndicator({
       case 'ia_fallida':
         return {
           icon: XCircle,
-          label: 'IA Fallida',
+          label: t('profile.reproduction.states.failedAI'),
           variant: 'destructive' as const,
           color: 'text-red-600',
-          description: 'Inseminación artificial no resultó en preñez'
+          description: t('profile.reproduction.stateDescriptions.failedAI')
         };
       case 'preñez_exitosa_servicio':
         return {
           icon: CheckCircle,
-          label: 'Preñez Exitosa (Servicio)',
+          label: t('profile.reproduction.states.successfulPregnancyService'),
           variant: 'default' as const,
           color: 'text-green-700',
-          description: 'Parto exitoso de servicio natural'
+          description: t('profile.reproduction.stateDescriptions.successfulPregnancyService')
         };
       case 'preñez_exitosa_ia':
         return {
           icon: CheckCircle,
-          label: 'Preñez Exitosa (IA)',
+          label: t('profile.reproduction.states.successfulPregnancyAI'),
           variant: 'default' as const,
           color: 'text-green-700',
-          description: 'Parto exitoso de inseminación artificial'
+          description: t('profile.reproduction.stateDescriptions.successfulPregnancyAI')
         };
       case 'preñez_exitosa':
         return {
           icon: CheckCircle,
-          label: 'Preñez Exitosa',
+          label: t('profile.reproduction.states.successfulPregnancy'),
           variant: 'default' as const,
           color: 'text-green-700',
-          description: 'Parto exitoso'
+          description: t('profile.reproduction.stateDescriptions.successfulPregnancy')
         };
       case 'preñez_perdida':
         return {
           icon: AlertTriangle,
-          label: 'Preñez Perdida',
+          label: t('profile.reproduction.states.lostPregnancy'),
           variant: 'destructive' as const,
           color: 'text-red-600',
-          description: 'Preñez terminada sin parto exitoso'
+          description: t('profile.reproduction.stateDescriptions.lostPregnancy')
         };
       case 'post_parto':
         return {
           icon: Baby,
-          label: 'Post Parto',
+          label: t('profile.reproduction.states.postpartum'),
           variant: 'default' as const,
           color: 'text-blue-600',
-          description: 'Recuperándose del parto'
+          description: t('profile.reproduction.stateDescriptions.postpartum')
         };
       default:
         return {
@@ -142,7 +142,7 @@ export function ReproductiveStateIndicator({
           label: estado,
           variant: 'outline' as const,
           color: 'text-muted-foreground',
-          description: 'Estado desconocido'
+          description: t('profile.reproduction.stateDescriptions.unknown')
         };
     }
   };
@@ -155,7 +155,7 @@ export function ReproductiveStateIndicator({
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Icon className={`h-4 w-4 ${stateInfo.color}`} />
-          Estado Reproductivo
+          {t('profile.reproduction.reproductiveStatus')}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
@@ -171,7 +171,7 @@ export function ReproductiveStateIndicator({
           
           {serviceType && (
             <div className="text-xs">
-              <span className="font-medium">Tipo: </span>
+              <span className="font-medium">{t('profile.reproduction.type')}: </span>
               <span className="text-muted-foreground">{serviceType}</span>
             </div>
           )}
@@ -179,7 +179,7 @@ export function ReproductiveStateIndicator({
           {lastUpdate && (
             <div className="text-xs flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              <span className="font-medium">Última actualización: </span>
+              <span className="font-medium">{t('profile.reproduction.lastUpdate')}: </span>
               <span className="text-muted-foreground">
                 {format(new Date(lastUpdate), 'dd/MM/yyyy', { locale: es })}
               </span>
@@ -189,7 +189,7 @@ export function ReproductiveStateIndicator({
           {expectedDate && (
             <div className="text-xs flex items-center gap-1">
               <Heart className="h-3 w-3" />
-              <span className="font-medium">Fecha esperada: </span>
+              <span className="font-medium">{t('profile.reproduction.expectedDate')}: </span>
               <span className="text-muted-foreground">
                 {format(new Date(expectedDate), 'dd/MM/yyyy', { locale: es })}
               </span>
@@ -198,7 +198,7 @@ export function ReproductiveStateIndicator({
           
           {notes && (
             <div className="text-xs">
-              <span className="font-medium">Notas: </span>
+              <span className="font-medium">{t('profile.reproduction.notes')}: </span>
               <span className="text-muted-foreground">{notes}</span>
             </div>
           )}
