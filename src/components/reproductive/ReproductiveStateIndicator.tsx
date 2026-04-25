@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
 
 interface ReproductiveStateIndicatorProps {
   state: string;
@@ -27,112 +28,113 @@ export function ReproductiveStateIndicator({
   serviceType, 
   notes 
 }: ReproductiveStateIndicatorProps) {
+  const { t } = useTranslation('animals');
   
   const getStateInfo = (estado: string) => {
     switch (estado) {
       case 'sin_actividad':
         return {
           icon: Clock,
-          label: 'Sin Actividad',
+          label: t('profile.reproduction.states.noActivity'),
           variant: 'secondary' as const,
           color: 'text-muted-foreground',
-          description: 'Sin servicios registrados'
+          description: t('profile.reproduction.stateDescriptions.noActivity')
         };
       case 'servicio_pendiente':
         return {
           icon: Clock,
-          label: 'Servicio Pendiente',
+          label: t('profile.reproduction.states.pendingService'),
           variant: 'default' as const,
           color: 'text-blue-600',
-          description: 'Esperando confirmación de preñez'
+          description: t('profile.reproduction.stateDescriptions.pendingService')
         };
       case 'ia_pendiente':
         return {
           icon: Clock,
-          label: 'IA Pendiente',
+          label: t('profile.reproduction.states.pendingAI'),
           variant: 'default' as const,
           color: 'text-purple-600',
-          description: 'Inseminación artificial esperando confirmación'
+          description: t('profile.reproduction.stateDescriptions.pendingAI')
         };
       case 'preñez_servicio':
         return {
           icon: Heart,
-          label: 'Preñada por Servicio',
+          label: t('profile.reproduction.states.pregnantByService'),
           variant: 'default' as const,
           color: 'text-green-600',
-          description: 'Preñez confirmada por servicio natural'
+          description: t('profile.reproduction.stateDescriptions.pregnantByService')
         };
       case 'preñez_ia':
         return {
           icon: Heart,
-          label: 'Preñada por IA',
+          label: t('profile.reproduction.states.pregnantByAI'),
           variant: 'default' as const,
           color: 'text-green-600',
-          description: 'Preñez confirmada por inseminación artificial'
+          description: t('profile.reproduction.stateDescriptions.pregnantByAI')
         };
       case 'preñez_activa':
         return {
           icon: Heart,
-          label: 'Preñez Activa',
+          label: t('profile.reproduction.states.activePregnancy'),
           variant: 'default' as const,
           color: 'text-green-600',
-          description: 'Preñez confirmada sin origen específico'
+          description: t('profile.reproduction.stateDescriptions.activePregnancy')
         };
       case 'servicio_fallido':
         return {
           icon: XCircle,
-          label: 'Servicio Fallido',
+          label: t('profile.reproduction.states.failedService'),
           variant: 'destructive' as const,
           color: 'text-red-600',
-          description: 'Servicio no resultó en preñez'
+          description: t('profile.reproduction.stateDescriptions.failedService')
         };
       case 'ia_fallida':
         return {
           icon: XCircle,
-          label: 'IA Fallida',
+          label: t('profile.reproduction.states.failedAI'),
           variant: 'destructive' as const,
           color: 'text-red-600',
-          description: 'Inseminación artificial no resultó en preñez'
+          description: t('profile.reproduction.stateDescriptions.failedAI')
         };
       case 'preñez_exitosa_servicio':
         return {
           icon: CheckCircle,
-          label: 'Preñez Exitosa (Servicio)',
+          label: t('profile.reproduction.states.successfulPregnancyService'),
           variant: 'default' as const,
           color: 'text-green-700',
-          description: 'Parto exitoso de servicio natural'
+          description: t('profile.reproduction.stateDescriptions.successfulPregnancyService')
         };
       case 'preñez_exitosa_ia':
         return {
           icon: CheckCircle,
-          label: 'Preñez Exitosa (IA)',
+          label: t('profile.reproduction.states.successfulPregnancyAI'),
           variant: 'default' as const,
           color: 'text-green-700',
-          description: 'Parto exitoso de inseminación artificial'
+          description: t('profile.reproduction.stateDescriptions.successfulPregnancyAI')
         };
       case 'preñez_exitosa':
         return {
           icon: CheckCircle,
-          label: 'Preñez Exitosa',
+          label: t('profile.reproduction.states.successfulPregnancy'),
           variant: 'default' as const,
           color: 'text-green-700',
-          description: 'Parto exitoso'
+          description: t('profile.reproduction.stateDescriptions.successfulPregnancy')
         };
       case 'preñez_perdida':
         return {
           icon: AlertTriangle,
-          label: 'Preñez Perdida',
+          label: t('profile.reproduction.states.lostPregnancy'),
           variant: 'destructive' as const,
           color: 'text-red-600',
-          description: 'Preñez terminada sin parto exitoso'
+          description: t('profile.reproduction.stateDescriptions.lostPregnancy')
         };
       case 'post_parto':
         return {
           icon: Baby,
-          label: 'Post Parto',
+          label: t('profile.reproduction.states.postpartum'),
           variant: 'default' as const,
           color: 'text-blue-600',
-          description: 'Recuperándose del parto'
+          description: t('profile.reproduction.stateDescriptions.postpartum')
         };
       default:
         return {
@@ -140,7 +142,7 @@ export function ReproductiveStateIndicator({
           label: estado,
           variant: 'outline' as const,
           color: 'text-muted-foreground',
-          description: 'Estado desconocido'
+          description: t('profile.reproduction.stateDescriptions.unknown')
         };
     }
   };
@@ -153,7 +155,7 @@ export function ReproductiveStateIndicator({
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Icon className={`h-4 w-4 ${stateInfo.color}`} />
-          Estado Reproductivo
+          {t('profile.reproduction.reproductiveStatus')}
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
@@ -169,7 +171,7 @@ export function ReproductiveStateIndicator({
           
           {serviceType && (
             <div className="text-xs">
-              <span className="font-medium">Tipo: </span>
+              <span className="font-medium">{t('profile.reproduction.type')}: </span>
               <span className="text-muted-foreground">{serviceType}</span>
             </div>
           )}
@@ -177,7 +179,7 @@ export function ReproductiveStateIndicator({
           {lastUpdate && (
             <div className="text-xs flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-              <span className="font-medium">Última actualización: </span>
+              <span className="font-medium">{t('profile.reproduction.lastUpdate')}: </span>
               <span className="text-muted-foreground">
                 {format(new Date(lastUpdate), 'dd/MM/yyyy', { locale: es })}
               </span>
@@ -187,7 +189,7 @@ export function ReproductiveStateIndicator({
           {expectedDate && (
             <div className="text-xs flex items-center gap-1">
               <Heart className="h-3 w-3" />
-              <span className="font-medium">Fecha esperada: </span>
+              <span className="font-medium">{t('profile.reproduction.expectedDate')}: </span>
               <span className="text-muted-foreground">
                 {format(new Date(expectedDate), 'dd/MM/yyyy', { locale: es })}
               </span>
@@ -196,7 +198,7 @@ export function ReproductiveStateIndicator({
           
           {notes && (
             <div className="text-xs">
-              <span className="font-medium">Notas: </span>
+              <span className="font-medium">{t('profile.reproduction.notes')}: </span>
               <span className="text-muted-foreground">{notes}</span>
             </div>
           )}
