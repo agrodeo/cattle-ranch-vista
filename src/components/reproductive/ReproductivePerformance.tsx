@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
 import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
+import { useTranslation } from "react-i18next";
 
 interface ReproductiveMetrics {
   porcentaje_preñez: number;
@@ -20,6 +21,7 @@ interface ReproductivePerformanceProps {
 }
 
 export function ReproductivePerformance({ animalId, animalSex }: ReproductivePerformanceProps) {
+  const { t } = useTranslation('animals');
   const [metrics, setMetrics] = useState<ReproductiveMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -132,7 +134,7 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Rendimiento Reproductivo</CardTitle>
+          <CardTitle>{t('profile.reproduction.reproductivePerformance')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
@@ -150,62 +152,62 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Rendimiento Reproductivo</CardTitle>
+          <CardTitle>{t('profile.reproduction.reproductivePerformance')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No hay datos disponibles</p>
+          <p className="text-muted-foreground">{t('profile.reproduction.noDataAvailable')}</p>
         </CardContent>
       </Card>
     );
   }
 
   const getPerformanceBadge = (percentage: number, type: "pregnancy" | "calving") => {
-    if (percentage >= 90) return <Badge className="bg-primary">Excelente</Badge>;
-    if (percentage >= 75) return <Badge className="bg-blue-500">Bueno</Badge>;
-    if (percentage >= 50) return <Badge className="bg-yellow-500">Regular</Badge>;
-    return <Badge variant="destructive">Bajo</Badge>;
+    if (percentage >= 90) return <Badge className="bg-primary">{t('profile.reproduction.performance.excellent')}</Badge>;
+    if (percentage >= 75) return <Badge className="bg-blue-500">{t('profile.reproduction.performance.good')}</Badge>;
+    if (percentage >= 50) return <Badge className="bg-yellow-500">{t('profile.reproduction.performance.regular')}</Badge>;
+    return <Badge variant="destructive">{t('profile.reproduction.performance.low')}</Badge>;
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Rendimiento Reproductivo</CardTitle>
+        <CardTitle>{t('profile.reproduction.reproductivePerformance')}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Porcentaje de Preñez</span>
+              <span className="text-sm font-medium">{t('profile.reproduction.pregnancyPercentage')}</span>
               {getPerformanceBadge(metrics.porcentaje_preñez || 0, "pregnancy")}
             </div>
             <div className="text-2xl font-bold">
               {metrics.porcentaje_preñez?.toFixed(1) || 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {metrics.confirmed_pregnancies} preñeces en {metrics.total_reproductive_years} años reproductivos
+              {t('profile.reproduction.pregnanciesInYears', { count: metrics.confirmed_pregnancies, years: metrics.total_reproductive_years })}
             </p>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Porcentaje de Parición</span>
+              <span className="text-sm font-medium">{t('profile.reproduction.calvingPercentage')}</span>
               {getPerformanceBadge(metrics.porcentaje_paricion || 0, "calving")}
             </div>
             <div className="text-2xl font-bold">
               {metrics.porcentaje_paricion?.toFixed(1) || 0}%
             </div>
             <p className="text-xs text-muted-foreground">
-              {metrics.live_calves} terneros vivos de {metrics.confirmed_pregnancies} preñeces
+              {t('profile.reproduction.liveCalvesOfPregnancies', { calves: metrics.live_calves, pregnancies: metrics.confirmed_pregnancies })}
             </p>
           </div>
 
           <div className="space-y-1">
-            <span className="text-sm font-medium">Años Reproductivos</span>
+            <span className="text-sm font-medium">{t('profile.reproduction.reproductiveYears')}</span>
             <div className="text-xl font-semibold">{metrics.total_reproductive_years}</div>
           </div>
 
           <div className="space-y-1">
-            <span className="text-sm font-medium">Terneros Vivos</span>
+            <span className="text-sm font-medium">{t('profile.reproduction.liveCalves')}</span>
             <div className="text-xl font-semibold">{metrics.live_calves}</div>
           </div>
         </div>
