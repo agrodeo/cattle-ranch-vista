@@ -29,11 +29,11 @@ serve(async (req) => {
     }
     
     const token = authHeader.replace('Bearer ', '');
-    const { data: userData, error: userError } = await supabaseClient.auth.api.getUser(token);
-    if (userError || !userData) {
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
+    if (userError || !userData.user) {
       throw new Error('User not authenticated');
     }
-    const user = userData;
+    const user = userData.user;
 
     const results = {
       moves_created: 0,
