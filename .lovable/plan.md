@@ -1,103 +1,39 @@
-Ajusto el plan: la carga manual múltiple no debe ser una tabla “simple” con pocos campos, sino un sistema rápido que permita cargar varios animales y, para cada uno, completar toda la información disponible en la ficha de animal.
+Plan to make the manual bulk animal entry fit cleanly on mobile and desktop without unwanted horizontal sliding.
 
-Propuesta de implementación:
+1. Replace the desktop bulk table with a responsive layout
+- Remove the wide multi-column table that forces horizontal scroll.
+- Use compact animal “row cards” that adapt by screen size:
+  - Mobile: 1 column stacked fields.
+  - Tablet: 2 columns.
+  - Desktop: 4–5 columns, wrapping naturally instead of overflowing.
+- Keep the same fields, validation, duplicate/delete/detail actions, and batch submit behavior.
 
-1. Crear un modo “Carga manual múltiple”
-- En “Agregar Animal”, cuando sea alta nueva, mostrar una interfaz para sumar varios animales antes de guardar.
-- Mantener edición individual sin cambios para animales existentes.
-- La experiencia será:
+2. Improve the desktop dialog container
+- Keep the large desktop modal, but ensure it never exceeds viewport width.
+- Add `min-w-0`, `overflow-x-hidden`, and responsive width classes so long labels/selects cannot expand the modal.
+- Keep vertical scrolling only inside the dialog when content is long.
 
-```text
-Carga manual múltiple
-[Valores comunes opcionales]
-[Tabla rápida con campos principales]
-[Detalle expandible por animal para completar toda la ficha]
-[Cargar X animales]
-```
+3. Improve the mobile manual entry screen
+- Ensure every card, input, select, header, and action row uses `min-w-0` and wraps properly.
+- Make top buttons/labels compact on narrow screens so the header does not create sideways overflow.
+- Keep the mobile card flow already implemented, but tighten spacing and button wrapping for small devices.
 
-2. Tabla rápida para acelerar la carga
-La tabla principal tendrá los campos que normalmente se repiten o se cargan rápido:
-- Identificación / caravana
-- Caravana electrónica
-- Nombre
-- Sexo
-- Raza
-- Fecha de nacimiento
-- Peso nacimiento
-- Estado
-- Corral
-- Madre
-- Padre
+4. Preserve functionality
+- No database/schema changes.
+- No changes to routes, plan limits, offline sync, validation, or translations unless a label needs a minor responsive-friendly adjustment.
+- Existing “add row”, “duplicate”, “delete”, “complete detail”, defaults, and create-all-at-once flows remain intact.
 
-Cada fila tendrá:
-- Editar detalle
-- Duplicar fila, útil cuando varios animales comparten datos
-- Eliminar fila
+Technical details
+- Main file: `src/components/animals/AnimalFormDialog.tsx`
+  - Replace `<Table>` usage in bulk creation mode with responsive card/grid rows.
+  - Remove the `overflow-x-auto` wrapper that creates the horizontal scrollbar.
+  - Add safer responsive classes to `DialogContent`, defaults grid, row fields, and action buttons.
+- Mobile file: `src/components/mobile/flows/ManualAnimalForm.tsx`
+  - Add overflow safeguards and responsive wrapping to the fixed mobile form header/cards.
+- Optional cleanup: remove unused table imports from `AnimalFormDialog.tsx` after replacing the table.
 
-3. Detalle completo por animal
-Cada fila tendrá un panel expandible o diálogo de “Detalle completo” para cargar toda la información posible, incluyendo:
-- Datos básicos: identificación, electrónica, nombre, sexo, raza, nacimiento, estado.
-- Genealogía: madre, padre, raza de madre/padre, registros de madre/padre.
-- Registro racial: nivel de registro, datos específicos para Braford/Brangus/Angus cuando aplique.
-- Fenotipo: mocho/cuernos, color/pelaje, condición corporal.
-- Pesos/productividad: peso nacimiento, destete, final, actual, fecha destete, circunferencia escrotal para machos.
-- Ubicación: corral.
-- Reproducción si corresponde: preñez, fecha probable de parto y campos reproductivos ya disponibles en la tabla `animals` cuando sean seguros de editar desde alta.
-- Observaciones.
-- Castrado para machos.
-
-4. Valores comunes para cargar más rápido
-Agregar una sección opcional de “Aplicar a nuevas filas” para no repetir datos:
-- Raza por defecto
-- Sexo por defecto
-- Fecha nacimiento por defecto
-- Estado por defecto
-- Corral por defecto
-- Madre/padre por defecto si aplica
-
-Al tocar “Agregar fila”, la nueva fila ya viene con esos valores.
-
-5. Validaciones completas antes de guardar
-- Campos requeridos por fila: identificación, sexo y raza.
-- Fecha de nacimiento no futura.
-- Pesos numéricos válidos y no negativos.
-- Condición corporal dentro de valores permitidos.
-- Madre y padre no pueden ser el mismo animal.
-- IDs duplicados dentro de la tabla.
-- IDs ya existentes en la cabaña.
-- Validar límite del plan considerando cuántos animales activos se van a agregar.
-- Respetar RLS y validación server-side existente: la inserción seguirá pasando por Supabase con `cabaña_id` del usuario y las políticas actuales.
-
-6. Guardado online/offline
-- Online: insertar todos los animales de una vez con `.insert([...])`.
-- Offline: crear cada animal en IndexedDB y encolar un `ANIMAL_INSERT` por animal, sin duplicar eventos.
-- Mantener el patrón outbox existente para sincronización.
-
-7. Mobile
-- En mobile no usar una tabla ancha que genere scroll horizontal.
-- Usar tarjetas compactas por animal:
-  - Encabezado con ID, sexo, raza.
-  - Campos rápidos visibles.
-  - “Completar detalle” para abrir todos los campos.
-- Botón fijo inferior: “Cargar X animales”.
-
-8. Traducciones
-Agregar textos en español, inglés y portugués para:
-- Carga manual múltiple
-- Valores comunes
-- Agregar animal/fila
-- Duplicar
-- Completar detalle
-- Cargar X animales
-- Errores por fila
-- Duplicados
-- Límite del plan superado
-
-Archivos a modificar:
-- `src/components/animals/AnimalFormDialog.tsx`
-- `src/components/mobile/flows/ManualAnimalForm.tsx`
-- `src/i18n/locales/es/animals.json`
-- `src/i18n/locales/en/animals.json`
-- `src/i18n/locales/pt/animals.json`
-
-No requiere cambios de base de datos. Se usan las columnas existentes de `animals` y se respeta la arquitectura actual de Supabase, RLS, plan limits y offline/outbox.
+Acceptance criteria
+- On mobile, no horizontal scrollbar appears and all fields/actions are reachable by vertical scroll.
+- On desktop, the modal fits within the screen with no page-level horizontal sliding.
+- Users can still load multiple animals at once and access the full detail fields for each animal.
+- Existing edit-animal modal behavior remains unchanged except for overflow safety.

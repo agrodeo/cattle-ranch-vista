@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { Animal } from "@/types/animal";
 import { cleanupInactiveAnimalsFromCorrals } from "@/lib/animalCleanup";
@@ -237,7 +236,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={editingAnimal ? "sm:max-w-[600px] max-h-[90vh] overflow-y-auto bg-background" : "max-w-[calc(100vw-2rem)] xl:max-w-7xl max-h-[90vh] overflow-y-auto bg-background"}>
+      <DialogContent className={editingAnimal ? "sm:max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0" : "w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0"}>
         <DialogHeader><DialogTitle>{editingAnimal ? t('animals:editAnimal') : t('animals:manualBulk.title')}</DialogTitle><DialogDescription>{editingAnimal ? t('animals:subtitle') : t('animals:manualBulk.description')}</DialogDescription></DialogHeader>
         {editingAnimal ? (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,8 +258,8 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
             <div className="flex justify-end gap-2"><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('forms:buttons.cancel')}</Button><Button type="submit" disabled={saving}>{t('forms:buttons.save')}</Button></div>
           </form>
         ) : (
-          <div className="space-y-4">
-            <div className="rounded-lg border bg-muted/20 p-3 space-y-3"><div className="font-medium text-sm">{t('animals:manualBulk.commonDefaults')}</div><div className="grid grid-cols-1 md:grid-cols-6 gap-2">
+          <div className="space-y-4 min-w-0 overflow-x-hidden">
+            <div className="rounded-lg border bg-muted/20 p-3 space-y-3 min-w-0"><div className="font-medium text-sm">{t('animals:manualBulk.commonDefaults')}</div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 min-w-0">
               {renderSelect(defaults.sex || '', v => setDefaults(d => ({ ...d, sex: v })), t('animals:form.selectSex'), sexOptions)}
               {renderSelect(defaults.breed || '', v => setDefaults(d => ({ ...d, breed: v })), t('animals:form.selectBreed'), breedOptions)}
               <Input type="date" value={defaults.birth_date || ''} onChange={e => setDefaults(d => ({ ...d, birth_date: e.target.value }))} />
@@ -270,13 +269,36 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
             </div></div>
             <datalist id="bulk-mothers">{parentAnimals.filter(a => a.sex === 'Hembra').map(a => <option key={a.id} value={a.id_tag}>{a.name ? `${a.name} (${a.id_tag})` : a.id_tag}</option>)}</datalist>
             <datalist id="bulk-fathers">{parentAnimals.filter(a => a.sex === 'Macho').map(a => <option key={a.id} value={a.id_tag}>{a.name ? `${a.name} (${a.id_tag})` : a.id_tag}</option>)}</datalist>
-            <div className="border rounded-lg overflow-x-auto"><Table><TableHeader><TableRow><TableHead className="min-w-32">{t('animals:fields.id')} *</TableHead><TableHead className="min-w-32">{t('animals:fields.name')}</TableHead><TableHead className="min-w-32">{t('animals:fields.sex')} *</TableHead><TableHead className="min-w-44">{t('animals:fields.breed')} *</TableHead><TableHead className="min-w-36">{t('animals:fields.birthDate')}</TableHead><TableHead className="min-w-28">{t('animals:form.birthWeightKg')}</TableHead><TableHead className="min-w-32">{t('animals:fields.status')}</TableHead><TableHead className="min-w-32">{t('animals:fields.mother')}</TableHead><TableHead className="min-w-32">{t('animals:fields.father')}</TableHead><TableHead className="w-36">{t('animals:manualBulk.actions')}</TableHead></TableRow></TableHeader><TableBody>
-              {drafts.map(row => <>
-                <TableRow key={row.localId}><TableCell><Input value={row.id_tag} maxLength={80} onChange={e => updateDraft(row.localId, { id_tag: e.target.value })} /></TableCell><TableCell><Input value={row.name} maxLength={120} onChange={e => updateDraft(row.localId, { name: e.target.value })} /></TableCell><TableCell>{renderSelect(row.sex, v => updateDraft(row.localId, { sex: v }), t('animals:form.selectSex'), sexOptions, 'min-w-28')}</TableCell><TableCell>{renderSelect(row.breed, v => updateDraft(row.localId, { breed: v }), t('animals:form.selectBreed'), breedOptions, 'min-w-40')}</TableCell><TableCell><Input type="date" value={row.birth_date} onChange={e => updateDraft(row.localId, { birth_date: e.target.value })} /></TableCell><TableCell><Input type="number" min="0" step="0.1" value={row.peso_nacimiento} onChange={e => updateDraft(row.localId, { peso_nacimiento: e.target.value })} /></TableCell><TableCell>{renderSelect(row.status, v => updateDraft(row.localId, { status: v }), t('animals:form.selectStatus'), statusOptions, 'min-w-28')}</TableCell><TableCell><Input value={row.mother_id} onChange={e => updateDraft(row.localId, { mother_id: e.target.value })} list="bulk-mothers" /></TableCell><TableCell><Input value={row.father_id} onChange={e => updateDraft(row.localId, { father_id: e.target.value })} list="bulk-fathers" /></TableCell><TableCell><div className="flex gap-1"><Button type="button" variant="ghost" size="icon" onClick={() => setExpandedId(expandedId === row.localId ? null : row.localId)} title={t('animals:manualBulk.completeDetail')}><Pencil className="h-4 w-4" /></Button><Button type="button" variant="ghost" size="icon" onClick={() => duplicateDraft(row)} title={t('animals:manualBulk.duplicate')}><Copy className="h-4 w-4" /></Button><Button type="button" variant="ghost" size="icon" onClick={() => removeDraft(row.localId)} title={t('animals:manualBulk.deleteRow')}><Trash2 className="h-4 w-4" /></Button></div></TableCell></TableRow>
-                {expandedId === row.localId && <TableRow key={`${row.localId}-detail`}><TableCell colSpan={10}><DetailFields row={row} onChange={patch => updateDraft(row.localId, patch)} /></TableCell></TableRow>}
-              </>)}
-            </TableBody></Table></div>
-            <div className="flex flex-col sm:flex-row justify-between gap-2"><Button type="button" variant="outline" onClick={addDraft}><Plus className="h-4 w-4" />{t('animals:manualBulk.addRow')}</Button><div className="flex gap-2 justify-end"><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('forms:buttons.cancel')}</Button><Button type="button" onClick={handleBatchSubmit} disabled={saving}>{t('animals:manualBulk.loadAnimals', { count: drafts.length })}</Button></div></div>
+            <div className="space-y-3 min-w-0">
+              {drafts.map((row, index) => (
+                <div key={row.localId} className="rounded-lg border bg-background p-3 space-y-3 min-w-0 overflow-hidden">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between min-w-0">
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate">{clean(row.id_tag) || `${t('animals:manualBulk.row')} ${index + 1}`}</div>
+                      <div className="text-xs text-muted-foreground truncate">{t('animals:manualBulk.completeDetail')}</div>
+                    </div>
+                    <div className="flex shrink-0 gap-1 self-end sm:self-auto">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => setExpandedId(expandedId === row.localId ? null : row.localId)} title={t('animals:manualBulk.completeDetail')}><Pencil className="h-4 w-4" /></Button>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => duplicateDraft(row)} title={t('animals:manualBulk.duplicate')}><Copy className="h-4 w-4" /></Button>
+                      <Button type="button" variant="ghost" size="icon" onClick={() => removeDraft(row.localId)} title={t('animals:manualBulk.deleteRow')}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 min-w-0">
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.id')} *</Label><Input value={row.id_tag} maxLength={80} onChange={e => updateDraft(row.localId, { id_tag: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.name')}</Label><Input value={row.name} maxLength={120} onChange={e => updateDraft(row.localId, { name: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.sex')} *</Label>{renderSelect(row.sex, v => updateDraft(row.localId, { sex: v }), t('animals:form.selectSex'), sexOptions)}</div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.breed')} *</Label>{renderSelect(row.breed, v => updateDraft(row.localId, { breed: v }), t('animals:form.selectBreed'), breedOptions)}</div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.birthDate')}</Label><Input type="date" value={row.birth_date} onChange={e => updateDraft(row.localId, { birth_date: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:form.birthWeightKg')}</Label><Input type="number" min="0" step="0.1" value={row.peso_nacimiento} onChange={e => updateDraft(row.localId, { peso_nacimiento: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.status')}</Label>{renderSelect(row.status, v => updateDraft(row.localId, { status: v }), t('animals:form.selectStatus'), statusOptions)}</div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.mother')}</Label><Input value={row.mother_id} onChange={e => updateDraft(row.localId, { mother_id: e.target.value })} list="bulk-mothers" /></div>
+                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.father')}</Label><Input value={row.father_id} onChange={e => updateDraft(row.localId, { father_id: e.target.value })} list="bulk-fathers" /></div>
+                  </div>
+                  {expandedId === row.localId && <DetailFields row={row} onChange={patch => updateDraft(row.localId, patch)} />}
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col sm:flex-row justify-between gap-2 min-w-0"><Button type="button" variant="outline" onClick={addDraft} className="w-full sm:w-auto"><Plus className="h-4 w-4" />{t('animals:manualBulk.addRow')}</Button><div className="flex flex-col sm:flex-row gap-2 sm:justify-end"><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('forms:buttons.cancel')}</Button><Button type="button" onClick={handleBatchSubmit} disabled={saving}>{t('animals:manualBulk.loadAnimals', { count: drafts.length })}</Button></div></div>
           </div>
         )}
       </DialogContent>
