@@ -236,7 +236,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={editingAnimal ? "sm:max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0" : "w-[calc(100vw-1rem)] sm:w-[calc(100vw-2rem)] max-w-6xl max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0"}>
+      <DialogContent className={editingAnimal ? "sm:max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0" : "w-[calc(100vw-0.5rem)] sm:w-[96vw] max-w-[96vw] h-[94vh] max-h-[94vh] overflow-y-auto overflow-x-hidden bg-background min-w-0 p-3 sm:p-5"}>
         <DialogHeader><DialogTitle>{editingAnimal ? t('animals:editAnimal') : t('animals:manualBulk.title')}</DialogTitle><DialogDescription>{editingAnimal ? t('animals:subtitle') : t('animals:manualBulk.description')}</DialogDescription></DialogHeader>
         {editingAnimal ? (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,40 +259,34 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
           </form>
         ) : (
           <div className="space-y-4 min-w-0 overflow-x-hidden">
-            <div className="rounded-lg border bg-muted/20 p-3 space-y-3 min-w-0"><div className="font-medium text-sm">{t('animals:manualBulk.commonDefaults')}</div><div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 min-w-0">
+            <div className="rounded-lg border bg-muted/20 p-3 space-y-3 min-w-0"><div className="font-medium text-sm">{t('animals:manualBulk.commonDefaults')}</div><div className="grid grid-cols-1 sm:grid-cols-3 gap-2 min-w-0 max-w-3xl">
               {renderSelect(defaults.sex || '', v => setDefaults(d => ({ ...d, sex: v })), t('animals:form.selectSex'), sexOptions)}
               {renderSelect(defaults.breed || '', v => setDefaults(d => ({ ...d, breed: v })), t('animals:form.selectBreed'), breedOptions)}
               <Input type="date" value={defaults.birth_date || ''} onChange={e => setDefaults(d => ({ ...d, birth_date: e.target.value }))} />
-              {renderSelect(defaults.status || 'activo', v => setDefaults(d => ({ ...d, status: v })), t('animals:form.selectStatus'), statusOptions)}
-              <Input value={defaults.mother_id || ''} onChange={e => setDefaults(d => ({ ...d, mother_id: e.target.value }))} placeholder={t('animals:fields.mother')} list="bulk-mothers" />
-              <Input value={defaults.father_id || ''} onChange={e => setDefaults(d => ({ ...d, father_id: e.target.value }))} placeholder={t('animals:fields.father')} list="bulk-fathers" />
             </div></div>
             <datalist id="bulk-mothers">{parentAnimals.filter(a => a.sex === 'Hembra').map(a => <option key={a.id} value={a.id_tag}>{a.name ? `${a.name} (${a.id_tag})` : a.id_tag}</option>)}</datalist>
             <datalist id="bulk-fathers">{parentAnimals.filter(a => a.sex === 'Macho').map(a => <option key={a.id} value={a.id_tag}>{a.name ? `${a.name} (${a.id_tag})` : a.id_tag}</option>)}</datalist>
-            <div className="space-y-3 min-w-0">
+            <div className="space-y-2 min-w-0">
+              <div className="hidden lg:grid grid-cols-[minmax(82px,1fr)_minmax(92px,1fr)_minmax(86px,0.8fr)_minmax(118px,1.2fr)_minmax(112px,1fr)_minmax(78px,0.7fr)_minmax(86px,0.8fr)_minmax(86px,0.8fr)_minmax(86px,0.8fr)_104px] gap-2 px-3 text-[11px] font-medium text-muted-foreground">
+                <span>{t('animals:fields.id')} *</span><span>{t('animals:fields.name')}</span><span>{t('animals:fields.sex')} *</span><span>{t('animals:fields.breed')} *</span><span>{t('animals:fields.birthDate')}</span><span>{t('animals:form.birthWeightKg')}</span><span>{t('animals:fields.status')}</span><span>{t('animals:fields.mother')}</span><span>{t('animals:fields.father')}</span><span>{t('animals:manualBulk.actions')}</span>
+              </div>
               {drafts.map((row, index) => (
                 <div key={row.localId} className="rounded-lg border bg-background p-3 space-y-3 min-w-0 overflow-hidden">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between min-w-0">
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold truncate">{clean(row.id_tag) || `${t('animals:manualBulk.row')} ${index + 1}`}</div>
-                      <div className="text-xs text-muted-foreground truncate">{t('animals:manualBulk.completeDetail')}</div>
-                    </div>
-                    <div className="flex shrink-0 gap-1 self-end sm:self-auto">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[minmax(82px,1fr)_minmax(92px,1fr)_minmax(86px,0.8fr)_minmax(118px,1.2fr)_minmax(112px,1fr)_minmax(78px,0.7fr)_minmax(86px,0.8fr)_minmax(86px,0.8fr)_minmax(86px,0.8fr)_104px] gap-2 min-w-0 items-end">
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.id')} *</Label><Input className="h-9" value={row.id_tag} maxLength={80} placeholder={`${t('animals:manualBulk.row')} ${index + 1}`} onChange={e => updateDraft(row.localId, { id_tag: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.name')}</Label><Input className="h-9" value={row.name} maxLength={120} onChange={e => updateDraft(row.localId, { name: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.sex')} *</Label>{renderSelect(row.sex, v => updateDraft(row.localId, { sex: v }), t('animals:form.selectSex'), sexOptions, 'h-9')}</div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.breed')} *</Label>{renderSelect(row.breed, v => updateDraft(row.localId, { breed: v }), t('animals:form.selectBreed'), breedOptions, 'h-9')}</div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.birthDate')}</Label><Input className="h-9" type="date" value={row.birth_date} onChange={e => updateDraft(row.localId, { birth_date: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:form.birthWeightKg')}</Label><Input className="h-9" type="number" min="0" step="0.1" value={row.peso_nacimiento} onChange={e => updateDraft(row.localId, { peso_nacimiento: e.target.value })} /></div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.status')}</Label>{renderSelect(row.status, v => updateDraft(row.localId, { status: v }), t('animals:form.selectStatus'), statusOptions, 'h-9')}</div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.mother')}</Label><Input className="h-9" value={row.mother_id} onChange={e => updateDraft(row.localId, { mother_id: e.target.value })} list="bulk-mothers" /></div>
+                    <div className="space-y-1 min-w-0"><Label className="lg:hidden">{t('animals:fields.father')}</Label><Input className="h-9" value={row.father_id} onChange={e => updateDraft(row.localId, { father_id: e.target.value })} list="bulk-fathers" /></div>
+                    <div className="flex shrink-0 gap-1 justify-end">
                       <Button type="button" variant="ghost" size="icon" onClick={() => setExpandedId(expandedId === row.localId ? null : row.localId)} title={t('animals:manualBulk.completeDetail')}><Pencil className="h-4 w-4" /></Button>
                       <Button type="button" variant="ghost" size="icon" onClick={() => duplicateDraft(row)} title={t('animals:manualBulk.duplicate')}><Copy className="h-4 w-4" /></Button>
                       <Button type="button" variant="ghost" size="icon" onClick={() => removeDraft(row.localId)} title={t('animals:manualBulk.deleteRow')}><Trash2 className="h-4 w-4" /></Button>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 min-w-0">
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.id')} *</Label><Input value={row.id_tag} maxLength={80} onChange={e => updateDraft(row.localId, { id_tag: e.target.value })} /></div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.name')}</Label><Input value={row.name} maxLength={120} onChange={e => updateDraft(row.localId, { name: e.target.value })} /></div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.sex')} *</Label>{renderSelect(row.sex, v => updateDraft(row.localId, { sex: v }), t('animals:form.selectSex'), sexOptions)}</div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.breed')} *</Label>{renderSelect(row.breed, v => updateDraft(row.localId, { breed: v }), t('animals:form.selectBreed'), breedOptions)}</div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.birthDate')}</Label><Input type="date" value={row.birth_date} onChange={e => updateDraft(row.localId, { birth_date: e.target.value })} /></div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:form.birthWeightKg')}</Label><Input type="number" min="0" step="0.1" value={row.peso_nacimiento} onChange={e => updateDraft(row.localId, { peso_nacimiento: e.target.value })} /></div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.status')}</Label>{renderSelect(row.status, v => updateDraft(row.localId, { status: v }), t('animals:form.selectStatus'), statusOptions)}</div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.mother')}</Label><Input value={row.mother_id} onChange={e => updateDraft(row.localId, { mother_id: e.target.value })} list="bulk-mothers" /></div>
-                    <div className="space-y-1 min-w-0"><Label>{t('animals:fields.father')}</Label><Input value={row.father_id} onChange={e => updateDraft(row.localId, { father_id: e.target.value })} list="bulk-fathers" /></div>
                   </div>
                   {expandedId === row.localId && <DetailFields row={row} onChange={patch => updateDraft(row.localId, patch)} />}
                 </div>
