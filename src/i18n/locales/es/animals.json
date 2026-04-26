@@ -602,5 +602,24 @@
     "needsWeighing": "Necesita pesaje",
     "anomaly": "Anomalía",
     "logWeightHint": "Registra un peso para mejor estimación"
+  },
+  "manualBulk": {
+    "title": "Carga manual múltiple",
+    "description": "Agrega varios animales, completa la tabla rápida y abre el detalle de cada fila para cargar toda la ficha.",
+    "commonDefaults": "Valores comunes para nuevas filas",
+    "row": "Fila",
+    "actions": "Acciones",
+    "addRow": "Agregar animal",
+    "duplicate": "Duplicar",
+    "deleteRow": "Eliminar fila",
+    "completeDetail": "Completar detalle",
+    "loadAnimals": "Cargar {{count}} animales",
+    "validationTitle": "Revisá la carga manual",
+    "duplicateRows": "IDs duplicados en la tabla",
+    "existingIds": "IDs ya existentes",
+    "invalidNumber": "Los pesos y medidas deben ser números positivos",
+    "planLimitExceeded": "Esta carga agregaría {{count}} animales activos y supera el límite de {{max}} del plan {{plan}}.",
+    "createdCount": "Se cargaron {{count}} animales correctamente",
+    "savedOffline": "Guardado localmente - se sincronizará cuando vuelvas a tener conexión"
   }
 }

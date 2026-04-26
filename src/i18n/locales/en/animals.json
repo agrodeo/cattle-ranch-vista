@@ -602,5 +602,24 @@
     "needsWeighing": "Needs weighing",
     "anomaly": "Anomaly",
     "logWeightHint": "Log a weight for a better estimate"
+  },
+  "manualBulk": {
+    "title": "Multiple manual entry",
+    "description": "Add several animals, complete the quick table, and open each row detail to fill the full record.",
+    "commonDefaults": "Common values for new rows",
+    "row": "Row",
+    "actions": "Actions",
+    "addRow": "Add animal",
+    "duplicate": "Duplicate",
+    "deleteRow": "Delete row",
+    "completeDetail": "Complete detail",
+    "loadAnimals": "Load {{count}} animals",
+    "validationTitle": "Review manual entry",
+    "duplicateRows": "Duplicate IDs in the table",
+    "existingIds": "Existing IDs",
+    "invalidNumber": "Weights and measurements must be positive numbers",
+    "planLimitExceeded": "This upload would add {{count}} active animals and exceed the {{max}} limit for the {{plan}} plan.",
+    "createdCount": "{{count}} animals loaded successfully",
+    "savedOffline": "Saved locally - it will sync when you are back online"
   }
 }
