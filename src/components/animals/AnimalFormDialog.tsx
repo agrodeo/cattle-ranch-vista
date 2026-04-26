@@ -236,7 +236,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={editingAnimal ? "sm:max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0" : "w-[calc(100vw-0.5rem)] sm:w-[96vw] max-w-[96vw] h-[94vh] max-h-[94vh] overflow-y-auto overflow-x-hidden bg-background min-w-0 p-3 sm:p-5"}>
+      <DialogContent className={editingAnimal ? "sm:max-w-[600px] max-h-[90vh] overflow-y-auto overflow-x-hidden bg-background min-w-0" : "w-[calc(100vw-0.5rem)] sm:w-[96vw] max-w-[96vw] max-h-[92vh] overflow-y-auto overflow-x-hidden bg-background min-w-0 p-3 sm:p-5 block space-y-4"}>
         <DialogHeader><DialogTitle>{editingAnimal ? t('animals:editAnimal') : t('animals:manualBulk.title')}</DialogTitle><DialogDescription>{editingAnimal ? t('animals:subtitle') : t('animals:manualBulk.description')}</DialogDescription></DialogHeader>
         {editingAnimal ? (
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -259,7 +259,7 @@ export function AnimalFormDialog({ open, onOpenChange, editingAnimal, userCabañ
           </form>
         ) : (
           <div className="space-y-4 min-w-0 overflow-x-hidden">
-            <div className="rounded-lg border bg-muted/20 p-3 space-y-3 min-w-0"><div className="font-medium text-sm">{t('animals:manualBulk.commonDefaults')}</div><div className="grid grid-cols-1 sm:grid-cols-3 gap-2 min-w-0 max-w-3xl">
+            <div className="rounded-lg border bg-muted/20 p-3 space-y-3 min-w-0"><div className="font-medium text-sm">Aplicar a nuevas filas</div><div className="grid grid-cols-1 sm:grid-cols-3 gap-2 min-w-0 max-w-3xl">
               {renderSelect(defaults.sex || '', v => setDefaults(d => ({ ...d, sex: v })), t('animals:form.selectSex'), sexOptions)}
               {renderSelect(defaults.breed || '', v => setDefaults(d => ({ ...d, breed: v })), t('animals:form.selectBreed'), breedOptions)}
               <Input type="date" value={defaults.birth_date || ''} onChange={e => setDefaults(d => ({ ...d, birth_date: e.target.value }))} />
