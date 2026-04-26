@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Copy, Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,444 +10,125 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Switch } from "@/components/ui/switch";
+import { ARGENTINE_BREEDS } from "@/components/animals/AnimalFormDialog";
 
-interface ManualAnimalFormProps {
-  onBack: () => void;
-  onSuccess: () => void;
-}
+interface ManualAnimalFormProps { onBack: () => void; onSuccess: () => void; }
+const INITIAL_ROW = { id_tag: "", caravana_electronica: "", name: "", sex: "", breed: "", birth_date: "", peso_nacimiento: "", peso_destete: "", peso_final: "", peso_actual_kg: "", father_id: "", mother_id: "", corral_id: "", color: "", mocho: "", is_castrated: false, condicion_corporal: "", circunferencia_escrotal: "", fecha_destete: "", observaciones: "", status: "activo", esta_preñada: false, fecha_probable_parto: "", registration_level: "", mother_breed: "", father_breed: "", mother_registration: "", father_registration: "", dna_verified: false };
+type Row = typeof INITIAL_ROW & { localId: string };
+const newRow = (defaults: Partial<typeof INITIAL_ROW> = {}): Row => ({ ...INITIAL_ROW, ...defaults, localId: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}` });
+const clean = (v?: string) => (v || "").trim();
+const num = (v?: string) => clean(v) ? Number(v) : null;
+const nil = (v?: string) => clean(v) && v !== 'none' ? clean(v) : null;
 
 export function ManualAnimalForm({ onBack, onSuccess }: ManualAnimalFormProps) {
   const { t } = useTranslation(['animals', 'common', 'forms']);
   const [loading, setLoading] = useState(false);
   const [animals, setAnimals] = useState<any[]>([]);
   const [corrales, setCorrales] = useState<any[]>([]);
-  
-  const [formData, setFormData] = useState({
-    id_tag: "",
-    caravana_electronica: "",
-    name: "",
-    sex: "",
-    breed: "",
-    birth_date: "",
-    peso_nacimiento: "",
-    peso_destete: "",
-    peso_final: "",
-    peso_actual_kg: "",
-    father_id: "",
-    mother_id: "",
-    corral_id: "",
-    color: "",
-    mocho: "",
-    is_castrated: false,
-    condicion_corporal: "",
-    circunferencia_escrotal: "",
-    fecha_destete: "",
-    observaciones: "",
-  });
+  const [rows, setRows] = useState<Row[]>([newRow()]);
+  const [defaults, setDefaults] = useState<Partial<typeof INITIAL_ROW>>({ status: "activo" });
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadAnimalsAndCorrales();
-  }, []);
-
+  useEffect(() => { loadAnimalsAndCorrales(); }, []);
   const loadAnimalsAndCorrales = async () => {
     try {
       const { data: cabanaId } = await supabase.rpc('get_current_user_cabana_id');
       if (!cabanaId) return;
-
-      const { data: animalsData } = await supabase
-        .from('animals')
-        .select('id, id_tag, name, sex')
-        .filter('cabaña_id', 'eq', cabanaId)
-        .in('status', ['activo'])
-        .order('id_tag');
-      
-      const { data: corralesData } = await supabase
-        .from('corrales')
-        .select('id, name')
-        .filter('cabaña_id', 'eq', cabanaId)
-        .order('name');
-      
-      setAnimals(animalsData || []);
-      setCorrales(corralesData || []);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    }
+      const [{ data: animalsData }, { data: corralesData }] = await Promise.all([
+        supabase.from('animals').select('id, id_tag, name, sex').filter('cabaña_id', 'eq', cabanaId).in('status', ['activo']).order('id_tag'),
+        supabase.from('corrales').select('id, name').filter('cabaña_id', 'eq', cabanaId).order('name')
+      ]);
+      setAnimals(animalsData || []); setCorrales(corralesData || []);
+    } catch (error) { console.error('Error loading data:', error); }
   };
-
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.id_tag || !formData.sex || !formData.breed) {
-      toast.error(t('animals:messages.requiredFields'));
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data: cabanaData, error: cabanaError } = await supabase.rpc(
-        'get_current_user_cabana_id'
-      );
-
-      if (cabanaError || !cabanaData) {
-        throw new Error(t('animals:form.errorNoCabana'));
-      }
-
-      const animalData: any = {
-        id_tag: formData.id_tag,
-        name: formData.name || null,
-        sex: formData.sex,
-        breed: formData.breed,
-        birth_date: formData.birth_date || null,
-        peso_nacimiento: formData.peso_nacimiento ? parseFloat(formData.peso_nacimiento) : null,
-        peso_destete: formData.peso_destete ? parseFloat(formData.peso_destete) : null,
-        peso_final: formData.peso_final ? parseFloat(formData.peso_final) : null,
-        peso_actual_kg: formData.peso_actual_kg ? parseFloat(formData.peso_actual_kg) : null,
-        fecha_destete: formData.fecha_destete || null,
-        father_id: (formData.father_id && formData.father_id !== 'none') ? formData.father_id : null,
-        mother_id: (formData.mother_id && formData.mother_id !== 'none') ? formData.mother_id : null,
-        corral_id: (formData.corral_id && formData.corral_id !== 'none') ? formData.corral_id : null,
-        color: (formData.color && formData.color !== 'none') ? formData.color : null,
-        mocho: (formData.mocho && formData.mocho !== 'none') ? formData.mocho : null,
-        is_castrated: formData.is_castrated,
-        condicion_corporal: (formData.condicion_corporal && formData.condicion_corporal !== 'none') ? formData.condicion_corporal : null,
-        circunferencia_escrotal: formData.circunferencia_escrotal ? parseFloat(formData.circunferencia_escrotal) : null,
-        observaciones: formData.observaciones || null,
-        status: "activo",
-        ...(formData.caravana_electronica && { caravana_electronica: formData.caravana_electronica })
-      };
-
-      animalData["cabaña_id"] = cabanaData;
-
-      const { error } = await supabase
-        .from("animals")
-        .insert([animalData]);
-
-      if (error) throw error;
-
-      toast.success(t('animals:messages.createdSuccessfully'));
-      onSuccess();
-    } catch (error) {
-      console.error("Error creating animal:", error);
-      toast.error(t('animals:messages.errorCreating'));
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  const updateRow = (id: string, patch: Partial<Row>) => setRows(prev => prev.map(r => r.localId === id ? { ...r, ...patch } : r));
+  const addRow = () => setRows(prev => [...prev, newRow(defaults)]);
+  const duplicate = (row: Row) => setRows(prev => [...prev, { ...row, localId: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`, id_tag: "", caravana_electronica: "" }]);
+  const remove = (id: string) => setRows(prev => prev.length === 1 ? prev : prev.filter(r => r.localId !== id));
   const fatherOptions = animals.filter(a => a.sex === 'Macho');
   const motherOptions = animals.filter(a => a.sex === 'Hembra');
+  const animalById = useMemo(() => new Map(animals.map(a => [a.id, a])), [animals]);
+
+  const validate = async (cabanaId: string, validRows: Row[]) => {
+    const ids = validRows.map(r => clean(r.id_tag)).filter(Boolean);
+    const duplicateIds = ids.filter((id, i) => ids.indexOf(id) !== i);
+    if (duplicateIds.length) return `${t('animals:manualBulk.duplicateRows')}: ${[...new Set(duplicateIds)].join(', ')}`;
+    for (const [i, r] of validRows.entries()) {
+      if (!clean(r.id_tag) || !r.sex || !r.breed) return `${t('animals:manualBulk.row')} ${i + 1}: ${t('animals:messages.requiredFields')}`;
+      if (r.birth_date && new Date(r.birth_date) > new Date()) return `${t('animals:manualBulk.row')} ${i + 1}: ${t('animals:errors.futureBirthDate')}`;
+      if (r.mother_id && r.father_id && r.mother_id === r.father_id) return `${t('animals:manualBulk.row')} ${i + 1}: ${t('animals:errors.sameParents')}`;
+    }
+    if (ids.length) {
+      const { data, error } = await supabase.from('animals').select('id_tag').eq('cabaña_id', cabanaId).in('id_tag', ids);
+      if (error) throw error;
+      if (data?.length) return `${t('animals:manualBulk.existingIds')}: ${data.map(d => d.id_tag).join(', ')}`;
+    }
+    return null;
+  };
+
+  const toPayload = (r: Row, cabanaId: string) => ({
+    id_tag: clean(r.id_tag), caravana_electronica: nil(r.caravana_electronica), name: nil(r.name), sex: r.sex, breed: r.breed, birth_date: nil(r.birth_date), status: r.status || 'activo',
+    peso_nacimiento: num(r.peso_nacimiento), peso_destete: num(r.peso_destete), peso_final: num(r.peso_final), peso_actual_kg: num(r.peso_actual_kg), fecha_destete: nil(r.fecha_destete),
+    father_id: nil(r.father_id), mother_id: nil(r.mother_id), corral_id: nil(r.corral_id), color: nil(r.color), mocho: nil(r.mocho), is_castrated: r.sex === 'Macho' ? r.is_castrated : false,
+    condicion_corporal: nil(r.condicion_corporal), circunferencia_escrotal: num(r.circunferencia_escrotal), observaciones: nil(r.observaciones), esta_preñada: r.sex === 'Hembra' ? r.esta_preñada : false,
+    fecha_probable_parto: r.sex === 'Hembra' ? nil(r.fecha_probable_parto) : null, registration_level: nil(r.registration_level), mother_breed: nil(r.mother_breed), father_breed: nil(r.father_breed),
+    mother_registration: nil(r.mother_registration), father_registration: nil(r.father_registration), dna_verified: r.dna_verified, cabaña_id: cabanaId
+  });
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    try {
+      const validRows = rows.filter(r => clean(r.id_tag) || r.sex || r.breed || clean(r.name));
+      const { data: cabanaData, error: cabanaError } = await supabase.rpc('get_current_user_cabana_id');
+      if (cabanaError || !cabanaData) throw new Error(t('animals:form.errorNoCabana'));
+      const validationError = await validate(cabanaData, validRows);
+      if (validationError) { toast.error(validationError); return; }
+      const { error } = await supabase.from('animals').insert(validRows.map(r => toPayload(r, cabanaData)));
+      if (error) throw error;
+      toast.success(t('animals:manualBulk.createdCount', { count: validRows.length }));
+      onSuccess();
+    } catch (error) { console.error('Error creating animals:', error); toast.error(t('animals:messages.errorCreating')); }
+    finally { setLoading(false); }
+  };
+
+  const SelectBox = ({ value, onChange, placeholder, children }: any) => (
+    <Select value={value || 'none'} onValueChange={(v) => onChange(v === 'none' ? '' : v)}><SelectTrigger><SelectValue placeholder={placeholder} /></SelectTrigger><SelectContent><SelectItem value="none">{placeholder}</SelectItem>{children}</SelectContent></Select>
+  );
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-background lg:hidden flex flex-col"
-      onTouchMove={(e) => e.stopPropagation()}
-      style={{ touchAction: 'auto' }}
-    >
+    <div className="fixed inset-0 z-50 bg-background lg:hidden flex flex-col" onTouchMove={(e) => e.stopPropagation()} style={{ touchAction: 'auto' }}>
       <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
-        <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={onBack} className="mr-2">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-xl font-semibold">{t('animals:form.newAnimal')}</h1>
-        </div>
-        <Button onClick={handleSubmit} disabled={loading} size="sm">
-          <Save className="h-4 w-4 mr-2" />
-          {loading ? t('common:forms.saving') : t('common:actions.save')}
-        </Button>
+        <div className="flex items-center min-w-0"><Button variant="ghost" size="icon" onClick={onBack} className="mr-2"><ArrowLeft className="h-5 w-5" /></Button><h1 className="text-lg font-semibold truncate">{t('animals:manualBulk.title')}</h1></div>
+        <Button onClick={handleSubmit} disabled={loading} size="sm"><Save className="h-4 w-4 mr-2" />{loading ? t('common:forms.saving') : t('animals:manualBulk.loadAnimals', { count: rows.length })}</Button>
       </div>
-
-      <div 
-        className="flex-1 p-4 space-y-6 overflow-y-auto pb-20"
-        style={{ touchAction: 'pan-y' }}
-      >
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('animals:form.basicInfo')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="id_tag">{t('animals:form.identificationRequired')}</Label>
-              <Input
-                id="id_tag"
-                value={formData.id_tag}
-                onChange={(e) => handleInputChange("id_tag", e.target.value)}
-                placeholder={t('animals:form.identificationPlaceholder')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="caravana_electronica">{t('animals:form.electronicTag')}</Label>
-              <Input
-                id="caravana_electronica"
-                value={formData.caravana_electronica}
-                onChange={(e) => handleInputChange("caravana_electronica", e.target.value)}
-                placeholder={t('animals:form.electronicTagPlaceholder')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="name">{t('common:name')}</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                placeholder={t('animals:form.animalName')}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="sex">{t('animals:form.sexRequired')}</Label>
-              <Select value={formData.sex} onValueChange={(value) => handleInputChange("sex", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectSex')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Macho">Macho</SelectItem>
-                  <SelectItem value="Hembra">Hembra</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="breed">{t('animals:form.breedRequired')}</Label>
-              <Select value={formData.breed} onValueChange={(value) => handleInputChange("breed", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectBreed')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Aberdeen Angus">Aberdeen Angus</SelectItem>
-                  <SelectItem value="Brangus">Brangus</SelectItem>
-                  <SelectItem value="Braford">Braford</SelectItem>
-                  <SelectItem value="Hereford">Hereford</SelectItem>
-                  <SelectItem value="Shorthorn">Shorthorn</SelectItem>
-                  <SelectItem value="Cruza">Cruza</SelectItem>
-                  <SelectItem value="Otro">Otro</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="birth_date">{t('animals:form.birthDate')}</Label>
-              <Input
-                id="birth_date"
-                type="date"
-                value={formData.birth_date}
-                onChange={(e) => handleInputChange("birth_date", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="color">{t('common:color')}</Label>
-              <Select value={formData.color} onValueChange={(value) => handleInputChange("color", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectColor')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('animals:form.unspecified')}</SelectItem>
-                  <SelectItem value="Negro">Negro</SelectItem>
-                  <SelectItem value="Colorado">Colorado</SelectItem>
-                  <SelectItem value="Bayo">Bayo</SelectItem>
-                  <SelectItem value="Blanco">Blanco</SelectItem>
-                  <SelectItem value="Overo">Overo</SelectItem>
-                  <SelectItem value="Gateado">Gateado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="mocho">{t('animals:form.hornCondition')}</Label>
-              <Select value={formData.mocho} onValueChange={(value) => handleInputChange("mocho", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('common:actions.select')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('animals:hornOptions.unspecified')}</SelectItem>
-                  <SelectItem value="Mocho">{t('animals:hornOptions.polled')}</SelectItem>
-                  <SelectItem value="Astado">{t('animals:hornOptions.horned')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.sex === 'Macho' && (
-              <div className="flex items-center justify-between">
-                <Label htmlFor="is_castrated">{t('animals:form.castrated')}</Label>
-                <Switch
-                  id="is_castrated"
-                  checked={formData.is_castrated}
-                  onCheckedChange={(checked) => handleInputChange("is_castrated", checked)}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('animals:form.genealogy')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="father_id">{t('animals:form.father')}</Label>
-              <Select value={formData.father_id} onValueChange={(value) => handleInputChange("father_id", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectFather')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('animals:form.noFather')}</SelectItem>
-                  {fatherOptions.map(animal => (
-                    <SelectItem key={animal.id} value={animal.id}>
-                      {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="mother_id">{t('animals:form.mother')}</Label>
-              <Select value={formData.mother_id} onValueChange={(value) => handleInputChange("mother_id", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectMother')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('animals:form.noMother')}</SelectItem>
-                  {motherOptions.map(animal => (
-                    <SelectItem key={animal.id} value={animal.id}>
-                      {animal.id_tag} {animal.name ? `- ${animal.name}` : ''}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('animals:form.locationAndWeights')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="corral_id">{t('animals:form.corral')}</Label>
-              <Select value={formData.corral_id} onValueChange={(value) => handleInputChange("corral_id", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectCorral')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('animals:form.noCorral')}</SelectItem>
-                  {corrales.map(corral => (
-                    <SelectItem key={corral.id} value={corral.id}>
-                      {corral.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="peso_nacimiento">{t('animals:form.birthWeightKg')}</Label>
-              <Input
-                id="peso_nacimiento"
-                type="number"
-                step="0.1"
-                value={formData.peso_nacimiento}
-                onChange={(e) => handleInputChange("peso_nacimiento", e.target.value)}
-                placeholder="35.5"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="fecha_destete">{t('animals:form.weaningDate')}</Label>
-              <Input
-                id="fecha_destete"
-                type="date"
-                value={formData.fecha_destete}
-                onChange={(e) => handleInputChange("fecha_destete", e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="peso_destete">{t('animals:form.weaningWeightKg')}</Label>
-              <Input
-                id="peso_destete"
-                type="number"
-                step="0.1"
-                value={formData.peso_destete}
-                onChange={(e) => handleInputChange("peso_destete", e.target.value)}
-                placeholder="180.5"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="peso_final">{t('animals:form.finalWeightKg')}</Label>
-              <Input
-                id="peso_final"
-                type="number"
-                step="0.1"
-                value={formData.peso_final}
-                onChange={(e) => handleInputChange("peso_final", e.target.value)}
-                placeholder="450.0"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="peso_actual_kg">{t('animals:form.currentWeightKg')}</Label>
-              <Input
-                id="peso_actual_kg"
-                type="number"
-                step="0.1"
-                value={formData.peso_actual_kg}
-                onChange={(e) => handleInputChange("peso_actual_kg", e.target.value)}
-                placeholder="320.5"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="condicion_corporal">{t('animals:form.bodyCondition')}</Label>
-              <Select value={formData.condicion_corporal} onValueChange={(value) => handleInputChange("condicion_corporal", value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('animals:form.selectCondition')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t('animals:form.unspecified')}</SelectItem>
-                  <SelectItem value="1">{t('animals:form.conditionScores.1')}</SelectItem>
-                  <SelectItem value="2">{t('animals:form.conditionScores.2')}</SelectItem>
-                  <SelectItem value="3">{t('animals:form.conditionScores.3')}</SelectItem>
-                  <SelectItem value="4">{t('animals:form.conditionScores.4')}</SelectItem>
-                  <SelectItem value="5">{t('animals:form.conditionScores.5')}</SelectItem>
-                  <SelectItem value="6">{t('animals:form.conditionScores.6')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.sex === 'Macho' && (
-              <div>
-                <Label htmlFor="circunferencia_escrotal">{t('animals:form.scrotalCircumference')}</Label>
-                <Input
-                  id="circunferencia_escrotal"
-                  type="number"
-                  step="0.1"
-                  value={formData.circunferencia_escrotal}
-                  onChange={(e) => handleInputChange("circunferencia_escrotal", e.target.value)}
-                  placeholder="34.5"
-                />
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="observaciones">{t('animals:form.observations')}</Label>
-              <Textarea
-                id="observaciones"
-                value={formData.observaciones}
-                onChange={(e) => handleInputChange("observaciones", e.target.value)}
-                placeholder={t('animals:form.observationsPlaceholder')}
-                rows={3}
-              />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex-1 p-4 space-y-4 overflow-y-auto pb-24" style={{ touchAction: 'pan-y' }}>
+        <Card><CardHeader><CardTitle>{t('animals:manualBulk.commonDefaults')}</CardTitle></CardHeader><CardContent className="grid grid-cols-1 gap-3">
+          <SelectBox value={defaults.sex} onChange={(v: string) => setDefaults(d => ({ ...d, sex: v }))} placeholder={t('animals:form.selectSex')}><SelectItem value="Macho">Macho</SelectItem><SelectItem value="Hembra">Hembra</SelectItem></SelectBox>
+          <SelectBox value={defaults.breed} onChange={(v: string) => setDefaults(d => ({ ...d, breed: v }))} placeholder={t('animals:form.selectBreed')}>{ARGENTINE_BREEDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectBox>
+          <Input type="date" value={defaults.birth_date || ''} onChange={e => setDefaults(d => ({ ...d, birth_date: e.target.value }))} />
+        </CardContent></Card>
+        {rows.map((row, idx) => <Card key={row.localId} className="overflow-hidden"><CardHeader className="pb-3"><div className="flex items-center justify-between gap-2"><CardTitle className="text-base">{clean(row.id_tag) || `${t('animals:manualBulk.row')} ${idx + 1}`}</CardTitle><div className="flex gap-1"><Button variant="ghost" size="icon" onClick={() => setExpanded(expanded === row.localId ? null : row.localId)}><Pencil className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => duplicate(row)}><Copy className="h-4 w-4" /></Button><Button variant="ghost" size="icon" onClick={() => remove(row.localId)}><Trash2 className="h-4 w-4" /></Button></div></div></CardHeader><CardContent className="space-y-3">
+          <div><Label>{t('animals:form.identificationRequired')}</Label><Input value={row.id_tag} onChange={e => updateRow(row.localId, { id_tag: e.target.value })} placeholder={t('animals:form.identificationPlaceholder')} /></div>
+          <div><Label>{t('common:name')}</Label><Input value={row.name} onChange={e => updateRow(row.localId, { name: e.target.value })} placeholder={t('animals:form.animalName')} /></div>
+          <div><Label>{t('animals:form.sexRequired')}</Label><SelectBox value={row.sex} onChange={(v: string) => updateRow(row.localId, { sex: v })} placeholder={t('animals:form.selectSex')}><SelectItem value="Macho">Macho</SelectItem><SelectItem value="Hembra">Hembra</SelectItem></SelectBox></div>
+          <div><Label>{t('animals:form.breedRequired')}</Label><SelectBox value={row.breed} onChange={(v: string) => updateRow(row.localId, { breed: v })} placeholder={t('animals:form.selectBreed')}>{ARGENTINE_BREEDS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectBox></div>
+          <div><Label>{t('animals:form.birthDate')}</Label><Input type="date" value={row.birth_date} onChange={e => updateRow(row.localId, { birth_date: e.target.value })} /></div>
+          {expanded === row.localId && <div className="space-y-3 border-t pt-3">
+            <div><Label>{t('animals:form.electronicTag')}</Label><Input value={row.caravana_electronica} onChange={e => updateRow(row.localId, { caravana_electronica: e.target.value })} /></div>
+            <div><Label>{t('animals:form.father')}</Label><SelectBox value={row.father_id} onChange={(v: string) => updateRow(row.localId, { father_id: v })} placeholder={t('animals:form.noFather')}>{fatherOptions.map(a => <SelectItem key={a.id} value={a.id}>{a.id_tag} {a.name ? `- ${a.name}` : ''}</SelectItem>)}</SelectBox></div>
+            <div><Label>{t('animals:form.mother')}</Label><SelectBox value={row.mother_id} onChange={(v: string) => updateRow(row.localId, { mother_id: v })} placeholder={t('animals:form.noMother')}>{motherOptions.map(a => <SelectItem key={a.id} value={a.id}>{a.id_tag} {a.name ? `- ${a.name}` : ''}</SelectItem>)}</SelectBox></div>
+            <div><Label>{t('animals:form.corral')}</Label><SelectBox value={row.corral_id} onChange={(v: string) => updateRow(row.localId, { corral_id: v })} placeholder={t('animals:form.noCorral')}>{corrales.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectBox></div>
+            <div><Label>{t('animals:form.birthWeightKg')}</Label><Input type="number" step="0.1" value={row.peso_nacimiento} onChange={e => updateRow(row.localId, { peso_nacimiento: e.target.value })} /></div>
+            <div><Label>{t('animals:form.weaningWeightKg')}</Label><Input type="number" step="0.1" value={row.peso_destete} onChange={e => updateRow(row.localId, { peso_destete: e.target.value })} /></div>
+            <div><Label>{t('animals:form.finalWeightKg')}</Label><Input type="number" step="0.1" value={row.peso_final} onChange={e => updateRow(row.localId, { peso_final: e.target.value })} /></div>
+            <div><Label>{t('animals:form.currentWeightKg')}</Label><Input type="number" step="0.1" value={row.peso_actual_kg} onChange={e => updateRow(row.localId, { peso_actual_kg: e.target.value })} /></div>
+            <div><Label>{t('common:color')}</Label><Input value={row.color} onChange={e => updateRow(row.localId, { color: e.target.value })} /></div>
+            {row.sex === 'Macho' && <div className="flex items-center justify-between"><Label>{t('animals:form.castrated')}</Label><Switch checked={row.is_castrated} onCheckedChange={checked => updateRow(row.localId, { is_castrated: checked })} /></div>}
+            {row.sex === 'Hembra' && <><div className="flex items-center justify-between"><Label>{t('animals:profile.pregnant')}</Label><Switch checked={row.esta_preñada} onCheckedChange={checked => updateRow(row.localId, { esta_preñada: checked })} /></div><div><Label>{t('animals:profile.expectedCalving')}</Label><Input type="date" value={row.fecha_probable_parto} onChange={e => updateRow(row.localId, { fecha_probable_parto: e.target.value })} /></div></>}
+            <div><Label>{t('animals:form.observations')}</Label><Textarea value={row.observaciones} onChange={e => updateRow(row.localId, { observaciones: e.target.value })} rows={3} /></div>
+          </div>}
+        </CardContent></Card>)}
+        <Button variant="outline" className="w-full" onClick={addRow}><Plus className="h-4 w-4" />{t('animals:manualBulk.addRow')}</Button>
       </div>
     </div>
   );
