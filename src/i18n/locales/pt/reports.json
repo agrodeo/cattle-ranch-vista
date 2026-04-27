@@ -9,7 +9,8 @@
     "evolution": "Evolução",
     "mortality": "Mortalidade",
     "vaccines": "Vacinas",
-    "financial": "Finanças"
+    "financial": "Finanças",
+    "corrales": "Currais"
   },
   "globalFilters": "Filtros Globais",
   "analysisPanel": "Painel de Análise",
@@ -384,5 +385,31 @@
     "current": "Atual",
     "previous": "Anterior",
     "change": "Mudança"
+  },
+  "corrales": {
+    "title": "Comparação de Currais",
+    "bestCorral": "Melhor Curral",
+    "worstCorral": "Pior Curral",
+    "adgSpread": "Diferença GMD",
+    "totalCorrales": "Currais com Dados",
+    "ranking": "Ranking por Curral",
+    "seasonComparison": "Comparação por Temporada",
+    "heatmap": "Mapa de Desempenho",
+    "heatmapSubtitle": "GMD por curral e temporada. Cores relativas ao benchmark de raça.",
+    "metricAdg": "GMD (kg/dia)",
+    "metricDestete": "Peso Desmame (kg)",
+    "metricFinal": "Peso Final (kg)",
+    "periodYear": "Ano",
+    "periodSemester": "Semestre",
+    "periodQuarter": "Trimestre",
+    "animals": "{{count}} animais",
+    "nAnimals": "n={{count}}",
+    "ofBenchmark": "do benchmark",
+    "improvement": "melhoria",
+    "decline": "queda",
+    "noData": "Sem dados",
+    "accuracyNote": "Os pesos são atribuídos ao curral onde o animal estava na data da pesagem. Animais com menos de {{days}} dias no curral são excluídos.",
+    "emptyState": "Não há dados de pesagem suficientes para comparar currais. São necessários pelo menos 2 currais com pesagens registradas.",
+    "error": "Erro ao carregar a comparação de currais"
   }
 }

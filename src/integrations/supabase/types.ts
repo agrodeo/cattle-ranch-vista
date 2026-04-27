@@ -2876,6 +2876,52 @@ export type Database = {
           tipo_pesaje: string
         }[]
       }
+      get_corral_ranking: {
+        Args: {
+          _cabana_id: string
+          _date_from?: string
+          _date_to?: string
+          _metric?: string
+          _min_days_in_corral?: number
+        }
+        Returns: {
+          animal_count: number
+          avg_adg: number
+          avg_peso_destete: number
+          avg_peso_final: number
+          breed_mix: string
+          corral_id: string
+          corral_name: string
+          hectareas: number
+          rank_position: number
+        }[]
+      }
+      get_corral_season_comparison: {
+        Args: {
+          _cabana_id: string
+          _corral_ids?: string[]
+          _date_from?: string
+          _date_to?: string
+          _group_by?: string
+          _min_days_in_corral?: number
+          _tipo_pesaje?: string[]
+        }
+        Returns: {
+          animal_count: number
+          avg_adg: number
+          avg_adg_benchmark_pct: number
+          avg_peso_destete: number
+          avg_peso_final: number
+          avg_peso_kg: number
+          breed_distribution: Json
+          corral_id: string
+          corral_name: string
+          mejora_vs_anterior: number
+          season_end: string
+          season_label: string
+          season_start: string
+        }[]
+      }
       get_current_entitlements: { Args: { cabana_uuid: string }; Returns: Json }
       get_current_user_cabana: { Args: never; Returns: string }
       get_current_user_cabana_id: { Args: never; Returns: string }

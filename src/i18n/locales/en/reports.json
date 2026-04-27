@@ -9,7 +9,8 @@
     "evolution": "Evolution",
     "mortality": "Mortality",
     "vaccines": "Vaccines",
-    "financial": "Financials"
+    "financial": "Financials",
+    "corrales": "Corrals"
   },
   "globalFilters": "Global Filters",
   "analysisPanel": "Analysis Panel",
@@ -384,5 +385,31 @@
     "current": "Current",
     "previous": "Previous",
     "change": "Change"
+  },
+  "corrales": {
+    "title": "Corral Comparison",
+    "bestCorral": "Best Corral",
+    "worstCorral": "Worst Corral",
+    "adgSpread": "ADG Spread",
+    "totalCorrales": "Corrals with Data",
+    "ranking": "Corral Ranking",
+    "seasonComparison": "Season Comparison",
+    "heatmap": "Performance Map",
+    "heatmapSubtitle": "ADG by corral and season. Colors are relative to the breed benchmark.",
+    "metricAdg": "ADG (kg/day)",
+    "metricDestete": "Weaning Weight (kg)",
+    "metricFinal": "Final Weight (kg)",
+    "periodYear": "Year",
+    "periodSemester": "Semester",
+    "periodQuarter": "Quarter",
+    "animals": "{{count}} animals",
+    "nAnimals": "n={{count}}",
+    "ofBenchmark": "of benchmark",
+    "improvement": "improvement",
+    "decline": "decline",
+    "noData": "No data",
+    "accuracyNote": "Weights are attributed to the corral where the animal was on the weighing date. Animals with fewer than {{days}} days in the corral are excluded.",
+    "emptyState": "There is not enough weighing data to compare corrals. At least 2 corrals with recorded weighings are needed.",
+    "error": "Error loading corral comparison"
   }
 }
