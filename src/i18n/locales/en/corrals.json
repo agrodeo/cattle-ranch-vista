@@ -29,23 +29,189 @@
     "overfull": "Overfull"
   },
   "optimization": {
-    "followStandards": "Follow Ranch Standards",
-    "checkingStandards": "Checking configured standards...",
-    "usingCustomStandards": "Use custom standards configured for your ranch",
-    "usingDefaultStandards": "Default standards will be used.",
-    "configureCustom": "Configure custom standards here",
-    "productiveData": "Productive Data",
-    "reproductiveData": "Reproductive Data",
-    "weight": "Weight",
-    "dailyGain": "Daily Gain",
-    "pregnancyRate": "Pregnancy Rate",
-    "calvingRate": "Calving Rate",
-    "performance": "Performance",
-    "excellent": "Excellent",
-    "good": "Good",
-    "regular": "Regular",
-    "low": "Low",
-    "pregnant": "PREGNANT"
+    "title": "Corral Optimization",
+    "titleWithStep": "Corral Optimization - Step {{step}} of 4",
+    "hideExplanation": "Hide",
+    "showExplanation": "How does it work?",
+    "explanationTitle": "How Corral Optimization Works",
+    "explanationSections": {
+      "consanguinityDetection": {
+        "title": "🧬 Consanguinity Detection",
+        "description": "The system analyzes family relationships between animals (father-son, siblings, half-siblings) in the same corral with reproductive age (≥15 months). It detects related male-female pairs that could mate."
+      },
+      "productiveData": {
+        "title": "📊 Productive and Reproductive Data",
+        "description": "The system collects key metrics for each animal:",
+        "metrics": {
+          "item1": "Current weight, average daily gain (ADG), weighing history",
+          "item2": "Pregnancy and calving rates (% reproductive success)",
+          "item3": "Performance level (Excellent, Good, Regular, Low)",
+          "item4": "Aggregated metrics by corral for comparative analysis"
+        }
+      },
+      "aiAnalysis": {
+        "title": "🤖 AI Analysis",
+        "description": "Using GPT-4, the system:",
+        "steps": {
+          "item1": "Evaluates current animal distribution with productive data",
+          "item2": "Identifies consanguinity conflicts and low performance",
+          "item3": "Generates specific moves with reasons based on real data",
+          "item4": "Considers capacity, ages, objectives and performance metrics",
+          "item5": "Prioritizes high-performing animals for strategic grouping"
+        }
+      },
+      "customizableObjectives": {
+        "title": "🎯 Customizable Objectives",
+        "description": "You can choose to optimize for:",
+        "objectives": {
+          "consanguinity": "Consanguinity: Reduces crosses between relatives",
+          "reproduction": "Reproduction: Groups females >70% pregnancy/calving, isolates low performance",
+          "production": "Production: Groups animals with ADG >0.7kg/d, separates low performance",
+          "benchmarks": "Standards: Follows your ranch's specific benchmarks"
+        }
+      },
+      "totalControl": {
+        "title": "✅ Total Control with Data",
+        "description": "You can see metrics for each animal (weight, ADG, % pregnancy, % calving), review each move with reasons based on real data, select which to apply and discard those you don't want. The system shows expected impact before applying changes."
+      }
+    },
+    "step1": {
+      "cardTitle": "Optimization Configuration",
+      "objectivesTitle": "Optimization Objectives",
+      "objectives": {
+        "consanguinity": {
+          "title": "Reduce Consanguinity",
+          "description": "Avoid crosses between related animals"
+        },
+        "reproduction": {
+          "title": "Optimize Reproduction",
+          "description": "Maximize fertility and pregnancy rate"
+        },
+        "production": {
+          "title": "Optimize Production",
+          "description": "Maximize weight gain and production"
+        },
+        "benchmarks": {
+          "title": "Follow Ranch Standards",
+          "checkingBenchmarks": "Checking configured standards...",
+          "hasCustomBenchmarks": "Use custom standards configured for your ranch",
+          "noCustomBenchmarks": "Default standards will be used.",
+          "configureCustomLink": "Configure custom standards here"
+        },
+        "breedingRatio": {
+          "title": "Distribute for Breeding",
+          "description": "Create functional breeding corrals with optimal female:male ratio",
+          "recommended": "Recommended"
+        }
+      },
+      "secondaryObjective": {
+        "title": "Secondary Objective (optional)",
+        "description": "When multiple moves reduce risk similarly, use this criterion to choose between them.",
+        "options": {
+          "none": "None (minimize risk only)",
+          "fertility": "Maximize fertility",
+          "fertilityDesc": "Prefer corrals with better reproductive potential",
+          "standards": "Follow ranch standards",
+          "standardsDesc": "Prefer corrals with animals meeting configured standards"
+        }
+      },
+      "breedingRatioConfig": {
+        "title": "Breeding Ratio Configuration",
+        "femalesPerBullLabel": "Females per bull",
+        "femalesPerBullHint": "Recommended: 20-30 females per bull for optimal breeding",
+        "minBullsPerCorralLabel": "Minimum bulls per corral",
+        "minBullsPerCorralHint": "Minimum number of bulls in each breeding corral",
+        "exampleTitle": "Example",
+        "exampleText": "With {{ratio}}:1 ratio, a corral with {{females}} females will need {{bulls}} bulls"
+      },
+      "weightObjectivesTitle": "Weight Objectives (optional)",
+      "birthWeightLabel": "Birth Weight (kg)",
+      "birthWeightPlaceholder": "e.g.: 35",
+      "weaningWeightLabel": "Weaning Weight (kg)",
+      "weaningWeightPlaceholder": "e.g.: 180",
+      "finalWeightLabel": "Final Weight (kg)",
+      "finalWeightPlaceholder": "e.g.: 450",
+      "technicalParametersTitle": "Technical Parameters",
+      "maxBullsPerCorralLabel": "Bulls per Corral (max)",
+      "maxAgeWithMotherLabel": "Max age calf with mother (months)",
+      "densityPerHectareLabel": "Density per Hectare",
+      "calfSpaceFactorLabel": "Calf space factor (0-1)",
+      "howItWorksTitle": "💡 How it works",
+      "howItWorksSteps": {
+        "step1": "Select one or more optimization objectives",
+        "step2": "AI will analyze your herd and generate specific moves",
+        "step3": "Calves move automatically with their mothers",
+        "step4": "You can adjust technical parameters according to your needs"
+      },
+      "cancelButton": "Cancel",
+      "verifyingButton": "Verifying...",
+      "nextButton": "Next: Select Animals",
+      "selectObjectiveError": "Select at least one objective"
+    },
+    "step2": {
+      "cardTitle": "Select Animals for Analysis (Optional)",
+      "cardDescription": "If you don't select any animals, all active animals will be analyzed. You can filter by corral or select individually.",
+      "searchLabel": "Search Animal",
+      "searchPlaceholder": "Name or tag...",
+      "filterByCorralLabel": "Filter by Corral",
+      "animalsCount": "Animals ({{count}})",
+      "selectVisibleButton": "Select Visible",
+      "clearButton": "Clear",
+      "pregnantBadge": "PREGNANT",
+      "backButton": "Back",
+      "analyzingButton": "Analyzing...",
+      "generateButton": "Generate Optimization"
+    },
+    "step3": {
+      "planTitle": "Optimization Plan",
+      "movementsSuggested": "{{count}} movements suggested",
+      "metricsTitle": "Risk Reduction Metrics",
+      "currentRisks": "Current Risks",
+      "risksAfter": "Risks After",
+      "reduction": "Reduction",
+      "movements": "Movements",
+      "calvesWithMother": "Calves w/Mother",
+      "detailedPlanTitle": "Detailed Plan by Corral",
+      "corralAnimalsInfo": "{{count}} animals ({{adult}} adults, {{calf}} calves)",
+      "corralRisksMovesInfo": "{{risks}} risks • {{moves}} movements",
+      "secondaryCriterionBadge": "Optimized",
+      "riskReductionBadge": "-{{score}}% risk",
+      "capacityOkBadge": "Capacity OK",
+      "overCapacityBadge": "Over capacity",
+      "detectedRisksTitle": "Detected Risks:",
+      "moreRisks": "... and {{count}} more risks",
+      "suggestedMovesTitle": "Suggested Movements:",
+      "calfLabel": "👶 Calf",
+      "selectAllButton": "Select All",
+      "deselectAllButton": "Deselect All",
+      "backButton": "Back",
+      "applyingButton": "Applying...",
+      "applyMovementsButton": "Apply {{count}} Movements",
+      "equalOptions": "equal options",
+      "whyThisCorral": "Why this corral?",
+      "bestSecondaryScore": "Best secondary score ({{score}})",
+      "vsAlternatives": "vs alternatives"
+    },
+    "step4": {
+      "title": "Optimization Applied",
+      "description": "Selected movements have been successfully applied.",
+      "closeButton": "Close",
+      "newOptimizationButton": "New Optimization"
+    },
+    "toast": {
+      "errorLoadingData": "Error loading data",
+      "optimizationGenerated": "Optimization generated successfully",
+      "errorGenerating": "Error generating optimization",
+      "movementsApplied": "{{count}} movements applied successfully",
+      "movementsFailed": "{{count}} movements failed",
+      "noMovementsToApply": "No movements to apply",
+      "errorApplying": "Error applying suggestions"
+    },
+    "severity": {
+      "highRisk": "High Risk",
+      "mediumRisk": "Medium Risk",
+      "lowRisk": "Low Risk"
+    }
   },
   "metrics": {
     "totalCorrals": "Total Corrals",
@@ -406,191 +572,6 @@
     "description": "Desc",
     "advice": "Advice: Avoid breeding animals with high coefficient"
   },
-  "optimization": {
-    "title": "Corral Optimization",
-    "titleWithStep": "Corral Optimization - Step {{step}} of 4",
-    "hideExplanation": "Hide",
-    "showExplanation": "How does it work?",
-    "explanationTitle": "How Corral Optimization Works",
-    "explanationSections": {
-      "consanguinityDetection": {
-        "title": "🧬 Consanguinity Detection",
-        "description": "The system analyzes family relationships between animals (father-son, siblings, half-siblings) in the same corral with reproductive age (≥15 months). It detects related male-female pairs that could mate."
-      },
-      "productiveData": {
-        "title": "📊 Productive and Reproductive Data",
-        "description": "The system collects key metrics for each animal:",
-        "metrics": {
-          "item1": "Current weight, average daily gain (ADG), weighing history",
-          "item2": "Pregnancy and calving rates (% reproductive success)",
-          "item3": "Performance level (Excellent, Good, Regular, Low)",
-          "item4": "Aggregated metrics by corral for comparative analysis"
-        }
-      },
-      "aiAnalysis": {
-        "title": "🤖 AI Analysis",
-        "description": "Using GPT-4, the system:",
-        "steps": {
-          "item1": "Evaluates current animal distribution with productive data",
-          "item2": "Identifies consanguinity conflicts and low performance",
-          "item3": "Generates specific moves with reasons based on real data",
-          "item4": "Considers capacity, ages, objectives and performance metrics",
-          "item5": "Prioritizes high-performing animals for strategic grouping"
-        }
-      },
-      "customizableObjectives": {
-        "title": "🎯 Customizable Objectives",
-        "description": "You can choose to optimize for:",
-        "objectives": {
-          "consanguinity": "Consanguinity: Reduces crosses between relatives",
-          "reproduction": "Reproduction: Groups females >70% pregnancy/calving, isolates low performance",
-          "production": "Production: Groups animals with ADG >0.7kg/d, separates low performance",
-          "benchmarks": "Standards: Follows your ranch's specific benchmarks"
-        }
-      },
-      "totalControl": {
-        "title": "✅ Total Control with Data",
-        "description": "You can see metrics for each animal (weight, ADG, % pregnancy, % calving), review each move with reasons based on real data, select which to apply and discard those you don't want. The system shows expected impact before applying changes."
-      }
-    },
-    "step1": {
-      "cardTitle": "Optimization Configuration",
-      "objectivesTitle": "Optimization Objectives",
-      "objectives": {
-        "consanguinity": {
-          "title": "Reduce Consanguinity",
-          "description": "Avoid crosses between related animals"
-        },
-        "reproduction": {
-          "title": "Optimize Reproduction",
-          "description": "Maximize fertility and pregnancy rate"
-        },
-        "production": {
-          "title": "Optimize Production",
-          "description": "Maximize weight gain and production"
-        },
-        "benchmarks": {
-          "title": "Follow Ranch Standards",
-          "checkingBenchmarks": "Checking configured standards...",
-          "hasCustomBenchmarks": "Use custom standards configured for your ranch",
-          "noCustomBenchmarks": "Default standards will be used.",
-          "configureCustomLink": "Configure custom standards here"
-        },
-        "breedingRatio": {
-          "title": "Distribute for Breeding",
-          "description": "Create functional breeding corrals with optimal female:male ratio",
-          "recommended": "Recommended"
-        }
-      },
-      "secondaryObjective": {
-        "title": "Secondary Objective (optional)",
-        "description": "When multiple moves reduce risk similarly, use this criterion to choose between them.",
-        "options": {
-          "none": "None (minimize risk only)",
-          "fertility": "Maximize fertility",
-          "fertilityDesc": "Prefer corrals with better reproductive potential",
-          "standards": "Follow ranch standards",
-          "standardsDesc": "Prefer corrals with animals meeting configured standards"
-        }
-      },
-      "breedingRatioConfig": {
-        "title": "Breeding Ratio Configuration",
-        "femalesPerBullLabel": "Females per bull",
-        "femalesPerBullHint": "Recommended: 20-30 females per bull for optimal breeding",
-        "minBullsPerCorralLabel": "Minimum bulls per corral",
-        "minBullsPerCorralHint": "Minimum number of bulls in each breeding corral",
-        "exampleTitle": "Example",
-        "exampleText": "With {{ratio}}:1 ratio, a corral with {{females}} females will need {{bulls}} bulls"
-      },
-      "weightObjectivesTitle": "Weight Objectives (optional)",
-      "birthWeightLabel": "Birth Weight (kg)",
-      "birthWeightPlaceholder": "e.g.: 35",
-      "weaningWeightLabel": "Weaning Weight (kg)",
-      "weaningWeightPlaceholder": "e.g.: 180",
-      "finalWeightLabel": "Final Weight (kg)",
-      "finalWeightPlaceholder": "e.g.: 450",
-      "technicalParametersTitle": "Technical Parameters",
-      "maxBullsPerCorralLabel": "Bulls per Corral (max)",
-      "maxAgeWithMotherLabel": "Max age calf with mother (months)",
-      "densityPerHectareLabel": "Density per Hectare",
-      "calfSpaceFactorLabel": "Calf space factor (0-1)",
-      "howItWorksTitle": "💡 How it works",
-      "howItWorksSteps": {
-        "step1": "Select one or more optimization objectives",
-        "step2": "AI will analyze your herd and generate specific moves",
-        "step3": "Calves move automatically with their mothers",
-        "step4": "You can adjust technical parameters according to your needs"
-      },
-      "cancelButton": "Cancel",
-      "verifyingButton": "Verifying...",
-      "nextButton": "Next: Select Animals",
-      "selectObjectiveError": "Select at least one objective"
-    },
-    "step2": {
-      "cardTitle": "Select Animals for Analysis (Optional)",
-      "cardDescription": "If you don't select any animals, all active animals will be analyzed. You can filter by corral or select individually.",
-      "searchLabel": "Search Animal",
-      "searchPlaceholder": "Name or tag...",
-      "filterByCorralLabel": "Filter by Corral",
-      "animalsCount": "Animals ({{count}})",
-      "selectVisibleButton": "Select Visible",
-      "clearButton": "Clear",
-      "pregnantBadge": "PREGNANT",
-      "backButton": "Back",
-      "analyzingButton": "Analyzing...",
-      "generateButton": "Generate Optimization"
-    },
-    "step3": {
-      "planTitle": "Optimization Plan",
-      "movementsSuggested": "{{count}} movements suggested",
-      "metricsTitle": "Risk Reduction Metrics",
-      "currentRisks": "Current Risks",
-      "risksAfter": "Risks After",
-      "reduction": "Reduction",
-      "movements": "Movements",
-      "calvesWithMother": "Calves w/Mother",
-      "detailedPlanTitle": "Detailed Plan by Corral",
-      "corralAnimalsInfo": "{{count}} animals ({{adult}} adults, {{calf}} calves)",
-      "corralRisksMovesInfo": "{{risks}} risks • {{moves}} movements",
-      "secondaryCriterionBadge": "Optimized",
-      "riskReductionBadge": "-{{score}}% risk",
-      "capacityOkBadge": "Capacity OK",
-      "overCapacityBadge": "Over capacity",
-      "detectedRisksTitle": "Detected Risks:",
-      "moreRisks": "... and {{count}} more risks",
-      "suggestedMovesTitle": "Suggested Movements:",
-      "calfLabel": "👶 Calf",
-      "selectAllButton": "Select All",
-      "deselectAllButton": "Deselect All",
-      "backButton": "Back",
-      "applyingButton": "Applying...",
-      "applyMovementsButton": "Apply {{count}} Movements",
-      "equalOptions": "equal options",
-      "whyThisCorral": "Why this corral?",
-      "bestSecondaryScore": "Best secondary score ({{score}})",
-      "vsAlternatives": "vs alternatives"
-    },
-    "step4": {
-      "title": "Optimization Applied",
-      "description": "Selected movements have been successfully applied.",
-      "closeButton": "Close",
-      "newOptimizationButton": "New Optimization"
-    },
-    "toast": {
-      "errorLoadingData": "Error loading data",
-      "optimizationGenerated": "Optimization generated successfully",
-      "errorGenerating": "Error generating optimization",
-      "movementsApplied": "{{count}} movements applied successfully",
-      "movementsFailed": "{{count}} movements failed",
-      "noMovementsToApply": "No movements to apply",
-      "errorApplying": "Error applying suggestions"
-    },
-    "severity": {
-      "highRisk": "High Risk",
-      "mediumRisk": "Medium Risk",
-      "lowRisk": "Low Risk"
-    }
-  },
   "suggestions": {
     "title": "Optimization Suggestions",
     "optimalState": "Optimal State",
@@ -777,5 +758,9 @@
     "bulkMoveDesc": "Move animals using automatic filters and specific selection",
     "manualMove": "Manual Move",
     "manualMoveDesc": "Select animals individually to move"
+  },
+  "tabs": {
+    "corrals": "Corrals",
+    "comparison": "Comparison"
   }
 }

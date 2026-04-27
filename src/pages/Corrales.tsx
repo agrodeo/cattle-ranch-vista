@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Eye, 
   Plus, 
@@ -49,6 +50,8 @@ import {
 import { analyzeCorralConsanguinity, Animal as ConsanguinityAnimal } from "@/lib/consanguinityAnalysis";
 import { ReadOnlyProtectedAction } from "@/components/subscription/ReadOnlyProtectedAction";
 import { useCorralKPIs } from "@/hooks/useCorralKPIs";
+import { CorralComparisonAnalytics } from "@/components/reports/CorralComparisonAnalytics";
+import type { ReportFilters } from "@/pages/Reports";
 import { cn } from "@/lib/utils";
 import { db } from "@/services/db";
 import { useConnectivity } from "@/services/connectivity";
@@ -93,6 +96,12 @@ export default function Corrales() {
   const [selectedCorral, setSelectedCorral] = useState<string | null>(null);
   const [selectedCorralName, setSelectedCorralName] = useState<string>("");
   const [selectedCorralAnimalCount, setSelectedCorralAnimalCount] = useState<number>(0);
+
+  const comparisonFilters: ReportFilters = {
+    date_from: new Date(Date.now() - 10 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    date_to: new Date().toISOString().split('T')[0],
+    include_sold_dead: false,
+  };
 
   // Load from cache first for instant display
   const loadFromCache = useCallback(async () => {
@@ -463,9 +472,16 @@ export default function Corrales() {
           }
         />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 overflow-x-hidden">
-          {/* Main Content */}
-          <section className="lg:col-span-3 space-y-6">
+        <Tabs defaultValue="corrales" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:inline-grid">
+            <TabsTrigger value="corrales">{t('corrals:tabs.corrals')}</TabsTrigger>
+            <TabsTrigger value="comparison">{t('corrals:tabs.comparison')}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="corrales" className="mt-0">
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 overflow-x-hidden">
+              {/* Main Content */}
+              <section className="lg:col-span-3 space-y-6">
             {/* KPIs */}
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {stats.map((stat, index) => (
@@ -809,10 +825,10 @@ export default function Corrales() {
                 </div>
               )}
             </div>
-          </section>
+              </section>
 
           {/* Right Sidebar */}
-          <aside className="space-y-4">
+              <aside className="space-y-4">
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -840,8 +856,14 @@ export default function Corrales() {
                 )}
               </CardContent>
             </Card>
-          </aside>
-        </div>
+              </aside>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="comparison" className="mt-0">
+            <CorralComparisonAnalytics filters={comparisonFilters} />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Dialogs */}
