@@ -10,6 +10,7 @@ import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
 import { FinancialAnalytics } from "@/components/reports/FinancialAnalytics";
 import { VaccinationAnalytics } from "@/components/reports/VaccinationAnalyticsWrapper";
 import { TemporalEvolutionAnalytics } from "@/components/reports/TemporalEvolutionAnalytics";
+import { CorralComparisonAnalytics } from "@/components/reports/CorralComparisonAnalytics";
 import { QuickFilterChips, QuickFilter } from "@/components/reports/QuickFilterChips";
 import { ReportErrorBoundary } from "@/components/reports/ReportErrorBoundary";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
@@ -173,6 +174,7 @@ const Reports = () => {
   const tabs = [
     { id: "reproductive", label: t('reports:tabs.reproductive'), shortLabel: t('reports:tabs.reproductive').substring(0, 6) + '.' },
     { id: "production", label: t('reports:tabs.production'), shortLabel: t('reports:tabs.production').substring(0, 4) + '.' },
+    { id: "corrales", label: t('reports:tabs.corrales'), shortLabel: "Corr." },
     { id: "evolution", label: t('reports:tabs.evolution'), shortLabel: t('reports:tabs.evolution').substring(0, 4) + '.' },
     { id: "mortality", label: t('reports:tabs.mortality'), shortLabel: t('reports:tabs.mortality').substring(0, 4) + '.' },
     { id: "vaccines", label: t('reports:tabs.vaccines'), shortLabel: t('reports:tabs.vaccines').substring(0, 3) + '.' },
@@ -191,6 +193,8 @@ const Reports = () => {
           return <ReproductiveAnalytics filters={stableAppliedFilters} />;
         case "production":
           return <ProductionAnalytics filters={stableAppliedFilters} />;
+        case "corrales":
+          return <CorralComparisonAnalytics filters={stableAppliedFilters} />;
         case "evolution":
           return <TemporalEvolutionAnalytics cabanaId={currentUser?.cabañaId || null} filters={stableAppliedFilters} />;
         case "mortality":
