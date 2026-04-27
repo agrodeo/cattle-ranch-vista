@@ -3482,7 +3482,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "employee" | "read_only"
+      app_role:
+        | "admin"
+        | "employee"
+        | "read_only"
+        | "owner"
+        | "manager"
+        | "worker"
+        | "vet"
       chat_message_role: "user" | "assistant"
       subscription_plan:
         | "free"
@@ -3618,7 +3625,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "employee", "read_only"],
+      app_role: [
+        "admin",
+        "employee",
+        "read_only",
+        "owner",
+        "manager",
+        "worker",
+        "vet",
+      ],
       chat_message_role: ["user", "assistant"],
       subscription_plan: [
         "free",
