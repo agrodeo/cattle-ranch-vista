@@ -154,6 +154,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return null;
       }
 
+      if (profile.is_active === false) {
+        console.warn('🚫 User profile is inactive, signing out:', userId);
+        await supabase.auth.signOut();
+        return null;
+      }
+
       console.log('[fetchUserProfile] Profile found, fetching cabaña & role...');
 
       // Fetch cabaña name and role IN PARALLEL for speed
