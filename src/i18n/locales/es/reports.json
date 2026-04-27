@@ -9,7 +9,8 @@
     "evolution": "Evolución",
     "mortality": "Mortalidad",
     "vaccines": "Vacunas",
-    "financial": "Finanzas"
+    "financial": "Finanzas",
+    "corrales": "Corrales"
   },
   "globalFilters": "Filtros Globales",
   "analysisPanel": "Panel de Análisis",
@@ -384,5 +385,31 @@
     "current": "Actual",
     "previous": "Anterior",
     "change": "Cambio"
+  },
+  "corrales": {
+    "title": "Comparación de Corrales",
+    "bestCorral": "Mejor Corral",
+    "worstCorral": "Peor Corral",
+    "adgSpread": "Diferencia ADG",
+    "totalCorrales": "Corrales con Datos",
+    "ranking": "Ranking por Corral",
+    "seasonComparison": "Comparación por Temporada",
+    "heatmap": "Mapa de Rendimiento",
+    "heatmapSubtitle": "ADG por corral y temporada. Colores relativos al benchmark de raza.",
+    "metricAdg": "ADG (kg/día)",
+    "metricDestete": "Peso Destete (kg)",
+    "metricFinal": "Peso Final (kg)",
+    "periodYear": "Año",
+    "periodSemester": "Semestre",
+    "periodQuarter": "Trimestre",
+    "animals": "{{count}} animales",
+    "nAnimals": "n={{count}}",
+    "ofBenchmark": "del benchmark",
+    "improvement": "mejora",
+    "decline": "baja",
+    "noData": "Sin datos",
+    "accuracyNote": "Los pesos se atribuyen al corral donde estaba el animal en la fecha de pesaje. Se excluyen animales con menos de {{days}} días en el corral.",
+    "emptyState": "No hay suficientes datos de pesaje para comparar corrales. Se necesitan al menos 2 corrales con pesajes registrados.",
+    "error": "Error al cargar la comparación de corrales"
   }
 }
