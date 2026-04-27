@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Beef, Heart, BarChart3, Cross, Syringe, DollarSign, TrendingUp } from "lucide-react";
+import { Beef, Heart, BarChart3, Cross, Syringe, DollarSign, TrendingUp, LayoutGrid } from "lucide-react";
 
 interface Tab {
   id: string;
@@ -17,6 +17,7 @@ const tabIcons = {
   herd: Beef,
   reproductive: Heart,
   production: BarChart3,
+  corrales: LayoutGrid,
   evolution: TrendingUp,
   mortality: Cross,
   vaccines: Syringe,
