@@ -5,17 +5,21 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BenchmarkSettings } from "@/components/settings/BenchmarkSettings";
 import { VaccinationRequirementsManager } from "@/components/settings/VaccinationRequirementsManager";
+import { UserManagement } from "@/components/settings/UserManagement";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Syringe, Globe, Scale, Trash2 } from "lucide-react";
+import { Target, Syringe, Globe, Scale, Trash2, Users } from "lucide-react";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { BreedMixingToggle } from "@/components/settings/BreedMixingToggle";
 import { Link } from "react-router-dom";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export const SettingsPage = () => {
   const { t } = useTranslation(['settings']);
+  const { currentUser } = useSupabaseAuth();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "general";
+  const canManageUsers = currentUser?.role === "owner" || currentUser?.role === "admin" || currentUser?.role === "manager";
 
   useEffect(() => {
     document.title = `${t('settings:title')} - agrodeo`;
@@ -35,6 +39,15 @@ export const SettingsPage = () => {
 
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="bg-transparent border-b border-border rounded-none w-auto justify-start gap-0 h-auto p-0 inline-flex overflow-x-auto scrollbar-hide">
+            {canManageUsers && (
+              <TabsTrigger 
+                value="users" 
+                className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground font-medium transition-all"
+              >
+                <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                Usuarios
+              </TabsTrigger>
+            )}
             <TabsTrigger 
               value="general" 
               className="flex-shrink-0 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm px-4 py-2.5 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary text-muted-foreground font-medium transition-all"
@@ -57,6 +70,12 @@ export const SettingsPage = () => {
               {t('settings:tabs.vaccines')}
             </TabsTrigger>
           </TabsList>
+
+          {canManageUsers && (
+            <TabsContent value="users" className="mt-4 sm:mt-6">
+              <UserManagement />
+            </TabsContent>
+          )}
 
           <TabsContent value="general" className="mt-4 sm:mt-6">
             <Card className="border-0 shadow-sm sm:border sm:shadow-md">

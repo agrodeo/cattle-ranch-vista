@@ -2745,6 +2745,7 @@ export type Database = {
         }[]
       }
       can_add_animals: { Args: { user_uuid: string }; Returns: boolean }
+      can_manage_users: { Args: { _user_id: string }; Returns: boolean }
       can_modify_data: { Args: { user_uuid: string }; Returns: boolean }
       categorize_animal: {
         Args: { birth_date: string; reference_date?: string; sex: string }
@@ -2827,6 +2828,14 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      current_user_is_active_in_cabana: {
+        Args: { _cabana_id: string }
+        Returns: boolean
+      }
+      current_user_role_in: {
+        Args: { _roles: Database["public"]["Enums"]["app_role"][] }
+        Returns: boolean
       }
       delete_finance_movement: {
         Args: { _movement_id: string; _user_id: string }
@@ -3482,7 +3491,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "employee" | "read_only"
+      app_role:
+        | "admin"
+        | "employee"
+        | "read_only"
+        | "owner"
+        | "manager"
+        | "worker"
+        | "vet"
       chat_message_role: "user" | "assistant"
       subscription_plan:
         | "free"
@@ -3618,7 +3634,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "employee", "read_only"],
+      app_role: [
+        "admin",
+        "employee",
+        "read_only",
+        "owner",
+        "manager",
+        "worker",
+        "vet",
+      ],
       chat_message_role: ["user", "assistant"],
       subscription_plan: [
         "free",
