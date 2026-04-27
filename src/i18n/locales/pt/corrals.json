@@ -29,23 +29,189 @@
     "overfull": "Superlotado"
   },
   "optimization": {
-    "followStandards": "Seguir Padrões da Fazenda",
-    "checkingStandards": "Verificando padrões configurados...",
-    "usingCustomStandards": "Usar os padrões personalizados configurados na sua fazenda",
-    "usingDefaultStandards": "Padrões padrão serão usados.",
-    "configureCustom": "Configure padrões personalizados aqui",
-    "productiveData": "Dados Produtivos",
-    "reproductiveData": "Dados Reprodutivos",
-    "weight": "Peso",
-    "dailyGain": "Ganho Diário",
-    "pregnancyRate": "Taxa de Prenhez",
-    "calvingRate": "Taxa de Parição",
-    "performance": "Desempenho",
-    "excellent": "Excelente",
-    "good": "Bom",
-    "regular": "Regular",
-    "low": "Baixo",
-    "pregnant": "PRENHA"
+    "title": "Otimização de Currais",
+    "titleWithStep": "Otimização de Currais - Passo {{step}} de 4",
+    "hideExplanation": "Ocultar",
+    "showExplanation": "Como funciona?",
+    "explanationTitle": "Como Funciona a Otimização de Currais",
+    "explanationSections": {
+      "consanguinityDetection": {
+        "title": "🧬 Detecção de Consanguinidade",
+        "description": "O sistema analisa as relações familiares entre animais (pai-filho, irmãos, meio-irmãos) que estão no mesmo curral e têm idade reprodutiva (≥15 meses). Detecta pares macho-fêmea aparentados que poderiam cruzar."
+      },
+      "productiveData": {
+        "title": "📊 Dados Produtivos e Reprodutivos",
+        "description": "O sistema coleta métricas-chave de cada animal:",
+        "metrics": {
+          "item1": "Peso atual, ganho diário médio (GPD), histórico de pesagens",
+          "item2": "Taxas de prenhez e parto (% sucesso reprodutivo)",
+          "item3": "Nível de desempenho (Excelente, Bom, Regular, Baixo)",
+          "item4": "Métricas agregadas por curral para análise comparativa"
+        }
+      },
+      "aiAnalysis": {
+        "title": "🤖 Análise com IA",
+        "description": "Usando GPT-4, o sistema:",
+        "steps": {
+          "item1": "Avalia a distribuição atual de animais com dados produtivos",
+          "item2": "Identifica conflitos de consanguinidade e baixo desempenho",
+          "item3": "Gera movimentos específicos com razões baseadas em dados reais",
+          "item4": "Considera capacidade, idades, objetivos e métricas de performance",
+          "item5": "Prioriza animais de alto desempenho para agrupamento estratégico"
+        }
+      },
+      "customizableObjectives": {
+        "title": "🎯 Objetivos Personalizáveis",
+        "description": "Você pode escolher otimizar para:",
+        "objectives": {
+          "consanguinity": "Consanguinidade: Reduz cruzamentos entre parentes",
+          "reproduction": "Reprodução: Agrupa fêmeas >70% prenhez/parto, isola baixo desempenho",
+          "production": "Produção: Agrupa animais com GPD >0.7kg/d, separa baixo desempenho",
+          "benchmarks": "Padrões: Segue benchmarks específicos da sua fazenda"
+        }
+      },
+      "totalControl": {
+        "title": "✅ Controle Total com Dados",
+        "description": "Você pode ver métricas de cada animal (peso, GPD, % prenhez, % parto), revisar cada movimento com razões baseadas em dados reais, selecionar quais aplicar e descartar os que não quer. O sistema mostra o impacto esperado antes de aplicar mudanças."
+      }
+    },
+    "step1": {
+      "cardTitle": "Configuração de Otimização",
+      "objectivesTitle": "Objetivos de Otimização",
+      "objectives": {
+        "consanguinity": {
+          "title": "Reduzir Consanguinidade",
+          "description": "Evitar cruzamentos entre animais aparentados"
+        },
+        "reproduction": {
+          "title": "Otimizar Reprodução",
+          "description": "Maximizar fertilidade e taxa de prenhez"
+        },
+        "production": {
+          "title": "Otimizar Produção",
+          "description": "Maximizar ganho de peso e produção"
+        },
+        "benchmarks": {
+          "title": "Seguir Padrões da Fazenda",
+          "checkingBenchmarks": "Verificando padrões configurados...",
+          "hasCustomBenchmarks": "Usar padrões personalizados configurados para sua fazenda",
+          "noCustomBenchmarks": "Padrões padrão serão usados.",
+          "configureCustomLink": "Configure padrões personalizados aqui"
+        },
+        "breedingRatio": {
+          "title": "Distribuir para Reprodução",
+          "description": "Criar currais reprodutivos funcionais com proporção fêmea:macho ideal",
+          "recommended": "Recomendado"
+        }
+      },
+      "secondaryObjective": {
+        "title": "Objetivo Secundário (opcional)",
+        "description": "Quando múltiplos movimentos reduzem o risco de forma similar, usar este critério para escolher entre eles.",
+        "options": {
+          "none": "Nenhum (apenas minimizar risco)",
+          "fertility": "Maximizar fertilidade",
+          "fertilityDesc": "Preferir currais com melhor potencial reprodutivo",
+          "standards": "Seguir padrões da cabana",
+          "standardsDesc": "Preferir currais com animais que cumprem os padrões configurados"
+        }
+      },
+      "breedingRatioConfig": {
+        "title": "Configuração de Proporção de Reprodução",
+        "femalesPerBullLabel": "Fêmeas por touro",
+        "femalesPerBullHint": "Recomendado: 20-30 fêmeas por touro para reprodução ideal",
+        "minBullsPerCorralLabel": "Mínimo de touros por curral",
+        "minBullsPerCorralHint": "Número mínimo de touros em cada curral reprodutivo",
+        "exampleTitle": "Exemplo",
+        "exampleText": "Com proporção {{ratio}}:1, um curral com {{females}} fêmeas precisará de {{bulls}} touros"
+      },
+      "weightObjectivesTitle": "Objetivos de Peso (opcional)",
+      "birthWeightLabel": "Peso ao Nascer (kg)",
+      "birthWeightPlaceholder": "ex: 35",
+      "weaningWeightLabel": "Peso ao Desmame (kg)",
+      "weaningWeightPlaceholder": "ex: 180",
+      "finalWeightLabel": "Peso Final (kg)",
+      "finalWeightPlaceholder": "ex: 450",
+      "technicalParametersTitle": "Parâmetros Técnicos",
+      "maxBullsPerCorralLabel": "Touros por Curral (máx)",
+      "maxAgeWithMotherLabel": "Idade máx. bezerro com mãe (meses)",
+      "densityPerHectareLabel": "Densidade por Hectare",
+      "calfSpaceFactorLabel": "Fator espaço bezerro (0-1)",
+      "howItWorksTitle": "💡 Como funciona",
+      "howItWorksSteps": {
+        "step1": "Selecione um ou mais objetivos de otimização",
+        "step2": "A IA analisará seu rebanho e gerará movimentos específicos",
+        "step3": "Bezerros se movem automaticamente com suas mães",
+        "step4": "Você pode ajustar parâmetros técnicos conforme suas necessidades"
+      },
+      "cancelButton": "Cancelar",
+      "verifyingButton": "Verificando...",
+      "nextButton": "Próximo: Selecionar Animais",
+      "selectObjectiveError": "Selecione pelo menos um objetivo"
+    },
+    "step2": {
+      "cardTitle": "Selecionar Animais para Análise (Opcional)",
+      "cardDescription": "Se você não selecionar nenhum animal, todos os animais ativos serão analisados. Você pode filtrar por curral ou selecionar individualmente.",
+      "searchLabel": "Buscar Animal",
+      "searchPlaceholder": "Nome ou tag...",
+      "filterByCorralLabel": "Filtrar por Curral",
+      "animalsCount": "Animais ({{count}})",
+      "selectVisibleButton": "Selecionar Visíveis",
+      "clearButton": "Limpar",
+      "pregnantBadge": "PRENHA",
+      "backButton": "Voltar",
+      "analyzingButton": "Analisando...",
+      "generateButton": "Gerar Otimização"
+    },
+    "step3": {
+      "planTitle": "Plano de Otimização",
+      "movementsSuggested": "{{count}} movimentos sugeridos",
+      "metricsTitle": "Métricas de Redução de Risco",
+      "currentRisks": "Riscos Atuais",
+      "risksAfter": "Riscos Depois",
+      "reduction": "Redução",
+      "movements": "Movimentos",
+      "calvesWithMother": "Bezerros c/Mãe",
+      "detailedPlanTitle": "Plano Detalhado por Curral",
+      "corralAnimalsInfo": "{{count}} animais ({{adult}} adultos, {{calf}} bezerros)",
+      "corralRisksMovesInfo": "{{risks}} riscos • {{moves}} movimentos",
+      "secondaryCriterionBadge": "Otimizado",
+      "riskReductionBadge": "-{{score}}% risco",
+      "capacityOkBadge": "Capacidade OK",
+      "overCapacityBadge": "Sobre capacidade",
+      "detectedRisksTitle": "Riscos Detectados:",
+      "moreRisks": "... e {{count}} riscos mais",
+      "suggestedMovesTitle": "Movimentos Sugeridos:",
+      "calfLabel": "👶 Bezerro",
+      "selectAllButton": "Selecionar Todos",
+      "deselectAllButton": "Desselecionar Todos",
+      "backButton": "Voltar",
+      "applyingButton": "Aplicando...",
+      "applyMovementsButton": "Aplicar {{count}} Movimentos",
+      "equalOptions": "opções iguais",
+      "whyThisCorral": "Por que este curral?",
+      "bestSecondaryScore": "Maior pontuação secundária ({{score}})",
+      "vsAlternatives": "vs alternativas"
+    },
+    "step4": {
+      "title": "Otimização Aplicada",
+      "description": "Movimentos selecionados foram aplicados com sucesso.",
+      "closeButton": "Fechar",
+      "newOptimizationButton": "Nova Otimização"
+    },
+    "toast": {
+      "errorLoadingData": "Erro ao carregar dados",
+      "optimizationGenerated": "Otimização gerada com sucesso",
+      "errorGenerating": "Erro ao gerar otimização",
+      "movementsApplied": "{{count}} movimentos aplicados com sucesso",
+      "movementsFailed": "{{count}} movimentos falharam",
+      "noMovementsToApply": "Não há movimentos para aplicar",
+      "errorApplying": "Erro ao aplicar sugestões"
+    },
+    "severity": {
+      "highRisk": "Risco Alto",
+      "mediumRisk": "Risco Médio",
+      "lowRisk": "Risco Baixo"
+    }
   },
   "metrics": {
     "totalCorrals": "Total de Currais",
@@ -407,191 +573,6 @@
     "description": "Desc",
     "advice": "Conselho: Evite cruzar animais com alto coeficiente"
   },
-  "optimization": {
-    "title": "Otimização de Currais",
-    "titleWithStep": "Otimização de Currais - Passo {{step}} de 4",
-    "hideExplanation": "Ocultar",
-    "showExplanation": "Como funciona?",
-    "explanationTitle": "Como Funciona a Otimização de Currais",
-    "explanationSections": {
-      "consanguinityDetection": {
-        "title": "🧬 Detecção de Consanguinidade",
-        "description": "O sistema analisa as relações familiares entre animais (pai-filho, irmãos, meio-irmãos) que estão no mesmo curral e têm idade reprodutiva (≥15 meses). Detecta pares macho-fêmea aparentados que poderiam cruzar."
-      },
-      "productiveData": {
-        "title": "📊 Dados Produtivos e Reprodutivos",
-        "description": "O sistema coleta métricas-chave de cada animal:",
-        "metrics": {
-          "item1": "Peso atual, ganho diário médio (GPD), histórico de pesagens",
-          "item2": "Taxas de prenhez e parto (% sucesso reprodutivo)",
-          "item3": "Nível de desempenho (Excelente, Bom, Regular, Baixo)",
-          "item4": "Métricas agregadas por curral para análise comparativa"
-        }
-      },
-      "aiAnalysis": {
-        "title": "🤖 Análise com IA",
-        "description": "Usando GPT-4, o sistema:",
-        "steps": {
-          "item1": "Avalia a distribuição atual de animais com dados produtivos",
-          "item2": "Identifica conflitos de consanguinidade e baixo desempenho",
-          "item3": "Gera movimentos específicos com razões baseadas em dados reais",
-          "item4": "Considera capacidade, idades, objetivos e métricas de performance",
-          "item5": "Prioriza animais de alto desempenho para agrupamento estratégico"
-        }
-      },
-      "customizableObjectives": {
-        "title": "🎯 Objetivos Personalizáveis",
-        "description": "Você pode escolher otimizar para:",
-        "objectives": {
-          "consanguinity": "Consanguinidade: Reduz cruzamentos entre parentes",
-          "reproduction": "Reprodução: Agrupa fêmeas >70% prenhez/parto, isola baixo desempenho",
-          "production": "Produção: Agrupa animais com GPD >0.7kg/d, separa baixo desempenho",
-          "benchmarks": "Padrões: Segue benchmarks específicos da sua fazenda"
-        }
-      },
-      "totalControl": {
-        "title": "✅ Controle Total com Dados",
-        "description": "Você pode ver métricas de cada animal (peso, GPD, % prenhez, % parto), revisar cada movimento com razões baseadas em dados reais, selecionar quais aplicar e descartar os que não quer. O sistema mostra o impacto esperado antes de aplicar mudanças."
-      }
-    },
-    "step1": {
-      "cardTitle": "Configuração de Otimização",
-      "objectivesTitle": "Objetivos de Otimização",
-      "objectives": {
-        "consanguinity": {
-          "title": "Reduzir Consanguinidade",
-          "description": "Evitar cruzamentos entre animais aparentados"
-        },
-        "reproduction": {
-          "title": "Otimizar Reprodução",
-          "description": "Maximizar fertilidade e taxa de prenhez"
-        },
-        "production": {
-          "title": "Otimizar Produção",
-          "description": "Maximizar ganho de peso e produção"
-        },
-        "benchmarks": {
-          "title": "Seguir Padrões da Fazenda",
-          "checkingBenchmarks": "Verificando padrões configurados...",
-          "hasCustomBenchmarks": "Usar padrões personalizados configurados para sua fazenda",
-          "noCustomBenchmarks": "Padrões padrão serão usados.",
-          "configureCustomLink": "Configure padrões personalizados aqui"
-        },
-        "breedingRatio": {
-          "title": "Distribuir para Reprodução",
-          "description": "Criar currais reprodutivos funcionais com proporção fêmea:macho ideal",
-          "recommended": "Recomendado"
-        }
-      },
-      "secondaryObjective": {
-        "title": "Objetivo Secundário (opcional)",
-        "description": "Quando múltiplos movimentos reduzem o risco de forma similar, usar este critério para escolher entre eles.",
-        "options": {
-          "none": "Nenhum (apenas minimizar risco)",
-          "fertility": "Maximizar fertilidade",
-          "fertilityDesc": "Preferir currais com melhor potencial reprodutivo",
-          "standards": "Seguir padrões da cabana",
-          "standardsDesc": "Preferir currais com animais que cumprem os padrões configurados"
-        }
-      },
-      "breedingRatioConfig": {
-        "title": "Configuração de Proporção de Reprodução",
-        "femalesPerBullLabel": "Fêmeas por touro",
-        "femalesPerBullHint": "Recomendado: 20-30 fêmeas por touro para reprodução ideal",
-        "minBullsPerCorralLabel": "Mínimo de touros por curral",
-        "minBullsPerCorralHint": "Número mínimo de touros em cada curral reprodutivo",
-        "exampleTitle": "Exemplo",
-        "exampleText": "Com proporção {{ratio}}:1, um curral com {{females}} fêmeas precisará de {{bulls}} touros"
-      },
-      "weightObjectivesTitle": "Objetivos de Peso (opcional)",
-      "birthWeightLabel": "Peso ao Nascer (kg)",
-      "birthWeightPlaceholder": "ex: 35",
-      "weaningWeightLabel": "Peso ao Desmame (kg)",
-      "weaningWeightPlaceholder": "ex: 180",
-      "finalWeightLabel": "Peso Final (kg)",
-      "finalWeightPlaceholder": "ex: 450",
-      "technicalParametersTitle": "Parâmetros Técnicos",
-      "maxBullsPerCorralLabel": "Touros por Curral (máx)",
-      "maxAgeWithMotherLabel": "Idade máx. bezerro com mãe (meses)",
-      "densityPerHectareLabel": "Densidade por Hectare",
-      "calfSpaceFactorLabel": "Fator espaço bezerro (0-1)",
-      "howItWorksTitle": "💡 Como funciona",
-      "howItWorksSteps": {
-        "step1": "Selecione um ou mais objetivos de otimização",
-        "step2": "A IA analisará seu rebanho e gerará movimentos específicos",
-        "step3": "Bezerros se movem automaticamente com suas mães",
-        "step4": "Você pode ajustar parâmetros técnicos conforme suas necessidades"
-      },
-      "cancelButton": "Cancelar",
-      "verifyingButton": "Verificando...",
-      "nextButton": "Próximo: Selecionar Animais",
-      "selectObjectiveError": "Selecione pelo menos um objetivo"
-    },
-    "step2": {
-      "cardTitle": "Selecionar Animais para Análise (Opcional)",
-      "cardDescription": "Se você não selecionar nenhum animal, todos os animais ativos serão analisados. Você pode filtrar por curral ou selecionar individualmente.",
-      "searchLabel": "Buscar Animal",
-      "searchPlaceholder": "Nome ou tag...",
-      "filterByCorralLabel": "Filtrar por Curral",
-      "animalsCount": "Animais ({{count}})",
-      "selectVisibleButton": "Selecionar Visíveis",
-      "clearButton": "Limpar",
-      "pregnantBadge": "PRENHA",
-      "backButton": "Voltar",
-      "analyzingButton": "Analisando...",
-      "generateButton": "Gerar Otimização"
-    },
-    "step3": {
-      "planTitle": "Plano de Otimização",
-      "movementsSuggested": "{{count}} movimentos sugeridos",
-      "metricsTitle": "Métricas de Redução de Risco",
-      "currentRisks": "Riscos Atuais",
-      "risksAfter": "Riscos Depois",
-      "reduction": "Redução",
-      "movements": "Movimentos",
-      "calvesWithMother": "Bezerros c/Mãe",
-      "detailedPlanTitle": "Plano Detalhado por Curral",
-      "corralAnimalsInfo": "{{count}} animais ({{adult}} adultos, {{calf}} bezerros)",
-      "corralRisksMovesInfo": "{{risks}} riscos • {{moves}} movimentos",
-      "secondaryCriterionBadge": "Otimizado",
-      "riskReductionBadge": "-{{score}}% risco",
-      "capacityOkBadge": "Capacidade OK",
-      "overCapacityBadge": "Sobre capacidade",
-      "detectedRisksTitle": "Riscos Detectados:",
-      "moreRisks": "... e {{count}} riscos mais",
-      "suggestedMovesTitle": "Movimentos Sugeridos:",
-      "calfLabel": "👶 Bezerro",
-      "selectAllButton": "Selecionar Todos",
-      "deselectAllButton": "Desselecionar Todos",
-      "backButton": "Voltar",
-      "applyingButton": "Aplicando...",
-      "applyMovementsButton": "Aplicar {{count}} Movimentos",
-      "equalOptions": "opções iguais",
-      "whyThisCorral": "Por que este curral?",
-      "bestSecondaryScore": "Maior pontuação secundária ({{score}})",
-      "vsAlternatives": "vs alternativas"
-    },
-    "step4": {
-      "title": "Otimização Aplicada",
-      "description": "Movimentos selecionados foram aplicados com sucesso.",
-      "closeButton": "Fechar",
-      "newOptimizationButton": "Nova Otimização"
-    },
-    "toast": {
-      "errorLoadingData": "Erro ao carregar dados",
-      "optimizationGenerated": "Otimização gerada com sucesso",
-      "errorGenerating": "Erro ao gerar otimização",
-      "movementsApplied": "{{count}} movimentos aplicados com sucesso",
-      "movementsFailed": "{{count}} movimentos falharam",
-      "noMovementsToApply": "Não há movimentos para aplicar",
-      "errorApplying": "Erro ao aplicar sugestões"
-    },
-    "severity": {
-      "highRisk": "Risco Alto",
-      "mediumRisk": "Risco Médio",
-      "lowRisk": "Risco Baixo"
-    }
-  },
   "suggestions": {
     "title": "Sugestões de Otimização",
     "optimalState": "Estado Ótimo",
@@ -778,5 +759,9 @@
     "bulkMoveDesc": "Mover animais usando filtros automáticos e seleção específica",
     "manualMove": "Movimentação Manual",
     "manualMoveDesc": "Selecionar animais individualmente para mover"
+  },
+  "tabs": {
+    "corrals": "Currais",
+    "comparison": "Comparação"
   }
 }
