@@ -23,7 +23,7 @@ const ROLE_BADGES: Record<string, string> = {
   owner: "border-primary/30 bg-primary/10 text-primary",
   manager: "border-accent/40 bg-accent/20 text-accent-foreground",
   worker: "border-primary/20 bg-primary/10 text-primary",
-  vet: "border-warning/30 bg-warning/10 text-warning-foreground",
+  vet: "border-accent/40 bg-accent/20 text-accent-foreground",
   read_only: "border-muted bg-muted text-muted-foreground",
   admin: "border-primary/30 bg-primary/10 text-primary",
   employee: "border-primary/20 bg-primary/10 text-primary",
