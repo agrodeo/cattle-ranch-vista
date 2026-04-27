@@ -64,6 +64,9 @@ verify_jwt = true
 [functions.create-user]
 verify_jwt = true
 
+[functions.create-ranch-user]
+verify_jwt = true
+
 [functions.hash-existing-passwords]
 verify_jwt = true
 
