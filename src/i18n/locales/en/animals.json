@@ -637,13 +637,18 @@
     "average": "Average",
     "belowAverage": "Below average",
     "needsAttention": "Needs attention",
-    "dataWarning": "Score based on {{pct}}% of available data. Add more weights, vaccines, and reproductive records to improve accuracy.",
+    "dataWarning": "Score based on {{pct}}% of available production, reproductive, and genetic data. Add more records to improve accuracy.",
     "topPercent": "Top {{pct}}% of herd",
     "excellentGrowth": "Excellent growth",
     "goodGrowth": "Good growth",
     "eliteBreeder": "Elite breeder",
     "fullHealth": "Full health",
     "superiorPerformance": "Superior performance",
-    "needsAttentionBadge": "Needs attention"
+    "needsAttentionBadge": "Needs attention",
+    "healthStatus": {
+      "current": "Up to date",
+      "pending": "Pending",
+      "overdue": "Overdue"
+    }
   }
 }
