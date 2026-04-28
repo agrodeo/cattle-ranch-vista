@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MobilePageHeader } from "@/components/mobile/MobilePageHeader";
 import { IconTabsBar } from "@/components/reports/IconTabsBar";
 import { HerdOverview } from "@/components/reports/HerdOverview";
+import { RankingAnalytics } from "@/components/reports/RankingAnalytics";
 import ReproductiveAnalytics from "@/components/reports/ReproductiveAnalytics";
 import { ProductionAnalytics } from "@/components/reports/ProductionAnalytics";
 import { MortalityReports } from "@/components/reports/MortalityReportsWrapper";
@@ -45,7 +46,7 @@ const Reports = () => {
   };
 
   // Active tab state
-  const [activeTab, setActiveTab] = useState("reproductive");
+  const [activeTab, setActiveTab] = useState("ranking");
 
   // Handle tab change - clear quick filters when switching tabs
   const handleTabChange = (newTab: string) => {
@@ -171,6 +172,7 @@ const Reports = () => {
 
   // Tab configuration for mobile chips
   const tabs = [
+    { id: "ranking", label: t('reports:tabs.ranking', 'Ranking'), shortLabel: "Rank." },
     { id: "reproductive", label: t('reports:tabs.reproductive'), shortLabel: t('reports:tabs.reproductive').substring(0, 6) + '.' },
     { id: "production", label: t('reports:tabs.production'), shortLabel: t('reports:tabs.production').substring(0, 4) + '.' },
     { id: "evolution", label: t('reports:tabs.evolution'), shortLabel: t('reports:tabs.evolution').substring(0, 4) + '.' },
@@ -187,6 +189,8 @@ const Reports = () => {
   const renderTabContent = () => {
     const content = (() => {
       switch (activeTab) {
+        case "ranking":
+          return <RankingAnalytics filters={stableAppliedFilters} />;
         case "reproductive":
           return <ReproductiveAnalytics filters={stableAppliedFilters} />;
         case "production":
@@ -200,7 +204,7 @@ const Reports = () => {
         case "financial":
           return <FinancialAnalytics filters={stableAppliedFilters} />;
         default:
-          return <ReproductiveAnalytics filters={stableAppliedFilters} />;
+          return <RankingAnalytics filters={stableAppliedFilters} />;
       }
     })();
 
