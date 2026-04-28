@@ -6,9 +6,13 @@ import { Animal } from "@/types/animal";
 import { AnimalProfileHeader } from "@/components/animals/profile/AnimalProfileHeader";
 import { AnimalProfileTabs } from "@/components/animals/profile/AnimalProfileTabs";
 import { toast } from "@/hooks/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
+import { ActivityTaskCard } from "@/components/activities/ActivityTaskCard";
+import { CreateActivityDialog } from "@/components/activities/CreateActivityDialog";
+import { useActivityTasks } from "@/hooks/useActivityTasks";
 
 export default function AnimalProfile() {
   const { t } = useTranslation(['animals', 'common']);
@@ -17,6 +21,7 @@ export default function AnimalProfile() {
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: allActivityTasks } = useActivityTasks("all");
 
   useEffect(() => {
     if (!id || !currentUser) return;
@@ -90,6 +95,11 @@ export default function AnimalProfile() {
     setAnimal(updatedAnimal);
   };
 
+  const animalActivityTasks = (allActivityTasks || []).filter((activity) => activity.animal_id === animal?.id);
+  const pendingActivityTasks = animalActivityTasks.filter((activity) => activity.status === "pending");
+  const completedActivityTasks = animalActivityTasks.filter((activity) => activity.status === "completed");
+  const canCreateTasks = ["owner", "manager", "admin"].includes(currentUser?.role || "");
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -151,6 +161,26 @@ export default function AnimalProfile() {
           animal={animal} 
           onAnimalUpdate={handleAnimalUpdate}
         />
+
+        {animalActivityTasks.length > 0 || canCreateTasks ? (
+          <Card className="mt-4">
+            <CardHeader className="flex-row items-center justify-between gap-3 space-y-0 p-4 sm:p-6">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base">{t('activities:dashboard.title')}</CardTitle>
+                {pendingActivityTasks.length > 0 && <Badge variant="secondary">{pendingActivityTasks.length} {t('activities:dashboard.pending').toLowerCase()}</Badge>}
+              </div>
+              {canCreateTasks && <CreateActivityDialog defaultAnimalId={animal.id} defaultAnimalTag={animal.id_tag || animal.name || ""} />}
+            </CardHeader>
+            {animalActivityTasks.length > 0 && (
+              <CardContent className="space-y-3 p-4 pt-0 sm:p-6 sm:pt-0">
+                {pendingActivityTasks.map((activity) => <ActivityTaskCard key={activity.id} activity={activity} />)}
+                {completedActivityTasks.length > 0 && (
+                  <p className="text-sm text-muted-foreground">+ {completedActivityTasks.length} {t('activities:dashboard.completed').toLowerCase()}</p>
+                )}
+              </CardContent>
+            )}
+          </Card>
+        ) : null}
       </div>
     </div>
   );
