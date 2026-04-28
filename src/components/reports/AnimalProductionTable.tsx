@@ -113,9 +113,10 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
           _animal_ids: productionAnimals.map((animal: ProductionAnimal) => animal.animal_id),
         } as never);
 
-        if (!scoreError && Array.isArray(scoreRows)) {
+        const rows = Array.isArray(scoreRows) ? scoreRows : [];
+        if (!scoreError && rows.length > 0) {
           const entries = await Promise.all(
-            scoreRows.map(async (row: { animal_id: string; score_data: AnimalScoreRawData }) => [
+            rows.map(async (row: { animal_id: string; score_data: AnimalScoreRawData }) => [
               row.animal_id,
               await scoreFromRawData(row.score_data, currentUser.cabañaId),
             ] as const),
