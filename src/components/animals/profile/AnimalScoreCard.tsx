@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, Info, TrendingDown, TrendingUp, Trophy } from "lucide-react";
+import { AlertTriangle, BarChart3, Info, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,43 @@ export function AnimalScoreCard({ score, sex, className }: AnimalScoreCardProps)
   const { t } = useTranslation("animals");
   const dimensions = DIMENSIONS.filter((dimension) => dimension.key !== "reproduction" || isFemale(sex));
   const healthState = score.health >= 8 ? "current" : score.health >= 5 ? "pending" : "overdue";
+
+  if (!score.hasEnoughData) {
+    return (
+      <Card className={cn("overflow-hidden", className)}>
+        <CardContent className="space-y-4 p-5">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground">{t("score.title")}</p>
+            <div className="mt-4 flex items-center gap-3">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-muted">
+                <BarChart3 className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-foreground">{t("score.insufficientTitle")}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{t("score.insufficientDescription")}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 border-t pt-3">
+            <span className="text-xs font-medium uppercase text-muted-foreground">{t("score.health")}</span>
+            <div className="flex-1" />
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xs",
+                healthState === "current" && "border-primary/20 bg-primary/10 text-primary",
+                healthState === "pending" && "border-muted-foreground/20 bg-muted text-foreground",
+                healthState === "overdue" && "border-destructive/20 bg-destructive/10 text-destructive"
+              )}
+            >
+              {t(`score.healthStatus.${healthState}`)}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className={cn("overflow-hidden", className)}>
