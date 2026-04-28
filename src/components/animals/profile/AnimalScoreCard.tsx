@@ -14,7 +14,7 @@ interface AnimalScoreCardProps {
 const DIMENSIONS = [
   { key: "production", labelKey: "production", bar: "bg-primary" },
   { key: "reproduction", labelKey: "reproduction", bar: "bg-secondary-foreground" },
-  { key: "health", labelKey: "health", bar: "bg-info" },
+  { key: "health", labelKey: "health", bar: "bg-accent-foreground" },
   { key: "genetics", labelKey: "genetics", bar: "bg-muted-foreground" },
   { key: "longevity", labelKey: "longevity", bar: "bg-warning" },
 ] as const;
