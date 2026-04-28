@@ -637,6 +637,8 @@
     "average": "Average",
     "belowAverage": "Below average",
     "needsAttention": "Needs attention",
+    "insufficientTitle": "Insufficient data to calculate score",
+    "insufficientDescription": "Data is needed in at least 2 areas: weights, reproduction, or genetics.",
     "dataWarning": "Score based on {{pct}}% of available production, reproductive, and genetic data. Add more records to improve accuracy.",
     "topPercent": "Top {{pct}}% of herd",
     "excellentGrowth": "Excellent growth",
