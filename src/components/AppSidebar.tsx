@@ -1,5 +1,5 @@
 import { 
-  Home, 
+  LayoutDashboard, 
   Users, 
   Activity, 
   FileText, 
@@ -33,8 +33,8 @@ import {
 const menuItems = [
   {
     title: "menu:dashboard",
-    url: "/dashboard",
-    icon: Home,
+    url: "/",
+    icon: LayoutDashboard,
   },
   {
     title: "menu:animals",
