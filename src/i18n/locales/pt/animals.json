@@ -637,6 +637,8 @@
     "average": "Médio",
     "belowAverage": "Abaixo da média",
     "needsAttention": "Requer atenção",
+    "insufficientTitle": "Dados insuficientes para calcular score",
+    "insufficientDescription": "São necessários dados em pelo menos 2 áreas: pesagens, reprodução ou genética.",
     "dataWarning": "Score baseado em {{pct}}% dos dados produtivos, reprodutivos e genéticos disponíveis. Registre mais dados para melhorar a precisão.",
     "topPercent": "Top {{pct}}% do rebanho",
     "excellentGrowth": "Crescimento excelente",

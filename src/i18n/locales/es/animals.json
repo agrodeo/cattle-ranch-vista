@@ -637,6 +637,8 @@
     "average": "Promedio",
     "belowAverage": "Por debajo",
     "needsAttention": "Requiere atención",
+    "insufficientTitle": "Datos insuficientes para calcular score",
+    "insufficientDescription": "Se necesitan datos en al menos 2 áreas: pesajes, reproducción o genética.",
     "dataWarning": "Score basado en {{pct}}% de los datos productivos, reproductivos y genéticos disponibles. Registra más datos para mejorar la precisión.",
     "topPercent": "Top {{pct}}% del rodeo",
     "excellentGrowth": "Crecimiento excelente",
