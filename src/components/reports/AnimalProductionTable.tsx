@@ -160,7 +160,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
     navigate(`/animales/${animalId}`);
   };
 
-  const handleSort = (column: keyof ProductionAnimal) => {
+  const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -172,8 +172,8 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const sortedAnimals = [...animals].sort((a, b) => {
     if (!sortColumn) return 0;
     
-    const aValue = a[sortColumn];
-    const bValue = b[sortColumn];
+    const aValue = sortColumn === 'score' ? animalScores.get(a.animal_id)?.overall : a[sortColumn];
+    const bValue = sortColumn === 'score' ? animalScores.get(b.animal_id)?.overall : b[sortColumn];
     
     if (aValue === null || aValue === undefined) return 1;
     if (bValue === null || bValue === undefined) return -1;
@@ -191,7 +191,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
     return 0;
   });
 
-  const SortableHeader = ({ column, children }: { column: keyof ProductionAnimal; children: React.ReactNode }) => (
+  const SortableHeader = ({ column, children }: { column: SortColumn; children: React.ReactNode }) => (
     <TableHead 
       className="cursor-pointer hover:bg-accent/50 select-none"
       onClick={() => handleSort(column)}
