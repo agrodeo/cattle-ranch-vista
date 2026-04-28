@@ -53,8 +53,8 @@ export interface ScoreBadge {
   variant: "success" | "warning" | "info" | "neutral";
 }
 
-const MALE_WEIGHTS = { production: 0.5, reproduction: 0, health: 0.2, genetics: 0.15, longevity: 0.15 };
-const FEMALE_WEIGHTS = { production: 0.25, reproduction: 0.4, health: 0.15, genetics: 0.1, longevity: 0.1 };
+const MALE_WEIGHTS = { production: 0.55, reproduction: 0, health: 0, genetics: 0.2, longevity: 0.25 };
+const FEMALE_WEIGHTS = { production: 0.25, reproduction: 0.5, health: 0, genetics: 0.1, longevity: 0.15 };
 
 function clamp(value: number, min = 0, max = 10): number {
   return Math.min(max, Math.max(min, value));
@@ -68,7 +68,18 @@ function isFemale(sex: string): boolean {
   return ["hembra", "female", "fêmea"].includes((sex || "").toLowerCase());
 }
 
-function scoreProduction(input: AnimalScoreInput) {
+function scoreProduction(input: AnimalScoreInput): { score: number; completeness: number } {
+  const hasAnyWeightData =
+    input.adg != null ||
+    input.pesoDestete != null ||
+    input.pesoNacimiento != null ||
+    input.pesoFinal != null ||
+    input.pesoActual != null;
+
+  if (!hasAnyWeightData) {
+    return { score: 0, completeness: 0 };
+  }
+
   const b = input.benchmarks;
   let totalWeight = 0;
   let weightedSum = 0;
@@ -101,8 +112,12 @@ function scoreProduction(input: AnimalScoreInput) {
   return { score: totalWeight > 0 ? clamp(weightedSum / totalWeight) : 5, completeness: (fieldsAvailable / fieldsTotal) * 100 };
 }
 
-function scoreReproduction(input: AnimalScoreInput) {
-  if (!isFemale(input.sex)) return { score: 5, completeness: 0 };
+function scoreReproduction(input: AnimalScoreInput): { score: number; completeness: number } {
+  if (!isFemale(input.sex)) return { score: 0, completeness: 0 };
+  if (input.totalServices === 0 && input.totalOffspring === 0 && !input.isPregnant) {
+    return { score: 0, completeness: 0 };
+  }
+
   let totalWeight = 0;
   let weightedSum = 0;
   let fieldsAvailable = 0;
@@ -152,7 +167,12 @@ function scoreHealth(input: AnimalScoreInput) {
   return { score: clamp(vaccineScore * 0.7 + bodyScore * 0.3), completeness: (fieldsAvailable / 2) * 100 };
 }
 
-function scoreGenetics(input: AnimalScoreInput) {
+function scoreGenetics(input: AnimalScoreInput): { score: number; completeness: number } {
+  const hasAnyGeneticData = input.registrationLevel != null || input.dnaVerified || input.hasFather || input.hasMother;
+  if (!hasAnyGeneticData) {
+    return { score: 0, completeness: 0 };
+  }
+
   let score = 3;
   let fieldsAvailable = 0;
   const regLevels: Record<string, number> = { PC: 4, PO: 3.5, PP: 2.5, PA: 2 };
@@ -208,14 +228,32 @@ function generateBadges(overall: number, production: number, reproduction: numbe
 
 export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
   const female = isFemale(input.sex);
-  const weights = female ? FEMALE_WEIGHTS : MALE_WEIGHTS;
+  const baseWeights = female ? FEMALE_WEIGHTS : MALE_WEIGHTS;
   const prod = scoreProduction(input);
   const repro = scoreReproduction(input);
   const hlth = scoreHealth(input);
   const gen = scoreGenetics(input);
   const long = scoreLongevity(input);
-  const overall = round1(clamp(prod.score * weights.production + repro.score * weights.reproduction + hlth.score * weights.health + gen.score * weights.genetics + long.score * weights.longevity));
-  const dataCompleteness = Math.round(prod.completeness * weights.production + (female ? repro.completeness * weights.reproduction : 0) + hlth.completeness * weights.health + gen.completeness * weights.genetics + long.completeness * weights.longevity);
+  const dimensions = { production: prod, reproduction: repro, health: hlth, genetics: gen, longevity: long };
+  let totalActiveWeight = 0;
+  let weightedOverall = 0;
+
+  for (const [key, weight] of Object.entries(baseWeights)) {
+    const dimension = dimensions[key as keyof typeof dimensions];
+    if (weight > 0 && dimension.completeness > 0) {
+      totalActiveWeight += weight;
+      weightedOverall += dimension.score * weight;
+    }
+  }
+
+  const overall = round1(clamp(totalActiveWeight > 0 ? weightedOverall / totalActiveWeight : 5));
+  const scoredDimensions = Object.entries(baseWeights).filter(([, weight]) => weight > 0);
+  const scoredWeightTotal = scoredDimensions.reduce((sum, [, weight]) => sum + weight, 0);
+  const dataCompleteness = Math.round(
+    scoredWeightTotal > 0
+      ? scoredDimensions.reduce((sum, [key, weight]) => sum + dimensions[key as keyof typeof dimensions].completeness * weight, 0) / scoredWeightTotal
+      : 0
+  );
 
   return {
     overall,
@@ -224,7 +262,7 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
     health: round1(hlth.score),
     genetics: round1(gen.score),
     longevity: round1(long.score),
-    vsHerdAvg: input.herdAvgScore != null && input.herdAvgScore > 0 ? Math.round(((overall - input.herdAvgScore) / input.herdAvgScore) * 100) : null,
+    vsHerdAvg: input.herdAvgScore != null && input.herdAvgScore > 1 ? Math.round(((overall - input.herdAvgScore) / input.herdAvgScore) * 100) : null,
     percentileRank: input.adgPercentile,
     badges: generateBadges(overall, prod.score, repro.score, hlth.score, input.adgPercentile, input),
     dataCompleteness,

@@ -637,13 +637,18 @@
     "average": "Promedio",
     "belowAverage": "Por debajo",
     "needsAttention": "Requiere atención",
-    "dataWarning": "Score basado en {{pct}}% de los datos disponibles. Registra más pesajes, vacunas y datos reproductivos para mejorar la precisión.",
+    "dataWarning": "Score basado en {{pct}}% de los datos productivos, reproductivos y genéticos disponibles. Registra más datos para mejorar la precisión.",
     "topPercent": "Top {{pct}}% del rodeo",
     "excellentGrowth": "Crecimiento excelente",
     "goodGrowth": "Buen crecimiento",
     "eliteBreeder": "Reproductora élite",
     "fullHealth": "Sanidad completa",
     "superiorPerformance": "Rendimiento superior",
-    "needsAttentionBadge": "Requiere atención"
+    "needsAttentionBadge": "Requiere atención",
+    "healthStatus": {
+      "current": "Al día",
+      "pending": "Pendiente",
+      "overdue": "Atrasado"
+    }
   }
 }

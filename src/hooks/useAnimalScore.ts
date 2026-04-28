@@ -14,8 +14,7 @@ function numberOrNull(value: unknown): number | null {
 export async function scoreFromRawData(rawData: AnimalScoreRawData, cabañaId: string): Promise<AnimalScore> {
   const d = rawData;
   const benchmarks = await getBreedBenchmarksWithCustom(String(d.breed || ""), cabañaId);
-  const herdAvgAdg = numberOrNull(d.herdAvgAdg);
-  const herdAvgScore = herdAvgAdg ? Math.round((herdAvgAdg / benchmarks.dailyGain.good) * 7 * 10) / 10 : null;
+  const herdAvgScore: number | null = null;
 
   const input: AnimalScoreInput = {
     sex: String(d.sex || "Macho"),
