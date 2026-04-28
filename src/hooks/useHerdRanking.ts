@@ -82,15 +82,7 @@ export function useHerdRanking(filters: ReportFilters = {}) {
 
       let query = supabase
         .from("animals")
-        .select(`
-          id, id_tag, name, sex, breed, birth_date, status,
-          peso_actual_kg, peso_nacimiento, peso_destete, peso_final,
-          ganancia_diaria_kg, esta_preñada,
-          registration_level, dna_verified,
-          father_id, mother_id,
-          registration_father_level, registration_mother_level,
-          condicion_corporal, corral_id
-        `)
+        .select("*")
         .eq("cabaña_id", cabañaId)
         .in("status", ["activo", "Activo", "active"]);
 
