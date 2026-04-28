@@ -16,7 +16,7 @@ const DIMENSIONS = [
   { key: "reproduction", labelKey: "reproduction", bar: "bg-secondary-foreground" },
   { key: "health", labelKey: "health", bar: "bg-accent-foreground" },
   { key: "genetics", labelKey: "genetics", bar: "bg-muted-foreground" },
-  { key: "longevity", labelKey: "longevity", bar: "bg-warning" },
+  { key: "longevity", labelKey: "longevity", bar: "bg-secondary-foreground" },
 ] as const;
 
 function isFemale(sex: string) {
@@ -25,14 +25,14 @@ function isFemale(sex: string) {
 
 function getScoreColor(score: number): string {
   if (score >= 8) return "text-primary";
-  if (score >= 6) return "text-warning";
+  if (score >= 6) return "text-secondary-foreground";
   if (score >= 4) return "text-foreground";
   return "text-destructive";
 }
 
 function getBarColor(score: number): string {
   if (score >= 8) return "bg-primary";
-  if (score >= 6) return "bg-warning";
+  if (score >= 6) return "bg-secondary-foreground";
   if (score >= 4) return "bg-muted-foreground";
   return "bg-destructive";
 }
@@ -99,7 +99,7 @@ export function AnimalScoreCard({ score, sex, className }: AnimalScoreCardProps)
         {score.badges.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {score.badges.map((badge) => (
-              <Badge key={badge.id} variant="outline" className={cn("gap-1", badge.variant === "success" && "border-primary/20 bg-primary/10 text-primary", badge.variant === "warning" && "border-warning/20 bg-warning/10 text-warning")}>
+              <Badge key={badge.id} variant="outline" className={cn("gap-1", badge.variant === "success" && "border-primary/20 bg-primary/10 text-primary", badge.variant === "warning" && "border-destructive/20 bg-destructive/10 text-destructive")}>
                 {badge.variant === "success" && <Trophy className="h-3 w-3" />}
                 {badge.variant === "warning" && <AlertTriangle className="h-3 w-3" />}
                 {t(`score.${badge.labelKey}`, badge.labelParams)}
