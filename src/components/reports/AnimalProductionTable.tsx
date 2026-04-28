@@ -304,7 +304,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                         {animal.corral_name || t('reports:production.noCorral')}
                       </Badge>
                         <div className="ml-2 flex-shrink-0">
-                          {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} /> : <span className="text-xs text-muted-foreground">—</span>}
+                          {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} hasEnoughData={animalScores.get(animal.animal_id)!.hasEnoughData} /> : <span className="text-xs text-muted-foreground">—</span>}
                         </div>
                     </div>
 
@@ -458,7 +458,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <TableCell className="text-center">{formatWeight(animal.weight_yearling)}</TableCell>
                       <TableCell className="text-center">{formatWeight(animal.weight_final)}</TableCell>
                       <TableCell className="text-center">
-                        {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} /> : <span className="text-xs text-muted-foreground">—</span>}
+                        {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} hasEnoughData={animalScores.get(animal.animal_id)!.hasEnoughData} /> : <span className="text-xs text-muted-foreground">—</span>}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge 
