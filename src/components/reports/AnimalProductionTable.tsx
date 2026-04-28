@@ -248,7 +248,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                   value={sortColumn || ""}
                   onValueChange={(value) => {
                     if (value) {
-                      handleSort(value as keyof ProductionAnimal);
+                      handleSort(value as SortColumn);
                     }
                   }}
                 >
@@ -270,6 +270,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                     <SelectItem value="weight_yearling">{t('reports:production.weight18m')}</SelectItem>
                     <SelectItem value="weight_final">{t('reports:production.weightFinal')}</SelectItem>
                     <SelectItem value="adg_percentile">{t('common:percentile')}</SelectItem>
+                    <SelectItem value="score">Score</SelectItem>
                   </SelectContent>
                 </Select>
                 {sortColumn && (
@@ -302,6 +303,9 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <Badge variant="outline" className="ml-2 flex-shrink-0">
                         {animal.corral_name || t('reports:production.noCorral')}
                       </Badge>
+                        <div className="ml-2 flex-shrink-0">
+                          {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} /> : <span className="text-xs text-muted-foreground">—</span>}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-3">
@@ -401,6 +405,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                     <SortableHeader column="weight_weaning">{t('reports:production.weightWeaning')}</SortableHeader>
                     <SortableHeader column="weight_yearling">{t('reports:production.weight18m')}</SortableHeader>
                     <SortableHeader column="weight_final">{t('reports:production.weightFinal')}</SortableHeader>
+                    <SortableHeader column="score">Score</SortableHeader>
                     <TableHead className="text-center">
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
@@ -452,6 +457,9 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <TableCell className="text-center">{formatWeight(animal.weight_weaning)}</TableCell>
                       <TableCell className="text-center">{formatWeight(animal.weight_yearling)}</TableCell>
                       <TableCell className="text-center">{formatWeight(animal.weight_final)}</TableCell>
+                      <TableCell className="text-center">
+                        {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} /> : <span className="text-xs text-muted-foreground">—</span>}
+                      </TableCell>
                       <TableCell className="text-center">
                         <Badge 
                           variant={getPercentileBadgeColor(animal.adg_percentile)}
