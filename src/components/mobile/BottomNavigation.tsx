@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Home, Plus, Fence, PieChart, Icon } from "lucide-react";
+import { LayoutDashboard, Plus, Fence, PieChart, Icon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { cowHead } from "@lucide/lab";
 
@@ -13,7 +13,7 @@ export function BottomNavigation({ onAddClick }: BottomNavigationProps) {
   const location = useLocation();
 
   const tabs = [
-    { key: 'home', label: t('home'), path: '/', icon: Home },
+    { key: 'home', label: t('dashboard'), path: '/', icon: LayoutDashboard },
     {
       key: 'animals',
       label: t('animals'),
