@@ -28,6 +28,7 @@ import { ActivityTaskCard } from "@/components/activities/ActivityTaskCard";
 import { useActivityTasks, useMyActivityTasks } from "@/hooks/useActivityTasks";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { isPast, isToday } from "date-fns";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance', 'activities']);
