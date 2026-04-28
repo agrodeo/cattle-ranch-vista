@@ -28,6 +28,7 @@ export type Database = {
           description: string | null
           due_date: string | null
           id: string
+          kind: string
           priority: string
           status: string
           title: string | null
@@ -48,6 +49,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          kind?: string
           priority?: string
           status?: string
           title?: string | null
@@ -68,6 +70,7 @@ export type Database = {
           description?: string | null
           due_date?: string | null
           id?: string
+          kind?: string
           priority?: string
           status?: string
           title?: string | null
