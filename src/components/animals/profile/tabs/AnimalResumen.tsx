@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Scale, 
   Heart, 
@@ -24,6 +25,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
 import type { AnimalReproductiveData, PregnancyRecord, ServiceRecord, OffspringRecord } from "@/types/reproductive";
+import { useAnimalScore } from "@/hooks/useAnimalScore";
+import { AnimalScoreCard } from "../AnimalScoreCard";
 
 interface AnimalResumenProps {
   animal: Animal;
@@ -41,6 +44,7 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
   const age = animal.birth_date ? calculateAge(animal.birth_date) : null;
   const { status: vaccinationStatus, loading: vaccinationLoading } = useAnimalVaccinations(animal.id);
   const { estimation, isLoading: estimationLoading } = useEstimatedWeight(animal);
+  const { data: score, isLoading: scoreLoading } = useAnimalScore(animal.id);
   const [reproductiveData, setReproductiveData] = useState<{
     pregnancyPercentage: number;
     calvingPercentage: number;
@@ -164,6 +168,9 @@ export function AnimalResumen({ animal }: AnimalResumenProps) {
 
   return (
     <div className="space-y-6">
+      {score && <AnimalScoreCard score={score} sex={animal.sex} />}
+      {scoreLoading && <Skeleton className="h-48 w-full rounded-lg" />}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Peso Actual */}
