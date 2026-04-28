@@ -47,7 +47,8 @@
     "scheduled": "Scheduled",
     "completed": "Completed",
     "overdue": "Overdue",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "pending": "Pending"
   },
   "tabs": {
     "summary": "Summary",
@@ -55,7 +56,10 @@
     "productive": "Productive",
     "sanitary": "Sanitary",
     "management": "Management",
-    "calendar": "Calendar"
+    "calendar": "Calendar",
+    "mine": "My Tasks",
+    "all": "All",
+    "created": "Created by me"
   },
   "kpis": {
     "activities30d": "Act. 30d",
@@ -1066,5 +1070,55 @@
       "pendingVaccinations": "• Pending vaccinations",
       "scheduledWeighings": "• Scheduled weighings"
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "subtitle": "Summary of activities for your ranch",
+    "pending": "Pending",
+    "overdue": "Overdue",
+    "myTasks": "My tasks",
+    "completedToday": "Completed today",
+    "allCaughtUp": "You have no pending tasks. All caught up!",
+    "noActivities": "No pending activities.",
+    "noCreated": "You have not created activities assigned to others.",
+    "completed": "Completed"
+  },
+  "create": {
+    "button": "New Activity",
+    "title": "Title",
+    "titlePlaceholder": "Example: Vaccinate calf group",
+    "description": "Description",
+    "descPlaceholder": "Additional details...",
+    "priority": "Priority",
+    "dueDate": "Due date",
+    "assignTo": "Assign to",
+    "unassigned": "Unassigned",
+    "linkAnimal": "Link animal (optional)",
+    "searchAnimal": "Search by tag or name...",
+    "clearAnimal": "Clear animal",
+    "linkCorral": "Link corral (optional)",
+    "none": "None",
+    "submit": "Create Activity",
+    "creating": "Creating..."
+  },
+  "priority": {
+    "alta": "High",
+    "media": "Medium",
+    "baja": "Low"
+  },
+  "card": {
+    "overdue": "Overdue",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "complete": "Complete",
+    "delete": "Delete",
+    "confirmDelete": "Delete this activity?"
+  },
+  "toast": {
+    "created": "Activity created",
+    "completed": "Activity completed",
+    "deleted": "Activity deleted",
+    "error": "Error creating activity"
   }
 }

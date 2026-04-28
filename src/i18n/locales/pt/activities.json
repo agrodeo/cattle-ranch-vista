@@ -47,7 +47,8 @@
     "scheduled": "Programada",
     "completed": "Concluída",
     "overdue": "Vencida",
-    "cancelled": "Cancelada"
+    "cancelled": "Cancelada",
+    "pending": "Pendente"
   },
   "tabs": {
     "summary": "Resumo",
@@ -55,7 +56,10 @@
     "productive": "Produtivas",
     "sanitary": "Sanitárias",
     "management": "Manejo",
-    "calendar": "Calendário"
+    "calendar": "Calendário",
+    "mine": "Minhas Tarefas",
+    "all": "Todas",
+    "created": "Criadas por mim"
   },
   "kpis": {
     "activities30d": "Ativ. 30d",
@@ -1068,5 +1072,55 @@
       "pendingVaccinations": "• Vacinações pendentes",
       "scheduledWeighings": "• Pesagens programadas"
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bem-vindo, {{name}}",
+    "subtitle": "Resumo de atividades da sua fazenda",
+    "pending": "Pendentes",
+    "overdue": "Vencidas",
+    "myTasks": "Minhas tarefas",
+    "completedToday": "Concluídas hoje",
+    "allCaughtUp": "Você não tem tarefas pendentes. Tudo em dia!",
+    "noActivities": "Não há atividades pendentes.",
+    "noCreated": "Você não criou atividades atribuídas a outras pessoas.",
+    "completed": "Concluídas"
+  },
+  "create": {
+    "button": "Nova Atividade",
+    "title": "Título",
+    "titlePlaceholder": "Ex: Vacinar lote de bezerros",
+    "description": "Descrição",
+    "descPlaceholder": "Detalhes adicionais...",
+    "priority": "Prioridade",
+    "dueDate": "Data limite",
+    "assignTo": "Atribuir a",
+    "unassigned": "Sem atribuição",
+    "linkAnimal": "Vincular animal (opcional)",
+    "searchAnimal": "Buscar por etiqueta ou nome...",
+    "clearAnimal": "Remover animal",
+    "linkCorral": "Vincular curral (opcional)",
+    "none": "Nenhum",
+    "submit": "Criar Atividade",
+    "creating": "Criando..."
+  },
+  "priority": {
+    "alta": "Alta",
+    "media": "Média",
+    "baja": "Baixa"
+  },
+  "card": {
+    "overdue": "Vencida",
+    "today": "Hoje",
+    "tomorrow": "Amanhã",
+    "complete": "Concluir",
+    "delete": "Excluir",
+    "confirmDelete": "Excluir esta atividade?"
+  },
+  "toast": {
+    "created": "Atividade criada",
+    "completed": "Atividade concluída",
+    "deleted": "Atividade excluída",
+    "error": "Erro ao criar atividade"
   }
 }

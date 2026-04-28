@@ -47,7 +47,8 @@
     "scheduled": "Programada",
     "completed": "Completada",
     "overdue": "Vencida",
-    "cancelled": "Cancelada"
+    "cancelled": "Cancelada",
+    "pending": "Pendiente"
   },
   "tabs": {
     "summary": "Resumen",
@@ -55,7 +56,10 @@
     "productive": "Productivas",
     "sanitary": "Sanitarias",
     "management": "Manejo",
-    "calendar": "Calendario"
+    "calendar": "Calendario",
+    "mine": "Mis Tareas",
+    "all": "Todas",
+    "created": "Creadas por mí"
   },
   "kpis": {
     "activities30d": "Act. 30d",
@@ -339,12 +343,8 @@
     "loadingAnimals": "Cargando animales...",
     "noName": "Sin nombre",
     "noCorral": "Sin corral",
-    "responsiblePlaceholder": "Nombre del responsable",
-    "notesPlaceholder": "Describe los detalles de la actividad...",
-    "searchPlaceholder": "Nombre o ID...",
     "males": "Machos",
     "females": "Hembras",
-    "allCategories": "Todas",
     "calves": "Terneros",
     "heiferCalves": "Terneras",
     "steers": "Novillos",
@@ -415,8 +415,6 @@
     "errorSelectFemale": "Debe seleccionar al menos una hembra",
     "dialogTitle": "Registrar Inseminación Artificial",
     "dialogDescription": "Registre el servicio de inseminación artificial",
-    "bullNameLabel": "Nombre del Toro *",
-    "bullNamePlaceholder": "Nombre o código del toro",
     "additionalDataTitle": "Datos Adicionales del Toro",
     "birthWeightLabel": "Peso Nacimiento (kg)",
     "weaningWeightLabel": "Peso Destete (kg)",
@@ -425,7 +423,6 @@
     "registrationLabel": "Registro Racial",
     "registrationPlaceholder": "Número de registro",
     "originLabel": "Origen",
-    "originPlaceholder": "País/región de origen",
     "eligibleFemalesCount": "Hembras Elegibles ({{count}})",
     "serviceObservations": "Observaciones del Servicio",
     "statusPregnant": "Preñada",
@@ -1092,5 +1089,55 @@
       "pendingVaccinations": "• Vacunaciones pendientes",
       "scheduledWeighings": "• Pesajes programados"
     }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bienvenido, {{name}}",
+    "subtitle": "Resumen de actividades de tu establecimiento",
+    "pending": "Pendientes",
+    "overdue": "Vencidas",
+    "myTasks": "Mis tareas",
+    "completedToday": "Completadas hoy",
+    "allCaughtUp": "No tenés tareas pendientes. ¡Todo al día!",
+    "noActivities": "No hay actividades pendientes.",
+    "noCreated": "No creaste actividades asignadas a otros.",
+    "completed": "Completadas"
+  },
+  "create": {
+    "button": "Nueva Actividad",
+    "title": "Título",
+    "titlePlaceholder": "Ej: Vacunar lote de terneros",
+    "description": "Descripción",
+    "descPlaceholder": "Detalles adicionales...",
+    "priority": "Prioridad",
+    "dueDate": "Fecha límite",
+    "assignTo": "Asignar a",
+    "unassigned": "Sin asignar",
+    "linkAnimal": "Vincular animal (opcional)",
+    "searchAnimal": "Buscar por caravana o nombre...",
+    "clearAnimal": "Quitar animal",
+    "linkCorral": "Vincular corral (opcional)",
+    "none": "Ninguno",
+    "submit": "Crear Actividad",
+    "creating": "Creando..."
+  },
+  "priority": {
+    "alta": "Alta",
+    "media": "Media",
+    "baja": "Baja"
+  },
+  "card": {
+    "overdue": "Vencida",
+    "today": "Hoy",
+    "tomorrow": "Mañana",
+    "complete": "Completar",
+    "delete": "Eliminar",
+    "confirmDelete": "¿Eliminar esta actividad?"
+  },
+  "toast": {
+    "created": "Actividad creada",
+    "completed": "Actividad completada",
+    "deleted": "Actividad eliminada",
+    "error": "Error al crear actividad"
   }
 }
