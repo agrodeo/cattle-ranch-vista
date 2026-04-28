@@ -79,19 +79,66 @@ const Dashboard = () => {
         <div className="hidden lg:flex items-center justify-between">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight text-foreground">
-              {t('dashboard:title')}
+              {t('activities:dashboard.title')}
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {t('dashboard:subtitle')}
+              {t('activities:dashboard.subtitle')}
             </p>
           </div>
           <div>
-            <Button onClick={handleRegisterActivity} size="lg" className="gap-2 shadow-sm" disabled={warnings.noCabana}>
-              <Plus className="h-4 w-4" />
-              {t('dashboard:actions.registerActivity')}
-            </Button>
+            {canCreateTasks && !warnings.noCabana ? <CreateActivityDialog /> : (
+              <Button onClick={handleRegisterActivity} size="lg" className="gap-2 shadow-sm" disabled={warnings.noCabana}>
+                <Plus className="h-4 w-4" />
+                {t('dashboard:actions.registerActivity')}
+              </Button>
+            )}
           </div>
         </div>
+
+        <div className="flex items-center justify-between gap-3 lg:hidden">
+          <div className="min-w-0">
+            <h1 className="text-xl font-bold text-foreground">{t('activities:dashboard.title')}</h1>
+            <p className="truncate text-sm text-muted-foreground">{t('activities:dashboard.subtitle')}</p>
+          </div>
+          {canCreateTasks && !warnings.noCabana && <CreateActivityDialog />}
+        </div>
+
+        {/* Activity Tasks Hub */}
+        {!warnings.noCabana && (
+          <section className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              <Card><CardContent className="flex items-center gap-3 p-4"><ClipboardList className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{pendingTaskCount}</p><p className="text-xs text-muted-foreground">{t('activities:dashboard.pending')}</p></div></CardContent></Card>
+              <Card><CardContent className="flex items-center gap-3 p-4"><AlertTriangle className={overdueTaskCount ? "h-5 w-5 text-destructive" : "h-5 w-5 text-muted-foreground"} /><div><p className={overdueTaskCount ? "text-2xl font-bold text-destructive" : "text-2xl font-bold"}>{overdueTaskCount}</p><p className="text-xs text-muted-foreground">{t('activities:dashboard.overdue')}</p></div></CardContent></Card>
+              <Card><CardContent className="flex items-center gap-3 p-4"><Clock className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{myTaskCount}</p><p className="text-xs text-muted-foreground">{t('activities:dashboard.myTasks')}</p></div></CardContent></Card>
+              <Card><CardContent className="flex items-center gap-3 p-4"><CheckCircle2 className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{completedTodayCount}</p><p className="text-xs text-muted-foreground">{t('activities:dashboard.completedToday')}</p></div></CardContent></Card>
+            </div>
+
+            <Tabs defaultValue="mine" className="w-full">
+              <TabsList className="grid h-auto w-full grid-cols-3">
+                <TabsTrigger value="mine" className="gap-2">{t('activities:tabs.mine')}{myTaskCount > 0 && <Badge variant="secondary">{myTaskCount}</Badge>}</TabsTrigger>
+                <TabsTrigger value="all" className="gap-2">{t('activities:tabs.all')}{pendingTaskCount > 0 && <Badge variant="secondary">{pendingTaskCount}</Badge>}</TabsTrigger>
+                <TabsTrigger value="created">{t('activities:tabs.created')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="mine" className="space-y-3 pt-2">
+                {myTasksLoading ? <Skeleton className="h-20 w-full" /> : myTasks?.assignedToMe?.length ? myTasks.assignedToMe.map((task) => <ActivityTaskCard key={task.id} activity={task} showAssignee={false} />) : <Card><CardContent className="p-6 text-center text-sm text-muted-foreground">{t('activities:dashboard.allCaughtUp')}</CardContent></Card>}
+              </TabsContent>
+              <TabsContent value="all" className="space-y-3 pt-2">
+                {pendingTasks?.length ? pendingTasks.map((task) => <ActivityTaskCard key={task.id} activity={task} />) : <Card><CardContent className="p-6 text-center text-sm text-muted-foreground">{t('activities:dashboard.noActivities')}</CardContent></Card>}
+              </TabsContent>
+              <TabsContent value="created" className="space-y-3 pt-2">
+                {myTasks?.createdByMe?.length ? myTasks.createdByMe.map((task) => <ActivityTaskCard key={task.id} activity={task} />) : <Card><CardContent className="p-6 text-center text-sm text-muted-foreground">{t('activities:dashboard.noCreated')}</CardContent></Card>}
+              </TabsContent>
+            </Tabs>
+
+            <div className="space-y-3">
+              <Button variant="ghost" className="w-full justify-between" onClick={() => setShowCompletedTasks((value) => !value)}>
+                {t('activities:dashboard.completed')} ({completedTasks?.length || 0})
+                <ChevronDown className={cn("h-4 w-4 transition-transform", showCompletedTasks && "rotate-180")} />
+              </Button>
+              {showCompletedTasks && <div className="space-y-3">{(completedTasks || []).slice(0, 20).map((task) => <ActivityTaskCard key={task.id} activity={task} compact />)}</div>}
+            </div>
+          </section>
+        )}
 
         {/* KPI Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
