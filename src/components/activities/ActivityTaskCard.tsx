@@ -20,13 +20,13 @@ interface ActivityTaskCardProps {
 
 const priorityStyles = {
   alta: "border-l-destructive bg-destructive/5",
-  media: "border-l-warning bg-warning/5",
+  media: "border-l-primary/70 bg-primary/5",
   baja: "border-l-primary bg-primary/5",
 };
 
 const priorityBadges = {
   alta: "bg-destructive/10 text-destructive border-destructive/20",
-  media: "bg-warning/10 text-warning-foreground border-warning/20",
+  media: "bg-secondary text-secondary-foreground border-border",
   baja: "bg-primary/10 text-primary border-primary/20",
 };
 
