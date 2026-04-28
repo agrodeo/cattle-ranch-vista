@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, ChevronDown, Icon, LucideProps, Baby, Heart } from "lucide-react";
+import { Activity, Fence, TrendingUp, Plus, Calendar, Settings, Shield, Syringe, ArrowRight, ChevronRight, ChevronDown, Icon, LucideProps, Baby, Heart, ClipboardList, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 import { cowHead } from "@lucide/lab";
@@ -20,11 +20,24 @@ import { useAchievementTriggers } from "@/hooks/useAchievementTriggers";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CreateActivityDialog } from "@/components/activities/CreateActivityDialog";
+import { ActivityTaskCard } from "@/components/activities/ActivityTaskCard";
+import { useActivityTasks, useMyActivityTasks } from "@/hooks/useActivityTasks";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { isPast, isToday } from "date-fns";
 
 const Dashboard = () => {
-  const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance']);
+  const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance', 'activities']);
   const [showPlansModal, setShowPlansModal] = useState(false);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const navigate = useNavigate();
+  const { currentUser } = useSupabaseAuth();
+  const { data: myTasks, isLoading: myTasksLoading } = useMyActivityTasks();
+  const { data: pendingTasks } = useActivityTasks("pending");
+  const { data: completedTasks } = useActivityTasks("completed");
   const { requirements: vaccinationRequirements } = useVaccinationRequirements();
   const { 
     cabana, 
@@ -43,6 +56,12 @@ const Dashboard = () => {
   const handleCreateCabana = () => navigate('/settings');
   const handleRegisterActivity = () => navigate('/activities');
   const handleAddAnimal = () => navigate('/animals');
+  const canCreateTasks = ["owner", "manager", "admin"].includes(currentUser?.role || "");
+  const taskDueDate = (date: string) => new Date(`${date}T00:00:00`);
+  const overdueTaskCount = (pendingTasks || []).filter((task) => task.due_date && isPast(taskDueDate(task.due_date)) && !isToday(taskDueDate(task.due_date))).length;
+  const pendingTaskCount = (pendingTasks || []).length;
+  const myTaskCount = myTasks?.assignedToMe?.length || 0;
+  const completedTodayCount = (completedTasks || []).filter((task) => task.completed_at && new Date(task.completed_at).toDateString() === new Date().toDateString()).length;
 
   return (
     <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
