@@ -77,7 +77,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
 
   useEffect(() => {
     fetchProductionData();
-  }, [filters]);
+  }, [filters, currentUser?.cabañaId]);
 
   const fetchProductionData = async () => {
     setLoading(true);
@@ -104,7 +104,29 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
         return;
       }
 
-      setAnimals(data || []);
+      const productionAnimals = data || [];
+      setAnimals(productionAnimals);
+
+      if (currentUser?.cabañaId && productionAnimals.length > 0) {
+        const { data: scoreRows, error: scoreError } = await supabase.rpc('calculate_herd_scores' as never, {
+          _cabana_id: currentUser.cabañaId,
+          _animal_ids: productionAnimals.map((animal: ProductionAnimal) => animal.animal_id),
+        } as never);
+
+        if (!scoreError && Array.isArray(scoreRows)) {
+          const entries = await Promise.all(
+            scoreRows.map(async (row: { animal_id: string; score_data: AnimalScoreRawData }) => [
+              row.animal_id,
+              await scoreFromRawData(row.score_data, currentUser.cabañaId),
+            ] as const),
+          );
+          setAnimalScores(new Map(entries));
+        } else {
+          setAnimalScores(new Map());
+        }
+      } else {
+        setAnimalScores(new Map());
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
