@@ -14,7 +14,6 @@ interface AnimalScoreCardProps {
 const DIMENSIONS = [
   { key: "production", labelKey: "production", bar: "bg-primary" },
   { key: "reproduction", labelKey: "reproduction", bar: "bg-secondary-foreground" },
-  { key: "health", labelKey: "health", bar: "bg-accent-foreground" },
   { key: "genetics", labelKey: "genetics", bar: "bg-muted-foreground" },
   { key: "longevity", labelKey: "longevity", bar: "bg-secondary-foreground" },
 ] as const;
@@ -50,6 +49,7 @@ function getScoreLabelKey(score: number): string {
 export function AnimalScoreCard({ score, sex, className }: AnimalScoreCardProps) {
   const { t } = useTranslation("animals");
   const dimensions = DIMENSIONS.filter((dimension) => dimension.key !== "reproduction" || isFemale(sex));
+  const healthState = score.health >= 8 ? "current" : score.health >= 5 ? "pending" : "overdue";
 
   return (
     <Card className={cn("overflow-hidden", className)}>
@@ -94,6 +94,22 @@ export function AnimalScoreCard({ score, sex, className }: AnimalScoreCardProps)
               </div>
             );
           })}
+        </div>
+
+        <div className="flex items-center gap-3 border-t pt-3">
+          <span className="text-xs font-medium uppercase text-muted-foreground">{t("score.health")}</span>
+          <div className="flex-1" />
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-xs",
+              healthState === "current" && "border-primary/20 bg-primary/10 text-primary",
+              healthState === "pending" && "border-muted-foreground/20 bg-muted text-foreground",
+              healthState === "overdue" && "border-destructive/20 bg-destructive/10 text-destructive"
+            )}
+          >
+            {t(`score.healthStatus.${healthState}`)}
+          </Badge>
         </div>
 
         {score.badges.length > 0 && (
