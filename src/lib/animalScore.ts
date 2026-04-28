@@ -228,14 +228,32 @@ function generateBadges(overall: number, production: number, reproduction: numbe
 
 export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
   const female = isFemale(input.sex);
-  const weights = female ? FEMALE_WEIGHTS : MALE_WEIGHTS;
+  const baseWeights = female ? FEMALE_WEIGHTS : MALE_WEIGHTS;
   const prod = scoreProduction(input);
   const repro = scoreReproduction(input);
   const hlth = scoreHealth(input);
   const gen = scoreGenetics(input);
   const long = scoreLongevity(input);
-  const overall = round1(clamp(prod.score * weights.production + repro.score * weights.reproduction + hlth.score * weights.health + gen.score * weights.genetics + long.score * weights.longevity));
-  const dataCompleteness = Math.round(prod.completeness * weights.production + (female ? repro.completeness * weights.reproduction : 0) + hlth.completeness * weights.health + gen.completeness * weights.genetics + long.completeness * weights.longevity);
+  const dimensions = { production: prod, reproduction: repro, health: hlth, genetics: gen, longevity: long };
+  let totalActiveWeight = 0;
+  let weightedOverall = 0;
+
+  for (const [key, weight] of Object.entries(baseWeights)) {
+    const dimension = dimensions[key as keyof typeof dimensions];
+    if (weight > 0 && dimension.completeness > 0) {
+      totalActiveWeight += weight;
+      weightedOverall += dimension.score * weight;
+    }
+  }
+
+  const overall = round1(clamp(totalActiveWeight > 0 ? weightedOverall / totalActiveWeight : 5));
+  const scoredDimensions = Object.entries(baseWeights).filter(([, weight]) => weight > 0);
+  const scoredWeightTotal = scoredDimensions.reduce((sum, [, weight]) => sum + weight, 0);
+  const dataCompleteness = Math.round(
+    scoredWeightTotal > 0
+      ? scoredDimensions.reduce((sum, [key, weight]) => sum + dimensions[key as keyof typeof dimensions].completeness * weight, 0) / scoredWeightTotal
+      : 0
+  );
 
   return {
     overall,
@@ -244,7 +262,7 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
     health: round1(hlth.score),
     genetics: round1(gen.score),
     longevity: round1(long.score),
-    vsHerdAvg: input.herdAvgScore != null && input.herdAvgScore > 0 ? Math.round(((overall - input.herdAvgScore) / input.herdAvgScore) * 100) : null,
+    vsHerdAvg: input.herdAvgScore != null && input.herdAvgScore > 1 ? Math.round(((overall - input.herdAvgScore) / input.herdAvgScore) * 100) : null,
     percentileRank: input.adgPercentile,
     badges: generateBadges(overall, prod.score, repro.score, hlth.score, input.adgPercentile, input),
     dataCompleteness,
