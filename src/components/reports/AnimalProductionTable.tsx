@@ -34,6 +34,10 @@ import { es } from "date-fns/locale";
 import { formatDateForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getTranslatedCategory } from "@/lib/translations";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { scoreFromRawData, type AnimalScoreRawData } from "@/hooks/useAnimalScore";
+import type { AnimalScore } from "@/lib/animalScore";
+import { AnimalScoreBadge } from "@/components/animals/profile/AnimalScoreBadge";
 
 interface ProductionAnimal {
   animal_id: string;
@@ -58,11 +62,15 @@ interface AnimalProductionTableProps {
   filters: ReportFilters;
 }
 
+type SortColumn = keyof ProductionAnimal | 'score';
+
 export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const { t } = useTranslation(['reports', 'common', 'animals']);
+  const { currentUser } = useSupabaseAuth();
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
+  const [animalScores, setAnimalScores] = useState<Map<string, AnimalScore>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
