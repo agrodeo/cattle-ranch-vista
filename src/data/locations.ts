@@ -7,6 +7,13 @@ export const COUNTRIES = [
   { code: 'PE', name: 'Perú' },
   { code: 'CL', name: 'Chile' },
   { code: 'BR', name: 'Brasil' },
+  { code: 'US', name: 'United States' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'NZ', name: 'New Zealand' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'OTHER', name: 'Other' },
 ] as const;
 
 export const AR_PROVINCES = [
