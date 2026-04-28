@@ -44,6 +44,8 @@ export interface AnimalScore {
   percentileRank: number | null;
   badges: ScoreBadge[];
   dataCompleteness: number;
+  hasEnoughData: boolean;
+  dimensionsWithData: number;
 }
 
 export interface ScoreBadge {
@@ -246,6 +248,10 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
     }
   }
 
+  const dimensionsWithData = Object.entries(baseWeights).filter(([key, weight]) => {
+    return weight > 0 && dimensions[key as keyof typeof dimensions].completeness > 0;
+  }).length;
+  const hasEnoughData = dimensionsWithData >= 2;
   const overall = round1(clamp(totalActiveWeight > 0 ? weightedOverall / totalActiveWeight : 5));
   const scoredDimensions = Object.entries(baseWeights).filter(([, weight]) => weight > 0);
   const scoredWeightTotal = scoredDimensions.reduce((sum, [, weight]) => sum + weight, 0);
@@ -256,15 +262,17 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
   );
 
   return {
-    overall,
+    overall: hasEnoughData ? overall : 0,
     production: round1(prod.score),
     reproduction: round1(repro.score),
     health: round1(hlth.score),
     genetics: round1(gen.score),
     longevity: round1(long.score),
-    vsHerdAvg: input.herdAvgScore != null && input.herdAvgScore > 1 ? Math.round(((overall - input.herdAvgScore) / input.herdAvgScore) * 100) : null,
+    vsHerdAvg: hasEnoughData && input.herdAvgScore != null && input.herdAvgScore > 1 ? Math.round(((overall - input.herdAvgScore) / input.herdAvgScore) * 100) : null,
     percentileRank: input.adgPercentile,
-    badges: generateBadges(overall, prod.score, repro.score, hlth.score, input.adgPercentile, input),
+    badges: hasEnoughData ? generateBadges(overall, prod.score, repro.score, hlth.score, input.adgPercentile, input) : [],
     dataCompleteness,
+    hasEnoughData,
+    dimensionsWithData,
   };
 }
