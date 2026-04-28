@@ -2654,6 +2654,10 @@ export type Database = {
           total_pregnancies: number
         }[]
       }
+      calculate_animal_score_data: {
+        Args: { _animal_id: string; _cabana_id: string }
+        Returns: Json
+      }
       calculate_animal_vaccination_coverage: {
         Args: { _animal_id: string }
         Returns: Json
@@ -2684,6 +2688,13 @@ export type Database = {
           previous_weight: number
         }
         Returns: number
+      }
+      calculate_herd_scores: {
+        Args: { _animal_ids?: string[]; _cabana_id: string }
+        Returns: {
+          animal_id: string
+          score_data: Json
+        }[]
       }
       calculate_individual_kpis: {
         Args: { _animal_id: string; _year?: number }

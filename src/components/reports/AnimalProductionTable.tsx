@@ -34,6 +34,10 @@ import { es } from "date-fns/locale";
 import { formatDateForDB } from "@/lib/dateFormatters";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getTranslatedCategory } from "@/lib/translations";
+import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { scoreFromRawData, type AnimalScoreRawData } from "@/hooks/useAnimalScore";
+import type { AnimalScore } from "@/lib/animalScore";
+import { AnimalScoreBadge } from "@/components/animals/profile/AnimalScoreBadge";
 
 interface ProductionAnimal {
   animal_id: string;
@@ -58,18 +62,22 @@ interface AnimalProductionTableProps {
   filters: ReportFilters;
 }
 
+type SortColumn = keyof ProductionAnimal | 'score';
+
 export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const { t } = useTranslation(['reports', 'common', 'animals']);
+  const { currentUser } = useSupabaseAuth();
   const [animals, setAnimals] = useState<ProductionAnimal[]>([]);
+  const [animalScores, setAnimalScores] = useState<Map<string, AnimalScore>>(new Map());
   const [loading, setLoading] = useState(true);
-  const [sortColumn, setSortColumn] = useState<keyof ProductionAnimal | null>(null);
+  const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchProductionData();
-  }, [filters]);
+  }, [filters, currentUser?.cabañaId]);
 
   const fetchProductionData = async () => {
     setLoading(true);
@@ -96,7 +104,30 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
         return;
       }
 
-      setAnimals(data || []);
+      const productionAnimals = data || [];
+      setAnimals(productionAnimals);
+
+      if (currentUser?.cabañaId && productionAnimals.length > 0) {
+        const { data: scoreRows, error: scoreError } = await supabase.rpc('calculate_herd_scores' as never, {
+          _cabana_id: currentUser.cabañaId,
+          _animal_ids: productionAnimals.map((animal: ProductionAnimal) => animal.animal_id),
+        } as never);
+
+        const rows = Array.isArray(scoreRows) ? scoreRows : [];
+        if (!scoreError && rows.length > 0) {
+          const entries = await Promise.all(
+            rows.map(async (row: { animal_id: string; score_data: AnimalScoreRawData }) => [
+              row.animal_id,
+              await scoreFromRawData(row.score_data, currentUser.cabañaId),
+            ] as const),
+          );
+          setAnimalScores(new Map(entries));
+        } else {
+          setAnimalScores(new Map());
+        }
+      } else {
+        setAnimalScores(new Map());
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -130,7 +161,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
     navigate(`/animales/${animalId}`);
   };
 
-  const handleSort = (column: keyof ProductionAnimal) => {
+  const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
@@ -142,8 +173,8 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
   const sortedAnimals = [...animals].sort((a, b) => {
     if (!sortColumn) return 0;
     
-    const aValue = a[sortColumn];
-    const bValue = b[sortColumn];
+    const aValue = sortColumn === 'score' ? animalScores.get(a.animal_id)?.overall : a[sortColumn];
+    const bValue = sortColumn === 'score' ? animalScores.get(b.animal_id)?.overall : b[sortColumn];
     
     if (aValue === null || aValue === undefined) return 1;
     if (bValue === null || bValue === undefined) return -1;
@@ -161,7 +192,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
     return 0;
   });
 
-  const SortableHeader = ({ column, children }: { column: keyof ProductionAnimal; children: React.ReactNode }) => (
+  const SortableHeader = ({ column, children }: { column: SortColumn; children: React.ReactNode }) => (
     <TableHead 
       className="cursor-pointer hover:bg-accent/50 select-none"
       onClick={() => handleSort(column)}
@@ -217,7 +248,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                   value={sortColumn || ""}
                   onValueChange={(value) => {
                     if (value) {
-                      handleSort(value as keyof ProductionAnimal);
+                      handleSort(value as SortColumn);
                     }
                   }}
                 >
@@ -239,6 +270,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                     <SelectItem value="weight_yearling">{t('reports:production.weight18m')}</SelectItem>
                     <SelectItem value="weight_final">{t('reports:production.weightFinal')}</SelectItem>
                     <SelectItem value="adg_percentile">{t('common:percentile')}</SelectItem>
+                    <SelectItem value="score">Score</SelectItem>
                   </SelectContent>
                 </Select>
                 {sortColumn && (
@@ -271,6 +303,9 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <Badge variant="outline" className="ml-2 flex-shrink-0">
                         {animal.corral_name || t('reports:production.noCorral')}
                       </Badge>
+                        <div className="ml-2 flex-shrink-0">
+                          {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} /> : <span className="text-xs text-muted-foreground">—</span>}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 mb-3">
@@ -370,6 +405,7 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                     <SortableHeader column="weight_weaning">{t('reports:production.weightWeaning')}</SortableHeader>
                     <SortableHeader column="weight_yearling">{t('reports:production.weight18m')}</SortableHeader>
                     <SortableHeader column="weight_final">{t('reports:production.weightFinal')}</SortableHeader>
+                    <SortableHeader column="score">Score</SortableHeader>
                     <TableHead className="text-center">
                       <Tooltip>
                         <TooltipTrigger className="flex items-center gap-1 mx-auto cursor-help">
@@ -421,6 +457,9 @@ export function AnimalProductionTable({ filters }: AnimalProductionTableProps) {
                       <TableCell className="text-center">{formatWeight(animal.weight_weaning)}</TableCell>
                       <TableCell className="text-center">{formatWeight(animal.weight_yearling)}</TableCell>
                       <TableCell className="text-center">{formatWeight(animal.weight_final)}</TableCell>
+                      <TableCell className="text-center">
+                        {animalScores.get(animal.animal_id) ? <AnimalScoreBadge score={animalScores.get(animal.animal_id)!.overall} /> : <span className="text-xs text-muted-foreground">—</span>}
+                      </TableCell>
                       <TableCell className="text-center">
                         <Badge 
                           variant={getPercentileBadgeColor(animal.adg_percentile)}

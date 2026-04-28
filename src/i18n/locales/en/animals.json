@@ -621,5 +621,29 @@
     "planLimitExceeded": "This upload would add {{count}} active animals and exceed the {{max}} limit for the {{plan}} plan.",
     "createdCount": "{{count}} animals loaded successfully",
     "savedOffline": "Saved locally - it will sync when you are back online"
+  },
+  "score": {
+    "title": "Overall Performance",
+    "production": "Production",
+    "reproduction": "Reproduction",
+    "health": "Health",
+    "genetics": "Genetics",
+    "longevity": "Longevity",
+    "vsHerd": "vs herd average",
+    "exceptional": "Exceptional",
+    "excellent": "Excellent",
+    "veryGood": "Very good",
+    "good": "Good",
+    "average": "Average",
+    "belowAverage": "Below average",
+    "needsAttention": "Needs attention",
+    "dataWarning": "Score based on {{pct}}% of available data. Add more weights, vaccines, and reproductive records to improve accuracy.",
+    "topPercent": "Top {{pct}}% of herd",
+    "excellentGrowth": "Excellent growth",
+    "goodGrowth": "Good growth",
+    "eliteBreeder": "Elite breeder",
+    "fullHealth": "Full health",
+    "superiorPerformance": "Superior performance",
+    "needsAttentionBadge": "Needs attention"
   }
 }
