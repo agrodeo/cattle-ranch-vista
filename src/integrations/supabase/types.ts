@@ -17,26 +17,65 @@ export type Database = {
       activities: {
         Row: {
           animal_id: string | null
+          assigned_to: string | null
+          cabaña_id: string | null
+          completed_at: string | null
+          completed_by: string | null
+          corral_id: string | null
+          created_at: string
+          created_by: string | null
           date: string | null
           description: string | null
+          due_date: string | null
           id: string
+          kind: string
+          priority: string
+          status: string
+          title: string | null
           type: string | null
+          updated_at: string
           user_id: string | null
         }
         Insert: {
           animal_id?: string | null
+          assigned_to?: string | null
+          cabaña_id?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          corral_id?: string | null
+          created_at?: string
+          created_by?: string | null
           date?: string | null
           description?: string | null
+          due_date?: string | null
           id?: string
+          kind?: string
+          priority?: string
+          status?: string
+          title?: string | null
           type?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Update: {
           animal_id?: string | null
+          assigned_to?: string | null
+          cabaña_id?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          corral_id?: string | null
+          created_at?: string
+          created_by?: string | null
           date?: string | null
           description?: string | null
+          due_date?: string | null
           id?: string
+          kind?: string
+          priority?: string
+          status?: string
+          title?: string | null
           type?: string | null
+          updated_at?: string
           user_id?: string | null
         }
         Relationships: [
@@ -45,6 +84,20 @@ export type Database = {
             columns: ["animal_id"]
             isOneToOne: false
             referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_cabana_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activities_corral_id_fkey"
+            columns: ["corral_id"]
+            isOneToOne: false
+            referencedRelation: "corrales"
             referencedColumns: ["id"]
           },
         ]
