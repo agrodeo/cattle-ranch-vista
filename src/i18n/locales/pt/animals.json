@@ -637,13 +637,18 @@
     "average": "Médio",
     "belowAverage": "Abaixo da média",
     "needsAttention": "Requer atenção",
-    "dataWarning": "Score baseado em {{pct}}% dos dados disponíveis. Registre mais pesagens, vacinas e dados reprodutivos para melhorar a precisão.",
+    "dataWarning": "Score baseado em {{pct}}% dos dados produtivos, reprodutivos e genéticos disponíveis. Registre mais dados para melhorar a precisão.",
     "topPercent": "Top {{pct}}% do rebanho",
     "excellentGrowth": "Crescimento excelente",
     "goodGrowth": "Bom crescimento",
     "eliteBreeder": "Reprodutora elite",
     "fullHealth": "Sanidade completa",
     "superiorPerformance": "Desempenho superior",
-    "needsAttentionBadge": "Requer atenção"
+    "needsAttentionBadge": "Requer atenção",
+    "healthStatus": {
+      "current": "Em dia",
+      "pending": "Pendente",
+      "overdue": "Atrasado"
+    }
   }
 }
