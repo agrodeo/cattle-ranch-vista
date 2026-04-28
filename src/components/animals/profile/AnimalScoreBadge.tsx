@@ -8,7 +8,7 @@ interface AnimalScoreBadgeProps {
 export function AnimalScoreBadge({ score, size = "sm" }: AnimalScoreBadgeProps) {
   const colorClass =
     score >= 8 ? "bg-primary/10 text-primary border-primary/20" :
-    score >= 6 ? "bg-warning/10 text-warning border-warning/20" :
+    score >= 6 ? "bg-secondary text-secondary-foreground border-border" :
     score >= 4 ? "bg-accent text-accent-foreground border-border" :
     "bg-destructive/10 text-destructive border-destructive/20";
 
