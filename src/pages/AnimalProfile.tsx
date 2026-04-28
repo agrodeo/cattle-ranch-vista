@@ -15,7 +15,7 @@ import { CreateActivityDialog } from "@/components/activities/CreateActivityDial
 import { useActivityTasks } from "@/hooks/useActivityTasks";
 
 export default function AnimalProfile() {
-  const { t } = useTranslation(['animals', 'common']);
+  const { t } = useTranslation(['animals', 'common', 'activities']);
   const { id } = useParams<{ id: string }>();
   const { currentUser } = useSupabaseAuth();
   const [animal, setAnimal] = useState<Animal | null>(null);
