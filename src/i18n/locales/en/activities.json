@@ -271,6 +271,10 @@
     "reproductive": {
       "title": "Reproductive Activities",
       "description": "Insemination, calving, pregnancy check & more"
+    },
+    "task": {
+      "title": "Task",
+      "description": "Create and assign team tasks"
     }
   },
   "filters": {

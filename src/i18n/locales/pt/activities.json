@@ -273,6 +273,10 @@
     "reproductive": {
       "title": "Atividades Reprodutivas",
       "description": "Inseminação, partos, exame gestacional e mais"
+    },
+    "task": {
+      "title": "Tarefa",
+      "description": "Criar e atribuir tarefas da equipe"
     }
   },
   "filters": {
