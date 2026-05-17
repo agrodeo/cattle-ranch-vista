@@ -1104,7 +1104,8 @@
     "linkCorral": "Link corral (optional)",
     "none": "None",
     "submit": "Create Activity",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "success": "Activity created successfully"
   },
   "priority": {
     "alta": "High",

@@ -1106,7 +1106,8 @@
     "linkCorral": "Vincular curral (opcional)",
     "none": "Nenhum",
     "submit": "Criar Atividade",
-    "creating": "Criando..."
+    "creating": "Criando...",
+    "success": "Atividade criada com sucesso"
   },
   "priority": {
     "alta": "Alta",
