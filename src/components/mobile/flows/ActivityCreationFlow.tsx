@@ -135,6 +135,11 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
     );
   }
 
+  // Full-screen task creation flow
+  if (selectedActivity === "task") {
+    return <TaskCreationFlow onClose={handleSuccess} />;
+  }
+
   const renderCards = (items: Array<{id: string; title: string; description: string; icon: React.ComponentType<{className?: string}>; color: string}>, onSelect: (id: string) => void) => (
     <>
       {items.map((item) => (
