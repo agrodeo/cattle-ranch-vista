@@ -104,9 +104,34 @@ const Dashboard = () => {
           {canCreateTasks && !warnings.noCabana && <CreateActivityDialog />}
         </div>
 
-        {/* Activity Tasks Hub */}
+        {/* Mobile compact tasks summary */}
         {!warnings.noCabana && (
-          <section className="space-y-4">
+          <button
+            type="button"
+            onClick={() => navigate('/activities')}
+            className="lg:hidden flex w-full items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 text-left shadow-sm"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <ClipboardList className="h-5 w-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {t('activities:dashboard.myTasks')}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {myTaskCount} {t('activities:dashboard.pending')}
+                  {overdueTaskCount > 0 && ` · ${overdueTaskCount} ${t('activities:dashboard.overdue')}`}
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+          </button>
+        )}
+
+        {/* Activity Tasks Hub - Desktop only */}
+        {!warnings.noCabana && (
+          <section className="hidden lg:block space-y-4">
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <Card><CardContent className="flex items-center gap-3 p-4"><ClipboardList className="h-5 w-5 text-primary" /><div><p className="text-2xl font-bold">{pendingTaskCount}</p><p className="text-xs text-muted-foreground">{t('activities:dashboard.pending')}</p></div></CardContent></Card>
               <Card><CardContent className="flex items-center gap-3 p-4"><AlertTriangle className={overdueTaskCount ? "h-5 w-5 text-destructive" : "h-5 w-5 text-muted-foreground"} /><div><p className={overdueTaskCount ? "text-2xl font-bold text-destructive" : "text-2xl font-bold"}>{overdueTaskCount}</p><p className="text-xs text-muted-foreground">{t('activities:dashboard.overdue')}</p></div></CardContent></Card>
