@@ -53,6 +53,13 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       icon: Activity,
       color: "bg-primary",
     },
+    {
+      id: "task" as const,
+      title: t('activityCreation.task.title'),
+      description: t('activityCreation.task.description'),
+      icon: ClipboardList,
+      color: "bg-emerald-500",
+    },
   ];
 
   const reproductiveActivities: Array<{id: string; title: string; description: string; icon: typeof Heart; color: string}> = [

@@ -282,6 +282,10 @@
     "reproductive": {
       "title": "Actividades Reproductivas",
       "description": "Inseminación, partos, tacto y más"
+    },
+    "task": {
+      "title": "Tarea",
+      "description": "Crear y asignar tareas del equipo"
     }
   },
   "filters": {
