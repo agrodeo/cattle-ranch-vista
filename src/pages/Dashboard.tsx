@@ -101,7 +101,6 @@ const Dashboard = () => {
             <h1 className="text-xl font-bold text-foreground">{t('activities:dashboard.title')}</h1>
             <p className="truncate text-sm text-muted-foreground">{t('activities:dashboard.subtitle')}</p>
           </div>
-          {canCreateTasks && !warnings.noCabana && <CreateActivityDialog />}
         </div>
 
         {/* Mobile compact tasks summary */}
