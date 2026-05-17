@@ -17,7 +17,7 @@ interface ActivityCreationFlowProps {
   onClose: () => void;
 }
 
-type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto" | "calving";
+type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto" | "calving" | "task";
 
 export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   const { t } = useTranslation('activities');
