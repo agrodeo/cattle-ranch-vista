@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby, HeartPulse } from "lucide-react";
+import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby, HeartPulse, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewVaccinationDialog } from "@/components/activities/NewVaccinationDialog";
@@ -10,6 +10,7 @@ import { NewGeneralActivityDialog } from "@/components/activities/NewGeneralActi
 import { NewPregnancyLossDialog } from "@/components/activities/NewPregnancyLossDialog";
 import { NewTactoDialog } from "@/components/activities/NewTactoDialog";
 import { CalvingRegistrationManager } from "@/components/activities/CalvingRegistrationManager";
+import { TaskCreationFlow } from "./TaskCreationFlow";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ActivityCreationFlowProps {
