@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby, HeartPulse } from "lucide-react";
+import { ArrowLeft, Syringe, Weight, Heart, Activity, AlertTriangle, Stethoscope, Baby, HeartPulse, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { NewVaccinationDialog } from "@/components/activities/NewVaccinationDialog";
@@ -10,13 +10,14 @@ import { NewGeneralActivityDialog } from "@/components/activities/NewGeneralActi
 import { NewPregnancyLossDialog } from "@/components/activities/NewPregnancyLossDialog";
 import { NewTactoDialog } from "@/components/activities/NewTactoDialog";
 import { CalvingRegistrationManager } from "@/components/activities/CalvingRegistrationManager";
+import { TaskCreationFlow } from "./TaskCreationFlow";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ActivityCreationFlowProps {
   onClose: () => void;
 }
 
-type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto" | "calving";
+type ActivityType = "vaccination" | "weighing" | "insemination" | "general" | "pregnancy_loss" | "tacto" | "calving" | "task";
 
 export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
   const { t } = useTranslation('activities');
@@ -51,6 +52,13 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
       description: t('activityCreation.general.description'),
       icon: Activity,
       color: "bg-primary",
+    },
+    {
+      id: "task" as const,
+      title: t('activityCreation.task.title'),
+      description: t('activityCreation.task.description'),
+      icon: ClipboardList,
+      color: "bg-emerald-500",
     },
   ];
 
@@ -125,6 +133,11 @@ export function ActivityCreationFlow({ onClose }: ActivityCreationFlowProps) {
         </ScrollArea>
       </div>
     );
+  }
+
+  // Full-screen task creation flow
+  if (selectedActivity === "task") {
+    return <TaskCreationFlow onClose={handleSuccess} />;
   }
 
   const renderCards = (items: Array<{id: string; title: string; description: string; icon: React.ComponentType<{className?: string}>; color: string}>, onSelect: (id: string) => void) => (

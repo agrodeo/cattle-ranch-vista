@@ -1,121 +1,27 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useCreateActivityTask } from "@/hooks/useActivityTasks";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { TaskForm } from "./TaskForm";
 
 interface CreateActivityDialogProps {
   defaultAnimalId?: string;
   defaultAnimalTag?: string;
 }
 
-const NONE_VALUE = "__none__";
-
 export function CreateActivityDialog({ defaultAnimalId, defaultAnimalTag }: CreateActivityDialogProps) {
   const { t } = useTranslation("activities");
   const [open, setOpen] = useState(false);
   const createActivity = useCreateActivityTask();
-  const { currentUser } = useSupabaseAuth();
-  const cabañaId = currentUser?.cabañaId;
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<"alta" | "media" | "baja">("media");
-  const [dueDate, setDueDate] = useState("");
-  const [assignedTo, setAssignedTo] = useState(NONE_VALUE);
-  const [animalId, setAnimalId] = useState(defaultAnimalId || "");
-  const [corralId, setCorralId] = useState(NONE_VALUE);
-  const [animalSearch, setAnimalSearch] = useState(defaultAnimalTag || "");
-
-  useEffect(() => {
-    if (open) {
-      setAnimalId(defaultAnimalId || "");
-      setAnimalSearch(defaultAnimalTag || "");
-    }
-  }, [defaultAnimalId, defaultAnimalTag, open]);
-
-  const { data: users } = useQuery({
-    queryKey: ["activity-task-users", cabañaId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, email, position")
-        .eq("cabaña_id", cabañaId!)
-        .eq("is_active", true)
-        .order("full_name");
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!cabañaId,
-  });
-
-  const { data: corrales } = useQuery({
-    queryKey: ["activity-task-corrales", cabañaId],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("corrales").select("id, name").eq("cabaña_id", cabañaId!).order("name");
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!cabañaId,
-  });
-
-  const { data: animalResults } = useQuery({
-    queryKey: ["activity-task-animal-search", cabañaId, animalSearch],
-    queryFn: async () => {
-      const search = animalSearch.replace(/[%,]/g, "").trim();
-      const { data, error } = await supabase
-        .from("animals")
-        .select("id, id_tag, name")
-        .eq("cabaña_id", cabañaId!)
-        .not("status", "ilike", "vendido")
-        .not("status", "ilike", "muerto")
-        .or(`id_tag.ilike.%${search}%,name.ilike.%${search}%`)
-        .limit(10);
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!cabañaId && !animalId && animalSearch.trim().length >= 2,
-  });
-
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setPriority("media");
-    setDueDate("");
-    setAssignedTo(NONE_VALUE);
-    setAnimalId(defaultAnimalId || "");
-    setAnimalSearch(defaultAnimalTag || "");
-    setCorralId(NONE_VALUE);
-  };
-
-  const handleSubmit = () => {
-    if (!title.trim()) return;
-
-    createActivity.mutate(
-      {
-        title: title.trim(),
-        description: description.trim() || undefined,
-        priority,
-        due_date: dueDate || null,
-        assigned_to: assignedTo === NONE_VALUE ? null : assignedTo,
-        animal_id: animalId || null,
-        corral_id: corralId === NONE_VALUE ? null : corralId,
+  const handleSubmit = (data: Parameters<typeof createActivity.mutate>[0]) => {
+    createActivity.mutate(data, {
+      onSuccess: () => {
+        setOpen(false);
       },
-      {
-        onSuccess: () => {
-          setOpen(false);
-          resetForm();
-        },
-      },
-    );
+    });
   };
 
   return (
@@ -130,101 +36,12 @@ export function CreateActivityDialog({ defaultAnimalId, defaultAnimalTag }: Crea
         <DialogHeader>
           <DialogTitle>{t("create.button")}</DialogTitle>
         </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t("create.title")} *</Label>
-            <Input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={t("create.titlePlaceholder")} />
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("create.description")}</Label>
-            <Textarea value={description} onChange={(event) => setDescription(event.target.value)} placeholder={t("create.descPlaceholder")} rows={2} />
-          </div>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label>{t("create.priority")}</Label>
-              <Select value={priority} onValueChange={(value) => setPriority(value as typeof priority)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="alta">{t("priority.alta")}</SelectItem>
-                  <SelectItem value="media">{t("priority.media")}</SelectItem>
-                  <SelectItem value="baja">{t("priority.baja")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{t("create.dueDate")}</Label>
-              <Input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("create.assignTo")}</Label>
-            <Select value={assignedTo} onValueChange={setAssignedTo}>
-              <SelectTrigger><SelectValue placeholder={t("create.unassigned")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_VALUE}>{t("create.unassigned")}</SelectItem>
-                {(users || []).map((user) => (
-                  <SelectItem key={user.user_id} value={user.user_id}>
-                    {user.full_name || user.email}{user.position ? ` · ${user.position}` : ""}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("create.linkAnimal")}</Label>
-            <Input
-              value={animalSearch}
-              onChange={(event) => {
-                setAnimalSearch(event.target.value);
-                if (!event.target.value) setAnimalId("");
-              }}
-              placeholder={t("create.searchAnimal")}
-            />
-            {animalId && (
-              <Button type="button" variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={() => { setAnimalId(""); setAnimalSearch(""); }}>
-                {t("create.clearAnimal")}
-              </Button>
-            )}
-            {!!animalResults?.length && !animalId && (
-              <div className="max-h-32 overflow-y-auto rounded-md border bg-background">
-                {animalResults.map((animal) => (
-                  <button
-                    key={animal.id}
-                    type="button"
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                    onClick={() => {
-                      setAnimalId(animal.id);
-                      setAnimalSearch(`${animal.id_tag}${animal.name ? ` — ${animal.name}` : ""}`);
-                    }}
-                  >
-                    <span className="font-mono">{animal.id_tag}</span>
-                    {animal.name && <span className="ml-2 text-muted-foreground">{animal.name}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>{t("create.linkCorral")}</Label>
-            <Select value={corralId} onValueChange={setCorralId}>
-              <SelectTrigger><SelectValue placeholder={t("create.none")} /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE_VALUE}>{t("create.none")}</SelectItem>
-                {(corrales || []).map((corral) => <SelectItem key={corral.id} value={corral.id}>{corral.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Button onClick={handleSubmit} disabled={!title.trim() || createActivity.isPending} className="w-full">
-            {createActivity.isPending ? t("create.creating") : t("create.submit")}
-          </Button>
-        </div>
+        <TaskForm
+          defaultAnimalId={defaultAnimalId}
+          defaultAnimalTag={defaultAnimalTag}
+          onSubmit={handleSubmit}
+          isSubmitting={createActivity.isPending}
+        />
       </DialogContent>
     </Dialog>
   );

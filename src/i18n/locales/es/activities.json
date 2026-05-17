@@ -282,6 +282,10 @@
     "reproductive": {
       "title": "Actividades Reproductivas",
       "description": "Inseminación, partos, tacto y más"
+    },
+    "task": {
+      "title": "Tarea",
+      "description": "Crear y asignar tareas del equipo"
     }
   },
   "filters": {
@@ -1119,7 +1123,8 @@
     "linkCorral": "Vincular corral (opcional)",
     "none": "Ninguno",
     "submit": "Crear Actividad",
-    "creating": "Creando..."
+    "creating": "Creando...",
+    "success": "Actividad creada correctamente"
   },
   "priority": {
     "alta": "Alta",

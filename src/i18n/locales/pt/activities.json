@@ -273,6 +273,10 @@
     "reproductive": {
       "title": "Atividades Reprodutivas",
       "description": "Inseminação, partos, exame gestacional e mais"
+    },
+    "task": {
+      "title": "Tarefa",
+      "description": "Criar e atribuir tarefas da equipe"
     }
   },
   "filters": {
@@ -1102,7 +1106,8 @@
     "linkCorral": "Vincular curral (opcional)",
     "none": "Nenhum",
     "submit": "Criar Atividade",
-    "creating": "Criando..."
+    "creating": "Criando...",
+    "success": "Atividade criada com sucesso"
   },
   "priority": {
     "alta": "Alta",

@@ -271,6 +271,10 @@
     "reproductive": {
       "title": "Reproductive Activities",
       "description": "Insemination, calving, pregnancy check & more"
+    },
+    "task": {
+      "title": "Task",
+      "description": "Create and assign team tasks"
     }
   },
   "filters": {
@@ -1100,7 +1104,8 @@
     "linkCorral": "Link corral (optional)",
     "none": "None",
     "submit": "Create Activity",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "success": "Activity created successfully"
   },
   "priority": {
     "alta": "High",
