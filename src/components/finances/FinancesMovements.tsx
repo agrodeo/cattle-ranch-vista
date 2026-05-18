@@ -41,7 +41,7 @@ export function FinancesMovements() {
   const { t } = useTranslation(['finance', 'common']);
   const { currentUser } = useSupabaseAuth();
   const { isOnline } = useConnectivity();
-  const canEdit = currentUser?.role === 'admin' || currentUser?.role === 'employee';
+  const canEdit = ['admin', 'owner', 'employee', 'worker'].includes(currentUser?.role || '');
 
   const [from, setFrom] = useState<Date | undefined>();
   const [to, setTo] = useState<Date | undefined>();
