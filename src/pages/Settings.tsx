@@ -20,6 +20,7 @@ export const SettingsPage = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "general";
   const canManageUsers = currentUser?.role === "owner" || currentUser?.role === "admin" || currentUser?.role === "manager";
+  const canDeleteAccount = currentUser?.role === "owner" || currentUser?.role === "admin";
 
   useEffect(() => {
     document.title = `${t('settings:title')} - agrodeo`;
