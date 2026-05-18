@@ -20,6 +20,7 @@ export const SettingsPage = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "general";
   const canManageUsers = currentUser?.role === "owner" || currentUser?.role === "admin" || currentUser?.role === "manager";
+  const canDeleteAccount = currentUser?.role === "owner" || currentUser?.role === "admin";
 
   useEffect(() => {
     document.title = `${t('settings:title')} - agrodeo`;
@@ -134,24 +135,26 @@ export const SettingsPage = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm sm:border sm:shadow-md mt-4 sm:mt-6 border-destructive/30">
-          <CardHeader className="pb-3 sm:pb-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-                <Trash2 className="h-5 w-5 text-destructive" />
+        {canDeleteAccount && (
+          <Card className="border-0 shadow-sm sm:border sm:shadow-md mt-4 sm:mt-6 border-destructive/30">
+            <CardHeader className="pb-3 sm:pb-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                </div>
+                <div>
+                  <CardTitle className="text-base sm:text-lg text-destructive">{t('settings:deleteAccount.sectionTitle', 'Delete Account')}</CardTitle>
+                  <CardDescription className="text-xs sm:text-sm mt-0.5">
+                    {t('settings:deleteAccount.sectionDescription', 'Permanently delete your account and all associated data.')}
+                  </CardDescription>
+                </div>
               </div>
-              <div>
-                <CardTitle className="text-base sm:text-lg text-destructive">{t('settings:deleteAccount.sectionTitle', 'Delete Account')}</CardTitle>
-                <CardDescription className="text-xs sm:text-sm mt-0.5">
-                  {t('settings:deleteAccount.sectionDescription', 'Permanently delete your account and all associated data.')}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <DeleteAccountDialog />
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <DeleteAccountDialog />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
