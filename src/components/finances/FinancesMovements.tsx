@@ -362,7 +362,7 @@ export function FinancesMovements() {
           value={categoryFilter}
           onChange={(id) => setCategoryFilter(id === "__none__" ? undefined : id)}
           className="w-[220px]"
-          allowCreate={false}
+          allowCreate={canEdit}
           placeholder={t('finance:movements.filterByCategory')}
         />
         <Input placeholder={t('finance:movements.searchDescription')} value={search} onChange={(e) => setSearch(e.target.value)} className="w-[220px]" />
