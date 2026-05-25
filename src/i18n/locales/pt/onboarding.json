@@ -20,10 +20,10 @@
     "back": "Voltar",
     "skip": "Completar mais tarde",
     "continue": "Continuar",
-    "finish": "Começar a usar o Agrodeo",
+    "finish": "Finalizar",
     "stepLabel": "Etapa {{current}} de {{total}}",
     "labels": {
-      "vaccines": "Vacinas",
+      "vaccines": "Sanidade",
       "corrals": "Currais",
       "animals": "Animais"
     },
@@ -33,9 +33,31 @@
     }
   },
 
+  "welcomeScreen": {
+    "title": "Bem-vindo ao Agrodeo, {{name}}!",
+    "subtitle": "Vamos configurar \"{{company}}\" em 3 etapas rápidas",
+    "step_animals": "Carregue seus animais (o mais importante)",
+    "step_corrals": "Organize em currais",
+    "step_vaccines": "Configure o calendário sanitário",
+    "animalsNote": "Sem animais carregados, o sistema não pode ajudar",
+    "estimatedTime": "Tempo estimado: 5-10 minutos",
+    "startButton": "Começar"
+  },
+
+  "successScreen": {
+    "title": "🎉 Seu rebanho está pronto!",
+    "ready": "Seu rebanho está pronto para gerenciar",
+    "animalsLoaded": "{{count}} animais carregados",
+    "corralsCreated": "{{count}} currais criados",
+    "viewHerd": "Ver meu rebanho",
+    "goDashboard": "Ir para o Dashboard"
+  },
+
   "vaccinesStep": {
     "title": "Configure suas vacinas",
     "subtitle": "Defina quais vacinas você aplica e a quais animais correspondem",
+    "introSimple": "Selecione as vacinas que você usa. Configure os detalhes depois em Configurações.",
+    "skipLabel": "Configurar depois",
     "savingError": "Erro ao salvar as vacinas",
     "configure": "Configurar",
     "applyTo": "Para quem se aplica?",
@@ -66,22 +88,56 @@
   },
 
   "corralStep": {
-    "title": "Crie seu primeiro curral",
+    "title": "Crie seus currais",
     "subtitle": "Os currais ajudam a organizar seu rebanho",
+    "introBulk": "Organize seus animais em currais para melhor acompanhamento. Adicione nomes agora, edite detalhes depois.",
     "nameLabel": "Nome do curral",
     "namePlaceholder": "Ex: Curral Norte",
     "capacityLabel": "Capacidade máxima",
     "capacityPlaceholder": "Ex: 50",
     "hectaresLabel": "Hectares (opcional)",
     "hectaresPlaceholder": "Ex: 10",
-    "nameRequired": "Insira um nome para o curral",
+    "nameRequired": "Insira pelo menos um nome de curral",
+    "addAnother": "Adicionar outro curral",
+    "removeRow": "Remover",
     "savedSuccess": "Curral criado!",
-    "savedError": "Erro ao criar o curral"
+    "savedSuccessBulk": "{{count}} currais criados",
+    "savedError": "Erro ao criar os currais"
   },
 
   "animalStep": {
-    "title": "Registre seu primeiro animal",
+    "title": "Carregue seus animais",
+    "intro": "A etapa mais importante: carregue seus animais. Adicione muitos de uma vez com a tabela ou use o gerador de intervalo.",
     "subtitle": "Você pode adicionar mais animais depois",
+    "defaultsTitle": "Valores padrão (aplicados a novas linhas)",
+    "colTag": "Brinco",
+    "colSex": "Sexo",
+    "colBirthYear": "Ano Nasc.",
+    "colBreed": "Raça",
+    "colCategory": "Categoria",
+    "colBirthDate": "Data exata (opcional)",
+    "male": "Macho",
+    "female": "Fêmea",
+    "addRows": "Adicionar mais linhas",
+    "removeRow": "Remover linha",
+    "duplicateRow": "Brinco duplicado na tabela",
+    "alreadyExists": "Este brinco já existe na sua fazenda",
+    "readyCount": "{{count}} animais prontos para carregar",
+    "submit": "Carregar {{count}} animais",
+    "noValidRows": "Preencha ao menos uma linha com brinco, sexo e ano",
+    "successCount": "{{count}} animais carregados com sucesso",
+    "savedError": "Erro ao carregar os animais",
+    "duplicateIdError": "Brincos duplicados encontrados. Revise e tente novamente.",
+    "planLimitExceeded": "Você está carregando {{count}} animais mas seu plano ({{plan}}) permite até {{max}}. Atualize o plano ou carregue menos.",
+    "rangeToggle": "Gerar intervalo rápido",
+    "rangeTitle": "Tem muitos animais? Carregue um intervalo rápido",
+    "rangePrefix": "Prefixo",
+    "rangeFrom": "De",
+    "rangeTo": "Até",
+    "rangeGenerate": "Gerar {{count}} animais",
+    "rangeGenerated": "{{count}} animais gerados na tabela",
+    "rangeInvalid": "Verifique os valores do intervalo",
+    "rangeTooLarge": "Máximo 500 animais por intervalo",
     "tagLabel": "Número do brinco",
     "tagPlaceholder": "Ex: 0123",
     "nameLabel": "Nome (opcional)",
@@ -97,7 +153,15 @@
     "sexRequired": "Selecione o sexo",
     "breedRequired": "Selecione uma raça",
     "birthDateRequired": "Insira a data de nascimento",
-    "savedSuccess": "Animal registrado!",
-    "savedError": "Erro ao registrar o animal"
+    "savedSuccess": "Animal registrado!"
+  },
+
+  "gettingStarted": {
+    "title": "🎉 Seu rebanho está pronto!",
+    "description": "Você tem {{count}} animais carregados. Aqui está o que pode fazer:",
+    "viewAnimals": "Ver meus animais",
+    "reproductive": "Gestão reprodutiva",
+    "health": "Sanidade",
+    "dismiss": "Entendi, fechar"
   }
 }

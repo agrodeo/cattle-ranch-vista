@@ -20,10 +20,10 @@
     "back": "Back",
     "skip": "Complete later",
     "continue": "Continue",
-    "finish": "Start using Agrodeo",
+    "finish": "Finish",
     "stepLabel": "Step {{current}} of {{total}}",
     "labels": {
-      "vaccines": "Vaccines",
+      "vaccines": "Health",
       "corrals": "Corrals",
       "animals": "Animals"
     },
@@ -33,9 +33,31 @@
     }
   },
 
+  "welcomeScreen": {
+    "title": "Welcome to Agrodeo, {{name}}!",
+    "subtitle": "Let's set up \"{{company}}\" in 3 quick steps",
+    "step_animals": "Load your animals (most important)",
+    "step_corrals": "Organize them in corrals",
+    "step_vaccines": "Set up the health calendar",
+    "animalsNote": "Without animals loaded, the system can't help you",
+    "estimatedTime": "Estimated time: 5-10 minutes",
+    "startButton": "Start"
+  },
+
+  "successScreen": {
+    "title": "🎉 Your herd is ready!",
+    "ready": "Your herd is ready to manage",
+    "animalsLoaded": "{{count}} animals loaded",
+    "corralsCreated": "{{count}} corrals created",
+    "viewHerd": "View my herd",
+    "goDashboard": "Go to Dashboard"
+  },
+
   "vaccinesStep": {
     "title": "Configure your vaccines",
     "subtitle": "Define which vaccines you apply and which animals they target",
+    "introSimple": "Select the vaccines you use on your ranch. You can configure the details later from Settings.",
+    "skipLabel": "Set up later",
     "savingError": "Error saving vaccines",
     "configure": "Configure",
     "applyTo": "Who is it for?",
@@ -66,22 +88,56 @@
   },
 
   "corralStep": {
-    "title": "Create your first corral",
+    "title": "Create your corrals",
     "subtitle": "Corrals help you organize your herd",
+    "introBulk": "Organize your animals in corrals for better tracking. Add names now, edit details later.",
     "nameLabel": "Corral name",
     "namePlaceholder": "e.g. North Corral",
     "capacityLabel": "Max capacity",
     "capacityPlaceholder": "e.g. 50",
     "hectaresLabel": "Hectares (optional)",
     "hectaresPlaceholder": "e.g. 10",
-    "nameRequired": "Enter a name for the corral",
+    "nameRequired": "Enter at least one corral name",
+    "addAnother": "Add another corral",
+    "removeRow": "Remove",
     "savedSuccess": "Corral created!",
-    "savedError": "Error creating corral"
+    "savedSuccessBulk": "{{count}} corrals created",
+    "savedError": "Error creating corrals"
   },
 
   "animalStep": {
-    "title": "Register your first animal",
+    "title": "Load your animals",
+    "intro": "The most important step: load your animals. Add many at once with the table or use the range generator.",
     "subtitle": "You can add more animals later",
+    "defaultsTitle": "Default values (applied to new rows)",
+    "colTag": "Tag",
+    "colSex": "Sex",
+    "colBirthYear": "Birth Year",
+    "colBreed": "Breed",
+    "colCategory": "Category",
+    "colBirthDate": "Exact date (optional)",
+    "male": "Male",
+    "female": "Female",
+    "addRows": "Add more rows",
+    "removeRow": "Remove row",
+    "duplicateRow": "Duplicate tag in the table",
+    "alreadyExists": "This tag already exists in your ranch",
+    "readyCount": "{{count}} animals ready to load",
+    "submit": "Load {{count}} animals",
+    "noValidRows": "Fill at least one row with tag, sex and year",
+    "successCount": "{{count}} animals loaded successfully",
+    "savedError": "Error loading animals",
+    "duplicateIdError": "Duplicate tags found. Review and try again.",
+    "planLimitExceeded": "You're loading {{count}} animals but your {{plan}} plan allows up to {{max}}. Upgrade your plan or load fewer.",
+    "rangeToggle": "Quick range",
+    "rangeTitle": "Got many animals? Load a quick range",
+    "rangePrefix": "Prefix",
+    "rangeFrom": "From",
+    "rangeTo": "To",
+    "rangeGenerate": "Generate {{count}} animals",
+    "rangeGenerated": "{{count}} animals generated in the table",
+    "rangeInvalid": "Check the range values",
+    "rangeTooLarge": "Maximum 500 animals per range",
     "tagLabel": "Tag number",
     "tagPlaceholder": "e.g. 0123",
     "nameLabel": "Name (optional)",
@@ -97,7 +153,15 @@
     "sexRequired": "Select the sex",
     "breedRequired": "Select a breed",
     "birthDateRequired": "Enter the birth date",
-    "savedSuccess": "Animal registered!",
-    "savedError": "Error registering animal"
+    "savedSuccess": "Animal registered!"
+  },
+
+  "gettingStarted": {
+    "title": "🎉 Your herd is ready!",
+    "description": "You have {{count}} animals loaded. Here's what you can do:",
+    "viewAnimals": "View my animals",
+    "reproductive": "Reproductive management",
+    "health": "Health",
+    "dismiss": "Got it, close"
   }
 }

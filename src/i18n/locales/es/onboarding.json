@@ -20,10 +20,10 @@
     "back": "Atrás",
     "skip": "Completar más tarde",
     "continue": "Continuar",
-    "finish": "Comenzar a usar Agrodeo",
+    "finish": "Finalizar",
     "stepLabel": "Paso {{current}} de {{total}}",
     "labels": {
-      "vaccines": "Vacunas",
+      "vaccines": "Sanidad",
       "corrals": "Corrales",
       "animals": "Animales"
     },
@@ -33,9 +33,31 @@
     }
   },
 
+  "welcomeScreen": {
+    "title": "¡Bienvenido a Agrodeo, {{name}}!",
+    "subtitle": "Vamos a configurar \"{{company}}\" en 3 pasos rápidos",
+    "step_animals": "Cargá tus animales (lo más importante)",
+    "step_corrals": "Organizalos en corrales",
+    "step_vaccines": "Configurá el calendario sanitario",
+    "animalsNote": "Sin animales cargados, el sistema no puede ayudarte",
+    "estimatedTime": "Tiempo estimado: 5-10 minutos",
+    "startButton": "Empezar"
+  },
+
+  "successScreen": {
+    "title": "🎉 ¡Tu rodeo está listo!",
+    "ready": "Tu rodeo está listo para gestionar",
+    "animalsLoaded": "{{count}} animales cargados",
+    "corralsCreated": "{{count}} corrales creados",
+    "viewHerd": "Ver mi rodeo",
+    "goDashboard": "Ir al Dashboard"
+  },
+
   "vaccinesStep": {
     "title": "Configurá tus vacunas",
     "subtitle": "Definí qué vacunas aplicás y a qué animales corresponden",
+    "introSimple": "Seleccioná las vacunas que usás en tu establecimiento. Podés configurar los detalles después desde Configuración.",
+    "skipLabel": "Configurar después",
     "savingError": "Error al guardar las vacunas",
     "configure": "Configurar",
     "applyTo": "¿A quién se aplica?",
@@ -66,22 +88,56 @@
   },
 
   "corralStep": {
-    "title": "Creá tu primer corral",
+    "title": "Creá tus corrales",
     "subtitle": "Los corrales te ayudan a organizar tu ganado",
+    "introBulk": "Organizá tus animales en corrales para un mejor seguimiento. Podés agregar los nombres y editar los detalles después.",
     "nameLabel": "Nombre del corral",
     "namePlaceholder": "Ej: Corral Norte",
     "capacityLabel": "Capacidad máxima",
     "capacityPlaceholder": "Ej: 50",
     "hectaresLabel": "Hectáreas (opcional)",
     "hectaresPlaceholder": "Ej: 10",
-    "nameRequired": "Ingresá un nombre para el corral",
+    "nameRequired": "Ingresá al menos un nombre de corral",
+    "addAnother": "Agregar otro corral",
+    "removeRow": "Quitar",
     "savedSuccess": "¡Corral creado!",
-    "savedError": "Error al crear el corral"
+    "savedSuccessBulk": "{{count}} corrales creados",
+    "savedError": "Error al crear los corrales"
   },
 
   "animalStep": {
-    "title": "Registrá tu primer animal",
+    "title": "Cargá tus animales",
+    "intro": "Lo más importante para empezar: cargá tus animales. Podés cargar muchos a la vez con la tabla o usar el generador de rango.",
     "subtitle": "Podés agregar más animales después",
+    "defaultsTitle": "Valores por defecto (se aplican a filas nuevas)",
+    "colTag": "Caravana",
+    "colSex": "Sexo",
+    "colBirthYear": "Año Nac.",
+    "colBreed": "Raza",
+    "colCategory": "Categoría",
+    "colBirthDate": "Fecha exacta (opcional)",
+    "male": "Macho",
+    "female": "Hembra",
+    "addRows": "Agregar más filas",
+    "removeRow": "Quitar fila",
+    "duplicateRow": "Caravana repetida en la tabla",
+    "alreadyExists": "Esta caravana ya existe en tu cabaña",
+    "readyCount": "{{count}} animales listos para cargar",
+    "submit": "Cargar {{count}} animales",
+    "noValidRows": "Completá al menos una fila con caravana, sexo y año",
+    "successCount": "{{count}} animales cargados exitosamente",
+    "savedError": "Error al cargar los animales",
+    "duplicateIdError": "Hay caravanas duplicadas. Revisá y volvé a intentar.",
+    "planLimitExceeded": "Estás cargando {{count}} animales pero tu plan ({{plan}}) permite hasta {{max}}. Actualizá tu plan o cargá menos.",
+    "rangeToggle": "Generar rango rápido",
+    "rangeTitle": "¿Tenés muchos animales? Cargá un rango rápido",
+    "rangePrefix": "Prefijo",
+    "rangeFrom": "Desde",
+    "rangeTo": "Hasta",
+    "rangeGenerate": "Generar {{count}} animales",
+    "rangeGenerated": "{{count}} animales generados en la tabla",
+    "rangeInvalid": "Revisá los valores del rango",
+    "rangeTooLarge": "Máximo 500 animales por rango",
     "tagLabel": "Número de caravana",
     "tagPlaceholder": "Ej: 0123",
     "nameLabel": "Nombre (opcional)",
@@ -97,7 +153,15 @@
     "sexRequired": "Seleccioná el sexo",
     "breedRequired": "Seleccioná una raza",
     "birthDateRequired": "Ingresá la fecha de nacimiento",
-    "savedSuccess": "¡Animal registrado!",
-    "savedError": "Error al registrar el animal"
+    "savedSuccess": "¡Animal registrado!"
+  },
+
+  "gettingStarted": {
+    "title": "🎉 ¡Tu rodeo está listo!",
+    "description": "Tenés {{count}} animales cargados. Esto es lo que podés hacer:",
+    "viewAnimals": "Ver mis animales",
+    "reproductive": "Gestión reproductiva",
+    "health": "Sanidad",
+    "dismiss": "Entendido, cerrar"
   }
 }
