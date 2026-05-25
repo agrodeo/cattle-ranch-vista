@@ -1,42 +1,60 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { toast } from "sonner";
 import { WizardStepShell } from "../WizardStepShell";
 
 interface CorralStepProps {
-  onComplete: () => void;
+  onComplete: (count: number) => void;
   onSkip: () => void;
   onBack: () => void;
 }
 
+interface Row {
+  id: string;
+  name: string;
+}
+
+const makeRow = (): Row => ({
+  id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
+  name: "",
+});
+
 export const CorralStep = ({ onComplete, onSkip, onBack }: CorralStepProps) => {
   const { t } = useTranslation(["onboarding"]);
   const { currentUser } = useSupabaseAuth();
-  const [name, setName] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [hectares, setHectares] = useState("");
+  const [rows, setRows] = useState<Row[]>(() => [makeRow(), makeRow(), makeRow()]);
   const [loading, setLoading] = useState(false);
 
+  const valid = rows.filter((r) => r.name.trim());
+  const canContinue = valid.length > 0;
+
+  const update = (id: string, name: string) =>
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, name } : r)));
+  const remove = (id: string) =>
+    setRows((prev) => (prev.length === 1 ? prev : prev.filter((r) => r.id !== id)));
+  const add = () => setRows((prev) => [...prev, makeRow()]);
+
   const handleSubmit = async () => {
-    if (!name.trim()) {
+    if (!currentUser?.cabañaId) return;
+    if (valid.length === 0) {
       toast.error(t("onboarding:corralStep.nameRequired"));
       return;
     }
-    if (!currentUser?.cabañaId) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from("corrales").insert({
-        name: name.trim(),
-        capacity: capacity ? parseInt(capacity) : null,
-        hectareas: hectares ? parseFloat(hectares) : null,
-        cabaña_id: currentUser.cabañaId,
-        user_id: currentUser.id,
-      });
+      const { error } = await supabase.from("corrales").insert(
+        valid.map((r) => ({
+          name: r.name.trim(),
+          cabaña_id: currentUser.cabañaId,
+          user_id: currentUser.id,
+        })),
+      );
       if (error) throw error;
-      toast.success(t("onboarding:corralStep.savedSuccess"));
-      onComplete();
+      toast.success(t("onboarding:corralStep.savedSuccessBulk", { count: valid.length }));
+      onComplete(valid.length);
     } catch (e) {
       console.error(e);
       toast.error(t("onboarding:corralStep.savedError"));
@@ -48,79 +66,43 @@ export const CorralStep = ({ onComplete, onSkip, onBack }: CorralStepProps) => {
   return (
     <WizardStepShell
       title={t("onboarding:corralStep.title")}
-      subtitle={t("onboarding:corralStep.subtitle")}
+      subtitle={t("onboarding:corralStep.introBulk")}
       onBack={onBack}
       onSkip={onSkip}
       onContinue={handleSubmit}
       loading={loading}
-      continueDisabled={!name.trim()}
+      continueDisabled={!canContinue}
     >
-      <div className="space-y-4">
-        <Field
-          id="corral-name"
-          label={t("onboarding:corralStep.nameLabel")}
-          placeholder={t("onboarding:corralStep.namePlaceholder")}
-          value={name}
-          onChange={setName}
-          autoFocus
-        />
-        <Field
-          id="corral-capacity"
-          label={t("onboarding:corralStep.capacityLabel")}
-          placeholder={t("onboarding:corralStep.capacityPlaceholder")}
-          value={capacity}
-          onChange={setCapacity}
-          type="number"
-          inputMode="numeric"
-        />
-        <Field
-          id="corral-hectares"
-          label={t("onboarding:corralStep.hectaresLabel")}
-          placeholder={t("onboarding:corralStep.hectaresPlaceholder")}
-          value={hectares}
-          onChange={setHectares}
-          type="number"
-          inputMode="decimal"
-        />
+      <div className="space-y-3">
+        {rows.map((r, i) => (
+          <div key={r.id} className="flex items-center gap-2">
+            <span className="w-6 text-xs font-medium text-muted-foreground text-right">{i + 1}.</span>
+            <input
+              value={r.name}
+              onChange={(e) => update(r.id, e.target.value)}
+              placeholder={t("onboarding:corralStep.namePlaceholder")}
+              autoFocus={i === 0}
+              className="flex-1 h-12 px-4 text-base rounded-xl border-2 border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={() => remove(r.id)}
+              className="p-2 text-muted-foreground hover:text-destructive transition-colors"
+              aria-label={t("onboarding:corralStep.removeRow")}
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={add}
+          className="w-full h-12 rounded-xl border-2 border-dashed border-border text-sm font-medium text-foreground hover:border-primary/40 inline-flex items-center justify-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          {t("onboarding:corralStep.addAnother")}
+        </button>
       </div>
     </WizardStepShell>
   );
 };
-
-function Field({
-  id,
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = "text",
-  inputMode,
-  autoFocus,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-  inputMode?: "numeric" | "decimal" | "text";
-  autoFocus?: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <label htmlFor={id} className="block text-base font-medium text-foreground">
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        inputMode={inputMode}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoFocus={autoFocus}
-        className="w-full min-h-[48px] px-4 text-base rounded-xl border-2 border-border bg-background placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
-      />
-    </div>
-  );
-}

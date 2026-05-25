@@ -31,9 +31,16 @@ import { isPast, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
-  const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance', 'activities']);
+  const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance', 'activities', 'onboarding']);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
+  const [showGettingStarted, setShowGettingStarted] = useState(
+    () => typeof window !== 'undefined' && !localStorage.getItem('agrodeo_onboarding_explored')
+  );
+  const dismissGettingStarted = () => {
+    try { localStorage.setItem('agrodeo_onboarding_explored', 'true'); } catch {}
+    setShowGettingStarted(false);
+  };
   const navigate = useNavigate();
   const { currentUser } = useSupabaseAuth();
   const { data: myTasks, isLoading: myTasksLoading } = useMyActivityTasks();
@@ -71,6 +78,34 @@ const Dashboard = () => {
         {warnings.noCabana && <NoCabanaAlert onCreateCabana={handleCreateCabana} />}
         {warnings.overAnimalLimit && cabana && (
           <PlanLimitAlert type="error" currentCount={counts.animalsActive} maxCount={cabana.animal_limit} planName={cabana.plan} onUpgrade={() => setShowPlansModal(true)} />
+        )}
+
+        {/* Getting Started card (post-onboarding) */}
+        {showGettingStarted && !warnings.noCabana && counts.animalsActive > 0 && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="p-5 space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-foreground">{t('onboarding:gettingStarted.title')}</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {t('onboarding:gettingStarted.description', { count: counts.animalsActive })}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={() => navigate('/animals')}>
+                  {t('onboarding:gettingStarted.viewAnimals')}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => navigate('/reproductive')}>
+                  {t('onboarding:gettingStarted.reproductive')}
+                </Button>
+                <Button size="sm" variant="secondary" onClick={() => navigate('/settings')}>
+                  {t('onboarding:gettingStarted.health')}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={dismissGettingStarted}>
+                  {t('onboarding:gettingStarted.dismiss')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         )}
         {warnings.nearAnimalLimit && !warnings.overAnimalLimit && cabana && (
           <PlanLimitAlert type="warning" currentCount={counts.animalsActive} maxCount={cabana.animal_limit} planName={cabana.plan} onUpgrade={() => setShowPlansModal(true)} />
