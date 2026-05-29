@@ -175,6 +175,129 @@ export type Database = {
           },
         ]
       }
+      animal_deps: {
+        Row: {
+          accuracy: number | null
+          animal_id: string
+          cabaña_id: string
+          created_at: string
+          created_by: string | null
+          custom_deps: Json | null
+          dep_area_ojo_bife: number | null
+          dep_area_ojo_bife_acc: number | null
+          dep_circunferencia_escrotal: number | null
+          dep_circunferencia_escrotal_acc: number | null
+          dep_docilidad: number | null
+          dep_docilidad_acc: number | null
+          dep_grasa_cadera: number | null
+          dep_grasa_cadera_acc: number | null
+          dep_grasa_dorsal: number | null
+          dep_grasa_dorsal_acc: number | null
+          dep_grasa_intramuscular: number | null
+          dep_grasa_intramuscular_acc: number | null
+          dep_largo_gestacion: number | null
+          dep_largo_gestacion_acc: number | null
+          dep_leche: number | null
+          dep_leche_acc: number | null
+          dep_peso_destete: number | null
+          dep_peso_destete_acc: number | null
+          dep_peso_final: number | null
+          dep_peso_final_acc: number | null
+          dep_peso_nacer: number | null
+          dep_peso_nacer_acc: number | null
+          evaluation_date: string | null
+          id: string
+          notes: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          accuracy?: number | null
+          animal_id: string
+          cabaña_id: string
+          created_at?: string
+          created_by?: string | null
+          custom_deps?: Json | null
+          dep_area_ojo_bife?: number | null
+          dep_area_ojo_bife_acc?: number | null
+          dep_circunferencia_escrotal?: number | null
+          dep_circunferencia_escrotal_acc?: number | null
+          dep_docilidad?: number | null
+          dep_docilidad_acc?: number | null
+          dep_grasa_cadera?: number | null
+          dep_grasa_cadera_acc?: number | null
+          dep_grasa_dorsal?: number | null
+          dep_grasa_dorsal_acc?: number | null
+          dep_grasa_intramuscular?: number | null
+          dep_grasa_intramuscular_acc?: number | null
+          dep_largo_gestacion?: number | null
+          dep_largo_gestacion_acc?: number | null
+          dep_leche?: number | null
+          dep_leche_acc?: number | null
+          dep_peso_destete?: number | null
+          dep_peso_destete_acc?: number | null
+          dep_peso_final?: number | null
+          dep_peso_final_acc?: number | null
+          dep_peso_nacer?: number | null
+          dep_peso_nacer_acc?: number | null
+          evaluation_date?: string | null
+          id?: string
+          notes?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          accuracy?: number | null
+          animal_id?: string
+          cabaña_id?: string
+          created_at?: string
+          created_by?: string | null
+          custom_deps?: Json | null
+          dep_area_ojo_bife?: number | null
+          dep_area_ojo_bife_acc?: number | null
+          dep_circunferencia_escrotal?: number | null
+          dep_circunferencia_escrotal_acc?: number | null
+          dep_docilidad?: number | null
+          dep_docilidad_acc?: number | null
+          dep_grasa_cadera?: number | null
+          dep_grasa_cadera_acc?: number | null
+          dep_grasa_dorsal?: number | null
+          dep_grasa_dorsal_acc?: number | null
+          dep_grasa_intramuscular?: number | null
+          dep_grasa_intramuscular_acc?: number | null
+          dep_largo_gestacion?: number | null
+          dep_largo_gestacion_acc?: number | null
+          dep_leche?: number | null
+          dep_leche_acc?: number | null
+          dep_peso_destete?: number | null
+          dep_peso_destete_acc?: number | null
+          dep_peso_final?: number | null
+          dep_peso_final_acc?: number | null
+          dep_peso_nacer?: number | null
+          dep_peso_nacer_acc?: number | null
+          evaluation_date?: string | null
+          id?: string
+          notes?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animal_deps_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: true
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "animal_deps_cabaña_id_fkey"
+            columns: ["cabaña_id"]
+            isOneToOne: false
+            referencedRelation: "cabañas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       animal_documents: {
         Row: {
           animal_id: string

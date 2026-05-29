@@ -1,76 +1,97 @@
-# Onboarding Redesign — Activación de carga masiva de animales
 
-## Objetivo
-Pasar de un onboarding que termina con 1 animal cargado a uno donde el productor carga 20-50+ animales en menos de 5 minutos, ve valor inmediato y queda activado.
+# Plan: DEPs for Male Animal Profiles
 
-## Cambios principales
+Add a genetic merit (DEPs / Diferencias Esperadas de Progenie) section to male animal profiles, with manual data entry, breed reference baselines, visual comparison vs breed averages, and optional bull-vs-bull comparison.
 
-### 1. `OnboardingWizard.tsx` — reestructura
-- Reordenar pasos: `["animals", "corrals", "vaccines"]` (antes: vaccines → corrals → animals).
-- Agregar **pantalla de bienvenida** previa al wizard con nombre del owner y de la cabaña (leído de `pending_owner_data` / `pending_cabana` o de los datos ya creados), 3 pasos resumidos y CTA "Empezar".
-- Reemplazar la pantalla de éxito genérica por un **resumen real**: cantidad de animales cargados, corrales creados, CTA "Ver mi rodeo" → `/animales`, secundario "Ir al Dashboard". Quitar el auto-redirect de 2s.
-- Mantener el indicador de progreso existente pero agregar una `Progress` bar de shadcn y el texto "Paso X de 3".
-- El paso de animales NO muestra botón skip; corrals y vaccines muestran skip con labels "Lo haré después" / "Configurar después".
+## 1. Database — `animal_deps` table
 
-### 2. `AnimalStep.tsx` — reescritura completa (carga masiva)
-Reemplazar el formulario de 1 animal por una **tabla de carga batch inline**:
-- Columnas: Caravana, Sexo (toggle ♂/♀), Año Nac., Raza (combobox), Categoría, Fecha exacta (opcional).
-- Inicia con 5 filas vacías. Botón "Agregar más filas" agrega 5. Auto-añade 3 cuando se completa la última fila visible.
-- Sección **"Valores por defecto"** arriba: año de nacimiento (pre-cargado con `año actual - 2`), raza, categoría. Se aplican a filas nuevas.
-- **Generador de rango rápido** abajo: prefijo + desde + hasta + sexo + año → genera filas (ej. AG-001..AG-050) que el usuario revisa antes de enviar.
-- **Validación inline** sin bloquear otras filas:
-  - Duplicados dentro del batch (resaltados en rojo).
-  - Duplicados contra `animals` existentes en la DB (mismo `cabaña_id`).
-  - Límite de plan (`max_animals` de la suscripción).
-- Contador en vivo: "X animales listos para cargar".
-- Requeridos por fila: `id_tag` + `sex` + `birth_year` (puede venir del default). `breed`/`category`/`birth_date` opcionales.
-- Submit:
-  - Filtra filas válidas, ignora vacías.
-  - Inserta en bulk a `animals` con `cabaña_id = currentUser.cabañaId`, `birth_date = row.birth_date || \`${year}-01-01\``, `status = 'Activo'`.
-  - Progreso visible, toast de éxito con conteo, avance automático a corrales.
-- NO tiene botón skip.
+Migration creates the table with these adjustments to fit project conventions:
 
-### 3. `CorralStep.tsx` — simplificar
-- Texto corto: "Organizá tus animales en corrales para un mejor seguimiento".
-- 3 inputs de nombre por defecto + botón "Agregar otro".
-- Insert batch a `corrales`.
-- Skip "Lo haré después" disponible.
-- (La asignación drag-and-drop opcional se deja como follow-up para no inflar este cambio; mantenemos el alcance del onboarding ajustado.)
+- Foreign key uses `cabañas(id)` (the existing table name with ñ), not `cabanas`.
+- Column named `cabaña_id` to match every other table in the schema (consistent with RLS helpers like `current_user_is_active_in_cabana`).
+- Uses existing helpers `current_user_is_active_in_cabana(cabaña_id)` and `current_user_role_in([...])` for RLS, instead of querying a `user_profiles` table (which doesn't exist — the project uses `profiles`).
+- Explicit `GRANT` statements for `authenticated` and `service_role` (project rule).
+- `UNIQUE(animal_id)` so each animal has one DEP record (latest evaluation).
+- All trait columns + accuracy columns + `custom_deps` JSONB exactly as specified.
 
-### 4. `VaccinesStep.tsx` — simplificar a checklist
-- Reducir a checkbox list de las 5 vacunas default (todas checked por defecto).
-- Eliminar configuración expandible (edad, sexo, mandatory) del onboarding — esto sigue disponible en Settings.
-- Texto: "Seleccioná las vacunas que usás en tu establecimiento. Podés configurar los detalles después."
-- Submit hace upsert simple a `cabaña_vaccination_requirements` con defaults.
-- Skip "Configurar después".
+RLS policies:
+- SELECT: any active user in the cabaña.
+- INSERT/UPDATE/DELETE: roles `owner`, `manager`, `worker`, `admin`, `employee` active in the cabaña + `can_modify_data(auth.uid())`.
 
-### 5. `Dashboard.tsx` — tarjeta "Getting Started"
-- Si el usuario tiene ≥1 animal y no descartó la tarjeta (`localStorage.agrodeo_onboarding_explored`), mostrar card al tope con:
-  - "🎉 ¡Tu rodeo está listo! Tenés N animales cargados."
-  - Botones: Ver mis animales, Reproducción, Sanidad, "Entendido, cerrar".
+## 2. Breed reference data
 
-### 6. Traducciones
-Agregar el namespace de claves nuevas en `src/i18n/locales/{es,en,pt}/onboarding.json` (no en `es.json/en.json/pt.json` planos, que no existen — el proyecto usa locales separados por namespace).
+`src/data/breedDEPReferences.ts` with `BREED_DEP_REFERENCES` for Angus, Hereford, Braford, Brangus, Limousin (placeholder values from spec — flagged as approximate, easy to update later). Helper `getBreedReference(breed: string)` doing a case-insensitive lookup against the animal's `breed` field.
 
-## Guardrails respetados
-- Sin renombrar/eliminar columnas, RLS, rutas o componentes existentes.
-- Ruta animales sigue siendo `/animales` (el CTA del éxito navega ahí).
-- Sin cambios globales de tipografía/color: todo con tokens semánticos existentes.
-- Reutiliza lógica de duplicados y límite de plan del `AnimalFormDialog.tsx` (mismo query por `id_tag` + `cabaña_id`, mismo check de suscripción).
-- Migraciones: ninguna (toda la lógica es client-side sobre tablas existentes).
+## 3. Hook — `useAnimalDEPs`
 
-## Detalles técnicos
-- Tipos nuevos `OnboardingAnimalRow` y `BatchDefaults` locales a `AnimalStep.tsx`.
-- Estado por `useState` con array de filas, índice estable (`crypto.randomUUID()`).
-- Validación con debounce ligero al editar `id_tag`.
-- Insert masivo: `supabase.from('animals').insert(animalsToInsert)` en una sola llamada; si excede el límite del plan, se cortan al máximo permitido y se avisa.
-- Progress bar: `<Progress value={(stepIndex + 1) / 3 * 100} />`.
+`src/hooks/useAnimalDEPs.ts`
 
-## Pre-merge smoke tests
-1. Cargar Animals, Activities, Corrales, Finance — sin regresiones.
-2. Onboarding flow: bienvenida → cargar 10 animales con generador de rango → crear 2 corrales → seleccionar vacunas → éxito → CTA navega a `/animales`.
-3. Skip de corrales y vaccines funciona; skip de animals NO existe.
-4. Validar que duplicados (dentro del batch y vs DB) se marcan sin bloquear el resto.
-5. Validar tope de plan: cargar más que `max_animals` corta y avisa.
-6. RLS: insert con usuario `owner` funciona; `worker` también (políticas actuales ya lo permiten).
-7. Dashboard muestra "Getting Started" tras onboarding y se puede descartar.
+- React Query fetch by `animal_id` (maybeSingle).
+- `saveDEPs` mutation: upsert pattern (update if `deps.id` exists, otherwise insert) including `cabaña_id` from current user and `created_by`.
+- Invalidates `['animal-deps', animalId]` on success, toast feedback via existing `useToast`.
+- Uses translations from new `deps` namespace.
+
+## 4. Display component — `AnimalDEPsSection`
+
+`src/components/deps/AnimalDEPsSection.tsx`
+
+- Card with header, subtitle, and "Editar DEPs" / "Agregar DEPs" button.
+- Empty state when no record.
+- When DEPs exist: grouped sections (Crecimiento, Aptitud Materna, Reproducción, Carcasa, Comportamiento). Each row shows:
+  - Trait label (translated)
+  - Value + unit
+  - Accuracy dot (green ≥0.7, yellow 0.4–0.7, red <0.4) — only when accuracy present
+  - Horizontal bar positioning the value between worse / average / better, using the breed reference (`top10` better edge, average center, mirrored on the worse side). For `lowerIsBetter` traits the bar direction is inverted.
+- Skeleton state while loading.
+- Source + evaluation date shown under the header when present.
+
+Shared `TRAIT_CONFIG` constant (units, lowerIsBetter, section) used by display, form, and comparison view.
+
+## 5. Edit form — `DEPsEditDialog`
+
+`src/components/deps/DEPsEditDialog.tsx`
+
+- Dialog (existing `Dialog` primitive) with react-hook-form.
+- Fields: source (text), evaluation date (date), and each trait as a numeric input (supports negatives) with unit suffix.
+- Grouped into the same sections as the display.
+- "Mostrar precisiones" toggle reveals accuracy inputs (0–1, step 0.01) for each trait.
+- If `getBreedReference(animal.breed)` matches, helper text under each trait: `Promedio raza: 0 | Top 25%: -1.5` (translated).
+- Calls `saveDEPs` and closes on success.
+
+## 6. Integration into animal profile
+
+`src/components/animals/profile/AnimalProfileTabs.tsx` already manages tabs. Add a new "Genética" tab (icon `Dna` from lucide) visible only when `animal.sex === 'macho'`. Tab content renders `<AnimalDEPsSection animalId={animal.id} breed={animal.breed} />`. No other tab is moved or removed (respects guardrails).
+
+## 7. Optional comparison — `DEPComparisonView`
+
+`src/components/deps/DEPComparisonView.tsx`
+
+- Triggered from "Comparar con otro toro" button inside `AnimalDEPsSection`.
+- Animal picker limited to other male animals in the same cabaña (reuses `useAnimalsData`, filtered by `sex === 'macho'` and excluding current animal).
+- Two-column trait comparison; better value highlighted (`bg-primary/10 text-primary`), respecting each trait's `lowerIsBetter`. Missing values render as `—`.
+
+## 8. Translations
+
+Add `deps` namespace files: `src/i18n/locales/{es,en,pt}/deps.json` with all keys from the spec. Register the namespace in `src/i18n/index.ts` alongside the other locale imports.
+
+## Technical notes
+
+- Table name in code/types: after the migration runs, the Supabase types file regenerates and the table is callable via `supabase.from('animal_deps')`.
+- The unique constraint on `animal_id` makes the upsert logic safe and matches "one DEPs record per animal".
+- Bar positioning math: clamp `value` between `-1.5 × top10` and `+1.5 × top10` (relative to the breed reference) and map to 0–100% width; for `lowerIsBetter` traits invert before mapping. Falls back to centered indicator with neutral coloring when no breed reference is available.
+- Accuracy dot uses semantic tokens (`bg-emerald-500`, `bg-amber-500`, `bg-destructive`) — only `bg-destructive` is from the design system; the others are existing Tailwind utilities already used across the app for ranking states.
+- No existing routes, components, or RLS policies are renamed or removed (project guardrails respected).
+
+## File summary
+
+| Action | File |
+| --- | --- |
+| New migration | `animal_deps` table + GRANTs + RLS |
+| New | `src/data/breedDEPReferences.ts` |
+| New | `src/hooks/useAnimalDEPs.ts` |
+| New | `src/components/deps/AnimalDEPsSection.tsx` |
+| New | `src/components/deps/DEPsEditDialog.tsx` |
+| New | `src/components/deps/DEPComparisonView.tsx` |
+| Edit | `src/components/animals/profile/AnimalProfileTabs.tsx` (add Genética tab for males) |
+| New | `src/i18n/locales/{es,en,pt}/deps.json` |
+| Edit | `src/i18n/index.ts` (register namespace) |
