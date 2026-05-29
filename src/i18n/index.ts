@@ -28,6 +28,7 @@ import reproductiveEs from './locales/es/reproductive.json';
 import breedingEs from './locales/es/breeding.json';
 import legalEs from './locales/es/legal.json';
 import onboardingEs from './locales/es/onboarding.json';
+import depsEs from './locales/es/deps.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
@@ -47,6 +48,7 @@ import reproductiveEn from './locales/en/reproductive.json';
 import breedingEn from './locales/en/breeding.json';
 import legalEn from './locales/en/legal.json';
 import onboardingEn from './locales/en/onboarding.json';
+import depsEn from './locales/en/deps.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -66,6 +68,7 @@ import reproductivePt from './locales/pt/reproductive.json';
 import breedingPt from './locales/pt/breeding.json';
 import legalPt from './locales/pt/legal.json';
 import onboardingPt from './locales/pt/onboarding.json';
+import depsPt from './locales/pt/deps.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -115,6 +118,7 @@ const resources = {
     breeding: breedingEs,
     legal: legalEs,
     onboarding: onboardingEs,
+    deps: depsEs,
   },
   en: {
     common: commonEn,
@@ -135,6 +139,7 @@ const resources = {
     breeding: breedingEn,
     legal: legalEn,
     onboarding: onboardingEn,
+    deps: depsEn,
   },
   pt: {
     common: commonPt,
@@ -155,6 +160,7 @@ const resources = {
     breeding: breedingPt,
     legal: legalPt,
     onboarding: onboardingPt,
+    deps: depsPt,
   },
 };
 
@@ -165,7 +171,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal', 'onboarding'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal', 'onboarding', 'deps'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],
