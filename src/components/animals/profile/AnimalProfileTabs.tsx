@@ -13,7 +13,8 @@ import {
   GitBranch, 
   MapPin, 
   FileText, 
-  DollarSign 
+  DollarSign,
+  Dna,
 } from "lucide-react";
 
 // Tab components (will create these)
@@ -26,6 +27,7 @@ import { AnimalGenealogia } from "./tabs/AnimalGenealogia";
 import { AnimalCorrales } from "./tabs/AnimalCorrales";
 import { AnimalDocumentos } from "./tabs/AnimalDocumentos";
 import { AnimalFinanzas } from "./tabs/AnimalFinanzas";
+import { AnimalDEPsSection } from "@/components/deps/AnimalDEPsSection";
 
 interface AnimalProfileTabsProps {
   animal: Animal;
@@ -33,19 +35,22 @@ interface AnimalProfileTabsProps {
 }
 
 export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsProps) {
-  const { t } = useTranslation('animals');
+  const { t } = useTranslation(['animals', 'deps']);
   const [activeTab, setActiveTab] = useState('resumen');
   const isMobile = useIsMobile();
 
+  const isMale = animal.sex === 'macho';
+
   const tabs = [
-    { id: 'resumen', label: t('profile.tabs.summary'), icon: BarChart3 },
-    { id: 'reproduccion', label: t('profile.tabs.reproduction'), icon: Heart },
-    { id: 'vacunas', label: t('profile.tabs.vaccines'), icon: Syringe },
-    { id: 'produccion', label: t('profile.tabs.production'), icon: Scale },
-    { id: 'genealogia', label: t('profile.tabs.genealogy'), icon: GitBranch },
-    { id: 'corrales', label: t('profile.tabs.corrals'), icon: MapPin },
-    { id: 'documentos', label: t('profile.tabs.documents'), icon: FileText },
-    { id: 'finanzas', label: t('profile.tabs.finances'), icon: DollarSign },
+    { id: 'resumen', label: t('animals:profile.tabs.summary'), icon: BarChart3 },
+    { id: 'reproduccion', label: t('animals:profile.tabs.reproduction'), icon: Heart },
+    { id: 'vacunas', label: t('animals:profile.tabs.vaccines'), icon: Syringe },
+    { id: 'produccion', label: t('animals:profile.tabs.production'), icon: Scale },
+    ...(isMale ? [{ id: 'genetica', label: t('deps:tab_genetics'), icon: Dna }] : []),
+    { id: 'genealogia', label: t('animals:profile.tabs.genealogy'), icon: GitBranch },
+    { id: 'corrales', label: t('animals:profile.tabs.corrals'), icon: MapPin },
+    { id: 'documentos', label: t('animals:profile.tabs.documents'), icon: FileText },
+    { id: 'finanzas', label: t('animals:profile.tabs.finances'), icon: DollarSign },
   ];
 
   const renderTabContent = () => {
@@ -58,6 +63,8 @@ export function AnimalProfileTabs({ animal, onAnimalUpdate }: AnimalProfileTabsP
         return <AnimalVacunas animal={animal} onAnimalUpdate={onAnimalUpdate} />;
       case 'produccion':
         return <AnimalProduccion animal={animal} onAnimalUpdate={onAnimalUpdate} />;
+      case 'genetica':
+        return <AnimalDEPsSection animalId={animal.id} breed={animal.breed} />;
       case 'genealogia':
         return <AnimalGenealogia animal={animal} onAnimalUpdate={onAnimalUpdate} />;
       case 'corrales':
