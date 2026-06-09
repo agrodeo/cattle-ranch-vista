@@ -114,7 +114,13 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
       birth: 0.2,
       weaning: 0.3,
       final: 0.3,
-      ce: 0.2
+      ce: 0.2,
+      // Advanced DEP-only priorities — default 0 so behavior is unchanged
+      // unless the user opens the advanced panel and raises them.
+      milk: 0,
+      ribeye_area: 0,
+      marbling: 0,
+      docility: 0,
     },
     cow_per_bull_max: 25,
     max_bulls_per_corral: 1,
@@ -122,6 +128,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
     min_bull_age_months: 15,
     density_per_hectare: 1.5
   });
+  const [showAdvancedDeps, setShowAdvancedDeps] = useState(false);
 
   useEffect(() => {
     if (isOpen && !benchmarksLoading) {
