@@ -66,12 +66,9 @@ export async function buildAncestryMap(
     for (const id of frontier) {
       const row = known.get(id);
       if (!row) continue;
-      if (row.father_id && !known.has(row.father_id) || row.father_id) next.add(row.father_id!);
-      if (row.mother_id && !known.has(row.mother_id) || row.mother_id) next.add(row.mother_id!);
+      if (row.father_id) next.add(row.father_id);
+      if (row.mother_id) next.add(row.mother_id);
     }
-    // strip nulls just in case
-    next.delete(null as unknown as string);
-    next.delete(undefined as unknown as string);
     frontier = next;
   }
 
