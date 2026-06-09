@@ -1,10 +1,33 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  buildAncestryMap,
+  inbreedingCoefficient,
+  type AncestryMap,
+  type PedigreeAnimal,
+} from "../_shared/genetics.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// EPD traits we read from animal_deps.
+interface AnimalDEPs {
+  animal_id: string;
+  dep_peso_nacer: number | null; dep_peso_nacer_acc: number | null;
+  dep_peso_destete: number | null; dep_peso_destete_acc: number | null;
+  dep_peso_final: number | null; dep_peso_final_acc: number | null;
+  dep_circunferencia_escrotal: number | null; dep_circunferencia_escrotal_acc: number | null;
+  dep_leche: number | null; dep_leche_acc: number | null;
+  dep_largo_gestacion: number | null; dep_largo_gestacion_acc: number | null;
+  dep_area_ojo_bife: number | null; dep_area_ojo_bife_acc: number | null;
+  dep_grasa_dorsal: number | null; dep_grasa_dorsal_acc: number | null;
+  dep_grasa_cadera: number | null; dep_grasa_cadera_acc: number | null;
+  dep_grasa_intramuscular: number | null; dep_grasa_intramuscular_acc: number | null;
+  dep_docilidad: number | null; dep_docilidad_acc: number | null;
+}
+
 
 interface Animal {
   id: string;
