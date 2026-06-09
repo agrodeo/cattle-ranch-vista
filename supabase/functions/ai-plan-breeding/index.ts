@@ -292,8 +292,50 @@ serve(async (req) => {
 
     console.log(`Found ${eligibleCows.length} eligible cows and ${eligibleBulls.length} eligible bulls`);
 
+    // ---- Fetch EPDs (Phase 1) ---------------------------------------------
+    const allEligibleIds = [...eligibleCows, ...eligibleBulls].map(a => a.id);
+    const depsMap = new Map<string, AnimalDEPs>();
+    if (allEligibleIds.length > 0) {
+      const { data: depsRows, error: depsErr } = await supabaseClient
+        .from('animal_deps')
+        .select('*')
+        .eq('cabaña_id', cabanaId)
+        .in('animal_id', allEligibleIds);
+      if (depsErr) {
+        console.warn('animal_deps query failed (continuing without EPDs):', depsErr.message);
+      } else {
+        for (const r of (depsRows || []) as AnimalDEPs[]) depsMap.set(r.animal_id, r);
+      }
+      console.log(`Loaded EPDs for ${depsMap.size}/${allEligibleIds.length} animals`);
+    }
+
+    // ---- Build multi-generation ancestry map (Phase 2) --------------------
+    const pedigreeSeed: PedigreeAnimal[] = (animals || []).map((a: Animal) => ({
+      id: a.id,
+      father_id: a.father_id ?? null,
+      mother_id: a.mother_id ?? null,
+    }));
+    const ancestryMap: AncestryMap = await buildAncestryMap(
+      pedigreeSeed,
+      async (missingIds) => {
+        if (missingIds.length === 0) return [];
+        const { data, error } = await supabaseClient
+          .from('animals')
+          .select('id, father_id, mother_id')
+          .in('id', missingIds);
+        if (error) {
+          console.warn('Ancestor fetch failed:', error.message);
+          return [];
+        }
+        return (data || []) as PedigreeAnimal[];
+      },
+    );
+    console.log(`Ancestry map built for ${ancestryMap.size} animals`);
+
     // Calculate ALL possible pairings and score them
-    const { pairings, blockedCount } = calculateAllPairings(eligibleCows, eligibleBulls, benchmarks, weights);
+    const { pairings, blockedCount } = calculateAllPairings(
+      eligibleCows, eligibleBulls, benchmarks, weights, depsMap, ancestryMap,
+    );
 
     console.log(`Generated ${pairings.length} pairings, ${blockedCount} blocked`);
 
