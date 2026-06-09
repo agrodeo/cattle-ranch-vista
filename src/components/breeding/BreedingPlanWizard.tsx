@@ -366,6 +366,49 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
               </CardContent>
             </Card>
 
+            <Card>
+              <CardHeader className="cursor-pointer" onClick={() => setShowAdvancedDeps(v => !v)}>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Settings className="h-4 w-4" />
+                  {t('breeding:advancedDepPriorities', 'Avanzado · Prioridades DEP')}
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {showAdvancedDeps ? '−' : '+'}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              {showAdvancedDeps && (
+                <CardContent className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    {t('breeding:advancedDepHelp', 'Pesos opcionales para rasgos genéticos adicionales (DEPs). Por defecto en 0 — sólo se usan si los subís.')}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { key: 'milk', label: t('breeding:depMilk', 'Leche') },
+                      { key: 'ribeye_area', label: t('breeding:depRibeye', 'Área ojo bife') },
+                      { key: 'marbling', label: t('breeding:depMarbling', 'Marmoreo') },
+                      { key: 'docility', label: t('breeding:depDocility', 'Docilidad') },
+                    ].map(({ key, label }) => (
+                      <div key={key}>
+                        <Label>{label}</Label>
+                        <Input
+                          type="number"
+                          step="0.05"
+                          min="0"
+                          max="1"
+                          value={(config.weights as any)[key] ?? 0}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            weights: { ...prev.weights, [key]: Number(e.target.value) || 0 } as any,
+                          }))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
+
             <div className="flex gap-2">
               <Button onClick={onClose} variant="outline">
                 {t('common:cancel')}
