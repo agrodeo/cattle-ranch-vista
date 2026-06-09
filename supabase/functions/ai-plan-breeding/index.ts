@@ -91,6 +91,32 @@ interface Pairing {
     weaning_weight?: number;
     final_weight?: number;
     ce_cm?: number;
+    milk?: number;
+    ribeye_area?: number;
+    marbling?: number;
+    docility?: number;
+    // per-trait confidence 0..1 (EPD accuracy when available, else heuristic).
+    confidence?: {
+      birth_weight?: number;
+      weaning_weight?: number;
+      final_weight?: number;
+      ce_cm?: number;
+      milk?: number;
+      ribeye_area?: number;
+      marbling?: number;
+      docility?: number;
+    };
+    // 'epd' when both parents had a DEP, 'epd_partial' when one, 'phenotype' otherwise.
+    source?: {
+      birth_weight?: 'epd' | 'epd_partial' | 'phenotype';
+      weaning_weight?: 'epd' | 'epd_partial' | 'phenotype';
+      final_weight?: 'epd' | 'epd_partial' | 'phenotype';
+      ce_cm?: 'epd' | 'epd_partial' | 'phenotype';
+      milk?: 'epd' | 'epd_partial' | 'phenotype';
+      ribeye_area?: 'epd' | 'epd_partial' | 'phenotype';
+      marbling?: 'epd' | 'epd_partial' | 'phenotype';
+      docility?: 'epd' | 'epd_partial' | 'phenotype';
+    };
   };
   match_quality: 'excellent' | 'good' | 'acceptable' | 'poor';
   explain: string;
@@ -108,6 +134,7 @@ interface Pairing {
     };
   };
 }
+
 
 interface BreedingPlan {
   season: string;
