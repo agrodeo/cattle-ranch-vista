@@ -59,7 +59,7 @@ export function ArtificialInseminationDialog({
   selectedAnimals,
   onSuccess,
 }: ArtificialInseminationDialogProps) {
-  const { t } = useTranslation(['activities', 'common']);
+  const { t } = useTranslation(['activities', 'common', 'semenInventory']);
   const [date, setDate] = useState<Date>();
   const [bullName, setBullName] = useState("");
   const [bullId, setBullId] = useState("");
