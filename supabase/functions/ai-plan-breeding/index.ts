@@ -820,13 +820,26 @@ function generateDetailedExplanation(
     inbreeding_risk = `❌ Parentesco alto (${(F * 100).toFixed(1)}%) - No recomendado`;
   }
 
+  const tag = (key: string) => {
+    const src = predicted?.source?.[key];
+    const acc = predicted?.confidence?.[key];
+    if (src === 'epd') return ` · DEP acc ${acc != null ? acc.toFixed(2) : '?'}`;
+    if (src === 'epd_partial') return ` · DEP parcial acc ${acc != null ? acc.toFixed(2) : '?'}`;
+    if (src === 'phenotype') return ` · estimado fenotipo`;
+    return '';
+  };
   const predicted_performance = [
-    predicted.birth_weight ? `Peso nacer: ${predicted.birth_weight.toFixed(1)}kg (${scores.birth_weight_score}pts)` : null,
-    predicted.weaning_weight ? `Peso destete: ${predicted.weaning_weight.toFixed(1)}kg (${scores.weaning_weight_score}pts)` : null,
-    predicted.final_weight ? `Peso final: ${predicted.final_weight.toFixed(1)}kg (${scores.final_weight_score}pts)` : null,
-    predicted.ce_cm ? `CE: ${predicted.ce_cm.toFixed(1)}cm (${scores.ce_score}pts)` : null,
+    predicted.birth_weight ? `Peso nacer: ${predicted.birth_weight.toFixed(1)}kg (${scores.birth_weight_score}pts)${tag('birth_weight')}` : null,
+    predicted.weaning_weight ? `Peso destete: ${predicted.weaning_weight.toFixed(1)}kg (${scores.weaning_weight_score}pts)${tag('weaning_weight')}` : null,
+    predicted.final_weight ? `Peso final: ${predicted.final_weight.toFixed(1)}kg (${scores.final_weight_score}pts)${tag('final_weight')}` : null,
+    predicted.ce_cm ? `CE: ${predicted.ce_cm.toFixed(1)}cm (${scores.ce_score}pts)${tag('ce_cm')}` : null,
+    typeof predicted.milk === 'number' ? `Leche DEP: ${predicted.milk.toFixed(1)}${tag('milk')}` : null,
+    typeof predicted.ribeye_area === 'number' ? `Área ojo bife DEP: ${predicted.ribeye_area.toFixed(2)}${tag('ribeye_area')}` : null,
+    typeof predicted.marbling === 'number' ? `Marmoreo DEP: ${predicted.marbling.toFixed(2)}${tag('marbling')}` : null,
+    typeof predicted.docility === 'number' ? `Docilidad DEP: ${predicted.docility.toFixed(1)}${tag('docility')}` : null,
     !hornMatch ? `⚠️ Cuernos no coincide con preferencia` : null
   ].filter(Boolean).join(" | ");
+
 
   let recommendation = "";
   if (score >= 85 && F < 0.03) {
