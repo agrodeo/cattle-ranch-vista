@@ -29,6 +29,7 @@ import breedingEs from './locales/es/breeding.json';
 import legalEs from './locales/es/legal.json';
 import onboardingEs from './locales/es/onboarding.json';
 import depsEs from './locales/es/deps.json';
+import semenInventoryEs from './locales/es/semenInventory.json';
 
 import commonEn from './locales/en/common.json';
 import menuEn from './locales/en/menu.json';
@@ -49,6 +50,7 @@ import breedingEn from './locales/en/breeding.json';
 import legalEn from './locales/en/legal.json';
 import onboardingEn from './locales/en/onboarding.json';
 import depsEn from './locales/en/deps.json';
+import semenInventoryEn from './locales/en/semenInventory.json';
 
 import commonPt from './locales/pt/common.json';
 import menuPt from './locales/pt/menu.json';
@@ -69,6 +71,7 @@ import breedingPt from './locales/pt/breeding.json';
 import legalPt from './locales/pt/legal.json';
 import onboardingPt from './locales/pt/onboarding.json';
 import depsPt from './locales/pt/deps.json';
+import semenInventoryPt from './locales/pt/semenInventory.json';
 
 // Initialize dayjs plugins
 dayjs.extend(relativeTime);
@@ -119,6 +122,7 @@ const resources = {
     legal: legalEs,
     onboarding: onboardingEs,
     deps: depsEs,
+    semenInventory: semenInventoryEs,
   },
   en: {
     common: commonEn,
@@ -140,6 +144,7 @@ const resources = {
     legal: legalEn,
     onboarding: onboardingEn,
     deps: depsEn,
+    semenInventory: semenInventoryEn,
   },
   pt: {
     common: commonPt,
@@ -161,6 +166,7 @@ const resources = {
     legal: legalPt,
     onboarding: onboardingPt,
     deps: depsPt,
+    semenInventory: semenInventoryPt,
   },
 };
 
@@ -171,7 +177,7 @@ i18n
     resources,
     fallbackLng: 'es',
     defaultNS: 'common',
-    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal', 'onboarding', 'deps'],
+    ns: ['common', 'menu', 'animals', 'activities', 'corrals', 'dashboard', 'reports', 'finance', 'mortality', 'auth', 'errors', 'forms', 'settings', 'subscription', 'reproductive', 'breeding', 'legal', 'onboarding', 'deps', 'semenInventory'],
     
     detection: {
       order: ['localStorage', 'querystring', 'navigator'],
