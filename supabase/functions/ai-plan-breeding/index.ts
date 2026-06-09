@@ -394,64 +394,64 @@ function calculateAgeMonths(birthDate: string, currentDate: Date): number {
   return Math.floor(diffDays / 30.44);
 }
 
-function calculateInbreedingCoefficient(cow: Animal, bull: Animal): { F: number; blocked: boolean } {
-  if (!cow.father_id && !cow.mother_id && !bull.father_id && !bull.mother_id) {
-    return { F: 0, blocked: false };
-  }
-
-  // Direct parent-offspring relationships (blocked)
-  if (cow.father_id === bull.id || cow.mother_id === bull.id || 
-      bull.father_id === cow.id || bull.mother_id === cow.id) {
+/**
+ * Hard-block matings closer than first cousins (F >= 0.0625).
+ * Lineal blood relatives and full/half sibs are blocked by the F threshold,
+ * but we also keep an explicit direct-parent check as a safety net.
+ */
+function inbreedingForPairing(
+  cow: Animal,
+  bull: Animal,
+  ancestry: AncestryMap,
+): { F: number; blocked: boolean } {
+  // Direct parent-offspring safety net.
+  if (
+    cow.father_id === bull.id || cow.mother_id === bull.id ||
+    bull.father_id === cow.id || bull.mother_id === cow.id
+  ) {
     return { F: 0.25, blocked: true };
   }
-
-  // Full siblings (blocked)
-  if (cow.father_id && bull.father_id && cow.father_id === bull.father_id &&
-      cow.mother_id && bull.mother_id && cow.mother_id === bull.mother_id) {
-    return { F: 0.25, blocked: true };
-  }
-
-  // Half siblings (blocked)
-  if ((cow.father_id && bull.father_id && cow.father_id === bull.father_id) ||
-      (cow.mother_id && bull.mother_id && cow.mother_id === bull.mother_id)) {
-    return { F: 0.125, blocked: true };
-  }
-
-  // Estimate cousin relationships
-  let estimatedF = 0;
-  if (cow.father_id === bull.father_id || cow.mother_id === bull.mother_id) {
-    estimatedF = 0.0625;
-  }
-
-  return { F: estimatedF, blocked: estimatedF >= 0.0625 };
+  const F = inbreedingCoefficient(cow.id, bull.id, ancestry);
+  return { F, blocked: F >= 0.0625 };
 }
 
 function calculateAllPairings(
-  cows: Animal[], 
-  bulls: Animal[], 
+  cows: Animal[],
+  bulls: Animal[],
   benchmarks: Benchmark,
-  weights: any
+  weights: any,
+  depsMap: Map<string, AnimalDEPs>,
+  ancestry: AncestryMap,
 ): { pairings: Pairing[]; blockedCount: number } {
   const pairings: Pairing[] = [];
   let blockedCount = 0;
 
+  let debuggedOne = false;
+
   // Analyze ALL possible cow × bull combinations
   for (const cow of cows) {
     for (const bull of bulls) {
-      const { F, blocked } = calculateInbreedingCoefficient(cow, bull);
-      
+      const { F, blocked } = inbreedingForPairing(cow, bull, ancestry);
+
       if (blocked) {
         blockedCount++;
         continue;
       }
 
-      const predicted = predictOffspringTraits(cow, bull);
+      const cowDEPs = depsMap.get(cow.id);
+      const bullDEPs = depsMap.get(bull.id);
+      const predicted = predictOffspringTraits(cow, bull, benchmarks, cowDEPs, bullDEPs);
       const scores = calculateDetailedScores(predicted, benchmarks, bull);
       const hornMatch = checkHornCompatibility(cow, bull, benchmarks.horn_preference);
-      
-      // Calculate weighted score
-      const weightedScore = calculateWeightedScore(scores, weights, hornMatch);
+
+      // Calculate weighted score (down-weighted by per-trait confidence).
+      const weightedScore = calculateWeightedScore(scores, weights, hornMatch, predicted);
       const matchQuality = getMatchQuality(weightedScore);
+
+      if (!debuggedOne && cowDEPs && bullDEPs) {
+        console.log('[EPD debug] cow', cow.id, 'bull', bull.id, 'predicted', predicted);
+        debuggedOne = true;
+      }
 
       const pairing: Pairing = {
         cow_id: cow.id,
@@ -474,40 +474,153 @@ function calculateAllPairings(
   }
 
   // Sort by score descending
-  return { 
+  return {
     pairings: pairings.sort((a, b) => b.score - a.score),
-    blockedCount 
+    blockedCount
   };
 }
 
-function predictOffspringTraits(cow: Animal, bull: Animal): any {
-  const prediction: any = {};
+// ---------- EPD-aware offspring prediction (Phase 1) -----------------------
+//
+// EPDs (DEPs) are deviations vs the breed average for a trait. For one mating
+// we estimate the offspring EPD as the parent average:
+//   offspring_EPD ≈ (sire_EPD + dam_EPD) / 2
+// To produce a phenotype-like predicted value comparable to benchmarks we add
+// the EPD to a baseline (benchmark "good" tier acts as the breed reference).
+// Confidence is the blended accuracy; halved when only one parent has a DEP.
 
-  // Birth weight prediction (weighted: 60% bull, 40% cow for heritability)
+interface PredictedTrait { value: number; confidence: number; source: 'epd' | 'epd_partial' | 'phenotype'; }
+
+function epdPredict(
+  sireDep: number | null | undefined,
+  sireAcc: number | null | undefined,
+  damDep: number | null | undefined,
+  damAcc: number | null | undefined,
+  baseline: number,
+): PredictedTrait | null {
+  const hasS = sireDep !== null && sireDep !== undefined;
+  const hasD = damDep !== null && damDep !== undefined;
+  const sAcc = sireAcc ?? 0;
+  const dAcc = damAcc ?? 0;
+  if (hasS && hasD) {
+    return {
+      value: baseline + (sireDep! + damDep!) / 2,
+      confidence: Math.min(1, (sAcc + dAcc) / 2),
+      source: 'epd',
+    };
+  }
+  if (hasS) {
+    return { value: baseline + sireDep!, confidence: Math.min(1, sAcc / 2), source: 'epd_partial' };
+  }
+  if (hasD) {
+    return { value: baseline + damDep!, confidence: Math.min(1, dAcc / 2), source: 'epd_partial' };
+  }
+  return null;
+}
+
+function predictOffspringTraits(
+  cow: Animal,
+  bull: Animal,
+  benchmarks: Benchmark,
+  cowDeps?: AnimalDEPs,
+  bullDeps?: AnimalDEPs,
+): any {
+  const prediction: any = { confidence: {}, source: {} };
+
+  const put = (key: string, t: PredictedTrait | null, fallback?: { value: number; confidence: number }) => {
+    if (t) {
+      prediction[key] = t.value;
+      prediction.confidence[key] = t.confidence;
+      prediction.source[key] = t.source;
+    } else if (fallback) {
+      prediction[key] = fallback.value;
+      prediction.confidence[key] = fallback.confidence;
+      prediction.source[key] = 'phenotype';
+    }
+  };
+
+  // --- Birth weight ---
+  const bwEpd = epdPredict(
+    bullDeps?.dep_peso_nacer, bullDeps?.dep_peso_nacer_acc,
+    cowDeps?.dep_peso_nacer, cowDeps?.dep_peso_nacer_acc,
+    benchmarks.birth_weight_good,
+  );
+  let bwFallback: { value: number; confidence: number } | undefined;
   if (cow.peso_nacimiento || bull.peso_nacimiento) {
-    const cowWeight = cow.peso_nacimiento || 32;
-    const bullWeight = bull.peso_nacimiento || 35;
-    prediction.birth_weight = cowWeight * 0.4 + bullWeight * 0.6;
+    const cowW = cow.peso_nacimiento ?? 32;
+    const bullW = bull.peso_nacimiento ?? 35;
+    bwFallback = { value: cowW * 0.4 + bullW * 0.6, confidence: 0.35 };
   }
+  put('birth_weight', bwEpd, bwFallback);
 
-  // Weaning weight prediction (50/50 split)
+  // --- Weaning weight ---
+  const wwEpd = epdPredict(
+    bullDeps?.dep_peso_destete, bullDeps?.dep_peso_destete_acc,
+    cowDeps?.dep_peso_destete, cowDeps?.dep_peso_destete_acc,
+    benchmarks.weaning_weight_good,
+  );
+  let wwFallback: { value: number; confidence: number } | undefined;
   if (cow.peso_destete || bull.peso_destete) {
-    const cowWeight = cow.peso_destete || 180;
-    const bullWeight = bull.peso_destete || 200;
-    prediction.weaning_weight = (cowWeight + bullWeight) / 2;
+    const cowW = cow.peso_destete ?? 180;
+    const bullW = bull.peso_destete ?? 200;
+    wwFallback = { value: (cowW + bullW) / 2, confidence: 0.35 };
   }
+  put('weaning_weight', wwEpd, wwFallback);
 
-  // Final weight prediction (55% bull genetic influence)
+  // --- Final weight ---
+  const fwEpd = epdPredict(
+    bullDeps?.dep_peso_final, bullDeps?.dep_peso_final_acc,
+    cowDeps?.dep_peso_final, cowDeps?.dep_peso_final_acc,
+    benchmarks.final_weight_good,
+  );
+  let fwFallback: { value: number; confidence: number } | undefined;
   if (cow.peso_final || bull.peso_final) {
-    const cowWeight = cow.peso_final || 400;
-    const bullWeight = bull.peso_final || 500;
-    prediction.final_weight = cowWeight * 0.45 + bullWeight * 0.55;
+    const cowW = cow.peso_final ?? 400;
+    const bullW = bull.peso_final ?? 500;
+    fwFallback = { value: cowW * 0.45 + bullW * 0.55, confidence: 0.35 };
   }
+  put('final_weight', fwEpd, fwFallback);
 
-  // CE prediction (direct from bull for male offspring potential)
+  // --- Scrotal circumference ---
+  const ceEpd = epdPredict(
+    bullDeps?.dep_circunferencia_escrotal, bullDeps?.dep_circunferencia_escrotal_acc,
+    cowDeps?.dep_circunferencia_escrotal, cowDeps?.dep_circunferencia_escrotal_acc,
+    benchmarks.scrotal_circumference_good,
+  );
+  let ceFallback: { value: number; confidence: number } | undefined;
   if (bull.circunferencia_escrotal) {
-    prediction.ce_cm = bull.circunferencia_escrotal;
+    ceFallback = { value: bull.circunferencia_escrotal, confidence: 0.4 };
   }
+  put('ce_cm', ceEpd, ceFallback);
+
+  // --- Additional EPD-only traits (displayed; weighted only if user opts in)
+  const milk = epdPredict(
+    bullDeps?.dep_leche, bullDeps?.dep_leche_acc,
+    cowDeps?.dep_leche, cowDeps?.dep_leche_acc,
+    0,
+  );
+  put('milk', milk);
+
+  const ribeye = epdPredict(
+    bullDeps?.dep_area_ojo_bife, bullDeps?.dep_area_ojo_bife_acc,
+    cowDeps?.dep_area_ojo_bife, cowDeps?.dep_area_ojo_bife_acc,
+    0,
+  );
+  put('ribeye_area', ribeye);
+
+  const marbling = epdPredict(
+    bullDeps?.dep_grasa_intramuscular, bullDeps?.dep_grasa_intramuscular_acc,
+    cowDeps?.dep_grasa_intramuscular, cowDeps?.dep_grasa_intramuscular_acc,
+    0,
+  );
+  put('marbling', marbling);
+
+  const docility = epdPredict(
+    bullDeps?.dep_docilidad, bullDeps?.dep_docilidad_acc,
+    cowDeps?.dep_docilidad, cowDeps?.dep_docilidad_acc,
+    0,
+  );
+  put('docility', docility);
 
   return prediction;
 }
@@ -576,8 +689,23 @@ function calculateDetailedScores(predicted: any, benchmarks: Benchmark, bull: An
     }
   }
 
+  // EPD-only traits scored as "higher is better" vs zero (deviation from breed avg)
+  if (typeof predicted.milk === 'number') {
+    scores.milk_score = predicted.milk >= 0 ? Math.min(100, 60 + predicted.milk * 5) : Math.max(0, 60 + predicted.milk * 5);
+  }
+  if (typeof predicted.ribeye_area === 'number') {
+    scores.ribeye_area_score = predicted.ribeye_area >= 0 ? Math.min(100, 60 + predicted.ribeye_area * 10) : Math.max(0, 60 + predicted.ribeye_area * 10);
+  }
+  if (typeof predicted.marbling === 'number') {
+    scores.marbling_score = predicted.marbling >= 0 ? Math.min(100, 60 + predicted.marbling * 20) : Math.max(0, 60 + predicted.marbling * 20);
+  }
+  if (typeof predicted.docility === 'number') {
+    scores.docility_score = predicted.docility >= 0 ? Math.min(100, 60 + predicted.docility * 5) : Math.max(0, 60 + predicted.docility * 5);
+  }
+
   return scores;
 }
+
 
 function checkHornCompatibility(cow: Animal, bull: Animal, preference: string): boolean {
   if (preference === 'any') return true;
