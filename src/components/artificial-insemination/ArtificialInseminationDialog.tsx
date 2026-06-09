@@ -347,6 +347,7 @@ export function ArtificialInseminationDialog({
     setBullId("");
     setIsPregnant("");
     setNotes("");
+    setSemenInventoryId("");
     setShowBullDetails(false);
     
     // Reset bull detail fields
