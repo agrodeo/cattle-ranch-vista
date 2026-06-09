@@ -15,6 +15,7 @@ import { CalendarIcon, ChevronDown, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useSemenInventory } from "@/hooks/useSemenInventory";
 
 interface Animal {
   id: string;
@@ -90,7 +91,11 @@ export function ArtificialInseminationDialog({
   
   // Validation states
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  
+
+  // Phase 3: optional link to semen inventory
+  const [semenInventoryId, setSemenInventoryId] = useState<string>("");
+  const { items: semenItems, decrementDoses } = useSemenInventory();
+
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
 
