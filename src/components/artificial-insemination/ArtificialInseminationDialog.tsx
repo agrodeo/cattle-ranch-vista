@@ -268,6 +268,20 @@ export function ArtificialInseminationDialog({
         // Note: We don't use this ID for the foreign key in artificial_inseminations
       }
 
+      // Phase 3: validate semen stock before inserting
+      if (semenInventoryId) {
+        const inv = semenItems.find(i => i.id === semenInventoryId);
+        if (!inv || inv.doses_remaining < selectedAnimals.length) {
+          toast({
+            title: t('activities:artificialInsemination.errorTitle'),
+            description: 'Insufficient doses in selected straw',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       console.log("💉 Preparando datos de inseminación...");
       const inseminations = selectedAnimals.map((animal) => ({
         female_id: animal.id,
@@ -278,6 +292,7 @@ export function ArtificialInseminationDialog({
         notes: notes || null,
         cabaña_id: currentUser.cabañaId,
         created_by: currentUser?.id,
+        semen_inventory_id: semenInventoryId || null,
       }));
 
       console.log("📊 Datos de inseminación a insertar:", inseminations);
@@ -285,12 +300,22 @@ export function ArtificialInseminationDialog({
 
       const { error: insertError } = await supabase
         .from("artificial_inseminations")
-        .insert(inseminations);
+        .insert(inseminations as any);
 
       if (insertError) {
         console.error("❌ Error insertando inseminaciones:", insertError);
         throw insertError;
       }
+
+      // Decrement inventory after successful insert
+      if (semenInventoryId) {
+        try {
+          await decrementDoses(semenInventoryId, selectedAnimals.length);
+        } catch (e) {
+          console.warn('Inventory decrement failed:', e);
+        }
+      }
+
 
       console.log("✅ Inseminaciones registradas exitosamente");
 
