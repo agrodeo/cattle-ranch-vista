@@ -672,6 +672,7 @@ export type Database = {
           insemination_date: string
           is_pregnant: boolean | null
           notes: string | null
+          semen_inventory_id: string | null
           updated_at: string
         }
         Insert: {
@@ -685,6 +686,7 @@ export type Database = {
           insemination_date: string
           is_pregnant?: boolean | null
           notes?: string | null
+          semen_inventory_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -698,6 +700,7 @@ export type Database = {
           insemination_date?: string
           is_pregnant?: boolean | null
           notes?: string | null
+          semen_inventory_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -713,6 +716,13 @@ export type Database = {
             columns: ["female_id"]
             isOneToOne: false
             referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artificial_inseminations_semen_inventory_id_fkey"
+            columns: ["semen_inventory_id"]
+            isOneToOne: false
+            referencedRelation: "semen_inventory"
             referencedColumns: ["id"]
           },
         ]
@@ -2405,6 +2415,80 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      semen_inventory: {
+        Row: {
+          batch_code: string | null
+          bull_id: string | null
+          bull_manual: Json | null
+          cabaña_id: string
+          cane_position: string | null
+          canister: string | null
+          centro_semen: string | null
+          cost_per_dose: number | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          doses_remaining: number
+          doses_total: number
+          id: string
+          notes: string | null
+          purchase_date: string | null
+          straw_type: string
+          tank: string | null
+          updated_at: string
+        }
+        Insert: {
+          batch_code?: string | null
+          bull_id?: string | null
+          bull_manual?: Json | null
+          cabaña_id: string
+          cane_position?: string | null
+          canister?: string | null
+          centro_semen?: string | null
+          cost_per_dose?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          doses_remaining?: number
+          doses_total?: number
+          id?: string
+          notes?: string | null
+          purchase_date?: string | null
+          straw_type?: string
+          tank?: string | null
+          updated_at?: string
+        }
+        Update: {
+          batch_code?: string | null
+          bull_id?: string | null
+          bull_manual?: Json | null
+          cabaña_id?: string
+          cane_position?: string | null
+          canister?: string | null
+          centro_semen?: string | null
+          cost_per_dose?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          doses_remaining?: number
+          doses_total?: number
+          id?: string
+          notes?: string | null
+          purchase_date?: string | null
+          straw_type?: string
+          tank?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "semen_inventory_bull_id_fkey"
+            columns: ["bull_id"]
+            isOneToOne: false
+            referencedRelation: "bulls"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sistema_credenciales: {
         Row: {
