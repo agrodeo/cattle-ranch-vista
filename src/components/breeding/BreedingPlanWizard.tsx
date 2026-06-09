@@ -114,7 +114,13 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
       birth: 0.2,
       weaning: 0.3,
       final: 0.3,
-      ce: 0.2
+      ce: 0.2,
+      // Advanced DEP-only priorities — default 0 so behavior is unchanged
+      // unless the user opens the advanced panel and raises them.
+      milk: 0,
+      ribeye_area: 0,
+      marbling: 0,
+      docility: 0,
     },
     cow_per_bull_max: 25,
     max_bulls_per_corral: 1,
@@ -122,6 +128,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
     min_bull_age_months: 15,
     density_per_hectare: 1.5
   });
+  const [showAdvancedDeps, setShowAdvancedDeps] = useState(false);
 
   useEffect(() => {
     if (isOpen && !benchmarksLoading) {
@@ -358,6 +365,49 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader className="cursor-pointer" onClick={() => setShowAdvancedDeps(v => !v)}>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Settings className="h-4 w-4" />
+                  {t('breeding:advancedDepPriorities', 'Avanzado · Prioridades DEP')}
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {showAdvancedDeps ? '−' : '+'}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              {showAdvancedDeps && (
+                <CardContent className="space-y-3">
+                  <p className="text-xs text-muted-foreground">
+                    {t('breeding:advancedDepHelp', 'Pesos opcionales para rasgos genéticos adicionales (DEPs). Por defecto en 0 — sólo se usan si los subís.')}
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                      { key: 'milk', label: t('breeding:depMilk', 'Leche') },
+                      { key: 'ribeye_area', label: t('breeding:depRibeye', 'Área ojo bife') },
+                      { key: 'marbling', label: t('breeding:depMarbling', 'Marmoreo') },
+                      { key: 'docility', label: t('breeding:depDocility', 'Docilidad') },
+                    ].map(({ key, label }) => (
+                      <div key={key}>
+                        <Label>{label}</Label>
+                        <Input
+                          type="number"
+                          step="0.05"
+                          min="0"
+                          max="1"
+                          value={(config.weights as any)[key] ?? 0}
+                          onChange={(e) => setConfig(prev => ({
+                            ...prev,
+                            weights: { ...prev.weights, [key]: Number(e.target.value) || 0 } as any,
+                          }))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
+
 
             <div className="flex gap-2">
               <Button onClick={onClose} variant="outline">

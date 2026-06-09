@@ -15,6 +15,7 @@ import { CalendarIcon, ChevronDown, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+import { useSemenInventory } from "@/hooks/useSemenInventory";
 
 interface Animal {
   id: string;
@@ -58,7 +59,7 @@ export function ArtificialInseminationDialog({
   selectedAnimals,
   onSuccess,
 }: ArtificialInseminationDialogProps) {
-  const { t } = useTranslation(['activities', 'common']);
+  const { t } = useTranslation(['activities', 'common', 'semenInventory']);
   const [date, setDate] = useState<Date>();
   const [bullName, setBullName] = useState("");
   const [bullId, setBullId] = useState("");
@@ -90,7 +91,11 @@ export function ArtificialInseminationDialog({
   
   // Validation states
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  
+
+  // Phase 3: optional link to semen inventory
+  const [semenInventoryId, setSemenInventoryId] = useState<string>("");
+  const { items: semenItems, decrementDoses } = useSemenInventory();
+
   const { toast } = useToast();
   const { currentUser } = useSupabaseAuth();
 
@@ -263,6 +268,20 @@ export function ArtificialInseminationDialog({
         // Note: We don't use this ID for the foreign key in artificial_inseminations
       }
 
+      // Phase 3: validate semen stock before inserting
+      if (semenInventoryId) {
+        const inv = semenItems.find(i => i.id === semenInventoryId);
+        if (!inv || inv.doses_remaining < selectedAnimals.length) {
+          toast({
+            title: t('activities:artificialInsemination.errorTitle'),
+            description: 'Insufficient doses in selected straw',
+            variant: 'destructive',
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       console.log("💉 Preparando datos de inseminación...");
       const inseminations = selectedAnimals.map((animal) => ({
         female_id: animal.id,
@@ -273,6 +292,7 @@ export function ArtificialInseminationDialog({
         notes: notes || null,
         cabaña_id: currentUser.cabañaId,
         created_by: currentUser?.id,
+        semen_inventory_id: semenInventoryId || null,
       }));
 
       console.log("📊 Datos de inseminación a insertar:", inseminations);
@@ -280,12 +300,22 @@ export function ArtificialInseminationDialog({
 
       const { error: insertError } = await supabase
         .from("artificial_inseminations")
-        .insert(inseminations);
+        .insert(inseminations as any);
 
       if (insertError) {
         console.error("❌ Error insertando inseminaciones:", insertError);
         throw insertError;
       }
+
+      // Decrement inventory after successful insert
+      if (semenInventoryId) {
+        try {
+          await decrementDoses(semenInventoryId, selectedAnimals.length);
+        } catch (e) {
+          console.warn('Inventory decrement failed:', e);
+        }
+      }
+
 
       console.log("✅ Inseminaciones registradas exitosamente");
 
@@ -317,6 +347,7 @@ export function ArtificialInseminationDialog({
     setBullId("");
     setIsPregnant("");
     setNotes("");
+    setSemenInventoryId("");
     setShowBullDetails(false);
     
     // Reset bull detail fields
@@ -791,6 +822,24 @@ export function ArtificialInseminationDialog({
               Este campo es opcional y se puede completar posteriormente desde otra actividad.
             </p>
           </div>
+
+          {/* Phase 3: optional link to semen inventory */}
+          {semenItems.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-base font-medium">{t('semenInventory:useFromInventory')}</Label>
+              <Select value={semenInventoryId || "__none__"} onValueChange={(v) => setSemenInventoryId(v === "__none__" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder={t('semenInventory:selectInventory')} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">—</SelectItem>
+                  {semenItems.filter(i => i.doses_remaining > 0).map(i => (
+                    <SelectItem key={i.id} value={i.id}>
+                      {(i.batch_code ? `${i.batch_code} · ` : '') + t('semenInventory:remainingOf', { remaining: i.doses_remaining, total: i.doses_total })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Notes */}
           <div className="space-y-3">
