@@ -725,36 +725,46 @@ function checkHornCompatibility(cow: Animal, bull: Animal, preference: string): 
   return true;
 }
 
-function calculateWeightedScore(scores: any, weights: any, hornMatch: boolean): number {
+function calculateWeightedScore(scores: any, weights: any, hornMatch: boolean, predicted?: any): number {
   let total = 0;
   let totalWeight = 0;
 
-  if (scores.birth_weight_score > 0) {
-    total += scores.birth_weight_score * (weights.birth || 0.2);
-    totalWeight += weights.birth || 0.2;
-  }
-  if (scores.weaning_weight_score > 0) {
-    total += scores.weaning_weight_score * (weights.weaning || 0.3);
-    totalWeight += weights.weaning || 0.3;
-  }
-  if (scores.final_weight_score > 0) {
-    total += scores.final_weight_score * (weights.final || 0.3);
-    totalWeight += weights.final || 0.3;
-  }
-  if (scores.ce_score > 0) {
-    total += scores.ce_score * (weights.ce || 0.2);
-    totalWeight += weights.ce || 0.2;
-  }
+  // Each contribution is down-weighted by its prediction confidence (0..1).
+  // Phenotype fallbacks have lower confidence than EPD-based predictions, so
+  // a high-accuracy EPD moves the score more than a guess.
+  const conf = (key: string, fallback = 0.5) => {
+    const c = predicted?.confidence?.[key];
+    if (typeof c === 'number') return Math.max(0.1, Math.min(1, c));
+    return fallback;
+  };
+
+  const add = (rawScore: number, weight: number, confidence: number) => {
+    if (!rawScore) return;
+    const w = weight * confidence;
+    total += rawScore * w;
+    totalWeight += w;
+  };
+
+  add(scores.birth_weight_score, weights.birth ?? 0.2, conf('birth_weight'));
+  add(scores.weaning_weight_score, weights.weaning ?? 0.3, conf('weaning_weight'));
+  add(scores.final_weight_score, weights.final ?? 0.3, conf('final_weight'));
+  add(scores.ce_score, weights.ce ?? 0.2, conf('ce_cm'));
+
+  // Optional EPD-only traits (default weight 0 — only score if user opted in).
+  add(scores.milk_score, weights.milk ?? 0, conf('milk'));
+  add(scores.ribeye_area_score, weights.ribeye_area ?? 0, conf('ribeye_area'));
+  add(scores.marbling_score, weights.marbling ?? 0, conf('marbling'));
+  add(scores.docility_score, weights.docility ?? 0, conf('docility'));
 
   let score = totalWeight > 0 ? total / totalWeight : 50;
-  
-  // Apply horn preference bonus/penalty
+
   if (!hornMatch) {
     score *= 0.9; // 10% penalty for horn mismatch
   }
 
   return Math.round(score);
 }
+
 
 function getMatchQuality(score: number): 'excellent' | 'good' | 'acceptable' | 'poor' {
   if (score >= 85) return 'excellent';
