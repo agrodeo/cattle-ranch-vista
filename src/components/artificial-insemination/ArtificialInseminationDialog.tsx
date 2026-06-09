@@ -823,6 +823,24 @@ export function ArtificialInseminationDialog({
             </p>
           </div>
 
+          {/* Phase 3: optional link to semen inventory */}
+          {semenItems.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-base font-medium">{t('semenInventory:useFromInventory')}</Label>
+              <Select value={semenInventoryId || "__none__"} onValueChange={(v) => setSemenInventoryId(v === "__none__" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder={t('semenInventory:selectInventory')} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">—</SelectItem>
+                  {semenItems.filter(i => i.doses_remaining > 0).map(i => (
+                    <SelectItem key={i.id} value={i.id}>
+                      {(i.batch_code ? `${i.batch_code} · ` : '') + t('semenInventory:remainingOf', { remaining: i.doses_remaining, total: i.doses_total })}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Notes */}
           <div className="space-y-3">
             <Label htmlFor="notes" className="text-base font-medium">
