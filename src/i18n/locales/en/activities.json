@@ -769,9 +769,15 @@
     "invalidFile": "Invalid file",
     "selectExcelOrCSV": "Please select an Excel (.xlsx, .xls) or CSV file",
     "errorProcessing": "Could not process file",
-    "requiredIdentifier": "ID/Tag or Electronic Tag required",
+    "requiredIdentifier": "ID/Tag or Electronic Tag (EID) required",
     "weightMustBePositive": "Weight must be greater than 0 kg",
-    "animalNotFound": "Animal not found in system"
+    "animalNotFound": "Animal not found in system",
+    "ambiguousMatch": "Ambiguous match: EID matches more than one animal",
+    "matchedByEid": "matched by EID",
+    "matchedByVisual": "matched by visual tag",
+    "eidColumn": "EID / caravana_electronica (optional if id_tag present): electronic identifier",
+    "dateColumn": "date or fecha (optional): weighing date (YYYY-MM-DD or DD/MM/YYYY)",
+    "dateHeader": "Date"
   },
   "artificialInsemination": {
     "registerTitle": "Register Artificial Insemination",

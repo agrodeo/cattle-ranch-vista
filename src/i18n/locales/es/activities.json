@@ -850,9 +850,15 @@
     "invalidFile": "Archivo no válido",
     "selectExcelOrCSV": "Por favor, selecciona un archivo Excel (.xlsx, .xls) o CSV",
     "errorProcessing": "No se pudo procesar el archivo",
-    "requiredIdentifier": "Se requiere ID/Caravana o Caravana Electrónica",
+    "requiredIdentifier": "Se requiere ID/Caravana o Caravana Electrónica (EID)",
     "weightMustBePositive": "Peso debe ser mayor a 0 kg",
-    "animalNotFound": "Animal no encontrado en el sistema"
+    "animalNotFound": "Animal no encontrado en el sistema",
+    "ambiguousMatch": "Coincidencia ambigua: el EID coincide con más de un animal",
+    "matchedByEid": "vinculado por EID",
+    "matchedByVisual": "vinculado por caravana visual",
+    "eidColumn": "EID / caravana_electronica (opcional si hay id_tag): identificador electrónico",
+    "dateColumn": "fecha o date (opcional): fecha del pesaje (YYYY-MM-DD o DD/MM/YYYY)",
+    "dateHeader": "Fecha"
   },
   "artificialInsemination": {
     "registerTitle": "Registrar Inseminación Artificial",
