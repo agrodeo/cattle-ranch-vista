@@ -193,8 +193,12 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     );
   })();
 
+  const mobileBottomPad = keyboardInset > 0 ? '0.75rem' : 'max(env(safe-area-inset-bottom), 0.75rem)';
   const inputArea = (
-    <div className={`flex-shrink-0 ${isMobile ? 'px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]' : 'px-4 pb-4'} pt-3 border-t space-y-2 bg-background`}>
+    <div
+      className={`flex-shrink-0 ${isMobile ? 'px-3' : 'px-4 pb-4'} pt-3 border-t space-y-2 bg-background`}
+      style={isMobile ? { paddingBottom: mobileBottomPad } : undefined}
+    >
       {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
           <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
