@@ -20,6 +20,7 @@ import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from '@/components/ui/drawer';
 import { useNavigate } from 'react-router-dom';
+import { useKeyboardInset } from '@/hooks/useKeyboardInset';
 
 interface AIChatDialogProps {
   open: boolean;
