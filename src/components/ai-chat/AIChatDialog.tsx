@@ -20,6 +20,7 @@ import {
   Drawer, DrawerContent, DrawerHeader, DrawerTitle,
 } from '@/components/ui/drawer';
 import { useNavigate } from 'react-router-dom';
+import { useKeyboardInset } from '@/hooks/useKeyboardInset';
 
 interface AIChatDialogProps {
   open: boolean;
@@ -39,6 +40,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  const keyboardInset = useKeyboardInset();
   const navigate = useNavigate();
   const { isUnlimited, messagesRemaining, messagesUsed, monthlyLimit, limitReached, incrementUsage } = useAIChatLimit();
 
@@ -64,6 +66,26 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
+
+  // Keep last message + input visible when the on-screen keyboard opens.
+  useEffect(() => {
+    if (!isMobile || keyboardInset <= 0) return;
+    const id = window.requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [keyboardInset, isMobile]);
+
+  const handleTextareaFocus = useCallback(() => {
+    if (!isMobile) return;
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 250);
+  }, [isMobile]);
 
   useEffect(() => {
     return () => {
@@ -171,8 +193,12 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     );
   })();
 
+  const mobileBottomPad = keyboardInset > 0 ? '0.75rem' : 'max(env(safe-area-inset-bottom), 0.75rem)';
   const inputArea = (
-    <div className={`flex-shrink-0 ${isMobile ? 'px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)]' : 'px-4 pb-4'} pt-3 border-t space-y-2 bg-background`}>
+    <div
+      className={`flex-shrink-0 ${isMobile ? 'px-3' : 'px-4 pb-4'} pt-3 border-t space-y-2 bg-background`}
+      style={isMobile ? { paddingBottom: mobileBottomPad } : undefined}
+    >
       {!isUnlimited && !limitReached && messagesRemaining <= 5 && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
           <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
@@ -215,6 +241,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleTextareaFocus}
             placeholder={t('common:aiChat.inputPlaceholder')}
             disabled={isLoading || limitReached}
             className="min-h-[52px] max-h-[120px] resize-none pr-10 py-2.5 text-sm placeholder:leading-tight"
@@ -304,7 +331,13 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     return (
       <>
         <Drawer open={open} onOpenChange={onOpenChange}>
-          <DrawerContent className="h-[92dvh] max-h-[92dvh] flex flex-col overflow-hidden">
+          <DrawerContent
+            className="flex flex-col overflow-hidden"
+            style={{
+              height: `calc(92dvh - ${keyboardInset}px)`,
+              maxHeight: `calc(92dvh - ${keyboardInset}px)`,
+            }}
+          >
             {/* Clean mobile header */}
             <div className="flex items-center justify-between px-4 py-3 border-b flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0 flex-1">
