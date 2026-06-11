@@ -241,6 +241,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
+            onFocus={handleTextareaFocus}
             placeholder={t('common:aiChat.inputPlaceholder')}
             disabled={isLoading || limitReached}
             className="min-h-[52px] max-h-[120px] resize-none pr-10 py-2.5 text-sm placeholder:leading-tight"
