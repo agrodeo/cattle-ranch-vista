@@ -40,6 +40,7 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMobile = useIsMobile();
+  const keyboardInset = useKeyboardInset();
   const navigate = useNavigate();
   const { isUnlimited, messagesRemaining, messagesUsed, monthlyLimit, limitReached, incrementUsage } = useAIChatLimit();
 
