@@ -67,6 +67,26 @@ export function AIChatDialog({ open, onOpenChange }: AIChatDialogProps) {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
+  // Keep last message + input visible when the on-screen keyboard opens.
+  useEffect(() => {
+    if (!isMobile || keyboardInset <= 0) return;
+    const id = window.requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [keyboardInset, isMobile]);
+
+  const handleTextareaFocus = useCallback(() => {
+    if (!isMobile) return;
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
+    }, 250);
+  }, [isMobile]);
+
   useEffect(() => {
     return () => {
       if (imagePreview) URL.revokeObjectURL(imagePreview);
