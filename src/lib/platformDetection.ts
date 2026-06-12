@@ -39,12 +39,18 @@ const inferPlatformFromNavigator = (): 'ios' | 'android' | null => {
  */
 export const isDespiaRuntime = (): boolean => {
   try {
-    if (typeof window !== 'undefined') {
-      if ((window as any).bundleNumber != null) return true;
-      if (window.location.hostname === 'localhost' && window.location.port === '') return true;
-    }
-  } catch {}
-  return false;
+    if (typeof window === 'undefined') return false;
+    // Positive signal: Despia exposes window.bundleNumber
+    if ((window as any).bundleNumber != null) return true;
+    // Positive signal: Despia may expose window.__DESPIA__
+    if ((window as any).__DESPIA__ === true) return true;
+    // NOTE: Do NOT use hostname === 'localhost' as a signal — Capacitor
+    // Android WebView also serves from http://localhost and would produce
+    // false positives, causing despia-native imports to fail.
+    return false;
+  } catch {
+    return false;
+  }
 };
 
 /**
