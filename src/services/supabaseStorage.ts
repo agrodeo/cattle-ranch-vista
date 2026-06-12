@@ -68,4 +68,26 @@ class IndexedDBStorage {
   }
 }
 
-export const indexedDBStorage = new IndexedDBStorage();
+const createStorage = () => {
+  try {
+    if (typeof indexedDB !== 'undefined' && indexedDB !== null) {
+      return new IndexedDBStorage();
+    }
+  } catch (error) {
+    console.warn('⚠️ IndexedDB unavailable, falling back to localStorage:', error);
+  }
+  // Fallback: wrap localStorage in the async interface Supabase expects
+  return {
+    async getItem(key: string): Promise<string | null> {
+      try { return localStorage.getItem(key); } catch { return null; }
+    },
+    async setItem(key: string, value: string): Promise<void> {
+      try { localStorage.setItem(key, value); } catch {}
+    },
+    async removeItem(key: string): Promise<void> {
+      try { localStorage.removeItem(key); } catch {}
+    },
+  };
+};
+
+export const indexedDBStorage = createStorage();
