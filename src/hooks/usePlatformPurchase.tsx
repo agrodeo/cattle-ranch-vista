@@ -10,8 +10,13 @@
   import { useUserAccess } from '@/hooks/useUserAccess';
 
   const getDespiaClient = async () => {
-    const module = await import('despia-native');
-    return module.default;
+    try {
+      const module = await import('despia-native');
+      return module.default;
+    } catch (e) {
+      console.warn('[Purchase] despia-native not available in this runtime:', e);
+      return null;
+    }
   };
 
   export interface PurchaseData {
