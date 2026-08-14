@@ -193,7 +193,10 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       cabanaRes, animalsRes, corralesRes, pregnanciesRes, eventsRes,
       iaRes, vaccinesRes, financesRes, tactoRes, vaccinationReqRes,
       weightHistoryRes, bullsRes, defuncionesRes, corralMovementsRes,
-      catalogoCausasRes, customBenchmarksRes
+      catalogoCausasRes, customBenchmarksRes,
+      activitiesRes, reproAlertsRes, vaccAlertsRes, verifTasksRes,
+      semenRes, depsRes, financeCatsRes, financeRecurringRes,
+      reproOutcomesRes, reproStateRes, reproKpisRes, aiRecordsRes, herdSettingsRes
     ] = await Promise.all([
       fetch(`${supabaseUrl}/rest/v1/cabañas?select=*&id=eq.${cabanaId}`, { headers }),
       fetch(`${supabaseUrl}/rest/v1/animals?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
@@ -210,25 +213,52 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       fetch(`${supabaseUrl}/rest/v1/defunciones?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
       fetch(`${supabaseUrl}/rest/v1/corral_movements?select=*&cabaña_id=eq.${cabanaId}&order=fecha_movimiento.desc`, { headers }),
       fetch(`${supabaseUrl}/rest/v1/catalogo_causas?select=*&cabaña_id=eq.${cabanaId}&activo=eq.true`, { headers }),
-      fetch(`${supabaseUrl}/rest/v1/custom_benchmarks?select=*&cabaña_id=eq.${cabanaId}`, { headers })
+      fetch(`${supabaseUrl}/rest/v1/custom_benchmarks?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/activities?select=*&cabaña_id=eq.${cabanaId}&order=created_at.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/reproductive_alerts?select=*&cabaña_id=eq.${cabanaId}&order=alert_date.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/vaccination_alerts?select=*&cabaña_id=eq.${cabanaId}&order=alert_date.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/verification_tasks?select=*&cabaña_id=eq.${cabanaId}&order=fecha_programada.asc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/semen_inventory?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/animal_deps?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/finance_categories?select=*&or=(cabaña_id.eq.${cabanaId},is_system.eq.true)`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/finance_recurring?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/reproductive_outcomes?select=*&cabaña_id=eq.${cabanaId}&order=fecha_outcome.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/reproductive_state_history?select=*&cabaña_id=eq.${cabanaId}&order=fecha_cambio.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/individual_reproductive_kpis?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/artificial_inseminations?select=*&cabaña_id=eq.${cabanaId}&order=insemination_date.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/herd_settings?select=*&cabaña_id=eq.${cabanaId}`, { headers })
     ]);
 
+    const j = async (res: Response) => (res.ok ? await res.json() : []);
     const cabana = cabanaRes.ok ? (await cabanaRes.json())[0] : null;
-    const animals = animalsRes.ok ? await animalsRes.json() : [];
-    const corrales = corralesRes.ok ? await corralesRes.json() : [];
-    const pregnancies = pregnanciesRes.ok ? await pregnanciesRes.json() : [];
-    const events = eventsRes.ok ? await eventsRes.json() : [];
-    const iaRecords = iaRes.ok ? await iaRes.json() : [];
-    const vaccines = vaccinesRes.ok ? await vaccinesRes.json() : [];
-    const finances = financesRes.ok ? await financesRes.json() : [];
-    const tactos = tactoRes.ok ? await tactoRes.json() : [];
-    const vaccinationRequirements = vaccinationReqRes.ok ? await vaccinationReqRes.json() : [];
-    const weightHistory = weightHistoryRes.ok ? await weightHistoryRes.json() : [];
-    const bulls = bullsRes.ok ? await bullsRes.json() : [];
-    const defunciones = defuncionesRes.ok ? await defuncionesRes.json() : [];
-    const corralMovements = corralMovementsRes.ok ? await corralMovementsRes.json() : [];
-    const catalogoCausas = catalogoCausasRes.ok ? await catalogoCausasRes.json() : [];
-    const customBenchmarks = customBenchmarksRes.ok ? await customBenchmarksRes.json() : [];
+    const animals = await j(animalsRes);
+    const corrales = await j(corralesRes);
+    const pregnancies = await j(pregnanciesRes);
+    const events = await j(eventsRes);
+    const iaRecords = await j(iaRes);
+    const vaccines = await j(vaccinesRes);
+    const finances = await j(financesRes);
+    const tactos = await j(tactoRes);
+    const vaccinationRequirements = await j(vaccinationReqRes);
+    const weightHistory = await j(weightHistoryRes);
+    const bulls = await j(bullsRes);
+    const defunciones = await j(defuncionesRes);
+    const corralMovements = await j(corralMovementsRes);
+    const catalogoCausas = await j(catalogoCausasRes);
+    const customBenchmarks = await j(customBenchmarksRes);
+    const activities = await j(activitiesRes);
+    const reproAlerts = await j(reproAlertsRes);
+    const vaccAlerts = await j(vaccAlertsRes);
+    const verifTasks = await j(verifTasksRes);
+    const semenInventory = await j(semenRes);
+    const animalDeps = await j(depsRes);
+    const financeCategories = await j(financeCatsRes);
+    const financeRecurring = await j(financeRecurringRes);
+    const reproOutcomes = await j(reproOutcomesRes);
+    const reproStateHistory = await j(reproStateRes);
+    const reproKpis = await j(reproKpisRes);
+    const aiRecords = await j(aiRecordsRes);
+    const herdSettings = await j(herdSettingsRes);
 
     const now = new Date();
     const active = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto');
@@ -679,6 +709,215 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
         context += '\n';
       });
       context += '\n';
+    }
+
+    const tag = (id: string) => {
+      const a = animals.find((x: any) => x.id === id);
+      return a ? `${a.id_tag}${a.name ? ` (${a.name})` : ''}` : '?';
+    };
+    const today = new Date().toISOString().slice(0, 10);
+
+    // === TAREAS / ACTIVIDADES ===
+    if (activities.length > 0) {
+      const pending = activities.filter((a: any) => a.status !== 'completed' && a.status !== 'completada');
+      const overdue = pending.filter((a: any) => a.due_date && a.due_date < today);
+      context += `=== TAREAS Y ACTIVIDADES (${activities.length} total, ${pending.length} pendientes, ${overdue.length} vencidas) ===\n`;
+      pending.slice(0, 25).forEach((a: any) => {
+        context += `- [${a.status}] ${a.title || a.type || a.kind}`;
+        if (a.due_date) context += `, vence: ${a.due_date}${a.due_date < today ? ' ⚠️VENCIDA' : ''}`;
+        if (a.priority) context += `, prioridad: ${a.priority}`;
+        if (a.animal_id) context += `, animal: ${tag(a.animal_id)}`;
+        if (a.corral_id) {
+          const c = corrales.find((x: any) => x.id === a.corral_id);
+          if (c) context += `, corral: ${c.name}`;
+        }
+        if (a.description) context += ` - ${a.description}`;
+        context += '\n';
+      });
+      const done = activities.filter((a: any) => a.status === 'completed' || a.status === 'completada').slice(0, 10);
+      if (done.length > 0) {
+        context += `Últimas completadas: ${done.map((a: any) => `${a.title || a.kind}(${(a.completed_at || '').slice(0, 10)})`).join(' | ')}\n`;
+      }
+      context += '\n';
+    }
+
+    // === ALERTAS REPRODUCTIVAS ===
+    if (reproAlerts.length > 0) {
+      const open = reproAlerts.filter((a: any) => a.status !== 'resolved' && a.status !== 'resuelta');
+      context += `=== ALERTAS REPRODUCTIVAS (${reproAlerts.length} total, ${open.length} abiertas) ===\n`;
+      open.slice(0, 25).forEach((a: any) => {
+        context += `- ${a.alert_date}: ${a.alert_type} - ${a.animal_tag || tag(a.animal_id)}`;
+        if (a.expected_date) context += `, esperado: ${a.expected_date}`;
+        if (a.days_overdue) context += `, ${a.days_overdue}d de atraso`;
+        if (a.prioridad) context += `, prioridad: ${a.prioridad}`;
+        if (a.notes) context += ` - ${a.notes}`;
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === ALERTAS DE VACUNACIÓN ===
+    if (vaccAlerts.length > 0) {
+      const open = vaccAlerts.filter((a: any) => !a.resolved_at);
+      context += `=== ALERTAS DE VACUNACIÓN (${vaccAlerts.length} total, ${open.length} sin resolver) ===\n`;
+      open.slice(0, 25).forEach((a: any) => {
+        const req = vaccinationRequirements.find((r: any) => r.id === a.requirement_id);
+        context += `- ${a.alert_date}: ${tag(a.animal_id)} - ${req?.vaccine_name || a.requirement_id} (${a.alert_type})`;
+        if (a.days_overdue) context += `, ${a.days_overdue}d de atraso`;
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === TAREAS DE VERIFICACIÓN PROGRAMADAS ===
+    if (verifTasks.length > 0) {
+      const open = verifTasks.filter((t: any) => t.estado !== 'completada' && !t.completed_at);
+      context += `=== TAREAS DE VERIFICACIÓN PROGRAMADAS (${open.length} pendientes de ${verifTasks.length}) ===\n`;
+      open.slice(0, 25).forEach((t: any) => {
+        context += `- ${t.fecha_programada}: ${t.tipo_tarea} - ${tag(t.animal_id)}${t.fecha_programada < today ? ' ⚠️VENCIDA' : ''}`;
+        if (t.notas) context += ` - ${t.notas}`;
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === INVENTARIO DE SEMEN ===
+    if (semenInventory.length > 0) {
+      const totalDoses = semenInventory.reduce((s: number, i: any) => s + (i.doses_remaining || 0), 0);
+      context += `=== INVENTARIO DE SEMEN (${semenInventory.length} lotes, ${totalDoses} dosis disponibles) ===\n`;
+      semenInventory.forEach((i: any) => {
+        const bull = bulls.find((b: any) => b.id === i.bull_id);
+        const bullName = bull?.name || i.bull_manual?.name || 'Toro N/E';
+        context += `- ${bullName}${i.batch_code ? ` [${i.batch_code}]` : ''}: ${i.doses_remaining}/${i.doses_total} dosis, ${i.straw_type}`;
+        if (i.centro_semen) context += `, centro: ${i.centro_semen}`;
+        if (i.tank) context += `, tanque ${i.tank}${i.canister ? `/${i.canister}` : ''}${i.cane_position ? `/${i.cane_position}` : ''}`;
+        if (i.cost_per_dose) context += `, ${i.currency || 'USD'} ${i.cost_per_dose}/dosis`;
+        if ((i.doses_remaining ?? 0) <= 2) context += ' ⚠️STOCK BAJO';
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === DEPs (MÉRITO GENÉTICO) ===
+    if (animalDeps.length > 0) {
+      context += `=== DEPs / MÉRITO GENÉTICO (${animalDeps.length} animales evaluados) ===\n`;
+      animalDeps.slice(0, 30).forEach((d: any) => {
+        const parts: string[] = [];
+        const add = (label: string, v: any, acc: any) => {
+          if (v !== null && v !== undefined) parts.push(`${label} ${v}${acc ? `(acc ${acc})` : ''}`);
+        };
+        add('PN', d.dep_peso_nacer, d.dep_peso_nacer_acc);
+        add('PD', d.dep_peso_destete, d.dep_peso_destete_acc);
+        add('PF', d.dep_peso_final, d.dep_peso_final_acc);
+        add('Leche', d.dep_leche, d.dep_leche_acc);
+        add('CE', d.dep_circunferencia_escrotal, d.dep_circunferencia_escrotal_acc);
+        add('AOB', d.dep_area_ojo_bife, d.dep_area_ojo_bife_acc);
+        add('GD', d.dep_grasa_dorsal, d.dep_grasa_dorsal_acc);
+        add('Docilidad', d.dep_docilidad, d.dep_docilidad_acc);
+        context += `- ${tag(d.animal_id)}${d.source ? ` [${d.source}]` : ''}${d.evaluation_date ? ` ${d.evaluation_date}` : ''}: ${parts.join(', ') || 'sin valores'}\n`;
+      });
+      context += '\n';
+    }
+
+    // === INSEMINACIONES INDIVIDUALES ===
+    if (aiRecords.length > 0) {
+      const preg = aiRecords.filter((r: any) => r.is_pregnant === true).length;
+      const notPreg = aiRecords.filter((r: any) => r.is_pregnant === false).length;
+      const rate = preg + notPreg > 0 ? Math.round((preg / (preg + notPreg)) * 100) : null;
+      context += `=== IA INDIVIDUALES (${aiRecords.length}) ===\n`;
+      context += `Preñadas: ${preg}, No preñadas: ${notPreg}${rate !== null ? `, tasa de éxito: ${rate}%` : ''}\n`;
+      aiRecords.slice(0, 20).forEach((r: any) => {
+        context += `- ${r.insemination_date}: ${tag(r.female_id)} con ${r.bull_name}`;
+        if (r.is_pregnant === true) context += ', PREÑADA';
+        else if (r.is_pregnant === false) context += ', vacía';
+        else context += ', pendiente de tacto';
+        if (r.notes) context += ` - ${r.notes}`;
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === KPIs REPRODUCTIVOS INDIVIDUALES ===
+    if (reproKpis.length > 0) {
+      context += `=== KPIs REPRODUCTIVOS POR HEMBRA (${reproKpis.length}) ===\n`;
+      reproKpis.slice(0, 30).forEach((k: any) => {
+        context += `- ${tag(k.animal_id)}: servicios ${k.total_servicios}, IAs ${k.total_inseminaciones}, preñeces ${k.total_preñeces_detectadas}, partos ${k.total_partos_exitosos}, pérdidas ${k.total_preñeces_perdidas}, %preñez ${k.porcentaje_preñez}, %parición ${k.porcentaje_paricion}, años reprod. ${k.años_reproductivos}\n`;
+      });
+      context += '\n';
+    }
+
+    // === RESULTADOS REPRODUCTIVOS ===
+    if (reproOutcomes.length > 0) {
+      const byType: Record<string, number> = {};
+      reproOutcomes.forEach((o: any) => { byType[o.tipo_outcome] = (byType[o.tipo_outcome] || 0) + 1; });
+      context += `=== RESULTADOS REPRODUCTIVOS (${reproOutcomes.length}) ===\n`;
+      context += `Por tipo: ${Object.entries(byType).map(([t, c]) => `${t}(${c})`).join(', ')}\n`;
+      reproOutcomes.slice(0, 20).forEach((o: any) => {
+        context += `- ${o.fecha_outcome}: ${tag(o.animal_id)} → ${o.tipo_outcome}`;
+        if (o.dias_gestacion) context += `, ${o.dias_gestacion}d gestación`;
+        if (o.cria_id) context += `, cría: ${tag(o.cria_id)}`;
+        if (o.notas) context += ` - ${o.notas}`;
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === HISTORIAL DE ESTADOS REPRODUCTIVOS ===
+    if (reproStateHistory.length > 0) {
+      context += `=== ÚLTIMOS CAMBIOS DE ESTADO REPRODUCTIVO (${Math.min(25, reproStateHistory.length)} de ${reproStateHistory.length}) ===\n`;
+      reproStateHistory.slice(0, 25).forEach((h: any) => {
+        context += `- ${h.fecha_cambio}: ${tag(h.animal_id)} ${h.estado_anterior || '-'} → ${h.estado_nuevo}`;
+        if (h.notas) context += ` (${h.notas})`;
+        context += '\n';
+      });
+      context += '\n';
+    }
+
+    // === CATEGORÍAS Y RECURRENTES FINANCIEROS ===
+    if (financeCategories.length > 0 || financeRecurring.length > 0) {
+      context += `=== DETALLE FINANCIERO ===\n`;
+      if (financeCategories.length > 0) {
+        const byType: Record<string, string[]> = {};
+        financeCategories.forEach((c: any) => {
+          byType[c.type] = byType[c.type] || [];
+          byType[c.type].push(c.name);
+        });
+        Object.entries(byType).forEach(([t, names]) => {
+          context += `Categorías ${t}: ${names.join(', ')}\n`;
+        });
+        const catById: Record<string, any> = {};
+        financeCategories.forEach((c: any) => { catById[c.id] = c; });
+        const totalsByCat: Record<string, number> = {};
+        finances.forEach((f: any) => {
+          const name = catById[f.category_id]?.name || 'Sin categoría';
+          totalsByCat[`${f.type}|${name}`] = (totalsByCat[`${f.type}|${name}`] || 0) + (f.amount || 0);
+        });
+        const top = Object.entries(totalsByCat).sort((a, b) => b[1] - a[1]).slice(0, 15);
+        if (top.length > 0) {
+          context += `Totales por categoría: ${top.map(([k, v]) => `${k.replace('|', ' ')}: $${v.toFixed(0)}`).join(' | ')}\n`;
+        }
+      }
+      if (financeRecurring.length > 0) {
+        const activeRec = financeRecurring.filter((r: any) => r.is_active);
+        context += `Movimientos recurrentes activos (${activeRec.length}):\n`;
+        activeRec.slice(0, 20).forEach((r: any) => {
+          context += `- ${r.name}: ${r.type} $${r.amount}, ${r.frequency}`;
+          if (r.next_run_date) context += `, próximo: ${r.next_run_date}`;
+          context += '\n';
+        });
+      }
+      context += '\n';
+    }
+
+    // === CONFIGURACIÓN DEL RODEO ===
+    if (herdSettings.length > 0) {
+      const h = herdSettings[0];
+      context += `=== CONFIGURACIÓN DEL RODEO ===\n`;
+      context += `País: ${h.country}${h.region ? `, región: ${h.region}` : ''}`;
+      if (h.herd_type) context += `, tipo de rodeo: ${h.herd_type}`;
+      if (h.service_type) context += `, tipo de servicio: ${h.service_type}`;
+      context += `, modo de cumplimiento: ${h.compliance_mode}`;
+      context += `, evitar cruzamiento de razas: ${h.prevent_breed_mixing ? 'sí' : 'no'}\n\n`;
     }
 
     console.log('Context length:', context.length);
