@@ -193,7 +193,10 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       cabanaRes, animalsRes, corralesRes, pregnanciesRes, eventsRes,
       iaRes, vaccinesRes, financesRes, tactoRes, vaccinationReqRes,
       weightHistoryRes, bullsRes, defuncionesRes, corralMovementsRes,
-      catalogoCausasRes, customBenchmarksRes
+      catalogoCausasRes, customBenchmarksRes,
+      activitiesRes, reproAlertsRes, vaccAlertsRes, verifTasksRes,
+      semenRes, depsRes, financeCatsRes, financeRecurringRes,
+      reproOutcomesRes, reproStateRes, reproKpisRes, aiRecordsRes, herdSettingsRes
     ] = await Promise.all([
       fetch(`${supabaseUrl}/rest/v1/cabañas?select=*&id=eq.${cabanaId}`, { headers }),
       fetch(`${supabaseUrl}/rest/v1/animals?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
@@ -210,25 +213,52 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       fetch(`${supabaseUrl}/rest/v1/defunciones?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
       fetch(`${supabaseUrl}/rest/v1/corral_movements?select=*&cabaña_id=eq.${cabanaId}&order=fecha_movimiento.desc`, { headers }),
       fetch(`${supabaseUrl}/rest/v1/catalogo_causas?select=*&cabaña_id=eq.${cabanaId}&activo=eq.true`, { headers }),
-      fetch(`${supabaseUrl}/rest/v1/custom_benchmarks?select=*&cabaña_id=eq.${cabanaId}`, { headers })
+      fetch(`${supabaseUrl}/rest/v1/custom_benchmarks?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/activities?select=*&cabaña_id=eq.${cabanaId}&order=created_at.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/reproductive_alerts?select=*&cabaña_id=eq.${cabanaId}&order=alert_date.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/vaccination_alerts?select=*&cabaña_id=eq.${cabanaId}&order=alert_date.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/verification_tasks?select=*&cabaña_id=eq.${cabanaId}&order=fecha_programada.asc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/semen_inventory?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/animal_deps?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/finance_categories?select=*&or=(cabaña_id.eq.${cabanaId},is_system.eq.true)`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/finance_recurring?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/reproductive_outcomes?select=*&cabaña_id=eq.${cabanaId}&order=fecha_outcome.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/reproductive_state_history?select=*&cabaña_id=eq.${cabanaId}&order=fecha_cambio.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/individual_reproductive_kpis?select=*&cabaña_id=eq.${cabanaId}`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/artificial_inseminations?select=*&cabaña_id=eq.${cabanaId}&order=insemination_date.desc`, { headers }),
+      fetch(`${supabaseUrl}/rest/v1/herd_settings?select=*&cabaña_id=eq.${cabanaId}`, { headers })
     ]);
 
+    const j = async (res: Response) => (res.ok ? await res.json() : []);
     const cabana = cabanaRes.ok ? (await cabanaRes.json())[0] : null;
-    const animals = animalsRes.ok ? await animalsRes.json() : [];
-    const corrales = corralesRes.ok ? await corralesRes.json() : [];
-    const pregnancies = pregnanciesRes.ok ? await pregnanciesRes.json() : [];
-    const events = eventsRes.ok ? await eventsRes.json() : [];
-    const iaRecords = iaRes.ok ? await iaRes.json() : [];
-    const vaccines = vaccinesRes.ok ? await vaccinesRes.json() : [];
-    const finances = financesRes.ok ? await financesRes.json() : [];
-    const tactos = tactoRes.ok ? await tactoRes.json() : [];
-    const vaccinationRequirements = vaccinationReqRes.ok ? await vaccinationReqRes.json() : [];
-    const weightHistory = weightHistoryRes.ok ? await weightHistoryRes.json() : [];
-    const bulls = bullsRes.ok ? await bullsRes.json() : [];
-    const defunciones = defuncionesRes.ok ? await defuncionesRes.json() : [];
-    const corralMovements = corralMovementsRes.ok ? await corralMovementsRes.json() : [];
-    const catalogoCausas = catalogoCausasRes.ok ? await catalogoCausasRes.json() : [];
-    const customBenchmarks = customBenchmarksRes.ok ? await customBenchmarksRes.json() : [];
+    const animals = await j(animalsRes);
+    const corrales = await j(corralesRes);
+    const pregnancies = await j(pregnanciesRes);
+    const events = await j(eventsRes);
+    const iaRecords = await j(iaRes);
+    const vaccines = await j(vaccinesRes);
+    const finances = await j(financesRes);
+    const tactos = await j(tactoRes);
+    const vaccinationRequirements = await j(vaccinationReqRes);
+    const weightHistory = await j(weightHistoryRes);
+    const bulls = await j(bullsRes);
+    const defunciones = await j(defuncionesRes);
+    const corralMovements = await j(corralMovementsRes);
+    const catalogoCausas = await j(catalogoCausasRes);
+    const customBenchmarks = await j(customBenchmarksRes);
+    const activities = await j(activitiesRes);
+    const reproAlerts = await j(reproAlertsRes);
+    const vaccAlerts = await j(vaccAlertsRes);
+    const verifTasks = await j(verifTasksRes);
+    const semenInventory = await j(semenRes);
+    const animalDeps = await j(depsRes);
+    const financeCategories = await j(financeCatsRes);
+    const financeRecurring = await j(financeRecurringRes);
+    const reproOutcomes = await j(reproOutcomesRes);
+    const reproStateHistory = await j(reproStateRes);
+    const reproKpis = await j(reproKpisRes);
+    const aiRecords = await j(aiRecordsRes);
+    const herdSettings = await j(herdSettingsRes);
 
     const now = new Date();
     const active = animals.filter((a: any) => a.status !== 'vendido' && a.status !== 'muerto');
