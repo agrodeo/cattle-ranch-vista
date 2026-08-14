@@ -3147,6 +3147,15 @@ export type Database = {
           tipo_pesaje: string
         }[]
       }
+      get_cabana_member_directory: {
+        Args: never
+        Returns: {
+          full_name: string
+          is_active: boolean
+          member_position: string
+          user_id: string
+        }[]
+      }
       get_corral_ranking: {
         Args: {
           _cabana_id: string

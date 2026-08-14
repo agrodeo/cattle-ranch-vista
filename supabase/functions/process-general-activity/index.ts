@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.4'
+import { authErrorResponse, requireCabanaAccess } from '../_shared/tenant.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -36,8 +37,19 @@ Deno.serve(async (req) => {
     if (eventoError) throw eventoError
     if (!evento) throw new Error('Event not found')
 
+    // Authorization: the caller must belong to the ranch that owns this event
+    await requireCabanaAccess(req, evento['cabaña_id'])
+
     const payload = evento.payload as ActivityPayload
-    const { tipo_actividad, animales_ids, detalles } = payload
+    const { tipo_actividad, animales_ids: rawAnimalIds, detalles } = payload
+
+    // Only animals of that same ranch may be mutated
+    const { data: ownAnimals } = await supabase
+      .from('animals')
+      .select('id')
+      .eq('cabaña_id', evento['cabaña_id'])
+      .in('id', rawAnimalIds || [])
+    const animales_ids = (ownAnimals || []).map((a: any) => a.id)
 
     console.log(`Processing ${tipo_actividad} for ${animales_ids.length} animals`)
 
@@ -78,6 +90,8 @@ Deno.serve(async (req) => {
     )
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders)
+    if (authResponse) return authResponse
     console.error('Error processing general activity:', error)
     return new Response(
       JSON.stringify({ error: error.message }),

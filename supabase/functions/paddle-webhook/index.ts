@@ -59,32 +59,38 @@ Deno.serve(async (req) => {
       return new Response('Server misconfigured', { status: 500 });
     }
 
-    // -------- Verify signature --------
+    // -------- Verify signature (mandatory) --------
     const signature = req.headers.get('paddle-signature');
     const rawBody = await req.text();
 
-    if (signature) {
-      const parts = signature.split(';').reduce((acc: Record<string, string>, part) => {
-        const [k, v] = part.split('=');
-        acc[k] = v;
-        return acc;
-      }, {});
-      const ts = parts['ts'];
-      const h1 = parts['h1'];
-      if (ts && h1) {
-        const enc = new TextEncoder();
-        const key = await crypto.subtle.importKey(
-          'raw', enc.encode(webhookSecret),
-          { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-        );
-        const sig = await crypto.subtle.sign('HMAC', key, enc.encode(`${ts}:${rawBody}`));
-        const expected = Array.from(new Uint8Array(sig))
-          .map(b => b.toString(16).padStart(2, '0')).join('');
-        if (expected !== h1) {
-          console.error('Webhook signature verification failed');
-          return new Response('Invalid signature', { status: 401 });
-        }
-      }
+    if (!signature) {
+      console.error('Missing paddle-signature header');
+      return new Response('Invalid signature', { status: 401 });
+    }
+
+    const parts = signature.split(';').reduce((acc: Record<string, string>, part) => {
+      const [k, v] = part.split('=');
+      acc[k] = v;
+      return acc;
+    }, {});
+    const ts = parts['ts'];
+    const h1 = parts['h1'];
+    if (!ts || !h1) {
+      console.error('Malformed paddle-signature header');
+      return new Response('Invalid signature', { status: 401 });
+    }
+
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw', enc.encode(webhookSecret),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+    );
+    const sig = await crypto.subtle.sign('HMAC', key, enc.encode(`${ts}:${rawBody}`));
+    const expected = Array.from(new Uint8Array(sig))
+      .map(b => b.toString(16).padStart(2, '0')).join('');
+    if (expected !== h1) {
+      console.error('Webhook signature verification failed');
+      return new Response('Invalid signature', { status: 401 });
     }
 
     const payload = JSON.parse(rawBody);

@@ -952,10 +952,7 @@ export const useDashboardSummary = (): DashboardSummary => {
       // Fetch user names for all activities at once
       const userIds = [...new Set(enrichedActivities.map(a => a.user_id).filter(Boolean))];
       if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('user_id, full_name')
-          .in('user_id', userIds);
+        const { data: profilesData } = await supabase.rpc('get_cabana_member_directory');
         
         if (profilesData) {
           const profileMap = new Map(profilesData.map(p => [p.user_id, p.full_name]));

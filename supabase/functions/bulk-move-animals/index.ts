@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
+import { authErrorResponse, requireCabanaAccess } from "../_shared/tenant.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,13 +19,34 @@ serve(async (req) => {
     );
 
     const {
-      cabanaId,
+      cabanaId: requestedCabanaId,
       to_corral_id,
       filters = {},
       specific_animal_ids = null,
       dryRun = true,
       density_per_hectare = 1.5
     } = await req.json();
+
+    // Authorization: always use the caller's own ranch, never the client value
+    const caller = await requireCabanaAccess(req, requestedCabanaId);
+    const cabanaId = caller.cabanaId as string;
+
+    // Target corral must belong to the caller's ranch
+    if (to_corral_id) {
+      const { data: targetCorral, error: targetCorralError } = await supabaseClient
+        .from('corrales')
+        .select('id')
+        .eq('id', to_corral_id)
+        .eq('cabaña_id', cabanaId)
+        .maybeSingle();
+      if (targetCorralError) throw targetCorralError;
+      if (!targetCorral) {
+        return new Response(JSON.stringify({ error: 'Corral no encontrado en tu cabaña' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
 
     console.log(`Bulk move animals for cabana ${cabanaId}, dryRun: ${dryRun}, specific_ids: ${specific_animal_ids?.length || 0}`);
 
@@ -206,6 +228,8 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders);
+    if (authResponse) return authResponse;
     console.error('Error in bulk-move-animals:', error);
     return new Response(JSON.stringify({ 
       success: false, 

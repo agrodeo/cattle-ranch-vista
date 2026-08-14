@@ -54,14 +54,16 @@ export function TaskForm({ defaultAnimalId, defaultAnimalTag, onSubmit, isSubmit
   const { data: users } = useQuery({
     queryKey: ["activity-task-users", cabañaId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("user_id, full_name, email, position")
-        .eq("cabaña_id", cabañaId!)
-        .eq("is_active", true)
-        .order("full_name");
+      const { data, error } = await supabase.rpc("get_cabana_member_directory");
       if (error) throw error;
-      return data || [];
+      return (data || [])
+        .filter((member: any) => member.is_active !== false)
+        .map((member: any) => ({
+          user_id: member.user_id,
+          full_name: member.full_name,
+          position: member.member_position,
+        }))
+        .sort((a: any, b: any) => (a.full_name || "").localeCompare(b.full_name || ""));
     },
     enabled: !!cabañaId,
   });
@@ -145,7 +147,7 @@ export function TaskForm({ defaultAnimalId, defaultAnimalTag, onSubmit, isSubmit
             <SelectItem value={NONE_VALUE}>{t("create.unassigned")}</SelectItem>
             {(users || []).map((user) => (
               <SelectItem key={user.user_id} value={user.user_id}>
-                {user.full_name || user.email}{user.position ? ` · ${user.position}` : ""}
+                {user.full_name || user.user_id}{user.position ? ` · ${user.position}` : ""}
               </SelectItem>
             ))}
           </SelectContent>
