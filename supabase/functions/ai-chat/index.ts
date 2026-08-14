@@ -368,10 +368,48 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
       context += '\n';
     }
 
+    // === OFFSPRING / CALVINGS MAP (madre -> crías) ===
+    const offspringByMother: Record<string, any[]> = {};
+    animals.forEach((a: any) => {
+      if (a.mother_id) {
+        if (!offspringByMother[a.mother_id]) offspringByMother[a.mother_id] = [];
+        offspringByMother[a.mother_id].push(a);
+      }
+    });
+    Object.values(offspringByMother).forEach((list: any[]) =>
+      list.sort((x: any, y: any) => new Date(y.birth_date || 0).getTime() - new Date(x.birth_date || 0).getTime())
+    );
+
+    // === PARICIONES (PARTOS) ===
+    {
+      const partoEvents = events.filter((e: any) => (e.tipo || '').toUpperCase() === 'PARTO');
+      const allOffspring = animals
+        .filter((a: any) => a.mother_id && a.birth_date)
+        .sort((x: any, y: any) => new Date(y.birth_date).getTime() - new Date(x.birth_date).getTime());
+
+      if (partoEvents.length > 0 || allOffspring.length > 0) {
+        context += `=== PARICIONES / PARTOS (${allOffspring.length} crías registradas, ${partoEvents.length} eventos de parto) ===\n`;
+        const recentOffspring = allOffspring.slice(0, 30);
+        recentOffspring.forEach((c: any) => {
+          const mother = animals.find((a: any) => a.id === c.mother_id);
+          const father = c.father_id ? animals.find((a: any) => a.id === c.father_id) : null;
+          context += `- ${c.birth_date}: madre ${mother?.id_tag || '?'}${mother?.name ? ` (${mother.name})` : ''} parió cría ${c.id_tag}${c.name ? ` (${c.name})` : ''}, ${c.sex || 'sexo N/E'}`;
+          if (c.peso_nacimiento) context += `, ${c.peso_nacimiento}kg al nacer`;
+          if (father) context += `, padre: ${father.id_tag}`;
+          if (c.status && c.status !== 'Activo') context += `, estado: ${c.status}`;
+          context += '\n';
+        });
+        if (allOffspring.length > recentOffspring.length) {
+          context += `(${allOffspring.length - recentOffspring.length} pariciones más antiguas no listadas)\n`;
+        }
+        context += '\n';
+      }
+    }
+
     // === REPRODUCTIVE TIMELINE PER FEMALE ===
     {
       const females = active.filter((a: any) => a.sex === 'Hembra');
-      if (females.length > 0 && (iaRecords.length > 0 || pregnancies.length > 0)) {
+      if (females.length > 0 && (iaRecords.length > 0 || pregnancies.length > 0 || Object.keys(offspringByMother).length > 0)) {
         context += `=== HISTORIAL REPRODUCTIVO POR HEMBRA ===\n`;
 
         females.forEach((f: any) => {
@@ -425,6 +463,15 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
             }
           } else {
             line += ` | sin preñez activa`;
+          }
+
+          const crias = offspringByMother[f.id] || [];
+          if (crias.length > 0) {
+            const last = crias[0];
+            line += ` | última parición: ${last.birth_date || 'fecha N/E'} (cría ${last.id_tag}${last.sex ? `, ${last.sex}` : ''})`;
+            line += ` | crías totales: ${crias.length} [${crias.slice(0, 6).map((c: any) => `${c.id_tag}${c.birth_date ? `:${c.birth_date}` : ''}`).join(', ')}]`;
+          } else {
+            line += ` | sin pariciones registradas`;
           }
 
           line += ` | historial: ${successCount} exitosas, ${failedCount} pérdidas, ${femaleIAs.length} IAs`;
