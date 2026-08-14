@@ -465,6 +465,15 @@ async function getCabanaContext(authHeader: string | null): Promise<string> {
             line += ` | sin preñez activa`;
           }
 
+          const crias = offspringByMother[f.id] || [];
+          if (crias.length > 0) {
+            const last = crias[0];
+            line += ` | última parición: ${last.birth_date || 'fecha N/E'} (cría ${last.id_tag}${last.sex ? `, ${last.sex}` : ''})`;
+            line += ` | crías totales: ${crias.length} [${crias.slice(0, 6).map((c: any) => `${c.id_tag}${c.birth_date ? `:${c.birth_date}` : ''}`).join(', ')}]`;
+          } else {
+            line += ` | sin pariciones registradas`;
+          }
+
           line += ` | historial: ${successCount} exitosas, ${failedCount} pérdidas, ${femaleIAs.length} IAs`;
           if (failedCount >= 2) line += ` ⚠️`;
 
