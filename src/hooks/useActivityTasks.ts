@@ -11,7 +11,7 @@ export interface ActivityTask {
   priority: "alta" | "media" | "baja";
   due_date: string | null;
   assigned_to: string | null;
-  assigned_profile?: { full_name: string | null; email: string | null } | null;
+  assigned_profile?: { full_name: string | null; email?: string | null } | null;
   created_by: string | null;
   creator_profile?: { full_name: string | null } | null;
   animal_id: string | null;
@@ -44,10 +44,7 @@ const enrichTasks = async (rows: any[]): Promise<ActivityTask[]> => {
 
   const [profilesResult, animalsResult, corralesResult] = await Promise.all([
     assigneeIds.length || creatorIds.length
-      ? supabase
-          .from("profiles")
-          .select("user_id, full_name, email")
-          .in("user_id", [...new Set([...assigneeIds, ...creatorIds])])
+      ? supabase.rpc("get_cabana_member_directory")
       : Promise.resolve({ data: [] as any[], error: null }),
     animalIds.length
       ? supabase.from("animals").select("id, id_tag, name").in("id", animalIds)

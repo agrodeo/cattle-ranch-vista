@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { authErrorResponse, requireCabanaAccess } from '../_shared/tenant.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,8 +43,12 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { events, cabañaId, lastSyncTimestamp } = await req.json();
-    
+    const { events, cabañaId: requestedCabanaId, lastSyncTimestamp } = await req.json();
+
+    // Authorization: the caller may only sync their own ranch's data.
+    const caller = await requireCabanaAccess(req, requestedCabanaId);
+    const cabañaId = caller.cabanaId as string;
+
     console.log(`[sync-batch] Processing ${events?.length || 0} events for cabaña ${cabañaId}`);
 
     const results: SyncResult[] = [];
@@ -87,6 +92,8 @@ Deno.serve(async (req) => {
     });
 
   } catch (error: any) {
+    const authResponse = authErrorResponse(error, corsHeaders);
+    if (authResponse) return authResponse;
     console.error('[sync-batch] Fatal error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
@@ -95,181 +102,89 @@ Deno.serve(async (req) => {
   }
 });
 
+/** Event type -> table mapping. Every table here is scoped by cabaña_id. */
+const TABLE_BY_PREFIX: Record<string, string> = {
+  ANIMAL: 'animals',
+  CORRAL: 'corrales',
+  VACCINE: 'animal_vaccines',
+  WEIGHT: 'animal_weight_history',
+  INSEMINATION: 'artificial_inseminations',
+  TACTO: 'reproductive_activities',
+  PREGNANCY: 'preñeces',
+  FINANCE: 'finances',
+  EVENTO: 'eventos',
+  DEATH_RECORD: 'defunciones',
+  CORRAL_MOVEMENT: 'corral_movements',
+};
+
+function resolveEvent(type: string): { table: string; action: string } | null {
+  const match = type.match(/^(.*)_(INSERT|UPDATE|DELETE)$/);
+  if (!match) return null;
+  const table = TABLE_BY_PREFIX[match[1]];
+  if (!table) return null;
+  return { table, action: match[2] };
+}
+
 async function processEvent(supabase: any, event: SyncEvent, cabañaId: string): Promise<SyncResult> {
   const { type, payload, id } = event;
-  
-  // Replace temp IDs in payload with real IDs if needed
-  const processedPayload = { ...payload };
-  
-  switch (type) {
-    // Animals
-    case 'ANIMAL_INSERT': {
-      const { data, error } = await supabase.from('animals').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'ANIMAL_UPDATE': {
-      const { error } = await supabase.from('animals').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-    case 'ANIMAL_DELETE': {
-      const { error } = await supabase.from('animals').delete().eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
 
-    // Corrales
-    case 'CORRAL_INSERT': {
-      const { data, error } = await supabase.from('corrales').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'CORRAL_UPDATE': {
-      const { error } = await supabase.from('corrales').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-    case 'CORRAL_DELETE': {
-      const { error } = await supabase.from('corrales').delete().eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
+  const resolved = resolveEvent(type);
+  if (!resolved) {
+    return { id, success: false, error: `Unknown event type: ${type}` };
+  }
+  const { table, action } = resolved;
 
-    // Vaccines
-    case 'VACCINE_INSERT': {
-      const { data, error } = await supabase.from('animal_vaccines').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'VACCINE_UPDATE': {
-      const { error } = await supabase.from('animal_vaccines').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-    case 'VACCINE_DELETE': {
-      const { error } = await supabase.from('animal_vaccines').delete().eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
+  // Never trust a cabaña id coming from the client payload: always stamp the
+  // caller's own verified ranch, and scope every mutation to it.
+  const processedPayload: Record<string, any> = { ...payload, 'cabaña_id': cabañaId };
+  if (type === 'TACTO_INSERT') processedPayload.tipo_actividad = 'tacto';
 
-    // Weights
-    case 'WEIGHT_INSERT': {
-      const { data, error } = await supabase.from('animal_weight_history').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'WEIGHT_UPDATE': {
-      const { error } = await supabase.from('animal_weight_history').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-    case 'WEIGHT_DELETE': {
-      const { error } = await supabase.from('animal_weight_history').delete().eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
+  if (action === 'INSERT') {
+    const { data, error } = await supabase.from(table).insert(processedPayload).select().single();
+    if (error) throw new Error(error.message);
 
-    // Inseminations
-    case 'INSEMINATION_INSERT': {
-      const { data, error } = await supabase.from('artificial_inseminations').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'INSEMINATION_UPDATE': {
-      const { error } = await supabase.from('artificial_inseminations').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-    case 'INSEMINATION_DELETE': {
-      const { error } = await supabase.from('artificial_inseminations').delete().eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-
-    // Tactos
-    case 'TACTO_INSERT': {
-      const { data, error } = await supabase.from('reproductive_activities').insert({
-        ...processedPayload,
-        tipo_actividad: 'tacto'
-      }).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'TACTO_UPDATE': {
-      const { error } = await supabase.from('reproductive_activities').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-
-    // Pregnancies
-    case 'PREGNANCY_INSERT': {
-      const { data, error } = await supabase.from('preñeces').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'PREGNANCY_UPDATE': {
-      const { error } = await supabase.from('preñeces').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-
-    // Finances
-    case 'FINANCE_INSERT': {
-      const { data, error } = await supabase.from('finances').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'FINANCE_UPDATE': {
-      const { error } = await supabase.from('finances').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-    case 'FINANCE_DELETE': {
-      const { error } = await supabase.from('finances').delete().eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-
-    // Events (Eventos)
-    case 'EVENTO_INSERT': {
-      const { data, error } = await supabase.from('eventos').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      return { id, success: true, realId: data.id };
-    }
-    case 'EVENTO_UPDATE': {
-      const { error } = await supabase.from('eventos').update(processedPayload).eq('id', processedPayload.id);
-      if (error) throw new Error(error.message);
-      return { id, success: true };
-    }
-
-    // Deaths
-    case 'DEATH_RECORD_INSERT': {
-      const { data, error } = await supabase.from('defunciones').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      // Also update animal status
-      await supabase.from('animals').update({ 
+    if (type === 'DEATH_RECORD_INSERT') {
+      await supabase.from('animals').update({
         status: 'muerto',
         fecha_muerte: processedPayload.fecha_defuncion,
-        defuncion_id: data.id
-      }).eq('id', processedPayload.animal_id);
-      return { id, success: true, realId: data.id };
+        defuncion_id: data.id,
+      }).eq('id', processedPayload.animal_id).eq('cabaña_id', cabañaId);
     }
 
-    // Corral movements
-    case 'CORRAL_MOVEMENT_INSERT': {
-      const { data, error } = await supabase.from('corral_movements').insert(processedPayload).select().single();
-      if (error) throw new Error(error.message);
-      // Update animal's corral_id
-      await supabase.from('animals').update({ 
-        corral_id: processedPayload.corral_nuevo_id 
-      }).eq('id', processedPayload.animal_id);
-      return { id, success: true, realId: data.id };
+    if (type === 'CORRAL_MOVEMENT_INSERT') {
+      await supabase.from('animals').update({
+        corral_id: processedPayload.corral_nuevo_id,
+      }).eq('id', processedPayload.animal_id).eq('cabaña_id', cabañaId);
     }
 
-    default:
-      return { id, success: false, error: `Unknown event type: ${type}` };
+    return { id, success: true, realId: data.id };
   }
+
+  if (!processedPayload.id) {
+    return { id, success: false, error: 'Missing record id' };
+  }
+
+  if (action === 'UPDATE') {
+    const { data, error } = await supabase
+      .from(table)
+      .update(processedPayload)
+      .eq('id', processedPayload.id)
+      .eq('cabaña_id', cabañaId)
+      .select('id');
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) return { id, success: false, error: 'Record not found' };
+    return { id, success: true };
+  }
+
+  const { data, error } = await supabase
+    .from(table)
+    .delete()
+    .eq('id', processedPayload.id)
+    .eq('cabaña_id', cabañaId)
+    .select('id');
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0) return { id, success: false, error: 'Record not found' };
+  return { id, success: true };
 }
 
 async function getServerChanges(supabase: any, cabañaId: string, since: string) {

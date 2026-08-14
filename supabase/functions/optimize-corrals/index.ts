@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authErrorResponse, requireCabanaAccess } from '../_shared/tenant.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -1360,7 +1361,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { 
-      cabanaId, 
+      cabanaId: requestedCabanaId, 
       language = 'es', 
       objective = 'consanguinity', 
       secondaryObjective = 'none' as SecondaryObjectiveType,
@@ -1374,12 +1375,16 @@ serve(async (req) => {
     
     console.log(`[Config] Objective: ${objective}, Secondary: ${secondaryObjective}, Language: ${language}`);
 
-    if (!cabanaId) {
+    if (!requestedCabanaId) {
       return new Response(JSON.stringify({ error: 'cabanaId is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Authorization: only the caller's own ranch data may be analyzed
+    const caller = await requireCabanaAccess(req, requestedCabanaId);
+    const cabanaId = caller.cabanaId as string;
 
     const t = translations[language as LanguageType] || translations.es;
 
@@ -3947,6 +3952,8 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error: any) {
+    const authResponse = authErrorResponse(error, corsHeaders);
+    if (authResponse) return authResponse;
     console.error('Error optimizing corrals:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,

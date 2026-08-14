@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { authErrorResponse, requireManager } from "../_shared/tenant.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,13 +13,11 @@ const ChangePasswordSchema = z.object({
   action: z.literal('change_password'),
   userId: z.string().uuid(),
   newPassword: z.string().min(8).max(128),
-  requesterId: z.string().uuid(),
 });
 
 const DeleteUserSchema = z.object({
   action: z.literal('delete_user'),
   userId: z.string().uuid(),
-  requesterId: z.string().uuid(),
 });
 
 const ManageUserSchema = z.discriminatedUnion('action', [
@@ -49,17 +48,9 @@ serve(async (req) => {
 
     const data = parsed.data;
 
-    // Verify that the requester is an admin
-    const { data: requesterRole, error: roleError } = await supabaseAdmin
-      .rpc('get_user_role', { _user_id: data.requesterId })
-
-    if (roleError || (Array.isArray(requesterRole) ? requesterRole[0] : requesterRole) !== 'admin') {
-      console.error('Authorization error:', roleError)
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    // Verify the requester from their JWT (never from the request body)
+    const caller = await requireManager(req);
+    const requesterId = caller.id;
 
     switch (data.action) {
       case 'change_password': {
@@ -96,7 +87,7 @@ serve(async (req) => {
           _action: 'password_changed',
           _table_name: 'user_passwords',
           _record_id: data.userId,
-          _details: { changed_by: data.requesterId }
+          _details: { changed_by: requesterId }
         })
 
         return new Response(
@@ -110,7 +101,7 @@ serve(async (req) => {
           _action: 'user_deleted',
           _table_name: 'users',
           _record_id: data.userId,
-          _details: { deleted_by: data.requesterId }
+          _details: { deleted_by: requesterId }
         })
 
         const { error: deleteError } = await supabaseAdmin
@@ -137,6 +128,8 @@ serve(async (req) => {
     }
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders)
+    if (authResponse) return authResponse
     console.error('Error in manage-user function:', error)
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),

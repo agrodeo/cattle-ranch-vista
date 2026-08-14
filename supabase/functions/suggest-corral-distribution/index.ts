@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { authErrorResponse, requireCabanaAccess } from "../_shared/tenant.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -101,7 +102,7 @@ serve(async (req) => {
     console.log('Request body:', JSON.stringify(requestBody));
 
     const {
-      cabanaId,
+      cabanaId: requestedCabanaId,
       objectives = ['consanguinity'],
       targetWeights = {},
       max_bulls_per_corral = 1,
@@ -114,13 +115,17 @@ serve(async (req) => {
     console.log('Optimization objectives:', objectives);
     console.log('Target weights:', targetWeights);
 
-    if (!cabanaId) {
+    if (!requestedCabanaId) {
       console.error('Missing cabanaId');
       return new Response(JSON.stringify({ error: 'cabanaId es requerido' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Authorization: only the caller's own ranch data may be analyzed
+    const caller = await requireCabanaAccess(req, requestedCabanaId);
+    const cabanaId = caller.cabanaId as string;
 
     console.log(`Analyzing corral distribution for cabana ${cabanaId}`);
     console.log(`Objectives:`, objectives);
@@ -290,6 +295,8 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders);
+    if (authResponse) return authResponse;
     console.error('Error in suggest-corral-distribution:', error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
       status: 500,

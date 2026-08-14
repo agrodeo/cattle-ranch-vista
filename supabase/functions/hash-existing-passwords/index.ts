@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { authErrorResponse, requireManager } from "../_shared/tenant.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,22 +21,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { requesterId } = await req.json()
-
-  // Verify that the requester is an admin
-  const { data: requesterRole, error: roleError } = await supabaseAdmin
-    .rpc('get_user_role', { _user_id: requesterId })
-
-  if (roleError || (Array.isArray(requesterRole) ? requesterRole[0] : requesterRole) !== 'admin') {
-    console.error('Authorization error:', roleError)
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized - admin access required' }),
-      { 
-        status: 403, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  }
+    // Verify the requester from their JWT (never from the request body)
+    const caller = await requireManager(req)
+    const requesterId = caller.id
 
     // Get all plain text passwords that need to be hashed
     const { data: passwords, error: fetchError } = await supabaseAdmin
@@ -117,6 +105,8 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders)
+    if (authResponse) return authResponse
     console.error('Error in hash-existing-passwords function:', error)
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),

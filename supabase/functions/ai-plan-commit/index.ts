@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authErrorResponse, requireCabanaAccess } from "../_shared/tenant.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,23 +18,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { cabanaId, plan, options = {} } = await req.json();
+    const { cabanaId: requestedCabanaId, plan, options = {} } = await req.json();
     const { createMoves = false } = options; // Solo permitir movimientos, no servicios de IA
 
-    console.log(`Committing corral distribution plan for cabana ${cabanaId}`);
+    // Authorization: caller must belong to the target ranch
+    const caller = await requireCabanaAccess(req, requestedCabanaId);
+    const cabanaId = caller.cabanaId as string;
+    const user = { id: caller.id };
 
-    // Get user ID from auth header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      throw new Error('No authorization header');
-    }
-    
-    const token = authHeader.replace('Bearer ', '');
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError || !userData.user) {
-      throw new Error('User not authenticated');
-    }
-    const user = userData.user;
+    console.log(`Committing corral distribution plan for cabana ${cabanaId}`);
 
     const results = {
       moves_created: 0,
@@ -45,7 +38,18 @@ serve(async (req) => {
     // Create movement activities
     if (createMoves && plan.corral_plan?.length > 0) {
       try {
+        // Only corrales owned by the caller's ranch can be targeted
+        const { data: ownCorrales } = await supabaseClient
+          .from('corrales')
+          .select('id')
+          .eq('cabaña_id', cabanaId);
+        const allowedCorrales = new Set((ownCorrales || []).map((c: any) => c.id));
+
         for (const corralMove of plan.corral_plan) {
+          if (!allowedCorrales.has(corralMove.corral_id)) {
+            results.errors.push(`Corral ${corralMove.corral_id} no pertenece a tu cabaña`);
+            continue;
+          }
           // Create moves for animals moving into this corral
           for (const animalId of corralMove.moves_in || []) {
             const { error: moveError } = await supabaseClient
@@ -55,6 +59,7 @@ serve(async (req) => {
                 type: 'MOVE',
                 date: new Date().toISOString().split('T')[0],
                 user_id: user.id,
+                'cabaña_id': cabanaId,
                 description: `Movido a ${corralMove.corral_id} - Plan IA`
               });
 
@@ -62,11 +67,12 @@ serve(async (req) => {
               console.error('Error creating move activity:', moveError);
               results.errors.push(`Error moving animal ${animalId}: ${moveError.message}`);
             } else {
-              // Update animal's corral
+              // Update animal's corral (scoped to the caller's ranch)
               const { error: updateError } = await supabaseClient
                 .from('animals')
                 .update({ corral_id: corralMove.corral_id })
-                .eq('id', animalId);
+                .eq('id', animalId)
+                .eq('cabaña_id', cabanaId);
 
               if (updateError) {
                 console.error('Error updating animal corral:', updateError);
@@ -94,6 +100,8 @@ serve(async (req) => {
     });
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders);
+    if (authResponse) return authResponse;
     console.error('Error in ai-plan-commit:', error);
     return new Response(JSON.stringify({ 
       success: false, 

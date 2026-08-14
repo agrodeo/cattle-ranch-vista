@@ -21,9 +21,9 @@ export function SecurityDashboard() {
         throw new Error('No authenticated user');
       }
 
-      // Call the password hashing function
+      // Call the password hashing function (identity is verified server-side from the JWT)
       const { data, error } = await supabase.functions.invoke('hash-existing-passwords', {
-        body: { requesterId: user.id }
+        body: {}
       });
 
       if (error) {

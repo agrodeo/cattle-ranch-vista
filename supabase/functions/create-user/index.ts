@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://deno.land/x/supabase@1.2.0/mod.ts";
 import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import { z } from "https://deno.land/x/zod@v3.23.8/mod.ts";
+import { authErrorResponse, requireManager } from "../_shared/tenant.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,7 +14,6 @@ const CreateUserSchema = z.object({
   password: z.string().min(8).max(128),
   fullName: z.string().min(1).max(100).trim(),
   role: z.enum(['admin', 'employee', 'read_only']),
-  requesterId: z.string().uuid(),
 });
 
 serve(async (req) => {
@@ -37,19 +37,11 @@ serve(async (req) => {
       )
     }
 
-    const { email, password, fullName, role, requesterId } = parsed.data;
+    const { email, password, fullName, role } = parsed.data;
 
-    // Verify that the requester is an admin
-    const { data: requesterRole, error: roleError } = await supabaseAdmin
-      .rpc('get_user_role', { _user_id: requesterId })
-
-    if (roleError || (Array.isArray(requesterRole) ? requesterRole[0] : requesterRole) !== 'admin') {
-      console.error('Authorization error:', roleError)
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized - admin access required' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    // Verify the requester from their JWT (never from the request body)
+    const caller = await requireManager(req);
+    const requesterId = caller.id;
 
     // Hash the password securely
     const saltRounds = 12
@@ -118,6 +110,8 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    const authResponse = authErrorResponse(error, corsHeaders)
+    if (authResponse) return authResponse
     console.error('Error in create-user function:', error)
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
