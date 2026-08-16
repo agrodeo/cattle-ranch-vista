@@ -30,7 +30,11 @@ export interface UserAccess {
   trialEndsAt: string | null;
   /** True if the user is eligible to start their first 14-day trial. */
   canStartTrial: boolean;
+  /** True while inside the automatic 7-day signup trial (server-resolved). */
+  isInFreeTrial: boolean;
+  freeTrialDaysRemaining: number;
 }
+
 
 export function useUserAccess(): UserAccess {
   const { subscriptionStatus, loading } = useSubscription();
