@@ -25,7 +25,14 @@ export const FreeTrialBanner = ({ onViewPlans }: FreeTrialBannerProps) => {
     }
   });
 
-  if (!isInFreeTrial() || dismissed) return null;
+  // Never show the signup trial to anyone with a paid plan or an active plan trial
+  const hasPlan =
+    subscriptionStatus?.status === 'active' ||
+    subscriptionStatus?.status === 'trial' ||
+    !!subscriptionStatus?.isTrialActive ||
+    subscriptionStatus?.accessLevel === 'paid';
+
+  if (hasPlan || !isInFreeTrial() || dismissed) return null;
 
   const daysRemaining = Math.max(1, Math.min(7, subscriptionStatus?.signupTrialDaysRemaining ?? 0));
   const currentDay = Math.max(1, 8 - daysRemaining);
