@@ -1075,6 +1075,7 @@ export type Database = {
           name: string
           owner_id: string | null
           province_code: string | null
+          trial_started_at: string | null
         }
         Insert: {
           country_code?: string | null
@@ -1085,6 +1086,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           province_code?: string | null
+          trial_started_at?: string | null
         }
         Update: {
           country_code?: string | null
@@ -1095,6 +1097,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           province_code?: string | null
+          trial_started_at?: string | null
         }
         Relationships: []
       }
@@ -3296,6 +3299,9 @@ export type Database = {
           is_trial_active: boolean
           max_animals: number
           plan: string
+          signup_trial_active: boolean
+          signup_trial_days_remaining: number
+          signup_trial_end_date: string
           subscription_end_date: string
           subscription_status: string
           trial_days_remaining: number
