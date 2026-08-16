@@ -29,7 +29,6 @@ export const FreeTrialBanner = ({ onViewPlans }: FreeTrialBannerProps) => {
   const hasPlan =
     subscriptionStatus?.status === 'active' ||
     subscriptionStatus?.status === 'trial' ||
-    !!subscriptionStatus?.isSubscriptionActive ||
     !!subscriptionStatus?.isTrialActive ||
     subscriptionStatus?.accessLevel === 'paid';
 
