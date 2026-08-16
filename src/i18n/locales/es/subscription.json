@@ -192,5 +192,17 @@
     "limitReached": "Límite alcanzado",
     "limitMessage": "Has alcanzado tu límite de 20 mensajes este mes. Actualiza a un plan superior para chat ilimitado.",
     "messagesRemaining": "{{count}} mensajes restantes este mes"
+  },
+  "freeTrial": {
+    "banner": {
+      "title": "Día {{day}} de 7 de tu prueba gratuita",
+      "subtitle": "Elegí un plan y sumá 14 días más gratis",
+      "cta": "Ver planes",
+      "dismiss": "Cerrar"
+    },
+    "ended": {
+      "title": "Tu período de prueba gratuito terminó",
+      "description": "Tu período de prueba gratuito terminó. Elegí un plan para seguir usando agrodeo — tenés 14 días adicionales gratis con cualquier plan."
+    }
   }
 }

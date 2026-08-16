@@ -192,5 +192,17 @@
     "limitReached": "Limite atingido",
     "limitMessage": "Você atingiu seu limite de 20 mensagens este mês. Atualize para um plano superior para chat ilimitado.",
     "messagesRemaining": "{{count}} mensagens restantes este mês"
+  },
+  "freeTrial": {
+    "banner": {
+      "title": "Dia {{day}} de 7 do seu teste gratuito",
+      "subtitle": "Escolha um plano e ganhe 14 dias grátis a mais",
+      "cta": "Ver planos",
+      "dismiss": "Fechar"
+    },
+    "ended": {
+      "title": "Seu período de teste gratuito terminou",
+      "description": "Seu período de teste gratuito terminou. Escolha um plano para continuar — ganhe 14 dias adicionais grátis com qualquer plano."
+    }
   }
 }
