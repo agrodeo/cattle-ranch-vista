@@ -12,6 +12,7 @@ import { ReportKpiCard } from "@/components/reports/shared/ReportKpiCard";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
 import { SubscriptionPlansModal } from "@/components/subscription/SubscriptionPlansModal";
+import { FreeTrialBanner } from "@/components/subscription/FreeTrialBanner";
 import { PlanLimitAlert } from "@/components/dashboard/PlanLimitAlert";
 import { NoCabanaAlert } from "@/components/dashboard/NoCabanaAlert";
 import { RecentActivityItem } from "@/components/dashboard/RecentActivityItem";
@@ -74,6 +75,9 @@ const Dashboard = () => {
   return (
     <div className="mx-auto w-full max-w-screen-sm px-3 sm:px-4 lg:max-w-screen-2xl lg:px-6 pb-24 lg:pb-0 overflow-x-hidden">
       <div className="space-y-6">
+        {/* Free 7-day trial banner */}
+        <FreeTrialBanner onViewPlans={() => setShowPlansModal(true)} />
+
         {/* Alerts */}
         {warnings.noCabana && <NoCabanaAlert onCreateCabana={handleCreateCabana} />}
         {warnings.overAnimalLimit && cabana && (

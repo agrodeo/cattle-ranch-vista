@@ -5,6 +5,7 @@ import { Lock, Crown, Zap, Smartphone, Globe } from "lucide-react";
 import { detectPlatform, getPlatformStoreName } from "@/lib/platformDetection";
 import { usePlatformPurchase } from "@/hooks/usePlatformPurchase";
 import { useTranslation } from "react-i18next";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface ReadOnlyModeModalProps {
   open: boolean;
@@ -14,7 +15,10 @@ interface ReadOnlyModeModalProps {
 
 export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyModeModalProps) => {
   const { t } = useTranslation('subscription');
+  const { subscriptionStatus } = useSubscription();
   const platform = detectPlatform();
+  // State B: the automatic 7-day signup trial ended and no plan was chosen yet
+  const signupTrialEnded = !subscriptionStatus?.trialUsed;
   const { initiatePurchase } = usePlatformPurchase();
   const storeName = getPlatformStoreName(platform);
 
@@ -38,9 +42,11 @@ export const ReadOnlyModeModal = ({ open, onOpenChange, onUpgrade }: ReadOnlyMod
           <div className="mx-auto mb-4 p-3 rounded-full bg-orange-100">
             <Lock className="h-8 w-8 text-orange-600" />
           </div>
-          <DialogTitle className="text-xl">{t('readOnlyModal.title')}</DialogTitle>
+          <DialogTitle className="text-xl">
+            {signupTrialEnded ? t('freeTrial.ended.title') : t('readOnlyModal.title')}
+          </DialogTitle>
           <DialogDescription>
-            {t('readOnlyModal.description')}
+            {signupTrialEnded ? t('freeTrial.ended.description') : t('readOnlyModal.description')}
           </DialogDescription>
           <div className="flex items-center justify-center gap-2 mt-2 text-sm text-muted-foreground">
             {platform === 'web' ? <Globe className="h-4 w-4" /> : <Smartphone className="h-4 w-4" />}

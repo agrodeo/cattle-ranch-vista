@@ -23,6 +23,10 @@ export interface SubscriptionStatus {
   subscriptionEndDate: string | null;
   trialEndDate: string | null;
   subscriptionDaysRemaining: number | null;
+  /** 7-day automatic trial granted at signup (server-resolved). */
+  signupTrialActive: boolean;
+  signupTrialDaysRemaining: number;
+  signupTrialEndDate: string | null;
   /** Derived single-value access level the UI can switch on. */
   accessLevel: SubscriptionAccessLevel;
 }
@@ -116,10 +120,14 @@ export const useSubscription = () => {
         const resolvedStatus: SubscriptionStatus['status'] =
           raw.subscription_status ?? (raw.is_subscription_active ? 'active' : raw.is_trial_active ? 'trial' : 'none');
 
+        const signupTrialActive = !!raw.signup_trial_active;
+
         const accessLevel: SubscriptionAccessLevel =
           resolvedStatus === 'active'
             ? 'paid'
             : resolvedStatus === 'trial'
+            ? 'trial'
+            : signupTrialActive
             ? 'trial'
             : raw.is_read_only
             ? 'blocked'
@@ -139,6 +147,9 @@ export const useSubscription = () => {
           subscriptionEndDate: status.subscription_end_date || null,
           trialEndDate: status.trial_end_date || null,
           subscriptionDaysRemaining: subDaysRemaining,
+          signupTrialActive,
+          signupTrialDaysRemaining: raw.signup_trial_days_remaining ?? 0,
+          signupTrialEndDate: raw.signup_trial_end_date ?? null,
           accessLevel,
         };
         setSubscriptionStatus(newStatus);
@@ -194,6 +205,15 @@ export const useSubscription = () => {
   }, [subscriptionStatus]);
 
 
+  /**
+   * True while the cabaña is inside the automatic 7-day signup trial.
+   * Resolved entirely from server data (`trial_started_at` in the DB) so the
+   * client clock cannot be manipulated to extend it.
+   */
+  const isInFreeTrial = useCallback((): boolean => {
+    return !!subscriptionStatus?.signupTrialActive;
+  }, [subscriptionStatus]);
+
   const isFeatureAvailable = useCallback((feature: 'reports' | 'analytics' | 'export'): boolean => {
     if (!subscriptionStatus) return false;
     
@@ -241,6 +261,7 @@ export const useSubscription = () => {
     loading,
     fetchSubscriptionStatus,
     checkAnimalLimit,
+    isInFreeTrial,
     isFeatureAvailable,
     upgradePlan,
     planNames: PLAN_NAMES,
