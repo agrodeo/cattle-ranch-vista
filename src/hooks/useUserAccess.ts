@@ -55,6 +55,9 @@ export function useUserAccess(): UserAccess {
       trialDaysRemaining: s?.trialDaysRemaining ?? 0,
       trialEndsAt: s?.trialEndDate ?? null,
       canStartTrial: !trialUsed,
+      isInFreeTrial: !!s?.signupTrialActive,
+      freeTrialDaysRemaining: s?.signupTrialDaysRemaining ?? 0,
     };
   }, [subscriptionStatus, loading]);
+
 }
