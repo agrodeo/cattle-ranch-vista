@@ -18,7 +18,8 @@
   },
   "animals": {
     "count": "{{current}} de {{max}} animais",
-    "limitReached": "Você atingiu o limite de animais"
+    "limitReached": "Você atingiu o limite de animais",
+    "unlimited": "Ilimitado"
   },
   "readOnlyModal": {
     "title": "Limite de animais excedido",
@@ -203,6 +204,12 @@
     "ended": {
       "title": "Seu período de teste gratuito terminou",
       "description": "Seu período de teste gratuito terminou. Escolha um plano para continuar — ganhe 14 dias adicionais grátis com qualquer plano."
+    },
+    "card": {
+      "title": "Teste gratuito de 7 dias",
+      "subtitle": "Acesso completo — faltam {{days}} dias",
+      "label": "Teste gratuito de 7 dias",
+      "hint": "Escolha um plano e ganhe 14 dias grátis a mais"
     }
   }
 }

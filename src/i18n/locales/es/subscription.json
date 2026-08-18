@@ -18,7 +18,8 @@
   },
   "animals": {
     "count": "{{current}} de {{max}} animales",
-    "limitReached": "Has alcanzado el límite de animales"
+    "limitReached": "Has alcanzado el límite de animales",
+    "unlimited": "Ilimitado"
   },
   "readOnlyModal": {
     "title": "Límite de animales superado",
@@ -203,6 +204,12 @@
     "ended": {
       "title": "Tu período de prueba gratuito terminó",
       "description": "Tu período de prueba gratuito terminó. Elegí un plan para seguir usando agrodeo — tenés 14 días adicionales gratis con cualquier plan."
+    },
+    "card": {
+      "title": "Prueba gratuita de 7 días",
+      "subtitle": "Acceso completo — te quedan {{days}} días",
+      "label": "Prueba gratuita de 7 días",
+      "hint": "Elegí un plan y sumá 14 días más gratis"
     }
   }
 }
