@@ -117,13 +117,22 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2.5 rounded-xl ${getPlanColor(subscriptionStatus.plan)} text-white`}>
-                {getPlanIcon(subscriptionStatus.plan)}
+              <div className={`p-2.5 rounded-xl ${inSignupTrial ? 'bg-primary' : getPlanColor(subscriptionStatus.plan)} text-white`}>
+                {inSignupTrial ? <Clock className="h-4 w-4" /> : getPlanIcon(subscriptionStatus.plan)}
               </div>
               <div>
-                <CardTitle className="text-lg">Plan {planNames[subscriptionStatus.plan]}</CardTitle>
+                <CardTitle className="text-lg">
+                  {inSignupTrial
+                    ? t('freeTrial.card.title', { defaultValue: 'Prueba gratuita de 7 días' })
+                    : `Plan ${planNames[subscriptionStatus.plan]}`}
+                </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  {subscriptionStatus.isSubscriptionActive
+                  {inSignupTrial
+                    ? t('freeTrial.card.subtitle', {
+                        days: signupDaysRemaining,
+                        defaultValue: 'Acceso completo — te quedan {{days}} días',
+                      })
+                    : subscriptionStatus.isSubscriptionActive
                     ? t('plan.active', { defaultValue: 'Suscripción activa' })
                     : subscriptionStatus.isTrialActive && subscriptionStatus.plan !== 'free'
                     ? t('trial.active', { defaultValue: 'Prueba gratuita activa' })
