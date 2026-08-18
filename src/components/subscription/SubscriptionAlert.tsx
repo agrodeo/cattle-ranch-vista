@@ -76,8 +76,15 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
     );
   }
 
+  // Automatic 7-day signup trial: show the trial, not the inflated "free" limit
+  const inSignupTrial = !!subscriptionStatus.signupTrialActive && !subscriptionStatus.isSubscriptionActive;
+  const signupDaysRemaining = Math.max(0, Math.min(7, subscriptionStatus.signupTrialDaysRemaining ?? 0));
+  const unlimitedAnimals = subscriptionStatus.maxAnimals >= 99999;
+
   // Limit warnings
-  const animalUsagePercent = (subscriptionStatus.currentAnimalsCount / subscriptionStatus.maxAnimals) * 100;
+  const animalUsagePercent = unlimitedAnimals
+    ? 0
+    : (subscriptionStatus.currentAnimalsCount / subscriptionStatus.maxAnimals) * 100;
 
   return (
     <div className="space-y-4">
