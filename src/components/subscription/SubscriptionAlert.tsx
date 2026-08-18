@@ -76,8 +76,15 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
     );
   }
 
+  // Automatic 7-day signup trial: show the trial, not the inflated "free" limit
+  const inSignupTrial = !!subscriptionStatus.signupTrialActive && !subscriptionStatus.isSubscriptionActive;
+  const signupDaysRemaining = Math.max(0, Math.min(7, subscriptionStatus.signupTrialDaysRemaining ?? 0));
+  const unlimitedAnimals = subscriptionStatus.maxAnimals >= 99999;
+
   // Limit warnings
-  const animalUsagePercent = (subscriptionStatus.currentAnimalsCount / subscriptionStatus.maxAnimals) * 100;
+  const animalUsagePercent = unlimitedAnimals
+    ? 0
+    : (subscriptionStatus.currentAnimalsCount / subscriptionStatus.maxAnimals) * 100;
 
   return (
     <div className="space-y-4">
@@ -110,13 +117,22 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2.5 rounded-xl ${getPlanColor(subscriptionStatus.plan)} text-white`}>
-                {getPlanIcon(subscriptionStatus.plan)}
+              <div className={`p-2.5 rounded-xl ${inSignupTrial ? 'bg-primary' : getPlanColor(subscriptionStatus.plan)} text-white`}>
+                {inSignupTrial ? <Clock className="h-4 w-4" /> : getPlanIcon(subscriptionStatus.plan)}
               </div>
               <div>
-                <CardTitle className="text-lg">Plan {planNames[subscriptionStatus.plan]}</CardTitle>
+                <CardTitle className="text-lg">
+                  {inSignupTrial
+                    ? t('freeTrial.card.title', { defaultValue: 'Prueba gratuita de 7 días' })
+                    : `Plan ${planNames[subscriptionStatus.plan]}`}
+                </CardTitle>
                 <CardDescription className="text-xs mt-0.5">
-                  {subscriptionStatus.isSubscriptionActive
+                  {inSignupTrial
+                    ? t('freeTrial.card.subtitle', {
+                        days: signupDaysRemaining,
+                        defaultValue: 'Acceso completo — te quedan {{days}} días',
+                      })
+                    : subscriptionStatus.isSubscriptionActive
                     ? t('plan.active', { defaultValue: 'Suscripción activa' })
                     : subscriptionStatus.isTrialActive && subscriptionStatus.plan !== 'free'
                     ? t('trial.active', { defaultValue: 'Prueba gratuita activa' })
@@ -130,6 +146,31 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Automatic 7-day signup trial */}
+          {inSignupTrial && (
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  {t('freeTrial.card.label', { defaultValue: 'Prueba gratuita de 7 días' })}
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {signupDaysRemaining} {t('common:days', { defaultValue: 'días' })}
+                </Badge>
+              </div>
+              <Progress value={Math.max(0, ((7 - signupDaysRemaining) / 7) * 100)} className="h-1.5" />
+              {subscriptionStatus.signupTrialEndDate && (
+                <p className="text-xs text-muted-foreground">
+                  {t('trial.endsOn', { defaultValue: 'Vence el' })}{' '}
+                  {format(new Date(subscriptionStatus.signupTrialEndDate), "d 'de' MMMM, yyyy", { locale: es })}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t('freeTrial.card.hint', { defaultValue: 'Elegí un plan y sumá 14 días más gratis' })}
+              </p>
+            </div>
+          )}
+
           {/* Trial days remaining — hide for free plan (free is forever, no trial) */}
           {subscriptionStatus.isTrialActive && subscriptionStatus.plan !== 'free' && (
             <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-3 space-y-2">
@@ -191,10 +232,12 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t('animals.label', { defaultValue: 'Animales' })}</span>
               <span className="font-medium">
-                {subscriptionStatus.currentAnimalsCount} / {subscriptionStatus.maxAnimals}
+                {unlimitedAnimals
+                  ? `${subscriptionStatus.currentAnimalsCount} / ${t('animals.unlimited', { defaultValue: 'Ilimitado' })}`
+                  : `${subscriptionStatus.currentAnimalsCount} / ${subscriptionStatus.maxAnimals}`}
               </span>
             </div>
-            <Progress value={Math.min(100, animalUsagePercent)} className="h-1.5" />
+            {!unlimitedAnimals && <Progress value={Math.min(100, animalUsagePercent)} className="h-1.5" />}
           </div>
         </CardContent>
       </Card>

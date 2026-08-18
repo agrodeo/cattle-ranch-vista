@@ -18,7 +18,8 @@
   },
   "animals": {
     "count": "{{current}} of {{max}} animals",
-    "limitReached": "You've reached the animal limit"
+    "limitReached": "You've reached the animal limit",
+    "unlimited": "Unlimited"
   },
   "readOnlyModal": {
     "title": "Animal limit exceeded",
@@ -203,6 +204,12 @@
     "ended": {
       "title": "Your free trial has ended",
       "description": "Your free trial has ended. Choose a plan to keep using agrodeo — get 14 more free days with any plan."
+    },
+    "card": {
+      "title": "7-day free trial",
+      "subtitle": "Full access — {{days}} days left",
+      "label": "7-day free trial",
+      "hint": "Choose a plan and get 14 more free days"
     }
   }
 }
