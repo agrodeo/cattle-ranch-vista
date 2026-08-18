@@ -232,10 +232,12 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t('animals.label', { defaultValue: 'Animales' })}</span>
               <span className="font-medium">
-                {subscriptionStatus.currentAnimalsCount} / {subscriptionStatus.maxAnimals}
+                {unlimitedAnimals
+                  ? `${subscriptionStatus.currentAnimalsCount} / ${t('animals.unlimited', { defaultValue: 'Ilimitado' })}`
+                  : `${subscriptionStatus.currentAnimalsCount} / ${subscriptionStatus.maxAnimals}`}
               </span>
             </div>
-            <Progress value={Math.min(100, animalUsagePercent)} className="h-1.5" />
+            {!unlimitedAnimals && <Progress value={Math.min(100, animalUsagePercent)} className="h-1.5" />}
           </div>
         </CardContent>
       </Card>
