@@ -146,6 +146,31 @@ export const SubscriptionAlert = ({ onUpgrade }: SubscriptionAlertProps) => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Automatic 7-day signup trial */}
+          {inSignupTrial && (
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                  <Clock className="h-4 w-4 text-primary" />
+                  {t('freeTrial.card.label', { defaultValue: 'Prueba gratuita de 7 días' })}
+                </div>
+                <Badge variant="secondary" className="text-xs">
+                  {signupDaysRemaining} {t('common:days', { defaultValue: 'días' })}
+                </Badge>
+              </div>
+              <Progress value={Math.max(0, ((7 - signupDaysRemaining) / 7) * 100)} className="h-1.5" />
+              {subscriptionStatus.signupTrialEndDate && (
+                <p className="text-xs text-muted-foreground">
+                  {t('trial.endsOn', { defaultValue: 'Vence el' })}{' '}
+                  {format(new Date(subscriptionStatus.signupTrialEndDate), "d 'de' MMMM, yyyy", { locale: es })}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t('freeTrial.card.hint', { defaultValue: 'Elegí un plan y sumá 14 días más gratis' })}
+              </p>
+            </div>
+          )}
+
           {/* Trial days remaining — hide for free plan (free is forever, no trial) */}
           {subscriptionStatus.isTrialActive && subscriptionStatus.plan !== 'free' && (
             <div className="rounded-xl bg-blue-500/5 border border-blue-500/10 p-3 space-y-2">
