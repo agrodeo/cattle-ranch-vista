@@ -445,6 +445,10 @@
     "data": "Datos",
     "unscoredSection": "{{count}} animales sin datos suficientes",
     "emptyState": "No hay animales activos en tu establecimiento.",
-    "months": "m"
+    "months": "m",
+    "health": "Salud",
+    "sortHealth": "Salud",
+    "confidence": "Confianza",
+    "categoryPercentile": "Top {{pct}}% de su categoría"
   }
 }

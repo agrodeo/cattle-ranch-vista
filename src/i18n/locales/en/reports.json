@@ -445,6 +445,10 @@
     "data": "Data",
     "unscoredSection": "{{count}} animals without enough data",
     "emptyState": "There are no active animals in your ranch.",
-    "months": "m"
+    "months": "m",
+    "health": "Health",
+    "sortHealth": "Health",
+    "confidence": "Confidence",
+    "categoryPercentile": "Top {{pct}}% of its category"
   }
 }
