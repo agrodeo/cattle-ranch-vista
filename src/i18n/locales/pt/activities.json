@@ -779,7 +779,25 @@
     "matchedByVisual": "vinculado por etiqueta visual",
     "eidColumn": "EID / caravana_electronica (opcional se houver id_tag): identificador eletrônico",
     "dateColumn": "fecha ou date (opcional): data da pesagem (AAAA-MM-DD ou DD/MM/AAAA)",
-    "dateHeader": "Data"
+    "dateHeader": "Data",
+    "emptyFile": "O arquivo não contém dados",
+    "mapping": {
+      "title": "Mapear colunas",
+      "description": "Atribua cada campo do sistema a uma coluna do seu arquivo. Confira a pré-visualização antes de continuar.",
+      "ignore": "Ignorar",
+      "continue": "Continuar",
+      "preview": "Pré-visualização (primeiras linhas)",
+      "weightRequired": "Você precisa mapear a coluna de Peso (kg).",
+      "identifierRequired": "Mapeie ao menos Brinco visual ou Brinco eletrônico (EID).",
+      "duplicateColumn": "A mesma coluna está atribuída a mais de um campo.",
+      "fields": {
+        "id_tag": "Brinco visual",
+        "caravana_electronica": "Brinco eletrônico (EID)",
+        "peso_kg": "Peso (kg)",
+        "fecha": "Data",
+        "notas": "Notas"
+      }
+    }
   },
   "artificialInsemination": {
     "registerTitle": "Registrar Inseminação Artificial",
