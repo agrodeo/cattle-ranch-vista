@@ -93,14 +93,66 @@ function parseDateValue(v: any): string | undefined {
   return undefined;
 }
 
-function mapRow(rawRow: Record<string, any>): Omit<WeighingRow, 'isValid' | 'errors'> {
-  const r = normalizeKeys(rawRow);
-  const id_tag = pick(r, VISUAL_TAG_ALIASES);
-  const caravana_electronica = pick(r, ELECTRONIC_TAG_ALIASES);
-  const weightRaw = pick(r, WEIGHT_ALIASES);
+type FieldKey = 'id_tag' | 'caravana_electronica' | 'peso_kg' | 'fecha' | 'notas';
+type ColumnMapping = Record<FieldKey, string>; // '' = ignorar
+
+const FIELD_KEYS: FieldKey[] = ['id_tag', 'caravana_electronica', 'peso_kg', 'fecha', 'notas'];
+
+const FIELD_ALIASES: Record<FieldKey, string[]> = {
+  id_tag: VISUAL_TAG_ALIASES,
+  caravana_electronica: ELECTRONIC_TAG_ALIASES,
+  peso_kg: WEIGHT_ALIASES,
+  fecha: DATE_ALIASES,
+  notas: NOTES_ALIASES,
+};
+
+const EMPTY_MAPPING: ColumnMapping = {
+  id_tag: '',
+  caravana_electronica: '',
+  peso_kg: '',
+  fecha: '',
+  notas: '',
+};
+
+/** Pre-selects the mapping using the historical aliases (exact match first, then contains). */
+function autoDetectMapping(headers: string[]): ColumnMapping {
+  const mapping: ColumnMapping = { ...EMPTY_MAPPING };
+  const used = new Set<string>();
+
+  for (const field of FIELD_KEYS) {
+    const aliases = FIELD_ALIASES[field];
+    let found = headers.find(h => !used.has(h) && aliases.includes(h.trim().toLowerCase()));
+    if (!found) {
+      found = headers.find(h => {
+        if (used.has(h)) return false;
+        const low = h.trim().toLowerCase();
+        return aliases.some(a => low.includes(a));
+      });
+    }
+    if (found) {
+      mapping[field] = found;
+      used.add(found);
+    }
+  }
+
+  return mapping;
+}
+
+function mapRow(rawRow: Record<string, any>, mapping: ColumnMapping): Omit<WeighingRow, 'isValid' | 'errors'> {
+  const val = (field: FieldKey) => {
+    const col = mapping[field];
+    if (!col) return undefined;
+    const v = rawRow[col];
+    if (v === undefined || v === null || String(v).trim() === '') return undefined;
+    return v;
+  };
+
+  const id_tag = val('id_tag');
+  const caravana_electronica = val('caravana_electronica');
+  const weightRaw = val('peso_kg');
   const peso_kg = weightRaw !== undefined ? parseFloat(String(weightRaw).replace(',', '.')) : NaN;
-  const fecha = parseDateValue(pick(r, DATE_ALIASES));
-  const notas = pick(r, NOTES_ALIASES);
+  const fecha = parseDateValue(val('fecha'));
+  const notas = val('notas');
   return {
     id_tag: id_tag !== undefined ? String(id_tag).trim() : '',
     caravana_electronica: caravana_electronica !== undefined ? String(caravana_electronica).trim() : '',
