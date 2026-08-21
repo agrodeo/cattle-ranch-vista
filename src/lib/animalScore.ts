@@ -1,4 +1,6 @@
 import type { BreedBenchmarks } from "./breedBenchmarks";
+import { inbreedingLevel, inbreedingPenalty, type InbreedingInfo } from "./inbreeding";
+
 
 export type AnimalCategory = "Ternero" | "Ternera" | "Novillito" | "Vaquillona" | "Vaca" | "Toro";
 
