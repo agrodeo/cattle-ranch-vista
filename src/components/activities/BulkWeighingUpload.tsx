@@ -369,18 +369,22 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     };
 
     for (const a of animals || []) {
+      for (const k of visualKeys(a.id_tag || undefined)) addKey(k, a, 'id_tag');
       for (const k of tagKeys(a.id_tag || undefined)) addKey(k, a, 'id_tag');
+      for (const k of visualKeys(a.caravana_electronica || undefined)) addKey(k, a, 'eid');
       for (const k of tagKeys(a.caravana_electronica || undefined)) addKey(k, a, 'eid');
     }
 
-    const allStoredKeys = Array.from(lookup.keys());
+    const allStoredKeys = Array.from(lookup.keys()).filter(k => !k.startsWith('V:'));
 
     const findAnimal = (
       visual?: string,
       eid?: string
     ): { entry?: LookupEntry; ambiguous: boolean } => {
       const incomingKeys = [
+        ...visualKeys(visual).map(k => ({ k, field: 'id_tag' as const })),
         ...tagKeys(visual).map(k => ({ k, field: 'id_tag' as const })),
+        ...visualKeys(eid).map(k => ({ k, field: 'eid' as const })),
         ...tagKeys(eid).map(k => ({ k, field: 'eid' as const })),
       ];
 
@@ -396,7 +400,8 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
       // 2) Suffix match (>=8 digit overlap), must be unique animal
       const matches = new Map<string, LookupEntry>();
       for (const { k } of incomingKeys) {
-        if (k.length < 8) continue;
+        if (k.startsWith('V:') || k.length < 8) continue;
+
         for (const stored of allStoredKeys) {
           if (stored.length < 8) continue;
           if (stored.endsWith(k) || k.endsWith(stored)) {
