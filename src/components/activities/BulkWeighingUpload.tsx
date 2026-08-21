@@ -511,6 +511,9 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
   const resetForm = () => {
     setCurrentStep(1);
     setFile(null);
+    setHeaders([]);
+    setRawRows([]);
+    setMapping({ ...EMPTY_MAPPING });
     setWeighingData([]);
     setValidData([]);
     setInvalidData([]);
