@@ -37,6 +37,7 @@ interface BulkWeighingUploadProps {
 
 const digitsOnly = (s?: string) => (s ?? "").replace(/\D/g, "");
 
+// Keys for electronic tags (EID/RFID): long numeric sequences
 function tagKeys(raw?: string): string[] {
   const d = digitsOnly(raw);
   if (!d) return [];
@@ -46,6 +47,24 @@ function tagKeys(raw?: string): string[] {
   return Array.from(new Set([d, noLeadingZeros, last12, last12NoZeros]))
     .filter(k => k.length >= 6);
 }
+
+// Keys for visual tags (caravana visual): may be short and alphanumeric (e.g. "A001", "12")
+function visualKeys(raw?: string): string[] {
+  const s = (raw ?? "").trim();
+  if (!s) return [];
+  const upper = s.toUpperCase();
+  const compact = upper.replace(/\s+/g, "");
+  const alnum = upper.replace(/[^A-Z0-9]/g, "");
+  const keys = new Set<string>([`V:${upper}`, `V:${compact}`, `V:${alnum}`]);
+  const d = digitsOnly(s);
+  if (d) {
+    keys.add(`V:${d}`);
+    const noZeros = d.replace(/^0+/, "");
+    if (noZeros) keys.add(`V:${noZeros}`);
+  }
+  return Array.from(keys).filter(k => k.length > 2);
+}
+
 
 function normalizeKeys(row: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = {};
