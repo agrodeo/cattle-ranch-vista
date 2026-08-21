@@ -378,7 +378,20 @@ function scoreHealth(input: AnimalScoreInput): DimensionResult {
 /* Genetics                                                            */
 /* ------------------------------------------------------------------ */
 
-function scoreGenetics(input: AnimalScoreInput): DimensionResult {
+function resolveInbreeding(input: AnimalScoreInput): InbreedingInfo | null {
+  const f = input.inbreedingCoefficient;
+  if (f == null || !Number.isFinite(f)) return null;
+  const parentsKnown = input.inbreedingParentsKnown ?? (input.hasFather && input.hasMother);
+  const coefficient = Math.max(0, Math.min(1, f));
+  return {
+    coefficient,
+    level: parentsKnown ? inbreedingLevel(coefficient) : "none",
+    penalty: parentsKnown ? inbreedingPenalty(coefficient) : 0,
+    parentsKnown,
+  };
+}
+
+function scoreGenetics(input: AnimalScoreInput, inbreeding: InbreedingInfo | null): DimensionResult {
   const hasPedigree = input.registrationLevel != null || input.dnaVerified || input.hasFather || input.hasMother;
   const hasDeps = input.depPercentile != null;
   if (!hasPedigree && !hasDeps) return NO_DATA;
@@ -404,15 +417,29 @@ function scoreGenetics(input: AnimalScoreInput): DimensionResult {
   }
   pedigreeScore = clamp(pedigreeScore);
 
+  let score: number;
+  let completeness: number;
   if (hasDeps) {
     // Real genetic merit dominates over how complete the pedigree paperwork is.
     const depScore = percentileToScore(input.depPercentile as number);
-    const score = hasPedigree ? clamp(depScore * 0.65 + pedigreeScore * 0.35) : depScore;
-    return { score, completeness: Math.min(100, ((fieldsAvailable + 1) / 4) * 100) };
+    score = hasPedigree ? clamp(depScore * 0.65 + pedigreeScore * 0.35) : depScore;
+    completeness = Math.min(100, ((fieldsAvailable + 1) / 4) * 100);
+  } else {
+    score = pedigreeScore;
+    completeness = (fieldsAvailable / 4) * 100;
   }
 
-  return { score: pedigreeScore, completeness: (fieldsAvailable / 4) * 100 };
+  // Inbreeding depression: consanguinity lowers real genetic value even with
+  // impeccable paperwork. A clean, verified outcross earns a small bonus.
+  if (inbreeding?.parentsKnown) {
+    if (inbreeding.penalty > 0) score = clamp(score - inbreeding.penalty);
+    else score = clamp(score + 0.3);
+    completeness = Math.min(100, completeness + 10);
+  }
+
+  return { score, completeness };
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Longevity (cows only)                                               */
