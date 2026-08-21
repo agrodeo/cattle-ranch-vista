@@ -166,6 +166,9 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
   const { t } = useTranslation(['activities', 'common']);
   const [currentStep, setCurrentStep] = useState(1);
   const [, setFile] = useState<File | null>(null);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [rawRows, setRawRows] = useState<Record<string, any>[]>([]);
+  const [mapping, setMapping] = useState<ColumnMapping>({ ...EMPTY_MAPPING });
   const [weighingData, setWeighingData] = useState<WeighingRow[]>([]);
   const [validData, setValidData] = useState<WeighingRow[]>([]);
   const [invalidData, setInvalidData] = useState<WeighingRow[]>([]);
@@ -196,15 +199,18 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     setLoading(true);
 
     try {
-      const weighings = await parseFile(selectedFile, isCSV);
-      const validated = await validateWeighingData(weighings);
-      setWeighingData(validated);
-
-      const valid = validated.filter(w => w.isValid);
-      const invalid = validated.filter(w => !w.isValid);
-
-      setValidData(valid);
-      setInvalidData(invalid);
+      const { headers: fileHeaders, rows } = await parseFile(selectedFile, isCSV);
+      if (rows.length === 0 || fileHeaders.length === 0) {
+        toast({
+          variant: "destructive",
+          title: t('common:status.error'),
+          description: t('activities:bulkWeighing.emptyFile'),
+        });
+        return;
+      }
+      setHeaders(fileHeaders);
+      setRawRows(rows);
+      setMapping(autoDetectMapping(fileHeaders));
       setCurrentStep(2);
     } catch (error) {
       console.error('Error parsing file:', error);
@@ -218,7 +224,10 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     }
   };
 
-  const parseFile = async (file: File, isCSV: boolean): Promise<Omit<WeighingRow, 'isValid' | 'errors'>[]> => {
+  const parseFile = async (
+    file: File,
+    isCSV: boolean
+  ): Promise<{ headers: string[]; rows: Record<string, any>[] }> => {
     return new Promise((resolve, reject) => {
       if (isCSV) {
         // Read as text to normalize \r-only line endings before parsing
@@ -234,8 +243,11 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
               delimitersToGuess: [';', ',', '\t', '|'],
               transformHeader: (h) => String(h).trim(),
             });
-            const weighings = (results.data || []).map(mapRow);
-            resolve(weighings);
+            const rows = (results.data || []) as Record<string, any>[];
+            const fileHeaders = (results.meta?.fields || Object.keys(rows[0] || {}))
+              .filter(h => h !== undefined && h !== null && String(h).trim() !== '')
+              .map(h => String(h));
+            resolve({ headers: fileHeaders, rows });
           } catch (err) {
             reject(err);
           }
@@ -249,8 +261,17 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
             const workbook = XLSX.read(data, { type: 'array', cellDates: false });
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { raw: true });
-            resolve(jsonData.map(mapRow));
+            const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+            const seen = new Set<string>();
+            const fileHeaders: string[] = [];
+            for (const row of jsonData) {
+              for (const k of Object.keys(row)) {
+                if (String(k).trim() === '' || seen.has(k)) continue;
+                seen.add(k);
+                fileHeaders.push(k);
+              }
+            }
+            resolve({ headers: fileHeaders, rows: jsonData });
           } catch (error) {
             reject(error);
           }
@@ -258,6 +279,43 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
         reader.readAsArrayBuffer(file);
       }
     });
+  };
+
+  const mappingErrors = (() => {
+    const errs: string[] = [];
+    if (!mapping.peso_kg) errs.push(t('activities:bulkWeighing.mapping.weightRequired'));
+    if (!mapping.id_tag && !mapping.caravana_electronica) {
+      errs.push(t('activities:bulkWeighing.mapping.identifierRequired'));
+    }
+    const used = FIELD_KEYS.map(f => mapping[f]).filter(Boolean);
+    if (new Set(used).size !== used.length) {
+      errs.push(t('activities:bulkWeighing.mapping.duplicateColumn'));
+    }
+    return errs;
+  })();
+
+  const previewRows = rawRows.slice(0, 3).map(r => mapRow(r, mapping));
+
+  const handleConfirmMapping = async () => {
+    if (mappingErrors.length > 0) return;
+    setLoading(true);
+    try {
+      const weighings = rawRows.map(r => mapRow(r, mapping));
+      const validated = await validateWeighingData(weighings);
+      setWeighingData(validated);
+      setValidData(validated.filter(w => w.isValid));
+      setInvalidData(validated.filter(w => !w.isValid));
+      setCurrentStep(3);
+    } catch (error) {
+      console.error('Error validating file:', error);
+      toast({
+        variant: "destructive",
+        title: t('common:status.error'),
+        description: t('activities:bulkWeighing.errorProcessing'),
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validateWeighingData = async (
