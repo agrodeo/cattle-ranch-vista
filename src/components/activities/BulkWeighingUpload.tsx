@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useActivities } from "@/hooks/useActivities";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,14 +94,66 @@ function parseDateValue(v: any): string | undefined {
   return undefined;
 }
 
-function mapRow(rawRow: Record<string, any>): Omit<WeighingRow, 'isValid' | 'errors'> {
-  const r = normalizeKeys(rawRow);
-  const id_tag = pick(r, VISUAL_TAG_ALIASES);
-  const caravana_electronica = pick(r, ELECTRONIC_TAG_ALIASES);
-  const weightRaw = pick(r, WEIGHT_ALIASES);
+type FieldKey = 'id_tag' | 'caravana_electronica' | 'peso_kg' | 'fecha' | 'notas';
+type ColumnMapping = Record<FieldKey, string>; // '' = ignorar
+
+const FIELD_KEYS: FieldKey[] = ['id_tag', 'caravana_electronica', 'peso_kg', 'fecha', 'notas'];
+
+const FIELD_ALIASES: Record<FieldKey, string[]> = {
+  id_tag: VISUAL_TAG_ALIASES,
+  caravana_electronica: ELECTRONIC_TAG_ALIASES,
+  peso_kg: WEIGHT_ALIASES,
+  fecha: DATE_ALIASES,
+  notas: NOTES_ALIASES,
+};
+
+const EMPTY_MAPPING: ColumnMapping = {
+  id_tag: '',
+  caravana_electronica: '',
+  peso_kg: '',
+  fecha: '',
+  notas: '',
+};
+
+/** Pre-selects the mapping using the historical aliases (exact match first, then contains). */
+function autoDetectMapping(headers: string[]): ColumnMapping {
+  const mapping: ColumnMapping = { ...EMPTY_MAPPING };
+  const used = new Set<string>();
+
+  for (const field of FIELD_KEYS) {
+    const aliases = FIELD_ALIASES[field];
+    let found = headers.find(h => !used.has(h) && aliases.includes(h.trim().toLowerCase()));
+    if (!found) {
+      found = headers.find(h => {
+        if (used.has(h)) return false;
+        const low = h.trim().toLowerCase();
+        return aliases.some(a => low.includes(a));
+      });
+    }
+    if (found) {
+      mapping[field] = found;
+      used.add(found);
+    }
+  }
+
+  return mapping;
+}
+
+function mapRow(rawRow: Record<string, any>, mapping: ColumnMapping): Omit<WeighingRow, 'isValid' | 'errors'> {
+  const val = (field: FieldKey) => {
+    const col = mapping[field];
+    if (!col) return undefined;
+    const v = rawRow[col];
+    if (v === undefined || v === null || String(v).trim() === '') return undefined;
+    return v;
+  };
+
+  const id_tag = val('id_tag');
+  const caravana_electronica = val('caravana_electronica');
+  const weightRaw = val('peso_kg');
   const peso_kg = weightRaw !== undefined ? parseFloat(String(weightRaw).replace(',', '.')) : NaN;
-  const fecha = parseDateValue(pick(r, DATE_ALIASES));
-  const notas = pick(r, NOTES_ALIASES);
+  const fecha = parseDateValue(val('fecha'));
+  const notas = val('notas');
   return {
     id_tag: id_tag !== undefined ? String(id_tag).trim() : '',
     caravana_electronica: caravana_electronica !== undefined ? String(caravana_electronica).trim() : '',
@@ -114,6 +167,9 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
   const { t } = useTranslation(['activities', 'common']);
   const [currentStep, setCurrentStep] = useState(1);
   const [, setFile] = useState<File | null>(null);
+  const [headers, setHeaders] = useState<string[]>([]);
+  const [rawRows, setRawRows] = useState<Record<string, any>[]>([]);
+  const [mapping, setMapping] = useState<ColumnMapping>({ ...EMPTY_MAPPING });
   const [weighingData, setWeighingData] = useState<WeighingRow[]>([]);
   const [validData, setValidData] = useState<WeighingRow[]>([]);
   const [invalidData, setInvalidData] = useState<WeighingRow[]>([]);
@@ -144,15 +200,18 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     setLoading(true);
 
     try {
-      const weighings = await parseFile(selectedFile, isCSV);
-      const validated = await validateWeighingData(weighings);
-      setWeighingData(validated);
-
-      const valid = validated.filter(w => w.isValid);
-      const invalid = validated.filter(w => !w.isValid);
-
-      setValidData(valid);
-      setInvalidData(invalid);
+      const { headers: fileHeaders, rows } = await parseFile(selectedFile, isCSV);
+      if (rows.length === 0 || fileHeaders.length === 0) {
+        toast({
+          variant: "destructive",
+          title: t('common:status.error'),
+          description: t('activities:bulkWeighing.emptyFile'),
+        });
+        return;
+      }
+      setHeaders(fileHeaders);
+      setRawRows(rows);
+      setMapping(autoDetectMapping(fileHeaders));
       setCurrentStep(2);
     } catch (error) {
       console.error('Error parsing file:', error);
@@ -166,7 +225,10 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     }
   };
 
-  const parseFile = async (file: File, isCSV: boolean): Promise<Omit<WeighingRow, 'isValid' | 'errors'>[]> => {
+  const parseFile = async (
+    file: File,
+    isCSV: boolean
+  ): Promise<{ headers: string[]; rows: Record<string, any>[] }> => {
     return new Promise((resolve, reject) => {
       if (isCSV) {
         // Read as text to normalize \r-only line endings before parsing
@@ -182,8 +244,11 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
               delimitersToGuess: [';', ',', '\t', '|'],
               transformHeader: (h) => String(h).trim(),
             });
-            const weighings = (results.data || []).map(mapRow);
-            resolve(weighings);
+            const rows = (results.data || []) as Record<string, any>[];
+            const fileHeaders = (results.meta?.fields || Object.keys(rows[0] || {}))
+              .filter(h => h !== undefined && h !== null && String(h).trim() !== '')
+              .map(h => String(h));
+            resolve({ headers: fileHeaders, rows });
           } catch (err) {
             reject(err);
           }
@@ -197,8 +262,17 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
             const workbook = XLSX.read(data, { type: 'array', cellDates: false });
             const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { raw: true });
-            resolve(jsonData.map(mapRow));
+            const jsonData: Record<string, any>[] = XLSX.utils.sheet_to_json(worksheet, { raw: true });
+            const seen = new Set<string>();
+            const fileHeaders: string[] = [];
+            for (const row of jsonData) {
+              for (const k of Object.keys(row)) {
+                if (String(k).trim() === '' || seen.has(k)) continue;
+                seen.add(k);
+                fileHeaders.push(k);
+              }
+            }
+            resolve({ headers: fileHeaders, rows: jsonData });
           } catch (error) {
             reject(error);
           }
@@ -206,6 +280,43 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
         reader.readAsArrayBuffer(file);
       }
     });
+  };
+
+  const mappingErrors = (() => {
+    const errs: string[] = [];
+    if (!mapping.peso_kg) errs.push(t('activities:bulkWeighing.mapping.weightRequired'));
+    if (!mapping.id_tag && !mapping.caravana_electronica) {
+      errs.push(t('activities:bulkWeighing.mapping.identifierRequired'));
+    }
+    const used = FIELD_KEYS.map(f => mapping[f]).filter(Boolean);
+    if (new Set(used).size !== used.length) {
+      errs.push(t('activities:bulkWeighing.mapping.duplicateColumn'));
+    }
+    return errs;
+  })();
+
+  const previewRows = rawRows.slice(0, 3).map(r => mapRow(r, mapping));
+
+  const handleConfirmMapping = async () => {
+    if (mappingErrors.length > 0) return;
+    setLoading(true);
+    try {
+      const weighings = rawRows.map(r => mapRow(r, mapping));
+      const validated = await validateWeighingData(weighings);
+      setWeighingData(validated);
+      setValidData(validated.filter(w => w.isValid));
+      setInvalidData(validated.filter(w => !w.isValid));
+      setCurrentStep(3);
+    } catch (error) {
+      console.error('Error validating file:', error);
+      toast({
+        variant: "destructive",
+        title: t('common:status.error'),
+        description: t('activities:bulkWeighing.errorProcessing'),
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validateWeighingData = async (
@@ -401,6 +512,9 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
   const resetForm = () => {
     setCurrentStep(1);
     setFile(null);
+    setHeaders([]);
+    setRawRows([]);
+    setMapping({ ...EMPTY_MAPPING });
     setWeighingData([]);
     setValidData([]);
     setInvalidData([]);
@@ -540,6 +654,109 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
           )}
 
           {currentStep === 2 && (
+            <div className="space-y-4 lg:space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base lg:text-lg">
+                    {t('activities:bulkWeighing.mapping.title')}
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    {t('activities:bulkWeighing.mapping.description')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    {FIELD_KEYS.map((field) => (
+                      <div key={field} className="flex flex-col lg:flex-row lg:items-center gap-2">
+                        <div className="lg:w-56 shrink-0 text-sm font-medium">
+                          {t(`activities:bulkWeighing.mapping.fields.${field}`)}
+                          {(field === 'peso_kg') && <span className="text-destructive"> *</span>}
+                        </div>
+                        <Select
+                          value={mapping[field] || '__ignore__'}
+                          onValueChange={(v) =>
+                            setMapping(prev => ({ ...prev, [field]: v === '__ignore__' ? '' : v }))
+                          }
+                        >
+                          <SelectTrigger className="h-11 lg:h-10 w-full lg:max-w-sm">
+                            <SelectValue placeholder={t('activities:bulkWeighing.mapping.ignore')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__ignore__">
+                              {t('activities:bulkWeighing.mapping.ignore')}
+                            </SelectItem>
+                            {headers.map((h) => (
+                              <SelectItem key={h} value={h}>{h}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+
+                  {mappingErrors.length > 0 && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="space-y-1">
+                        {mappingErrors.map((e, i) => (
+                          <div key={i} className="text-sm">• {e}</div>
+                        ))}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div>
+                    <p className="text-sm font-medium mb-2">
+                      {t('activities:bulkWeighing.mapping.preview')}
+                    </p>
+                    <div className="border rounded-lg overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            {FIELD_KEYS.map((f) => (
+                              <TableHead key={f} className="whitespace-nowrap">
+                                {t(`activities:bulkWeighing.mapping.fields.${f}`)}
+                              </TableHead>
+                            ))}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {previewRows.map((row, i) => (
+                            <TableRow key={i}>
+                              <TableCell>{row.id_tag || '—'}</TableCell>
+                              <TableCell>{row.caravana_electronica || '—'}</TableCell>
+                              <TableCell>{row.peso_kg || '—'}</TableCell>
+                              <TableCell>{row.fecha || '—'}</TableCell>
+                              <TableCell>{row.notas || '—'}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="sticky bottom-0 left-0 right-0 bg-background border-t lg:border-0 p-4 lg:p-0 lg:static flex flex-col lg:flex-row gap-2 lg:justify-between -mx-4 lg:mx-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(1)}
+                  className="h-12 lg:h-10 w-full lg:w-auto order-2 lg:order-1"
+                >
+                  {t('activities:bulkWeighing.back')}
+                </Button>
+                <Button
+                  onClick={handleConfirmMapping}
+                  disabled={loading || mappingErrors.length > 0}
+                  className="h-12 lg:h-10 w-full lg:w-auto order-1 lg:order-2"
+                >
+                  {loading ? t('activities:bulkWeighing.processing') : t('activities:bulkWeighing.mapping.continue')}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 3 && (
             <div className="space-y-4 lg:space-y-6">
               <div className="grid gap-3 grid-cols-3 lg:gap-4">
                 <Card>
@@ -692,7 +909,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
               <div className="sticky bottom-0 left-0 right-0 bg-background border-t lg:border-0 p-4 lg:p-0 lg:static flex flex-col lg:flex-row gap-2 lg:justify-between -mx-4 lg:mx-0">
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep(1)}
+                  onClick={() => setCurrentStep(2)}
                   className="h-12 lg:h-10 w-full lg:w-auto order-2 lg:order-1"
                 >
                   {t('activities:bulkWeighing.back')}

@@ -858,7 +858,25 @@
     "matchedByVisual": "vinculado por caravana visual",
     "eidColumn": "EID / caravana_electronica (opcional si hay id_tag): identificador electrónico",
     "dateColumn": "fecha o date (opcional): fecha del pesaje (YYYY-MM-DD o DD/MM/YYYY)",
-    "dateHeader": "Fecha"
+    "dateHeader": "Fecha",
+    "emptyFile": "El archivo no contiene datos",
+    "mapping": {
+      "title": "Mapear columnas",
+      "description": "Asigná cada campo del sistema a una columna de tu archivo. Revisá la vista previa antes de continuar.",
+      "ignore": "Ignorar",
+      "continue": "Continuar",
+      "preview": "Vista previa (primeras filas)",
+      "weightRequired": "Tenés que mapear la columna de Peso (kg).",
+      "identifierRequired": "Mapeá al menos Caravana visual o Caravana electrónica (EID).",
+      "duplicateColumn": "Hay una misma columna asignada a más de un campo.",
+      "fields": {
+        "id_tag": "Caravana visual",
+        "caravana_electronica": "Caravana electrónica (EID)",
+        "peso_kg": "Peso (kg)",
+        "fecha": "Fecha",
+        "notas": "Notas"
+      }
+    }
   },
   "artificialInsemination": {
     "registerTitle": "Registrar Inseminación Artificial",

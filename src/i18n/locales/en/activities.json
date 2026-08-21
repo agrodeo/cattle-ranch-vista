@@ -777,7 +777,25 @@
     "matchedByVisual": "matched by visual tag",
     "eidColumn": "EID / caravana_electronica (optional if id_tag present): electronic identifier",
     "dateColumn": "date or fecha (optional): weighing date (YYYY-MM-DD or DD/MM/YYYY)",
-    "dateHeader": "Date"
+    "dateHeader": "Date",
+    "emptyFile": "The file contains no data",
+    "mapping": {
+      "title": "Map columns",
+      "description": "Assign each system field to a column in your file. Check the preview before continuing.",
+      "ignore": "Ignore",
+      "continue": "Continue",
+      "preview": "Preview (first rows)",
+      "weightRequired": "You must map the Weight (kg) column.",
+      "identifierRequired": "Map at least Visual tag or Electronic tag (EID).",
+      "duplicateColumn": "The same column is assigned to more than one field.",
+      "fields": {
+        "id_tag": "Visual tag",
+        "caravana_electronica": "Electronic tag (EID)",
+        "peso_kg": "Weight (kg)",
+        "fecha": "Date",
+        "notas": "Notes"
+      }
+    }
   },
   "artificialInsemination": {
     "registerTitle": "Register Artificial Insemination",
