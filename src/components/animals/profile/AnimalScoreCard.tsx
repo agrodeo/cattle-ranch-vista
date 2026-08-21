@@ -3,6 +3,7 @@ import { AlertTriangle, BarChart3, Info, TrendingDown, TrendingUp, Trophy } from
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { ScoreExplanation } from "./ScoreExplanation";
 import type { AnimalScore } from "@/lib/animalScore";
 
 interface AnimalScoreCardProps {
@@ -160,6 +161,8 @@ export function AnimalScoreCard({ score, sex, className }: AnimalScoreCardProps)
             ))}
           </div>
         )}
+
+        <ScoreExplanation score={score} />
 
         {score.dataCompleteness < 60 && (
           <div className="flex gap-2 rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">

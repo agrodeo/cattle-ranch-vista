@@ -1,4 +1,6 @@
 import type { BreedBenchmarks } from "./breedBenchmarks";
+import { inbreedingLevel, inbreedingPenalty, type InbreedingInfo } from "./inbreeding";
+
 
 export type AnimalCategory = "Ternero" | "Ternera" | "Novillito" | "Vaquillona" | "Vaca" | "Toro";
 
@@ -51,7 +53,12 @@ export interface AnimalScoreInput {
   /** Cow-only longevity metrics. */
   reproductiveYears?: number | null;
   calvingIntervalDays?: number | null;
+  /** Inbreeding coefficient F (0-1) of this animal, from the herd pedigree. */
+  inbreedingCoefficient?: number | null;
+  /** True when both parents are known (so the coefficient is meaningful). */
+  inbreedingParentsKnown?: boolean;
 }
+
 
 export interface AnimalScore {
   overall: number;
@@ -75,6 +82,18 @@ export interface AnimalScore {
   /** 0-100 confidence: share of the category weight that is backed by data. */
   confidence: number;
   peerGroupSize: number;
+  /** Inbreeding info applied to the genetics dimension (null when unknown). */
+  inbreeding: InbreedingInfo | null;
+  /** Human-readable reasons behind each dimension score. */
+  explanations: ScoreExplanation[];
+}
+
+export interface ScoreExplanation {
+  dimension: DimensionKey;
+  /** i18n key under animals:score.why.* */
+  key: string;
+  params?: Record<string, string | number>;
+  tone: "positive" | "negative" | "neutral";
 }
 
 export interface ScoreBadge {
@@ -83,6 +102,7 @@ export interface ScoreBadge {
   labelParams?: Record<string, string | number>;
   variant: "success" | "warning" | "info" | "neutral";
 }
+
 
 export type DimensionKey = "production" | "reproduction" | "health" | "genetics" | "longevity";
 export type DimensionWeights = Record<DimensionKey, number>;
@@ -358,7 +378,20 @@ function scoreHealth(input: AnimalScoreInput): DimensionResult {
 /* Genetics                                                            */
 /* ------------------------------------------------------------------ */
 
-function scoreGenetics(input: AnimalScoreInput): DimensionResult {
+function resolveInbreeding(input: AnimalScoreInput): InbreedingInfo | null {
+  const f = input.inbreedingCoefficient;
+  if (f == null || !Number.isFinite(f)) return null;
+  const parentsKnown = input.inbreedingParentsKnown ?? (input.hasFather && input.hasMother);
+  const coefficient = Math.max(0, Math.min(1, f));
+  return {
+    coefficient,
+    level: parentsKnown ? inbreedingLevel(coefficient) : "none",
+    penalty: parentsKnown ? inbreedingPenalty(coefficient) : 0,
+    parentsKnown,
+  };
+}
+
+function scoreGenetics(input: AnimalScoreInput, inbreeding: InbreedingInfo | null): DimensionResult {
   const hasPedigree = input.registrationLevel != null || input.dnaVerified || input.hasFather || input.hasMother;
   const hasDeps = input.depPercentile != null;
   if (!hasPedigree && !hasDeps) return NO_DATA;
@@ -384,15 +417,29 @@ function scoreGenetics(input: AnimalScoreInput): DimensionResult {
   }
   pedigreeScore = clamp(pedigreeScore);
 
+  let score: number;
+  let completeness: number;
   if (hasDeps) {
     // Real genetic merit dominates over how complete the pedigree paperwork is.
     const depScore = percentileToScore(input.depPercentile as number);
-    const score = hasPedigree ? clamp(depScore * 0.65 + pedigreeScore * 0.35) : depScore;
-    return { score, completeness: Math.min(100, ((fieldsAvailable + 1) / 4) * 100) };
+    score = hasPedigree ? clamp(depScore * 0.65 + pedigreeScore * 0.35) : depScore;
+    completeness = Math.min(100, ((fieldsAvailable + 1) / 4) * 100);
+  } else {
+    score = pedigreeScore;
+    completeness = (fieldsAvailable / 4) * 100;
   }
 
-  return { score: pedigreeScore, completeness: (fieldsAvailable / 4) * 100 };
+  // Inbreeding depression: consanguinity lowers real genetic value even with
+  // impeccable paperwork. A clean, verified outcross earns a small bonus.
+  if (inbreeding?.parentsKnown) {
+    if (inbreeding.penalty > 0) score = clamp(score - inbreeding.penalty);
+    else score = clamp(score + 0.3);
+    completeness = Math.min(100, completeness + 10);
+  }
+
+  return { score, completeness };
 }
+
 
 /* ------------------------------------------------------------------ */
 /* Longevity (cows only)                                               */
@@ -442,6 +489,134 @@ function generateBadges(
 }
 
 /* ------------------------------------------------------------------ */
+/* Explanations                                                        */
+/* ------------------------------------------------------------------ */
+
+function buildExplanations(
+  input: AnimalScoreInput,
+  dims: Record<DimensionKey, DimensionResult>,
+  category: AnimalCategory,
+  inbreeding: InbreedingInfo | null,
+): ScoreExplanation[] {
+  const out: ScoreExplanation[] = [];
+  const push = (dimension: DimensionKey, key: string, tone: ScoreExplanation["tone"], params?: Record<string, string | number>) =>
+    out.push({ dimension, key, tone, params });
+
+  // --- Production -----------------------------------------------------
+  if (dims.production.completeness > 0) {
+    if (input.adg != null && input.adg > 0) {
+      const target = input.benchmarks.dailyGain.good;
+      push("production", "adg", input.adg >= target ? "positive" : input.adg >= target * 0.8 ? "neutral" : "negative", {
+        adg: round1(input.adg * 100) / 100,
+        target: round1(target * 100) / 100,
+      });
+      if (input.weightRecordCount < 3) push("production", "fewWeighings", "neutral", { count: input.weightRecordCount });
+    } else {
+      push("production", "noAdg", "neutral");
+    }
+    if (input.peerAdgPercentile != null && (input.peerGroupSize ?? 0) >= 5) {
+      push("production", "peerAdg", input.peerAdgPercentile >= 50 ? "positive" : "negative", {
+        pct: input.peerAdgPercentile,
+        n: input.peerGroupSize ?? 0,
+      });
+    }
+    if (input.pesoDestete != null && input.pesoDestete > 0) {
+      push("production", "weaning", input.pesoDestete >= input.benchmarks.weaningWeight.good ? "positive" : "neutral", {
+        kg: Math.round(input.pesoDestete),
+        target: Math.round(input.benchmarks.weaningWeight.good),
+      });
+    }
+    if (input.pesoNacimiento != null && input.pesoNacimiento > 0) {
+      push("production", "birthWeight", "neutral", {
+        kg: Math.round(input.pesoNacimiento),
+        target: Math.round(input.benchmarks.birthWeight.good),
+      });
+    }
+  } else {
+    push("production", "noWeightData", "negative");
+  }
+
+  // --- Reproduction ---------------------------------------------------
+  if (dims.reproduction.completeness > 0) {
+    if (category === "Toro") {
+      if ((input.bullServedFemales ?? 0) > 0) {
+        push("reproduction", "bullServices", (input.bullPregnancyRate ?? 0) >= 0.75 ? "positive" : "neutral", {
+          females: input.bullServedFemales ?? 0,
+          rate: Math.round((input.bullPregnancyRate ?? 0) * 100),
+        });
+      }
+      if ((input.bullLiveOffspring ?? 0) > 0) push("reproduction", "liveOffspring", "positive", { count: input.bullLiveOffspring ?? 0 });
+      if (input.scrotalCircumference) push("reproduction", "scrotal", input.scrotalCircumference >= 34 ? "positive" : "neutral", { cm: input.scrotalCircumference });
+    } else {
+      if (input.totalServices > 0) {
+        push("reproduction", "services", input.successfulPregnancies / input.totalServices >= 0.7 ? "positive" : "negative", {
+          services: input.totalServices,
+          pregnancies: input.successfulPregnancies,
+        });
+      }
+      if (input.totalOffspring > 0) push("reproduction", "offspring", input.liveOffspring >= input.totalOffspring ? "positive" : "negative", {
+        total: input.totalOffspring,
+        live: input.liveOffspring,
+      });
+      if (input.calvingIntervalDays) push("reproduction", "calvingInterval", input.calvingIntervalDays <= 420 ? "positive" : "negative", { days: input.calvingIntervalDays });
+      if (input.isPregnant) push("reproduction", "pregnant", "positive");
+    }
+  } else if (category === "Vaca" || category === "Vaquillona" || category === "Toro") {
+    push("reproduction", "noReproData", "neutral");
+  }
+
+  // --- Health ---------------------------------------------------------
+  if (dims.health.completeness > 0) {
+    if (input.requiredVaccines > 0) {
+      push("health", "vaccines", input.completedVaccines >= input.requiredVaccines ? "positive" : "negative", {
+        done: input.completedVaccines,
+        required: input.requiredVaccines,
+      });
+      if (input.overdueVaccines > 0) push("health", "overdueVaccines", "negative", { count: input.overdueVaccines });
+    }
+    if (input.condicionCorporal != null) {
+      push("health", "bcs", input.condicionCorporal >= 3 && input.condicionCorporal <= 4 ? "positive" : "negative", { bcs: input.condicionCorporal });
+    }
+  } else {
+    push("health", "noHealthData", "neutral");
+  }
+
+  // --- Genetics -------------------------------------------------------
+  if (dims.genetics.completeness > 0) {
+    if (input.registrationLevel) push("genetics", "registration", "positive", { level: input.registrationLevel });
+    if (input.dnaVerified) push("genetics", "dna", "positive");
+    if (input.depPercentile != null) push("genetics", "deps", input.depPercentile >= 50 ? "positive" : "negative", { pct: input.depPercentile });
+    if (!input.hasFather || !input.hasMother) push("genetics", "incompletePedigree", "negative");
+  } else {
+    push("genetics", "noGeneticData", "neutral");
+  }
+
+  if (inbreeding?.parentsKnown) {
+    const pct = Math.round(inbreeding.coefficient * 1000) / 10;
+    if (inbreeding.penalty > 0) {
+      push("genetics", `inbreeding.${inbreeding.level}`, inbreeding.level === "low" ? "neutral" : "negative", {
+        pct,
+        penalty: inbreeding.penalty,
+      });
+    } else {
+      push("genetics", "inbreeding.none", "positive", { pct });
+    }
+  } else if (inbreeding) {
+    push("genetics", "inbreeding.unknown", "neutral");
+  }
+
+  // --- Longevity ------------------------------------------------------
+  if (dims.longevity.completeness > 0) {
+    push("longevity", "productivity", dims.longevity.score >= 7 ? "positive" : "negative", {
+      live: input.liveOffspring,
+      years: Math.round((input.reproductiveYears ?? 0) * 10) / 10,
+    });
+  }
+
+  return out;
+}
+
+/* ------------------------------------------------------------------ */
 /* Main                                                               */
 /* ------------------------------------------------------------------ */
 
@@ -449,14 +624,16 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
   const ageMonths = input.ageMonths ?? monthsFromBirth(input.birthDate);
   const category = resolveCategory(input.sex, ageMonths);
   const weights = CATEGORY_WEIGHTS[category];
+  const inbreeding = resolveInbreeding(input);
 
   const dims: Record<DimensionKey, DimensionResult> = {
     production: scoreProduction(input, category),
     reproduction: scoreReproduction(input, category, ageMonths),
     health: scoreHealth(input),
-    genetics: scoreGenetics(input),
+    genetics: scoreGenetics(input, inbreeding),
     longevity: scoreLongevity(input, category, ageMonths),
   };
+
 
   const dimensionKeys = Object.keys(weights) as DimensionKey[];
   const applicable = dimensionKeys.reduce((acc, key) => {
@@ -507,5 +684,8 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
     applicable,
     confidence: Math.round(coverage * 100),
     peerGroupSize: input.peerGroupSize ?? 0,
+    inbreeding,
+    explanations: buildExplanations(input, dims, category, inbreeding),
   };
+
 }

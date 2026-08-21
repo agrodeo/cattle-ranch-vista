@@ -652,6 +652,54 @@
       "pending": "Pendente",
       "overdue": "Atrasado"
     },
-    "eliteSire": "Reprodutor elite"
+    "eliteSire": "Reprodutor elite",
+    "why": {
+      "title": "Por que esta pontuação?",
+      "intro": "Categoria {{category}} · confiança dos dados {{confidence}}%",
+      "weight": "peso {{pct}}%",
+      "notCounted": "Dados insuficientes: não entra na pontuação final.",
+      "formula": "A pontuação geral é a média ponderada das dimensões com dados, conforme a categoria do animal.",
+      "adg": "Ganho médio diário {{adg}} kg/dia (meta {{target}} kg/dia)",
+      "peerAdg": "Percentil {{pct}} de ganho diário no seu grupo comparável ({{n}} animais)",
+      "fewWeighings": "Apenas {{count}} pesagem(ns) registrada(s): menos confiável",
+      "noAdg": "Sem ganho diário calculado (faltam pesagens sucessivas)",
+      "weaning": "Peso à desmama {{kg}} kg (referência {{target}} kg)",
+      "birthWeight": "Peso ao nascer {{kg}} kg (referência {{target}} kg)",
+      "noWeightData": "Sem dados de peso: a produção não pode ser avaliada",
+      "bullServices": "{{females}} fêmeas cobertas com {{rate}}% de prenhez",
+      "liveOffspring": "{{count}} cria(s) viva(s) registrada(s)",
+      "scrotal": "Circunferência escrotal {{cm}} cm",
+      "services": "{{pregnancies}} prenhezes em {{services}} serviços",
+      "offspring": "{{live}} de {{total}} crias vivas",
+      "calvingInterval": "Intervalo entre partos de {{days}} dias",
+      "pregnant": "Atualmente prenha",
+      "noReproData": "Sem histórico reprodutivo registrado",
+      "vaccines": "{{done}} de {{required}} vacinas em dia",
+      "overdueVaccines": "{{count}} vacina(s) atrasada(s)",
+      "bcs": "Condição corporal {{bcs}} (ideal 3-4)",
+      "noHealthData": "Sem dados sanitários registrados",
+      "registration": "Nível de registro {{level}}",
+      "dna": "Genealogia verificada por DNA",
+      "deps": "DEPs no percentil {{pct}} da raça",
+      "incompletePedigree": "Pedigree incompleto (falta pai ou mãe)",
+      "noGeneticData": "Sem dados genéticos ou de registro",
+      "productivity": "{{live}} cria(s) viva(s) em {{years}} anos produtivos",
+      "inbreedingSummary": "Consanguinidade estimada (F): {{pct}}%",
+      "inbreeding": {
+        "none": "Sem consanguinidade detectada (F {{pct}}%): cruzamento limpo",
+        "low": "Consanguinidade baixa: F {{pct}}% (−{{penalty}} pts)",
+        "moderate": "Consanguinidade moderada: F {{pct}}% (−{{penalty}} pts)",
+        "high": "Consanguinidade alta: F {{pct}}% (−{{penalty}} pts)",
+        "severe": "Consanguinidade severa: F {{pct}}% (−{{penalty}} pts)",
+        "unknown": "Não é possível calcular consanguinidade sem pai e mãe"
+      },
+      "inbreedingLevel": {
+        "none": "Sem consanguinidade",
+        "low": "Baixa",
+        "moderate": "Moderada",
+        "high": "Alta",
+        "severe": "Severa"
+      }
+    }
   }
 }

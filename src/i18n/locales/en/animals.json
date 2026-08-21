@@ -652,6 +652,54 @@
       "pending": "Pending",
       "overdue": "Overdue"
     },
-    "eliteSire": "Elite sire"
+    "eliteSire": "Elite sire",
+    "why": {
+      "title": "Why this score?",
+      "intro": "Category {{category}} · data confidence {{confidence}}%",
+      "weight": "weight {{pct}}%",
+      "notCounted": "Not enough data: excluded from the overall score.",
+      "formula": "The overall score is the weighted average of the dimensions with data, based on the animal's category.",
+      "adg": "Average daily gain {{adg}} kg/day (target {{target}} kg/day)",
+      "peerAdg": "{{pct}}th percentile of daily gain within its peer group ({{n}} animals)",
+      "fewWeighings": "Only {{count}} weighing(s) recorded: less reliable",
+      "noAdg": "No daily gain computed (missing successive weighings)",
+      "weaning": "Weaning weight {{kg}} kg (reference {{target}} kg)",
+      "birthWeight": "Birth weight {{kg}} kg (reference {{target}} kg)",
+      "noWeightData": "No weight data: production cannot be assessed",
+      "bullServices": "{{females}} females served with {{rate}}% pregnancy rate",
+      "liveOffspring": "{{count}} live offspring recorded",
+      "scrotal": "Scrotal circumference {{cm}} cm",
+      "services": "{{pregnancies}} pregnancies out of {{services}} services",
+      "offspring": "{{live}} of {{total}} offspring alive",
+      "calvingInterval": "Calving interval of {{days}} days",
+      "pregnant": "Currently pregnant",
+      "noReproData": "No reproductive history recorded",
+      "vaccines": "{{done}} of {{required}} vaccines up to date",
+      "overdueVaccines": "{{count}} overdue vaccine(s)",
+      "bcs": "Body condition {{bcs}} (optimal 3-4)",
+      "noHealthData": "No health data recorded",
+      "registration": "Registration level {{level}}",
+      "dna": "Pedigree DNA-verified",
+      "deps": "EPDs in the {{pct}}th percentile of the breed",
+      "incompletePedigree": "Incomplete pedigree (sire or dam missing)",
+      "noGeneticData": "No genetic or registration data",
+      "productivity": "{{live}} live offspring over {{years}} productive years",
+      "inbreedingSummary": "Estimated inbreeding (F): {{pct}}%",
+      "inbreeding": {
+        "none": "No inbreeding detected (F {{pct}}%): clean outcross",
+        "low": "Low inbreeding: F {{pct}}% (−{{penalty}} pts)",
+        "moderate": "Moderate inbreeding: F {{pct}}% (−{{penalty}} pts)",
+        "high": "High inbreeding: F {{pct}}% (−{{penalty}} pts)",
+        "severe": "Severe inbreeding: F {{pct}}% (−{{penalty}} pts)",
+        "unknown": "Inbreeding cannot be computed without sire and dam"
+      },
+      "inbreedingLevel": {
+        "none": "No inbreeding",
+        "low": "Low",
+        "moderate": "Moderate",
+        "high": "High",
+        "severe": "Severe"
+      }
+    }
   }
 }
