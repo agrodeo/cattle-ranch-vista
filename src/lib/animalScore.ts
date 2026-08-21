@@ -569,6 +569,12 @@ function buildExplanations(
         total: input.totalOffspring,
         live: input.liveOffspring,
       });
+      if (category === "Vaca") {
+        const parities = Math.max(input.totalOffspring, input.totalPregnancies);
+        if (parities > 0 && parities < 6) push("reproduction", "shortTrackRecord", "neutral", { parities });
+        else if (parities >= 6) push("reproduction", "provenTrackRecord", "positive", { parities });
+      }
+
       if (input.calvingIntervalDays) push("reproduction", "calvingInterval", input.calvingIntervalDays <= 420 ? "positive" : "negative", { days: input.calvingIntervalDays });
       if (input.isPregnant) push("reproduction", "pregnant", "positive");
     }
