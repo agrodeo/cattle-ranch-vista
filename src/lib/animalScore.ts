@@ -276,14 +276,25 @@ function scoreCowReproduction(input: AnimalScoreInput): DimensionResult {
     fieldsAvailable++;
   }
   if (input.totalOffspring > 0) {
-    weightedSum += clamp(3 + input.liveOffspring * 1.5, 3, 10) * 0.15;
+    // Lifetime productivity: each extra parity adds real, proven value.
+    weightedSum += clamp(4 + input.liveOffspring * 0.9, 3, 10) * 0.15;
     totalWeight += 0.15;
     fieldsAvailable++;
   }
 
   if (totalWeight === 0) return NO_DATA;
-  return { score: clamp(weightedSum / totalWeight), completeness: (fieldsAvailable / fieldsTotal) * 100 };
+
+  const base = clamp(weightedSum / totalWeight);
+  // Track record (reliability): a 2/2 cow is promising, an 8/8 cow is proven.
+  // Perfect records only reach the top of the scale with enough parities.
+  const parities = Math.max(input.totalOffspring, input.totalPregnancies);
+  const reliability = Math.min(1, parities / 6);
+  const ceiling = 8.2 + 1.8 * reliability;
+  const score = Math.min(base, ceiling);
+
+  return { score: clamp(score), completeness: (fieldsAvailable / fieldsTotal) * 100 };
 }
+
 
 function scoreHeiferReproduction(input: AnimalScoreInput, ageMonths: number | null): DimensionResult {
   const age = ageMonths ?? 0;
