@@ -37,6 +37,7 @@ interface BulkWeighingUploadProps {
 
 const digitsOnly = (s?: string) => (s ?? "").replace(/\D/g, "");
 
+// Keys for electronic tags (EID/RFID): long numeric sequences
 function tagKeys(raw?: string): string[] {
   const d = digitsOnly(raw);
   if (!d) return [];
@@ -46,6 +47,24 @@ function tagKeys(raw?: string): string[] {
   return Array.from(new Set([d, noLeadingZeros, last12, last12NoZeros]))
     .filter(k => k.length >= 6);
 }
+
+// Keys for visual tags (caravana visual): may be short and alphanumeric (e.g. "A001", "12")
+function visualKeys(raw?: string): string[] {
+  const s = (raw ?? "").trim();
+  if (!s) return [];
+  const upper = s.toUpperCase();
+  const compact = upper.replace(/\s+/g, "");
+  const alnum = upper.replace(/[^A-Z0-9]/g, "");
+  const keys = new Set<string>([`V:${upper}`, `V:${compact}`, `V:${alnum}`]);
+  const d = digitsOnly(s);
+  if (d) {
+    keys.add(`V:${d}`);
+    const noZeros = d.replace(/^0+/, "");
+    if (noZeros) keys.add(`V:${noZeros}`);
+  }
+  return Array.from(keys).filter(k => k.length > 2);
+}
+
 
 function normalizeKeys(row: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = {};
@@ -350,18 +369,22 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
     };
 
     for (const a of animals || []) {
+      for (const k of visualKeys(a.id_tag || undefined)) addKey(k, a, 'id_tag');
       for (const k of tagKeys(a.id_tag || undefined)) addKey(k, a, 'id_tag');
+      for (const k of visualKeys(a.caravana_electronica || undefined)) addKey(k, a, 'eid');
       for (const k of tagKeys(a.caravana_electronica || undefined)) addKey(k, a, 'eid');
     }
 
-    const allStoredKeys = Array.from(lookup.keys());
+    const allStoredKeys = Array.from(lookup.keys()).filter(k => !k.startsWith('V:'));
 
     const findAnimal = (
       visual?: string,
       eid?: string
     ): { entry?: LookupEntry; ambiguous: boolean } => {
       const incomingKeys = [
+        ...visualKeys(visual).map(k => ({ k, field: 'id_tag' as const })),
         ...tagKeys(visual).map(k => ({ k, field: 'id_tag' as const })),
+        ...visualKeys(eid).map(k => ({ k, field: 'eid' as const })),
         ...tagKeys(eid).map(k => ({ k, field: 'eid' as const })),
       ];
 
@@ -377,7 +400,8 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
       // 2) Suffix match (>=8 digit overlap), must be unique animal
       const matches = new Map<string, LookupEntry>();
       for (const { k } of incomingKeys) {
-        if (k.length < 8) continue;
+        if (k.startsWith('V:') || k.length < 8) continue;
+
         for (const stored of allStoredKeys) {
           if (stored.length < 8) continue;
           if (stored.endsWith(k) || k.endsWith(stored)) {
