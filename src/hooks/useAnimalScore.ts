@@ -22,7 +22,8 @@ export async function fetchInbreeding(animalId: string, cabañaId: string): Prom
   const { data } = await supabase
     .from("animals")
     .select("id, father_id, mother_id")
-    .eq("cabaña_id", cabañaId);
+    .eq("cabaña_id", cabañaId)
+    .range(0, 49999);
   if (!data?.length) return {};
   const info = animalInbreeding(animalId, buildPedigreeIndex(data));
   if (!info) return {};
