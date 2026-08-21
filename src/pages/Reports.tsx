@@ -172,13 +172,13 @@ const Reports = () => {
 
   // Tab configuration for mobile chips
   const tabs = [
-    { id: "ranking", label: t('reports:tabs.ranking', 'Ranking'), shortLabel: "Rank." },
     { id: "reproductive", label: t('reports:tabs.reproductive'), shortLabel: t('reports:tabs.reproductive').substring(0, 6) + '.' },
     { id: "production", label: t('reports:tabs.production'), shortLabel: t('reports:tabs.production').substring(0, 4) + '.' },
     { id: "evolution", label: t('reports:tabs.evolution'), shortLabel: t('reports:tabs.evolution').substring(0, 4) + '.' },
     { id: "mortality", label: t('reports:tabs.mortality'), shortLabel: t('reports:tabs.mortality').substring(0, 4) + '.' },
     { id: "vaccines", label: t('reports:tabs.vaccines'), shortLabel: t('reports:tabs.vaccines').substring(0, 3) + '.' },
-    { id: "financial", label: t('reports:tabs.financial'), shortLabel: t('reports:tabs.financial').substring(0, 3) + '.' }
+    { id: "financial", label: t('reports:tabs.financial'), shortLabel: t('reports:tabs.financial').substring(0, 3) + '.' },
+    { id: "ranking", label: t('reports:tabs.ranking', 'Ranking'), shortLabel: "Rank." }
   ];
 
   // Memoize the formatted filters to prevent unnecessary re-renders
