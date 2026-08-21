@@ -10,6 +10,7 @@ import {
   type AnimalScoreInput,
 } from "@/lib/animalScore";
 import { getBreedBenchmarksWithCustom, type BreedBenchmarks } from "@/lib/breedBenchmarks";
+import { animalInbreeding, buildPedigreeIndex } from "@/lib/inbreeding";
 import type { ReportFilters } from "@/pages/Reports";
 import type { Json } from "@/integrations/supabase/types";
 
@@ -156,6 +157,10 @@ export function useHerdRanking(filters: ReportFilters = {}) {
         birth_date: string | null;
       };
       const herd = (herdRows || []) as unknown as HerdRow[];
+      // Pedigree index for inbreeding (Wright's R between parents / 2).
+      const pedigreeIndex = buildPedigreeIndex(
+        herd.map((row) => ({ id: row.id, father_id: row.father_id, mother_id: row.mother_id })),
+      );
       const isDead = (status: string | null) => ["muerto", "Muerto", "dead", "fallecido"].includes(status || "");
 
       // --- Bull reproductive metrics ---------------------------------------
@@ -376,6 +381,8 @@ export function useHerdRanking(filters: ReportFilters = {}) {
             bullLiveOffspring: category === "Toro" ? fatherOffspring?.live ?? 0 : null,
             reproductiveYears: null,
             calvingIntervalDays: calvingIntervalByCow.get(animal.id) ?? null,
+            inbreedingCoefficient: animalInbreeding(animal.id, pedigreeIndex)?.coefficient ?? null,
+            inbreedingParentsKnown: Boolean(animal.father_id && animal.mother_id),
           };
 
           return {

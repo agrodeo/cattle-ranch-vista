@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { calculateAnimalScore, type AnimalScore, type AnimalScoreInput } from "@/lib/animalScore";
 import { getBreedBenchmarksWithCustom } from "@/lib/breedBenchmarks";
+import { animalInbreeding, buildPedigreeIndex } from "@/lib/inbreeding";
 
 export type AnimalScoreRawData = Record<string, unknown>;
 
@@ -11,7 +12,28 @@ function numberOrNull(value: unknown): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-export async function scoreFromRawData(rawData: AnimalScoreRawData, cabañaId: string): Promise<AnimalScore> {
+export interface ScoreExtras {
+  inbreedingCoefficient?: number | null;
+  inbreedingParentsKnown?: boolean;
+}
+
+/** Inbreeding coefficient for one animal, using the whole herd pedigree. */
+export async function fetchInbreeding(animalId: string, cabañaId: string): Promise<ScoreExtras> {
+  const { data } = await supabase
+    .from("animals")
+    .select("id, father_id, mother_id")
+    .eq("cabaña_id", cabañaId);
+  if (!data?.length) return {};
+  const info = animalInbreeding(animalId, buildPedigreeIndex(data));
+  if (!info) return {};
+  return { inbreedingCoefficient: info.coefficient, inbreedingParentsKnown: info.parentsKnown };
+}
+
+export async function scoreFromRawData(
+  rawData: AnimalScoreRawData,
+  cabañaId: string,
+  extras: ScoreExtras = {},
+): Promise<AnimalScore> {
   const d = rawData;
   const benchmarks = await getBreedBenchmarksWithCustom(String(d.breed || ""), cabañaId);
   const herdAvgScore: number | null = null;
@@ -47,6 +69,8 @@ export async function scoreFromRawData(rawData: AnimalScoreRawData, cabañaId: s
     motherRegistration: (d.motherRegistration as string | null) ?? null,
     herdAvgScore,
     benchmarks,
+    inbreedingCoefficient: extras.inbreedingCoefficient ?? null,
+    inbreedingParentsKnown: extras.inbreedingParentsKnown,
   };
 
   return calculateAnimalScore(input);
@@ -65,7 +89,8 @@ export function useAnimalScore(animalId: string | undefined) {
         _cabana_id: cabañaId,
       } as never);
       if (error || !data) return null;
-      return scoreFromRawData(data as AnimalScoreRawData, cabañaId);
+      const extras = await fetchInbreeding(animalId, cabañaId);
+      return scoreFromRawData(data as AnimalScoreRawData, cabañaId, extras);
     },
     enabled: !!animalId && !!cabañaId,
     staleTime: 10 * 60 * 1000,
