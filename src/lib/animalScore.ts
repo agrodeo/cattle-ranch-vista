@@ -53,7 +53,12 @@ export interface AnimalScoreInput {
   /** Cow-only longevity metrics. */
   reproductiveYears?: number | null;
   calvingIntervalDays?: number | null;
+  /** Inbreeding coefficient F (0-1) of this animal, from the herd pedigree. */
+  inbreedingCoefficient?: number | null;
+  /** True when both parents are known (so the coefficient is meaningful). */
+  inbreedingParentsKnown?: boolean;
 }
+
 
 export interface AnimalScore {
   overall: number;
