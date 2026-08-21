@@ -671,6 +671,8 @@
       "scrotal": "Circunferência escrotal {{cm}} cm",
       "services": "{{pregnancies}} prenhezes em {{services}} serviços",
       "offspring": "{{live}} de {{total}} crias vivas",
+      "shortTrackRecord": "Histórico curto: apenas {{parities}} parto(s); a pontuação é limitada até acumular mais histórico",
+      "provenTrackRecord": "Histórico comprovado: {{parities}} partos registrados",
       "calvingInterval": "Intervalo entre partos de {{days}} dias",
       "pregnant": "Atualmente prenha",
       "noReproData": "Sem histórico reprodutivo registrado",

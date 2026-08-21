@@ -671,6 +671,8 @@
       "scrotal": "Scrotal circumference {{cm}} cm",
       "services": "{{pregnancies}} pregnancies out of {{services}} services",
       "offspring": "{{live}} of {{total}} offspring alive",
+      "shortTrackRecord": "Short track record: only {{parities}} calving(s); score is capped until more history accumulates",
+      "provenTrackRecord": "Proven track record: {{parities}} calvings recorded",
       "calvingInterval": "Calving interval of {{days}} days",
       "pregnant": "Currently pregnant",
       "noReproData": "No reproductive history recorded",

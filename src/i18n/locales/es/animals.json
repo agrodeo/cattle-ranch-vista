@@ -671,6 +671,8 @@
       "scrotal": "Circunferencia escrotal {{cm}} cm",
       "services": "{{pregnancies}} preñeces sobre {{services}} servicios",
       "offspring": "{{live}} de {{total}} crías vivas",
+      "shortTrackRecord": "Trayectoria corta: solo {{parities}} parto(s); el puntaje se limita hasta acumular más historial",
+      "provenTrackRecord": "Trayectoria probada: {{parities}} partos registrados",
       "calvingInterval": "Intervalo entre partos de {{days}} días",
       "pregnant": "Actualmente preñada",
       "noReproData": "Sin historial reproductivo cargado",
