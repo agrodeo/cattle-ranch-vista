@@ -684,5 +684,8 @@ export function calculateAnimalScore(input: AnimalScoreInput): AnimalScore {
     applicable,
     confidence: Math.round(coverage * 100),
     peerGroupSize: input.peerGroupSize ?? 0,
+    inbreeding,
+    explanations: buildExplanations(input, dims, category, inbreeding),
   };
+
 }
