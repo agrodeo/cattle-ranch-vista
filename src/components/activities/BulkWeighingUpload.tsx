@@ -654,6 +654,109 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
 
           {currentStep === 2 && (
             <div className="space-y-4 lg:space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base lg:text-lg">
+                    {t('activities:bulkWeighing.mapping.title')}
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    {t('activities:bulkWeighing.mapping.description')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    {FIELD_KEYS.map((field) => (
+                      <div key={field} className="flex flex-col lg:flex-row lg:items-center gap-2">
+                        <div className="lg:w-56 shrink-0 text-sm font-medium">
+                          {t(`activities:bulkWeighing.mapping.fields.${field}`)}
+                          {(field === 'peso_kg') && <span className="text-destructive"> *</span>}
+                        </div>
+                        <Select
+                          value={mapping[field] || '__ignore__'}
+                          onValueChange={(v) =>
+                            setMapping(prev => ({ ...prev, [field]: v === '__ignore__' ? '' : v }))
+                          }
+                        >
+                          <SelectTrigger className="h-11 lg:h-10 w-full lg:max-w-sm">
+                            <SelectValue placeholder={t('activities:bulkWeighing.mapping.ignore')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__ignore__">
+                              {t('activities:bulkWeighing.mapping.ignore')}
+                            </SelectItem>
+                            {headers.map((h) => (
+                              <SelectItem key={h} value={h}>{h}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ))}
+                  </div>
+
+                  {mappingErrors.length > 0 && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription className="space-y-1">
+                        {mappingErrors.map((e, i) => (
+                          <div key={i} className="text-sm">• {e}</div>
+                        ))}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div>
+                    <p className="text-sm font-medium mb-2">
+                      {t('activities:bulkWeighing.mapping.preview')}
+                    </p>
+                    <div className="border rounded-lg overflow-x-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            {FIELD_KEYS.map((f) => (
+                              <TableHead key={f} className="whitespace-nowrap">
+                                {t(`activities:bulkWeighing.mapping.fields.${f}`)}
+                              </TableHead>
+                            ))}
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {previewRows.map((row, i) => (
+                            <TableRow key={i}>
+                              <TableCell>{row.id_tag || '—'}</TableCell>
+                              <TableCell>{row.caravana_electronica || '—'}</TableCell>
+                              <TableCell>{row.peso_kg || '—'}</TableCell>
+                              <TableCell>{row.fecha || '—'}</TableCell>
+                              <TableCell>{row.notas || '—'}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="sticky bottom-0 left-0 right-0 bg-background border-t lg:border-0 p-4 lg:p-0 lg:static flex flex-col lg:flex-row gap-2 lg:justify-between -mx-4 lg:mx-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentStep(1)}
+                  className="h-12 lg:h-10 w-full lg:w-auto order-2 lg:order-1"
+                >
+                  {t('activities:bulkWeighing.back')}
+                </Button>
+                <Button
+                  onClick={handleConfirmMapping}
+                  disabled={loading || mappingErrors.length > 0}
+                  className="h-12 lg:h-10 w-full lg:w-auto order-1 lg:order-2"
+                >
+                  {loading ? t('activities:bulkWeighing.processing') : t('activities:bulkWeighing.mapping.continue')}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="space-y-4 lg:space-y-6">
               <div className="grid gap-3 grid-cols-3 lg:gap-4">
                 <Card>
                   <CardHeader className="pb-2 px-3 pt-3 lg:px-6 lg:pt-6">
