@@ -908,7 +908,7 @@ export function BulkWeighingUpload({ open, onOpenChange, onSuccess }: BulkWeighi
               <div className="sticky bottom-0 left-0 right-0 bg-background border-t lg:border-0 p-4 lg:p-0 lg:static flex flex-col lg:flex-row gap-2 lg:justify-between -mx-4 lg:mx-0">
                 <Button
                   variant="outline"
-                  onClick={() => setCurrentStep(1)}
+                  onClick={() => setCurrentStep(2)}
                   className="h-12 lg:h-10 w-full lg:w-auto order-2 lg:order-1"
                 >
                   {t('activities:bulkWeighing.back')}
