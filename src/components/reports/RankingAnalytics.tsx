@@ -20,11 +20,11 @@ interface RankingAnalyticsProps {
   filters: ReportFilters;
 }
 
-type SortField = "overall" | "production" | "reproduction" | "genetics" | "longevity" | "ageMonths";
+type SortField = "overall" | "production" | "reproduction" | "health" | "genetics" | "longevity" | "ageMonths";
 type SexFilter = "all" | "Hembra" | "Macho";
 type CategoryFilter = "all" | "Vaca" | "Vaquillona" | "Ternera" | "Toro" | "Novillito" | "Ternero";
 
-const sortFields: SortField[] = ["overall", "production", "reproduction", "genetics", "longevity", "ageMonths"];
+const sortFields: SortField[] = ["overall", "production", "reproduction", "health", "genetics", "longevity", "ageMonths"];
 const categories: CategoryFilter[] = ["all", "Vaca", "Vaquillona", "Ternera", "Toro", "Novillito", "Ternero"];
 
 function scoreValue(animal: RankedAnimal, field: SortField): number {
@@ -49,6 +49,10 @@ function rankClass(rank: number): string {
 
 function dimensionText(value: number, enabled = true): string {
   return enabled ? value.toFixed(1) : "—";
+}
+
+function dimensionCell(animal: RankedAnimal, key: "production" | "reproduction" | "health" | "genetics" | "longevity"): string {
+  return dimensionText(animal.score[key], animal.score.applicable[key]);
 }
 
 export function RankingAnalytics({ filters }: RankingAnalyticsProps) {
@@ -148,7 +152,7 @@ export function RankingAnalytics({ filters }: RankingAnalyticsProps) {
           <Select value={sortField} onValueChange={(value) => setSortField(value as SortField)}>
             <SelectTrigger className="h-9 min-w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {sortFields.filter((field) => field !== "reproduction" || sexFilter !== "Macho").map((field) => <SelectItem key={field} value={field}>{sortLabel(field)}</SelectItem>)}
+              {sortFields.filter((field) => (field !== "longevity" || categoryFilter === "all" || categoryFilter === "Vaca")).map((field) => <SelectItem key={field} value={field}>{sortLabel(field)}</SelectItem>)}
             </SelectContent>
           </Select>
           <Button type="button" variant="outline" size="icon" className="h-9 w-9" onClick={() => setSortAsc((value) => !value)} aria-label={sortAsc ? "Ascending" : "Descending"}>
@@ -172,11 +176,15 @@ export function RankingAnalytics({ filters }: RankingAnalyticsProps) {
         <AnimalScoreBadge score={animal.score.overall} hasEnoughData={animal.score.hasEnoughData} size="md" />
       </div>
       <div className="mt-3 grid grid-cols-4 gap-2 text-xs font-semibold">
-        <span>{t("reports:ranking.production")} {dimensionText(animal.score.production)}</span>
-        <span>{t("reports:ranking.reproduction")} {dimensionText(animal.score.reproduction, animal.sex === "Hembra")}</span>
-        <span>{t("reports:ranking.genetics")} {dimensionText(animal.score.genetics)}</span>
-        <span>{t("reports:ranking.longevity")} {dimensionText(animal.score.longevity)}</span>
+        <span>{t("reports:ranking.production")} {dimensionCell(animal, "production")}</span>
+        <span>{t("reports:ranking.reproduction")} {dimensionCell(animal, "reproduction")}</span>
+        <span>{t("reports:ranking.health")} {dimensionCell(animal, "health")}</span>
+        <span>{t("reports:ranking.genetics")} {dimensionCell(animal, "genetics")}</span>
       </div>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        {animal.category} · {t("reports:ranking.confidence")} {animal.score.confidence}%
+        {animal.categoryPercentile != null ? ` · ${t("reports:ranking.categoryPercentile", { pct: animal.categoryPercentile })}` : ""}
+      </p>
       <div className="mt-2"><ScoreBadges animal={animal} /></div>
     </Link>
   );
@@ -238,6 +246,7 @@ export function RankingAnalytics({ filters }: RankingAnalyticsProps) {
                   <SortHeader field="overall">{t("reports:ranking.score")}</SortHeader>
                   <SortHeader field="production">{t("reports:ranking.production")}</SortHeader>
                   <SortHeader field="reproduction">{t("reports:ranking.reproduction")}</SortHeader>
+                  <SortHeader field="health">{t("reports:ranking.health")}</SortHeader>
                   <SortHeader field="genetics">{t("reports:ranking.genetics")}</SortHeader>
                   <SortHeader field="longevity">{t("reports:ranking.longevity")}</SortHeader>
                   <TableHead>{t("reports:ranking.data")}</TableHead>
@@ -254,11 +263,17 @@ export function RankingAnalytics({ filters }: RankingAnalyticsProps) {
                     <TableCell>{animal.ageMonths}{t("reports:ranking.months")} · {animal.category}</TableCell>
                     <TableCell>{animal.corralName || "—"}</TableCell>
                     <TableCell><div className="flex flex-col gap-1"><AnimalScoreBadge score={animal.score.overall} hasEnoughData={animal.score.hasEnoughData} size="md" /><ScoreBadges animal={animal} /></div></TableCell>
-                    <TableCell className="font-semibold tabular-nums">{dimensionText(animal.score.production)}</TableCell>
-                    <TableCell className="font-semibold tabular-nums">{dimensionText(animal.score.reproduction, animal.sex === "Hembra")}</TableCell>
-                    <TableCell className="font-semibold tabular-nums">{dimensionText(animal.score.genetics)}</TableCell>
-                    <TableCell className="font-semibold tabular-nums">{dimensionText(animal.score.longevity)}</TableCell>
-                    <TableCell className="text-muted-foreground">{animal.score.dataCompleteness}%</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{dimensionCell(animal, "production")}</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{dimensionCell(animal, "reproduction")}</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{dimensionCell(animal, "health")}</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{dimensionCell(animal, "genetics")}</TableCell>
+                    <TableCell className="font-semibold tabular-nums">{dimensionCell(animal, "longevity")}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      <div className="flex flex-col leading-tight">
+                        <span>{animal.score.dataCompleteness}%</span>
+                        <span className="text-[10px]">{t("reports:ranking.confidence")} {animal.score.confidence}%</span>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
