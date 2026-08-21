@@ -652,6 +652,54 @@
       "pending": "Pendiente",
       "overdue": "Atrasado"
     },
-    "eliteSire": "Reproductor élite"
+    "eliteSire": "Reproductor élite",
+    "why": {
+      "title": "¿Por qué este puntaje?",
+      "intro": "Categoría {{category}} · confianza de los datos {{confidence}}%",
+      "weight": "peso {{pct}}%",
+      "notCounted": "Sin datos suficientes: no se promedia en el puntaje final.",
+      "formula": "El puntaje general es el promedio ponderado de las dimensiones con datos, según la categoría del animal.",
+      "adg": "Ganancia diaria {{adg}} kg/día (objetivo {{target}} kg/día)",
+      "peerAdg": "Percentil {{pct}} de ganancia diaria dentro de su grupo comparable ({{n}} animales)",
+      "fewWeighings": "Solo {{count}} pesaje(s) registrado(s): el dato es menos confiable",
+      "noAdg": "Sin ganancia diaria calculada (faltan pesajes sucesivos)",
+      "weaning": "Peso al destete {{kg}} kg (referencia {{target}} kg)",
+      "birthWeight": "Peso al nacer {{kg}} kg (referencia {{target}} kg)",
+      "noWeightData": "Sin datos de peso: la producción no puede evaluarse",
+      "bullServices": "{{females}} hembras servidas con {{rate}}% de preñez",
+      "liveOffspring": "{{count}} cría(s) viva(s) registrada(s)",
+      "scrotal": "Circunferencia escrotal {{cm}} cm",
+      "services": "{{pregnancies}} preñeces sobre {{services}} servicios",
+      "offspring": "{{live}} de {{total}} crías vivas",
+      "calvingInterval": "Intervalo entre partos de {{days}} días",
+      "pregnant": "Actualmente preñada",
+      "noReproData": "Sin historial reproductivo cargado",
+      "vaccines": "{{done}} de {{required}} vacunas al día",
+      "overdueVaccines": "{{count}} vacuna(s) vencida(s)",
+      "bcs": "Condición corporal {{bcs}} (óptimo 3-4)",
+      "noHealthData": "Sin datos sanitarios cargados",
+      "registration": "Nivel de registro {{level}}",
+      "dna": "Genealogía verificada por ADN",
+      "deps": "DEPs en el percentil {{pct}} de la raza",
+      "incompletePedigree": "Pedigrí incompleto (falta padre o madre)",
+      "noGeneticData": "Sin datos genéticos ni de registro",
+      "productivity": "{{live}} cría(s) viva(s) en {{years}} años productivos",
+      "inbreedingSummary": "Consanguinidad estimada (F): {{pct}}%",
+      "inbreeding": {
+        "none": "Sin consanguinidad detectada (F {{pct}}%): cruza limpia",
+        "low": "Consanguinidad baja: F {{pct}}% (−{{penalty}} pts)",
+        "moderate": "Consanguinidad moderada: F {{pct}}% (−{{penalty}} pts)",
+        "high": "Consanguinidad alta: F {{pct}}% (−{{penalty}} pts)",
+        "severe": "Consanguinidad severa: F {{pct}}% (−{{penalty}} pts)",
+        "unknown": "No se puede calcular consanguinidad sin padre y madre"
+      },
+      "inbreedingLevel": {
+        "none": "Sin consanguinidad",
+        "low": "Baja",
+        "moderate": "Moderada",
+        "high": "Alta",
+        "severe": "Severa"
+      }
+    }
   }
 }
