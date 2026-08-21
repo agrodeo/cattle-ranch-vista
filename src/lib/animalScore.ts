@@ -172,14 +172,17 @@ function scoreProduction(input: AnimalScoreInput, category: AnimalCategory): Dim
     fieldsAvailable++;
   }
 
-  // Birth weight is only relevant while the animal is young (calving-ease proxy).
-  if (input.pesoNacimiento != null && input.pesoNacimiento > 0 && b.birthWeight.good > 0 && (category === "Ternero" || category === "Ternera")) {
+  // Birth weight (calving-ease proxy) counts for every category: strongly while the
+  // animal is a calf, and with a small residual weight for the rest of its life.
+  if (input.pesoNacimiento != null && input.pesoNacimiento > 0 && b.birthWeight.good > 0) {
     const ratio = input.pesoNacimiento / b.birthWeight.good;
     const birthScore = ratio >= 0.9 && ratio <= 1.15 ? 9 : ratio > 1.15 ? clamp(9 - (ratio - 1.15) * 15, 3, 9) : clamp(ratio * 10, 2, 8);
-    weightedSum += birthScore * 0.15;
-    totalWeight += 0.15;
+    const birthWeightFactor = category === "Ternero" || category === "Ternera" ? 0.15 : 0.05;
+    weightedSum += birthScore * birthWeightFactor;
+    totalWeight += birthWeightFactor;
     fieldsAvailable++;
   }
+
 
   if (totalWeight === 0) return NO_DATA;
 
