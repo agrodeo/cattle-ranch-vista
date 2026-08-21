@@ -134,7 +134,8 @@ export function useHerdRanking(filters: ReportFilters = {}) {
         supabase
           .from("animals")
           .select("id, sex, status, father_id, mother_id, toro_servicio_id, \"esta_preñada\", birth_date")
-          .eq("cabaña_id", cabañaId),
+          .eq("cabaña_id", cabañaId)
+          .range(0, 49999),
         supabase
           .from("animal_deps")
           .select(`animal_id, ${DEP_FIELDS.join(", ")}`)
