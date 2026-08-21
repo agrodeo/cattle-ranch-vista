@@ -132,7 +132,7 @@ export function useHerdRanking(filters: ReportFilters = {}) {
       const [{ data: herdRows }, { data: depRows }, { data: pregnancyRows }] = await Promise.all([
         supabase
           .from("animals")
-          .select("id, sex, status, father_id, mother_id, toro_servicio_id, esta_preñada, birth_date")
+          .select("id, sex, status, father_id, mother_id, toro_servicio_id, \"esta_preñada\", birth_date")
           .eq("cabaña_id", cabañaId),
         supabase
           .from("animal_deps")
@@ -145,7 +145,17 @@ export function useHerdRanking(filters: ReportFilters = {}) {
           .not("fecha_parto_real", "is", null),
       ]);
 
-      const herd = herdRows || [];
+      type HerdRow = {
+        id: string;
+        sex: string | null;
+        status: string | null;
+        father_id: string | null;
+        mother_id: string | null;
+        toro_servicio_id: string | null;
+        esta_preñada: boolean | null;
+        birth_date: string | null;
+      };
+      const herd = (herdRows || []) as unknown as HerdRow[];
       const isDead = (status: string | null) => ["muerto", "Muerto", "dead", "fallecido"].includes(status || "");
 
       // --- Bull reproductive metrics ---------------------------------------
