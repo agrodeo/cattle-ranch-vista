@@ -82,6 +82,18 @@ export interface AnimalScore {
   /** 0-100 confidence: share of the category weight that is backed by data. */
   confidence: number;
   peerGroupSize: number;
+  /** Inbreeding info applied to the genetics dimension (null when unknown). */
+  inbreeding: InbreedingInfo | null;
+  /** Human-readable reasons behind each dimension score. */
+  explanations: ScoreExplanation[];
+}
+
+export interface ScoreExplanation {
+  dimension: DimensionKey;
+  /** i18n key under animals:score.why.* */
+  key: string;
+  params?: Record<string, string | number>;
+  tone: "positive" | "negative" | "neutral";
 }
 
 export interface ScoreBadge {
@@ -90,6 +102,7 @@ export interface ScoreBadge {
   labelParams?: Record<string, string | number>;
   variant: "success" | "warning" | "info" | "neutral";
 }
+
 
 export type DimensionKey = "production" | "reproduction" | "health" | "genetics" | "longevity";
 export type DimensionWeights = Record<DimensionKey, number>;
