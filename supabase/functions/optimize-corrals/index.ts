@@ -2217,6 +2217,8 @@ serve(async (req) => {
           const currentCount = workingDistribution[targetCorral.id]?.length || 0;
           if (currentCount >= capacity) continue;
           
+          const animalsInTarget = workingDistribution[targetCorral.id] || [];
+          
           // Skip if breed mixing prevented
           if (preventBreedMixing && animalToMove.breed) {
             const existingBreeds = animalsInTarget.filter(a => a.breed).map(a => a.breed!);
@@ -2224,7 +2226,6 @@ serve(async (req) => {
           }
           
           // Check if moving there creates new risks
-          const animalsInTarget = workingDistribution[targetCorral.id] || [];
           let createsNewRisk = false;
           
           for (const targetAnimal of animalsInTarget) {
