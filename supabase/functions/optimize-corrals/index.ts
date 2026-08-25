@@ -1410,7 +1410,7 @@ serve(async (req) => {
     console.log(`Breed mixing prevention: ${preventBreedMixing}`);
 
     // Build ancestry map from ALL animals
-    const ancestryMap = buildAncestryMap(allAnimals || []);
+    const ancestryMap = buildAncestryMap((allAnimals || []) as unknown as Animal[]);
     console.log(`Built ancestry map for ${ancestryMap.size} animals`);
 
     // Normalize sex and status to canonical capitalized form so downstream
@@ -2912,9 +2912,10 @@ serve(async (req) => {
         : [...highFertilityFemales, ...highFertilityMales];
       
       // Get target corrals
-      let targetCorrals = isConsolidationMode
+      let targetCorrals: Array<Corral & { availableCapacity: number }> = (isConsolidationMode
         ? corralsWithCounts.filter(c => destCorralSet.has(c.id))
-        : corralsWithCounts;
+        : corralsWithCounts
+      ).map(c => ({ ...c, availableCapacity: 0 }));
       
       // Sort target corrals by available capacity
       targetCorrals = targetCorrals
@@ -3227,8 +3228,8 @@ serve(async (req) => {
     let corralConfigurations: Array<{
       corral_id: string;
       corral_name: string;
-      bulls: Array<{ id: string; name: string; tag?: string; score: number }>;
-      cows: Array<{ id: string; name: string; tag?: string; assignedScore: number }>;
+      bulls: Array<{ id: string; name: string; tag?: string | null; score: number }>;
+      cows: Array<{ id: string; name: string; tag?: string | null; assignedScore: number }>;
       expectedScore: number;
       allPairings: Array<{ cow_name: string; bull_name: string; score: number }>;
       blockedPairings: number;
