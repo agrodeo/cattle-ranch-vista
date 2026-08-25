@@ -639,6 +639,7 @@
       "includeSeparationMoves": "Include calf-mother reunification",
       "includeSeparationMovesHint": "Generate moves to reunite calves under 8 months with their mothers"
     },
+    "authRequired": "Your session is not active. Sign out and sign back in to optimize corrals.",
     "alreadyOptimized": "The system is already optimized. No moves were found that improve the distribution.",
     "noFurtherOptimizationPossible": "No further risk reduction is possible with the available corrals.",
     "reasons": {
