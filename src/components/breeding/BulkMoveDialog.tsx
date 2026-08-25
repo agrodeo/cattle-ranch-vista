@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { Truck, Eye, CheckCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
 
 interface BulkMoveDialogProps {
   isOpen: boolean;
@@ -88,7 +89,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('bulk-move-animals', {
+      const { data, error } = await invokeEdgeFunction<any>('bulk-move-animals', {
         body: {
           cabanaId,
           to_corral_id: targetCorralId,
@@ -123,7 +124,7 @@ export function BulkMoveDialog({ isOpen, onClose, cabanaId }: BulkMoveDialogProp
 
     setLoading(true);
     try {
-        const { data, error } = await supabase.functions.invoke('bulk-move-animals', {
+        const { data, error } = await invokeEdgeFunction<any>('bulk-move-animals', {
           body: {
             cabanaId,
             to_corral_id: targetCorralId,

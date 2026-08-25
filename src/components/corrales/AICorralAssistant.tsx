@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
 
 interface AICorralAssistantProps {
   corralesData: any[];
@@ -34,7 +35,7 @@ export function AICorralAssistant({ corralesData, currentRisks, cabanaId }: AICo
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('ai-corral-recommendations', {
+      const { data, error } = await invokeEdgeFunction<any>('ai-corral-recommendations', {
         body: {
           requestType: 'chat',
           message: userMessage,
@@ -64,7 +65,7 @@ export function AICorralAssistant({ corralesData, currentRisks, cabanaId }: AICo
   const getAIRecommendations = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-corral-recommendations', {
+      const { data, error } = await invokeEdgeFunction<any>('ai-corral-recommendations', {
         body: {
           requestType: 'optimization',
           corralesData,
