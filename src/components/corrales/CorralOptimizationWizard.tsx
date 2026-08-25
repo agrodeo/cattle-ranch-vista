@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { supabase } from "@/integrations/supabase/client";
 import { Shuffle, Target, CheckCircle, AlertTriangle, HelpCircle, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
 
 interface ConsanguinityRisk {
   animal1_id: string;
@@ -216,7 +217,7 @@ export function CorralOptimizationWizard({ isOpen, onClose, cabanaId }: CorralOp
       
       console.log('Invoking', functionName, 'with cabanaId:', cabanaId, 'objective:', primaryObjective);
       
-      const { data, error } = await supabase.functions.invoke(functionName, {
+      const { data, error } = await invokeEdgeFunction<any>(functionName, {
         body: {
           cabanaId,
           ...config,

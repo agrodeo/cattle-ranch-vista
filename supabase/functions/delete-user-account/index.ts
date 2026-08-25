@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
       .eq("user_id", userId)
       .single();
 
-    const cabañaId = profile?.cabaña_id;
+    const cabañaId = (profile as Record<string, unknown> | null)?.['cabaña_id'] as string | undefined;
 
     if (cabañaId) {
       // Check if user is the owner of the cabaña

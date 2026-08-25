@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield, Lock, AlertTriangle, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
 
 export function SecurityDashboard() {
   const [migrating, setMigrating] = useState(false);
@@ -22,7 +23,7 @@ export function SecurityDashboard() {
       }
 
       // Call the password hashing function (identity is verified server-side from the JWT)
-      const { data, error } = await supabase.functions.invoke('hash-existing-passwords', {
+      const { data, error } = await invokeEdgeFunction<any>('hash-existing-passwords', {
         body: {}
       });
 

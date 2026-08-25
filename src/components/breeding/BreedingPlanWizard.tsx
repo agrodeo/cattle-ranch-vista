@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Brain, Target, CheckCircle, AlertTriangle, HelpCircle, Settings, Info, Star, TrendingUp, Scale } from "lucide-react";
 import { toast } from "sonner";
 import { useBenchmarks } from "@/hooks/useBenchmarks";
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
 
 interface Pairing {
   cow_id: string;
@@ -150,7 +151,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
   const generatePlan = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-plan-breeding', {
+      const { data, error } = await invokeEdgeFunction<any>('ai-plan-breeding', {
         body: {
           cabanaId,
           ...config
@@ -175,7 +176,7 @@ export function BreedingPlanWizard({ isOpen, onClose, cabanaId }: BreedingPlanWi
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-plan-commit', {
+      const { data, error } = await invokeEdgeFunction<any>('ai-plan-commit', {
         body: {
           cabanaId,
           plan,

@@ -78,7 +78,8 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (profileError || !profile?.['cabaña_id']) {
+    const profileRow = profile as Record<string, unknown> | null;
+    if (profileError || !profileRow?.['cabaña_id']) {
       console.error('Could not find cabaña for user:', user.id, profileError);
       return new Response(
         JSON.stringify({ error: 'User profile or cabaña not found' }),
@@ -86,7 +87,7 @@ serve(async (req) => {
       );
     }
 
-    const cabanaId = profile['cabaña_id'];
+    const cabanaId = profileRow['cabaña_id'] as string;
     console.log('Resolved cabaña_id:', cabanaId, 'for user:', user.id);
 
     const activeSubscriptions = customerInfo.activeSubscriptions || [];

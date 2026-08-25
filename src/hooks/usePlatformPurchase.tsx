@@ -1,3 +1,4 @@
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
   import { useState, useEffect, useCallback } from 'react';
   import { isNativeApp, getNativePlatform, isDespiaRuntime } from '@/lib/platformDetection';
   import { useToast } from '@/hooks/use-toast';
@@ -99,7 +100,7 @@
 
         const userId = session?.user?.id;
         // Call sync-ios-purchase directly with constructed customerInfo
-        const { error } = await supabase.functions.invoke('sync-ios-purchase', {
+        const { error } = await invokeEdgeFunction('sync-ios-purchase', {
           body: {
             customerInfo: {
               originalAppUserId: userId || 'anonymous',

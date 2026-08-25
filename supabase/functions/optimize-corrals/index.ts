@@ -170,7 +170,7 @@ const translations = {
     meetsExcellent: "Cumple estándares de excelencia",
     meetsGood: "Cumple estándares buenos",
     meetsPoor: "Por debajo de estándares",
-    standardsScore: "puntos estándares",
+    alreadyOptimal: "La distribución ya está optimizada",
     separateLowPerformers: "Separar bajo rendimiento reproductivo",
     fertilityScore: "fertilidad",
     standardsScore: "puntos",
@@ -267,7 +267,7 @@ const translations = {
     meetsExcellent: "Meets excellent standards",
     meetsGood: "Meets good standards",
     meetsPoor: "Below standards",
-    standardsScore: "standards score",
+    alreadyOptimal: "Distribution is already optimal",
     separateLowPerformers: "Separate low reproductive performance",
     fertilityScore: "fertility",
     standardsScore: "points",
@@ -364,7 +364,7 @@ const translations = {
     meetsExcellent: "Cumpre padrões de excelência",
     meetsGood: "Cumpre padrões bons",
     meetsPoor: "Abaixo dos padrões",
-    standardsScore: "pontos padrões",
+    alreadyOptimal: "A distribuição já está otimizada",
     separateLowPerformers: "Separar baixo desempenho reprodutivo",
     fertilityScore: "fertilidade",
     standardsScore: "pontos",
@@ -1410,7 +1410,7 @@ serve(async (req) => {
     console.log(`Breed mixing prevention: ${preventBreedMixing}`);
 
     // Build ancestry map from ALL animals
-    const ancestryMap = buildAncestryMap(allAnimals || []);
+    const ancestryMap = buildAncestryMap((allAnimals || []) as unknown as Animal[]);
     console.log(`Built ancestry map for ${ancestryMap.size} animals`);
 
     // Normalize sex and status to canonical capitalized form so downstream
@@ -2673,6 +2673,9 @@ serve(async (req) => {
     // =========================================================================
     // FERTILITY OBJECTIVE - COMPREHENSIVE IMPLEMENTATION
     // =========================================================================
+    // Declared at handler scope so the response builder can read it safely.
+    let fertilityPairsImprovement = 0;
+
     if (objective === 'fertility') {
       console.log('Starting comprehensive fertility optimization');
       
@@ -2909,9 +2912,10 @@ serve(async (req) => {
         : [...highFertilityFemales, ...highFertilityMales];
       
       // Get target corrals
-      let targetCorrals = isConsolidationMode
+      let targetCorrals: Array<Corral & { availableCapacity: number }> = (isConsolidationMode
         ? corralsWithCounts.filter(c => destCorralSet.has(c.id))
-        : corralsWithCounts;
+        : corralsWithCounts
+      ).map(c => ({ ...c, availableCapacity: 0 }));
       
       // Sort target corrals by available capacity
       targetCorrals = targetCorrals
@@ -3198,6 +3202,7 @@ serve(async (req) => {
       const pairsImprovement = breedingPairsBefore > 0 
         ? Math.round(((breedingPairsAfter - breedingPairsBefore) / breedingPairsBefore) * 100)
         : (breedingPairsAfter > 0 ? 100 : 0);
+      fertilityPairsImprovement = pairsImprovement;
       
       const movedFemalesScores = suggestedMoves
         .filter(m => m.issue_type === 'fertility')
@@ -3223,8 +3228,8 @@ serve(async (req) => {
     let corralConfigurations: Array<{
       corral_id: string;
       corral_name: string;
-      bulls: Array<{ id: string; name: string; tag?: string; score: number }>;
-      cows: Array<{ id: string; name: string; tag?: string; assignedScore: number }>;
+      bulls: Array<{ id: string; name: string; tag?: string | null; score: number }>;
+      cows: Array<{ id: string; name: string; tag?: string | null; assignedScore: number }>;
       expectedScore: number;
       allPairings: Array<{ cow_name: string; bull_name: string; score: number }>;
       blockedPairings: number;
@@ -3909,7 +3914,7 @@ serve(async (req) => {
       const fertilityMoves = suggestedMoves.filter(m => m.issue_type === 'fertility');
       if (fertilityMoves.length > 0) {
         // Use breeding pairs improvement or moved animals count as fallback
-        const improvementPercent = pairsImprovement > 0 ? pairsImprovement : Math.min(fertilityMoves.length * 5, 50);
+        const improvementPercent = fertilityPairsImprovement > 0 ? fertilityPairsImprovement : Math.min(fertilityMoves.length * 5, 50);
         expectedImprovement = t.expectedImprovementFertility.replace('{{percent}}', improvementPercent.toString());
       } else {
         expectedImprovement = t.alreadyOptimal || 'Distribution is already optimal';

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { isOnline } from "@/services/connectivity";
+import { invokeEdgeFunction } from "@/lib/invokeEdgeFunction";
 
 interface ActivityStats {
   totalActivities: number;
@@ -200,7 +201,7 @@ export function useActivities() {
       // Process general activities with their specific logic
       if (tipo === 'GENERAL' && event) {
         try {
-          await supabase.functions.invoke('process-general-activity', {
+          await invokeEdgeFunction('process-general-activity', {
             body: { evento_id: event.id }
           });
         } catch (processError) {
