@@ -65,11 +65,12 @@ serve(async (req) => {
       .eq("user_id", caller.id)
       .single();
 
-    if (profileError || !callerProfile?.cabaña_id || callerProfile.is_active === false) {
+    const callerRow = callerProfile as Record<string, unknown> | null;
+    if (profileError || !callerRow?.['cabaña_id'] || callerRow['is_active'] === false) {
       return json({ error: "No se encontró una cabaña activa para tu usuario" }, 400);
     }
 
-    const cabañaId = callerProfile.cabaña_id;
+    const cabañaId = callerRow['cabaña_id'] as string;
 
     const parsed = CreateRanchUserSchema.safeParse(await req.json());
     if (!parsed.success) {
