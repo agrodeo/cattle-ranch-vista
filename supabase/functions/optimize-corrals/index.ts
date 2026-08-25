@@ -2673,6 +2673,9 @@ serve(async (req) => {
     // =========================================================================
     // FERTILITY OBJECTIVE - COMPREHENSIVE IMPLEMENTATION
     // =========================================================================
+    // Declared at handler scope so the response builder can read it safely.
+    let fertilityPairsImprovement = 0;
+
     if (objective === 'fertility') {
       console.log('Starting comprehensive fertility optimization');
       
