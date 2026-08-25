@@ -3913,7 +3913,7 @@ serve(async (req) => {
       const fertilityMoves = suggestedMoves.filter(m => m.issue_type === 'fertility');
       if (fertilityMoves.length > 0) {
         // Use breeding pairs improvement or moved animals count as fallback
-        const improvementPercent = pairsImprovement > 0 ? pairsImprovement : Math.min(fertilityMoves.length * 5, 50);
+        const improvementPercent = fertilityPairsImprovement > 0 ? fertilityPairsImprovement : Math.min(fertilityMoves.length * 5, 50);
         expectedImprovement = t.expectedImprovementFertility.replace('{{percent}}', improvementPercent.toString());
       } else {
         expectedImprovement = t.alreadyOptimal || 'Distribution is already optimal';
