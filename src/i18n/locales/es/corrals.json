@@ -640,6 +640,7 @@
       "includeSeparationMoves": "Incluir reunificación de crías con madres",
       "includeSeparationMovesHint": "Generar movimientos para reunir terneros menores de 8 meses con sus madres"
     },
+    "authRequired": "Tu sesión no está activa. Cerrá sesión y volvé a ingresar para optimizar corrales.",
     "alreadyOptimized": "El sistema ya está optimizado. No se encontraron movimientos que mejoren la distribución.",
     "noFurtherOptimizationPossible": "No se pueden reducir más los riesgos con los corrales disponibles.",
     "reasons": {

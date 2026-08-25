@@ -74,7 +74,7 @@ interface PreviewCorral {
 
 export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimizerProps) {
   const { t } = useTranslation(['corrals', 'common']);
-  const { currentUser } = useSupabaseAuth();
+  const { currentUser, session } = useSupabaseAuth();
   const { toast } = useToast();
   
   const [step, setStep] = useState<StepType>("objective");
@@ -195,7 +195,16 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
     try {
       setLoading(true);
 
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token || session?.access_token;
+      if (sessionError || !accessToken) {
+        throw new Error(t('corrals:optimizer.authRequired'));
+      }
+
       const { data, error } = await supabase.functions.invoke('optimize-corrals', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: {
           cabanaId: currentUser.cabañaId,
           language: getCurrentLanguage(),

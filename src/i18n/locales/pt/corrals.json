@@ -640,6 +640,7 @@
       "includeSeparationMoves": "Incluir reunificação de bezerros com mães",
       "includeSeparationMovesHint": "Gerar movimentos para reunir bezerros com menos de 8 meses com suas mães"
     },
+    "authRequired": "Sua sessão não está ativa. Saia e entre novamente para otimizar os currais.",
     "alreadyOptimized": "O sistema já está otimizado. Não foram encontrados movimentos que melhorem a distribuição.",
     "noFurtherOptimizationPossible": "Não é possível reduzir mais riscos com os currais disponíveis.",
     "reasons": {

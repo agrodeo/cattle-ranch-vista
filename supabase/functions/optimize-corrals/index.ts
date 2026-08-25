@@ -1591,12 +1591,21 @@ serve(async (req) => {
                 const motherCorral = corralsWithCounts.find(c => c.id === mother.corral_id);
                 if (motherCorral) {
                   const capacity = motherCorral.capacity || (motherCorral.hectareas ? Math.round(motherCorral.hectareas * 2) : 999);
-                  if (motherCorral.animal_count < capacity) {
+                  const currentMotherCorralCount = workingDistribution[motherCorral.id]?.length || 0;
+                  if (currentMotherCorralCount < capacity) {
+                    let currentCorralId: string | null = animal.corral_id;
+                    for (const [corralId, corralAnimalsList] of Object.entries(workingDistribution)) {
+                      if (corralAnimalsList.some((candidate) => candidate.id === animal.id)) {
+                        currentCorralId = corralId;
+                        break;
+                      }
+                    }
+
                     suggestedMoves.push({
                       animal_id: animal.id,
                       animal_name: animal.name || animal.id_tag || t.noName,
-                      from_corral_id: animal.corral_id,
-                      from_corral_name: corralsWithCounts.find(c => c.id === animal.corral_id)?.name || null,
+                      from_corral_id: currentCorralId,
+                      from_corral_name: corralsWithCounts.find(c => c.id === currentCorralId)?.name || null,
                       to_corral_id: motherCorral.id,
                       to_corral_name: motherCorral.name,
                       reason: `${t.reuniteWithMother} (${ageMonths} ${t.months})`,
@@ -1605,8 +1614,8 @@ serve(async (req) => {
                     movedAnimals.add(animal.id);
                     
                     // Update working distribution
-                    if (animal.corral_id && workingDistribution[animal.corral_id]) {
-                      workingDistribution[animal.corral_id] = workingDistribution[animal.corral_id].filter(a => a.id !== animal.id);
+                    if (currentCorralId && workingDistribution[currentCorralId]) {
+                      workingDistribution[currentCorralId] = workingDistribution[currentCorralId].filter(a => a.id !== animal.id);
                     }
                     if (!workingDistribution[motherCorral.id]) {
                       workingDistribution[motherCorral.id] = [];
@@ -2588,9 +2597,11 @@ serve(async (req) => {
         affectedCorrals.add(move.to_corral_id);
       });
 
-      // Filter moves by objective - only include consanguinity-related moves for consanguinity objective
+      // Filter moves by objective. Keep explicitly requested calf-mother reunification moves.
       const filteredMoves = suggestedMoves.filter(m => 
-        m.issue_type === 'consanguinity' || m.issue_type === 'future_consanguinity'
+        m.issue_type === 'consanguinity' ||
+        m.issue_type === 'future_consanguinity' ||
+        (includeSeparationMoves && m.issue_type === 'separation')
       );
       
       console.log(`Filtered ${suggestedMoves.length} moves to ${filteredMoves.length} consanguinity-related moves`);
