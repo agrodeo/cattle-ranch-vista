@@ -3201,6 +3201,7 @@ serve(async (req) => {
       const pairsImprovement = breedingPairsBefore > 0 
         ? Math.round(((breedingPairsAfter - breedingPairsBefore) / breedingPairsBefore) * 100)
         : (breedingPairsAfter > 0 ? 100 : 0);
+      fertilityPairsImprovement = pairsImprovement;
       
       const movedFemalesScores = suggestedMoves
         .filter(m => m.issue_type === 'fertility')
