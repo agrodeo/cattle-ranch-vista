@@ -116,7 +116,7 @@ export function calculatePregnancyRate(
   
   const totalServices = services.length;
   const totalOffspring = offspring.length;
-  const liveOffspring = offspring.filter(child => child.status !== 'muerto').length;
+  const liveOffspring = offspring.filter(child => String(child.status || '').trim().toLowerCase() !== 'muerto').length;
   const currentlyPregnant = animal.esta_preñada ? 1 : 0;
   
   // Count successful pregnancies from preñeces table
