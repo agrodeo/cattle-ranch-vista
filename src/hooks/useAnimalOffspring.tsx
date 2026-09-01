@@ -44,7 +44,7 @@ export function useAnimalOffspring(animalId: string, animalSex: string): Offspri
   }, [animalId, animalSex]);
 
   const totalCount = offspring.length;
-  const liveCount = offspring.filter(child => child.status !== 'muerto').length;
+  const liveCount = offspring.filter(child => String(child.status || '').trim().toLowerCase() !== 'muerto').length;
 
   return {
     offspring,

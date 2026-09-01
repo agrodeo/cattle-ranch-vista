@@ -66,7 +66,7 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
       }
 
       if (!filters?.include_sold_dead) {
-        query = query.or("status.is.null,status.eq.activo");
+        query = query.or("status.is.null,status.ilike.activo,status.ilike.active");
       }
 
       if (filters?.date_from) {
@@ -92,9 +92,10 @@ export const HerdOverview = ({ filters }: HerdOverviewProps) => {
 
   const calculateHerdStats = (animals: any[]): HerdStats => {
     const totalAnimals = animals.length;
-    const activeAnimals = animals.filter(a => !a.status || a.status === 'activo').length;
-    const soldAnimals = animals.filter(a => a.status === 'vendido').length;
-    const deadAnimals = animals.filter(a => a.status === 'muerto').length;
+    const st = (a: any) => (a.status ? String(a.status).trim().toLowerCase() : '');
+    const activeAnimals = animals.filter(a => !a.status || st(a) === 'activo' || st(a) === 'active').length;
+    const soldAnimals = animals.filter(a => st(a) === 'vendido' || st(a) === 'sold').length;
+    const deadAnimals = animals.filter(a => st(a) === 'muerto' || st(a) === 'dead').length;
     const maleCount = animals.filter(a => a.sex === 'Macho').length;
     const femaleCount = animals.filter(a => a.sex === 'Hembra').length;
 

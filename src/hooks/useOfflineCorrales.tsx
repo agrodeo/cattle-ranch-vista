@@ -44,7 +44,7 @@ export function useOfflineCorrales(options: UseOfflineCorralesOptions) {
         cachedCorrales.map(async (corral) => {
           const count = await db.animals_cache
             .where('corral_id').equals(corral.id)
-            .filter(a => a.status === 'activo')
+            .filter(a => String(a.status || 'activo').trim().toLowerCase() === 'activo')
             .count();
           return { ...corral, animal_count: count };
         })
@@ -187,7 +187,7 @@ export function useOfflineCorrales(options: UseOfflineCorralesOptions) {
   const getAnimalsInCorral = useCallback(async (corralId: string) => {
     return await db.animals_cache
       .where('corral_id').equals(corralId)
-      .filter(a => a.status === 'activo')
+      .filter(a => String(a.status || 'activo').trim().toLowerCase() === 'activo')
       .toArray();
   }, []);
 

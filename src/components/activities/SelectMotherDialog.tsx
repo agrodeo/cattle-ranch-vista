@@ -48,7 +48,7 @@ export function SelectMotherDialog({ open, onClose, onSelect, animals, corrales,
   const females = useMemo(() => {
     return animals.filter(a =>
       (a.sex === 'Hembra' || a.sex === 'hembra') &&
-      a.status === 'Activo' &&
+      String(a.status || '').trim().toLowerCase() === 'activo' &&
       !alreadySelectedIds.includes(a.id)
     );
   }, [animals, alreadySelectedIds]);

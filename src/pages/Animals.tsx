@@ -263,7 +263,7 @@ const Animals = () => {
                                 </Button>
                                 <Button variant="outline" size="sm" onClick={() => handleEdit(animal)}><Edit className="h-4 w-4" /></Button>
                                 <Button variant="outline" size="sm" onClick={() => deleteAnimal(animal.id)}><Trash2 className="h-4 w-4" /></Button>
-                                {animal.status !== 'muerto' && animal.status !== 'vendido' && (
+                                {normalizeAnimalStatus(animal.status) === 'active' && (
                                   <Button variant="outline" size="sm" onClick={() => handleMarkDeath(animal)} className="text-destructive hover:text-destructive">
                                     <Skull className="h-4 w-4" />
                                   </Button>
