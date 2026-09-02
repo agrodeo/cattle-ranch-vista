@@ -38,6 +38,31 @@ export const SettingsPage = () => {
           subtitle={t('settings:subtitle')}
         />
 
+        <Card className="border-0 shadow-sm sm:border sm:shadow-md">
+          <CardHeader className="pb-3 sm:pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <PlayCircle className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base sm:text-lg">
+                  {tTour('onboarding:featureTour.settingsRow.title')}
+                </CardTitle>
+                <CardDescription className="text-sm mt-0.5">
+                  {tTour('onboarding:featureTour.settingsRow.description')}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button className="h-14 w-full text-base font-semibold sm:w-auto sm:px-8" onClick={() => setShowTour(true)}>
+              {tTour('onboarding:featureTour.settingsRow.button')}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {showTour && <FeatureTour onClose={() => setShowTour(false)} />}
+
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="bg-transparent border-b border-border rounded-none w-auto justify-start gap-0 h-auto p-0 inline-flex overflow-x-auto scrollbar-hide">
             {canManageUsers && (
