@@ -18,6 +18,8 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export const SettingsPage = () => {
   const { t } = useTranslation(['settings']);
+  const { t: tTour } = useTranslation(['onboarding']);
+  const [showTour, setShowTour] = useState(false);
   const { currentUser } = useSupabaseAuth();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "general";
