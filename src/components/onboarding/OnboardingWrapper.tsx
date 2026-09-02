@@ -74,15 +74,42 @@ export const OnboardingWrapper = ({ children }: OnboardingWrapperProps) => {
     }
   };
 
+  // Marks the guided feature tour as seen (server is the source of truth).
+  const markTourCompleted = async () => {
+    if (!currentUser) return;
+    try {
+      localStorage.setItem(tourFlagKey(currentUser.id), "true");
+    } catch {
+      /* noop */
+    }
+    if (currentUser.cabañaId) {
+      await supabase
+        .from("cabañas")
+        .update({ feature_tour_completed_at: new Date().toISOString() })
+        .eq("id", currentUser.cabañaId);
+    }
+  };
+
   const handleCompleteOnboarding = () => {
     void markCompleted();
     setShowOnboarding(false);
+    setShowTour(true);
     navigate("/dashboard");
+  };
+
+  const handleCloseTour = () => {
+    void markTourCompleted();
+    setShowTour(false);
   };
 
   if (showOnboarding) {
     return <OnboardingWizard onComplete={handleCompleteOnboarding} />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {showTour && <FeatureTour onClose={handleCloseTour} />}
+    </>
+  );
 };
