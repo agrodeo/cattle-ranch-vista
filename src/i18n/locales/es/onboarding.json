@@ -15,7 +15,6 @@
   "addLaterDescription": "Podrás agregarlas más tarde desde la configuración",
   "configuring": "Configurando...",
   "configureVaccines": "Configurar Vacunas",
-
   "wizard": {
     "back": "Atrás",
     "skip": "Completar más tarde",
@@ -30,9 +29,9 @@
     "success": {
       "title": "¡Todo listo!",
       "subtitle": "Tu establecimiento está configurado"
-    }
+    },
+    "exit": "Salir y hacerlo después"
   },
-
   "welcomeScreen": {
     "title": "¡Bienvenido a Agrodeo, {{name}}!",
     "subtitle": "Vamos a configurar \"{{company}}\" en 3 pasos rápidos",
@@ -43,7 +42,6 @@
     "estimatedTime": "Tiempo estimado: 5-10 minutos",
     "startButton": "Empezar"
   },
-
   "successScreen": {
     "title": "🎉 ¡Tu rodeo está listo!",
     "ready": "Tu rodeo está listo para gestionar",
@@ -52,7 +50,6 @@
     "viewHerd": "Ver mi rodeo",
     "goDashboard": "Ir al Dashboard"
   },
-
   "vaccinesStep": {
     "title": "Configurá tus vacunas",
     "subtitle": "Definí qué vacunas aplicás y a qué animales corresponden",
@@ -86,7 +83,6 @@
       "untilAge": "Hasta {{max}} meses"
     }
   },
-
   "corralStep": {
     "title": "Creá tus corrales",
     "subtitle": "Los corrales te ayudan a organizar tu ganado",
@@ -104,7 +100,6 @@
     "savedSuccessBulk": "{{count}} corrales creados",
     "savedError": "Error al crear los corrales"
   },
-
   "animalStep": {
     "title": "Cargá tus animales",
     "intro": "Lo más importante para empezar: cargá tus animales. Podés cargar muchos a la vez con la tabla o usar el generador de rango.",
@@ -153,9 +148,21 @@
     "sexRequired": "Seleccioná el sexo",
     "breedRequired": "Seleccioná una raza",
     "birthDateRequired": "Ingresá la fecha de nacimiento",
-    "savedSuccess": "¡Animal registrado!"
+    "savedSuccess": "¡Animal registrado!",
+    "chooser": {
+      "subtitle": "Elegí cómo querés cargarlos. Podés cambiar de método cuando quieras.",
+      "backToOptions": "Volver a las opciones",
+      "fastest": "Lo más rápido",
+      "excelTitle": "Subir un Excel",
+      "excelDesc": "Si ya tenés la planilla del campo, subila y la mapeamos por vos.",
+      "rangeTitle": "Cargar un rango de caravanas",
+      "rangeDesc": "Generá cientos de animales numerados en un paso.",
+      "manualTitle": "Escribirlos a mano",
+      "manualDesc": "Ideal si son pocos animales o querés detallar cada uno.",
+      "rangePreview": "Vamos a generar {{count}} animales, de la {{first}} a la {{last}}."
+    },
+    "skipAndEnter": "Cargarlos después y entrar a la app"
   },
-
   "gettingStarted": {
     "title": "🎉 ¡Tu rodeo está listo!",
     "description": "Tenés {{count}} animales cargados. Esto es lo que podés hacer:",
@@ -163,5 +170,47 @@
     "reproductive": "Gestión reproductiva",
     "health": "Sanidad",
     "dismiss": "Entendido, cerrar"
+  },
+  "startPlan": {
+    "title": "Qué podés activar",
+    "subtitle": "Cada dato que cargás enciende un análisis que ya está listo.",
+    "notActiveYet": "Todavía no está activo",
+    "steps": {
+      "animals": {
+        "action": "Cargar tus animales",
+        "benefit": "Para tener el rodeo entero en un lugar",
+        "unlocks": "Stock por categoría, fichas individuales y todos los reportes."
+      },
+      "corrals": {
+        "action": "Crear tus corrales",
+        "benefit": "Para saber qué potrero rinde mejor",
+        "unlocks": "Comparación de corrales, carga por hectárea y ranking por potrero."
+      },
+      "weights": {
+        "action": "Registrar dos pesadas por animal",
+        "benefit": "Para saber cuántos kilos por día está ganando cada animal",
+        "unlocks": "Ganancia diaria (kg/día), peso estimado, ranking del rodeo y aviso cuando un animal se frena."
+      },
+      "vaccines": {
+        "action": "Configurar el calendario sanitario y aplicar la primera vacuna",
+        "benefit": "Para que el sistema te avise antes de que se venza",
+        "unlocks": "Cobertura sanitaria del rodeo, alertas de vencimiento y refuerzos pendientes."
+      },
+      "genealogy": {
+        "action": "Cargar padre y madre de tus animales",
+        "benefit": "Para no cruzar parientes sin darte cuenta",
+        "unlocks": "Árbol genealógico, cálculo de consanguinidad y puntaje genético."
+      },
+      "reproduction": {
+        "action": "Registrar servicios, tactos y pariciones",
+        "benefit": "Para saber qué vacas te están dando cría todos los años",
+        "unlocks": "Porcentaje de preñez y parición, días abiertos y ranking reproductivo."
+      },
+      "finances": {
+        "action": "Cargar ingresos y gastos",
+        "benefit": "Para saber cuánto te deja realmente el rodeo",
+        "unlocks": "Resultado por período, costo por animal y reportes financieros."
+      }
+    }
   }
 }

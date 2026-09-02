@@ -15,7 +15,6 @@
   "addLaterDescription": "You can add them later from settings",
   "configuring": "Configuring...",
   "configureVaccines": "Configure Vaccines",
-
   "wizard": {
     "back": "Back",
     "skip": "Complete later",
@@ -30,9 +29,9 @@
     "success": {
       "title": "All set!",
       "subtitle": "Your ranch is configured"
-    }
+    },
+    "exit": "Exit and do it later"
   },
-
   "welcomeScreen": {
     "title": "Welcome to Agrodeo, {{name}}!",
     "subtitle": "Let's set up \"{{company}}\" in 3 quick steps",
@@ -43,7 +42,6 @@
     "estimatedTime": "Estimated time: 5-10 minutes",
     "startButton": "Start"
   },
-
   "successScreen": {
     "title": "🎉 Your herd is ready!",
     "ready": "Your herd is ready to manage",
@@ -52,7 +50,6 @@
     "viewHerd": "View my herd",
     "goDashboard": "Go to Dashboard"
   },
-
   "vaccinesStep": {
     "title": "Configure your vaccines",
     "subtitle": "Define which vaccines you apply and which animals they target",
@@ -86,7 +83,6 @@
       "untilAge": "Until {{max}} months"
     }
   },
-
   "corralStep": {
     "title": "Create your corrals",
     "subtitle": "Corrals help you organize your herd",
@@ -104,7 +100,6 @@
     "savedSuccessBulk": "{{count}} corrals created",
     "savedError": "Error creating corrals"
   },
-
   "animalStep": {
     "title": "Load your animals",
     "intro": "The most important step: load your animals. Add many at once with the table or use the range generator.",
@@ -153,9 +148,21 @@
     "sexRequired": "Select the sex",
     "breedRequired": "Select a breed",
     "birthDateRequired": "Enter the birth date",
-    "savedSuccess": "Animal registered!"
+    "savedSuccess": "Animal registered!",
+    "chooser": {
+      "subtitle": "Choose how you want to load them. You can switch method any time.",
+      "backToOptions": "Back to options",
+      "fastest": "Fastest",
+      "excelTitle": "Upload a spreadsheet",
+      "excelDesc": "Already have your farm sheet? Upload it and we map the columns for you.",
+      "rangeTitle": "Load a tag range",
+      "rangeDesc": "Generate hundreds of numbered animals in one step.",
+      "manualTitle": "Type them in",
+      "manualDesc": "Best for a few animals or when you want full detail.",
+      "rangePreview": "We'll generate {{count}} animals, from {{first}} to {{last}}."
+    },
+    "skipAndEnter": "Load them later and enter the app"
   },
-
   "gettingStarted": {
     "title": "🎉 Your herd is ready!",
     "description": "You have {{count}} animals loaded. Here's what you can do:",
@@ -163,5 +170,47 @@
     "reproductive": "Reproductive management",
     "health": "Health",
     "dismiss": "Got it, close"
+  },
+  "startPlan": {
+    "title": "What you can unlock",
+    "subtitle": "Every record you add turns on an analysis that's already built.",
+    "notActiveYet": "Not active yet",
+    "steps": {
+      "animals": {
+        "action": "Load your animals",
+        "benefit": "To have the whole herd in one place",
+        "unlocks": "Stock by category, individual profiles and every report."
+      },
+      "corrals": {
+        "action": "Create your corrals",
+        "benefit": "To know which paddock performs best",
+        "unlocks": "Corral comparison, stocking rate and paddock ranking."
+      },
+      "weights": {
+        "action": "Record two weighings per animal",
+        "benefit": "To know how many kilos a day each animal is gaining",
+        "unlocks": "Average daily gain (kg/day), estimated weight, herd ranking and alerts when an animal stalls."
+      },
+      "vaccines": {
+        "action": "Set up the health calendar and log the first dose",
+        "benefit": "So the system warns you before anything expires",
+        "unlocks": "Herd vaccination coverage, due-date alerts and pending boosters."
+      },
+      "genealogy": {
+        "action": "Record sire and dam for your animals",
+        "benefit": "To avoid mating relatives by accident",
+        "unlocks": "Genealogy tree, inbreeding coefficient and genetic score."
+      },
+      "reproduction": {
+        "action": "Record services, pregnancy checks and calvings",
+        "benefit": "To know which cows give you a calf every year",
+        "unlocks": "Pregnancy and calving rates, days open and reproductive ranking."
+      },
+      "finances": {
+        "action": "Record income and expenses",
+        "benefit": "To know what the herd actually leaves you",
+        "unlocks": "Result per period, cost per animal and financial reports."
+      }
+    }
   }
 }

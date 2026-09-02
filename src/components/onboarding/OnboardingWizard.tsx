@@ -122,6 +122,14 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             {t("onboarding:welcomeScreen.startButton")}
             <ArrowRight className="h-5 w-5" />
           </button>
+          <button
+            type="button"
+            onClick={onComplete}
+            className="mt-3 w-full h-12 text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+          >
+            {t("onboarding:wizard.exit")}
+          </button>
+
         </div>
       </div>
     );
@@ -192,15 +200,22 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
       <div className="w-full sm:max-w-2xl sm:rounded-3xl sm:shadow-xl sm:border sm:border-border bg-card flex flex-col min-h-[100dvh] sm:min-h-0">
         {/* Progress header */}
         <div className="px-6 pt-6 pb-4 space-y-3">
-          <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
+          <div className="flex items-center justify-between gap-2 text-xs font-medium text-muted-foreground">
             <span>
               {t("onboarding:wizard.stepLabel", {
                 current: stepIndex + 1,
                 total: STEP_ORDER.length,
               })}
             </span>
-            <span>{t(`onboarding:wizard.labels.${currentKey}`)}</span>
+            <button
+              type="button"
+              onClick={onComplete}
+              className="text-xs font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+            >
+              {t("onboarding:wizard.exit")}
+            </button>
           </div>
+
           <Progress value={progressPct} className="h-2" />
           <div className="flex items-center justify-between gap-2">
             {STEP_ORDER.map((key, i) => {
@@ -240,8 +255,10 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                 setSummary((s) => ({ ...s, animals: count }));
                 goNext();
               }}
+              onSkip={onComplete}
             />
           )}
+
           {currentKey === "corrals" && (
             <CorralStep
               onComplete={(count) => {
