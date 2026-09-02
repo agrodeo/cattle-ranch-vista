@@ -212,5 +212,79 @@
         "unlocks": "Result per period, cost per animal and financial reports."
       }
     }
+  },
+  "featureTour": {
+    "stepCounter": "Step {{current}} of {{total}}",
+    "next": "Next",
+    "back": "Back",
+    "skip": "Skip the tour",
+    "close": "Close the tour",
+    "settingsRow": {
+      "title": "Watch the tour again",
+      "description": "We'll show you again what each part of Agrodeo is for.",
+      "button": "Watch the tour"
+    },
+    "contact": {
+      "whatsappButton": "Message me on WhatsApp",
+      "emailButton": "Send me an email",
+      "finishButton": "Done, start using Agrodeo"
+    },
+    "slides": {
+      "welcome": {
+        "title": "Let me show you Agrodeo in 2 minutes",
+        "body": "Just a few short screens so you know what you can do with the app.\n\nYou can leave whenever you want and watch it again from Settings.",
+        "where": ""
+      },
+      "animals": {
+        "title": "Keep your whole herd in one place",
+        "body": "Add each animal once and you get its full record: weight, history, health and both parents.\n\nSearch by tag and see everything that happened to it.",
+        "where": "Find it in the Animals menu."
+      },
+      "corrales": {
+        "title": "Know which paddock performs best",
+        "body": "See how many animals are in each pen and how they are growing.\n\nThat way you decide better where to move the herd.",
+        "where": "Find it in the Pens menu."
+      },
+      "weights": {
+        "title": "Know how much each animal gains",
+        "body": "With two weigh-ins the app works out how many kilos a day each animal gains.\n\nIt also flags the ones that stopped growing, before you lose money.",
+        "where": "Find it in the Activities menu."
+      },
+      "health": {
+        "title": "Never miss a vaccine again",
+        "body": "Set the calendar once and the app warns you before each vaccine is due.\n\nEvery record stays saved for official reporting.",
+        "where": "Find it in Settings and in the Activities menu."
+      },
+      "reproduction": {
+        "title": "Know when each cow will calve",
+        "body": "Add services and inseminations and the app estimates the calving date and builds the calving calendar.\n\nIt also flags the empty ones.",
+        "where": "Find it inside each animal's record, in the Animals menu."
+      },
+      "finances": {
+        "title": "Know what each kilo gained cost you",
+        "body": "Add expenses and sales and the app shows you the clear number.\n\nIt's the fastest way to see if the year worked out.",
+        "where": "Find it in the Finances menu."
+      },
+      "reports": {
+        "title": "See how the herd is doing",
+        "body": "Track month-by-month progress, compare pens and get the ranking of your best animals.\n\nExport everything to Excel if you need it.",
+        "where": "Find it in the Reports menu."
+      },
+      "offline": {
+        "title": "It works without signal",
+        "body": "You can add data out in the field with no internet.\n\nIt's saved on your phone and uploaded on its own once you have signal again. Nothing gets lost.",
+        "where": ""
+      },
+      "assistant": {
+        "title": "Ask anything about your herd",
+        "body": "Write to it in plain words, like talking to a person, and it answers using your own data.\n\nFor example: how many cows are pregnant, or which animal gained the most.",
+        "where": ""
+      },
+      "contact": {
+        "title": "Any questions? Write to me",
+        "body": "There's a real person on the other side, not a form. I answer the same day.\n\nIf something isn't clear or you want help loading your data, write to me.",
+        "where": ""
+      }
+    }
   }
 }

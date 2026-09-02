@@ -212,5 +212,79 @@
         "unlocks": "Resultado por período, custo por animal e relatórios financeiros."
       }
     }
+  },
+  "featureTour": {
+    "stepCounter": "Passo {{current}} de {{total}}",
+    "next": "Seguinte",
+    "back": "Voltar",
+    "skip": "Pular o tutorial",
+    "close": "Fechar o tutorial",
+    "settingsRow": {
+      "title": "Ver o tutorial de novo",
+      "description": "Mostramos de novo para que serve cada parte do Agrodeo.",
+      "button": "Ver o tutorial"
+    },
+    "contact": {
+      "whatsappButton": "Fale comigo no WhatsApp",
+      "emailButton": "Me manda um e-mail",
+      "finishButton": "Pronto, começar a usar o Agrodeo"
+    },
+    "slides": {
+      "welcome": {
+        "title": "Te mostro o Agrodeo em 2 minutos",
+        "body": "São poucas telas curtas para você saber o que dá para fazer no aplicativo.\n\nVocê pode sair quando quiser e ver de novo nas Configurações.",
+        "where": ""
+      },
+      "animals": {
+        "title": "Tenha todo o rebanho em um só lugar",
+        "body": "Cadastra cada animal uma vez e já tem a ficha dele: peso, histórico, sanidade e quem são o pai e a mãe.\n\nBusca pelo brinco e vê tudo o que aconteceu com ele.",
+        "where": "Está no menu Animais."
+      },
+      "corrales": {
+        "title": "Saiba qual piquete está rendendo mais",
+        "body": "Vê quantos animais tem em cada piquete e como estão crescendo.\n\nAssim você decide melhor para onde mover o gado.",
+        "where": "Está no menu Piquetes."
+      },
+      "weights": {
+        "title": "Saiba quanto cada animal engorda",
+        "body": "Com duas pesagens o aplicativo calcula sozinho quantos quilos por dia cada animal ganha.\n\nE marca o que parou de crescer, antes de você perder dinheiro.",
+        "where": "Está no menu Atividades."
+      },
+      "health": {
+        "title": "Nenhuma vacina vence sem aviso",
+        "body": "Monta o calendário uma vez e o aplicativo avisa antes de cada vacina vencer.\n\nFica todo o registro guardado para a fiscalização.",
+        "where": "Está nas Configurações e no menu Atividades."
+      },
+      "reproduction": {
+        "title": "Saiba quando cada vaca vai parir",
+        "body": "Cadastra as coberturas e inseminações e o aplicativo estima a data do parto e monta o calendário de partos.\n\nTambém marca as vazias.",
+        "where": "Está dentro da ficha de cada animal, no menu Animais."
+      },
+      "finances": {
+        "title": "Saiba quanto custou cada quilo ganho",
+        "body": "Cadastra os gastos e as vendas e o aplicativo mostra o número claro.\n\nÉ o jeito mais rápido de ver se o ano fechou bem.",
+        "where": "Está no menu Finanças."
+      },
+      "reports": {
+        "title": "Veja como está o rebanho",
+        "body": "Vê a evolução mês a mês, compara piquetes e tira o ranking dos melhores animais.\n\nSe precisar, baixa tudo em Excel.",
+        "where": "Está no menu Relatórios."
+      },
+      "offline": {
+        "title": "Funciona sem sinal",
+        "body": "Você pode cadastrar dados no campo mesmo sem internet.\n\nFicam salvos no celular e sobem sozinhos quando o sinal voltar. Nada se perde.",
+        "where": ""
+      },
+      "assistant": {
+        "title": "Pergunte o que quiser sobre o rebanho",
+        "body": "Escreve com suas palavras, como falaria com uma pessoa, e ele responde com os seus dados.\n\nPor exemplo: quantas vacas estão prenhas ou qual animal engordou mais.",
+        "where": ""
+      },
+      "contact": {
+        "title": "Alguma dúvida? Me escreva",
+        "body": "Do outro lado tem uma pessoa de verdade, não um formulário. Respondo no mesmo dia.\n\nSe algo não ficou claro ou quer ajuda para cadastrar os dados, me escreva.",
+        "where": ""
+      }
+    }
   }
 }
