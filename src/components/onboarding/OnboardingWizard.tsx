@@ -255,8 +255,10 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
                 setSummary((s) => ({ ...s, animals: count }));
                 goNext();
               }}
+              onSkip={onComplete}
             />
           )}
+
           {currentKey === "corrals" && (
             <CorralStep
               onComplete={(count) => {
