@@ -8,7 +8,9 @@ import { VaccinationRequirementsManager } from "@/components/settings/Vaccinatio
 import { UserManagement } from "@/components/settings/UserManagement";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Syringe, Globe, Scale, Trash2, Users } from "lucide-react";
+import { Target, Syringe, Globe, Scale, Trash2, Users, PlayCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FeatureTour } from "@/components/onboarding/FeatureTour";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { BreedMixingToggle } from "@/components/settings/BreedMixingToggle";
 import { Link } from "react-router-dom";
