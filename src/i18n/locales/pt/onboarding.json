@@ -241,9 +241,14 @@
         "where": "Está no menu Animais."
       },
       "corrales": {
-        "title": "Saiba qual piquete está rendendo mais",
-        "body": "Vê quantos animais tem em cada piquete e como estão crescendo.\n\nAssim você decide melhor para onde mover o gado.",
-        "where": "Está no menu Piquetes."
+        "title": "Organize o gado por piquetes",
+        "body": "Um piquete é cada área do seu campo. Você cria uma vez com nome, hectares e quantos animais cabem.\n\nDepois atribui cada animal ao seu piquete e o app mostra quantos há em cada um, se está passando da lotação e como estão engordando em cada área.\n\nAssim você vê rapidinho qual piquete rende mais e qual precisa descansar.",
+        "where": "Está no menu Piquetes: crie um novo com o botão de mais."
+      },
+      "movimientos": {
+        "title": "Mova animais entre piquetes",
+        "body": "Quando troca o gado de piquete, você registra no app e fica o histórico por onde passou cada animal.\n\nPode mover um só ou um grupo inteiro, e até pedir ao sistema uma sugestão de divisão para não cruzar parentes.",
+        "where": "Está no menu Piquetes, em Mover animais."
       },
       "weights": {
         "title": "Saiba quanto cada animal engorda",
