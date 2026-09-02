@@ -122,6 +122,14 @@ export const OnboardingWizard = ({ onComplete }: OnboardingWizardProps) => {
             {t("onboarding:welcomeScreen.startButton")}
             <ArrowRight className="h-5 w-5" />
           </button>
+          <button
+            type="button"
+            onClick={onComplete}
+            className="mt-3 w-full h-12 text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+          >
+            {t("onboarding:wizard.exit")}
+          </button>
+
         </div>
       </div>
     );
