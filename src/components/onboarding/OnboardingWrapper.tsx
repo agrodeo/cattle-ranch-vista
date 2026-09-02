@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { OnboardingWizard } from "./OnboardingWizard";
+import { FeatureTour } from "./FeatureTour";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
