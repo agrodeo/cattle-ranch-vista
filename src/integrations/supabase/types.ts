@@ -1068,6 +1068,7 @@ export type Database = {
       cabañas: {
         Row: {
           country_code: string | null
+          feature_tour_completed_at: string | null
           id: string
           language: string | null
           location: string | null
@@ -1080,6 +1081,7 @@ export type Database = {
         }
         Insert: {
           country_code?: string | null
+          feature_tour_completed_at?: string | null
           id?: string
           language?: string | null
           location?: string | null
@@ -1092,6 +1094,7 @@ export type Database = {
         }
         Update: {
           country_code?: string | null
+          feature_tour_completed_at?: string | null
           id?: string
           language?: string | null
           location?: string | null

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PageHeader } from "@/components/ui/page-header";
@@ -8,7 +8,9 @@ import { VaccinationRequirementsManager } from "@/components/settings/Vaccinatio
 import { UserManagement } from "@/components/settings/UserManagement";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Syringe, Globe, Scale, Trash2, Users } from "lucide-react";
+import { Target, Syringe, Globe, Scale, Trash2, Users, PlayCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FeatureTour } from "@/components/onboarding/FeatureTour";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { BreedMixingToggle } from "@/components/settings/BreedMixingToggle";
 import { Link } from "react-router-dom";
@@ -16,6 +18,8 @@ import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 export const SettingsPage = () => {
   const { t } = useTranslation(['settings']);
+  const { t: tTour } = useTranslation(['onboarding']);
+  const [showTour, setShowTour] = useState(false);
   const { currentUser } = useSupabaseAuth();
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get("tab") || "general";
@@ -37,6 +41,31 @@ export const SettingsPage = () => {
           title={t('settings:title')}
           subtitle={t('settings:subtitle')}
         />
+
+        <Card className="border-0 shadow-sm sm:border sm:shadow-md">
+          <CardHeader className="pb-3 sm:pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <PlayCircle className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base sm:text-lg">
+                  {tTour('onboarding:featureTour.settingsRow.title')}
+                </CardTitle>
+                <CardDescription className="text-sm mt-0.5">
+                  {tTour('onboarding:featureTour.settingsRow.description')}
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Button className="h-14 w-full text-base font-semibold sm:w-auto sm:px-8" onClick={() => setShowTour(true)}>
+              {tTour('onboarding:featureTour.settingsRow.button')}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {showTour && <FeatureTour onClose={() => setShowTour(false)} />}
 
         <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="bg-transparent border-b border-border rounded-none w-auto justify-start gap-0 h-auto p-0 inline-flex overflow-x-auto scrollbar-hide">

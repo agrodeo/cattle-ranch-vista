@@ -212,5 +212,79 @@
         "unlocks": "Resultado por período, costo por animal y reportes financieros."
       }
     }
+  },
+  "featureTour": {
+    "stepCounter": "Paso {{current}} de {{total}}",
+    "next": "Siguiente",
+    "back": "Atrás",
+    "skip": "Saltear el tutorial",
+    "close": "Cerrar el tutorial",
+    "settingsRow": {
+      "title": "Ver el tutorial de nuevo",
+      "description": "Te volvemos a mostrar para qué sirve cada parte de Agrodeo.",
+      "button": "Ver el tutorial"
+    },
+    "contact": {
+      "whatsappButton": "Escribime por WhatsApp",
+      "emailButton": "Mandame un mail",
+      "finishButton": "Listo, empezar a usar Agrodeo"
+    },
+    "slides": {
+      "welcome": {
+        "title": "Te muestro Agrodeo en 2 minutos",
+        "body": "Son unas pocas pantallas cortas para que sepas qué podés hacer con la app.\n\nPodés salir cuando quieras y volver a verlo desde Configuración.",
+        "where": ""
+      },
+      "animals": {
+        "title": "Tené todo el rodeo en un solo lugar",
+        "body": "Cargás cada animal una vez y ya tenés su ficha: peso, historia, sanidad y quiénes son el padre y la madre.\n\nBuscás uno por caravana y ves todo lo que pasó con él.",
+        "where": "Lo encontrás en el menú Animales."
+      },
+      "corrales": {
+        "title": "Sabé qué potrero te está rindiendo mejor",
+        "body": "Ves cuántos animales tenés en cada corral y cómo vienen creciendo.\n\nAsí decidís mejor dónde mover la hacienda.",
+        "where": "Lo encontrás en el menú Corrales."
+      },
+      "weights": {
+        "title": "Sabé cuánto engorda cada animal",
+        "body": "Con dos pesadas la app calcula sola cuántos kilos por día gana cada animal.\n\nY te marca el que se frenó, para que lo veas antes de perder plata.",
+        "where": "Lo encontrás en el menú Actividades."
+      },
+      "health": {
+        "title": "Que no se te venza ninguna vacuna",
+        "body": "Armás el calendario una vez y la app te avisa antes de que se venza cada vacuna.\n\nQueda todo el registro guardado para SENASA.",
+        "where": "Lo encontrás en Configuración y en el menú Actividades."
+      },
+      "reproduction": {
+        "title": "Sabé cuándo va a parir cada vaca",
+        "body": "Cargás los servicios y las inseminaciones y la app estima la fecha de parto y arma el calendario de pariciones.\n\nTambién te marca las vacías.",
+        "where": "Lo encontrás dentro de la ficha de cada animal, en el menú Animales."
+      },
+      "finances": {
+        "title": "Sabé cuánto te costó cada kilo ganado",
+        "body": "Cargás los gastos y las ventas y la app te muestra el número claro.\n\nEs la forma más rápida de ver si el año te cerró bien.",
+        "where": "Lo encontrás en el menú Finanzas."
+      },
+      "reports": {
+        "title": "Mirá cómo viene el rodeo",
+        "body": "Ves la evolución mes a mes, compará corrales y sacá el ranking de los mejores animales.\n\nSi lo necesitás, bajás todo a Excel.",
+        "where": "Lo encontrás en el menú Reportes."
+      },
+      "offline": {
+        "title": "Funciona sin señal",
+        "body": "Podés cargar datos en el campo aunque no tengas internet.\n\nSe guardan en el teléfono y se suben solos cuando volvés a tener señal. No perdés nada.",
+        "where": ""
+      },
+      "assistant": {
+        "title": "Preguntale lo que quieras sobre tu rodeo",
+        "body": "Le escribís en castellano, como le hablarías a una persona, y te contesta con tus propios datos.\n\nPor ejemplo: cuántas vacas están preñadas o cuál animal engordó más.",
+        "where": ""
+      },
+      "contact": {
+        "title": "¿Alguna duda? Escribime",
+        "body": "Del otro lado hay una persona de verdad, no un formulario. Te contesto en el día.\n\nSi algo no te cierra o querés que te ayude a cargar los datos, escribime.",
+        "where": ""
+      }
+    }
   }
 }
