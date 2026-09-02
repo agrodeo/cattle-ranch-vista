@@ -1,16 +1,31 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2, Plus, Trash2, ChevronDown, Wand2, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  ChevronDown,
+  Wand2,
+  ArrowLeft,
+  FileSpreadsheet,
+  Keyboard,
+  ArrowRight,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useSubscription } from "@/hooks/useSubscription";
 import { ARGENTINE_BREEDS } from "@/components/animals/AnimalFormDialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import AnimalExcelUploadAdvanced from "@/components/excel-upload/AnimalExcelUploadAdvanced";
 import { toast } from "sonner";
 
 interface AnimalStepProps {
   onComplete: (count: number) => void;
+  onSkip?: () => void;
+  onBack?: () => void;
 }
+
+type Mode = "chooser" | "excel" | "range" | "manual";
 
 interface OnboardingAnimalRow {
   id: string;
@@ -30,9 +45,6 @@ interface BatchDefaults {
   category: string;
 }
 
-const CATEGORIES_HEMBRA = ["Vaca", "Vaquillona", "Ternera"];
-const CATEGORIES_MACHO = ["Toro", "Torito", "Novillo", "Ternero"];
-
 const makeRow = (defaults?: Partial<BatchDefaults>): OnboardingAnimalRow => ({
   id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
   id_tag: "",
@@ -46,14 +58,15 @@ const makeRow = (defaults?: Partial<BatchDefaults>): OnboardingAnimalRow => ({
 });
 
 const inputCls =
-  "w-full h-11 px-3 text-sm rounded-lg border-2 border-border bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors";
+  "w-full h-12 px-3 text-base rounded-lg border-2 border-border bg-background focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors";
 
-export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
+export const AnimalStep = ({ onComplete, onSkip, onBack }: AnimalStepProps) => {
   const { t } = useTranslation(["onboarding"]);
   const { currentUser } = useSupabaseAuth();
   const { subscriptionStatus, planNames } = useSubscription();
 
   const currentYear = new Date().getFullYear();
+  const [mode, setMode] = useState<Mode>("chooser");
   const [defaults, setDefaults] = useState<BatchDefaults>({
     birth_year: currentYear - 2,
     breed: "",
@@ -65,7 +78,6 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
   const [existingTags, setExistingTags] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
   const [showDefaults, setShowDefaults] = useState(false);
-  const [showRange, setShowRange] = useState(false);
 
   // Range generator state
   const [rangePrefix, setRangePrefix] = useState("");
@@ -132,12 +144,24 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
 
   // Auto-add 3 more rows when last row is filled
   useEffect(() => {
+    if (mode !== "manual") return;
     const last = rows[rows.length - 1];
     if (last && last.id_tag.trim() && last.sex) {
       setRows((prev) => [...prev, ...Array.from({ length: 3 }, () => makeRow(defaults))]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows[rows.length - 1]?.id_tag, rows[rows.length - 1]?.sex]);
+  }, [rows[rows.length - 1]?.id_tag, rows[rows.length - 1]?.sex, mode]);
+
+  const rangeCount =
+    Number.isFinite(Number(rangeTo)) && Number.isFinite(Number(rangeFrom))
+      ? Math.max(0, Number(rangeTo) - Number(rangeFrom) + 1)
+      : 0;
+
+  const rangeTagAt = (n: number) => {
+    const width = String(Number(rangeTo) || 0).length;
+    const num = String(n).padStart(width, "0");
+    return rangePrefix ? `${rangePrefix}-${num}` : num;
+  };
 
   const generateRange = () => {
     const from = Number(rangeFrom);
@@ -151,14 +175,11 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
       toast.error(t("onboarding:animalStep.rangeTooLarge"));
       return;
     }
-    const width = String(to).length;
     const newRows: OnboardingAnimalRow[] = [];
     for (let i = from; i <= to; i++) {
-      const num = String(i).padStart(width, "0");
-      const tag = rangePrefix ? `${rangePrefix}-${num}` : num;
       newRows.push({
         ...makeRow(defaults),
-        id_tag: tag,
+        id_tag: rangeTagAt(i),
         sex: rangeSex,
         birth_year: rangeYear,
       });
@@ -168,7 +189,7 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
       const filled = prev.filter((r) => r.id_tag.trim() || r.sex);
       return [...filled, ...newRows, makeRow(defaults), makeRow(defaults)];
     });
-    setShowRange(false);
+    setMode("manual");
     toast.success(t("onboarding:animalStep.rangeGenerated", { count }));
   };
 
@@ -226,14 +247,235 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
     }
   };
 
+  const handleExcelDone = async () => {
+    let count = 0;
+    if (currentUser?.cabañaId) {
+      const { count: c } = await supabase
+        .from("animals")
+        .select("id", { count: "exact", head: true })
+        .eq("cabaña_id", currentUser.cabañaId);
+      count = c ?? 0;
+    }
+    onComplete(count);
+  };
+
+  // Permanent escape hatch — present on every screen of this step.
+  const SkipLink = () =>
+    onSkip ? (
+      <button
+        type="button"
+        onClick={onSkip}
+        className="w-full h-12 text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+      >
+        {t("onboarding:animalStep.skipAndEnter")}
+      </button>
+    ) : null;
+
+  const BackToChooser = () => (
+    <button
+      type="button"
+      onClick={() => setMode("chooser")}
+      className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors -ml-2 px-2 py-1 rounded-md"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      {t("onboarding:animalStep.chooser.backToOptions")}
+    </button>
+  );
+
+  const Heading = ({ title, subtitle }: { title: string; subtitle: string }) => (
+    <div className="space-y-2">
+      <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{title}</h2>
+      <p className="text-base text-muted-foreground">{subtitle}</p>
+    </div>
+  );
+
+  // ---------- Chooser ----------
+  if (mode === "chooser") {
+    const options = [
+      {
+        key: "excel" as const,
+        icon: FileSpreadsheet,
+        badge: t("onboarding:animalStep.chooser.fastest"),
+      },
+      { key: "range" as const, icon: Wand2, badge: "" },
+      { key: "manual" as const, icon: Keyboard, badge: "" },
+    ];
+    return (
+      <div className="flex flex-col gap-5 animate-fade-in">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="self-start inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors -ml-2 px-2 py-1 rounded-md"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("onboarding:wizard.back")}
+          </button>
+        )}
+        <Heading
+          title={t("onboarding:animalStep.title")}
+          subtitle={t("onboarding:animalStep.chooser.subtitle")}
+        />
+        <div className="space-y-3">
+          {options.map((o) => {
+            const Icon = o.icon;
+            return (
+              <button
+                key={o.key}
+                type="button"
+                onClick={() => setMode(o.key)}
+                className="w-full text-left rounded-2xl border-2 border-border bg-background p-4 hover:border-primary/50 transition-colors flex items-start gap-4"
+              >
+                <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-base font-semibold text-foreground">
+                      {t(`onboarding:animalStep.chooser.${o.key}Title`)}
+                    </p>
+                    {o.badge && (
+                      <span className="text-[11px] font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+                        {o.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground mt-0.5">
+                    {t(`onboarding:animalStep.chooser.${o.key}Desc`)}
+                  </p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-muted-foreground shrink-0 mt-3" />
+              </button>
+            );
+          })}
+        </div>
+        <SkipLink />
+      </div>
+    );
+  }
+
+  // ---------- Excel ----------
+  if (mode === "excel") {
+    return (
+      <div className="flex flex-col gap-5 animate-fade-in">
+        <BackToChooser />
+        <Heading
+          title={t("onboarding:animalStep.chooser.excelTitle")}
+          subtitle={t("onboarding:animalStep.chooser.excelDesc")}
+        />
+        {currentUser?.cabañaId && (
+          <AnimalExcelUploadAdvanced
+            userCabañaId={currentUser.cabañaId}
+            onUploadComplete={handleExcelDone}
+          />
+        )}
+        <SkipLink />
+      </div>
+    );
+  }
+
+  // ---------- Range ----------
+  if (mode === "range") {
+    return (
+      <div className="flex flex-col gap-5 animate-fade-in">
+        <BackToChooser />
+        <Heading
+          title={t("onboarding:animalStep.chooser.rangeTitle")}
+          subtitle={t("onboarding:animalStep.chooser.rangeDesc")}
+        />
+        <div className="rounded-2xl border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("onboarding:animalStep.rangePrefix")}
+              </label>
+              <input
+                value={rangePrefix}
+                onChange={(e) => setRangePrefix(e.target.value)}
+                placeholder="AG"
+                className={inputCls}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("onboarding:animalStep.rangeFrom")}
+              </label>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={rangeFrom}
+                onChange={(e) => setRangeFrom(e.target.value === "" ? "" : Number(e.target.value))}
+                className={inputCls}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("onboarding:animalStep.rangeTo")}
+              </label>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={rangeTo}
+                onChange={(e) => setRangeTo(e.target.value === "" ? "" : Number(e.target.value))}
+                className={inputCls}
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("onboarding:animalStep.colSex")}
+              </label>
+              <select
+                value={rangeSex}
+                onChange={(e) => setRangeSex(e.target.value as "Macho" | "Hembra")}
+                className={inputCls}
+              >
+                <option value="Hembra">{t("onboarding:animalStep.female")}</option>
+                <option value="Macho">{t("onboarding:animalStep.male")}</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                {t("onboarding:animalStep.colBirthYear")}
+              </label>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={rangeYear}
+                onChange={(e) => setRangeYear(Number(e.target.value) || currentYear)}
+                className={inputCls}
+              />
+            </div>
+          </div>
+          {rangeCount > 0 && (
+            <p className="text-sm text-foreground">
+              {t("onboarding:animalStep.chooser.rangePreview", {
+                count: rangeCount,
+                first: rangeTagAt(Number(rangeFrom)),
+                last: rangeTagAt(Number(rangeTo)),
+              })}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={generateRange}
+            className="w-full h-12 rounded-lg bg-primary text-primary-foreground text-base font-semibold hover:bg-primary/90"
+          >
+            {t("onboarding:animalStep.rangeGenerate", { count: rangeCount })}
+          </button>
+        </div>
+        <SkipLink />
+      </div>
+    );
+  }
+
+  // ---------- Manual table ----------
   return (
     <div className="flex flex-col gap-5 animate-fade-in">
-      <div className="space-y-2">
-        <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
-          {t("onboarding:animalStep.title")}
-        </h2>
-        <p className="text-base text-muted-foreground">{t("onboarding:animalStep.intro")}</p>
-      </div>
+      <BackToChooser />
+      <Heading
+        title={t("onboarding:animalStep.title")}
+        subtitle={t("onboarding:animalStep.intro")}
+      />
 
       {/* Defaults */}
       <Collapsible open={showDefaults} onOpenChange={setShowDefaults}>
@@ -262,6 +504,7 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
               </label>
               <input
                 type="number"
+                inputMode="numeric"
                 value={defaults.birth_year}
                 onChange={(e) =>
                   setDefaults((d) => ({ ...d, birth_year: Number(e.target.value) || currentYear }))
@@ -349,7 +592,7 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
                             key={s}
                             type="button"
                             onClick={() => update(r.id, { sex: r.sex === s ? "" : s })}
-                            className={`h-11 rounded-lg text-xs font-semibold border-2 transition-colors ${
+                            className={`h-12 rounded-lg text-xs font-semibold border-2 transition-colors ${
                               r.sex === s
                                 ? "border-primary bg-primary text-primary-foreground"
                                 : "border-border bg-background text-foreground hover:border-primary/40"
@@ -363,6 +606,7 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
                     <td className="px-2 py-2">
                       <input
                         type="number"
+                        inputMode="numeric"
                         value={r.birth_year ?? ""}
                         onChange={(e) =>
                           update(r.id, {
@@ -418,100 +662,20 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
         <button
           type="button"
           onClick={() => addRows(5)}
-          className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg border-2 border-dashed border-border text-sm font-medium text-foreground hover:border-primary/40"
+          className="inline-flex items-center gap-1.5 h-11 px-3 rounded-lg border-2 border-dashed border-border text-sm font-medium text-foreground hover:border-primary/40"
         >
           <Plus className="h-4 w-4" />
           {t("onboarding:animalStep.addRows")}
         </button>
         <button
           type="button"
-          onClick={() => setShowRange((v) => !v)}
-          className="inline-flex items-center gap-1.5 h-10 px-3 rounded-lg border-2 border-dashed border-primary/40 text-sm font-medium text-primary hover:bg-primary/5"
+          onClick={() => setMode("range")}
+          className="inline-flex items-center gap-1.5 h-11 px-3 rounded-lg border-2 border-dashed border-primary/40 text-sm font-medium text-primary hover:bg-primary/5"
         >
           <Wand2 className="h-4 w-4" />
           {t("onboarding:animalStep.rangeToggle")}
         </button>
       </div>
-
-      {/* Range generator */}
-      {showRange && (
-        <div className="rounded-xl border-2 border-primary/30 bg-primary/5 p-4 space-y-3">
-          <p className="text-sm font-semibold text-foreground">
-            {t("onboarding:animalStep.rangeTitle")}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("onboarding:animalStep.rangePrefix")}
-              </label>
-              <input
-                value={rangePrefix}
-                onChange={(e) => setRangePrefix(e.target.value)}
-                placeholder="AG"
-                className={inputCls}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("onboarding:animalStep.rangeFrom")}
-              </label>
-              <input
-                type="number"
-                value={rangeFrom}
-                onChange={(e) => setRangeFrom(e.target.value === "" ? "" : Number(e.target.value))}
-                className={inputCls}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("onboarding:animalStep.rangeTo")}
-              </label>
-              <input
-                type="number"
-                value={rangeTo}
-                onChange={(e) => setRangeTo(e.target.value === "" ? "" : Number(e.target.value))}
-                className={inputCls}
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("onboarding:animalStep.colSex")}
-              </label>
-              <select
-                value={rangeSex}
-                onChange={(e) => setRangeSex(e.target.value as "Macho" | "Hembra")}
-                className={inputCls}
-              >
-                <option value="Hembra">{t("onboarding:animalStep.female")}</option>
-                <option value="Macho">{t("onboarding:animalStep.male")}</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">
-                {t("onboarding:animalStep.colBirthYear")}
-              </label>
-              <input
-                type="number"
-                value={rangeYear}
-                onChange={(e) => setRangeYear(Number(e.target.value) || currentYear)}
-                className={inputCls}
-              />
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={generateRange}
-            className="w-full h-11 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90"
-          >
-            {t("onboarding:animalStep.rangeGenerate", {
-              count:
-                Number.isFinite(Number(rangeTo)) && Number.isFinite(Number(rangeFrom))
-                  ? Math.max(0, Number(rangeTo) - Number(rangeFrom) + 1)
-                  : 0,
-            })}
-          </button>
-        </div>
-      )}
 
       {/* Submit */}
       <div className="sticky bottom-0 -mx-6 px-6 pt-3 pb-2 bg-card border-t border-border space-y-2">
@@ -530,6 +694,7 @@ export const AnimalStep = ({ onComplete }: AnimalStepProps) => {
             t("onboarding:animalStep.submit", { count: readyCount })
           )}
         </button>
+        <SkipLink />
       </div>
     </div>
   );
