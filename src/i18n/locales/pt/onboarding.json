@@ -15,7 +15,6 @@
   "addLaterDescription": "Você poderá adicioná-las mais tarde nas configurações",
   "configuring": "Configurando...",
   "configureVaccines": "Configurar Vacinas",
-
   "wizard": {
     "back": "Voltar",
     "skip": "Completar mais tarde",
@@ -30,9 +29,9 @@
     "success": {
       "title": "Tudo pronto!",
       "subtitle": "Sua fazenda está configurada"
-    }
+    },
+    "exit": "Sair e fazer depois"
   },
-
   "welcomeScreen": {
     "title": "Bem-vindo ao Agrodeo, {{name}}!",
     "subtitle": "Vamos configurar \"{{company}}\" em 3 etapas rápidas",
@@ -43,7 +42,6 @@
     "estimatedTime": "Tempo estimado: 5-10 minutos",
     "startButton": "Começar"
   },
-
   "successScreen": {
     "title": "🎉 Seu rebanho está pronto!",
     "ready": "Seu rebanho está pronto para gerenciar",
@@ -52,7 +50,6 @@
     "viewHerd": "Ver meu rebanho",
     "goDashboard": "Ir para o Dashboard"
   },
-
   "vaccinesStep": {
     "title": "Configure suas vacinas",
     "subtitle": "Defina quais vacinas você aplica e a quais animais correspondem",
@@ -86,7 +83,6 @@
       "untilAge": "Até {{max}} meses"
     }
   },
-
   "corralStep": {
     "title": "Crie seus currais",
     "subtitle": "Os currais ajudam a organizar seu rebanho",
@@ -104,7 +100,6 @@
     "savedSuccessBulk": "{{count}} currais criados",
     "savedError": "Erro ao criar os currais"
   },
-
   "animalStep": {
     "title": "Carregue seus animais",
     "intro": "A etapa mais importante: carregue seus animais. Adicione muitos de uma vez com a tabela ou use o gerador de intervalo.",
@@ -153,9 +148,21 @@
     "sexRequired": "Selecione o sexo",
     "breedRequired": "Selecione uma raça",
     "birthDateRequired": "Insira a data de nascimento",
-    "savedSuccess": "Animal registrado!"
+    "savedSuccess": "Animal registrado!",
+    "chooser": {
+      "subtitle": "Escolha como quer carregar. Pode trocar de método quando quiser.",
+      "backToOptions": "Voltar às opções",
+      "fastest": "O mais rápido",
+      "excelTitle": "Enviar uma planilha",
+      "excelDesc": "Já tem a planilha da fazenda? Envie e mapeamos as colunas para você.",
+      "rangeTitle": "Carregar um intervalo de brincos",
+      "rangeDesc": "Gere centenas de animais numerados em uma etapa.",
+      "manualTitle": "Digitar um por um",
+      "manualDesc": "Ideal para poucos animais ou quando quer detalhar cada um.",
+      "rangePreview": "Vamos gerar {{count}} animais, do {{first}} ao {{last}}."
+    },
+    "skipAndEnter": "Carregar depois e entrar no app"
   },
-
   "gettingStarted": {
     "title": "🎉 Seu rebanho está pronto!",
     "description": "Você tem {{count}} animais carregados. Aqui está o que pode fazer:",
@@ -163,5 +170,47 @@
     "reproductive": "Gestão reprodutiva",
     "health": "Sanidade",
     "dismiss": "Entendi, fechar"
+  },
+  "startPlan": {
+    "title": "O que você pode ativar",
+    "subtitle": "Cada dado carregado liga uma análise que já está pronta.",
+    "notActiveYet": "Ainda não está ativo",
+    "steps": {
+      "animals": {
+        "action": "Carregar seus animais",
+        "benefit": "Para ter o rebanho todo em um só lugar",
+        "unlocks": "Estoque por categoria, fichas individuais e todos os relatórios."
+      },
+      "corrals": {
+        "action": "Criar seus currais",
+        "benefit": "Para saber qual pasto rende mais",
+        "unlocks": "Comparação de currais, lotação e ranking por pasto."
+      },
+      "weights": {
+        "action": "Registrar duas pesagens por animal",
+        "benefit": "Para saber quantos quilos por dia cada animal ganha",
+        "unlocks": "Ganho diário (kg/dia), peso estimado, ranking do rebanho e alerta quando um animal para de ganhar."
+      },
+      "vaccines": {
+        "action": "Configurar o calendário sanitário e aplicar a primeira dose",
+        "benefit": "Para o sistema avisar antes do vencimento",
+        "unlocks": "Cobertura sanitária do rebanho, alertas de vencimento e reforços pendentes."
+      },
+      "genealogy": {
+        "action": "Registrar pai e mãe dos animais",
+        "benefit": "Para não cruzar parentes sem perceber",
+        "unlocks": "Árvore genealógica, cálculo de consanguinidade e nota genética."
+      },
+      "reproduction": {
+        "action": "Registrar coberturas, diagnósticos e partos",
+        "benefit": "Para saber quais vacas dão cria todos os anos",
+        "unlocks": "Taxa de prenhez e de parição, dias em aberto e ranking reprodutivo."
+      },
+      "finances": {
+        "action": "Registrar receitas e despesas",
+        "benefit": "Para saber quanto o rebanho realmente deixa",
+        "unlocks": "Resultado por período, custo por animal e relatórios financeiros."
+      }
+    }
   }
 }
