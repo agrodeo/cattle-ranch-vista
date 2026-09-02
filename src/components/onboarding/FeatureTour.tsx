@@ -5,6 +5,7 @@ import { cowHead } from "@lucide/lab";
 import {
   Sparkles,
   Fence,
+  Move,
   Scale,
   Syringe,
   Baby,
@@ -30,6 +31,7 @@ type SlideId =
   | "welcome"
   | "animals"
   | "corrales"
+  | "movimientos"
   | "weights"
   | "health"
   | "reproduction"
@@ -43,6 +45,7 @@ const SLIDES: { id: SlideId; render: (className: string) => JSX.Element }[] = [
   { id: "welcome", render: (c) => <Sparkles className={c} /> },
   { id: "animals", render: (c) => <Icon iconNode={cowHead} className={c} /> },
   { id: "corrales", render: (c) => <Fence className={c} /> },
+  { id: "movimientos", render: (c) => <Move className={c} /> },
   { id: "weights", render: (c) => <Scale className={c} /> },
   { id: "health", render: (c) => <Syringe className={c} /> },
   { id: "reproduction", render: (c) => <Baby className={c} /> },
