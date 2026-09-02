@@ -10,10 +10,12 @@ interface OnboardingWrapperProps {
 }
 
 const flagKey = (userId: string) => `onboarding_completed_${userId}`;
+const tourFlagKey = (userId: string) => `feature_tour_completed_${userId}`;
 
 export const OnboardingWrapper = ({ children }: OnboardingWrapperProps) => {
   const { isAuthenticated, currentUser } = useSupabaseAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const [decided, setDecided] = useState(false);
   const navigate = useNavigate();
 
