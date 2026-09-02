@@ -36,13 +36,6 @@ const Dashboard = () => {
   const { t } = useTranslation(['dashboard', 'common', 'animals', 'corrals', 'finance', 'activities', 'onboarding']);
   const [showPlansModal, setShowPlansModal] = useState(false);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
-  const [showGettingStarted, setShowGettingStarted] = useState(
-    () => typeof window !== 'undefined' && !localStorage.getItem('agrodeo_onboarding_explored')
-  );
-  const dismissGettingStarted = () => {
-    try { localStorage.setItem('agrodeo_onboarding_explored', 'true'); } catch {}
-    setShowGettingStarted(false);
-  };
   const navigate = useNavigate();
   const { currentUser } = useSupabaseAuth();
   const { data: myTasks, isLoading: myTasksLoading } = useMyActivityTasks();
