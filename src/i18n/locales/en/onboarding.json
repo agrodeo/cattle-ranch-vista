@@ -241,9 +241,14 @@
         "where": "Find it in the Animals menu."
       },
       "corrales": {
-        "title": "Know which paddock performs best",
-        "body": "See how many animals are in each pen and how they are growing.\n\nThat way you decide better where to move the herd.",
-        "where": "Find it in the Pens menu."
+        "title": "Organize the herd by pens",
+        "body": "A pen is each paddock on your farm. You create it once with a name, hectares and how many animals it holds.\n\nThen you assign each animal to its pen and the app tells you how many are in each one, whether you are overstocking, and how they are gaining weight per paddock.\n\nAt a glance you know which paddock performs best and which one needs a rest.",
+        "where": "Find it in the Pens menu: create one with the plus button."
+      },
+      "movimientos": {
+        "title": "Move animals between pens",
+        "body": "When you change paddocks, you log it in the app and each animal keeps the history of where it has been.\n\nYou can move one animal or a whole group at once, and even ask the system to suggest a split that avoids mating relatives.",
+        "where": "Find it in the Pens menu, under Move animals."
       },
       "weights": {
         "title": "Know how much each animal gains",

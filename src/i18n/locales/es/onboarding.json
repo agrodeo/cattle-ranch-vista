@@ -241,9 +241,14 @@
         "where": "Lo encontrás en el menú Animales."
       },
       "corrales": {
-        "title": "Sabé qué potrero te está rindiendo mejor",
-        "body": "Ves cuántos animales tenés en cada corral y cómo vienen creciendo.\n\nAsí decidís mejor dónde mover la hacienda.",
-        "where": "Lo encontrás en el menú Corrales."
+        "title": "Ordená el rodeo por corrales",
+        "body": "Un corral es cada potrero o piquete de tu campo. Lo creás una vez, le ponés nombre, hectáreas y cuántos animales aguanta.\n\nDespués asignás cada animal a su corral y la app te dice cuántos hay en cada uno, si te estás pasando de la carga y cómo vienen engordando en cada potrero.\n\nAsí, de un vistazo, sabés qué potrero te rinde mejor y cuál conviene descansar.",
+        "where": "Lo encontrás en el menú Corrales: ahí creás uno nuevo con el botón de más."
+      },
+      "movimientos": {
+        "title": "Mové animales de un corral a otro",
+        "body": "Cuando cambiás la hacienda de potrero, lo cargás en la app y queda la historia de por dónde pasó cada animal.\n\nPodés mover uno solo o un grupo entero de una vez, y también pedirle al sistema que te sugiera cómo repartirlos para no cruzar parientes.",
+        "where": "Lo encontrás en el menú Corrales, en Mover animales."
       },
       "weights": {
         "title": "Sabé cuánto engorda cada animal",
