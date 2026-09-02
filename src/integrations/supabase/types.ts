@@ -1073,6 +1073,7 @@ export type Database = {
           location: string | null
           location_updated_at: string | null
           name: string
+          onboarding_completed_at: string | null
           owner_id: string | null
           province_code: string | null
           trial_started_at: string | null
@@ -1084,6 +1085,7 @@ export type Database = {
           location?: string | null
           location_updated_at?: string | null
           name: string
+          onboarding_completed_at?: string | null
           owner_id?: string | null
           province_code?: string | null
           trial_started_at?: string | null
@@ -1095,6 +1097,7 @@ export type Database = {
           location?: string | null
           location_updated_at?: string | null
           name?: string
+          onboarding_completed_at?: string | null
           owner_id?: string | null
           province_code?: string | null
           trial_started_at?: string | null
