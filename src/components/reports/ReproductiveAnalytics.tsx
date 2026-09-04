@@ -17,6 +17,7 @@ import { ReportKpiCard } from "./shared/ReportKpiCard";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { PregnantAnimalsReport } from "./PregnantAnimalsReport";
 import { calculatePregnancyRate } from "@/lib/reproductiveCalculations";
 import { getTranslatedCategory } from "@/lib/translations";
@@ -160,26 +161,28 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
       const cabanaId = userInfo[0].cabana_id;
 
       // Fetch animals (needed first for animalIds)
-      let animalsQuery = supabase
-        .from('animals')
-        .select('*')
-        .eq('cabaña_id', cabanaId)
-        .eq('sex', 'Hembra');
-      
-      if (filters?.corral_ids?.length) {
-        animalsQuery = animalsQuery.in('corral_id', filters.corral_ids);
-      }
-      if (filters?.breed) {
-        animalsQuery = animalsQuery.eq('breed', filters.breed);
-      }
-      if (!filters.include_sold_dead) {
-        animalsQuery = animalsQuery
-          .neq('status', 'vendido')
-          .neq('status', 'muerto');
-      }
-      
-      const { data: animals, error: animalsError } = await animalsQuery;
-      if (animalsError) throw animalsError;
+      const animals = await fetchAllRows<any>((from, to) => {
+        let animalsQuery = supabase
+          .from('animals')
+          .select('*')
+          .eq('cabaña_id', cabanaId)
+          .eq('sex', 'Hembra')
+          .range(from, to);
+
+        if (filters?.corral_ids?.length) {
+          animalsQuery = animalsQuery.in('corral_id', filters.corral_ids);
+        }
+        if (filters?.breed) {
+          animalsQuery = animalsQuery.eq('breed', filters.breed);
+        }
+        if (!filters.include_sold_dead) {
+          animalsQuery = animalsQuery
+            .neq('status', 'vendido')
+            .neq('status', 'muerto');
+        }
+
+        return animalsQuery;
+      });
 
       // Filter females 15+ months old
       const reproductiveFemales = (animals || []).filter(animal => {
@@ -192,56 +195,34 @@ const ReproductiveAnalytics = ({ filters = {} }: ReproductiveAnalyticsProps) => 
 
       // Parallelize ALL remaining queries
       const [
-        pregnanciesResult,
-        servicesResult,
-        offspringResult,
-        corralesResult,
-        allBirthsResult,
-        allPregnanciesResult,
-        allAIResult,
-        allIAEventsResult,
-        allFemalesResult,
+        pregnancies,
+        services,
+        offspring,
+        corrales,
+        allBirths,
+        allPregnancies,
+        allAI,
+        allIAEvents,
+        allFemales,
       ] = await Promise.all([
-        supabase.from('preñeces').select('*').in('animal_id', animalIds),
-        supabase.from('ia').select('id, evento_id, animales_ids'),
-        supabase.from('animals').select('id, mother_id, father_id, status, birth_date').in('mother_id', animalIds),
-        supabase.from('corrales').select('id, name').eq('cabaña_id', cabanaId),
-        supabase.from('animals').select('id, mother_id, birth_date').eq('cabaña_id', cabanaId).not('mother_id', 'is', null).not('birth_date', 'is', null),
-        supabase.from('preñeces').select('*').eq('cabaña_id', cabanaId),
-        supabase.from('artificial_inseminations').select('id, insemination_date, is_pregnant').eq('cabaña_id', cabanaId),
-        supabase.from('ia').select('id, evento_id, animales_ids'),
-        supabase.from('animals').select('id, birth_date, sex').eq('cabaña_id', cabanaId).eq('sex', 'Hembra').not('birth_date', 'is', null),
+        fetchAllRows<any>((f, t) => supabase.from('preñeces').select('*').in('animal_id', animalIds).range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('ia').select('id, evento_id, animales_ids').range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('animals').select('id, mother_id, father_id, status, birth_date').in('mother_id', animalIds).range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('corrales').select('id, name').eq('cabaña_id', cabanaId).range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('animals').select('id, mother_id, birth_date').eq('cabaña_id', cabanaId).not('mother_id', 'is', null).not('birth_date', 'is', null).range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('preñeces').select('*').eq('cabaña_id', cabanaId).range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('artificial_inseminations').select('id, insemination_date, is_pregnant').eq('cabaña_id', cabanaId).range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('ia').select('id, evento_id, animales_ids').range(f, t)),
+        fetchAllRows<any>((f, t) => supabase.from('animals').select('id, birth_date, sex').eq('cabaña_id', cabanaId).eq('sex', 'Hembra').not('birth_date', 'is', null).range(f, t)),
       ]);
-
-      if (pregnanciesResult.error) throw pregnanciesResult.error;
-      if (servicesResult.error) throw servicesResult.error;
-      if (offspringResult.error) throw offspringResult.error;
-      if (corralesResult.error) throw corralesResult.error;
-      if (allBirthsResult.error) throw allBirthsResult.error;
-      if (allPregnanciesResult.error) throw allPregnanciesResult.error;
-      if (allAIResult.error) throw allAIResult.error;
-      if (allIAEventsResult.error) throw allIAEventsResult.error;
-      if (allFemalesResult.error) throw allFemalesResult.error;
-
-      const pregnancies = pregnanciesResult.data;
-      const services = servicesResult.data;
-      const offspring = offspringResult.data;
-      const corrales = corralesResult.data;
-      const allBirths = allBirthsResult.data;
-      const allPregnancies = allPregnanciesResult.data;
-      const allAI = allAIResult.data;
-      const allIAEvents = allIAEventsResult.data;
-      const allFemales = allFemalesResult.data;
 
       // Get eventos for IA records (depends on allIAEvents)
       const iaEventoIds = (allIAEvents || []).map(ia => ia.evento_id).filter(Boolean);
       let eventosDates: { id: string; fecha: string }[] = [];
       if (iaEventoIds.length > 0) {
-        const { data: eventosData } = await supabase
-          .from('eventos')
-          .select('id, fecha')
-          .in('id', iaEventoIds);
-        eventosDates = eventosData || [];
+        eventosDates = await fetchAllRows<{ id: string; fecha: string }>((f, t) =>
+          supabase.from('eventos').select('id, fecha').in('id', iaEventoIds).range(f, t)
+        );
       }
 
       const corralesMap = new Map(corrales?.map(c => [c.id, c.name]) || []);
