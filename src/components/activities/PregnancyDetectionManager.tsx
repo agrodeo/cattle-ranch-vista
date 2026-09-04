@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { Plus, Search, Calendar as CalendarIcon, Heart, AlertTriangle, CheckCircle, Users } from "lucide-react";
 import { NewTactoDialog } from "./NewTactoDialog";
 import { format, addDays, differenceInMonths, differenceInDays } from "date-fns";
@@ -74,14 +75,15 @@ export function PregnancyDetectionManager() {
       
       if (!currentUser?.cabañaId) return;
 
-      const { data: animalsData, error } = await supabase
-        .from("animals")
-        .select("*")
-        .eq("cabaña_id", currentUser.cabañaId)
-        .eq("sex", "Hembra")
-        .not("status", "in", '("vendido","muerto","Vendido","Muerto","sold","dead")');
-
-      if (error) throw error;
+      const animalsData = await fetchAllRows<any>((from, to) =>
+        supabase
+          .from("animals")
+          .select("*")
+          .eq("cabaña_id", currentUser.cabañaId)
+          .eq("sex", "Hembra")
+          .not("status", "in", '("vendido","muerto","Vendido","Muerto","sold","dead")')
+          .range(from, to)
+      );
 
       const eligibleAnimals = animalsData?.filter(animal => {
         if (!animal.birth_date) return false;

@@ -162,7 +162,7 @@ export default function Corrales() {
       // Fetch total active animals count
       const { count: activeCount, error: countError } = await supabase
         .from('animals')
-        .select('*', { count: 'exact', head: true })
+        .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', currentUser.cabañaId)
         .in('status', ['activo', 'Activo']);
 

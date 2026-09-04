@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trash2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -98,15 +99,16 @@ export const BenchmarkSettings = () => {
 
   const fetchAvailableBreeds = async () => {
     try {
-      const { data, error } = await supabase
-        .from("animals")
-        .select("breed")
-        .eq("cabaña_id", currentUser?.cabañaId)
-        .not("breed", "is", null);
+      const data = await fetchAllRows<{ breed: string | null }>((from, to) =>
+        supabase
+          .from("animals")
+          .select("breed")
+          .eq("cabaña_id", currentUser?.cabañaId)
+          .not("breed", "is", null)
+          .range(from, to)
+      );
 
-      if (error) throw error;
-      
-      const breeds = [...new Set(data?.map(a => a.breed).filter(Boolean))] as string[];
+      const breeds = [...new Set(data.map(a => a.breed).filter(Boolean))] as string[];
       setAvailableBreeds(breeds);
     } catch (error) {
       console.error("Error fetching breeds:", error);

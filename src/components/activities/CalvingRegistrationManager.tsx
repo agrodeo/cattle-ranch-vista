@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/lib/fetchAll';
 import { isOnline } from '@/services/connectivity';
 import { db, generateTempId } from '@/services/db';
 import { enqueue } from '@/services/outbox';
@@ -71,9 +72,15 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       const { data: profile } = await supabase.from('profiles' as any).select('cabaña_id').eq('user_id', user.id).single();
       const cabanaId = (profile as any)?.cabaña_id;
       if (!cabanaId) return [];
-      const { data, error } = await supabase.from('animals').select('*').eq('cabaña_id', cabanaId);
-      if (error) { console.error('Error fetching animals for calving:', error); return []; }
-      return (data || []) as any[];
+      try {
+        const data = await fetchAllRows<any>((from, to) =>
+          supabase.from('animals').select('*').eq('cabaña_id', cabanaId).range(from, to)
+        );
+        return data as any[];
+      } catch (error) {
+        console.error('Error fetching animals for calving:', error);
+        return [];
+      }
     },
   });
 

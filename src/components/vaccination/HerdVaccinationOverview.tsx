@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, AlertTriangle, CheckCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { useVaccinationRequirements } from "@/hooks/useVaccinationRequirements";
 
 interface HerdVaccinationSummary {
@@ -36,21 +37,24 @@ export function HerdVaccinationOverview() {
       if (!cabanaId) return;
 
       // Get all active animals
-      const { data: animals } = await supabase
+      const { count: animalsCount } = await supabase
         .from('animals')
-        .select('id')
+        .select('id', { count: 'exact', head: true })
         .eq('cabaña_id', cabanaId)
         .not('status', 'in', '("muerto","vendido")');
 
-      const totalAnimals = animals?.length || 0;
+      const totalAnimals = animalsCount || 0;
 
       // Get animals with at least one vaccination
-      const { data: vaccinatedAnimals } = await supabase
-        .from('animal_vaccines')
-        .select('animal_id')
-        .eq('cabaña_id', cabanaId);
+      const vaccinatedAnimals = await fetchAllRows<{ animal_id: string }>((from, to) =>
+        supabase
+          .from('animal_vaccines')
+          .select('animal_id')
+          .eq('cabaña_id', cabanaId)
+          .range(from, to)
+      );
 
-      const uniqueVaccinatedAnimals = new Set(vaccinatedAnimals?.map(v => v.animal_id) || []).size;
+      const uniqueVaccinatedAnimals = new Set(vaccinatedAnimals.map(v => v.animal_id)).size;
 
       // Calculate average compliance (simplified - could be enhanced with RPC)
       const averageCompliance = totalAnimals > 0 
