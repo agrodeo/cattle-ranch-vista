@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, FileSpreadsheet, Check, X, Download, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
@@ -354,14 +355,17 @@ const AnimalExcelUpload = ({ userCabañaId, onUploadComplete }: AnimalExcelUploa
 
     try {
       // Check for existing IDs in the database
-      const existingIds = await supabase
-        .from('animals')
-        .select('id_tag')
-        .eq('cabaña_id', userCabañaId)
-        .in('id_tag', validAnimals.map(a => a.identificacion));
+      const existingIdRows = await fetchAllRows<{ id_tag: string | null }>((from, to) =>
+        supabase
+          .from('animals')
+          .select('id_tag')
+          .eq('cabaña_id', userCabañaId)
+          .in('id_tag', validAnimals.map(a => a.identificacion))
+          .range(from, to)
+      );
 
-      if (existingIds.data && existingIds.data.length > 0) {
-        const duplicateIds = existingIds.data.map(d => d.id_tag);
+      if (existingIdRows.length > 0) {
+        const duplicateIds = existingIdRows.map(d => d.id_tag);
         toast({
           title: "IDs duplicados",
           description: `Los siguientes IDs ya existen: ${duplicateIds.join(', ')}`,

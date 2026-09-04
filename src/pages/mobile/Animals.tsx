@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { MobilePageHeader } from "@/components/mobile/MobilePageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,14 +62,16 @@ export function MobileAnimals() {
     if (!userCabaña) return;
 
     try {
-      const { data, error } = await supabase
-        .from("animals")
-        .select("*")
-        .eq("cabaña_id", userCabaña)
-        .order("birth_date", { ascending: false, nullsFirst: false });
+      const data = await fetchAllRows<any>((from, to) =>
+        supabase
+          .from("animals")
+          .select("*")
+          .eq("cabaña_id", userCabaña)
+          .order("birth_date", { ascending: false, nullsFirst: false })
+          .range(from, to)
+      );
 
-      if (error) throw error;
-      setAnimals(data || []);
+      setAnimals(data);
     } catch (error) {
       console.error("Error fetching animals:", error);
     } finally {

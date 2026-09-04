@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/lib/fetchAll';
 
 export interface AnimalFinanceRecord {
   id: string;
@@ -66,18 +67,19 @@ export function useAnimalFinances(animalId: string) {
         if (salesError) throw salesError;
 
         // Fetch total expenses from the cabaña
-        const { data: allExpenses, error: expensesError } = await supabase
-          .from('finances')
-          .select('amount')
-          .eq('cabaña_id', cabanaId)
-          .eq('type', 'expense');
-
-        if (expensesError) throw expensesError;
+        const allExpenses = await fetchAllRows<{ amount: number | null }>((from, to) =>
+          supabase
+            .from('finances')
+            .select('amount')
+            .eq('cabaña_id', cabanaId)
+            .eq('type', 'expense')
+            .range(from, to)
+        );
 
         // Count active animals in the cabaña
         const { count: activeAnimalsCount, error: countError } = await supabase
           .from('animals')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('cabaña_id', cabanaId)
           .not('status', 'in', '(muerto,vendido)');
 

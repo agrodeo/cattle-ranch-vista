@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from '@/lib/fetchAll';
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import {
   calculateAnimalScore,
@@ -104,17 +105,19 @@ export function useHerdRanking(filters: ReportFilters = {}) {
     queryFn: async (): Promise<{ animals: RankedAnimal[]; stats: HerdRankingStats }> => {
       if (!cabañaId) return { animals: [], stats: emptyStats() };
 
-      let query = supabase
-        .from("animals")
-        .select("*")
-        .eq("cabaña_id", cabañaId)
-        .in("status", ["activo", "Activo", "active"]);
+      const animals = await fetchAllRows<any>((from, to) => {
+        let query = supabase
+          .from("animals")
+          .select("*")
+          .eq("cabaña_id", cabañaId)
+          .in("status", ["activo", "Activo", "active"])
+          .range(from, to);
 
-      if (filters.corral_ids?.length) query = query.in("corral_id", filters.corral_ids);
-      if (filters.breed) query = query.eq("breed", filters.breed);
+        if (filters.corral_ids?.length) query = query.in("corral_id", filters.corral_ids);
+        if (filters.breed) query = query.eq("breed", filters.breed);
+        return query;
+      });
 
-      const { data: animals, error: animalsError } = await query;
-      if (animalsError) throw animalsError;
       if (!animals?.length) return { animals: [], stats: emptyStats() };
 
       const animalIds = animals.map((animal) => animal.id);
@@ -130,21 +133,29 @@ export function useHerdRanking(filters: ReportFilters = {}) {
       });
 
       // Herd-wide lightweight context: parentage, services and DEPs.
-      const [{ data: herdRows }, { data: depRows }, { data: pregnancyRows }] = await Promise.all([
-        supabase
-          .from("animals")
-          .select("id, sex, status, father_id, mother_id, toro_servicio_id, \"esta_preñada\", birth_date")
-          .eq("cabaña_id", cabañaId)
-          .range(0, 49999),
-        supabase
-          .from("animal_deps")
-          .select(`animal_id, ${DEP_FIELDS.join(", ")}`)
-          .eq("cabaña_id", cabañaId),
-        supabase
-          .from("preñeces")
-          .select("animal_id, fecha_parto_real")
-          .eq("cabaña_id", cabañaId)
-          .not("fecha_parto_real", "is", null),
+      const [herdRows, depRows, pregnancyRows] = await Promise.all([
+        fetchAllRows<any>((from, to) =>
+          supabase
+            .from("animals")
+            .select("id, sex, status, father_id, mother_id, toro_servicio_id, \"esta_preñada\", birth_date")
+            .eq("cabaña_id", cabañaId)
+            .range(from, to),
+        ),
+        fetchAllRows<any>((from, to) =>
+          supabase
+            .from("animal_deps")
+            .select(`animal_id, ${DEP_FIELDS.join(", ")}`)
+            .eq("cabaña_id", cabañaId)
+            .range(from, to),
+        ),
+        fetchAllRows<any>((from, to) =>
+          supabase
+            .from("preñeces")
+            .select("animal_id, fecha_parto_real")
+            .eq("cabaña_id", cabañaId)
+            .not("fecha_parto_real", "is", null)
+            .range(from, to),
+        ),
       ]);
 
       type HerdRow = {

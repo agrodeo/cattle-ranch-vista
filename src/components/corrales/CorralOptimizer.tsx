@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { getCurrentLanguage } from "@/i18n";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -147,11 +148,14 @@ export function CorralOptimizer({ open, onOpenChange, onSuccess }: CorralOptimiz
       if (error) throw error;
 
       // Count animals per corral
-      const { data: animalsData } = await supabase
-        .from('animals')
-        .select('id, corral_id')
-        .eq('cabaña_id', currentUser.cabañaId)
-        .in('status', ['activo', 'Activo']);
+      const animalsData = await fetchAllRows<{ id: string; corral_id: string | null }>((from, to) =>
+        supabase
+          .from('animals')
+          .select('id, corral_id')
+          .eq('cabaña_id', currentUser.cabañaId)
+          .in('status', ['activo', 'Activo'])
+          .range(from, to)
+      );
 
       const animalCounts: Record<string, number> = {};
       (animalsData || []).forEach(animal => {

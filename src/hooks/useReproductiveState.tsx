@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { useToast } from "@/hooks/use-toast";
 
 interface ReproductiveState {
@@ -53,12 +54,15 @@ export function useReproductiveState(animalId: string) {
       }
 
       // Fetch offspring for validation
-      const { data: offspringData, error: offspringError } = await supabase
-        .from('animals')
-        .select('id, birth_date, name, id_tag')
-        .eq('mother_id', animalId)
-        .not('birth_date', 'is', null)
-        .order('birth_date', { ascending: false });
+      const offspringData = await fetchAllRows<any>((from, to) =>
+        supabase
+          .from('animals')
+          .select('id, birth_date, name, id_tag')
+          .eq('mother_id', animalId)
+          .not('birth_date', 'is', null)
+          .order('birth_date', { ascending: false })
+          .range(from, to)
+      );
 
       // Fetch services (IA and natural)
       const { data: serviceData, error: serviceError } = await supabase
@@ -76,11 +80,14 @@ export function useReproductiveState(animalId: string) {
         .order('eventos.fecha', { ascending: false });
 
       // Fetch pregnancy history from preñeces table
-      const { data: pregnancyData, error: pregnancyError } = await supabase
-        .from('preñeces')
-        .select('*')
-        .eq('animal_id', animalId)
-        .order('fecha_inicio', { ascending: false });
+      const pregnancyData = await fetchAllRows<any>((from, to) =>
+        supabase
+          .from('preñeces')
+          .select('*')
+          .eq('animal_id', animalId)
+          .order('fecha_inicio', { ascending: false })
+          .range(from, to)
+      );
 
       let pregnancyHistory: any[] = pregnancyData || [];
       

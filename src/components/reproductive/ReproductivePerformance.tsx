@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,12 +44,9 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
         if (animalError) throw animalError;
 
         // Get pregnancy history
-        const { data: pregnancies, error: pregnancyError } = await supabase
-          .from('preñeces')
-          .select('*')
-          .eq('animal_id', animalId);
-
-        if (pregnancyError) throw pregnancyError;
+        const pregnancies = await fetchAllRows<any>((from, to) =>
+          supabase.from('preñeces').select('*').eq('animal_id', animalId).range(from, to)
+        );
 
         // Get services (from IA and eventos)
         const { data: services, error: servicesError } = await supabase
@@ -59,12 +57,9 @@ export function ReproductivePerformance({ animalId, animalSex }: ReproductivePer
         if (servicesError) throw servicesError;
 
         // Get offspring
-        const { data: offspring, error: offspringError } = await supabase
-          .from('animals')
-          .select('id, mother_id, father_id, status')
-          .eq('mother_id', animalId);
-
-        if (offspringError) throw offspringError;
+        const offspring = await fetchAllRows<any>((from, to) =>
+          supabase.from('animals').select('id, mother_id, father_id, status').eq('mother_id', animalId).range(from, to)
+        );
 
         // Convert to proper types
         const animal: AnimalReproductiveData = {

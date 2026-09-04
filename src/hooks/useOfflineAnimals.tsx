@@ -4,6 +4,7 @@ import { enqueue } from '@/services/outbox';
 import { trySync } from '@/services/sync';
 import { useConnectivity } from '@/services/connectivity';
 import { supabase } from '@/integrations/supabase/client';
+import { fetchAllRows } from '@/lib/fetchAll';
 import type { CachedAnimal, SyncStatus } from '@/services/offlineTypes';
 
 interface UseOfflineAnimalsOptions {
@@ -81,13 +82,11 @@ export function useOfflineAnimals(options: UseOfflineAnimalsOptions) {
     if (!isOnline || !cabañaId) return;
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('animals')
-        .select('*')
-        .eq('cabaña_id', cabañaId);
+      const data = await fetchAllRows<any>((from, to) =>
+        supabase.from('animals').select('*').eq('cabaña_id', cabañaId).range(from, to)
+      );
 
-      if (fetchError) throw fetchError;
-      if (!data) return;
+      if (!data.length) return;
 
       // Get pending local IDs to avoid overwriting
       const pendingIds = (await db.animals_cache.where('sync_status').equals('pending').toArray()).map(a => a.id);
