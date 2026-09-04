@@ -250,14 +250,17 @@ export const PreviewAndEditStep = ({
 
     try {
       // Check for existing IDs in the database
-      const existingIds = await supabase
-        .from('animals')
-        .select('id_tag')
-        .eq('cabaña_id', userCabañaId)
-        .in('id_tag', validAnimals.map(a => a.identificacion));
+      const existingIdRows = await fetchAllRows<{ id_tag: string | null }>((from, to) =>
+        supabase
+          .from('animals')
+          .select('id_tag')
+          .eq('cabaña_id', userCabañaId)
+          .in('id_tag', validAnimals.map(a => a.identificacion))
+          .range(from, to)
+      );
 
-      if (existingIds.data && existingIds.data.length > 0) {
-        const duplicateIds = existingIds.data.map(d => d.id_tag);
+      if (existingIdRows.length > 0) {
+        const duplicateIds = existingIdRows.map(d => d.id_tag);
         toast({
           title: "IDs duplicados",
           description: `Los siguientes IDs ya existen: ${duplicateIds.join(', ')}`,

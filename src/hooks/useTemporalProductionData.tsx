@@ -5,6 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { analyzeTrend, calculateAcceleration, findBestPeriod, generateInsights, type TemporalDataPoint } from '@/lib/temporalAnalysis';
 import { isOnline } from '@/services/connectivity';
 import { db } from '@/services/db';
+import { fetchAllRows } from '@/lib/fetchAll';
 
 export type GroupByPeriod = 'year' | 'semester' | 'quarter' | 'month';
 export type WeightType = 'destete' | 'final' | 'all';
@@ -80,35 +81,41 @@ export function useTemporalProductionData({
       if (rpcError) throw rpcError;
 
       // Count unique animals with the same filters
-      let query = supabase
-        .from('animal_weight_history')
-        .select('animal_id', { count: 'exact', head: false })
-        .eq('cabaña_id', cabanaId);
-
-      if (dateFrom) query = query.gte('fecha', dateFrom);
-      if (dateTo) query = query.lte('fecha', dateTo);
-      
-      if (weightType !== 'all') {
-        query = query.eq('tipo_pesaje', weightType);
-      }
-
+      let corralAnimalIds: string[] | null = null;
       if (filters.corral_ids && filters.corral_ids.length > 0) {
-        const { data: corralAnimals } = await supabase
-          .from('animals')
-          .select('id')
-          .in('corral_id', filters.corral_ids);
-        
-        if (corralAnimals) {
-          query = query.in('animal_id', corralAnimals.map(a => a.id));
-        }
+        const corralAnimals = await fetchAllRows<{ id: string }>((from, to) =>
+          supabase
+            .from('animals')
+            .select('id')
+            .in('corral_id', filters.corral_ids!)
+            .range(from, to)
+        );
+        corralAnimalIds = corralAnimals.map(a => a.id);
       }
 
-      const { data: uniqueAnimals, error: countError } = await query;
+      const uniqueAnimals = await fetchAllRows<{ animal_id: string }>((from, to) => {
+        let query = supabase
+          .from('animal_weight_history')
+          .select('animal_id')
+          .eq('cabaña_id', cabanaId)
+          .range(from, to);
 
-      if (countError) throw countError;
+        if (dateFrom) query = query.gte('fecha', dateFrom);
+        if (dateTo) query = query.lte('fecha', dateTo);
+
+        if (weightType !== 'all') {
+          query = query.eq('tipo_pesaje', weightType);
+        }
+
+        if (corralAnimalIds) {
+          query = query.in('animal_id', corralAnimalIds);
+        }
+
+        return query;
+      });
 
       // Count unique animal_ids
-      const uniqueIds = new Set(uniqueAnimals?.map(a => a.animal_id) || []);
+      const uniqueIds = new Set(uniqueAnimals.map(a => a.animal_id));
       setUniqueAnimalsCount(uniqueIds.size);
       setData(result || []);
       // Cache for offline
