@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { toast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
 import { Animal } from "@/types/animal";
@@ -68,14 +69,16 @@ export function useAnimalsData() {
   const fetchParentAnimals = async () => {
     if (!userCabaña || !isOnline) return;
     try {
-      const { data, error } = await supabase
-        .from("animals")
-        .select("id, name, id_tag, sex")
-        .eq("cabaña_id", userCabaña)
-        .in("status", ["activo", "Activo"])
-        .order("name");
-      if (error) throw error;
-      setParentAnimals(data || []);
+      const data = await fetchAllRows<ParentAnimal>((from, to) =>
+        supabase
+          .from("animals")
+          .select("id, name, id_tag, sex")
+          .eq("cabaña_id", userCabaña)
+          .in("status", ["activo", "Activo"])
+          .order("name")
+          .range(from, to)
+      );
+      setParentAnimals(data);
     } catch (error) {
       console.error("Error fetching parent animals:", error);
     }
@@ -107,12 +110,14 @@ export function useAnimalsData() {
   const syncFromServer = useCallback(async () => {
     if (!userCabaña || !isOnline) return;
     try {
-      const { data, error } = await supabase
-        .from("animals")
-        .select("*, is_castrated")
-        .eq("cabaña_id", userCabaña)
-        .order("birth_date", { ascending: false, nullsFirst: false });
-      if (error) throw error;
+      const data = await fetchAllRows<any>((from, to) =>
+        supabase
+          .from("animals")
+          .select("*, is_castrated")
+          .eq("cabaña_id", userCabaña)
+          .order("birth_date", { ascending: false, nullsFirst: false })
+          .range(from, to)
+      );
 
       const pendingIds = (await db.animals_cache
         .where('sync_status')

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,17 +32,14 @@ export default function MultiAnimalSelect({ selectedIds, onChange, className }: 
       }
       
       // Fetch animals that are not sold or dead
-      const { data, error } = await supabase
-        .from("animals")
-        .select("*")
-        .eq("cabaña_id", cabId)
-        .not("status", "in", "(vendido,muerto,Vendido,Muerto)");
-        
-      if (error) {
-        console.error("MultiAnimalSelect - Query error:", error);
-        throw error;
-      }
-      return data || [];
+      return await fetchAllRows<any>((from, to) =>
+        supabase
+          .from("animals")
+          .select("*")
+          .eq("cabaña_id", cabId)
+          .not("status", "in", "(vendido,muerto,Vendido,Muerto)")
+          .range(from, to)
+      );
     },
     enabled: !!currentUser?.cabañaId,
   });
