@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { db, updateLastSyncTime, getLastSyncTime, isTempId } from './db';
 import { isOnline } from './connectivity';
+import { fetchAllRows } from '@/lib/fetchAll';
 import type { CachedAnimal, CachedCorral, CachedEvento, CachedVaccine, CachedWeight, CachedInsemination, CachedPregnancy, CachedFinance, CachedVaccRequirement, CachedDeathCause, CachedBenchmark, CachedCorralMovement } from './offlineTypes';
 
 export interface SyncResult {
@@ -109,12 +110,9 @@ export async function incrementalSync(cabañaId: string): Promise<SyncResult> {
 
 // Individual table sync functions
 async function syncAnimals(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('animals')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('animals').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   // Clear existing non-pending animals and insert fresh data
@@ -138,14 +136,13 @@ async function syncAnimals(cabañaId: string): Promise<number> {
 
 async function syncAnimalsIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('animals');
-  let query = supabase.from('animals').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('animals').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const animal of data) {
@@ -168,12 +165,9 @@ async function syncAnimalsIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncCorrales(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('corrales')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('corrales').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.corrales_cache.where('sync_status').equals('pending').toArray()).map(c => c.id);
@@ -193,14 +187,13 @@ async function syncCorrales(cabañaId: string): Promise<number> {
 
 async function syncCorralesIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('corrales');
-  let query = supabase.from('corrales').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('corrales').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const corral of data) {
@@ -220,12 +213,9 @@ async function syncCorralesIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncEventos(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('eventos')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('eventos').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.eventos_cache.where('sync_status').equals('pending').toArray()).map(e => e.id);
@@ -244,14 +234,13 @@ async function syncEventos(cabañaId: string): Promise<number> {
 
 async function syncEventosIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('eventos');
-  let query = supabase.from('eventos').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('eventos').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const evento of data) {
@@ -270,12 +259,9 @@ async function syncEventosIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncVaccines(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('animal_vaccines')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('animal_vaccines').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.vaccines_cache.where('sync_status').equals('pending').toArray()).map(v => v.id);
@@ -294,14 +280,13 @@ async function syncVaccines(cabañaId: string): Promise<number> {
 
 async function syncVaccinesIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('vaccines');
-  let query = supabase.from('animal_vaccines').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('created_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('animal_vaccines').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('created_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const vaccine of data) {
@@ -320,12 +305,9 @@ async function syncVaccinesIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncWeights(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('animal_weight_history')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('animal_weight_history').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.weights_cache.where('sync_status').equals('pending').toArray()).map(w => w.id);
@@ -344,14 +326,13 @@ async function syncWeights(cabañaId: string): Promise<number> {
 
 async function syncWeightsIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('weights');
-  let query = supabase.from('animal_weight_history').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('animal_weight_history').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const weight of data) {
@@ -370,12 +351,9 @@ async function syncWeightsIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncInseminations(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('artificial_inseminations')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('artificial_inseminations').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.inseminations_cache.where('sync_status').equals('pending').toArray()).map(i => i.id);
@@ -394,14 +372,13 @@ async function syncInseminations(cabañaId: string): Promise<number> {
 
 async function syncInseminationsIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('inseminations');
-  let query = supabase.from('artificial_inseminations').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('artificial_inseminations').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const insemination of data) {
@@ -420,12 +397,9 @@ async function syncInseminationsIncremental(cabañaId: string): Promise<number> 
 }
 
 async function syncPregnancies(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('preñeces')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('preñeces').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.pregnancies_cache.where('sync_status').equals('pending').toArray()).map(p => p.id);
@@ -444,14 +418,13 @@ async function syncPregnancies(cabañaId: string): Promise<number> {
 
 async function syncPregnanciesIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('pregnancies');
-  let query = supabase.from('preñeces').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('preñeces').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const pregnancy of data) {
@@ -470,12 +443,9 @@ async function syncPregnanciesIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncFinances(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('finances')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('finances').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   const pendingIds = (await db.finances_cache.where('sync_status').equals('pending').toArray()).map(f => f.id);
@@ -495,14 +465,13 @@ async function syncFinances(cabañaId: string): Promise<number> {
 
 async function syncFinancesIncremental(cabañaId: string): Promise<number> {
   const lastSync = await getLastSyncTime('finances');
-  let query = supabase.from('finances').select('*').eq('cabaña_id', cabañaId);
-  
-  if (lastSync) {
-    query = query.gte('updated_at', lastSync);
-  }
-
-  const { data, error } = await query;
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) => {
+    let query = supabase.from('finances').select('*').eq('cabaña_id', cabañaId).range(from, to);
+    if (lastSync) {
+      query = query.gte('updated_at', lastSync);
+    }
+    return query;
+  });
   if (!data?.length) return 0;
 
   for (const finance of data) {
@@ -522,12 +491,9 @@ async function syncFinancesIncremental(cabañaId: string): Promise<number> {
 }
 
 async function syncVaccinationRequirements(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('cabaña_vaccination_requirements')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('cabaña_vaccination_requirements').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   await db.vaccination_requirements_cache.where('cabaña_id').equals(cabañaId).delete();
@@ -544,12 +510,9 @@ async function syncVaccinationRequirements(cabañaId: string): Promise<number> {
 }
 
 async function syncDeathCauses(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('catalogo_causas')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('catalogo_causas').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   await db.death_causes_cache.where('cabaña_id').equals(cabañaId).delete();
@@ -566,12 +529,9 @@ async function syncDeathCauses(cabañaId: string): Promise<number> {
 }
 
 async function syncBenchmarks(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('custom_benchmarks')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('custom_benchmarks').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   await db.benchmarks_cache.where('cabaña_id').equals(cabañaId).delete();
@@ -588,12 +548,9 @@ async function syncBenchmarks(cabañaId: string): Promise<number> {
 }
 
 async function syncCorralMovements(cabañaId: string): Promise<number> {
-  const { data, error } = await supabase
-    .from('corral_movements')
-    .select('*')
-    .eq('cabaña_id', cabañaId);
-
-  if (error) throw error;
+  const data = await fetchAllRows<any>((from, to) =>
+    supabase.from('corral_movements').select('*').eq('cabaña_id', cabañaId).range(from, to)
+  );
   if (!data?.length) return 0;
 
   await db.corral_movements_cache.where('cabaña_id').equals(cabañaId).delete();
