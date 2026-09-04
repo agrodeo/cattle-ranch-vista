@@ -12,6 +12,7 @@ import { ArrowLeft, ArrowRight, Edit, Check, X, Upload, Download, AlertTriangle 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import { AnimalFieldMapping, SUPPORTED_FIELDS } from "./AnimalExcelUploadAdvanced";
 import { convertToISODate, isValidBirthDate, detectPartialDate } from '@/lib/dateUtils';
 import { calculateBrafordRegistration, type RegistrationLevel, type ParentInfo } from "@/lib/brafordRegistration";

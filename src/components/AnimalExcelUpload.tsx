@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Upload, FileSpreadsheet, Check, X, Download, AlertTriangle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllRows } from "@/lib/fetchAll";
 import * as XLSX from 'xlsx';
 import Papa from 'papaparse';
 import { convertToISODate, isValidBirthDate } from '@/lib/dateUtils';
