@@ -345,12 +345,27 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
             failedCount++;
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error processing calving row:', error);
-        setRows(prev => prev.map(r => r.id === row.id ? { ...r, errors: { _general: String(error) } } : r));
+        const raw = String(error?.message || error?.error_description || error);
+        const isPermission = /row-level security|permission denied|policy/i.test(raw);
+        const friendly = isPermission
+          ? t('reproductive:calvingRegistration.validation.notAllowed')
+          : raw;
+        errorMessages.push(`${row.mother.id_tag || '-'}: ${friendly}`);
+        setRows(prev => prev.map(r => r.id === row.id ? { ...r, errors: { _general: friendly } } : r));
       }
     }
     setSaving(false);
+
+    if (errorMessages.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: t('common:error.title'),
+        description: errorMessages.slice(0, 3).join(' · '),
+      });
+    }
+
     if (successCount > 0 || failedCount > 0) {
       if (!isOnline()) {
         sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
@@ -360,7 +375,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
           description: t('reproductive:calvingRegistration.summary', { success: successCount, failed: failedCount }),
         });
       }
-      setRows([]);
+      setRows(prev => prev.filter(r => !!r.errors._general));
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-for-calving'] });
       queryClient.invalidateQueries({ queryKey: ['reproductive-alerts'] });
@@ -370,6 +385,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       onSuccess?.();
     }
   };
+
 
   const today = new Date();
 
