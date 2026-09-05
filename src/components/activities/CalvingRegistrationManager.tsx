@@ -595,6 +595,10 @@ function MobileCalvingCard({ row, males, onUpdate, onRemove, t }: RowProps) {
         </Button>
       </div>
 
+      {row.errors._general && (
+        <p className="text-[11px] text-destructive">{row.errors._general}</p>
+      )}
+
       {/* Row 1: Date + Result */}
       <div className="grid grid-cols-2 gap-2">
         <div>
@@ -726,6 +730,9 @@ function DesktopCalvingRow({ row, males, onUpdate, onRemove, t }: RowProps) {
       <TableCell className="whitespace-nowrap">
         <div className="font-medium text-sm">{row.mother.id_tag || '-'}</div>
         {row.mother.name && <div className="text-xs text-muted-foreground">{row.mother.name}</div>}
+        {row.errors._general && (
+          <div className="text-[11px] text-destructive max-w-[220px] whitespace-normal">{row.errors._general}</div>
+        )}
       </TableCell>
       <TableCell>
         <Popover open={calOpen} onOpenChange={setCalOpen}>

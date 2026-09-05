@@ -196,11 +196,26 @@
     "successDesc": "Perda reprodutiva registrada para {{animal}}",
     "errorSaving": "Não foi possível registrar a perda reprodutiva",
     "lossTypes": {
-      "aborto_temprano": { "label": "Aborto Precoce (< 6 meses)", "description": "Perda antes dos 180 dias" },
-      "aborto_tardio": { "label": "Aborto Tardio (> 6 meses)", "description": "Perda após os 180 dias" },
-      "stillbirth": { "label": "Natimorto", "description": "Cria nasce morta" },
-      "neonatal": { "label": "Perda Neonatal", "description": "Cria morre nos primeiros dias" },
-      "no_detectada": { "label": "Não Detectada/Falso Positivo", "description": "Erro na detecção inicial" }
+      "aborto_temprano": {
+        "label": "Aborto Precoce (< 6 meses)",
+        "description": "Perda antes dos 180 dias"
+      },
+      "aborto_tardio": {
+        "label": "Aborto Tardio (> 6 meses)",
+        "description": "Perda após os 180 dias"
+      },
+      "stillbirth": {
+        "label": "Natimorto",
+        "description": "Cria nasce morta"
+      },
+      "neonatal": {
+        "label": "Perda Neonatal",
+        "description": "Cria morre nos primeiros dias"
+      },
+      "no_detectada": {
+        "label": "Não Detectada/Falso Positivo",
+        "description": "Erro na detecção inicial"
+      }
     }
   },
   "femalesTable": {
@@ -286,7 +301,10 @@
       "tagDuplicate": "Este tag já existe",
       "tagDuplicateInBatch": "Tag duplicado neste lote",
       "dateInFuture": "A data não pode ser futura",
-      "noRows": "Adicione pelo menos um parto"
+      "noRows": "Adicione pelo menos um parto",
+      "noCabana": "Não conseguimos identificar seu estabelecimento. Entre novamente e tente de novo.",
+      "notAllowed": "Seu plano atual não permite registrar novos animais. Atualize o plano para continuar.",
+      "fixErrors": "Revise os campos marcados em vermelho"
     },
     "dueDate": "Data estimada",
     "daysOverdue": "dias de atraso",

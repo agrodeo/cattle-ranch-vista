@@ -196,11 +196,26 @@
     "successDesc": "Reproductive loss registered for {{animal}}",
     "errorSaving": "Could not register reproductive loss",
     "lossTypes": {
-      "aborto_temprano": { "label": "Early Abortion (< 6 months)", "description": "Loss before 180 days" },
-      "aborto_tardio": { "label": "Late Abortion (> 6 months)", "description": "Loss after 180 days" },
-      "stillbirth": { "label": "Stillbirth", "description": "Calf born dead" },
-      "neonatal": { "label": "Neonatal Loss", "description": "Calf dies in first days" },
-      "no_detectada": { "label": "Not Detected/False Positive", "description": "Error in initial detection" }
+      "aborto_temprano": {
+        "label": "Early Abortion (< 6 months)",
+        "description": "Loss before 180 days"
+      },
+      "aborto_tardio": {
+        "label": "Late Abortion (> 6 months)",
+        "description": "Loss after 180 days"
+      },
+      "stillbirth": {
+        "label": "Stillbirth",
+        "description": "Calf born dead"
+      },
+      "neonatal": {
+        "label": "Neonatal Loss",
+        "description": "Calf dies in first days"
+      },
+      "no_detectada": {
+        "label": "Not Detected/False Positive",
+        "description": "Error in initial detection"
+      }
     }
   },
   "femalesTable": {
@@ -286,7 +301,10 @@
       "tagDuplicate": "This tag already exists",
       "tagDuplicateInBatch": "Duplicate tag in this batch",
       "dateInFuture": "Date cannot be in the future",
-      "noRows": "Add at least one birth"
+      "noRows": "Add at least one birth",
+      "noCabana": "We couldn't identify your ranch. Please sign in again and retry.",
+      "notAllowed": "Your current plan doesn't allow adding new animals. Upgrade your plan to continue.",
+      "fixErrors": "Please review the fields marked in red"
     },
     "dueDate": "Due date",
     "daysOverdue": "days overdue",
