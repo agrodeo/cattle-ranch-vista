@@ -205,8 +205,16 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       return { ...row, errors };
     });
     setRows(updated);
+    if (!valid) {
+      toast({
+        variant: 'destructive',
+        title: t('reproductive:calvingRegistration.validation.fixErrors'),
+        description: Object.values(updated.find(r => Object.keys(r.errors).length > 0)?.errors || {}).join(' · '),
+      });
+    }
     return valid;
   }, [rows, animals, t, toast]);
+
 
   const handleSaveAll = async () => {
     if (!validate()) return;
