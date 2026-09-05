@@ -205,8 +205,16 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       return { ...row, errors };
     });
     setRows(updated);
+    if (!valid) {
+      toast({
+        variant: 'destructive',
+        title: t('reproductive:calvingRegistration.validation.fixErrors'),
+        description: Object.values(updated.find(r => Object.keys(r.errors).length > 0)?.errors || {}).join(' · '),
+      });
+    }
     return valid;
   }, [rows, animals, t, toast]);
+
 
   const handleSaveAll = async () => {
     if (!validate()) return;
@@ -222,10 +230,20 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       const cached = await db.user_profile.toArray();
       cabanaId = cached[0]?.cabañaId || null;
     }
-    if (!cabanaId) { setSaving(false); return; }
+    if (!cabanaId) {
+      setSaving(false);
+      toast({
+        variant: 'destructive',
+        title: t('common:error.title'),
+        description: t('reproductive:calvingRegistration.validation.noCabana'),
+      });
+      return;
+    }
 
     let successCount = 0;
     let failedCount = 0;
+    const errorMessages: string[] = [];
+
 
     for (const row of rows) {
       try {
@@ -335,12 +353,27 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
             failedCount++;
           }
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error processing calving row:', error);
-        setRows(prev => prev.map(r => r.id === row.id ? { ...r, errors: { _general: String(error) } } : r));
+        const raw = String(error?.message || error?.error_description || error);
+        const isPermission = /row-level security|permission denied|policy/i.test(raw);
+        const friendly = isPermission
+          ? t('reproductive:calvingRegistration.validation.notAllowed')
+          : raw;
+        errorMessages.push(`${row.mother.id_tag || '-'}: ${friendly}`);
+        setRows(prev => prev.map(r => r.id === row.id ? { ...r, errors: { _general: friendly } } : r));
       }
     }
     setSaving(false);
+
+    if (errorMessages.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: t('common:error.title'),
+        description: errorMessages.slice(0, 3).join(' · '),
+      });
+    }
+
     if (successCount > 0 || failedCount > 0) {
       if (!isOnline()) {
         sonnerToast.info('Guardado localmente - se sincronizará cuando vuelvas a tener conexión');
@@ -350,7 +383,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
           description: t('reproductive:calvingRegistration.summary', { success: successCount, failed: failedCount }),
         });
       }
-      setRows([]);
+      setRows(prev => prev.filter(r => !!r.errors._general));
       queryClient.invalidateQueries({ queryKey: ['animals'] });
       queryClient.invalidateQueries({ queryKey: ['animals-for-calving'] });
       queryClient.invalidateQueries({ queryKey: ['reproductive-alerts'] });
@@ -360,6 +393,7 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       onSuccess?.();
     }
   };
+
 
   const today = new Date();
 
@@ -561,6 +595,10 @@ function MobileCalvingCard({ row, males, onUpdate, onRemove, t }: RowProps) {
         </Button>
       </div>
 
+      {row.errors._general && (
+        <p className="text-[11px] text-destructive">{row.errors._general}</p>
+      )}
+
       {/* Row 1: Date + Result */}
       <div className="grid grid-cols-2 gap-2">
         <div>
@@ -692,6 +730,9 @@ function DesktopCalvingRow({ row, males, onUpdate, onRemove, t }: RowProps) {
       <TableCell className="whitespace-nowrap">
         <div className="font-medium text-sm">{row.mother.id_tag || '-'}</div>
         {row.mother.name && <div className="text-xs text-muted-foreground">{row.mother.name}</div>}
+        {row.errors._general && (
+          <div className="text-[11px] text-destructive max-w-[220px] whitespace-normal">{row.errors._general}</div>
+        )}
       </TableCell>
       <TableCell>
         <Popover open={calOpen} onOpenChange={setCalOpen}>
