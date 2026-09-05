@@ -222,10 +222,20 @@ export function CalvingRegistrationManager({ isCompact, onSuccess }: CalvingRegi
       const cached = await db.user_profile.toArray();
       cabanaId = cached[0]?.cabañaId || null;
     }
-    if (!cabanaId) { setSaving(false); return; }
+    if (!cabanaId) {
+      setSaving(false);
+      toast({
+        variant: 'destructive',
+        title: t('common:error.title'),
+        description: t('reproductive:calvingRegistration.validation.noCabana'),
+      });
+      return;
+    }
 
     let successCount = 0;
     let failedCount = 0;
+    const errorMessages: string[] = [];
+
 
     for (const row of rows) {
       try {
